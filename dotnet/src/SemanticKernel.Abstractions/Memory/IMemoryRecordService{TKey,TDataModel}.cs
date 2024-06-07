@@ -24,7 +24,7 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <param name="options">Optional options for retrieving the record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The memory record if found, otherwise null.</returns>
-    Task<TDataModel?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task<TDataModel> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
@@ -35,7 +35,7 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <param name="options">Optional options for retrieving the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The vecmemorytor records associated with the unique keys provided.</returns>
-    IAsyncEnumerable<TDataModel?> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<TDataModel> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes a memory record from the data store. Does not guarantee that the collection exists.

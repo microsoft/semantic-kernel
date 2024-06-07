@@ -14,7 +14,7 @@ public abstract class MemoryRecordProperty
     /// Initializes a new instance of the <see cref="MemoryRecordProperty"/> class.
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
-    protected MemoryRecordProperty(string propertyName)
+    private protected MemoryRecordProperty(string propertyName)
     {
         this.PropertyName = propertyName;
     }

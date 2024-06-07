@@ -31,6 +31,11 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     ];
 
     /// <summary>A set of types that vectors on the provided model may have.</summary>
+    /// <remarks>
+    /// Azure AI Search is adding support for more types than just float32, but these are not available for use via the
+    /// SDK yet. We will update this list as the SDK is updated.
+    /// <see href="https://learn.microsoft.com/en-us/rest/api/searchservice/supported-data-types#edm-data-types-for-vector-fields"/>
+    /// </remarks>
     private static readonly HashSet<Type> s_supportedVectorTypes =
     [
         typeof(ReadOnlyMemory<float>),
@@ -39,9 +44,6 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
 
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
-
-    /// <summary>The name of the collection to use with this store if none is provided for any individual operation.</summary>
-    private readonly string _defaultCollectionName;
 
     /// <summary>The name of the key field for the collections that this class is used with.</summary>
     private readonly string _keyPropertyName;
@@ -59,19 +61,15 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     /// Initializes a new instance of the <see cref="AzureAISearchMemoryRecordService{TDataModel}"/> class.
     /// </summary>
     /// <param name="searchIndexClient">Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</param>
-    /// <param name="defaultCollectionName">The name of the collection to use with this store if none is provided for any individual operation.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="searchIndexClient"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="defaultCollectionName"/> is null or whitespace.</exception>
-    public AzureAISearchMemoryRecordService(SearchIndexClient searchIndexClient, string defaultCollectionName, AzureAISearchMemoryRecordServiceOptions<TDataModel>? options = default)
+    public AzureAISearchMemoryRecordService(SearchIndexClient searchIndexClient, AzureAISearchMemoryRecordServiceOptions<TDataModel>? options = default)
     {
         // Verify.
         Verify.NotNull(searchIndexClient);
-        Verify.NotNullOrWhiteSpace(defaultCollectionName);
 
         // Assign.
         this._searchIndexClient = searchIndexClient;
-        this._defaultCollectionName = defaultCollectionName;
         this._options = options ?? new AzureAISearchMemoryRecordServiceOptions<TDataModel>();
 
         // Verify custom mapper.
@@ -101,13 +99,13 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <inheritdoc />
-    public Task<TDataModel?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public Task<TDataModel> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
         // Create Options.
         var innerOptions = this.ConvertGetDocumentOptions(options);
-        var collectionName = options?.CollectionName ?? this._defaultCollectionName;
+        var collectionName = this.ChooseCollectionName(options?.CollectionName);
 
         // Get record.
         var searchClient = this.GetSearchClient(collectionName);
@@ -115,13 +113,13 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TDataModel?> GetBatchAsync(IEnumerable<string> keys, Memory.GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TDataModel> GetBatchAsync(IEnumerable<string> keys, Memory.GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
         // Create Options
         var innerOptions = this.ConvertGetDocumentOptions(options);
-        var collectionName = options?.CollectionName ?? this._defaultCollectionName;
+        var collectionName = this.ChooseCollectionName(options?.CollectionName);
 
         // Get records in parallel.
         var searchClient = this.GetSearchClient(collectionName);
@@ -136,7 +134,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         Verify.NotNullOrWhiteSpace(key);
 
         // Create options.
-        var collectionName = options?.CollectionName ?? this._defaultCollectionName;
+        var collectionName = this.ChooseCollectionName(options?.CollectionName);
 
         // Remove record.
         var searchClient = this.GetSearchClient(collectionName);
@@ -152,7 +150,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         Verify.NotNull(keys);
 
         // Create options.
-        var collectionName = options?.CollectionName ?? this._defaultCollectionName;
+        var collectionName = this.ChooseCollectionName(options?.CollectionName);
 
         // Remove records.
         var searchClient = this.GetSearchClient(collectionName);
@@ -168,7 +166,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         Verify.NotNull(record);
 
         // Create options.
-        var collectionName = options?.CollectionName ?? this._defaultCollectionName;
+        var collectionName = this.ChooseCollectionName(options?.CollectionName);
         var innerOptions = new IndexDocumentsOptions { ThrowOnAnyError = true };
 
         // Upsert record.
@@ -183,7 +181,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         Verify.NotNull(records);
 
         // Create Options
-        var collectionName = options?.CollectionName ?? this._defaultCollectionName;
+        var collectionName = this.ChooseCollectionName(options?.CollectionName);
         var innerOptions = new IndexDocumentsOptions { ThrowOnAnyError = true };
 
         // Upsert records
@@ -204,7 +202,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     /// <param name="innerOptions">The azure ai search sdk options for getting a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The retrieved document, mapped to the consumer data model.</returns>
-    private async Task<TDataModel?> GetDocumentAndMapToDataModelAsync(
+    private async Task<TDataModel> GetDocumentAndMapToDataModelAsync(
         SearchClient searchClient,
         string collectionName,
         string key,
@@ -288,6 +286,25 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <summary>
+    /// Choose the right collection name to use for the operation by using the one provided
+    /// as part of the operation options, or the default one provided at construction time.
+    /// </summary>
+    /// <param name="operationCollectionName">The collection name provided on the operation options.</param>
+    /// <returns>The collection name to use.</returns>
+    private string ChooseCollectionName(string? operationCollectionName)
+    {
+        var collectionName = operationCollectionName ?? this._options.DefaultCollectionName;
+        if (collectionName is null)
+        {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
+            throw new ArgumentException("Collection name must be provided in the operation options, since no default was provided at construction time.", "options");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
+        }
+
+        return collectionName;
+    }
+
+    /// <summary>
     /// Convert the public <see cref="GetRecordOptions"/> options model to the azure ai search <see cref="GetDocumentOptions"/> options model.
     /// </summary>
     /// <param name="options">The public options model.</param>
@@ -316,6 +333,18 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         try
         {
             return await operation.Invoke().ConfigureAwait(false);
+        }
+        catch (AggregateException ex) when (ex.InnerException is RequestFailedException innerEx)
+        {
+            var wrapperException = new MemoryServiceOperationException("Call to memory service failed.", ex);
+
+            // Using Open Telemetry standard for naming of these entries.
+            // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
+            wrapperException.Data.Add("db.system", "AzureAISearch");
+            wrapperException.Data.Add("db.collection.name", collectionName);
+            wrapperException.Data.Add("db.operation.name", operationName);
+
+            throw wrapperException;
         }
         catch (RequestFailedException ex)
         {

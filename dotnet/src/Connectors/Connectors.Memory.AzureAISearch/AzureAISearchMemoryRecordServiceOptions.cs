@@ -12,6 +12,12 @@ public sealed class AzureAISearchMemoryRecordServiceOptions<TDataModel>
     where TDataModel : class
 {
     /// <summary>
+    /// Gets or sets the default collection name to use.
+    /// If not provided here, the collection name will need to be provided for each operation or the operation will throw.
+    /// </summary>
+    public string? DefaultCollectionName { get; init; } = null;
+
+    /// <summary>
     /// Gets or sets the choice of mapper to use when converting between the data model and the azure ai search record.
     /// </summary>
     public AzureAISearchMemoryRecordMapperType MapperType { get; init; } = AzureAISearchMemoryRecordMapperType.Default;

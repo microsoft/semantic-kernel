@@ -29,9 +29,10 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
         // Arrange
         var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
         {
+            DefaultCollectionName = fixture.TestIndexName,
             MemoryRecordDefinition = useRecordDefinition ? fixture.MemoryRecordDefinition : null
         };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
+        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
 
         // Act
         var hotel = new Hotel()
@@ -78,7 +79,11 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
     public async Task ItCanUpsertManyDocumentsToMemoryStoreAsync()
     {
         // Arrange
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        {
+            DefaultCollectionName = fixture.TestIndexName
+        };
+        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
 
         // Act
         var results = sut.UpsertBatchAsync(
@@ -114,9 +119,10 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
         // Arrange
         var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
         {
+            DefaultCollectionName = fixture.TestIndexName,
             MemoryRecordDefinition = useRecordDefinition ? fixture.MemoryRecordDefinition : null
         };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
+        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
 
         // Act
         var getResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = includeVectors });
@@ -146,7 +152,11 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
     public async Task ItCanGetManyDocumentsFromMemoryStoreAsync()
     {
         // Arrange
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        {
+            DefaultCollectionName = fixture.TestIndexName
+        };
+        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
 
         // Act
         var hotels = sut.GetBatchAsync(["BaseSet-1", "BaseSet-2", "BaseSet-3", "BaseSet-4"], new GetRecordOptions { IncludeVectors = true });
@@ -167,7 +177,11 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
     public async Task ItThrowsForPartialGetBatchResultAsync()
     {
         // Arrange.
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        {
+            DefaultCollectionName = fixture.TestIndexName
+        };
+        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
 
         // Act.
         await Assert.ThrowsAsync<MemoryServiceOperationException>(async () => await sut.GetBatchAsync(["BaseSet-1", "BaseSet-5", "BaseSet-2"]).ToListAsync());
@@ -181,9 +195,10 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
         // Arrange
         var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
         {
+            DefaultCollectionName = fixture.TestIndexName,
             MemoryRecordDefinition = useRecordDefinition ? fixture.MemoryRecordDefinition : null
         };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
+        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
         await sut.UpsertAsync(CreateTestHotel("Remove-1"));
 
         // Act
@@ -197,7 +212,11 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
     public async Task ItCanRemoveManyDocumentsFromMemoryStoreAsync()
     {
         // Arrange
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        {
+            DefaultCollectionName = fixture.TestIndexName
+        };
+        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-1"));
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-2"));
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-3"));
