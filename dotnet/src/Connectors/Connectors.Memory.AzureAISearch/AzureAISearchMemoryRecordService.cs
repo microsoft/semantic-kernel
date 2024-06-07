@@ -321,6 +321,8 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         {
             var wrapperException = new MemoryServiceOperationException("Call to memory service failed.", ex);
 
+            // Using Open Telemetry standard for naming of these entries.
+            // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
             wrapperException.Data.Add("db.system", "AzureAISearch");
             wrapperException.Data.Add("db.collection.name", collectionName);
             wrapperException.Data.Add("db.operation.name", operationName);
@@ -347,6 +349,8 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         {
             var wrapperException = new MemoryModelException("Failed to convert memory model.", ex);
 
+            // Using Open Telemetry standard for naming of these entries.
+            // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
             wrapperException.Data.Add("db.system", "AzureAISearch");
             wrapperException.Data.Add("db.collection.name", collectionName);
             wrapperException.Data.Add("db.operation.name", operationName);
