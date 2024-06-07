@@ -9,7 +9,7 @@ using Resources;
 namespace Agents;
 
 /// <summary>
-/// Demonstrate using code-intepreter to manipulate and generate csv file on <see cref="OpenAIAssistantAgent"/> .
+/// Demonstrate using code-interpreter to manipulate and generate csv file on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
 public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTest(output)
 {
