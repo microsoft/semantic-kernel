@@ -105,7 +105,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                 try
                 {
                     // Invoking the function
-                    FunctionResultContent resultContent = await functionCall.InvokeAsync(kernel); 
+                    FunctionResultContent resultContent = await functionCall.InvokeAsync(kernel);
 
                     // Adding the function result to the chat history
                     chatHistory.Add(resultContent.ToChatMessage());
