@@ -188,7 +188,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
 
         request_attempts = (
-            settings.function_call_behavior.max_auto_invoke_attempts if settings.function_call_behavior else 1
+            settings.function_call_behavior.max_auto_invoke_attempts 
+            if (settings.function_call_behavior and 
+                settings.function_call_behavior.auto_invoke_kernel_functions) 
+            else 1
         )
         # hold the messages, if there are more than one response, it will not be used, so we flatten
         for request_index in range(request_attempts):
