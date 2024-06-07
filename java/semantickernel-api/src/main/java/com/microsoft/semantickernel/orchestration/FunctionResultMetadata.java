@@ -51,7 +51,7 @@ public class FunctionResultMetadata<UsageType> {
     /**
      * Create a new instance of FunctionResultMetadata.
      */
-    public static FunctionResultMetadata<?> build(@Nullable String id) {
+    public static FunctionResultMetadata<?> build(String id) {
         return build(id, null, null);
     }
 
@@ -64,15 +64,14 @@ public class FunctionResultMetadata<UsageType> {
      * @return A new instance of FunctionResultMetadata.
      */
     public static <UsageType> FunctionResultMetadata<UsageType> build(
-        @Nullable String id,
+        String id,
         @Nullable UsageType usage,
         @Nullable OffsetDateTime createdAt) {
 
         CaseInsensitiveMap<ContextVariable<?>> metadata = new CaseInsensitiveMap<>();
 
-        if (id != null) {
-            metadata.put(ID, ContextVariable.of(id));
-        }
+        metadata.put(ID, ContextVariable.of(id));
+
         if (usage != null) {
             metadata.put(USAGE, ContextVariable.of(usage,
                 new ContextVariableTypeConverter.NoopConverter<>(Object.class)));
@@ -107,7 +106,6 @@ public class FunctionResultMetadata<UsageType> {
      *
      * @return The id of the result of the function invocation.
      */
-    @Nullable
     public String getId() {
         ContextVariable<?> id = metadata.get(ID);
         if (id == null) {

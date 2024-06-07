@@ -9,6 +9,8 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.google.GeminiService;
 import com.microsoft.semantickernel.aiservices.google.implementation.MonoConverter;
 import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.exceptions.SKCheckedException;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.services.gemini.GeminiServiceBuilder;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class GeminiTextGenerationService extends GeminiService implements TextGenerationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeminiTextGenerationService.class);
@@ -59,9 +62,9 @@ public class GeminiTextGenerationService extends GeminiService implements TextGe
 
     private Mono<List<TextContent>> internalGetTextAsync(String prompt,
         @Nullable PromptExecutionSettings executionSettings) {
-        GenerativeModel model = getGenerativeModel(executionSettings);
 
         try {
+            GenerativeModel model = getGenerativeModel(executionSettings);
             return MonoConverter.fromApiFuture(model.generateContentAsync(prompt))
                 .doOnError(e -> LOGGER.error("Error generating text", e))
                 .flatMap(result -> {
@@ -69,9 +72,9 @@ public class GeminiTextGenerationService extends GeminiService implements TextGe
 
                     FunctionResultMetadata<GenerateContentResponse.UsageMetadata> metadata = FunctionResultMetadata
                         .build(
-                            null,
+                            UUID.randomUUID().toString(),
                             result.getUsageMetadata(),
-                            null);
+                            OffsetDateTime.now());
 
                     result.getCandidatesList().forEach(
                         candidate -> {
@@ -85,13 +88,13 @@ public class GeminiTextGenerationService extends GeminiService implements TextGe
 
                     return Mono.just(textContents);
                 });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (SKCheckedException | IOException e) {
+            return Mono.error(new SKException("Error generating text", e));
         }
     }
 
     private GenerativeModel getGenerativeModel(
-        @Nullable PromptExecutionSettings executionSettings) {
+        @Nullable PromptExecutionSettings executionSettings) throws SKCheckedException {
         GenerativeModel.Builder modelBuilder = new GenerativeModel.Builder()
             .setModelName(getModelId())
             .setVertexAi(getClient());
@@ -99,10 +102,11 @@ public class GeminiTextGenerationService extends GeminiService implements TextGe
         if (executionSettings != null) {
             if (executionSettings.getResultsPerPrompt() < 1
                 || executionSettings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
-                throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                    String.format(
-                        "Results per prompt must be in range between 1 and %d, inclusive.",
-                        MAX_RESULTS_PER_PROMPT));
+                throw SKCheckedException.build("Error building generative model.",
+                    new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                        String.format(
+                            "Results per prompt must be in range between 1 and %d, inclusive.",
+                            MAX_RESULTS_PER_PROMPT)));
             }
 
             GenerationConfig config = GenerationConfig.newBuilder()
