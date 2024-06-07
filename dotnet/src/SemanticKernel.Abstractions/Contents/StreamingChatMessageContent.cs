@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -21,7 +20,6 @@ public class StreamingChatMessageContent : StreamingKernelContent
     /// <summary>
     /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection of <see cref="StreamingTextContent"/> type.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public string? Content
     {
         get

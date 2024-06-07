@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace AutoFunctionCalling;
+namespace FunctionCalling;
 
 /// <summary>
 /// These examples demonstrate two ways functions called by the OpenAI LLM can be invoked using the SK streaming and non-streaming AI API:
@@ -20,10 +20,10 @@ namespace AutoFunctionCalling;
 ///
 /// 2. Manual Invocation by a Caller:
 ///    Functions called by the LLM are returned to the AI API caller. The caller controls the invocation phase where
-///    they may decide which function to call, when to call them, how to handle exceptions, etc. The caller then
-///    adds the function results or exceptions to the chat history and returns it to the LLM, which reasons about it
+///    they may decide which function to call, when to call them, how to handle exceptions, call them in parallel or sequentially, etc.
+///    The caller then adds the function results or exceptions to the chat history and returns it to the LLM, which reasons about it
 ///    and generates the final response.
-///    This approach is more manual and requires more manual intervention from the caller.
+///    This approach is manual and provides more control over the function invocation phase to the caller.
 /// </summary>
 public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
@@ -35,7 +35,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Auto function calling with a non-streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -50,7 +50,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Auto function calling with a streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -64,12 +64,12 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     /// This example demonstrates manual function calling with a non-streaming chat API.
     /// </summary>
     [Fact]
-    public async Task RunNonStreamingChatAPItWithManualFunctionCallingAsync()
+    public async Task RunNonStreamingChatAPIWithManualFunctionCallingAsync()
     {
         Console.WriteLine("Manual function calling with a non-streaming prompt.");
 
         // Create kernel and chat service
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -132,7 +132,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine("Manual function calling with a streaming prompt.");
 
         // Create kernel and chat service
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -200,7 +200,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Simulated function calling with a non-streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -252,7 +252,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Auto function calling with a streaming chat");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
@@ -289,7 +289,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    private static Kernel CreateBuilder()
+    private static Kernel CreateKernel()
     {
         // Create kernel
         IKernelBuilder builder = Kernel.CreateBuilder();
