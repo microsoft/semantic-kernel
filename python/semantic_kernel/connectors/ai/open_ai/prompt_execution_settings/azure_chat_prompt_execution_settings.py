@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Annotated, Any, Literal, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Union
 
 from pydantic import AliasGenerator, ConfigDict, Field
 from pydantic.alias_generators import to_camel, to_snake
@@ -10,8 +10,10 @@ from pydantic.functional_validators import AfterValidator
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +88,7 @@ class AzureAISearchDataSource(AzureChatRequestBase):
     parameters: Annotated[dict, AzureAISearchDataSourceParameters]
 
     @classmethod
-    def from_azure_ai_search_settings(cls, azure_ai_search_settings: AzureAISearchSettings, **kwargs: Any):
+    def from_azure_ai_search_settings(cls, azure_ai_search_settings: "AzureAISearchSettings", **kwargs: Any):
         """Create an instance from Azure AI Search settings."""
         kwargs["parameters"] = {
             "endpoint": str(azure_ai_search_settings.endpoint),
