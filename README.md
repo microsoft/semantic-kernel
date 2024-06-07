@@ -82,7 +82,7 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 
 1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
     1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
-2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/main/java/samples/sample-code/README.md)
+2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/tree/main/java/samples/README.md)
 
 ## Learning how to use Semantic Kernel
 
