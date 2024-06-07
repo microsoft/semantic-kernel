@@ -25,17 +25,17 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     where TDataModel : class
 {
     /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes = new()
-    {
+    private static readonly HashSet<Type> s_supportedKeyTypes =
+    [
         typeof(string)
-    };
+    ];
 
     /// <summary>A set of types that vectors on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes = new()
-    {
+    private static readonly HashSet<Type> s_supportedVectorTypes =
+    [
         typeof(ReadOnlyMemory<float>),
         typeof(ReadOnlyMemory<float>?)
-    };
+    ];
 
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
@@ -75,20 +75,20 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         this._options = options ?? new AzureAISearchMemoryRecordServiceOptions<TDataModel>();
 
         // Verify custom mapper.
-        if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomerMapper && this._options.JsonObjectCustomMapper is null)
+        if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper && this._options.JsonObjectCustomMapper is null)
         {
-            throw new ArgumentException($"The {nameof(AzureAISearchMemoryRecordServiceOptions<TDataModel>.JsonObjectCustomMapper)} option needs to be set if a {nameof(AzureAISearchMemoryRecordServiceOptions<TDataModel>.MapperType)} of {nameof(AzureAISearchMemoryRecordMapperType.JsonObjectCustomerMapper)} has been chosen.", nameof(options));
+            throw new ArgumentException($"The {nameof(AzureAISearchMemoryRecordServiceOptions<TDataModel>.JsonObjectCustomMapper)} option needs to be set if a {nameof(AzureAISearchMemoryRecordServiceOptions<TDataModel>.MapperType)} of {nameof(AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper)} has been chosen.", nameof(options));
         }
 
         // Enumerate public properties using configuration or attributes.
         (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
         if (this._options.MemoryRecordDefinition is not null)
         {
-            properties = MemoryServiceModelPropertyReader.FindProperties(typeof(TDataModel), this._options.MemoryRecordDefinition, true);
+            properties = MemoryServiceModelPropertyReader.FindProperties(typeof(TDataModel), this._options.MemoryRecordDefinition, supportsMultipleVectors: true);
         }
         else
         {
-            properties = MemoryServiceModelPropertyReader.FindProperties(typeof(TDataModel), true);
+            properties = MemoryServiceModelPropertyReader.FindProperties(typeof(TDataModel), supportsMultipleVectors: true);
         }
 
         // Validate property types and store for later use.
@@ -101,7 +101,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <inheritdoc />
-    public Task<TDataModel?> GetAsync(string key, Memory.GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public Task<TDataModel?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -212,7 +212,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         CancellationToken cancellationToken)
     {
         // Use the user provided mapper.
-        if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomerMapper)
+        if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper)
         {
             var jsonObject = await RunOperationAsync(
                 () => searchClient.GetDocumentAsync<JsonObject>(key, innerOptions, cancellationToken),
@@ -249,7 +249,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         CancellationToken cancellationToken)
     {
         // Use the user provided mapper.
-        if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomerMapper)
+        if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper)
         {
             var jsonObjects = RunModelConversion(
                 () => records.Select(this._options.JsonObjectCustomMapper!.MapFromDataToStorageModel),

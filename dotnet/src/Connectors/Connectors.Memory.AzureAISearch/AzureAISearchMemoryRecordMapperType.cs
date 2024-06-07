@@ -10,12 +10,12 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 public enum AzureAISearchMemoryRecordMapperType
 {
     /// <summary>
-    /// Use the default mapper that is provided by the azure ai search client sdk.
+    /// Use the default mapper that is provided by the Azure AI Search client SDK.
     /// </summary>
     Default,
 
     /// <summary>
     /// Use a custom mapper between <see cref="JsonObject"/> and the data model.
     /// </summary>
-    JsonObjectCustomerMapper
+    JsonObjectCustomMapper
 }

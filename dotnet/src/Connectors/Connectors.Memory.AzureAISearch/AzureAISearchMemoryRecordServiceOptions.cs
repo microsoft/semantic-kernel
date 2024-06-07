@@ -20,7 +20,7 @@ public sealed class AzureAISearchMemoryRecordServiceOptions<TDataModel>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the azure ai search record.
     /// </summary>
     /// <remarks>
-    /// Set <see cref="MapperType"/> to <see cref="AzureAISearchMemoryRecordMapperType.JsonObjectCustomerMapper"/> to use this mapper."/>
+    /// Set <see cref="MapperType"/> to <see cref="AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper"/> to use this mapper."/>
     /// </remarks>
     public IMemoryRecordMapper<TDataModel, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
 
