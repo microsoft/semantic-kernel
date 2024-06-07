@@ -29,10 +29,15 @@ To set your secrets with Secret Manager:
 cd dotnet/src/IntegrationTests
 
 dotnet user-secrets init
+
 dotnet user-secrets set "OpenAI:ServiceId" "text-davinci-003"
 dotnet user-secrets set "OpenAI:ModelId" "text-davinci-003"
 dotnet user-secrets set "OpenAI:ChatModelId" "gpt-4"
 dotnet user-secrets set "OpenAI:ApiKey" "..."
+
+dotnet user-secrets set "OpenAITextToImage:ServiceId" "dall-e-3"
+dotnet user-secrets set "OpenAITextToImage:ModelId" "dall-e-3"
+dotnet user-secrets set "OpenAITextToImage:ApiKey" "..."
 
 dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-text-davinci-003"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "text-davinci-003"
