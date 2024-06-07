@@ -223,11 +223,11 @@ public abstract class AgentChat
                 this.History.Add(message);
                 messages.Add(message);
 
-                //// Don't expose internal messages to caller.
-                //if (message.Role == AuthorRole.Tool)
-                //{
-                //    continue;
-                //}
+                // Don't expose internal messages to caller.
+                if (message.Items.All(i => i is FunctionCallContent || i is FunctionResultContent))
+                {
+                    continue;
+                }
 
                 // Yield message to caller
                 yield return message;
