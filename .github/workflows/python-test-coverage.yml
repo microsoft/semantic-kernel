@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Download coverage
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v5
         with:
           name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
@@ -44,7 +44,7 @@ jobs:
           if_no_artifact_found: warn
       - name: Download pytest
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v5
         with:
           name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
