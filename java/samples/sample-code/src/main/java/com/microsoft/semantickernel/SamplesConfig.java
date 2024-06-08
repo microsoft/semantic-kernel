@@ -8,12 +8,15 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import java.io.File;
 import java.util.List;
 
+<<<<<<< HEAD
 /**
  * Helper for creating
  * Refer to the <a href=
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
  */
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 public class SamplesConfig {
 
     public static final List<File> DEFAULT_PROPERTIES_LOCATIONS = List.of(

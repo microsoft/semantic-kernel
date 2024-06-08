@@ -53,5 +53,10 @@ public interface ReadOnlySkillCollection extends Buildable {
         return BuildersSingleton.INST.getInstance(Builder.class);
     }
 
+<<<<<<< HEAD
     interface Builder extends SemanticKernelBuilder<ReadOnlySkillCollection> {}
+=======
+    interface Builder extends SemanticKernelBuilder<ReadOnlySkillCollection> {
+    }
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 }

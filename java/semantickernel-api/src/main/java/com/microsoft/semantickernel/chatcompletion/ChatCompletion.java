@@ -14,7 +14,10 @@ import reactor.core.publisher.Mono;
 
 public interface ChatCompletion<ChatHistoryType extends ChatHistory>
         extends AIService, TextCompletion, Buildable {
+<<<<<<< HEAD
 
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     /**
      * Generate a new chat message
      *
@@ -40,6 +43,7 @@ public interface ChatCompletion<ChatHistoryType extends ChatHistory>
             ChatHistoryType chat, ChatRequestSettings requestSettings);
 
     @SuppressWarnings("unchecked")
+<<<<<<< HEAD
     static <ChatHistoryType extends ChatHistory, E extends ChatCompletion<ChatHistoryType>>
             Builder<ChatHistoryType> builder() {
         return (Builder<ChatHistoryType>) BuildersSingleton.INST.getInstance(Builder.class);
@@ -47,6 +51,13 @@ public interface ChatCompletion<ChatHistoryType extends ChatHistory>
 
     interface Builder<ChatHistoryType extends ChatHistory>
             extends SemanticKernelBuilder<ChatCompletion<ChatHistoryType>> {
+=======
+    static <ChatHistoryType extends ChatHistory, E extends ChatCompletion<ChatHistoryType>> Builder<ChatHistoryType> builder() {
+        return (Builder<ChatHistoryType>)BuildersSingleton.INST.getInstance(Builder.class);
+    }
+
+    interface Builder<ChatHistoryType extends ChatHistory> extends SemanticKernelBuilder<ChatCompletion<ChatHistoryType>> {
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 
         Builder<ChatHistoryType> withOpenAIClient(OpenAIAsyncClient client);
 

@@ -15,11 +15,15 @@ import java.util.function.BiFunction;
 import static com.microsoft.semantickernel.chatcompletion.ChatHistory.AuthorRoles.Assistant;
 
 /**
+<<<<<<< HEAD
  * Demonstrates how to use Semantic Kernel with Text Completion as streaming
  * <p>
  * Refer to the <a href=
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
+=======
+ * The following example shows how to use Semantic Kernel with Text Completion as streaming
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
  */
 public class Example33_StreamingChat {
     public static void main(String[] args) throws ConfigurationException {
