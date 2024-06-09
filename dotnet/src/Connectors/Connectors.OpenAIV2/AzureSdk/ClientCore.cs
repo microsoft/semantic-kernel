@@ -1041,13 +1041,13 @@ internal abstract class ClientCore
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="serviceVersion">Optional API version.</param>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient, OpenAIClientOptions.ServiceVersion? serviceVersion = null)
+    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient)
     {
-        OpenAIClientOptions options = serviceVersion is not null ?
-            new(serviceVersion.Value) :
-            new();
+        OpenAIClientOptions options = new()
+        {
+            ApplicationId = HttpHeaderConstant.Values.UserAgent;
+        };
 
-        options.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
         options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), HttpPipelinePosition.PerCall);
 
         if (httpClient is not null)
@@ -1085,48 +1085,6 @@ internal abstract class ClientCore
         }
 
         return chat;
-    }
-
-    private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIPromptExecutionSettings executionSettings, string deploymentOrModelName)
-    {
-        if (executionSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
-        {
-            throw new ArgumentOutOfRangeException($"{nameof(executionSettings)}.{nameof(executionSettings.ResultsPerPrompt)}", executionSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
-        }
-
-        var options = new CompletionsOptions
-        {
-            Prompts = { text.Replace("\r\n", "\n") }, // normalize line endings
-            MaxTokens = executionSettings.MaxTokens,
-            Temperature = (float?)executionSettings.Temperature,
-            NucleusSamplingFactor = (float?)executionSettings.TopP,
-            FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
-            PresencePenalty = (float?)executionSettings.PresencePenalty,
-            Echo = false,
-            ChoicesPerPrompt = executionSettings.ResultsPerPrompt,
-            GenerationSampleCount = executionSettings.ResultsPerPrompt,
-            LogProbabilityCount = executionSettings.TopLogprobs,
-            User = executionSettings.User,
-            DeploymentName = deploymentOrModelName
-        };
-
-        if (executionSettings.TokenSelectionBiases is not null)
-        {
-            foreach (var keyValue in executionSettings.TokenSelectionBiases)
-            {
-                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
-            }
-        }
-
-        if (executionSettings.StopSequences is { Count: > 0 })
-        {
-            foreach (var s in executionSettings.StopSequences)
-            {
-                options.StopSequences.Add(s);
-            }
-        }
-
-        return options;
     }
 
     private (ChatCompletionOptions, List<ChatMessage>) CreateChatCompletionsOptions(

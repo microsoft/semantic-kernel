@@ -70,7 +70,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
             if (toolCall is ChatToolCall functionToolCall)
             {
                 var functionCallContent = ClientCore.GetFunctionCallContent(functionToolCall);
-                message.Items.Add(functionCallContent);
+                this.Items.Add(functionCallContent);
             }
         }
     }
