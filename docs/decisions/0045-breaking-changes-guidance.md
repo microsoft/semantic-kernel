@@ -1,8 +1,7 @@
 ---
-# These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 contact: markwallace
-date: 2024-06-05
+date: 2024-06-10
 deciders: sergeymenshykh, mbolan, rbarreto, dmytrostruk, westey
 consulted: 
 informed: 
@@ -24,7 +23,7 @@ Breaking changes are only allowed under the following circumstances:
 All breaking changes must be clearly documented, definitely in the release notes and possibly also via a migration guide Blog post.
 
 - Include a detailed description of the breaking change in the PR description so that it is included in the release notes.
-- Create a migration guide Blog post and have this published to coincide with the release which includes the breaking change.
+- Update Learn Site migration guide documentation and have this published to coincide with the release which includes the breaking change.
 
 In all other cases we must avoid breaking changes. There will be situations where we need to move to accommodate a change to one of our dependencies or introduce a new capability e.g.
 
