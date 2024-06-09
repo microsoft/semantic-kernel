@@ -25,16 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="OpenAI" />
     <PackageReference Include="System.ClientModel" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="OpenAI">
-      <HintPath>C:\temp\OpenAISDK\OpenAI.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

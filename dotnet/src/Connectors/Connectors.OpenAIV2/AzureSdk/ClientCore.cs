@@ -445,7 +445,7 @@ internal abstract class ClientCore
         {
             // Make the request.
             OpenAIChatCompletion? responseData = null;
-            List<OpenAIChatMessageContent> responseContent;
+            OpenAIChatMessageContent responseContent;
             using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.ModelName, ModelProvider, chat, chatExecutionSettings))
             {
                 try
@@ -468,12 +468,12 @@ internal abstract class ClientCore
                 }
 
                 responseContent = this.GetChatMessage(responseData);
-                activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
+                activity?.SetCompletionResponse(responseContent, responseData.Usage.InputTokens, responseData.Usage.OutputTokens);
             }
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
-            if (!autoInvoke || responseData.Choices.Count != 1)
+            if (!autoInvoke)
             {
                 return responseContent;
             }
@@ -485,11 +485,10 @@ internal abstract class ClientCore
             // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
-            ChatChoice resultChoice = responseData.Choices[0];
-            OpenAIChatMessageContent result = this.GetChatMessage(resultChoice, responseData);
+            OpenAIChatMessageContent result = this.GetChatMessage(responseData);
             if (result.ToolCalls.Count == 0)
             {
-                return [result];
+                return result;
             }
 
             if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -498,14 +497,16 @@ internal abstract class ClientCore
             }
             if (this.Logger.IsEnabled(LogLevel.Trace))
             {
-                this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().Select(ftc => $"{ftc.Name}({ftc.Arguments})")));
+                this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", result.ToolCalls.OfType<ChatToolCall>().Select(ftc => $"{ftc.FunctionName}({ftc.FunctionArguments})")));
             }
+
+            var resultMessage = result.Content;
 
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses. Also add the result message to the caller's chat
             // history: if they don't want it, they can remove it, but this makes the data available,
             // including metadata like usage.
-            chatOptions.Messages.Add(GetRequestMessage(resultChoice.Message));
+            openAIChatHistory.Add(GetRequestMessage(result));
             chat.Add(result);
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
@@ -1226,10 +1227,10 @@ internal abstract class ClientCore
             openAIChatHistory.AddRange(GetRequestMessages(message, executionSettings.ToolCallBehavior));
         }
 
-        return options;
+        return (options, openAIChatHistory);
     }
 
-    private static ChatMessage GetRequestMessage(ChatMessageRole chatRole, string contents, string? name, ChatCompletionsFunctionToolCall[]? tools)
+    private static ChatMessage GetRequestMessage(ChatMessageRole chatRole, string contents, string? name, ChatToolCall[]? tools)
     {
         if (chatRole == ChatMessageRole.User)
         {
@@ -1248,21 +1249,16 @@ internal abstract class ClientCore
 
         if (chatRole == ChatMessageRole.Assistant)
         {
-            var msg = ChatMessage.CreateAssistantMessage(contents,) { Name = name };
-            if (tools is not null)
-            {
-                foreach (ChatCompletionsFunctionToolCall tool in tools)
-                {
-                    msg.ToolCalls.Add(tool);
-                }
-            }
+            var msg = ChatMessage.CreateAssistantMessage(tools, contents);
+            // msg.ParticipantName = name;
+
             return msg;
         }
 
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
-    private static List<ChatRequestMessage> GetRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
+    private static List<ChatMessage> GetRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
     {
         if (message.Role == AuthorRole.System)
         {
