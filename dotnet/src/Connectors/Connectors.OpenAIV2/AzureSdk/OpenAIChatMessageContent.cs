@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -32,7 +33,48 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         this.ToolCalls = chatMessage.ToolCalls;
     }
 
-    internal OpenAIChatMessageContent(OpenAIChatCompletion )
+    internal OpenAIChatMessageContent(OpenAIChatCompletion chatCompletionResult)
+    {
+        foreach (var item in chatCompletionResult.Content)
+        {
+            switch (item.Kind.ToString())
+            {
+                case nameof(ChatMessageContentPartKind.Text):
+                {
+                    this.Items.Add(new TextContent(item.Text) { ModelId = this.ModelId });
+                    break;
+                }
+                case nameof(ChatMessageContentPartKind.Image):
+                {
+                    if (item.ImageUri is not null)
+                    {
+                        this.Items.Add(new ImageContent(item.ImageUri) { ModelId = this.ModelId });
+                    }
+                    else
+                    {
+                        this.Items.Add(new ImageContent(item.ImageBytes) { MimeType = item.ImageBytesMediaType, ModelId = this.ModelId });
+                    }
+                    break;
+                }
+                default:
+                {
+                    throw new NotSupportedException($"The content kind {item.Kind} is not supported.");
+                }
+            }
+        }
+
+        foreach (var toolCall in chatCompletionResult.ToolCalls)
+        {
+            // Adding items of 'FunctionCallContent' type to the 'Items' collection even though the function calls are available via the 'ToolCalls' property.
+            // This allows consumers to work with functions in an LLM-agnostic way.
+            if (toolCall is ChatToolCall functionToolCall)
+            {
+                var functionCallContent = ClientCore.GetFunctionCallContent(functionToolCall);
+                message.Items.Add(functionCallContent);
+            }
+        }
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>

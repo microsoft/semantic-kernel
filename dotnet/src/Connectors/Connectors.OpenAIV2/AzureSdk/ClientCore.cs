@@ -467,7 +467,7 @@ internal abstract class ClientCore
                     throw;
                 }
 
-                responseContent = this.GetChatMessage(responseData);
+                responseContent = new OpenAIChatMessageContent(responseData);
                 activity?.SetCompletionResponse(responseContent, responseData.Usage.InputTokens, responseData.Usage.OutputTokens);
             }
 
@@ -485,7 +485,7 @@ internal abstract class ClientCore
             // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
-            OpenAIChatMessageContent result = this.GetChatMessage(responseData);
+            var result = new OpenAIChatMessageContent(responseData);
             if (result.ToolCalls.Count == 0)
             {
                 return result;
@@ -506,7 +506,7 @@ internal abstract class ClientCore
             // to understand the tool call responses. Also add the result message to the caller's chat
             // history: if they don't want it, they can remove it, but this makes the data available,
             // including metadata like usage.
-            openAIChatHistory.Add(GetRequestMessage(result));
+            openAIChatHistory.AddRange(GetRequestMessage(result));
             chat.Add(result);
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
@@ -1129,7 +1129,7 @@ internal abstract class ClientCore
         return options;
     }
 
-    private (ChatCompletionOptions, IEnumerable<ChatMessage>) CreateChatCompletionsOptions(
+    private (ChatCompletionOptions, List<ChatMessage>) CreateChatCompletionsOptions(
         OpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
         Kernel? kernel,
@@ -1262,7 +1262,9 @@ internal abstract class ClientCore
     {
         if (message.Role == AuthorRole.System)
         {
-            return [new ChatRequestSystemMessage(message.Content) { Name = message.AuthorName }];
+            var systemMessage = ChatMessage.CreateSystemMessage(message.Content);
+            // systemMessage.ParticipantName = message.AuthorName;
+            return [systemMessage];
         }
 
         if (message.Role == AuthorRole.Tool)
@@ -1272,12 +1274,12 @@ internal abstract class ClientCore
             if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolIdProperty, out object? toolId) is true &&
                 toolId?.ToString() is string toolIdString)
             {
-                return [new ChatRequestToolMessage(message.Content, toolIdString)];
+                return [ChatMessage.CreateToolChatMessage(toolIdString, message.Content)];
             }
 
             // Handling function results represented by the FunctionResultContent type.
             // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) })
-            List<ChatRequestMessage>? toolMessages = null;
+            List<ChatMessage>? toolMessages = null;
             foreach (var item in message.Items)
             {
                 if (item is not FunctionResultContent resultContent)
@@ -1289,13 +1291,13 @@ internal abstract class ClientCore
 
                 if (resultContent.Result is Exception ex)
                 {
-                    toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.Id));
+                    toolMessages.Add(ChatMessage.CreateToolChatMessage(resultContent.Id, $"Error: Exception while invoking function. {ex.Message}"));
                     continue;
                 }
 
                 var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
 
-                toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
+                toolMessages.Add(ChatMessage.CreateToolChatMessage(resultContent.Id, stringResult ?? string.Empty));
             }
 
             if (toolMessages is not null)
@@ -1308,35 +1310,44 @@ internal abstract class ClientCore
 
         if (message.Role == AuthorRole.User)
         {
+            ChatMessage userMessage;
             if (message.Items is { Count: 1 } && message.Items.FirstOrDefault() is TextContent textContent)
             {
-                return [new ChatRequestUserMessage(textContent.Text) { Name = message.AuthorName }];
+                userMessage = ChatMessage.CreateUserMessage(textContent.Text);
+                // userMessage.ParticipantName = message.AuthorName;
+                return [userMessage];
             }
 
-            return [new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
-            {
-                TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
-                ImageContent imageContent => GetImageContentItem(imageContent),
-                _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
-            })))
-            { Name = message.AuthorName }];
+            List<ChatMessage> userMessageList = [];
+            userMessage = ChatMessage.CreateUserMessage(
+                message.Items.Select(static (KernelContent item) => (ChatMessageContentPart)(item switch
+                {
+                    TextContent textContent => ChatMessageContentPart.CreateTextMessageContentPart(textContent.Text),
+                    ImageContent imageContent => GetImageContentItem(imageContent),
+                    _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
+                }
+            )));
+
+            // userMessage.ParticipantName = message.AuthorName;
+            return [userMessage];
         }
 
         if (message.Role == AuthorRole.Assistant)
         {
-            var asstMessage = new ChatRequestAssistantMessage(message.Content) { Name = message.AuthorName };
+            var asstMessage = ChatMessage.CreateAssistantMessage(message.Content);
+            // asstMessage.ParticipantName = message.AuthorName;
 
             // Handling function calls supplied via either:  
             // ChatCompletionsToolCall.ToolCalls collection items or  
             // ChatMessageContent.Metadata collection item with 'ChatResponseMessage.FunctionToolCalls' key.
-            IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
+            IEnumerable<ChatToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
             if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
             {
-                tools = toolCallsObject as IEnumerable<ChatCompletionsFunctionToolCall>;
+                tools = toolCallsObject as IEnumerable<ChatToolCall>;
                 if (tools is null && toolCallsObject is JsonElement { ValueKind: JsonValueKind.Array } array)
                 {
                     int length = array.GetArrayLength();
-                    var ftcs = new List<ChatCompletionsToolCall>(length);
+                    var ftcs = new List<ChatToolCall>(length);
                     for (int i = 0; i < length; i++)
                     {
                         JsonElement e = array[i];
@@ -1347,7 +1358,7 @@ internal abstract class ClientCore
                             name.ValueKind == JsonValueKind.String &&
                             arguments.ValueKind == JsonValueKind.String)
                         {
-                            ftcs.Add(new ChatCompletionsFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
+                            ftcs.Add(ChatToolCall.CreateFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
                         }
                     }
                     tools = ftcs;
@@ -1377,7 +1388,7 @@ internal abstract class ClientCore
 
                 var argument = JsonSerializer.Serialize(callRequest.Arguments);
 
-                asstMessage.ToolCalls.Add(new ChatCompletionsFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
+                asstMessage.ToolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
             }
 
             return [asstMessage];
@@ -1386,66 +1397,32 @@ internal abstract class ClientCore
         throw new NotSupportedException($"Role {message.Role} is not supported.");
     }
 
-    private static ChatMessageImageContentItem GetImageContentItem(ImageContent imageContent)
+    private static ChatMessageContentPart GetImageContentItem(ImageContent imageContent)
     {
         if (imageContent.Data is { IsEmpty: false } data)
         {
-            return new ChatMessageImageContentItem(BinaryData.FromBytes(data), imageContent.MimeType);
+            return ChatMessageContentPart.CreateImageMessageContentPart(BinaryData.FromBytes(data), imageContent.MimeType);
         }
 
         if (imageContent.Uri is not null)
         {
-            return new ChatMessageImageContentItem(imageContent.Uri);
+            return ChatMessageContentPart.CreateImageMessageContentPart(imageContent.Uri);
         }
 
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
     }
 
-    private static ChatRequestMessage GetRequestMessage(ChatResponseMessage message)
-    {
-        if (message.Role == ChatRole.System)
-        {
-            return new ChatRequestSystemMessage(message.Content);
-        }
-
-        if (message.Role == ChatRole.Assistant)
-        {
-            var msg = new ChatRequestAssistantMessage(message.Content);
-            if (message.ToolCalls is { Count: > 0 } tools)
-            {
-                foreach (ChatCompletionsToolCall tool in tools)
-                {
-                    msg.ToolCalls.Add(tool);
-                }
-            }
-
-            return msg;
-        }
-
-        if (message.Role == ChatRole.User)
-        {
-            return new ChatRequestUserMessage(message.Content);
-        }
-
-        throw new NotSupportedException($"Role {message.Role} is not supported.");
-    }
-
     private OpenAIChatMessageContent GetChatMessage(OpenAIChatCompletion responseData)
     {
-        var messageContent = new OpenAIChatMessageContent(responseData);
-        if (textPart is not null)
-        {
-            message.Items.Add(new TextContent(textPart) { ModelId = this.ModelName, Metadata = GetChatResultMetadata(responseData) });
-        }
-        var message = new OpenAIChatMessageContent(responseData.Content.FirstOrDefault(part => part.Kind == ChatMessageContentPartKind.Text)?.Text, this.ModelName, GetChatChoiceMetadata(responseData));
+        var message = new OpenAIChatMessageContent(responseData);
 
-        foreach (var toolCall in chatChoice.Message.ToolCalls)
+        foreach (var toolCall in responseData.ToolCalls)
         {
             // Adding items of 'FunctionCallContent' type to the 'Items' collection even though the function calls are available via the 'ToolCalls' property.
             // This allows consumers to work with functions in an LLM-agnostic way.
-            if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
+            if (toolCall is ChatToolCall functionToolCall)
             {
-                var functionCallContent = this.GetFunctionCallContent(functionToolCall);
+                var functionCallContent = GetFunctionCallContent(functionToolCall, this.Logger);
                 message.Items.Add(functionCallContent);
             }
         }
@@ -1453,13 +1430,13 @@ internal abstract class ClientCore
         return message;
     }
 
-    private FunctionCallContent GetFunctionCallContent(ChatCompletionsFunctionToolCall toolCall)
+    internal static FunctionCallContent GetFunctionCallContent(ChatToolCall toolCall, ILogger? logger = null)
     {
         KernelArguments? arguments = null;
         Exception? exception = null;
         try
         {
-            arguments = JsonSerializer.Deserialize<KernelArguments>(toolCall.Arguments);
+            arguments = JsonSerializer.Deserialize<KernelArguments>(toolCall.FunctionArguments);
             if (arguments is not null)
             {
                 // Iterate over copy of the names to avoid mutating the dictionary while enumerating it
@@ -1474,13 +1451,13 @@ internal abstract class ClientCore
         {
             exception = new KernelException("Error: Function call arguments were invalid JSON.", ex);
 
-            if (this.Logger.IsEnabled(LogLevel.Debug))
+            if (logger is not null && logger.IsEnabled(LogLevel.Debug))
             {
-                this.Logger.LogDebug(ex, "Failed to deserialize function arguments ({FunctionName}/{FunctionId}).", toolCall.Name, toolCall.Id);
+                logger.LogDebug(ex, "Failed to deserialize function arguments ({FunctionName}/{FunctionId}).", toolCall.FunctionName, toolCall.Id);
             }
         }
 
-        var functionName = FunctionName.Parse(toolCall.Name, OpenAIFunction.NameSeparator);
+        var functionName = FunctionName.Parse(toolCall.FunctionName, OpenAIFunction.NameSeparator);
 
         return new FunctionCallContent(
             functionName: functionName.Name,
