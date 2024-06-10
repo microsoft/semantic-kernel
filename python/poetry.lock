@@ -303,13 +303,13 @@ files = [
 
 [[package]]
 name = "azure-core"
-version = "1.30.1"
+version = "1.30.2"
 description = "Microsoft Azure Core Library for Python"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "azure-core-1.30.1.tar.gz", hash = "sha256:26273a254131f84269e8ea4464f3560c731f29c0c1f69ac99010845f239c1a8f"},
-    {file = "azure_core-1.30.1-py3-none-any.whl", hash = "sha256:7c5ee397e48f281ec4dd773d67a0a47a0962ed6fa833036057f9ea067f688e74"},
+    {file = "azure-core-1.30.2.tar.gz", hash = "sha256:a14dc210efcd608821aa472d9fb8e8d035d29b68993819147bc290a8ac224472"},
+    {file = "azure_core-1.30.2-py3-none-any.whl", hash = "sha256:cf019c1ca832e96274ae85abd3d9f752397194d9fea3b41487290562ac8abe4a"},
 ]
 
 [package.dependencies]
