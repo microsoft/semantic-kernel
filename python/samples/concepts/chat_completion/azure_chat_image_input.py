@@ -66,10 +66,10 @@ async def chat(uri: str | None = None, image_path: str | None = None) -> bool:
 
 
 async def main() -> None:
-    print("Get a description of a image from a URL.")
-    await chat(
-        uri="https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
-    )
+    # print("Get a description of a image from a URL.")
+    # await chat(
+    #     uri="https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
+    # )
     print("Get a description of the same image but now from a local file!")
     await chat(image_path="samples/concepts/resources/sample_image.jpg")
 

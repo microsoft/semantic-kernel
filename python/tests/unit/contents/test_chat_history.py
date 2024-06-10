@@ -249,6 +249,7 @@ def test_serialize():
                 items=[
                     TextContent(text="Message"),
                     ImageContent(uri="http://test.com/image.jpg"),
+                    ImageContent(data_uri="data:image/jpeg;base64,dGVzdF9kYXRh"),
                 ],
             )
         ],
@@ -259,7 +260,7 @@ def test_serialize():
     assert json_str is not None
     assert (
         json_str
-        == '{\n  "messages": [\n    {\n      "metadata": {},\n      "role": "system",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "a test system prompt"\n        }\n      ]\n    },\n    {\n      "metadata": {},\n      "role": "user",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "Message"\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "uri": "http://test.com/image.jpg"\n        }\n      ]\n    }\n  ]\n}'  # noqa: E501
+        == '{\n  "messages": [\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "system",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "a test system prompt"\n        }\n      ]\n    },\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "user",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "Message"\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "uri": "http://test.com/image.jpg",\n          "data_uri": ""\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "data_uri": "data:image/jpeg;base64,dGVzdF9kYXRh"\n        }\n      ]\n    }\n  ]\n}'  # noqa: E501
     )
 
 

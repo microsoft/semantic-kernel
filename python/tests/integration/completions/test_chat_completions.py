@@ -75,7 +75,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
 pytestmark = pytest.mark.parametrize(
     "service, execution_settings_kwargs, inputs, outputs",
     [
-        (
+        pytest.param(
             "openai",
             {},
             [
@@ -83,8 +83,9 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             ["Hello", "well"],
+            id="openai_text_input",
         ),
-        (
+        pytest.param(
             "openai",
             {},
             [
@@ -100,8 +101,9 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             ["house", "germany"],
+            id="openai_image_input_uri",
         ),
-        (
+        pytest.param(
             "openai",
             {},
             [
@@ -117,8 +119,9 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             ["house", "germany"],
+            id="openai_image_input_file",
         ),
-        (
+        pytest.param(
             "openai",
             {
                 "function_call_behavior": FunctionCallBehavior.EnableFunctions(
@@ -129,8 +132,9 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
+            id="openai_tool_call_auto",
         ),
-        (
+        pytest.param(
             "openai",
             {
                 "function_call_behavior": FunctionCallBehavior.EnableFunctions(
@@ -141,8 +145,9 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
+            id="openai_tool_call_non_auto",
         ),
-        (
+        pytest.param(
             "openai",
             {},
             [
@@ -166,8 +171,9 @@ pytestmark = pytest.mark.parametrize(
                 ],
             ],
             ["1.2"],
+            id="openai_tool_call_flow",
         ),
-        (
+        pytest.param(
             "azure",
             {},
             [
@@ -175,8 +181,9 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             ["Hello", "well"],
+            id="azure_text_input",
         ),
-        (
+        pytest.param(
             "azure",
             {},
             [
@@ -192,8 +199,9 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             ["house", "germany"],
+            id="azure_image_input_uri",
         ),
-        (
+        pytest.param(
             "azure",
             {},
             [
@@ -209,8 +217,9 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
             ["house", "germany"],
+            id="azure_image_input_file",
         ),
-        (
+        pytest.param(
             "azure",
             {
                 "function_call_behavior": FunctionCallBehavior.EnableFunctions(
@@ -221,8 +230,9 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
+            id="azure_tool_call_auto",
         ),
-        (
+        pytest.param(
             "azure",
             {
                 "function_call_behavior": FunctionCallBehavior.EnableFunctions(
@@ -233,8 +243,9 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
+            id="azure_tool_call_non_auto",
         ),
-        (
+        pytest.param(
             "azure",
             {},
             [
@@ -258,8 +269,9 @@ pytestmark = pytest.mark.parametrize(
                 ],
             ],
             ["1.2"],
+            id="azure_tool_call_flow",
         ),
-        (
+        pytest.param(
             "azure_custom_client",
             {},
             [
@@ -267,22 +279,8 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             ["Hello", "well"],
+            id="azure_custom_client",
         ),
-    ],
-    ids=[
-        "openai_text_input",
-        "openai_image_input_uri",
-        "openai_image_input_file",
-        "openai_tool_call_auto",
-        "openai_tool_call_non_auto",
-        "openai_tool_call_flow",
-        "azure_text_input",
-        "azure_image_input_uri",
-        "azure_image_input_file",
-        "azure_tool_call_auto",
-        "azure_tool_call_non_auto",
-        "azure_tool_call_flow",
-        "azure_custom_client",
     ],
 )
 
