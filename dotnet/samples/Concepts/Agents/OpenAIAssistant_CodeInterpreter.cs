@@ -33,7 +33,7 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("Use code to determine the value of term in the fibinacci sequence that does not exceed a value of 101?");
+            await InvokeAgentAsync("Use code to determine the value of term in the Fibonacci sequence that does not exceed a value of 101?");
         }
         finally
         {

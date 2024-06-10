@@ -15,7 +15,7 @@ namespace Agents;
 public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// File service reliability issues using Azure OpenAI.
+    /// Target OpenAI services.
     /// </summary>
     protected override bool ForceOpenAI => true;
 
