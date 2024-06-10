@@ -125,10 +125,13 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     /// <param name="index">The index of the content item to remove.</param>
     public void RemoveAt(int index) => this._items.RemoveAt(index);
 
+    /// <inheritdoc/>
     bool ICollection<StreamingKernelContent>.IsReadOnly => false;
 
+    /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => this._items.GetEnumerator();
 
+    /// <inheritdoc/>
     IEnumerator<StreamingKernelContent> IEnumerable<StreamingKernelContent>.GetEnumerator() => this._items.GetEnumerator();
 
     #region private
