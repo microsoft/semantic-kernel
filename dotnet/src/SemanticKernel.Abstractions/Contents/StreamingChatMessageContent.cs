@@ -73,7 +73,7 @@ public class StreamingChatMessageContent : StreamingKernelContent
     public AuthorRole? Role { get; set; }
 
     /// <summary>
-    /// The encoding of the text content.
+    /// A convenience property to get or set the encoding of the first item in the <see cref="Items" /> collection of <see cref="StreamingTextContent"/> type.
     /// </summary>
     [JsonIgnore]
     public Encoding Encoding
