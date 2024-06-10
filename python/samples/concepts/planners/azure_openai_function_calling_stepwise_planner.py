@@ -19,8 +19,11 @@ async def main():
         ),
     )
 
-    cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources")
-    kernel.add_plugin(parent_directory=cur_dir, plugin_name="email_plugin")
+    plugin_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
+        "resources", 
+    )
+    kernel.add_plugin(parent_directory=plugin_path, plugin_name="email_plugin")
 
     kernel.add_plugin(MathPlugin(), "MathPlugin")
     kernel.add_plugin(TimePlugin(), "TimePlugin")

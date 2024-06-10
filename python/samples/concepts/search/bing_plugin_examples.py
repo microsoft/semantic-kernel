@@ -65,7 +65,7 @@ async def example2(kernel: Kernel, service_id: str):
     oracle = kernel.add_function(
         function_name="oracle",
         plugin_name="OraclePlugin",
-        template=prompt,
+        prompt=prompt,
         execution_settings=OpenAIChatPromptExecutionSettings(
             service_id=service_id, max_tokens=150, temperature=0, top_p=1
         ),

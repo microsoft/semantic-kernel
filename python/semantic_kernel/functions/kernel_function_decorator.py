@@ -45,7 +45,6 @@ def kernel_function(
             if not supplied, the function docstring will be used, can be None.
 
     """
-
     def decorator(func: Callable[..., object]) -> Callable[..., object]:
         """The actual decorator function."""
         setattr(func, "__kernel_function__", True)
@@ -115,7 +114,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
     logger.debug(f"Parsing param: {name}")
     logger.debug(f"Parsing annotation: {param}")
     ret: dict[str, Any] = {"name": name}
-    if default:
+    if default is not None:
         ret["default_value"] = default
         ret["is_required"] = False
     else:
