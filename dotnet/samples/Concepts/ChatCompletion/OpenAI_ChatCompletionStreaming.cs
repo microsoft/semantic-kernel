@@ -12,7 +12,7 @@ namespace ChatCompletion;
 public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    ///This example demonstrates how the chat completion service streams chat using the OpenAI LLM.
+    /// This example demonstrates chat completion streaming using OpenAI.
     /// </summary>
     [Fact]
     public Task StreamOpenAIChatAsync()
@@ -25,7 +25,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     }
 
     /// <summary>
-    ///This example demonstrates how the chat completion service streams chat using the Azure OpenAI LLM.
+    /// This example demonstrates chat completion streaming using Azure OpenAI.
     /// </summary>
     [Fact]
     public Task StreamAzureOpenAIChatAsync()
