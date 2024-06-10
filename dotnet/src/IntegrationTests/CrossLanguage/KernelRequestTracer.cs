@@ -11,6 +11,9 @@ using SemanticKernel.UnitTests;
 
 namespace SemanticKernel.IntegrationTests.CrossLanguage;
 
+/// <summary>
+/// A helper class to trace the HTTP requests made by the kernel.
+/// </summary>
 internal sealed class KernelRequestTracer : IDisposable
 {
     private const string DummyResponse = @"{
