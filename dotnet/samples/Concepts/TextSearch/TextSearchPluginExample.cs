@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 
 namespace TextSearch;

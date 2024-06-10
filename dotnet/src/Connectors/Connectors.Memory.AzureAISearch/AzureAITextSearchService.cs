@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 public sealed class AzureAITextSearchService : ITextSearchService
 {
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object?> Attributes { get; }
 
     /// <summary>
     /// Create an instance of the <see cref="AzureAITextSearchService"/> connector with API key authentication.
@@ -30,6 +30,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
     /// You need to use an admin key to perform any operations on the SearchIndexClient.
     /// See <see href="https://docs.microsoft.com/azure/search/search-security-api-keys">Create and manage api-keys for an Azure Cognitive Search service</see> for more information about API keys in Azure Cognitive Search.
     /// </param>
+    /// <param name="index">The name of the search index.</param>
     public AzureAITextSearchService(string endpoint, string adminKey, string? index = null)
     {
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -37,7 +38,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
 
         this._searchIndexClient = new SearchIndexClient(new Uri(endpoint), new AzureKeyCredential(adminKey));
 
-        this._attributes = new Dictionary<string, object?>
+        this.Attributes = new Dictionary<string, object?>
         {
             { "ServiceName", this._searchIndexClient.ServiceName },
         };
@@ -54,7 +55,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
 
         this._searchIndexClient = searchIndexClient;
 
-        this._attributes = new Dictionary<string, object?>
+        this.Attributes = new Dictionary<string, object?>
         {
             { "ServiceName", this._searchIndexClient.ServiceName },
         };
@@ -106,7 +107,6 @@ public sealed class AzureAITextSearchService : ITextSearchService
     #region private
 
     private readonly SearchIndexClient _searchIndexClient;
-    private readonly IReadOnlyDictionary<string, object?> _attributes;
     private readonly string? _index;
 
     /// <summary>
@@ -172,7 +172,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
     /// <typeparam name="T">The .NET type that maps to the index schema. Instances of this type
     /// can be retrieved as documents from the index.</typeparam>
     /// <param name="searchResults">Response containing the documents matching the query.</param>
-    static private Dictionary<string, object?>? GetResultsMetadata<T>(SearchResults<T>? searchResults) where T : class
+    private static Dictionary<string, object?>? GetResultsMetadata<T>(SearchResults<T>? searchResults) where T : class
     {
         return new Dictionary<string, object?>()
         {

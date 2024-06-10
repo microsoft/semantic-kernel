@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 public sealed class BingTextSearchService : ITextSearchService
 {
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object?> Attributes { get; }
 
     /// <summary>
     /// Create an instance of the <see cref="BingTextSearchService"/> connector with API key authentication.
@@ -42,9 +42,7 @@ public sealed class BingTextSearchService : ITextSearchService
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingTextSearchService)));
 
-        this._attributes = new Dictionary<string, object?>
-        {
-        };
+        this.Attributes = new Dictionary<string, object?>();
     }
 
     /// <inheritdoc/>
@@ -77,7 +75,7 @@ public sealed class BingTextSearchService : ITextSearchService
                         Id = webPages.WebPages.Id,
                         SomeResultsRemoved = webPages.WebPages.SomeResultsRemoved,
                         TotalEstimatedMatches = webPages.WebPages.TotalEstimatedMatches,
-                        Value = webPages?.WebPages?.Value.Select(x => x.Snippet).ToList() as List<T>,
+                        Value = webPages?.WebPages?.Value?.Select(x => x.Snippet).ToList() as List<T> ?? [],
                     },
                 };
             }
@@ -96,7 +94,7 @@ public sealed class BingTextSearchService : ITextSearchService
                         Id = webPages.WebPages.Id,
                         SomeResultsRemoved = webPages.WebPages.SomeResultsRemoved,
                         TotalEstimatedMatches = webPages.WebPages.TotalEstimatedMatches,
-                        Value = webPages?.WebPages?.Value.Select(x => new TextSearchResult(x.Name, x.Snippet, x.Url, x)).ToList() as List<T>
+                        Value = webPages?.WebPages?.Value?.Select(x => new TextSearchResult(x.Name, x.Snippet, x.Url, x)).ToList() as List<T> ?? [],
                     },
                 };
             }
@@ -115,7 +113,6 @@ public sealed class BingTextSearchService : ITextSearchService
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
     private readonly Uri? _uri = null;
-    private readonly IReadOnlyDictionary<string, object?> _attributes;
 
     private const string DefaultUri = "https://api.bing.microsoft.com/v7.0/search";
 

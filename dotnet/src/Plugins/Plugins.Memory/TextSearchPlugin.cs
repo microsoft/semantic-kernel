@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Search;
 
-namespace Microsoft.SemanticKernel.Plugins.Web;
+namespace Microsoft.SemanticKernel.Plugins;
 
 /// <summary>
 /// Text search plugin

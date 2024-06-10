@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Search;
 public class SearchExecutionSettings
 {
     /// <summary>
-    /// The name of the desired search index.
+    /// The name of the search index.
     /// </summary>
     [JsonPropertyName("index")]
     public string? Index { get; set; }
