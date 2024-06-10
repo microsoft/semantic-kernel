@@ -3,7 +3,7 @@
 from pytest import mark
 
 from samples.concepts.auto_function_calling.azure_python_code_interpreter_function_calling import (
-    main as azure_python_code_interpreter_function_calling,  # noqa: E501
+    main as azure_python_code_interpreter_function_calling,
 )
 from samples.concepts.auto_function_calling.chat_gpt_api_function_calling import main as chat_gpt_api_function_calling
 from samples.concepts.chat_completion.azure_chat_gpt_api import main as azure_chat_gpt_api
@@ -14,6 +14,7 @@ from samples.concepts.filtering.auto_function_invoke_filters import main as auto
 from samples.concepts.filtering.function_invocation_filters import main as function_invocation_filters
 from samples.concepts.filtering.function_invocation_filters_stream import main as function_invocation_filters_stream
 from samples.concepts.filtering.prompt_filters import main as prompt_filters
+from samples.concepts.functions.kernel_arguments import main as kernel_arguments
 from samples.concepts.grounding.grounded import main as grounded
 from samples.concepts.memory.azure_cognitive_search_memory import main as azure_cognitive_search_memory
 from samples.concepts.memory.memory import main as memory
@@ -54,6 +55,7 @@ from samples.concepts.search.bing_search_plugin import main as bing_search_plugi
         (function_invocation_filters, ["What is 3+3?", "exit"]),
         (function_invocation_filters_stream, ["What is 3+3?", "exit"]),
         (prompt_filters, ["What is the fastest animal?", "exit"]),
+        (kernel_arguments, []),
         (grounded, []),
         (azure_cognitive_search_memory, []),
         (memory, ["What are my investments?", "exit"]),
@@ -84,6 +86,7 @@ from samples.concepts.search.bing_search_plugin import main as bing_search_plugi
         "function_invocation_filters",
         "function_invocation_filters_stream",
         "prompt_filters",
+        "kernel_arguments",
         "grounded",
         "azure_cognitive_search_memory",
         "memory",

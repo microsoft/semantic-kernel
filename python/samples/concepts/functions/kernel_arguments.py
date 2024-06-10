@@ -64,7 +64,8 @@ async def main():
     print(result)
 
     # Note: if you need access to the result metadata, you can do the following
-    
+    # metadata = result.metadata
+
 
 if __name__ == "__main__":
     asyncio.run(main())
