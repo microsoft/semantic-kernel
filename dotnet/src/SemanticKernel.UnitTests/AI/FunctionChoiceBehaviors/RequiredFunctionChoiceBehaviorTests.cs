@@ -34,11 +34,11 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.NotNull(config.Functions);
-        Assert.Equal(3, config.Functions.Count());
-        Assert.Contains(config.Functions, f => f.Name == "Function1");
-        Assert.Contains(config.Functions, f => f.Name == "Function2");
-        Assert.Contains(config.Functions, f => f.Name == "Function3");
+        Assert.NotNull(config.FunctionsMetadata);
+        Assert.Equal(3, config.FunctionsMetadata.Count());
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function1");
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function2");
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function3");
     }
 
     [Fact]
@@ -56,10 +56,10 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.NotNull(config.Functions);
-        Assert.Equal(2, config.Functions.Count());
-        Assert.Contains(config.Functions, f => f.Name == "Function1");
-        Assert.Contains(config.Functions, f => f.Name == "Function2");
+        Assert.NotNull(config.FunctionsMetadata);
+        Assert.Equal(2, config.FunctionsMetadata.Count());
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function1");
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function2");
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new RequiredFunctionChoiceBehavior()
         {
-            Functions = ["MyPlugin-Function1", "MyPlugin-Function2"]
+            Functions = ["MyPlugin.Function1", "MyPlugin.Function2"]
         };
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
@@ -80,10 +80,10 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.NotNull(config.Functions);
-        Assert.Equal(2, config.Functions.Count());
-        Assert.Contains(config.Functions, f => f.Name == "Function1");
-        Assert.Contains(config.Functions, f => f.Name == "Function2");
+        Assert.NotNull(config.FunctionsMetadata);
+        Assert.Equal(2, config.FunctionsMetadata.Count());
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function1");
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function2");
     }
 
     [Fact]
@@ -100,10 +100,10 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.NotNull(config.Functions);
-        Assert.Equal(2, config.Functions.Count());
-        Assert.Contains(config.Functions, f => f.Name == "Function1");
-        Assert.Contains(config.Functions, f => f.Name == "Function2");
+        Assert.NotNull(config.FunctionsMetadata);
+        Assert.Equal(2, config.FunctionsMetadata.Count());
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function1");
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function2");
     }
 
     [Fact]
@@ -121,11 +121,11 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.NotNull(config.Functions);
-        Assert.Equal(3, config.Functions.Count());
-        Assert.Contains(config.Functions, f => f.Name == "Function1");
-        Assert.Contains(config.Functions, f => f.Name == "Function2");
-        Assert.Contains(config.Functions, f => f.Name == "Function3");
+        Assert.NotNull(config.FunctionsMetadata);
+        Assert.Equal(3, config.FunctionsMetadata.Count());
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function1");
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function2");
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function3");
     }
 
     [Fact]
@@ -176,8 +176,8 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         Assert.NotNull(choiceBehavior.Functions);
         Assert.Equal(2, choiceBehavior.Functions.Count);
 
-        Assert.Equal("MyPlugin-Function1", choiceBehavior.Functions.ElementAt(0));
-        Assert.Equal("MyPlugin-Function2", choiceBehavior.Functions.ElementAt(1));
+        Assert.Equal("MyPlugin.Function1", choiceBehavior.Functions.ElementAt(0));
+        Assert.Equal("MyPlugin.Function2", choiceBehavior.Functions.ElementAt(1));
     }
 
     [Fact]
@@ -212,7 +212,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
             choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
         });
 
-        Assert.Equal("The specified function MyPlugin-Function1 is not available in the kernel.", exception.Message);
+        Assert.Equal("The specified function MyPlugin.Function1 is not available in the kernel.", exception.Message);
     }
 
     [Fact]
@@ -224,7 +224,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
 
         var choiceBehavior = new RequiredFunctionChoiceBehavior(false)
         {
-            Functions = ["MyPlugin-NonKernelFunction"]
+            Functions = ["MyPlugin.NonKernelFunction"]
         };
 
         // Act
@@ -233,7 +233,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
             choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
         });
 
-        Assert.Equal("No instance of the specified function MyPlugin-NonKernelFunction is found.", exception.Message);
+        Assert.Equal("No instance of the specified function MyPlugin.NonKernelFunction is found.", exception.Message);
     }
 
     [Fact]

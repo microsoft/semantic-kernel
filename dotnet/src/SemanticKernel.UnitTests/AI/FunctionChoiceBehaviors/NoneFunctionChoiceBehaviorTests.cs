@@ -33,11 +33,11 @@ public sealed class NoneFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.NotNull(config.Functions);
-        Assert.Equal(3, config.Functions.Count());
-        Assert.Contains(config.Functions, f => f.Name == "Function1");
-        Assert.Contains(config.Functions, f => f.Name == "Function2");
-        Assert.Contains(config.Functions, f => f.Name == "Function3");
+        Assert.NotNull(config.FunctionsMetadata);
+        Assert.Equal(3, config.FunctionsMetadata.Count());
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function1");
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function2");
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function3");
     }
 
     [Fact]
@@ -54,10 +54,10 @@ public sealed class NoneFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.NotNull(config.Functions);
-        Assert.Equal(2, config.Functions.Count());
-        Assert.Contains(config.Functions, f => f.Name == "Function1");
-        Assert.Contains(config.Functions, f => f.Name == "Function3");
+        Assert.NotNull(config.FunctionsMetadata);
+        Assert.Equal(2, config.FunctionsMetadata.Count());
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function1");
+        Assert.Contains(config.FunctionsMetadata, f => f.Name == "Function3");
     }
 
     private static KernelPlugin GetTestPlugin()

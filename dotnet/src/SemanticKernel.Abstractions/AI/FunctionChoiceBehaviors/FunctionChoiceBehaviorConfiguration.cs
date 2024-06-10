@@ -12,29 +12,22 @@ namespace Microsoft.SemanticKernel;
 public sealed class FunctionChoiceBehaviorConfiguration
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="FunctionChoiceBehaviorConfiguration"/> class.
-    /// </summary>
-    internal FunctionChoiceBehaviorConfiguration()
-    {
-    }
-
-    /// <summary>
     /// Represents an AI model's decision-making strategy for calling functions.
     /// </summary>
-    public FunctionChoice Choice { get; internal set; }
+    public FunctionChoice Choice { get; init; }
 
     /// <summary>
     /// The functions available for AI model.
     /// </summary>
-    public IEnumerable<KernelFunction>? Functions { get; internal set; }
+    public IEnumerable<KernelFunctionMetadata>? FunctionsMetadata { get; init; }
 
     /// <summary>
     /// Indicates whether the functions should be automatically invoked by the AI service/connector.
     /// </summary>
-    public bool AutoInvoke { get; internal set; } = true;
+    public bool AutoInvoke { get; init; } = true;
 
     /// <summary>
     /// Specifies whether validation against a specified list of functions is required before allowing the model to request a function from the kernel.
     /// </summary>
-    public bool? AllowAnyRequestedKernelFunction { get; internal set; }
+    public bool? AllowAnyRequestedKernelFunction { get; init; }
 }

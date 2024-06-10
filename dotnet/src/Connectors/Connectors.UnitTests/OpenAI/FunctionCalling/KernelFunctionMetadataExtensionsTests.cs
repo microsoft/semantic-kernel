@@ -106,7 +106,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         // Assert
         Assert.Equal(param1.Name, outputParam.Name);
-        Assert.Equal("This is param1 (default value: 1)", outputParam.Description);
+        Assert.Equal("This is param1", outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.NotNull(outputParam.Schema);
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
@@ -196,7 +196,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(
-            """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"type":"string","enum":["Value1","Value2"],"description":"Enum parameter"},"parameter3":{"type":"string","format":"date-time","description":"DateTime parameter"}}}""",
+            """{"type":"object","required":["parameter1"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"type":"string","enum":["Value1","Value2"],"description":"Enum parameter (default value: Value2)"},"parameter3":{"type":["string","null"],"format":"date-time","description":"DateTime parameter"}}}""",
             result.Parameters.ToString()
         );
     }
@@ -247,8 +247,8 @@ public sealed class KernelFunctionMetadataExtensionsTests
         [KernelFunction, Description("My sample function.")]
         public string MyFunction(
             [Description("String parameter")] string parameter1,
-            [Description("Enum parameter")] MyEnum parameter2,
-            [Description("DateTime parameter")] DateTime parameter3
+            [Description("Enum parameter")] MyEnum parameter2 = MyEnum.Value2,
+            [Description("DateTime parameter")] DateTime? parameter3 = null
             )
         {
             return "return";

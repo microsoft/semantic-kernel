@@ -15,13 +15,14 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 public sealed class OpenAIFunctionParameter
 {
-    internal OpenAIFunctionParameter(string? name, string? description, bool isRequired, Type? parameterType, KernelJsonSchema? schema)
+    internal OpenAIFunctionParameter(string? name, string? description, bool isRequired, Type? parameterType, KernelJsonSchema? schema, object? defaultValue = null)
     {
         this.Name = name ?? string.Empty;
         this.Description = description ?? string.Empty;
         this.IsRequired = isRequired;
         this.ParameterType = parameterType;
         this.Schema = schema;
+        this.DefaultValue = defaultValue;
     }
 
     /// <summary>Gets the name of the parameter.</summary>
@@ -38,6 +39,9 @@ public sealed class OpenAIFunctionParameter
 
     /// <summary>Gets a JSON schema for the parameter, if known.</summary>
     public KernelJsonSchema? Schema { get; }
+
+    /// <summary>Gets the default value of the parameter.</summary>
+    public object? DefaultValue { get; }
 }
 
 /// <summary>
@@ -144,7 +148,7 @@ public sealed class OpenAIFunction
             for (int i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
-                properties.Add(parameter.Name, parameter.Schema ?? GetDefaultSchemaForTypelessParameter(parameter.Description));
+                properties.Add(parameter.Name, parameter.Schema ?? GetDefaultSchemaForTypelessParameter(GetDescription(parameter)));
                 if (parameter.IsRequired)
                 {
                     required.Add(parameter.Name);
@@ -165,6 +169,16 @@ public sealed class OpenAIFunction
             Description = this.Description,
             Parameters = resultParameters,
         };
+
+        static string GetDescription(OpenAIFunctionParameter param)
+        {
+            if (InternalTypeConverter.ConvertToString(param.DefaultValue) is string stringValue && !string.IsNullOrEmpty(stringValue))
+            {
+                return $"{param.Description} (default value: {stringValue})";
+            }
+
+            return param.Description;
+        }
     }
 
     /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>

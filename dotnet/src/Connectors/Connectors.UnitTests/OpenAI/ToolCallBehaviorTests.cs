@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
@@ -64,13 +63,12 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var kernelFunctions = new KernelFunctions(autoInvoke: false);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
 
         // Act
-        kernelFunctions.ConfigureOptions(null, chatCompletionsOptions);
+        var config = kernelFunctions.GetConfiguration(new());
 
         // Assert
-        Assert.Empty(chatCompletionsOptions.Tools);
+        Assert.Null(config.FunctionsMetadata);
     }
 
     [Fact]
@@ -78,15 +76,14 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var kernelFunctions = new KernelFunctions(autoInvoke: false);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act
-        kernelFunctions.ConfigureOptions(kernel, chatCompletionsOptions);
+        var config = kernelFunctions.GetConfiguration(new() { Kernel = kernel });
 
         // Assert
-        Assert.Null(chatCompletionsOptions.ToolChoice);
-        Assert.Empty(chatCompletionsOptions.Tools);
+        Assert.Equal(FunctionChoice.Auto, config.Choice);
+        Assert.Null(config.FunctionsMetadata);
     }
 
     [Fact]
@@ -94,7 +91,6 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var kernelFunctions = new KernelFunctions(autoInvoke: false);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
 
         var plugin = this.GetTestPlugin();
@@ -102,12 +98,12 @@ public sealed class ToolCallBehaviorTests
         kernel.Plugins.Add(plugin);
 
         // Act
-        kernelFunctions.ConfigureOptions(kernel, chatCompletionsOptions);
+        var config = kernelFunctions.GetConfiguration(new() { Kernel = kernel });
 
         // Assert
-        Assert.Equal(ChatCompletionsToolChoice.Auto, chatCompletionsOptions.ToolChoice);
+        Assert.Equal(FunctionChoice.Auto, config.Choice);
 
-        this.AssertTools(chatCompletionsOptions);
+        this.AssertFunctions(config.FunctionsMetadata);
     }
 
     [Fact]
@@ -115,14 +111,13 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var enabledFunctions = new EnabledFunctions([], autoInvoke: false);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
 
         // Act
-        enabledFunctions.ConfigureOptions(null, chatCompletionsOptions);
+        var config = enabledFunctions.GetConfiguration(new());
 
         // Assert
-        Assert.Null(chatCompletionsOptions.ToolChoice);
-        Assert.Empty(chatCompletionsOptions.Tools);
+        Assert.Equal(FunctionChoice.Auto, config.Choice);
+        Assert.Null(config.FunctionsMetadata);
     }
 
     [Fact]
@@ -131,10 +126,9 @@ public sealed class ToolCallBehaviorTests
         // Arrange
         var functions = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction());
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke: true);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureOptions(null, chatCompletionsOptions));
+        var exception = Assert.Throws<KernelException>(() => enabledFunctions.GetConfiguration(new()));
         Assert.Equal($"Auto-invocation with {nameof(EnabledFunctions)} is not supported when no kernel is provided.", exception.Message);
     }
 
@@ -144,11 +138,10 @@ public sealed class ToolCallBehaviorTests
         // Arrange
         var functions = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction());
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke: true);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureOptions(kernel, chatCompletionsOptions));
+        var exception = Assert.Throws<KernelException>(() => enabledFunctions.GetConfiguration(new() { Kernel = kernel }));
         Assert.Equal($"The specified {nameof(EnabledFunctions)} function MyPlugin-MyFunction is not available in the kernel.", exception.Message);
     }
 
@@ -161,18 +154,16 @@ public sealed class ToolCallBehaviorTests
         var plugin = this.GetTestPlugin();
         var functions = plugin.GetFunctionsMetadata().Select(function => function.ToOpenAIFunction());
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
 
         kernel.Plugins.Add(plugin);
 
         // Act
-        enabledFunctions.ConfigureOptions(kernel, chatCompletionsOptions);
+        var config = enabledFunctions.GetConfiguration(new() { Kernel = kernel });
 
         // Assert
-        Assert.Equal(ChatCompletionsToolChoice.Auto, chatCompletionsOptions.ToolChoice);
-
-        this.AssertTools(chatCompletionsOptions);
+        Assert.Equal(FunctionChoice.Auto, config.Choice);
+        this.AssertFunctions(config.FunctionsMetadata);
     }
 
     [Fact]
@@ -181,10 +172,9 @@ public sealed class ToolCallBehaviorTests
         // Arrange
         var function = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction()).First();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => requiredFunction.ConfigureOptions(null, chatCompletionsOptions));
+        var exception = Assert.Throws<KernelException>(() => requiredFunction.GetConfiguration(new()));
         Assert.Equal($"Auto-invocation with {nameof(RequiredFunction)} is not supported when no kernel is provided.", exception.Message);
     }
 
@@ -194,11 +184,10 @@ public sealed class ToolCallBehaviorTests
         // Arrange
         var function = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction()).First();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => requiredFunction.ConfigureOptions(kernel, chatCompletionsOptions));
+        var exception = Assert.Throws<KernelException>(() => requiredFunction.GetConfiguration(new() { Kernel = kernel }));
         Assert.Equal($"The specified {nameof(RequiredFunction)} function MyPlugin-MyFunction is not available in the kernel.", exception.Message);
     }
 
@@ -208,18 +197,17 @@ public sealed class ToolCallBehaviorTests
         // Arrange
         var plugin = this.GetTestPlugin();
         var function = plugin.GetFunctionsMetadata()[0].ToOpenAIFunction();
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
         var kernel = new Kernel();
         kernel.Plugins.Add(plugin);
 
         // Act
-        requiredFunction.ConfigureOptions(kernel, chatCompletionsOptions);
+        var config = requiredFunction.GetConfiguration(new() { Kernel = kernel });
 
         // Assert
-        Assert.NotNull(chatCompletionsOptions.ToolChoice);
+        Assert.NotNull(config.FunctionsMetadata);
 
-        this.AssertTools(chatCompletionsOptions);
+        this.AssertFunctions(config.FunctionsMetadata);
     }
 
     private KernelPlugin GetTestPlugin()
@@ -234,16 +222,25 @@ public sealed class ToolCallBehaviorTests
         return KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
     }
 
-    private void AssertTools(ChatCompletionsOptions chatCompletionsOptions)
+    private void AssertFunctions(IEnumerable<KernelFunctionMetadata>? functions)
     {
-        Assert.Single(chatCompletionsOptions.Tools);
+        Assert.NotNull(functions);
 
-        var tool = chatCompletionsOptions.Tools[0] as ChatCompletionsFunctionToolDefinition;
+        var function = Assert.Single(functions);
 
-        Assert.NotNull(tool);
+        Assert.NotNull(function);
 
-        Assert.Equal("MyPlugin-MyFunction", tool.Name);
-        Assert.Equal("Test Function", tool.Description);
-        Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{\"parameter1\":{\"type\":\"string\"},\"parameter2\":{\"type\":\"string\"}}}", tool.Parameters.ToString());
+        Assert.Equal("MyPlugin", function.PluginName);
+        Assert.Equal("MyFunction", function.Name);
+        Assert.Equal("Test Function", function.Description);
+
+        Assert.NotNull(function.Parameters);
+        Assert.Equal(2, function.Parameters.Count);
+
+        Assert.Equal("parameter1", function.Parameters[0].Name);
+        Assert.Equal("parameter2", function.Parameters[1].Name);
+
+        Assert.NotNull(function.ReturnParameter);
+        Assert.Equal("Function Result", function.ReturnParameter.Description);
     }
 }

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -11,8 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
 /// This behavior forces the model to always call one or more functions. The model will then select which function(s) to call.
 /// </summary>
-[Experimental("SKEXP0001")]
-public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
+internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     /// <summary>
     /// List of the functions that the model can choose from.
@@ -23,11 +21,6 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Indicates whether the functions should be automatically invoked by the AI service/connector.
     /// </summary>
     private readonly bool _autoInvoke = true;
-
-    /// <summary>
-    /// This class type discriminator used for polymorphic deserialization of the type specified in JSON and YAML prompts.
-    /// </summary>
-    public const string TypeDiscriminator = "required";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
@@ -47,7 +40,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     {
         this._autoInvoke = autoInvoke;
         this._functions = functions;
-        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName)).ToList();
+        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
     }
 
     /// <summary>
@@ -55,7 +48,6 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
     /// </summary>
     [JsonPropertyName("functions")]
-    [JsonConverter(typeof(FunctionNameFormatJsonConverter))]
     public IList<string>? Functions { get; set; }
 
     /// <inheritdoc />
@@ -71,7 +63,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             throw new KernelException("Auto-invocation for Required choice behavior is not supported when no kernel is provided.");
         }
 
-        List<KernelFunction>? availableFunctions = null;
+        List<KernelFunctionMetadata>? availableFunctions = null;
         bool allowAnyRequestedKernelFunction = false;
 
         // Handle functions provided via the 'Functions' property as function fully qualified names.
@@ -81,12 +73,12 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 
             foreach (var functionFQN in functionFQNs)
             {
-                var nameParts = FunctionName.Parse(functionFQN);
+                var nameParts = FunctionName.Parse(functionFQN, FunctionNameSeparator);
 
                 // Check if the function is available in the kernel. If it is, then connectors can find it for auto-invocation later.
                 if (context.Kernel!.Plugins.TryGetFunction(nameParts.PluginName, nameParts.Name, out var function))
                 {
-                    availableFunctions.Add(function);
+                    availableFunctions.Add(function.Metadata);
                     continue;
                 }
 
@@ -100,7 +92,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
                 function = this._functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
                 if (function is not null)
                 {
-                    availableFunctions.Add(function);
+                    availableFunctions.Add(function.Metadata);
                     continue;
                 }
 
@@ -114,17 +106,16 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 
             foreach (var plugin in context.Kernel.Plugins)
             {
-                availableFunctions ??= [];
-                availableFunctions.AddRange(plugin);
+                (availableFunctions ??= []).AddRange(plugin.Select(p => p.Metadata));
             }
         }
 
         return new FunctionChoiceBehaviorConfiguration()
         {
             Choice = FunctionChoice.Required,
-            Functions = availableFunctions,
+            FunctionsMetadata = availableFunctions,
             AutoInvoke = this._autoInvoke,
-            AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
+            AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction,
         };
     }
 }

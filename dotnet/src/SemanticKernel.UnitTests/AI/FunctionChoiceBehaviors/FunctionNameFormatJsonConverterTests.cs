@@ -25,7 +25,7 @@ public class FunctionNameFormatJsonConverterTests
         // Assert
         Assert.NotNull(behavior?.Functions);
         Assert.Single(behavior.Functions);
-        Assert.Equal("p1-f1", behavior.Functions.Single());
+        Assert.Equal("p1.f1", behavior.Functions.Single());
     }
 
     [Fact]
@@ -45,6 +45,26 @@ public class FunctionNameFormatJsonConverterTests
         // Assert
         Assert.NotNull(behavior?.Functions);
         Assert.Single(behavior.Functions);
-        Assert.Equal("p1-f1", behavior.Functions.Single());
+        Assert.Equal("p1.f1", behavior.Functions.Single());
+    }
+
+    [Fact]
+    public void ItShouldDeserializeNoneFunctionChoiceBehavior()
+    {
+        // Arrange
+        var json = """
+            {
+                "type": "none",
+                "functions": ["p1.f1"]
+            }
+            """;
+
+        // Act
+        var behavior = JsonSerializer.Deserialize<NoneFunctionChoiceBehavior>(json);
+
+        // Assert
+        Assert.NotNull(behavior?.Functions);
+        Assert.Single(behavior.Functions);
+        Assert.Equal("p1.f1", behavior.Functions.Single());
     }
 }
