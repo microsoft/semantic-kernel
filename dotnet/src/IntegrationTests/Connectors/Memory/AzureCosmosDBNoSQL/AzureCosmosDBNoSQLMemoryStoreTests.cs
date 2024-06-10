@@ -139,7 +139,7 @@ public class AzureCosmosDBNoSQLMemoryStoreTests : IClassFixture<AzureCosmosDBNoS
         var expectedQueryResult = new MemoryQueryResult(
             new MemoryRecordMetadata(isReference: true, id, text: "", description: "", source, additionalMetadata: ""),
             1.0,
-            withEmbedding ? MockTextEmbeddingGenerationService.MatchingEmbedding : null);
+            withEmbedding ? DataHelper.VectorSearchTestEmbedding : null);
 
         var queryResult = await textMemory.GetAsync(collectionName, refId, withEmbedding);
         AssertQueryResultEqual(expectedQueryResult, queryResult, withEmbedding);
@@ -147,6 +147,8 @@ public class AzureCosmosDBNoSQLMemoryStoreTests : IClassFixture<AzureCosmosDBNoS
         var searchResults = await textMemory.SearchAsync(collectionName, textToStore, withEmbeddings: withEmbedding).ToListAsync();
         Assert.Equal(1, searchResults?.Count);
         AssertQueryResultEqual(expectedQueryResult, searchResults?[0], compareEmbeddings: true);
+
+        await textMemory.RemoveAsync(collectionName, refId);
     }
 
     private static void AssertQueryResultEqual(MemoryQueryResult expected, MemoryQueryResult? actual, bool compareEmbeddings)
@@ -201,13 +203,11 @@ public class AzureCosmosDBNoSQLMemoryStoreTests : IClassFixture<AzureCosmosDBNoS
 
     private sealed class MockTextEmbeddingGenerationService : ITextEmbeddingGenerationService
     {
-        public static ReadOnlyMemory<float> MatchingEmbedding = new[] { 0.0f, 0.0f, 0.0f };
-
         public IReadOnlyDictionary<string, object?> Attributes { get; } = ReadOnlyDictionary<string, object?>.Empty;
 
         public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
-            IList<ReadOnlyMemory<float>> result = new List<ReadOnlyMemory<float>> { MatchingEmbedding };
+            IList<ReadOnlyMemory<float>> result = new List<ReadOnlyMemory<float>> { DataHelper.VectorSearchTestEmbedding };
             return Task.FromResult(result);
         }
     }

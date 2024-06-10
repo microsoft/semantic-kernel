@@ -71,12 +71,20 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         VectorEmbeddingPolicy vectorEmbeddingPolicy,
         IndexingPolicy indexingPolicy)
     {
-        if (!vectorEmbeddingPolicy.Embeddings.Any(e => e.Path == "/embedding"))
+        var embedding = vectorEmbeddingPolicy.Embeddings.FirstOrDefault(e => e.Path == "/embedding");
+        if (embedding is null)
         {
             throw new InvalidOperationException($"""
                 In order for {nameof(GetNearestMatchAsync)} to function, {nameof(vectorEmbeddingPolicy)} should
                 contain an embedding path at /embedding. It's also recommended to include a that path in the
                 {nameof(indexingPolicy)} to improve performance and reduce cost for searches.
+                """);
+        }
+        else if (embedding.DistanceFunction != DistanceFunction.Cosine)
+        {
+            throw new InvalidOperationException($"""
+                In order for {nameof(GetNearestMatchAsync)} to reliably return relevance information, the {nameof(DistanceFunction)} should
+                be specified as {nameof(DistanceFunction)}.{nameof(DistanceFunction.Cosine)}.
                 """);
         }
         this._cosmosClient = cosmosClient;
@@ -337,9 +345,10 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         {
             foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
             {
-                if (memoryRecord.SimilarityScore >= minRelevanceScore)
+                var relevanceScore = (memoryRecord.SimilarityScore + 1) / 2;
+                if (relevanceScore >= minRelevanceScore)
                 {
-                    yield return (memoryRecord, 1 - memoryRecord.SimilarityScore);
+                    yield return (memoryRecord, relevanceScore);
                 }
             }
         }
