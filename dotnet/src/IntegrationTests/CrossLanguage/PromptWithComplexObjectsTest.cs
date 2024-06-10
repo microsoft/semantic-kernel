@@ -12,7 +12,7 @@ public class PromptWithComplexObjectsTest
 {
     private const string Prompt = "Can you help me tell the time in {{city.name}} right now?";
 
-    private class City
+    private sealed class City
     {
         public string name;
 
