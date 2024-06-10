@@ -11,24 +11,24 @@ namespace Microsoft.SemanticKernel;
 public class StreamingFunctionCallUpdateContent : StreamingKernelContent
 {
     /// <summary>
-    /// The function call ID that can come as full or partial.
+    /// The function call ID.
     /// </summary>
-    public string? Id { get; }
+    public string? Id { get; init; }
 
     /// <summary>
-    /// The function name that can come as full or partial.
+    /// The function name.
     /// </summary>
-    public string? Name { get; }
+    public string? Name { get; init; }
 
     /// <summary>
     /// The function arguments that can come as full or partial.
     /// </summary>
-    public string? Arguments { get; }
+    public string? Arguments { get; init; }
 
     /// <summary>
     /// The function call index.
     /// </summary>
-    public int FunctionCallIndex { get; }
+    public int FunctionCallIndex { get; init; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="StreamingFunctionCallUpdateContent"/> class.
