@@ -76,7 +76,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         {
             throw new InvalidOperationException($"""
                 In order for {nameof(GetNearestMatchAsync)} to function, {nameof(vectorEmbeddingPolicy)} should
-                contain an embedding path at /embedding. It's also recommended to include a that path in the
+                contain an embedding path at /embedding. It's also recommended to include that path in the
                 {nameof(indexingPolicy)} to improve performance and reduce cost for searches.
                 """);
         }
