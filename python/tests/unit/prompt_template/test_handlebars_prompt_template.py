@@ -3,6 +3,7 @@
 import pytest
 from pytest import mark
 
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -122,7 +123,7 @@ async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, dec
     template = "Function: {{plug-getLightStatus arg1='test'}}"
     target = create_handlebars_prompt_template(template)
 
-    rendered = await target.render(kernel, KernelArguments())
+    rendered = await target.render(kernel)
     assert rendered == "Function: test"
 
 
@@ -285,10 +286,12 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     chat_history = ChatHistory()
     chat_history.add_user_message("User message")
     chat_history.add_message(
-        ChatMessageContent(role="assistant", items=[FunctionCallContent(id="1", name="plug-test")])
+        ChatMessageContent(role=AuthorRole.ASSISTANT, items=[FunctionCallContent(id="1", name="plug-test")])
     )
     chat_history.add_message(
-        ChatMessageContent(role="tool", items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")])
+        ChatMessageContent(
+            role=AuthorRole.TOOL, items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")]
+        )
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 
@@ -354,3 +357,12 @@ async def test_helpers_chat_history_messages(kernel: Kernel):
         rendered.strip()
         == """<chat_history><message role="user"><text>User message</text></message><message role="assistant"><text>Assistant message</text></message></chat_history>"""  # noqa E501
     )
+
+
+@mark.asyncio
+async def test_helpers_chat_history_not_chat_history(kernel: Kernel):
+    template = """{{messages chat_history}}"""
+    target = create_handlebars_prompt_template(template)
+    chat_history = "this is not a chathistory object"
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert rendered.strip() == ""

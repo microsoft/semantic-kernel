@@ -134,7 +134,7 @@ public sealed class MistralAIChatCompletionTests
         {
             chunks.Add(chunk);
             content.Append(chunk.Content);
-        };
+        }
 
         // Assert
         Assert.NotNull(response);

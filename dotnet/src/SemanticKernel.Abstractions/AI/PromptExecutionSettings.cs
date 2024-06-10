@@ -64,6 +64,7 @@ public class PromptExecutionSettings
     /// <summary>
     /// Gets a value that indicates whether the <see cref="PromptExecutionSettings"/> are currently modifiable.
     /// </summary>
+    [JsonIgnore]
     public bool IsFrozen { get; private set; }
 
     /// <summary>

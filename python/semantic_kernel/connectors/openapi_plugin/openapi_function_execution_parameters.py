@@ -1,18 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
-
-from typing import Any, Awaitable, Callable, List
+from collections.abc import Awaitable, Callable
+from typing import Any
 from urllib.parse import urlparse
 
 import httpx
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 AuthCallbackType = Callable[..., Awaitable[Any]]
 
 
+@experimental_class
 class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     """OpenAPI function execution parameters."""
 
@@ -23,9 +24,10 @@ class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     user_agent: str | None = None
     enable_dynamic_payload: bool = True
     enable_payload_namespacing: bool = False
-    operations_to_exclude: List[str] = Field(default_factory=list)
+    operations_to_exclude: list[str] = Field(default_factory=list)
 
     def model_post_init(self, __context: Any) -> None:
+        """Post initialization method for the model."""
         from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 
         if self.server_url_override:

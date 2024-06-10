@@ -35,8 +35,8 @@ public sealed class OpenAITextToAudioTests
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
 
         // Assert
-        Assert.NotNull(result.Data);
-        Assert.False(result.Data!.Value.IsEmpty);
+        var audioData = result.Data!.Value;
+        Assert.False(audioData.IsEmpty);
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public sealed class OpenAITextToAudioTests
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
 
         // Assert
-        Assert.NotNull(result.Data);
-        Assert.False(result.Data!.Value.IsEmpty);
+        var audioData = result.Data!.Value;
+        Assert.False(audioData.IsEmpty);
     }
 }

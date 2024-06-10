@@ -27,6 +27,7 @@ EOF = "EOF"               # End of File
 ans = "ans"               # Short for answers
 arange = "arange"         # Method in Python numpy package
 prompty = "prompty"       # prompty is a format name.
+ist = "ist"               # German language
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service

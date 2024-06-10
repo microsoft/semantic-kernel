@@ -1,28 +1,34 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pydantic import SecretStr
+from typing import Any, ClassVar
 
-from semantic_kernel.connectors.memory.memory_settings_base import BaseModelSettings
-from semantic_kernel.kernel_pydantic import HttpsUrl
+from pydantic import SecretStr, ValidationError, model_validator
+
+from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-class WeaviateSettings(BaseModelSettings):
-    """Weaviate model settings
+@experimental_class
+class WeaviateSettings(KernelBaseSettings):
+    """Weaviate model settings.
 
-    Optional:
-    - url: HttpsUrl | None - Weaviate URL (Env var WEAVIATE_URL)
-    - api_key: SecretStr | None - Weaviate token (Env var WEAVIATE_API_KEY)
-    - use_embed: bool - Whether to use the client embedding options
-        (Env var WEAVIATE_USE_EMBED)
+    Args:
+        url: HttpsUrl | None - Weaviate URL (Env var WEAVIATE_URL)
+        api_key: SecretStr | None - Weaviate token (Env var WEAVIATE_API_KEY)
+        use_embed: bool - Whether to use the client embedding options
+          (Env var WEAVIATE_USE_EMBED)
     """
+
+    env_prefix: ClassVar[str] = "WEAVIATE_"
 
     url: HttpsUrl | None = None
     api_key: SecretStr | None = None
     use_embed: bool = False
 
-    class Config(BaseModelSettings.Config):
-        env_prefix = "WEAVIATE_"
-
-    def validate_settings(self):
-        if not self.use_embed and not self.url:
-            raise ValueError("Weaviate config must have either url or use_embed set")
+    @model_validator(mode="before")
+    @classmethod
+    def validate_settings(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Validate Weaviate settings."""
+        if not data.get("use_embed") and not data.get("url"):
+            raise ValidationError("Weaviate config must have either url or use_embed set")
+        return data

@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from typing import Any, Dict
+from typing import Any
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextCompletion
-from semantic_kernel.contents import ChatHistory
+from semantic_kernel.contents import AuthorRole, ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 
@@ -18,7 +18,7 @@ Read more about logit bias and how to configure output: https://help.openai.com/
 """
 
 
-def _config_ban_tokens(settings: PromptExecutionSettings, keys: Dict[Any, Any]):
+def _config_ban_tokens(settings: PromptExecutionSettings, keys: dict[Any, Any]):
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for k in keys:
         # -100 to potentially ban all tokens in the list
@@ -204,7 +204,9 @@ def _check_banned_words(banned_list, actual_list) -> bool:
 
 def _format_output(chat, banned_words) -> None:
     print("--- Checking for banned words ---")
-    chat_bot_ans_words = [word for msg in chat.messages if msg.role == "assistant" for word in msg.content.split()]
+    chat_bot_ans_words = [
+        word for msg in chat.messages if msg.role == AuthorRole.ASSISTANT for word in msg.content.split()
+    ]
     if _check_banned_words(banned_words, chat_bot_ans_words):
         print("None of the banned words were found in the answer")
 
