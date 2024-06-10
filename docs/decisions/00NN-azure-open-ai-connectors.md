@@ -24,7 +24,6 @@ OpenAI SDK limitations:
 
 - ⚠️ No support for multiple results (Choices) per request.
 - ⚠️ Text Generation modality is not supported.
-- ⚠️ ChatMessages sent to the API can't be created with `AuthorName`.
 
 ### OpenAI CELA Restrictions
 
