@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Search;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Search;
 /// <remarks>
 /// Initializes a new instance of the <see cref="TextSearchResult"/> class.
 /// </remarks>
+[Experimental("SKEXP0001")]
 public class TextSearchResult(string? name, string? value, string? link, object? innerContent)
 {
     /// <summary>

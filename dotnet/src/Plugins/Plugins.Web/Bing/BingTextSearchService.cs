@@ -77,7 +77,7 @@ public sealed class BingTextSearchService : ITextSearchService
                         Id = webPages.WebPages.Id,
                         SomeResultsRemoved = webPages.WebPages.SomeResultsRemoved,
                         TotalEstimatedMatches = webPages.WebPages.TotalEstimatedMatches,
-                        Value = webPages?.WebPages?.Value.Select(x => x.Snippet).ToList() as List<T>
+                        Value = webPages?.WebPages?.Value.Select(x => x.Snippet).ToList() as List<T>,
                     },
                 };
             }

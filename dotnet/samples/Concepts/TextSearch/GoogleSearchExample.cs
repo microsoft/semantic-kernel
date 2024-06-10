@@ -3,7 +3,7 @@ using Google.Apis.CustomSearchAPI.v1.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
 using Microsoft.SemanticKernel.Search;
 
-namespace Search;
+namespace TextSearch;
 
 /// <summary>
 /// This example shows how to create and use a <see cref="GoogleTextSearchService"/>.

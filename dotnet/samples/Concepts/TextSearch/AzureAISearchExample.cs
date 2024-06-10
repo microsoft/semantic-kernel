@@ -5,7 +5,7 @@ using Azure.Search.Documents.Models;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Search;
 
-namespace Search;
+namespace TextSearch;
 
 /// <summary>
 /// This example shows how to create and use a <see cref="AzureAITextSearchService"/>.

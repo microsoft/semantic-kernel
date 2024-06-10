@@ -30,7 +30,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
     /// You need to use an admin key to perform any operations on the SearchIndexClient.
     /// See <see href="https://docs.microsoft.com/azure/search/search-security-api-keys">Create and manage api-keys for an Azure Cognitive Search service</see> for more information about API keys in Azure Cognitive Search.
     /// </param>
-    public AzureAITextSearchService(string endpoint, string adminKey)
+    public AzureAITextSearchService(string endpoint, string adminKey, string? index = null)
     {
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(adminKey);
@@ -41,6 +41,8 @@ public sealed class AzureAITextSearchService : ITextSearchService
         {
             { "ServiceName", this._searchIndexClient.ServiceName },
         };
+
+        this._index = index;
     }
 
     /// <summary>
@@ -64,7 +66,10 @@ public sealed class AzureAITextSearchService : ITextSearchService
         Verify.NotNullOrWhiteSpace(query);
         Verify.NotNull(searchSettings);
 
-        var indexName = this.NormalizeIndexName(searchSettings.Index);
+        var index = searchSettings.Index ?? this._index;
+        Verify.NotNullOrWhiteSpace(index);
+
+        var indexName = this.NormalizeIndexName(index);
         var searchClient = this._searchIndexClient.GetSearchClient(indexName);
 
         var azureSearchSettings = AzureAISearchExecutionSettings.FromExecutionSettings(searchSettings);
@@ -102,6 +107,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
 
     private readonly SearchIndexClient _searchIndexClient;
     private readonly IReadOnlyDictionary<string, object?> _attributes;
+    private readonly string? _index;
 
     /// <summary>
     /// Return the search results.

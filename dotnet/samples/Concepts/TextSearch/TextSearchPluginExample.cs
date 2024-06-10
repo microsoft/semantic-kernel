@@ -3,7 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 
-namespace Search;
+namespace TextSearch;
 
 /// <summary>
 /// This example shows how to create and use a <see cref="TextSearchPlugin{T}"/>.

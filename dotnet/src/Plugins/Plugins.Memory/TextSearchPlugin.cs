@@ -45,7 +45,7 @@ public sealed class TextSearchPlugin<T>(ITextSearchService service) where T : cl
         [Description("Number of results to skip")] int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        var results = await this._service.SearchAsync<T>(query, new() { Count = count, Offset = offset }, cancellationToken).ConfigureAwait(false);
+        var results = await this._service.SearchAsync<T>(query, new() { Count = count, Offset = offset }, null, cancellationToken).ConfigureAwait(false);
         var resultList = await results.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
         if (resultList.Count == 0)
         {

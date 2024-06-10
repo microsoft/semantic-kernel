@@ -13,7 +13,7 @@ informed: stephentoub, matthewbolanos
 ## Context and Problem Statement
 
 Semantic Kernel has support for searching using popular Vector databases e.g. Azure AI Search, Chroma, Milvus and also Web search engines e.g. Bing, Google.
-There are two sets of abstractions and plugins depending on whether the developer wants to perform search against a Vector database of a Web search engine.
+There are two sets of abstractions and plugins depending on whether the developer wants to perform search against a Vector database or a Web search engine.
 The current abstractions are experimental and the purpose of this ADR is to progress the design of the abstractions so that they can graduate to non experimental status.
 
 ## Decision Drivers

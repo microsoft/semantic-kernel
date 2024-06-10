@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Search;
 
@@ -9,16 +10,23 @@ namespace Microsoft.SemanticKernel.Search;
 /// Provides execution settings for a search request.
 /// </summary>
 /// <remarks>
-/// Implementors of <see cref="ISearchService"/> can extend this
+/// Implementors of <see cref="ITextSearchService"/> can extend this
 /// if the service they are calling supports additional properties.
 /// </remarks>
+[Experimental("SKEXP0001")]
 public class SearchExecutionSettings
 {
     /// <summary>
-    /// The name of the desired Search Index.
+    /// The name of the desired search index.
     /// </summary>
     [JsonPropertyName("index")]
-    public string Index { get; set; } = string.Empty;
+    public string? Index { get; set; }
+
+    /// <summary>
+    /// The filter expression to apply to the search query.
+    /// </summary>
+    [JsonPropertyName("filter")]
+    public FormattableString? Filter { get; set; }
 
     /// <summary>
     /// Number of search results to return.

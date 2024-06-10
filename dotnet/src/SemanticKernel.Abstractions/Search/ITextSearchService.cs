@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Search;
 /// <summary>
 /// Interface for text based search services
 /// </summary>
+[Experimental("SKEXP0001")]
 public interface ITextSearchService
 {
     /// <summary>

@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Search;
 
 /// <summary>
-/// Represents the search results returned from a <see cref="ISearchService" /> service.
+/// Represents the search results returned from a <see cref="ITextSearchService" /> service.
 /// </summary>
+[Experimental("SKEXP0001")]
 public class KernelSearchResults<T>
 {
     /// <summary>
