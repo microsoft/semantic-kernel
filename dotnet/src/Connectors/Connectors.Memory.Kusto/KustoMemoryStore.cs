@@ -232,7 +232,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        if (keys != null)
+        if (keys is not null)
         {
             var keysString = string.Join(",", keys.Select(k => $"'{k}'"));
             using var resp = await this._adminClient

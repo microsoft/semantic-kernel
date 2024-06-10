@@ -1,14 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
-
 import asyncio
-import sys
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+from typing import Annotated
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
@@ -21,7 +14,6 @@ from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict, openai_settings_from_dot_env
 
 
 class WeatherPlugin:
@@ -31,20 +23,19 @@ class WeatherPlugin:
     def get_weather_for_city(self, city: Annotated[str, "The input city"]) -> Annotated[str, "The output is a string"]:
         if city == "Boston":
             return "61 and rainy"
-        elif city == "London":
+        if city == "London":
             return "55 and cloudy"
-        elif city == "Miami":
+        if city == "Miami":
             return "80 and sunny"
-        elif city == "Paris":
+        if city == "Paris":
             return "60 and rainy"
-        elif city == "Tokyo":
+        if city == "Tokyo":
             return "50 and sunny"
-        elif city == "Sydney":
+        if city == "Sydney":
             return "75 and sunny"
-        elif city == "Tel Aviv":
+        if city == "Tel Aviv":
             return "80 and sunny"
-        else:
-            return "31 and snowing"
+        return "31 and snowing"
 
 
 async def main():
@@ -55,14 +46,12 @@ async def main():
     if use_azure_openai:
         # Please make sure your AzureOpenAI Deployment allows for function calling
         ai_service = AzureChatCompletion(
-            service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+            service_id=service_id,
         )
     else:
-        api_key, _ = openai_settings_from_dot_env()
         ai_service = OpenAIChatCompletion(
             service_id=service_id,
             ai_model_id="gpt-3.5-turbo-1106",
-            api_key=api_key,
         )
     kernel.add_service(ai_service)
 
@@ -75,7 +64,7 @@ async def main():
         service_id=service_id
     )
     settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
     )
 
     print(
@@ -93,7 +82,7 @@ async def main():
         service_id=service_id
     )
     settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
     )
 
     result = kernel.invoke_prompt_stream(
@@ -116,7 +105,7 @@ async def main():
         service_id=service_id
     )
     settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+        auto_invoke=False, filters={"included_plugins": ["weather", "time"]}
     )
     chat_history.add_user_message(
         "Given the current time of day and weather, what is the likely color of the sky in Boston?"
@@ -124,7 +113,7 @@ async def main():
 
     while True:
         # The result is a list of ChatMessageContent objects, grab the first one
-        result = await chat.complete_chat(chat_history=chat_history, settings=settings)
+        result = await chat.get_chat_message_contents(chat_history=chat_history, settings=settings, kernel=kernel)
         result = result[0]
 
         if result.content:
@@ -134,12 +123,16 @@ async def main():
             break
 
         chat_history.add_message(result)
-        await chat._process_tool_calls(
-            result=result,
-            kernel=kernel,
-            chat_history=chat_history,
-            arguments=KernelArguments(),
-        )
+        for item in result.items:
+            await chat._process_function_call(
+                function_call=item,
+                kernel=kernel,
+                chat_history=chat_history,
+                arguments=KernelArguments(),
+                function_call_count=1,
+                request_index=0,
+                function_call_behavior=settings.function_call_behavior,
+            )
 
 
 if __name__ == "__main__":

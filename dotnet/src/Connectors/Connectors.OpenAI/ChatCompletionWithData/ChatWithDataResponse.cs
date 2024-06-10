@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 [method: JsonConstructor]
 internal sealed class ChatWithDataResponse(ChatWithDataUsage usage)
 {
@@ -33,6 +34,7 @@ internal sealed class ChatWithDataResponse(ChatWithDataUsage usage)
 }
 
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used for JSON deserialization")]
 internal sealed class ChatWithDataChoice
 {
@@ -41,6 +43,7 @@ internal sealed class ChatWithDataChoice
 }
 
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 internal sealed class ChatWithDataUsage
 {
     [JsonPropertyName("prompt_tokens")]

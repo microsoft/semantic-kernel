@@ -27,6 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionService, ITextGenerationService
 {
     /// <summary>
@@ -183,7 +184,11 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
         while (!reader.EndOfStream)
         {
-            var body = await reader.ReadLineAsync().ConfigureAwait(false);
+            var body = await reader.ReadLineAsync(
+#if NET
+                cancellationToken
+#endif
+                ).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(body))
             {

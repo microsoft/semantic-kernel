@@ -1,19 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 import time
 
 import numpy as np
 import pytest
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.pinecone import PineconeMemoryStore
+from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.utils.settings import pinecone_settings_from_dot_env
 
 try:
-    import pinecone  # noqa: F401
+    import pinecone
 
     pinecone_installed = True
 except ImportError:
@@ -33,6 +33,7 @@ async def retry(func, retries=1):
         except pinecone.core.client.exceptions.ServiceException as e:
             print(e)
             await asyncio.sleep(i * 2)
+    return None
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -43,13 +44,11 @@ def slow_down_tests():
 
 @pytest.fixture(scope="session")
 def api_key():
-    if "Python_Integration_Tests" in os.environ:
-        api_key = os.environ["Pinecone__ApiKey"]
-    else:
-        # Load credentials from .env file
-        api_key = pinecone_settings_from_dot_env()
-
-    return api_key
+    try:
+        pinecone_settings = PineconeSettings.create()
+        return pinecone_settings.api_key.get_secret_value()
+    except ValidationError:
+        pytest.skip("Pinecone API key not found in env vars.")
 
 
 @pytest.fixture

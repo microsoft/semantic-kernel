@@ -1,15 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from typing import Any, Dict
+from typing import Any
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextCompletion
-from semantic_kernel.contents import ChatHistory
+from semantic_kernel.contents import AuthorRole, ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 """
 Logit bias enables prioritizing certain tokens within a given output.
@@ -19,7 +18,7 @@ Read more about logit bias and how to configure output: https://help.openai.com/
 """
 
 
-def _config_ban_tokens(settings: PromptExecutionSettings, keys: Dict[Any, Any]):
+def _config_ban_tokens(settings: PromptExecutionSettings, keys: dict[Any, Any]):
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for k in keys:
         # -100 to potentially ban all tokens in the list
@@ -31,10 +30,11 @@ def _prepare_input_chat(chat: ChatHistory):
     return "".join([f"{msg.role}: {msg.content}\n" for msg in chat])
 
 
-async def chat_request_example(kernel: Kernel, api_key, org_id):
+async def chat_request_example(kernel: Kernel):
     service_id = "chat_service"
     openai_chat_completion = OpenAIChatCompletion(
-        service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id
+        service_id=service_id,
+        ai_model_id="gpt-3.5-turbo",
     )
     kernel.add_service(openai_chat_completion)
 
@@ -111,10 +111,11 @@ async def chat_request_example(kernel: Kernel, api_key, org_id):
     return chat, banned_words
 
 
-async def text_complete_request_example(kernel: Kernel, api_key, org_id):
+async def text_complete_request_example(kernel: Kernel):
     service_id = "text_service"
     openai_text_completion = OpenAITextCompletion(
-        service_id=service_id, ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id
+        service_id=service_id,
+        ai_model_id="gpt-3.5-turbo-instruct",
     )
     kernel.add_service(openai_text_completion)
 
@@ -203,25 +204,26 @@ def _check_banned_words(banned_list, actual_list) -> bool:
 
 def _format_output(chat, banned_words) -> None:
     print("--- Checking for banned words ---")
-    chat_bot_ans_words = [word for msg in chat.messages if msg.role == "assistant" for word in msg.content.split()]
+    chat_bot_ans_words = [
+        word for msg in chat.messages if msg.role == AuthorRole.ASSISTANT for word in msg.content.split()
+    ]
     if _check_banned_words(banned_words, chat_bot_ans_words):
         print("None of the banned words were found in the answer")
 
 
 async def main() -> None:
     kernel = Kernel()
-    api_key, org_id = openai_settings_from_dot_env()
 
     print("Chat completion example:")
     print("------------------------")
-    chat, banned_words = await chat_request_example(kernel, api_key, org_id)
+    chat, banned_words = await chat_request_example(kernel)
     _format_output(chat, banned_words)
 
     print("------------------------")
 
     print("\nText completion example:")
     print("------------------------")
-    chat, banned_words = await text_complete_request_example(kernel, api_key, org_id)
+    chat, banned_words = await text_complete_request_example(kernel)
     _format_output(chat, banned_words)
 
     return

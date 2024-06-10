@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import pytest
 
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -11,6 +13,8 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 def test_function_call(function_call: FunctionCallContent):
     assert function_call.name == "Test-Function"
     assert function_call.arguments == """{"input": "world"}"""
+    assert function_call.function_name == "Function"
+    assert function_call.plugin_name == "Test"
 
 
 def test_add(function_call: FunctionCallContent):

@@ -24,9 +24,15 @@ public sealed class TestConfiguration
 
     public static ApplicationInsightsConfig ApplicationInsights => LoadSection<ApplicationInsightsConfig>();
 
+    public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
+
+    public static HuggingFaceConfig HuggingFace => LoadSection<HuggingFaceConfig>();
+
+    public static MistralAIConfig MistralAI => LoadSection<MistralAIConfig>();
+
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
-        if (s_instance == null)
+        if (s_instance is null)
         {
             throw new InvalidOperationException(
                 "TestConfiguration must be initialized with a call to Initialize(IConfigurationRoot) before accessing configuration values.");
@@ -53,6 +59,31 @@ public sealed class TestConfiguration
     public class ApplicationInsightsConfig
     {
         public string ConnectionString { get; set; }
+    }
+
+    public class GoogleAIConfig
+    {
+        public string ApiKey { get; set; }
+        public string EmbeddingModelId { get; set; }
+        public GeminiConfig Gemini { get; set; }
+
+        public class GeminiConfig
+        {
+            public string ModelId { get; set; }
+        }
+    }
+
+    public class HuggingFaceConfig
+    {
+        public string ApiKey { get; set; }
+        public string ModelId { get; set; }
+        public string EmbeddingModelId { get; set; }
+    }
+
+    public class MistralAIConfig
+    {
+        public string ApiKey { get; set; }
+        public string ChatModelId { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.

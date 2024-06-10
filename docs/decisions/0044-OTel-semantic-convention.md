@@ -58,13 +58,13 @@ block-beta
 columns 1
     Models
     blockArrowId1<["&nbsp;&nbsp;&nbsp;"]>(y)
-    block:Connectors
+    block:Clients
         columns 3
         ConnectorTypeClientA["Instrumented client SDK<br>(i.e. Azure OpenAI client)"]
         ConnectorTypeClientB["Un-instrumented Client SDK"]
         ConnectorTypeClientC["Custom client on REST API<br>(i.e. HuggingFaceClient)"]
     end
-    Services["AI Services"]
+    Connectors["AI Connectors"]
     blockArrowId2<["&nbsp;&nbsp;&nbsp;"]>(y)
     SemanticKernel["Semantic Kernel"]
     block:Kernel
@@ -259,8 +259,8 @@ internal static class ModelDiagnostics
     private static readonly string s_namespace = typeof(ModelDiagnostics).Namespace;
     private static readonly ActivitySource s_activitySource = new(s_namespace);
 
-    private const string EnableModelDiagnosticsSettingName = "Microsoft.SemanticKernel.Experimental.EnableModelDiagnostics";
-    private const string EnableSensitiveEventsSettingName = "Microsoft.SemanticKernel.Experimental.EnableModelDiagnosticsWithSensitiveData";
+    private const string EnableModelDiagnosticsSettingName = "Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnostics";
+    private const string EnableSensitiveEventsSettingName = "Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive";
 
     private static readonly bool s_enableSensitiveEvents = AppContextSwitchHelper.GetConfigValue(EnableSensitiveEventsSettingName);
     private static readonly bool s_enableModelDiagnostics = AppContextSwitchHelper.GetConfigValue(EnableModelDiagnosticsSettingName) || s_enableSensitiveEvents;

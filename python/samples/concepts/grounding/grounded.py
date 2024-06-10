@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import asyncio
 import logging
 
@@ -5,7 +7,6 @@ from samples.utils import Colors
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.functions import KernelArguments
-from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env, openai_settings_from_dot_env
 
 
 def get_grounding_text():
@@ -56,22 +57,16 @@ def setup(use_azure: bool = False, plugin_name: str = "GroundingPlugin"):
 
     # Configure AI service used by the kernel
     if use_azure:
-        deployment, api_key, endpoint = azure_openai_settings_from_dot_env()
         service_id = "chat_completion"
         kernel.add_service(
             AzureChatCompletion(
                 service_id=service_id,
-                deployment_name=deployment,
-                endpoint=endpoint,
-                api_key=api_key,
-                api_version="2023-12-01-preview",
             ),
         )
     else:
-        api_key, org_id = openai_settings_from_dot_env()
         service_id = "chat-gpt"
         kernel.add_service(
-            OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
+            OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo"),
         )
 
     # note: using plugins from the samples folder
@@ -85,8 +80,7 @@ def setup(use_azure: bool = False, plugin_name: str = "GroundingPlugin"):
 def get_summary_text():
     summary_text = """My father, a respected resident of Milan, was a close friend of a merchant named Beaufort who, after a series of misfortunes, moved to Zurich in poverty. My father was upset by his friend's troubles and sought him out, finding him in a mean street. Beaufort had saved a small sum of money, but it was not enough to support him and his daughter, Mary. Mary procured work to eek out a living, but after ten months her father died, leaving her a beggar. My father came to her aid and two years later they married when they visited Rome."""  # noqa: E501
 
-    summary_text = summary_text.replace("\n", " ").replace("  ", " ")
-    return summary_text
+    return summary_text.replace("\n", " ").replace("  ", " ")
 
 
 async def run_entity_extraction(kernel: Kernel, plugin_name: str, summary_text: str):
@@ -94,38 +88,34 @@ async def run_entity_extraction(kernel: Kernel, plugin_name: str, summary_text: 
         topic="people and places", example_entities="John, Jane, mother, brother, Paris, Rome", input=summary_text
     )
 
-    extraction_result = await kernel.invoke(
+    return await kernel.invoke(
         plugin_name=plugin_name, function_name="ExtractEntities", arguments=arguments
     )
 
-    return extraction_result
-
 
 async def run_reference_check(kernel: Kernel, plugin_name: str, extraction_result):
-    grounding_result = await kernel.invoke(
+    return await kernel.invoke(
         plugin_name=plugin_name,
         function_name="ReferenceCheckEntities",
         input=str(extraction_result),
         reference_context=get_grounding_text(),
     )
-    return grounding_result
 
 
 async def run_entity_excision(kernel: Kernel, plugin_name: str, summary_text, grounding_result):
-    excision_result = await kernel.invoke(
+    return await kernel.invoke(
         plugin_name=plugin_name,
         function_name="ExciseEntities",
         input=summary_text,
         ungrounded_entities=grounding_result,
     )
-    return excision_result
 
 
 async def run_grounding(use_azure: bool = False):
     plugin_name = "GroundingPlugin"
     kernel = setup(use_azure, plugin_name=plugin_name)
     print(f"\n{Colors.CBOLD.value}Groundingsness Checking Plugins\n{Colors.CEND.value}")
-    print(f"\n{ '-'*80 }\n")
+    print(f"\n{ '-' * 80 }\n")
     print(
         f"""{Colors.CGREEN.value}A well-known problem with large language models (LLMs) is that they make things up. These are sometimes called 'hallucinations' but a safer (and less anthropomorphic) term is 'ungrounded addition' - something in the text which cannot be firmly established. When attempting to establish whether or not something in an LLM response is 'true' we can either check for it in the supplied prompt (this is called 'narrow grounding') or use our general knowledge ('broad grounding'). Note that narrow grounding can lead to things being classified as 'true, but ungrounded.' For example "I live in Switzerland" is **not** _narrowly_ grounded in "I live in Geneva" even though it must be true (it **is** _broadly_ grounded).
 
@@ -140,10 +130,10 @@ What is an 'entity' in this context? In its simplest form, it's a named object s
 
     print(f"\nThe grounding text: \n{Colors.CGREY.value}{get_grounding_text()}{Colors.CEND.value}")
 
-    print(f"\n{ '-'*80 }\n")
+    print(f"\n{ '-' * 80 }\n")
     summary_text = get_summary_text()
     print(f"Summary text: \n{Colors.CBLUE.value}{summary_text}{Colors.CEND.value}")
-    print(f"\n{ '-'*80 }\n")
+    print(f"\n{ '-' * 80 }\n")
     print(
         f"""{Colors.CGREEN.value}Some things to note:
 
@@ -161,25 +151,25 @@ The grounding plugin has three stages:
 
 Now, let us start calling individual semantic functions.{Colors.CEND.value}"""
     )
-    print(f"\n{ '-'*80 }\n")
+    print(f"\n{ '-' * 80 }\n")
     print(
         f"{Colors.CGREEN.value}First we run the extraction function on the summary, this results in all the extracted entities.{Colors.CEND.value}"  # noqa: E501
     )
     extraction_result = await run_entity_extraction(kernel, plugin_name, summary_text)
-    print(f"Extraction result: \n{Colors.CBLUE.value}{str(extraction_result)}{Colors.CEND.value}")
-    print(f"\n{ '-'*80 }\n")
+    print(f"Extraction result: \n{Colors.CBLUE.value}{extraction_result!s}{Colors.CEND.value}")
+    print(f"\n{ '-' * 80 }\n")
     print(
         f"{Colors.CGREEN.value}Next we run the reference check function on the summary, this loads the grounding text as part of it in order to know the 'truth'. This returns a list of ungrounded entities.{Colors.CEND.value}"  # noqa: E501
     )
     grounding_result = await run_reference_check(kernel, plugin_name, extraction_result)
-    print(f"Grounding result: \n{Colors.CBLUE.value}{str(grounding_result)}{Colors.CEND.value}")
-    print(f"\n{ '-'*80 }\n")
+    print(f"Grounding result: \n{Colors.CBLUE.value}{grounding_result!s}{Colors.CEND.value}")
+    print(f"\n{ '-' * 80 }\n")
     print(
         f"{Colors.CGREEN.value}Finally we run the excision function on the summary, this removes the ungrounded entities from the summary.{Colors.CEND.value}"  # noqa: E501
     )
     excision_result = await run_entity_excision(kernel, plugin_name, summary_text, grounding_result)
-    print(f"The final summary text: \n{Colors.CBLUE.value}{str(excision_result)}{Colors.CEND.value}")
-    print(f"\n{ '-'*80 }\n")
+    print(f"The final summary text: \n{Colors.CBLUE.value}{excision_result!s}{Colors.CEND.value}")
+    print(f"\n{ '-' * 80 }\n")
     print(f"{Colors.CBOLD.value}Finished!{Colors.CEND.value}")
 
 

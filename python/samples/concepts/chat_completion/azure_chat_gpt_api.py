@@ -4,9 +4,9 @@ import asyncio
 import logging
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -23,12 +23,12 @@ kernel = Kernel()
 
 service_id = "chat-gpt"
 chat_service = AzureChatCompletion(
-    service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+    service_id=service_id,
 )
 kernel.add_service(chat_service)
 
 ## there are three ways to create the request settings in code: # noqa: E266
-## Note: the prompt_execution_settings are a dictionary with the service_id as the key and the request settings as the value. # noqa: E501
+# Note: the prompt_execution_settings are a dictionary with the service_id as the key and the request settings as the value. # noqa: E501
 
 ## 1. create the request settings from the base class: # noqa: E266
 # from semantic_kernel.connectors.ai.chat_completion_client_base import PromptExecutionSettings
@@ -44,7 +44,9 @@ req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=s
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
-req_settings.auto_invoke_kernel_functions = True
+req_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
+    auto_invoke=True, filters={"excluded_plugins": []}
+)
 ## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
 
 

@@ -1,4 +1,6 @@
-from typing import Any, Dict
+# Copyright (c) Microsoft. All rights reserved.
+
+from typing import Any
 
 from transformers import GenerationConfig
 
@@ -16,6 +18,7 @@ class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
     top_p: float = 1.0
 
     def get_generation_config(self) -> GenerationConfig:
+        """Get the generation config."""
         return GenerationConfig(
             **self.model_dump(
                 include={"max_new_tokens", "pad_token_id", "eos_token_id", "temperature", "top_p"},
@@ -25,7 +28,8 @@ class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
             )
         )
 
-    def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
+    def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
+        """Prepare the settings dictionary."""
         gen_config = self.get_generation_config()
         settings = {
             "generation_config": gen_config,

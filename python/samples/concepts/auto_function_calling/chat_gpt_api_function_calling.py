@@ -3,24 +3,21 @@
 import asyncio
 import os
 from functools import reduce
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIChatCompletion,
-    OpenAIChatPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions import KernelArguments
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
+
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -38,14 +35,7 @@ you will return a full answer to me as soon as possible.
 kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-api_key, org_id = openai_settings_from_dot_env()
-kernel.add_service(
-    OpenAIChatCompletion(
-        service_id="chat",
-        ai_model_id="gpt-3.5-turbo-1106",
-        api_key=api_key,
-    ),
-)
+kernel.add_service(OpenAIChatCompletion(service_id="chat"))
 
 plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
@@ -64,18 +54,17 @@ chat_function = kernel.add_function(
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
-# if the model or api version do not support this you will get an error.
+# if the model or api version does not support this you will get an error.
 
-# Note: the number of responses for auto inoking tool calls is limited to 1.
+# Note: the number of responses for auto invoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
 execution_settings = OpenAIChatPromptExecutionSettings(
     service_id="chat",
-    ai_model_id="gpt-3.5-turbo-1106",
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
     function_call_behavior=FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["math"]}
+        auto_invoke=True, filters={"included_plugins": ["math", "time"]}
     ),
 )
 
@@ -119,10 +108,10 @@ async def handle_streaming(
     )
 
     print("Mosscap:> ", end="")
-    streamed_chunks: List[StreamingChatMessageContent] = []
+    streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
         if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
-            message[0], FunctionCallContent
+            message[0], StreamingChatMessageContent
         ):
             streamed_chunks.append(message[0])
         else:
@@ -152,7 +141,7 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
-    stream = False
+    stream = True
     if stream:
         await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
@@ -161,9 +150,8 @@ async def chat() -> bool:
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
-        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
-            result.value[0], FunctionCallContent
-        ):
+        function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
+        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
             print_tool_calls(result.value[0])
             return True
 

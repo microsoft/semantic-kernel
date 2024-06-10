@@ -8,7 +8,6 @@ from semantic_kernel.core_plugins import TextMemoryPlugin
 from semantic_kernel.functions import KernelFunction
 from semantic_kernel.memory import SemanticTextMemory, VolatileMemoryStore
 from semantic_kernel.prompt_template import PromptTemplateConfig
-from semantic_kernel.utils.settings import google_palm_settings_from_dot_env
 
 collection_id = "generic"
 
@@ -51,13 +50,11 @@ async def setup_chat_with_memory(
         execution_settings={service_id: kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)},
     )
 
-    chat_func = kernel.add_function(
+    return kernel.add_function(
         function_name="chat_with_memory",
         plugin_name="TextMemoryPlugin",
         prompt_template_config=prompt_template_config,
     )
-
-    return chat_func
 
 
 async def chat(kernel: Kernel, chat_func: KernelFunction) -> bool:
@@ -82,12 +79,11 @@ async def chat(kernel: Kernel, chat_func: KernelFunction) -> bool:
 
 async def main() -> None:
     kernel = Kernel()
-    apikey = google_palm_settings_from_dot_env()
     model_id = "models/embedding-gecko-001"
-    palm_text_embed = sk_gp.GooglePalmTextEmbedding(model_id, apikey)
+    palm_text_embed = sk_gp.GooglePalmTextEmbedding(model_id)
     kernel.add_service(palm_text_embed)
     chat_service_id = "models/chat-bison-001"
-    palm_chat_completion = sk_gp.GooglePalmChatCompletion(chat_service_id, apikey)
+    palm_chat_completion = sk_gp.GooglePalmChatCompletion(chat_service_id)
     kernel.add_service(palm_chat_completion)
 
     memory = SemanticTextMemory(storage=VolatileMemoryStore(), embeddings_generator=palm_text_embed)

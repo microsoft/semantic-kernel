@@ -22,7 +22,7 @@ public sealed class ConfigureExecutionSettings(ITestOutputHelper output) : BaseT
         string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (apiKey is null || chatDeploymentName is null || endpoint is null)
         {
             Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;

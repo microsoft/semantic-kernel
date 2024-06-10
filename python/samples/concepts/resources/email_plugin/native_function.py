@@ -1,18 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+from typing import Annotated
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class EmailPlugin:
-    """
-    Description: EmailPlugin provides a set of functions to send emails.
+    """Description: EmailPlugin provides a set of functions to send emails.
 
     Usage:
         kernel.add_plugin(EmailPlugin(), plugin_name="email")

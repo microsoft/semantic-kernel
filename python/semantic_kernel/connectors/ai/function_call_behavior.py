@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Literal
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Literal
 
 from pydantic.dataclasses import dataclass
 
@@ -82,7 +82,7 @@ class FunctionCallBehavior(KernelBaseModel):
             EnabledFunctions (filtered set of functions from the Kernel)
             RequiredFunction (a single function)
 
-        By default the update_settings_callback is called with FunctionCallConfiguration,
+        By default, the update_settings_callback is called with FunctionCallConfiguration,
         which contains a list of available functions or a list of required functions, it also
         takes the PromptExecutionSettings object.
 
@@ -185,7 +185,6 @@ class RequiredFunction(FunctionCallBehavior):
         if not self.enable_kernel_functions:
             return
         # since using this always calls this single function, we do not want to allow repeated calls
-        # TODO: reevaluate when other models support function calling then OpenAI.
         if self.max_auto_invoke_attempts > 1:
             self.max_auto_invoke_attempts = 1
         update_settings_callback(

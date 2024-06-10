@@ -28,7 +28,6 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
             )
             .AddEnvironmentVariables()
             .Build();
-
         var connectionString = GetSetting(configuration, "ConnectionString");
         this.DatabaseName = "DotNetSKTestDB";
         this.CollectionName = "DotNetSKTestCollection";
@@ -42,7 +41,6 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await this.MemoryStore.CreateCollectionAsync(this.CollectionName);
-
         await this
             .MemoryStore.UpsertBatchAsync(this.CollectionName, DataHelper.VectorSearchTestRecords)
             .ToListAsync();

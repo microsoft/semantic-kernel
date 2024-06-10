@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CS1591;SKEXP0101</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;SKEXP0101</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Agents\Experimental.Agents.csproj" />
