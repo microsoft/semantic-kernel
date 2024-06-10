@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -54,6 +55,6 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
     /// <inheritdoc />
     public override byte[] ToByteArray()
     {
-        return [];
+        return Encoding.UTF8.GetBytes(this.ToString());
     }
 }

@@ -126,5 +126,5 @@ public class StreamingChatMessageContent : StreamingKernelContent
     public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
 
     private StreamingKernelContentItemCollection? _items;
-    private Encoding _encoding = Encoding.UTF8;
+    private Encoding _encoding;
 }
