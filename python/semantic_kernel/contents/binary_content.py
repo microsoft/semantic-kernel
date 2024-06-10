@@ -77,6 +77,8 @@ class BinaryContent(KernelContent):
             _data_uri = DataUri.from_data_uri(data_uri, self.default_mime_type)
             if "metadata" in kwargs:
                 kwargs["metadata"].update(_data_uri.parameters)
+            else:
+                kwargs["metadata"] = _data_uri.parameters
         elif data:
             if isinstance(data, str):
                 _data_uri = DataUri(
@@ -130,6 +132,12 @@ class BinaryContent(KernelContent):
             return self._data_uri.mime_type
         return self.default_mime_type
 
+    @mime_type.setter
+    def mime_type(self, value: str):
+        """Set the mime type."""
+        if self._data_uri:
+            self._data_uri.mime_type = value
+
     def __str__(self) -> str:
         """Return the string representation of the image."""
         return self.data_uri if self._data_uri else str(self.uri)
@@ -147,7 +155,7 @@ class BinaryContent(KernelContent):
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != cls.tag:
-            raise ValueError(f"Element tag is not {cls.tag}")
+            raise ValueError(f"Element tag is not {cls.tag}")  # pragma: no cover
 
         if element.text:
             return cls(data_uri=element.text, uri=element.get("uri", None))
