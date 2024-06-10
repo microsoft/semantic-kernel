@@ -25,7 +25,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
 
         OpenAIFileReference uploadFile =
             await fileService.UploadContentAsync(
-                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("sales.csv")!)),
+                new BinaryContent(await EmbeddedResource.ReadAllAsync("sales.csv"), mimeType: "text/plain"),
                 new OpenAIFileUploadExecutionSettings("sales.csv", OpenAIFilePurpose.Assistants));
 
         Console.WriteLine(this.ApiKey);
@@ -72,9 +72,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
                 foreach (var annotation in content.Items.OfType<AnnotationContent>())
                 {
                     Console.WriteLine($"\n* '{annotation.Quote}' => {annotation.FileId}");
-                    BinaryContent fileContent = fileService.GetFileContent(annotation.FileId!);
-                    using StreamReader streamReader = new(await fileContent.GetStreamAsync());
-                    Console.WriteLine(streamReader.ReadToEnd());
+                    BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!);
+                    Console.WriteLine(fileContent.ToString());
                 }
             }
         }
