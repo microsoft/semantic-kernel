@@ -29,18 +29,13 @@ public class StreamingChatMessageContent : StreamingKernelContent
         }
         set
         {
-            if (value is null)
-            {
-                return;
-            }
-
             var textContent = this.Items.OfType<StreamingTextContent>().FirstOrDefault();
             if (textContent is not null)
             {
                 textContent.Text = value;
                 textContent.Encoding = this.Encoding;
             }
-            else
+            else if (value is not null)
             {
                 this.Items.Add(new StreamingTextContent(
                     text: value,

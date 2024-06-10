@@ -46,7 +46,22 @@ public class StreamingChatMessageContentTests
     }
 
     [Fact]
-    public void ContentPropertySetterShouldUpdateContentOfFirstTextContentItem()
+    public void ContentPropertySetterShouldNotAddTextContentToItemsCollection()
+    {
+        // Arrange
+        var sut = new StreamingChatMessageContent(AuthorRole.User, content: null)
+        {
+            Content = null
+        };
+
+        // Assert
+        Assert.Empty(sut.Items);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("content-update")]
+    public void ContentPropertySetterShouldUpdateContentOfFirstTextContentItem(string? content)
     {
         // Arrange
         var items = new StreamingKernelContentItemCollection
@@ -57,9 +72,9 @@ public class StreamingChatMessageContentTests
 
         var sut = new StreamingChatMessageContent(AuthorRole.User, content: null);
         sut.Items = items;
-        sut.Content = "fake-content-1-update";
+        sut.Content = content;
 
-        Assert.Equal("fake-content-1-update", ((StreamingTextContent)sut.Items[0]).Text);
+        Assert.Equal(content, ((StreamingTextContent)sut.Items[0]).Text);
     }
 
     [Fact]
