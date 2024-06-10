@@ -317,7 +317,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                     "Sydney" => "75 and sunny",
                     "Tel Aviv" => "80 and sunny",
                     _ => "31 and snowing",
-                }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
+                }, "GetWeatherForCity", "Gets the current weather for the specified city"),
         ]);
 
         return kernel;

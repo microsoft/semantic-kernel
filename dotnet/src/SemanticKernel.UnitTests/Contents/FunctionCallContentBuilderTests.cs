@@ -16,16 +16,16 @@ public class FunctionCallContentBuilderTests
         var sut = new FunctionCallContentBuilder();
 
         // Act
-        var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, id: "f_101", name: null, arguments: null);
+        var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: "f_101", name: null, arguments: null);
         sut.Add(update1);
 
-        var update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, id: null, name: "WeatherUtils-GetTemperature", arguments: null);
+        var update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: "WeatherUtils-GetTemperature", arguments: null);
         sut.Add(update2);
 
-        var update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, id: null, name: null, arguments: "{\"city\":");
+        var update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "{\"city\":");
         sut.Add(update3);
 
-        var update4 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, id: null, name: null, arguments: "\"Seattle\"}");
+        var update4 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "\"Seattle\"}");
         sut.Add(update4);
 
         var functionCalls = sut.Build();
@@ -50,25 +50,25 @@ public class FunctionCallContentBuilderTests
         var sut = new FunctionCallContentBuilder();
 
         // Act
-        var f1_update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 1, id: "f_1", name: "WeatherUtils-GetTemperature", arguments: null);
+        var f1_update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 1, callId: "f_1", name: "WeatherUtils-GetTemperature", arguments: null);
         sut.Add(f1_update1);
 
-        var f2_update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, id: null, name: "WeatherUtils-GetHumidity", arguments: null);
+        var f2_update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, callId: null, name: "WeatherUtils-GetHumidity", arguments: null);
         sut.Add(f2_update1);
 
-        var f2_update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, id: "f_2", name: null, arguments: null);
+        var f2_update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, callId: "f_2", name: null, arguments: null);
         sut.Add(f2_update2);
 
-        var f1_update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 1, id: null, name: null, arguments: "{\"city\":");
+        var f1_update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 1, callId: null, name: null, arguments: "{\"city\":");
         sut.Add(f1_update2);
 
-        var f2_update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, id: null, name: null, arguments: "{\"city\":");
+        var f2_update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, callId: null, name: null, arguments: "{\"city\":");
         sut.Add(f2_update3);
 
-        var f1_update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 1, id: null, name: null, arguments: "\"Seattle\"}");
+        var f1_update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 1, callId: null, name: null, arguments: "\"Seattle\"}");
         sut.Add(f1_update3);
 
-        var f2_update4 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, id: null, name: null, arguments: "\"Georgia\"}");
+        var f2_update4 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, callId: null, name: null, arguments: "\"Georgia\"}");
         sut.Add(f2_update4);
 
         var functionCalls = sut.Build().ToArray();
@@ -98,14 +98,14 @@ public class FunctionCallContentBuilderTests
         var sut = new FunctionCallContentBuilder();
 
         // Act
-        var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, id: "f_101", name: "WeatherUtils-GetTemperature", arguments: null);
+        var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: "f_101", name: "WeatherUtils-GetTemperature", arguments: null);
         sut.Add(update1);
 
-        var update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, id: null, name: null, arguments: "{\"city\":");
+        var update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "{\"city\":");
         sut.Add(update2);
 
         // Invalid JSON - double closing braces - }}
-        var update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, id: null, name: null, arguments: "\"Seattle\"}}");
+        var update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "\"Seattle\"}}");
         sut.Add(update3);
 
         var functionCalls = sut.Build();
@@ -120,7 +120,7 @@ public class FunctionCallContentBuilderTests
         Assert.NotNull(functionCall.Exception);
     }
 
-    private static StreamingChatMessageContent CreateStreamingContentWithFunctionCallUpdate(int choiceIndex, int functionCallIndex, string? id, string? name, string? arguments)
+    private static StreamingChatMessageContent CreateStreamingContentWithFunctionCallUpdate(int choiceIndex, int functionCallIndex, string? callId, string? name, string? arguments)
     {
         var content = new StreamingChatMessageContent(AuthorRole.Assistant, null);
 
@@ -128,7 +128,7 @@ public class FunctionCallContentBuilderTests
         {
             ChoiceIndex = choiceIndex,
             FunctionCallIndex = functionCallIndex,
-            Id = id,
+            CallId = callId,
             Name = name,
             Arguments = arguments,
         });

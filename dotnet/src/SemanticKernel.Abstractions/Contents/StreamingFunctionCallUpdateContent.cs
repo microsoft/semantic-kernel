@@ -13,7 +13,7 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
     /// <summary>
     /// The function call ID.
     /// </summary>
-    public string? Id { get; init; }
+    public string? CallId { get; init; }
 
     /// <summary>
     /// The function name.
@@ -33,13 +33,13 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
     /// <summary>
     /// Creates a new instance of the <see cref="StreamingFunctionCallUpdateContent"/> class.
     /// </summary>
-    /// <param name="id">The function call ID.</param>
+    /// <param name="callId">The function call ID.</param>
     /// <param name="name">The function name.</param>
     /// <param name="arguments">The function original arguments.</param>
     /// <param name="functionCallIndex">The function call index.</param>
-    public StreamingFunctionCallUpdateContent(string? id = null, string? name = null, string? arguments = null, int functionCallIndex = 0)
+    public StreamingFunctionCallUpdateContent(string? callId = null, string? name = null, string? arguments = null, int functionCallIndex = 0)
     {
-        this.Id = id;
+        this.CallId = callId;
         this.Name = name;
         this.Arguments = arguments;
         this.FunctionCallIndex = functionCallIndex;

@@ -134,9 +134,9 @@ public sealed class FunctionCallContentBuilder
             return;
         }
 
-        // If we have an ID, ensure the index is being tracked. Even if it's not a function update,
+        // If we have an call id, ensure the index is being tracked. Even if it's not a function update,
         // we want to keep track of it so we can send back an error.
-        if (update.Id is string id)
+        if (update.CallId is string id)
         {
             (functionCallIdsByIndex ??= [])[update.FunctionCallIndex] = id;
         }

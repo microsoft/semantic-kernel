@@ -76,9 +76,7 @@ public abstract class BaseTest
     /// </summary>
     /// <param name="target">Target object to write</param>
     public void WriteLine(object? target = null)
-    {
-        this.Output.WriteLine(target ?? string.Empty);
-    }
+        => this.Output.WriteLine(target ?? string.Empty);
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.

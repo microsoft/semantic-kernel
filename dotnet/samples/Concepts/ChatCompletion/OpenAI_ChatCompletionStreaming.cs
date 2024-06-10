@@ -110,7 +110,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             // Iterating over function call updates. Please use the unctionCallContentBuilder to simplify function call content building.
             foreach (StreamingFunctionCallUpdateContent update in streamingFunctionCallUpdates)
             {
-                Console.WriteLine($"Function call update: id={update.Id}, name={update.Name}, arguments={update.Arguments?.Replace("\n", "\\n")}, functionCallIndex={update.FunctionCallIndex}");
+                Console.WriteLine($"Function call update: callId={update.CallId}, name={update.Name}, arguments={update.Arguments?.Replace("\n", "\\n")}, functionCallIndex={update.FunctionCallIndex}");
             }
         }
     }
