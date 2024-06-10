@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Collections;
+using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -73,7 +75,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
                 {
                     Console.WriteLine($"\n* '{annotation.Quote}' => {annotation.FileId}");
                     BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!);
-                    Console.WriteLine(fileContent.ToString());
+                    byte[] byteContent = fileContent.Data?.ToArray() ?? [];
+                    Console.WriteLine(Encoding.Default.GetString(byteContent));
                 }
             }
         }
