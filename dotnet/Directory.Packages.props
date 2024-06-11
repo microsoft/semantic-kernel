@@ -76,7 +76,7 @@
     <PackageVersion Include="Grpc.Net.Client" Version="2.63.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.1.4" />
+    <PackageVersion Include="YamlDotNet" Version="15.1.6" />
     <!-- Memory stores -->
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
@@ -105,7 +105,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Moq.Analyzers" Version="0.0.9" />
+    <PackageVersion Include="Moq.Analyzers" Version="0.1.0" />
     <PackageReference Include="Moq.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -115,7 +115,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.12.3]" />
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.12.4]" />
     <PackageReference Include="Roslynator.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
