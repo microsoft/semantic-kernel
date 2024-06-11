@@ -40,8 +40,8 @@ internal sealed class SqlServerClient
     {
         var sql = $@"IF NOT EXISTS (SELECT  *
                                     FROM    sys.schemas
-                                    WHERE   name = N'{this._configuration.Schema}' )
-                    EXEC('CREATE SCHEMA [{this._configuration.Schema}]');
+                                    WHERE   name = N'{NormalizeSQLObjectName(this._configuration.Schema)}' )
+                    EXEC('CREATE SCHEMA [{NormalizeSQLObjectName(this._configuration.Schema)}]');
                     IF OBJECT_ID(N'{this.GetFullTableName(this._configuration.MemoryCollectionTableName)}', N'U') IS NULL
                     CREATE TABLE {this.GetFullTableName(this._configuration.MemoryCollectionTableName)}
                     (   [id] NVARCHAR(256) NOT NULL,
@@ -58,7 +58,7 @@ internal sealed class SqlServerClient
                         [timestamp] DATETIMEOFFSET,
                         PRIMARY KEY ([id]),
                         FOREIGN KEY ([collection]) REFERENCES {this.GetFullTableName(this._configuration.MemoryCollectionTableName)}([id]) ON DELETE CASCADE,
-                        CONSTRAINT UK_{this._configuration.MemoryTableName} UNIQUE([collection], [key])
+                        CONSTRAINT UK_{NormalizeSQLObjectName(this._configuration.MemoryTableName)} UNIQUE([collection], [key])
                     );";
 
         using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
@@ -98,8 +98,8 @@ internal sealed class SqlServerClient
                         FOREIGN KEY ([memory_id]) REFERENCES {this.GetFullTableName(this._configuration.MemoryTableName)}([id]) ON DELETE CASCADE
                     );
 
-                    IF OBJECT_ID(N'{this._configuration.Schema}.IXC_{$"{this._configuration.EmbeddingsTableName}_{collectionName}"}', N'U') IS NULL
-                    CREATE CLUSTERED COLUMNSTORE INDEX [IXC_{$"{this._configuration.EmbeddingsTableName}_{collectionName}]"}
+                    IF OBJECT_ID(N'{NormalizeSQLObjectName(this._configuration.Schema)}.IXC_{$"{NormalizeSQLObjectName(this._configuration.EmbeddingsTableName)}_{collectionName}"}', N'U') IS NULL
+                    CREATE CLUSTERED COLUMNSTORE INDEX [IXC_{$"{NormalizeSQLObjectName(this._configuration.EmbeddingsTableName)}_{collectionName}]"}
                     ON {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")};";
 
             command.Parameters.AddWithValue("@collectionName", collectionName);
@@ -445,7 +445,7 @@ internal sealed class SqlServerClient
 
     private string GetFullTableName(string tableName)
     {
-        return $"[{this._configuration.Schema}].[{tableName}]";
+        return $"[{NormalizeSQLObjectName(this._configuration.Schema)}].[{NormalizeSQLObjectName(tableName)}]";
     }
 
     /// <inheritdoc />
@@ -476,6 +476,7 @@ internal sealed class SqlServerClient
 
     // Note: "_" is allowed in SQL Server, but we normalize it to "-" for consistency with other DBs
     private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|_|:]");
+    private static readonly Regex s_replaceSQLObjectNameCharsRegex = new(@"[\s|\\|/|.|_|:\[|\]|\`|\'|\""]");
     private const string ValidSeparator = "-";
 
     private static string NormalizeIndexName(string index)
@@ -483,6 +484,12 @@ internal sealed class SqlServerClient
         index = s_replaceIndexNameCharsRegex.Replace(index.Trim().ToLowerInvariant(), ValidSeparator);
 
         return index;
+    }
+    private static string NormalizeSQLObjectName(string objectName)
+    {
+        objectName = s_replaceSQLObjectNameCharsRegex.Replace(objectName.Trim(), ValidSeparator);
+
+        return objectName;
     }
 
     private async Task<IDisposable> OpenConnectionAsync(CancellationToken cancellationToken = default)
