@@ -4,6 +4,8 @@ import json
 import os
 import platform
 from functools import reduce
+from urllib.parse import urljoin
+from urllib.request import pathname2url
 
 import httpx
 from aiohttp import ClientSession
@@ -26,8 +28,7 @@ def get_file_url(relative_path):
     absolute_path = os.path.abspath(relative_path)
     if platform.system() == "Windows":
         absolute_path = absolute_path.replace('\\', '/')
-        return f"file:///{absolute_path}"
-    return f"file://{absolute_path}"
+    return urljoin('file:', pathname2url(absolute_path))
 
 
 def load_and_update_openai_spec():
