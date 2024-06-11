@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -22,10 +23,59 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// </summary>
 public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 {
+    private const string EMBEDDING_PATH = "/embedding";
+
     private readonly CosmosClient _cosmosClient;
     private readonly VectorEmbeddingPolicy _vectorEmbeddingPolicy;
     private readonly IndexingPolicy _indexingPolicy;
     private readonly string _databaseName;
+
+    /// <summary>
+    /// Initiates a AzureCosmosDBNoSQLMemoryStore instance using a Azure Cosmos DB connection string
+    /// and other properties required for vector search.
+    /// </summary>
+    /// <param name="connectionString">Connection string required to connect to Azure Cosmos DB.</param>
+    /// <param name="databaseName">The database name to connect to.</param>
+    /// <param name="dimensions">The number of dimensions the embedding vectors to be stored.</param>
+    /// <param name="vectorDataType">The data type of the embedding vectors to be stored.</param>
+    /// <param name="applicationName">The application name to use in requests.</param>
+    public AzureCosmosDBNoSQLMemoryStore(
+        string connectionString,
+        string databaseName,
+        ulong dimensions,
+        VectorDataType vectorDataType,
+        string? applicationName = null)
+        : this(
+            new CosmosClient(
+                connectionString,
+                new CosmosClientOptions
+                {
+                    ApplicationName = applicationName ?? HttpHeaderConstant.Values.UserAgent,
+                    Serializer = new CosmosSystemTextJsonSerializer(JsonSerializerOptions.Default),
+                }),
+            databaseName,
+            new VectorEmbeddingPolicy(
+                [
+                    new Embedding
+                    {
+                        DataType = vectorDataType,
+                        Dimensions = dimensions,
+                        DistanceFunction = DistanceFunction.Cosine,
+                        Path = EMBEDDING_PATH,
+                    }
+                ]),
+            new IndexingPolicy
+            {
+                VectorIndexes = new Collection<VectorIndexPath> {
+                    new()
+                    {
+                        Path = EMBEDDING_PATH,
+                        Type = VectorIndexType.Flat,
+                    },
+                },
+            })
+    {
+    }
 
     /// <summary>
     /// Initiates a AzureCosmosDBNoSQLMemoryStore instance using a Azure Cosmos DB connection string
@@ -71,12 +121,12 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         VectorEmbeddingPolicy vectorEmbeddingPolicy,
         IndexingPolicy indexingPolicy)
     {
-        var embedding = vectorEmbeddingPolicy.Embeddings.FirstOrDefault(e => e.Path == "/embedding");
+        var embedding = vectorEmbeddingPolicy.Embeddings.FirstOrDefault(e => e.Path == EMBEDDING_PATH);
         if (embedding is null)
         {
             throw new InvalidOperationException($"""
                 In order for {nameof(GetNearestMatchAsync)} to function, {nameof(vectorEmbeddingPolicy)} should
-                contain an embedding path at /embedding. It's also recommended to include that path in the
+                contain an embedding path at {EMBEDDING_PATH}. It's also recommended to include that path in the
                 {nameof(indexingPolicy)} to improve performance and reduce cost for searches.
                 """);
         }
