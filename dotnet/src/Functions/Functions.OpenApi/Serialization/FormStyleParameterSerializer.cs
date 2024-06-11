@@ -20,7 +20,6 @@ internal static class FormStyleParameterSerializer
     public static string Serialize(RestApiOperationParameter parameter, JsonNode argument)
     {
         const string ArrayType = "array";
-        const string StringType = "string";
 
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
@@ -38,7 +37,7 @@ internal static class FormStyleParameterSerializer
         }
 
         // Handling parameters where the underlying value is already a string.
-        if (argument is JsonValue jsonValue && jsonValue.TryGetValue(out string value))
+        if (argument is JsonValue jsonValue && jsonValue.TryGetValue(out string? value))
         {
             return $"{parameter.Name}={HttpUtility.UrlEncode(value)}";
         }

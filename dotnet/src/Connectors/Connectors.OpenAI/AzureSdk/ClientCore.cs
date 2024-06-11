@@ -340,6 +340,11 @@ internal abstract class ClientCore
         CancellationToken cancellationToken)
     {
         Verify.NotNull(content.Data);
+        var audioData = content.Data.Value;
+        if (audioData.IsEmpty)
+        {
+            throw new ArgumentException("Audio data cannot be empty", nameof(content));
+        }
 
         OpenAIAudioToTextExecutionSettings? audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
 
@@ -347,7 +352,7 @@ internal abstract class ClientCore
 
         var audioOptions = new AudioTranscriptionOptions
         {
-            AudioData = BinaryData.FromBytes(content.Data.Value),
+            AudioData = BinaryData.FromBytes(audioData),
             DeploymentName = this.DeploymentOrModelName,
             Filename = audioExecutionSettings.Filename,
             Language = audioExecutionSettings.Language,
@@ -1241,13 +1246,13 @@ internal abstract class ClientCore
 
                 if (resultContent.Result is Exception ex)
                 {
-                    toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.Id));
+                    toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.CallId));
                     continue;
                 }
 
                 var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
 
-                toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
+                toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.CallId));
             }
 
             if (toolMessages is not null)

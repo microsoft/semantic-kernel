@@ -158,54 +158,18 @@ public class ChatMessageContentTests
     public void ItCanBeSerializeAndDeserialized()
     {
         // Arrange
-        var items = new ChatMessageContentItemCollection
-        {
-            new TextContent("content-1", "model-1", metadata: new Dictionary<string, object?>()
-            {
-                ["metadata-key-1"] = "metadata-value-1"
-            }) { MimeType = "mime-type-1" },
-            new ImageContent(new Uri("https://fake-random-test-host:123"), "model-2", metadata: new Dictionary<string, object?>()
-            {
-                ["metadata-key-2"] = "metadata-value-2"
-            }) { MimeType = "mime-type-2" },
-            new BinaryContent(new BinaryData(new[] { 1, 2, 3 }), "model-3", metadata: new Dictionary<string, object?>()
-            {
-                ["metadata-key-3"] = "metadata-value-3"
-            }) { MimeType = "mime-type-3" },
-            new AudioContent(new BinaryData(new[] { 3, 2, 1 }), "model-4", metadata: new Dictionary<string, object?>()
-            {
-                ["metadata-key-4"] = "metadata-value-4"
-            }) { MimeType = "mime-type-4" },
-            new ImageContent(new BinaryData(new[] { 2, 1, 3 }), "model-5", metadata: new Dictionary<string, object?>()
-            {
-                ["metadata-key-5"] = "metadata-value-5"
-            }) { MimeType = "mime-type-5" },
-            new TextContent("content-6", "model-6", metadata: new Dictionary<string, object?>()
-            {
-                ["metadata-key-6"] = "metadata-value-6"
-            }) { MimeType = "mime-type-6" },
+        ChatMessageContentItemCollection items = [
+            new TextContent("content-1", "model-1", metadata: new Dictionary<string, object?>() { ["metadata-key-1"] = "metadata-value-1" }) { MimeType = "mime-type-1" },
+            new ImageContent(new Uri("https://fake-random-test-host:123")) { ModelId = "model-2", MimeType = "mime-type-2", Metadata = new Dictionary<string, object?>() { ["metadata-key-2"] = "metadata-value-2" } },
+            new BinaryContent(new BinaryData(new[] { 1, 2, 3 }), mimeType: "mime-type-3") { ModelId = "model-3", Metadata = new Dictionary<string, object?>() { ["metadata-key-3"] = "metadata-value-3" } },
+            new AudioContent(new BinaryData(new[] { 3, 2, 1 }), mimeType: "mime-type-4") { ModelId = "model-4", Metadata = new Dictionary<string, object?>() { ["metadata-key-4"] = "metadata-value-4" } },
+            new ImageContent(new BinaryData(new[] { 2, 1, 3 }), mimeType: "mime-type-5") { ModelId = "model-5", Metadata = new Dictionary<string, object?>() { ["metadata-key-5"] = "metadata-value-5" } },
+            new TextContent("content-6", "model-6", metadata: new Dictionary<string, object?>() { ["metadata-key-6"] = "metadata-value-6" }) { MimeType = "mime-type-6" },
             new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }),
             new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"),
-            new FileReferenceContent(
-                fileId: "file-id-1",
-                modelId: "model-7",
-                metadata: new Dictionary<string, object?>()
-                {
-                    ["metadata-key-7"] = "metadata-value-7"
-                }),
-            new AnnotationContent(
-                modelId: "model-8",
-                metadata: new Dictionary<string, object?>()
-                {
-                    ["metadata-key-8"] = "metadata-value-8"
-                })
-            {
-                FileId = "file-id-2",
-                StartIndex = 2,
-                EndIndex = 24,
-                Quote = "quote-8"
-            },
-        };
+            new FileReferenceContent(fileId: "file-id-1") { ModelId = "model-7", Metadata = new Dictionary<string, object?>() { ["metadata-key-7"] = "metadata-value-7" } },
+            new AnnotationContent() { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Quote = "quote-8", Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } }
+        ];
 
         // Act
         var chatMessageJson = JsonSerializer.Serialize(new ChatMessageContent(AuthorRole.User, items: items, "message-model", metadata: new Dictionary<string, object?>()
@@ -253,7 +217,7 @@ public class ChatMessageContentTests
 
         var binaryContent = deserializedMessage.Items[2] as BinaryContent;
         Assert.NotNull(binaryContent);
-        Assert.True(binaryContent.Content?.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 })));
+        Assert.True(binaryContent.Data!.Value.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 })));
         Assert.Equal("model-3", binaryContent.ModelId);
         Assert.Equal("mime-type-3", binaryContent.MimeType);
         Assert.NotNull(binaryContent.Metadata);
@@ -300,7 +264,7 @@ public class ChatMessageContentTests
         Assert.NotNull(functionResultContent);
         Assert.Equal("function-result", functionResultContent.Result?.ToString());
         Assert.Equal("function-name", functionResultContent.FunctionName);
-        Assert.Equal("function-id", functionResultContent.Id);
+        Assert.Equal("function-id", functionResultContent.CallId);
         Assert.Equal("plugin-name", functionResultContent.PluginName);
 
         var fileReferenceContent = deserializedMessage.Items[8] as FileReferenceContent;
