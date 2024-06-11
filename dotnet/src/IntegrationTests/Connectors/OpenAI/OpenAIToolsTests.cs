@@ -357,7 +357,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             }
 
             // Adding a simulated function call to the connector response message
-            var simulatedFunctionCall = new FunctionCallContent("weather-alert", id: "call_123");
+            var simulatedFunctionCall = new FunctionCallContent("weather_alert", id: "call_123");
             messageContent.Items.Add(simulatedFunctionCall);
 
             // Adding a simulated function result to chat history

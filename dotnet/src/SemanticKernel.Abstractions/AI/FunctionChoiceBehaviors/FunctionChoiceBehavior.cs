@@ -10,12 +10,15 @@ namespace Microsoft.SemanticKernel;
 /// Represents the base class for different function choice behaviors.
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
-[JsonDerivedType(typeof(AutoFunctionChoiceBehavior), typeDiscriminator: AutoFunctionChoiceBehavior.TypeDiscriminator)]
-[JsonDerivedType(typeof(RequiredFunctionChoiceBehavior), typeDiscriminator: RequiredFunctionChoiceBehavior.TypeDiscriminator)]
-[JsonDerivedType(typeof(NoneFunctionChoiceBehavior), typeDiscriminator: NoneFunctionChoiceBehavior.TypeDiscriminator)]
+[JsonDerivedType(typeof(AutoFunctionChoiceBehavior), typeDiscriminator: "auto")]
+[JsonDerivedType(typeof(RequiredFunctionChoiceBehavior), typeDiscriminator: "required")]
+[JsonDerivedType(typeof(NoneFunctionChoiceBehavior), typeDiscriminator: "none")]
 [Experimental("SKEXP0001")]
 public abstract class FunctionChoiceBehavior
 {
+    /// <summary>The separator used to separate plugin name and function name.</summary>
+    protected const string FunctionNameSeparator = ".";
+
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionChoiceBehavior"/> class.
     /// </summary>

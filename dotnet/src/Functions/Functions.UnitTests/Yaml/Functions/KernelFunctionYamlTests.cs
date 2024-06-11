@@ -89,31 +89,47 @@ public class KernelFunctionYamlTests
         // Act
         var promptTemplateConfig = KernelFunctionYaml.ToPromptTemplateConfig(this._yaml);
 
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("p1", [KernelFunctionFactory.CreateFromMethod(() => { }, "f1")]);
+        kernel.Plugins.AddFromFunctions("p2", [KernelFunctionFactory.CreateFromMethod(() => { }, "f2")]);
+        kernel.Plugins.AddFromFunctions("p3", [KernelFunctionFactory.CreateFromMethod(() => { }, "f3")]);
+
         // Assert
         Assert.NotNull(promptTemplateConfig?.ExecutionSettings);
         Assert.Equal(3, promptTemplateConfig.ExecutionSettings.Count);
 
         // Service with auto function choice behavior
         var service1ExecutionSettings = promptTemplateConfig.ExecutionSettings["service1"];
+        Assert.NotNull(service1ExecutionSettings?.FunctionChoiceBehavior);
 
-        var autoFunctionChoiceBehavior = service1ExecutionSettings.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
-        Assert.NotNull(autoFunctionChoiceBehavior?.Functions);
-        Assert.Equal("p1-f1", autoFunctionChoiceBehavior.Functions.Single());
+        var autoConfig = service1ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorContext() { Kernel = kernel });
+        Assert.NotNull(autoConfig);
+        Assert.Equal(FunctionChoice.Auto, autoConfig.Choice);
+        Assert.NotNull(autoConfig.Functions);
+        Assert.Equal("p1", autoConfig.Functions.Single().PluginName);
+        Assert.Equal("f1", autoConfig.Functions.Single().Name);
 
         // Service with required function choice behavior
         var service2ExecutionSettings = promptTemplateConfig.ExecutionSettings["service2"];
+        Assert.NotNull(service2ExecutionSettings?.FunctionChoiceBehavior);
 
-        var requiredFunctionChoiceBehavior = service2ExecutionSettings.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
-        Assert.NotNull(requiredFunctionChoiceBehavior?.Functions);
-        Assert.Equal("p2-f2", requiredFunctionChoiceBehavior.Functions.Single());
+        var requiredConfig = service2ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorContext() { Kernel = kernel });
+        Assert.NotNull(requiredConfig);
+        Assert.Equal(FunctionChoice.Required, requiredConfig.Choice);
+        Assert.NotNull(requiredConfig.Functions);
+        Assert.Equal("p2", requiredConfig.Functions.Single().PluginName);
+        Assert.Equal("f2", requiredConfig.Functions.Single().Name);
 
         // Service with none function choice behavior
         var service3ExecutionSettings = promptTemplateConfig.ExecutionSettings["service3"];
+        Assert.NotNull(service3ExecutionSettings?.FunctionChoiceBehavior);
 
-        var noneFunctionChoiceBehavior = service3ExecutionSettings.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
-        Assert.NotNull(noneFunctionChoiceBehavior);
-        Assert.NotNull(noneFunctionChoiceBehavior?.Functions);
-        Assert.Equal("p3-f3", noneFunctionChoiceBehavior.Functions.Single());
+        var noneConfig = service3ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorContext() { Kernel = kernel });
+        Assert.NotNull(noneConfig);
+        Assert.Equal(FunctionChoice.None, noneConfig.Choice);
+        Assert.NotNull(noneConfig.Functions);
+        Assert.Equal("p3", noneConfig.Functions.Single().PluginName);
+        Assert.Equal("f3", noneConfig.Functions.Single().Name);
     }
 
     [Fact]

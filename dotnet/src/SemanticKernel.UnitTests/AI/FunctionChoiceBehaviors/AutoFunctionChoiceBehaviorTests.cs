@@ -72,7 +72,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         // Act
         var choiceBehavior = new AutoFunctionChoiceBehavior()
         {
-            Functions = ["MyPlugin-Function1", "MyPlugin-Function2"]
+            Functions = ["MyPlugin.Function1", "MyPlugin.Function2"]
         };
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
@@ -176,8 +176,8 @@ public sealed class AutoFunctionChoiceBehaviorTests
         Assert.NotNull(choiceBehavior.Functions);
         Assert.Equal(2, choiceBehavior.Functions.Count);
 
-        Assert.Equal("MyPlugin-Function1", choiceBehavior.Functions.ElementAt(0));
-        Assert.Equal("MyPlugin-Function2", choiceBehavior.Functions.ElementAt(1));
+        Assert.Equal("MyPlugin.Function1", choiceBehavior.Functions.ElementAt(0));
+        Assert.Equal("MyPlugin.Function2", choiceBehavior.Functions.ElementAt(1));
     }
 
     [Fact]
@@ -212,7 +212,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
             choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
         });
 
-        Assert.Equal("The specified function MyPlugin-Function1 is not available in the kernel.", exception.Message);
+        Assert.Equal("The specified function MyPlugin.Function1 is not available in the kernel.", exception.Message);
     }
 
     [Fact]
@@ -224,7 +224,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
 
         var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false)
         {
-            Functions = ["MyPlugin-NonKernelFunction"]
+            Functions = ["MyPlugin.NonKernelFunction"]
         };
 
         // Act
@@ -233,7 +233,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
             choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
         });
 
-        Assert.Equal("No instance of the specified function MyPlugin-NonKernelFunction is found.", exception.Message);
+        Assert.Equal("No instance of the specified function MyPlugin.NonKernelFunction is found.", exception.Message);
     }
 
     [Fact]

@@ -30,6 +30,9 @@ public class KernelFunctionMarkdownTests
     {
         // Arrange
         var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("p1", [KernelFunctionFactory.CreateFromMethod(() => { }, "f1")]);
+        kernel.Plugins.AddFromFunctions("p2", [KernelFunctionFactory.CreateFromMethod(() => { }, "f2")]);
+        kernel.Plugins.AddFromFunctions("p3", [KernelFunctionFactory.CreateFromMethod(() => { }, "f3")]);
 
         // Act
         var function = KernelFunctionMarkdown.CreateFromPromptMarkdown(Markdown, "TellMeAbout");
@@ -42,34 +45,36 @@ public class KernelFunctionMarkdownTests
 
         // AutoFunctionCallChoice for service1
         var service1ExecutionSettings = function.ExecutionSettings["service1"];
-        Assert.NotNull(service1ExecutionSettings);
+        Assert.NotNull(service1ExecutionSettings?.FunctionChoiceBehavior);
 
-        var autoFunctionChoiceBehavior = service1ExecutionSettings.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
-        Assert.NotNull(autoFunctionChoiceBehavior);
-
-        Assert.NotNull(autoFunctionChoiceBehavior.Functions);
-        Assert.Single(autoFunctionChoiceBehavior.Functions);
-        Assert.Equal("p1-f1", autoFunctionChoiceBehavior.Functions.First());
+        var autoConfig = service1ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorContext() { Kernel = kernel });
+        Assert.NotNull(autoConfig);
+        Assert.Equal(FunctionChoice.Auto, autoConfig.Choice);
+        Assert.NotNull(autoConfig.Functions);
+        Assert.Equal("p1", autoConfig.Functions.Single().PluginName);
+        Assert.Equal("f1", autoConfig.Functions.Single().Name);
 
         // RequiredFunctionCallChoice for service2
         var service2ExecutionSettings = function.ExecutionSettings["service2"];
-        Assert.NotNull(service2ExecutionSettings);
+        Assert.NotNull(service2ExecutionSettings?.FunctionChoiceBehavior);
 
-        var requiredFunctionChoiceBehavior = service2ExecutionSettings.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
-        Assert.NotNull(requiredFunctionChoiceBehavior);
-        Assert.NotNull(requiredFunctionChoiceBehavior.Functions);
-        Assert.Single(requiredFunctionChoiceBehavior.Functions);
-        Assert.Equal("p1-f1", requiredFunctionChoiceBehavior.Functions.First());
+        var requiredConfig = service2ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorContext() { Kernel = kernel });
+        Assert.NotNull(requiredConfig);
+        Assert.Equal(FunctionChoice.Required, requiredConfig.Choice);
+        Assert.NotNull(requiredConfig.Functions);
+        Assert.Equal("p2", requiredConfig.Functions.Single().PluginName);
+        Assert.Equal("f2", requiredConfig.Functions.Single().Name);
 
         // NoneFunctionCallChoice for service3
         var service3ExecutionSettings = function.ExecutionSettings["service3"];
-        Assert.NotNull(service3ExecutionSettings);
+        Assert.NotNull(service3ExecutionSettings?.FunctionChoiceBehavior);
 
-        var noneFunctionChoiceBehavior = service3ExecutionSettings.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
-        Assert.NotNull(noneFunctionChoiceBehavior);
-        Assert.NotNull(noneFunctionChoiceBehavior.Functions);
-        Assert.Single(noneFunctionChoiceBehavior.Functions);
-        Assert.Equal("p1-f1", noneFunctionChoiceBehavior.Functions.First());
+        var noneConfig = service3ExecutionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorContext() { Kernel = kernel });
+        Assert.NotNull(noneConfig);
+        Assert.Equal(FunctionChoice.None, noneConfig.Choice);
+        Assert.NotNull(noneConfig.Functions);
+        Assert.Equal("p3", noneConfig.Functions.Single().PluginName);
+        Assert.Equal("f3", noneConfig.Functions.Single().Name);
     }
 
     [Fact]
@@ -112,7 +117,7 @@ public class KernelFunctionMarkdownTests
                 "temperature": 0.8,
                 "function_choice_behavior": {
                     "type": "required",
-                    "functions": ["p1.f1"]
+                    "functions": ["p2.f2"]
                 }
             }
         }
@@ -125,7 +130,7 @@ public class KernelFunctionMarkdownTests
                 "temperature": 0.8,
                 "function_choice_behavior": {
                     "type": "none",
-                    "functions": ["p1.f1"]
+                    "functions": ["p3.f3"]
                 }
             }
         }
