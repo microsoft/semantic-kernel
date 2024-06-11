@@ -486,11 +486,11 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             {
                 textContent.Append(streamingContent.Content);
                 authorRole ??= streamingContent.Role;
-                fccBuilder.Add(streamingContent);
+                fccBuilder.Append(streamingContent);
             }
 
-            var functionCalls = fccBuilder.Build().ToArray();
-            if (functionCalls.Length != 0)
+            var functionCalls = fccBuilder.Build();
+            if (functionCalls.Any())
             {
                 var fcContent = new ChatMessageContent(role: authorRole ?? default, content: null);
                 chatHistory.Add(fcContent);
@@ -611,11 +611,11 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             {
                 textContent.Append(streamingContent.Content);
                 authorRole ??= streamingContent.Role;
-                fccBuilder.Add(streamingContent);
+                fccBuilder.Append(streamingContent);
             }
 
-            var functionCalls = fccBuilder.Build().ToArray();
-            if (functionCalls.Length != 0)
+            var functionCalls = fccBuilder.Build();
+            if (functionCalls.Any())
             {
                 var fcContent = new ChatMessageContent(role: authorRole ?? default, content: null);
                 chatHistory.Add(fcContent);
@@ -669,11 +669,11 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             {
                 textContent.Append(streamingContent.Content);
                 authorRole ??= streamingContent.Role;
-                fccBuilder.Add(streamingContent);
+                fccBuilder.Append(streamingContent);
             }
 
-            var functionCalls = fccBuilder.Build().ToArray();
-            if (functionCalls.Length != 0)
+            var functionCalls = fccBuilder.Build();
+            if (functionCalls.Any())
             {
                 var fcContent = new ChatMessageContent(role: authorRole ?? default, content: null);
                 chatHistory.Add(fcContent);

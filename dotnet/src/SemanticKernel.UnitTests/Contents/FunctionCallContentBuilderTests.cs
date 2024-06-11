@@ -17,16 +17,16 @@ public class FunctionCallContentBuilderTests
 
         // Act
         var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: "f_101", name: null, arguments: null);
-        sut.Add(update1);
+        sut.Append(update1);
 
         var update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: "WeatherUtils-GetTemperature", arguments: null);
-        sut.Add(update2);
+        sut.Append(update2);
 
         var update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "{\"city\":");
-        sut.Add(update3);
+        sut.Append(update3);
 
         var update4 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "\"Seattle\"}");
-        sut.Add(update4);
+        sut.Append(update4);
 
         var functionCalls = sut.Build();
 
@@ -51,30 +51,30 @@ public class FunctionCallContentBuilderTests
 
         // Act
         var f1_update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 1, callId: "f_1", name: "WeatherUtils-GetTemperature", arguments: null);
-        sut.Add(f1_update1);
+        sut.Append(f1_update1);
 
         var f2_update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, callId: null, name: "WeatherUtils-GetHumidity", arguments: null);
-        sut.Add(f2_update1);
+        sut.Append(f2_update1);
 
         var f2_update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, callId: "f_2", name: null, arguments: null);
-        sut.Add(f2_update2);
+        sut.Append(f2_update2);
 
         var f1_update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 1, callId: null, name: null, arguments: "{\"city\":");
-        sut.Add(f1_update2);
+        sut.Append(f1_update2);
 
         var f2_update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, callId: null, name: null, arguments: "{\"city\":");
-        sut.Add(f2_update3);
+        sut.Append(f2_update3);
 
         var f1_update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 1, callId: null, name: null, arguments: "\"Seattle\"}");
-        sut.Add(f1_update3);
+        sut.Append(f1_update3);
 
         var f2_update4 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 0, functionCallIndex: 2, callId: null, name: null, arguments: "\"Georgia\"}");
-        sut.Add(f2_update4);
+        sut.Append(f2_update4);
 
-        var functionCalls = sut.Build().ToArray();
+        var functionCalls = sut.Build();
 
         // Assert
-        Assert.Equal(2, functionCalls.Length);
+        Assert.Equal(2, functionCalls.Count);
 
         var functionCall1 = functionCalls.ElementAt(0);
         Assert.Equal("f_1", functionCall1.Id);
@@ -99,14 +99,14 @@ public class FunctionCallContentBuilderTests
 
         // Act
         var update1 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: "f_101", name: "WeatherUtils-GetTemperature", arguments: null);
-        sut.Add(update1);
+        sut.Append(update1);
 
         var update2 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "{\"city\":");
-        sut.Add(update2);
+        sut.Append(update2);
 
         // Invalid JSON - double closing braces - }}
         var update3 = CreateStreamingContentWithFunctionCallUpdate(choiceIndex: 1, functionCallIndex: 2, callId: null, name: null, arguments: "\"Seattle\"}}");
-        sut.Add(update3);
+        sut.Append(update3);
 
         var functionCalls = sut.Build();
 

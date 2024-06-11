@@ -23,7 +23,7 @@ public sealed class FunctionCallContentBuilder
     /// Extracts function call updates from the content and track them for later building.
     /// </summary>
     /// <param name="content">The content to extract function call updates from.</param>
-    public void Add(StreamingChatMessageContent content)
+    public void Append(StreamingChatMessageContent content)
     {
         var streamingFunctionCallUpdates = content.Items.OfType<StreamingFunctionCallUpdateContent>();
 
@@ -37,10 +37,10 @@ public sealed class FunctionCallContentBuilder
     }
 
     /// <summary>
-    /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Add"/> method.
+    /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Append"/> method.
     /// </summary>
     /// <returns>A list of <see cref="FunctionCallContent"/> objects.</returns>
-    public IEnumerable<FunctionCallContent> Build()
+    public IReadOnlyList<FunctionCallContent> Build()
     {
         FunctionCallContent[]? functionCalls = null;
 
@@ -75,7 +75,7 @@ public sealed class FunctionCallContentBuilder
             }
         }
 
-        return functionCalls ?? Enumerable.Empty<FunctionCallContent>();
+        return functionCalls ?? [];
     }
 
     /// <summary>

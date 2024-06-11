@@ -33,7 +33,6 @@ public class StreamingChatMessageContent : StreamingKernelContent
             if (textContent is not null)
             {
                 textContent.Text = value;
-                textContent.Encoding = this.Encoding;
             }
             else if (value is not null)
             {

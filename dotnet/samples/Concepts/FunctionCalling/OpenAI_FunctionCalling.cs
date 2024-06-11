@@ -156,7 +156,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                     Console.Write(streamingContent.Content);
                 }
                 authorRole ??= streamingContent.Role;
-                fccBuilder.Add(streamingContent);
+                fccBuilder.Append(streamingContent);
             }
 
             // Build the function calls from the streaming content and quit the chat loop if no function calls are found
