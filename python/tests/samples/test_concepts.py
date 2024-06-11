@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from pytest import mark
+from test_samples_utils import retry
 
 from samples.concepts.auto_function_calling.azure_python_code_interpreter_function_calling import (
     main as azure_python_code_interpreter_function_calling,
@@ -109,4 +110,4 @@ from samples.concepts.search.bing_search_plugin import main as bing_search_plugi
 )
 async def test_concepts(func, responses, monkeypatch):
     monkeypatch.setattr("builtins.input", lambda _: responses.pop(0))
-    await func()
+    await retry(lambda: func())

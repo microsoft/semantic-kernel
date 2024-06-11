@@ -25,16 +25,17 @@ from semantic_kernel.functions import KernelArguments, KernelFunction, KernelPlu
 def get_file_url(relative_path):
     absolute_path = os.path.abspath(relative_path)
     if platform.system() == "Windows":
-        return f"file:///{absolute_path.replace('\\\\', '/')}"
+        absolute_path = absolute_path.replace('\\', '/')
+        return f"file:///{absolute_path}"
     return f"file://{absolute_path}"
 
 
 def load_and_update_openai_spec():
     # Construct the path to the OpenAI spec file
     openai_spec_file = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
-        "resources", 
-        "open_ai_plugins", 
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        "resources",
+        "open_ai_plugins",
         "akv-openai.json"
     )
 
@@ -44,9 +45,9 @@ def load_and_update_openai_spec():
 
     # Adjust the OpenAI spec file to use the correct file URL based on platform
     openapi_yaml_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
-        "resources", 
-        "open_ai_plugins", 
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        "resources",
+        "open_ai_plugins",
         "akv-openapi.yaml"
     )
     openai_spec["api"]["url"] = get_file_url(openapi_yaml_path)
