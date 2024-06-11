@@ -186,7 +186,7 @@ public sealed class RestApiOperation
                 continue;
             }
 
-            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Form;
+            var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Query;
 
             if (!s_parameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
@@ -280,7 +280,8 @@ public sealed class RestApiOperation
         { RestApiOperationParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
         { RestApiOperationParameterStyle.Form, FormStyleParameterSerializer.Serialize },
         { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
-        { RestApiOperationParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
+        { RestApiOperationParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize },
+        { RestApiOperationParameterStyle.Query, QueryStyleParameterSerializer.Serialize }
     };
 
     # endregion

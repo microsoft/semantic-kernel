@@ -7,12 +7,12 @@ using System.Web;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// Serializes REST API operation parameter of the 'Form' style.
+/// Serializes REST API operation parameter of the 'Query' style.
 /// </summary>
-internal static class FormStyleParameterSerializer
+internal static class QueryStyleParameterSerializer
 {
     /// <summary>
-    /// Serializes a REST API operation `Form` style parameter.
+    /// Serializes a REST API operation `Query` style parameter.
     /// </summary>
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
@@ -24,8 +24,8 @@ internal static class FormStyleParameterSerializer
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
 
-        var style = parameter.Style ?? RestApiOperationParameterStyle.Form;
-        if (style != RestApiOperationParameterStyle.Form)
+        var style = parameter.Style ?? RestApiOperationParameterStyle.Query;
+        if (style != RestApiOperationParameterStyle.Query)
         {
             throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
@@ -37,7 +37,7 @@ internal static class FormStyleParameterSerializer
         }
 
         // Handling parameters of primitive and removing extra quotes added by the JsonValue for string values.
-        return $"{parameter.Name}={HttpUtility.UrlEncode(argument.ToString().Trim('"'))}";
+        return $"{parameter.Name}={HttpUtility.UrlEncode(argument.GetValue<string>())}";
     }
 
     /// <summary>
