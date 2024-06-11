@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 /// <summary>
 /// A Google Search service that creates and recalls memories associated with text.
 /// </summary>
-public sealed class GoogleTextSearchService : ITextSearchService, IDisposable
+public sealed class GoogleTextSearchService : ITextSearchService<string>, ITextSearchService<TextSearchResult>, IDisposable
 {
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;

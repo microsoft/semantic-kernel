@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// <summary>
 /// A Bing Search service that creates and recalls memories associated with text.
 /// </summary>
-public sealed class BingTextSearchService : ITextSearchService
+public sealed class BingTextSearchService : ITextSearchService<string>, ITextSearchService<TextSearchResult>, ITextSearchService<BingWebPage>
 {
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes { get; }
@@ -43,6 +43,24 @@ public sealed class BingTextSearchService : ITextSearchService
         this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingTextSearchService)));
 
         this.Attributes = new Dictionary<string, object?>();
+    }
+
+    /// <inheritdoc/>
+    Task<KernelSearchResults<string>> ITextSearchService<string>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    Task<KernelSearchResults<TextSearchResult>> ITextSearchService<TextSearchResult>.SearchAsync(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    Task<KernelSearchResults<BingWebPage>> ITextSearchService<BingWebPage>.SearchAsync(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 
     /// <inheritdoc/>
@@ -115,6 +133,29 @@ public sealed class BingTextSearchService : ITextSearchService
     private readonly Uri? _uri = null;
 
     private const string DefaultUri = "https://api.bing.microsoft.com/v7.0/search";
+
+    /// <summary>
+    /// Execute a Bing search query and return the results.
+    /// </summary>
+    /// <param name="query">What to search for</param>
+    /// <param name="searchSettings">Option search execution settings</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    private async Task<BingSearchResponse<BingWebPage>?> BingSearchAsync(string query, SearchExecutionSettings? searchSettings = null, CancellationToken cancellationToken = default)
+    {
+        searchSettings ??= new SearchExecutionSettings();
+        var count = searchSettings.Count;
+        var offset = searchSettings.Offset;
+        using HttpResponseMessage response = await this.SendGetRequestAsync(query, count, offset, cancellationToken).ConfigureAwait(false);
+
+        this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
+
+        string json = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+
+        // Sensitive data, logging as trace, disabled by default
+        this._logger.LogTrace("Response content received: {Data}", json);
+
+        return JsonSerializer.Deserialize<BingSearchResponse<BingWebPage>>(json);
+    }
 
     /// <summary>
     /// Sends a GET request to the specified URI.
