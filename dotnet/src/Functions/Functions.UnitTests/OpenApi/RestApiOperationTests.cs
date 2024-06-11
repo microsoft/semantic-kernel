@@ -189,6 +189,39 @@ public class RestApiOperationTests
     }
 
     [Fact]
+    public void ItShouldBuildQueryStringWithQuotes()
+    {
+        // Arrange
+        var parameters = new List<RestApiOperationParameter> {
+            new(
+                name: "has_quotes",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query)
+        };
+
+        var sut = new RestApiOperation(
+            "fake_id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path/",
+            HttpMethod.Get,
+            "fake_description",
+            parameters);
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "has_quotes", "\"Quoted Value\"" },
+        };
+
+        // Act
+        var queryString = sut.BuildQueryString(arguments);
+
+        // Assert
+        Assert.Equal("has_quotes=%22Quoted+Value%22", queryString, ignoreCase: true);
+    }
+
+    [Fact]
     public void ItShouldBuildQueryStringForArray()
     {
         // Arrange

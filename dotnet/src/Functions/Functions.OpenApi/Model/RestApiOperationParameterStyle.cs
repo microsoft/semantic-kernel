@@ -40,10 +40,5 @@ public enum RestApiOperationParameterStyle
     /// <summary>
     /// Provides a simple way of rendering nested objects using form parameters.
     /// </summary>
-    DeepObject,
-
-    /// <summary>
-    /// Query style parameters.
-    /// </summary>
-    Query
+    DeepObject
 }
