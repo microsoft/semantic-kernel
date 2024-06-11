@@ -51,6 +51,7 @@ import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,8 +62,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
-
-import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -405,8 +404,22 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         ChatCompletionsToolCall toolCall,
         ChatMessages msgs,
         Throwable e) {
+
+        StringBuilder errorMessage = new StringBuilder();
+
+        Throwable currentError = e;
+        while (currentError != null) {
+            String msg = currentError.getMessage();
+            if (msg != null && !msg.isEmpty()) {
+                errorMessage
+                    .append(msg)
+                    .append("\n");
+            }
+            currentError = currentError.getCause();
+        }
+
         msgs = msgs.add(new ChatRequestToolMessage(
-            "Call failed: " + e.getMessage(),
+            "Call failed: " + errorMessage,
             toolCall.getId()));
 
         return Mono.error(new FunctionInvocationError(e, msgs.allMessages));

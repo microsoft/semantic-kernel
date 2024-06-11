@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples.functions;
 
 import com.google.cloud.vertexai.VertexAI;
@@ -31,7 +32,6 @@ public class Example98_GeminiFunctionCalling {
     private static final String LOCATION = System.getenv("LOCATION");
     private static final String MODEL_ID = System.getenv("GEMINI_MODEL_ID");
 
-
     // Define functions that can be called by the model
     public static class HelperFunctions {
 
@@ -42,7 +42,7 @@ public class Example98_GeminiFunctionCalling {
 
         @DefineKernelFunction(name = "getWeatherForCity", description = "Gets the current weather for the specified city")
         public String getWeatherForCity(
-                @KernelFunctionParameter(name = "cityName", description = "Name of the city") String cityName) {
+            @KernelFunctionParameter(name = "cityName", description = "Name of the city") String cityName) {
             switch (cityName) {
                 case "Thrapston":
                     return "80 and sunny";
@@ -71,35 +71,36 @@ public class Example98_GeminiFunctionCalling {
             VertexAI client = new VertexAI(PROJECT_ID, LOCATION);
 
             ChatCompletionService chat = GeminiChatCompletion.builder()
-                    .withModelId(MODEL_ID)
-                    .withVertexAIClient(client)
-                    .build();
+                .withModelId(MODEL_ID)
+                .withVertexAIClient(client)
+                .build();
 
-            var plugin = KernelPluginFactory.createFromObject(new HelperFunctions(), "HelperFunctions");
+            var plugin = KernelPluginFactory.createFromObject(new HelperFunctions(),
+                "HelperFunctions");
 
             var kernel = Kernel.builder()
-                    .withAIService(ChatCompletionService.class, chat)
-                    .withPlugin(plugin)
-                    .build();
+                .withAIService(ChatCompletionService.class, chat)
+                .withPlugin(plugin)
+                .build();
 
             System.out.println("======== Example 1: Use automated function calling ========");
 
             var function = KernelFunctionFromPrompt.builder()
-                    .withTemplate(
-                            "Given the current time of day and weather, what is the likely color of the sky in Boston?")
-                    .withDefaultExecutionSettings(
-                            PromptExecutionSettings.builder()
-                                    .withTemperature(0.4)
-                                    .withTopP(1)
-                                    .withMaxTokens(100)
-                                    .build())
-                    .build();
+                .withTemplate(
+                    "Given the current time of day and weather, what is the likely color of the sky in Boston?")
+                .withDefaultExecutionSettings(
+                    PromptExecutionSettings.builder()
+                        .withTemperature(0.4)
+                        .withTopP(1)
+                        .withMaxTokens(100)
+                        .build())
+                .build();
 
             var result = kernel
-                    .invokeAsync(function)
-                    .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
-                    .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
-                    .block();
+                .invokeAsync(function)
+                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+                .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
+                .block();
 
             System.out.println(result.getResult());
 
@@ -107,17 +108,17 @@ public class Example98_GeminiFunctionCalling {
 
             var chatHistory = new ChatHistory();
             chatHistory.addUserMessage(
-                    "Given the current time of day and weather, what is the likely color of the sky in Boston?");
+                "Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
             while (true) {
                 var message = (GeminiChatMessageContent<?>) chat.getChatMessageContentsAsync(
-                                chatHistory,
-                                kernel,
-                                InvocationContext.builder()
-                                        .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false))
-                                        .withReturnMode(InvocationReturnMode.LAST_MESSAGE_ONLY)
-                                        .build())
-                        .block().get(0);
+                    chatHistory,
+                    kernel,
+                    InvocationContext.builder()
+                        .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false))
+                        .withReturnMode(InvocationReturnMode.LAST_MESSAGE_ONLY)
+                        .build())
+                    .block().get(0);
 
                 // Add the assistant's response to the chat history
                 chatHistory.addMessage(message);
@@ -136,26 +137,30 @@ public class Example98_GeminiFunctionCalling {
                     String content = null;
                     try {
                         // getFunction will throw an exception if the function is not found
-                        var fn = kernel.getFunction(geminiFunction.getPluginName(), geminiFunction.getFunctionName());
+                        var fn = kernel.getFunction(geminiFunction.getPluginName(),
+                            geminiFunction.getFunctionName());
 
                         var arguments = KernelFunctionArguments.builder();
-                        geminiFunction.getFunctionCall().getArgs().getFieldsMap().forEach((key, value) -> {
-                            arguments.withVariable(key, value.getStringValue());
-                        });
+                        geminiFunction.getFunctionCall().getArgs().getFieldsMap()
+                            .forEach((key, value) -> {
+                                arguments.withVariable(key, value.getStringValue());
+                            });
 
                         // Invoke the function and add the result to the list of function responses
                         FunctionResult<?> functionResult = fn
-                                .invokeAsync(kernel, arguments.build(), null, null).block();
+                            .invokeAsync(kernel, arguments.build(), null, null).block();
 
-                        functionResponses.add(new GeminiFunctionCall(geminiFunction.getFunctionCall(), functionResult));
+                        functionResponses.add(new GeminiFunctionCall(
+                            geminiFunction.getFunctionCall(), functionResult));
                     } catch (IllegalArgumentException e) {
                         content = "Unable to find function. Please try again!";
                     }
                 }
 
                 // Add the function responses to the chat history
-                ChatMessageContent<?> functionResponsesMessage = new GeminiChatMessageContent<>(AuthorRole.USER,
-                        "", null, null, null, null, functionResponses);
+                ChatMessageContent<?> functionResponsesMessage = new GeminiChatMessageContent<>(
+                    AuthorRole.USER,
+                    "", null, null, null, null, functionResponses);
 
                 chatHistory.addMessage(functionResponsesMessage);
             }
