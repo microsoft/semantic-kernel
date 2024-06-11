@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 public class FunctionResult<T> {
 
     private final ContextVariable<T> result;
-    private final FunctionResultMetadata metadata;
+    private final FunctionResultMetadata<?> metadata;
     @Nullable
     private final Object unconvertedResult;
 
@@ -30,7 +30,7 @@ public class FunctionResult<T> {
      */
     public FunctionResult(
         ContextVariable<T> result,
-        @Nullable FunctionResultMetadata metadata,
+        @Nullable FunctionResultMetadata<?> metadata,
         @Nullable Object unconvertedResult) {
         this.result = result;
         this.metadata = metadata == null ? FunctionResultMetadata.empty() : metadata;
@@ -77,7 +77,7 @@ public class FunctionResult<T> {
      *
      * @return The metadata about the result of the function invocation.
      */
-    public FunctionResultMetadata getMetadata() {
+    public FunctionResultMetadata<?> getMetadata() {
         return metadata;
     }
 

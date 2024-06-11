@@ -20,7 +20,9 @@ import com.microsoft.semantickernel.aiservices.google.GeminiService;
 import com.microsoft.semantickernel.aiservices.google.implementation.MonoConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.exceptions.SKCheckedException;
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -40,8 +42,10 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class GeminiChatCompletion extends GeminiService implements ChatCompletionService {
@@ -87,11 +91,13 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
     private Mono<List<ChatMessageContent<?>>> internalChatMessageContentsAsync(
         ChatHistory fullHistory, ChatHistory newHistory, @Nullable Kernel kernel,
         @Nullable InvocationContext invocationContext, int invocationAttempts) {
+
         List<Content> contents = getContents(fullHistory);
-        GenerativeModel model = getGenerativeModel(kernel, invocationContext);
 
         try {
+            GenerativeModel model = getGenerativeModel(kernel, invocationContext);
             return MonoConverter.fromApiFuture(model.generateContentAsync(contents))
+                .doOnError(e -> LOGGER.error("Error generating chat completion", e))
                 .flatMap(result -> {
                     // Get ChatMessageContent from the response
                     GeminiChatMessageContent<?> response = getGeminiChatMessageContentFromResponse(
@@ -144,8 +150,8 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                             invocationContext, invocationAttempts - 1);
                     });
                 });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (SKCheckedException | IOException e) {
+            return Mono.error(new SKException("Error generating chat completion", e));
         }
     }
 
@@ -223,12 +229,15 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                 });
             });
 
+        FunctionResultMetadata<GenerateContentResponse.UsageMetadata> metadata = FunctionResultMetadata
+            .build(UUID.randomUUID().toString(), response.getUsageMetadata(), OffsetDateTime.now());
+
         return new GeminiChatMessageContent<>(AuthorRole.ASSISTANT,
-            message.toString(), null, null, null, null, functionCalls);
+            message.toString(), null, null, null, metadata, functionCalls);
     }
 
     private GenerativeModel getGenerativeModel(@Nullable Kernel kernel,
-        @Nullable InvocationContext invocationContext) {
+        @Nullable InvocationContext invocationContext) throws SKCheckedException {
         GenerativeModel.Builder modelBuilder = new GenerativeModel.Builder()
             .setModelName(getModelId())
             .setVertexAi(getClient());
@@ -239,10 +248,11 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
                 if (settings.getResultsPerPrompt() < 1
                     || settings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
-                    throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                        String.format(
-                            "Results per prompt must be in range between 1 and %d, inclusive.",
-                            MAX_RESULTS_PER_PROMPT));
+                    throw SKCheckedException.build("Error building generative model.",
+                        new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                            String.format(
+                                "Results per prompt must be in range between 1 and %d, inclusive.",
+                                MAX_RESULTS_PER_PROMPT)));
                 }
 
                 GenerationConfig config = GenerationConfig.newBuilder()

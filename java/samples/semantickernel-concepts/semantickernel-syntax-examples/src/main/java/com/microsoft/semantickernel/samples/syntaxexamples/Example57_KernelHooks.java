@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatRequestMessage;
 import com.azure.ai.openai.models.ChatRequestSystemMessage;
+import com.azure.ai.openai.models.CompletionsUsage;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
@@ -111,10 +112,10 @@ public class Example57_KernelHooks {
 
         FunctionInvokedHook postExecutionHandler = event -> {
             System.out.println(
-                event.getFunction().getName() + " : Post Execution Handler - Usage: " + event
+                event.getFunction().getName() + " : Post Execution Handler - Usage: " + ((CompletionsUsage) event
                     .getResult()
                     .getMetadata()
-                    .getUsage()
+                    .getUsage())
                     .getTotalTokens());
             return event;
         };

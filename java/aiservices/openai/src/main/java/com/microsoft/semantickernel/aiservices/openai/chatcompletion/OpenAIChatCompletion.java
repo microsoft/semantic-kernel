@@ -17,6 +17,7 @@ import com.azure.ai.openai.models.ChatRequestSystemMessage;
 import com.azure.ai.openai.models.ChatRequestToolMessage;
 import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.ChatResponseMessage;
+import com.azure.ai.openai.models.CompletionsUsage;
 import com.azure.ai.openai.models.FunctionCall;
 import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -512,7 +513,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
     private Mono<List<OpenAIChatMessageContent>> getChatMessageContentsAsync(
         ChatCompletions completions) {
-        FunctionResultMetadata completionMetadata = FunctionResultMetadata.build(
+        FunctionResultMetadata<CompletionsUsage> completionMetadata = FunctionResultMetadata.build(
             completions.getId(),
             completions.getUsage(),
             completions.getCreatedAt());
