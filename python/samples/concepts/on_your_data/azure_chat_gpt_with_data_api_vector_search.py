@@ -51,6 +51,7 @@ req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_bod
 # When using data, use the 2024-02-15-preview API version.
 chat_service = AzureChatCompletion(
     service_id="chat-gpt",
+    api_version="2024-02-15-preview",
 )
 kernel.add_service(chat_service)
 
