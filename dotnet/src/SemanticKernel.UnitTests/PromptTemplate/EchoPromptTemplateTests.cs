@@ -6,7 +6,7 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.PromptTemplate;
 
-public sealed class NoopPromptTemplateTests
+public sealed class EchoPromptTemplateTests
 {
     [Fact]
     public async Task ItDoesNothingForSemanticKernelFormatAsync()
@@ -14,7 +14,7 @@ public sealed class NoopPromptTemplateTests
         // Arrange
         var template = """This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='literal "c"' d = $d}} and {{p.baz ename=$e}}""";
         var promptTemplateConfig = new PromptTemplateConfig(template);
-        var templateFactory = new NoopPromptTemplateFactory();
+        var templateFactory = new EchoPromptTemplateFactory();
 
         // Act
         var target = templateFactory.Create(promptTemplateConfig);
@@ -31,7 +31,7 @@ public sealed class NoopPromptTemplateTests
         // Arrange
         var template = """This {{x11}} {{a}}{{missing}} test template {{p.bar b}} and {{p.foo c='literal "c"' d = d}} and {{p.baz ename=e}}""";
         var promptTemplateConfig = new PromptTemplateConfig(template) { TemplateFormat = "handlebars" };
-        var templateFactory = new NoopPromptTemplateFactory();
+        var templateFactory = new EchoPromptTemplateFactory();
 
         // Act
         var target = templateFactory.Create(promptTemplateConfig);

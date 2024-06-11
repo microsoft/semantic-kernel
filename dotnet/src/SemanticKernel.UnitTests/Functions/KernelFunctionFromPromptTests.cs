@@ -670,7 +670,7 @@ public class KernelFunctionFromPromptTests
         Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig(template) { TemplateFormat = templateFormat };
-        var func = kernel.CreateFunctionFromPrompt(promptConfig, promptTemplateFactory: new NoopPromptTemplateFactory());
+        var func = kernel.CreateFunctionFromPrompt(promptConfig, promptTemplateFactory: new EchoPromptTemplateFactory());
         var args = new KernelArguments();
         args["input"] = "Some Input";
 
