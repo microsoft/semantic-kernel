@@ -713,7 +713,7 @@ internal abstract class ClientCore
                         ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
 
                     // Translate all entries into FunctionCallContent instances for diagnostics purposes.
-                    functionCallContents = this.GetFunctionCallContent(toolCalls).ToArray();
+                    functionCallContents = this.GetFunctionCallContents(toolCalls).ToArray();
                 }
                 finally
                 {
@@ -1349,7 +1349,7 @@ internal abstract class ClientCore
     {
         var message = new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, chatChoice));
 
-        message.Items.AddRange(this.GetFunctionCallContent(chatChoice.Message.ToolCalls));
+        message.Items.AddRange(this.GetFunctionCallContents(chatChoice.Message.ToolCalls));
 
         return message;
     }
@@ -1369,7 +1369,7 @@ internal abstract class ClientCore
         return message;
     }
 
-    private IEnumerable<FunctionCallContent> GetFunctionCallContent(IEnumerable<ChatCompletionsToolCall> toolCalls)
+    private IEnumerable<FunctionCallContent> GetFunctionCallContents(IEnumerable<ChatCompletionsToolCall> toolCalls)
     {
         List<FunctionCallContent>? result = null;
 
