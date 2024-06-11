@@ -32,7 +32,7 @@ class BinaryContent(KernelContent):
         __str__: Returns the string representation of the content.
 
     Raises:
-        ValidationError: If any arguments are misformed.
+        ValidationError: If any arguments are malformed.
 
     """
 
