@@ -1547,13 +1547,25 @@ internal abstract class ClientCore
             return result;
         }
 
+        // If both behaviors are specified, we can't handle that.
+        if (executionSettings.FunctionChoiceBehavior is not null && executionSettings.ToolCallBehavior is not null)
+        {
+            throw new ArgumentException($"{nameof(executionSettings.ToolCallBehavior)} and {nameof(executionSettings.FunctionChoiceBehavior)} cannot be used together.");
+        }
+
         // Set the tool choice to none. If we end up wanting to use tools, we'll set it to the desired value.
         chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
         chatOptions.Tools.Clear();
 
+        // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
         if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
         {
             result = this.ConfigureFunctionCalling(kernel, chatOptions, requestIndex, functionChoiceBehavior);
+        }
+        // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
+        else if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
+        {
+            result = this.ConfigureFunctionCalling(kernel, chatOptions, requestIndex, toolCallBehavior);
         }
 
         // Having already sent tools and with tool call information in history, the service can become unhappy "Invalid 'tools': empty array. Expected an array with minimum length 1, but got an empty array instead."
@@ -1593,13 +1605,13 @@ internal abstract class ClientCore
 
         if (config.Choice == FunctionChoice.Auto)
         {
-            if (config.FunctionsMetadata is { } functionsMetadata && functionsMetadata.Any())
-            {
-                chatOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
+            chatOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
 
-                foreach (var functionMetadata in functionsMetadata)
+            if (config.Functions is { } functions)
+            {
+                foreach (var function in functions)
                 {
-                    var functionDefinition = functionMetadata.ToOpenAIFunction().ToFunctionDefinition();
+                    var functionDefinition = function.Metadata.ToOpenAIFunction().ToFunctionDefinition();
                     chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
                 }
             }
@@ -1609,14 +1621,14 @@ internal abstract class ClientCore
 
         if (config.Choice == FunctionChoice.Required)
         {
-            if (config.FunctionsMetadata is { } functionsMetadata && functionsMetadata.Any())
+            if (config.Functions is { } functions && functions.Any())
             {
-                if (functionsMetadata.Count() > 1)
+                if (functions.Count() > 1)
                 {
                     throw new KernelException("Only one required function is allowed.");
                 }
 
-                var functionDefinition = functionsMetadata.First().ToOpenAIFunction().ToFunctionDefinition();
+                var functionDefinition = functions.First().Metadata.ToOpenAIFunction().ToFunctionDefinition();
 
                 chatOptions.ToolChoice = new ChatCompletionsToolChoice(functionDefinition);
                 chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
@@ -1627,13 +1639,13 @@ internal abstract class ClientCore
 
         if (config.Choice == FunctionChoice.None)
         {
-            if (config.FunctionsMetadata is { } functionsMetadata && functionsMetadata.Any())
-            {
-                chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
 
-                foreach (var functionMetadata in functionsMetadata)
+            if (config.Functions is { } functions)
+            {
+                foreach (var function in functions)
                 {
-                    var functionDefinition = functionMetadata.ToOpenAIFunction().ToFunctionDefinition();
+                    var functionDefinition = function.Metadata.ToOpenAIFunction().ToFunctionDefinition();
                     chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
                 }
             }
@@ -1642,5 +1654,29 @@ internal abstract class ClientCore
         }
 
         throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
+    }
+
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(Kernel? kernel, ChatCompletionsOptions chatOptions, int requestIndex, ToolCallBehavior toolCallBehavior)
+    {
+        if (requestIndex >= toolCallBehavior.MaximumUseAttempts)
+        {
+            // Don't add any tools as we've reached the maximum attempts limit.
+            if (this.Logger.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.", toolCallBehavior.MaximumUseAttempts);
+            }
+        }
+        else
+        {
+            // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
+            // what functions are available in the kernel.
+            toolCallBehavior.ConfigureOptions(kernel, chatOptions);
+        }
+
+        return new()
+        {
+            AllowAnyRequestedKernelFunction = toolCallBehavior.AllowAnyRequestedKernelFunction,
+            MaximumAutoInvokeAttempts = toolCallBehavior.MaximumAutoInvokeAttempts,
+        };
     }
 }

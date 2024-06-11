@@ -2,12 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using System.Linq;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.BufferedDeserialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace Microsoft.SemanticKernel;
@@ -30,8 +27,18 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
     {
         s_deserializer ??= new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .IgnoreUnmatchedProperties() // Required to ignore the 'type' property used as type discrimination. Otherwise, the "Property 'type' not found on type '{type.FullName}'" exception is thrown.
-            .WithTypeDiscriminatingNodeDeserializer(ConfigureTypeDiscriminatingNodeDeserializer)
+            .WithTypeConverter(new FunctionChoiceBehaviorTypesConverter())
+            .WithTypeDiscriminatingNodeDeserializer((options) =>
+            {
+#pragma warning disable SKEXP0001
+                options.AddKeyValueTypeDiscriminator<FunctionChoiceBehavior>("type", new Dictionary<string, Type>
+                {
+                    { AutoFunctionChoiceBehavior.TypeDiscriminator, typeof(AutoFunctionChoiceBehavior) },
+                    { RequiredFunctionChoiceBehavior.TypeDiscriminator, typeof(RequiredFunctionChoiceBehavior) },
+                    { NoneFunctionChoiceBehavior.TypeDiscriminator, typeof(NoneFunctionChoiceBehavior) }
+                });
+#pragma warning restore SKEXP0010
+            })
             .Build();
 
         parser.MoveNext(); // Move to the first property  
@@ -46,9 +53,7 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
                     executionSettings.ModelId = s_deserializer.Deserialize<string>(parser);
                     break;
                 case "function_choice_behavior":
-#pragma warning disable SKEXP0001
                     executionSettings.FunctionChoiceBehavior = s_deserializer.Deserialize<FunctionChoiceBehavior>(parser);
-#pragma warning restore SKEXP0010
                     break;
                 default:
                     (executionSettings.ExtensionData ??= new Dictionary<string, object>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));
@@ -63,36 +68,5 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
     public void WriteYaml(IEmitter emitter, object? value, Type type)
     {
         throw new NotImplementedException();
-    }
-
-    private static void ConfigureTypeDiscriminatingNodeDeserializer(ITypeDiscriminatingNodeDeserializerOptions options)
-    {
-#pragma warning disable SKEXP0001
-        var attributes = typeof(FunctionChoiceBehavior).GetCustomAttributes(false);
-
-        // Getting the type discriminator property name - "type" from the JsonPolymorphicAttribute.
-        var discriminatorKey = attributes.OfType<JsonPolymorphicAttribute>().Single().TypeDiscriminatorPropertyName;
-        if (string.IsNullOrEmpty(discriminatorKey))
-        {
-            throw new InvalidOperationException("Type discriminator property name is not specified.");
-        }
-
-        var discriminatorTypeMapping = new Dictionary<string, Type>();
-
-        // Getting FunctionChoiceBehavior subtypes and their type discriminators registered for polymorphic deserialization.
-        var derivedTypeAttributes = attributes.OfType<JsonDerivedTypeAttribute>();
-        foreach (var derivedTypeAttribute in derivedTypeAttributes)
-        {
-            var discriminator = derivedTypeAttribute.TypeDiscriminator?.ToString();
-            if (string.IsNullOrEmpty(discriminator))
-            {
-                throw new InvalidOperationException($"Type discriminator is not specified for the {derivedTypeAttribute.DerivedType} type.");
-            }
-
-            discriminatorTypeMapping.Add(discriminator!, derivedTypeAttribute.DerivedType);
-        }
-
-        options.AddKeyValueTypeDiscriminator<FunctionChoiceBehavior>(discriminatorKey!, discriminatorTypeMapping);
-#pragma warning restore SKEXP0010
     }
 }

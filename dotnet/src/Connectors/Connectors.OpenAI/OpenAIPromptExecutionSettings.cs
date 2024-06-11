@@ -231,11 +231,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </remarks>
     public ToolCallBehavior? ToolCallBehavior
     {
-        get => base.FunctionChoiceBehavior as ToolCallBehavior;
+        get => this._toolCallBehavior;
+
         set
         {
             this.ThrowIfFrozen();
-            base.FunctionChoiceBehavior = value;
+            this._toolCallBehavior = value;
         }
     }
 
@@ -423,6 +424,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private long? _seed;
     private object? _responseFormat;
     private IDictionary<int, int>? _tokenSelectionBiases;
+    private ToolCallBehavior? _toolCallBehavior;
     private string? _user;
     private string? _chatSystemPrompt;
     private bool? _logprobs;

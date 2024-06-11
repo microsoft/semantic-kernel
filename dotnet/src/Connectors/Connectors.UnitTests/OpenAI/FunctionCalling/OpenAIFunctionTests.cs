@@ -92,12 +92,12 @@ public sealed class OpenAIFunctionTests
     [Fact]
     public void ItCanConvertToFunctionDefinitionsWithParameterTypesAndReturnParameterType()
     {
-        string expectedParameterSchema = """{"type":"object","required":["param1","param2"],"properties":{"param1":{"type":"string","description":"String param 1"},"param2":{"type":"integer","description":"Int param 2"},"param3":{"type":"number","description":"double param 2 (default value: 34.8)"}}}""";
+        string expectedParameterSchema = """{   "type": "object",   "required": ["param1", "param2"],   "properties": {     "param1": { "type": "string", "description": "String param 1" },     "param2": { "type": "integer", "description": "Int param 2" }   } } """;
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("Tests", new[]
         {
             KernelFunctionFactory.CreateFromMethod(
-                [return: Description("My test Result")] ([Description("String param 1")] string param1, [Description("Int param 2")] int param2, [Description("double param 2")] double param3 = 34.8) => "",
+                [return: Description("My test Result")] ([Description("String param 1")] string param1, [Description("Int param 2")] int param2) => "",
                 "TestFunction",
                 "My test function")
         });
@@ -118,12 +118,12 @@ public sealed class OpenAIFunctionTests
     [Fact]
     public void ItCanConvertToFunctionDefinitionsWithParameterTypesAndNoReturnParameterType()
     {
-        string expectedParameterSchema = """{"type":"object","required":["param1","param2"],"properties":{"param1":{"type":"string","description":"String param 1"},"param2":{"type":"integer","description":"Int param 2"},"param3":{"type":"number","description":"double param 2 (default value: 34.8)"}}}""";
+        string expectedParameterSchema = """{   "type": "object",   "required": ["param1", "param2"],   "properties": {     "param1": { "type": "string", "description": "String param 1" },     "param2": { "type": "integer", "description": "Int param 2" }   } } """;
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("Tests", new[]
         {
             KernelFunctionFactory.CreateFromMethod(
-                [return: Description("My test Result")] ([Description("String param 1")] string param1, [Description("Int param 2")] int param2, [Description("double param 2")] double param3 = 34.8) => { },
+                [return: Description("My test Result")] ([Description("String param 1")] string param1, [Description("Int param 2")] int param2) => { },
                 "TestFunction",
                 "My test function")
         });
@@ -176,47 +176,6 @@ public sealed class OpenAIFunctionTests
         Assert.Equal(
             JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"string", "description":"something neat" }""")),
             JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
-    }
-
-    [Fact]
-    public void ItCanConvertToFunctionMetadata()
-    {
-        // Arrange
-        OpenAIFunction f = new("p1", "f1", "description", new[]
-        {
-            new OpenAIFunctionParameter("param1", "param1 description", true, typeof(string), KernelJsonSchema.Parse("""{ "type":"string" }""")),
-            new OpenAIFunctionParameter("param2", "param2 description", false, typeof(int), KernelJsonSchema.Parse("""{ "type":"integer" }""")),
-        },
-        new OpenAIFunctionReturnParameter("return description", typeof(string), KernelJsonSchema.Parse("""{ "type":"string" }""")));
-
-        // Act
-        KernelFunctionMetadata result = f.ToKernelFunctionMetadata();
-
-        // Assert
-        Assert.Equal("p1", result.PluginName);
-        Assert.Equal("f1", result.Name);
-        Assert.Equal("description", result.Description);
-
-        Assert.Equal(2, result.Parameters.Count);
-
-        var param1 = result.Parameters[0];
-        Assert.Equal("param1", param1.Name);
-        Assert.Equal("param1 description", param1.Description);
-        Assert.True(param1.IsRequired);
-        Assert.Equal(typeof(string), param1.ParameterType);
-        Assert.Equal("string", param1.Schema?.RootElement.GetProperty("type").GetString());
-
-        var param2 = result.Parameters[1];
-        Assert.Equal("param2", param2.Name);
-        Assert.Equal("param2 description", param2.Description);
-        Assert.False(param2.IsRequired);
-        Assert.Equal(typeof(int), param2.ParameterType);
-        Assert.Equal("integer", param2.Schema?.RootElement.GetProperty("type").GetString());
-
-        Assert.NotNull(result.ReturnParameter);
-        Assert.Equal("return description", result.ReturnParameter.Description);
-        Assert.Equal(typeof(string), result.ReturnParameter.ParameterType);
-        Assert.Equal("string", result.ReturnParameter.Schema?.RootElement.GetProperty("type").GetString());
     }
 
 #pragma warning disable CA1812 // uninstantiated internal class

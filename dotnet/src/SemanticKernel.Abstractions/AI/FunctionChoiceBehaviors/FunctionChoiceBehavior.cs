@@ -9,15 +9,19 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents the base class for different function choice behaviors.
 /// </summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "type", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
-[JsonDerivedType(typeof(AutoFunctionChoiceBehavior), typeDiscriminator: "auto")]
-[JsonDerivedType(typeof(RequiredFunctionChoiceBehavior), typeDiscriminator: "required")]
-[JsonDerivedType(typeof(NoneFunctionChoiceBehavior), typeDiscriminator: "none")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(AutoFunctionChoiceBehavior), typeDiscriminator: AutoFunctionChoiceBehavior.TypeDiscriminator)]
+[JsonDerivedType(typeof(RequiredFunctionChoiceBehavior), typeDiscriminator: RequiredFunctionChoiceBehavior.TypeDiscriminator)]
+[JsonDerivedType(typeof(NoneFunctionChoiceBehavior), typeDiscriminator: NoneFunctionChoiceBehavior.TypeDiscriminator)]
 [Experimental("SKEXP0001")]
 public abstract class FunctionChoiceBehavior
 {
-    /// <summary>The separator used to separate plugin name and function name.</summary>
-    protected const string FunctionNameSeparator = ".";
+    /// <summary>
+    /// Creates a new instance of the <see cref="FunctionChoiceBehavior"/> class.
+    /// </summary>
+    internal FunctionChoiceBehavior()
+    {
+    }
 
     /// <summary>
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
