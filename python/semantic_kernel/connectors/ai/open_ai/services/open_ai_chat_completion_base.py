@@ -436,7 +436,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             if parsed_args:
                 args_cloned.update(parsed_args)
         except (FunctionCallInvalidArgumentsException, TypeError) as exc:
-            logger.exception(
+            logger.info(
                 f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again."
             )
             frc = FunctionResultContent.from_function_call_content_and_result(
@@ -485,7 +485,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 f"{[param.name for param in function_to_call.parameters if param.is_required]}. "
                 "Please provide the required arguments and try again."
             )
-            logger.exception(msg)
+            logger.info(msg)
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
                 result=msg,
