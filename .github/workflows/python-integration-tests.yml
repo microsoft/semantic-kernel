@@ -103,6 +103,7 @@ jobs:
 
           cd python
           poetry run pytest ./tests/integration -v
+          poetry run pytest ./tests/samples -v
 
   python-integration-tests:
     needs: paths-filter
@@ -169,6 +170,7 @@ jobs:
 
           cd python
           poetry run pytest ./tests/integration -v
+          poetry run pytest ./tests/samples -v
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   python-integration-tests-check:
