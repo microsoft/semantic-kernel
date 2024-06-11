@@ -84,7 +84,7 @@ Pros:
 Cons:
 
 - Breaking changes for developers using the current OpenAI connector.
-- Breaking changes upcomming for developers using the current Azure specific connectors (AI + Memory).
+- Breaking changes upcoming for developers using the current Azure specific connectors (AI + Memory).
 
 ## Option 3 - Current OpenAI Connector changing internals only
 
