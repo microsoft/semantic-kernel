@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
