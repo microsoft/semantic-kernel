@@ -19,10 +19,10 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import ChatHistory, ChatMessageContent, TextContent
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from tests.integration.completions.test_utils import retry
 

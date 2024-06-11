@@ -4,15 +4,14 @@ from enum import Enum
 from typing import Any, Union, overload
 from xml.etree.ElementTree import Element  # nosec
 
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
-from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import ContentAdditionException
 
 ITEM_TYPES = Union[
@@ -205,7 +204,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         Returns:
             Element - The XML Element representing the StreamingChatMessageContent.
         """
-        root = Element(CHAT_MESSAGE_CONTENT_TAG)
+        root = Element(self.tag)
         for field in self.model_fields_set:
             if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id", "choice_index"]:
                 continue

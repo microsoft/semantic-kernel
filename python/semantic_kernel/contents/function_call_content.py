@@ -3,7 +3,7 @@
 import json
 import logging
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field
@@ -25,6 +25,7 @@ class FunctionCallContent(KernelContent):
     """Class to hold a function call response."""
 
     content_type: Literal[ContentTypes.FUNCTION_CALL_CONTENT] = Field(FUNCTION_CALL_CONTENT_TAG, init=False)  # type: ignore
+    tag: ClassVar[str] = FUNCTION_CALL_CONTENT_TAG
     id: str | None
     index: int | None = None
     name: str | None = None
@@ -92,7 +93,7 @@ class FunctionCallContent(KernelContent):
 
     def to_element(self) -> Element:
         """Convert the function call to an Element."""
-        element = Element(FUNCTION_CALL_CONTENT_TAG)
+        element = Element(self.tag)
         if self.id:
             element.set("id", self.id)
         if self.name:
@@ -104,8 +105,8 @@ class FunctionCallContent(KernelContent):
     @classmethod
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
-        if element.tag != FUNCTION_CALL_CONTENT_TAG:
-            raise ValueError(f"Element tag is not {FUNCTION_CALL_CONTENT_TAG}")
+        if element.tag != cls.tag:
+            raise ValueError(f"Element tag is not {cls.tag}")
 
         return cls(name=element.get("name"), id=element.get("id"), arguments=element.text or "")
 

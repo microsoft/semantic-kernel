@@ -1,10 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-import sys
-
-if sys.version < "3.11":
-    pass
-else:
-    pass
 
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.text_content import TextContent

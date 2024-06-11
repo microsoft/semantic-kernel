@@ -3,13 +3,12 @@
 import logging
 from enum import Enum
 from html import unescape
-from typing import Any, Literal, Union, overload
+from typing import Any, ClassVar, Literal, Union, overload
 from xml.etree.ElementTree import Element  # nosec
 
 from defusedxml import ElementTree
 from pydantic import Field
 
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.const import (
     CHAT_MESSAGE_CONTENT_TAG,
     DISCRIMINATOR_FIELD,
@@ -19,13 +18,14 @@ from semantic_kernel.contents.const import (
     TEXT_CONTENT_TAG,
     ContentTypes,
 )
-from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 
 TAG_CONTENT_MAP = {
     TEXT_CONTENT_TAG: TextContent,
@@ -66,6 +66,7 @@ class ChatMessageContent(KernelContent):
     """
 
     content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
+    tag: ClassVar[str] = CHAT_MESSAGE_CONTENT_TAG
     role: AuthorRole
     name: str | None = None
     items: list[ITEM_TYPES] = Field(default_factory=list, discriminator=DISCRIMINATOR_FIELD)
@@ -206,7 +207,7 @@ class ChatMessageContent(KernelContent):
         Returns:
             Element - The XML Element representing the ChatMessageContent.
         """
-        root = Element(CHAT_MESSAGE_CONTENT_TAG)
+        root = Element(self.tag)
         for field in self.model_fields_set:
             if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id"]:
                 continue
@@ -228,6 +229,8 @@ class ChatMessageContent(KernelContent):
         Returns:
             ChatMessageContent - The new instance of ChatMessageContent or a subclass.
         """
+        if element.tag != cls.tag:
+            raise ValueError(f"Element tag is not {cls.tag}")
         kwargs: dict[str, Any] = {key: value for key, value in element.items()}
         items: list[KernelContent] = []
         if element.text:

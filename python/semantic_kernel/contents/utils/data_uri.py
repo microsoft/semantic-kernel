@@ -7,8 +7,6 @@ import re
 import sys
 from typing import Any, TypeVar
 
-from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
-
 if sys.version < "3.11":
     from typing_extensions import Self  # pragma: no cover
 else:
@@ -17,6 +15,7 @@ else:
 from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_core import Url
 
+from semantic_kernel.exceptions import ContentInitializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)

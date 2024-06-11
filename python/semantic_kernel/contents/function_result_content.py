@@ -1,15 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field, field_validator
 
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -43,6 +43,7 @@ class FunctionResultContent(KernelContent):
     """
 
     content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(FUNCTION_RESULT_CONTENT_TAG, init=False)  # type: ignore
+    tag: ClassVar[str] = FUNCTION_RESULT_CONTENT_TAG
     id: str
     name: str | None = None
     result: str
@@ -71,7 +72,7 @@ class FunctionResultContent(KernelContent):
 
     def to_element(self) -> Element:
         """Convert the instance to an Element."""
-        element = Element(FUNCTION_RESULT_CONTENT_TAG)
+        element = Element(self.tag)
         element.set("id", self.id)
         if self.name:
             element.set("name", self.name)
@@ -81,8 +82,8 @@ class FunctionResultContent(KernelContent):
     @classmethod
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
-        if element.tag != FUNCTION_RESULT_CONTENT_TAG:
-            raise ValueError(f"Element tag is not {FUNCTION_RESULT_CONTENT_TAG}")
+        if element.tag != cls.tag:
+            raise ValueError(f"Element tag is not {cls.tag}")
         return cls(id=element.get("id", ""), result=element.text, name=element.get("name", None))
 
     @classmethod

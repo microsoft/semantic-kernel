@@ -23,27 +23,16 @@ DataUrl = Annotated[Url, UrlConstraints(allowed_schemes=["data"])]
 class BinaryContent(KernelContent):
     """This is a base class for different types of binary content.
 
-    This can be created either with a uri for a image or with the bytes data of the image.
-    Use the .from_image_file method to create an instance from a image file.
-        This reads the file and guesses the mime_type.
-    If both uri and data is provided, data will be used and a warning is logged.
+    This can be created either the bytes data or a data uri, additionally it can have a uri.
+    The uri is a reference to the source, and might or might not point to the same thing as the data.
 
-    Args:
-        inner_content (Any): The inner content of the response,
-            this should hold all the information from the response so even
-            when not creating a subclass a developer can leverage the full thing.
-        ai_model_id (str | None): The id of the AI model that generated this response.
-        metadata (dict[str, Any]): Any metadata that should be attached to the response.
-        uri (Url | None): The uri of the image.
-        data (bytes | None): The data of the image.
-        mime_type (str | None): The mime type of the image, only used with data.
+    Ideally only subclasses of this class are used, like ImageContent.
 
     Methods:
-        from_image_path: Create an instance from an image file.
-        __str__: Returns the string representation of the image.
+        __str__: Returns the string representation of the content.
 
     Raises:
-        ValidationError: If neither uri or data is provided.
+        ValidationError: If any arguments are misformed.
 
     """
 
@@ -70,7 +59,12 @@ class BinaryContent(KernelContent):
             data (str | bytes | None): The data of the content.
             data_format (str | None): The format of the data (e.g. base64).
             mime_type (str | None): The mime type of the image, only used with data.
-            **kwargs (Any): Any additional arguments from KernelContent.
+            kwargs (Any): Any additional arguments:
+                inner_content (Any): The inner content of the response,
+                    this should hold all the information from the response so even
+                    when not creating a subclass a developer can leverage the full thing.
+                ai_model_id (str | None): The id of the AI model that generated this response.
+                metadata (dict[str, Any]): Any metadata that should be attached to the response.
         """
         _data_uri = None
         if data_uri:
@@ -139,7 +133,7 @@ class BinaryContent(KernelContent):
             self._data_uri.mime_type = value
 
     def __str__(self) -> str:
-        """Return the string representation of the image."""
+        """Return the string representation of the content."""
         return self.data_uri if self._data_uri else str(self.uri)
 
     def to_element(self) -> Element:
