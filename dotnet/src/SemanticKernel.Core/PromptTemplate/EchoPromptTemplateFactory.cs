@@ -9,6 +9,11 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class EchoPromptTemplateFactory : IPromptTemplateFactory
 {
+    /// <summary>
+    /// Singleton instance of <see cref="EchoPromptTemplateFactory"/>.
+    /// </summary>
+    public static EchoPromptTemplateFactory Instance { get; } = new EchoPromptTemplateFactory();
+
     /// <inheritdoc/>
     public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)
     {
