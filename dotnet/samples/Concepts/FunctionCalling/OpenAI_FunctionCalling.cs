@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace AutoFunctionCalling;
+namespace FunctionCalling;
 
 /// <summary>
 /// These examples demonstrate two ways functions called by the OpenAI LLM can be invoked using the SK streaming and non-streaming AI API:
@@ -35,7 +35,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Auto function calling with a non-streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -50,7 +50,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Auto function calling with a streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -68,7 +68,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Manual function calling with a non-streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -127,7 +127,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Simulated function calling with a non-streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -179,7 +179,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Auto function calling with a streaming chat");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
@@ -216,7 +216,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    private static Kernel CreateBuilder()
+    private static Kernel CreateKernel()
     {
         // Create kernel
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -244,7 +244,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                     "Sydney" => "75 and sunny",
                     "Tel Aviv" => "80 and sunny",
                     _ => "31 and snowing",
-                }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
+                }, "GetWeatherForCity", "Gets the current weather for the specified city"),
         ]);
 
         return kernel;

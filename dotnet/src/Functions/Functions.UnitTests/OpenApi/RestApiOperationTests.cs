@@ -149,6 +149,112 @@ public class RestApiOperationTests
     }
 
     [Fact]
+    public void ItShouldBuildQueryString()
+    {
+        // Arrange
+        var parameters = new List<RestApiOperationParameter> {
+            new(
+                name: "since_create_time",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query),
+            new(
+                name: "before_create_time",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query),
+        };
+
+        var sut = new RestApiOperation(
+            "fake_id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path/",
+            HttpMethod.Get,
+            "fake_description",
+            parameters);
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "since_create_time", "2024-01-01T00:00:00+00:00" },
+            { "before_create_time", "2024-05-01T00:00:00+00:00" },
+        };
+
+        // Act
+        var queryString = sut.BuildQueryString(arguments);
+
+        // Assert
+        Assert.Equal("since_create_time=2024-01-01T00%3A00%3A00%2B00%3A00&before_create_time=2024-05-01T00%3A00%3A00%2B00%3A00", queryString, ignoreCase: true);
+    }
+
+    [Fact]
+    public void ItShouldBuildQueryStringWithQuotes()
+    {
+        // Arrange
+        var parameters = new List<RestApiOperationParameter> {
+            new(
+                name: "has_quotes",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query)
+        };
+
+        var sut = new RestApiOperation(
+            "fake_id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path/",
+            HttpMethod.Get,
+            "fake_description",
+            parameters);
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "has_quotes", "\"Quoted Value\"" },
+        };
+
+        // Act
+        var queryString = sut.BuildQueryString(arguments);
+
+        // Assert
+        Assert.Equal("has_quotes=%22Quoted+Value%22", queryString, ignoreCase: true);
+    }
+
+    [Fact]
+    public void ItShouldBuildQueryStringForArray()
+    {
+        // Arrange
+        var parameters = new List<RestApiOperationParameter> {
+            new(
+                name: "times",
+                type: "array",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query),
+        };
+
+        var sut = new RestApiOperation(
+            "fake_id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path/",
+            HttpMethod.Get,
+            "fake_description",
+            parameters);
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "times", new string[] { "2024-01-01T00:00:00+00:00", "2024-05-01T00:00:00+00:00" } },
+        };
+
+        // Act
+        var queryString = sut.BuildQueryString(arguments);
+
+        // Assert
+        Assert.Equal("times=2024-01-01T00%3A00%3A00%2B00%3A00,2024-05-01T00%3A00%3A00%2B00%3A00", queryString, ignoreCase: true);
+    }
+
+    [Fact]
     public void ItShouldRenderHeaderValuesFromArguments()
     {
         // Arrange
