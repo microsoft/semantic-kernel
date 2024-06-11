@@ -35,7 +35,8 @@ public class AzureCosmosDBNoSQLMemoryStoreTestsFixture : IAsyncLifetime
             connectionString,
             this.DatabaseName,
             dimensions: 3,
-            vectorDataType: VectorDataType.Float32);
+            VectorDataType.Float32,
+            VectorIndexType.Flat);
     }
 
     public Task InitializeAsync()

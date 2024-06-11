@@ -38,12 +38,14 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     /// <param name="databaseName">The database name to connect to.</param>
     /// <param name="dimensions">The number of dimensions the embedding vectors to be stored.</param>
     /// <param name="vectorDataType">The data type of the embedding vectors to be stored.</param>
+    /// <param name="vectorIndexType">The type of index to use for the embedding vectors to be stored.</param>
     /// <param name="applicationName">The application name to use in requests.</param>
     public AzureCosmosDBNoSQLMemoryStore(
         string connectionString,
         string databaseName,
         ulong dimensions,
         VectorDataType vectorDataType,
+        VectorIndexType vectorIndexType,
         string? applicationName = null)
         : this(
             new CosmosClient(
@@ -70,7 +72,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                     new()
                     {
                         Path = EMBEDDING_PATH,
-                        Type = VectorIndexType.Flat,
+                        Type = vectorIndexType,
                     },
                 },
             })
