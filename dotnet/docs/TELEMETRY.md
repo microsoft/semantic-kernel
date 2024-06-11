@@ -7,9 +7,9 @@ Code example using Application Insights can be found [here](../samples/Demos/Tel
 
 ## Logging
 
-The logging mechanism in this project relies on the `ILogger` interface from the `Microsoft.Extensions.Logging` namespace. Recent updates have introduced enhancements to the logger creation process. Instead of directly using the `ILogger` interface, instances of `ILogger` are now recommended to be created through an `ILoggerFactory` provided to components using the `WithLoggerFactory` method.
+The logging mechanism in this project relies on the `ILogger` interface from the `Microsoft.Extensions.Logging` namespace. Recent updates have introduced enhancements to the logger creation process. Instead of directly using the `ILogger` interface, instances of `ILogger` are now recommended to be created through an `ILoggerFactory` configured through a `ServiceCollection`.
 
-By employing the `WithLoggerFactory` approach, logger instances are generated with precise type information, facilitating more accurate logging and streamlined control over log filtering across various classes.
+By employing the `ILoggerFactory` approach, logger instances are generated with precise type information, facilitating more accurate logging and streamlined control over log filtering across various classes.
 
 Log levels used in SK:
 
@@ -36,7 +36,13 @@ Log levels used in SK:
 Enable logging for Kernel instance:
 
 ```csharp
-var kernel = new KernelBuilder().WithLoggerFactory(loggerFactory);
+IKernelBuilder builder = Kernel.CreateBuilder();
+
+// Assuming loggerFactory is already defined.
+builder.Services.AddSingleton(loggerFactory);
+...
+
+var kernel = builder.Build();
 ```
 
 All kernel functions and planners will be instrumented. It includes _logs_, _metering_ and _tracing_.
@@ -46,16 +52,19 @@ All kernel functions and planners will be instrumented. It includes _logs_, _met
 Log filtering configuration has been refined to strike a balance between visibility and relevance:
 
 ```csharp
-// Add OpenTelemetry as a logging provider
-builder.AddOpenTelemetry(options =>
+using var loggerFactory = LoggerFactory.Create(builder =>
 {
-  options.AddAzureMonitorLogExporter(options => options.ConnectionString = connectionString);
-  // Format log messages. This is default to false.
-  options.IncludeFormattedMessage = true;
-});
-builder.AddFilter("Microsoft", LogLevel.Warning);
-builder.AddFilter("Microsoft.SemanticKernel", LogLevel.Critical);
-builder.AddFilter("Microsoft.SemanticKernel.Reliability", LogLevel.Information);
+  // Add OpenTelemetry as a logging provider
+  builder.AddOpenTelemetry(options =>
+  {
+    // Assuming connectionString is already defined.
+    options.AddAzureMonitorLogExporter(options => options.ConnectionString = connectionString);
+    // Format log messages. This is default to false.
+    options.IncludeFormattedMessage = true;
+  });
+  builder.AddFilter("Microsoft", LogLevel.Warning);
+  builder.AddFilter("Microsoft.SemanticKernel", LogLevel.Information);
+}
 ```
 
 > Read more at: https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/docs/logs/customizing-the-sdk/README.md
