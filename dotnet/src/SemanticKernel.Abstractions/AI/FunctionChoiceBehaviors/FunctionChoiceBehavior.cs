@@ -69,7 +69,7 @@ public abstract class FunctionChoiceBehavior
     }
 
     /// <summary>Returns the configuration specified by the <see cref="FunctionChoiceBehavior"/>.</summary>
-    /// <param name="context">The caller context.</param>
+    /// <param name="context">The function choice caller context.</param>
     /// <returns>The configuration.</returns>
     public abstract FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context);
 }
