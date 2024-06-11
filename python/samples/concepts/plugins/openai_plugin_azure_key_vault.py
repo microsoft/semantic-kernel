@@ -25,7 +25,7 @@ from semantic_kernel.functions import KernelArguments, KernelFunction, KernelPlu
 def get_file_url(relative_path):
     absolute_path = os.path.abspath(relative_path)
     if platform.system() == "Windows":
-        return f"file:///{absolute_path.replace('\\', '/')}"
+        return f"file:///{absolute_path.replace('\\\\', '/')}"
     return f"file://{absolute_path}"
 
 
