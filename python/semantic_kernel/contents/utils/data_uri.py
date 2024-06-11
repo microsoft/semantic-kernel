@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import base64
+import binascii
 import logging
 import re
 import sys
@@ -9,11 +10,11 @@ from typing import Any, TypeVar
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 if sys.version < "3.11":
-    from typing_extensions import Self
+    from typing_extensions import Self  # pragma: no cover
 else:
-    from typing import Self
+    from typing import Self  # pragma: no cover
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_core import Url
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -53,19 +54,30 @@ class DataUri(KernelBaseModel, validate_assignment=True):
                 self.data_str = base64.b64encode(self.data_bytes).decode("utf-8")
             else:
                 self.data_str = self.data_bytes.decode("utf-8")
+        if self.data_format and self.data_format.lower() == "base64" and self.data_str:
+            try:
+                if not self.data_bytes:
+                    self.data_bytes = base64.b64decode(self.data_str, validate=True)
+                else:
+                    base64.b64decode(self.data_str, validate=True)
+            except binascii.Error as exc:
+                raise ContentInitializationError("Invalid base64 data.") from exc
         return self
 
     @classmethod
     def from_data_uri(cls: type[_T], data_uri: str | Url, default_mime_type: str = "text/plain") -> _T:
         """Create a DataUri object from a data URI string or pydantic URL."""
         if isinstance(data_uri, str):
-            data_uri = Url(data_uri)
+            try:
+                data_uri = Url(data_uri)
+            except ValidationError as exc:
+                raise ContentInitializationError("Invalid data uri format.") from exc
 
         data = data_uri.path
         if not data or "," not in data:
             raise ContentInitializationError("Invalid data uri format. The data is missing.")
 
-        pattern = "((?P<mime_type>[a-zA-Z]+/[a-zA-Z]+)(?P<parameters>(;[a-zA-Z0-9]+=+[a-zA-Z0-9]+)*)(;+(?P<data_format>.*)))?(,(?P<data_str>.*))"  # noqa: E501
+        pattern = "(((?P<mime_type>[a-zA-Z]+/[a-zA-Z-]+)(?P<parameters>(;[a-zA-Z0-9]+=+[a-zA-Z0-9]+)*))?(;+(?P<data_format>.*)))?(,(?P<data_str>.*))"  # noqa: E501
         match = re.match(pattern, data)
         if not match:
             raise ContentInitializationError("Invalid data uri format.")
@@ -81,9 +93,9 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         return cls(**matches)
 
     @field_validator("parameters", mode="before")
-    def _validate_parameters(cls, value: list[str] | dict[str, str] | None = None) -> dict[str, str] | None:
+    def _validate_parameters(cls, value: list[str] | dict[str, str] | None = None) -> dict[str, str]:
         if not value:
-            return None
+            return {}
         if isinstance(value, dict):
             return value
 
@@ -92,7 +104,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
             if item.strip() == "":
                 continue
             if "=" not in item:
-                raise ValueError("Invalid data uri format. The parameter is missing a value.")
+                raise ContentInitializationError("Invalid data uri format. The parameter is missing a value.")
             name, val = item.split("=", maxsplit=1)
             new[name] = val
         return new
