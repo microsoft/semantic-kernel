@@ -156,6 +156,8 @@ async def chat() -> bool:
             return True
 
         print(f"Mosscap:> {result}")
+    history.add_user_message(user_input)
+    history.add_assistant_message(str(result))
     return True
 
 
