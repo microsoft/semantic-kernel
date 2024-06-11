@@ -14,6 +14,13 @@ if TYPE_CHECKING:
 
 DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS = 5
 
+####################################################################################################
+# NOTE: this class was the precursor to the now used FunctionChoiceBehavior class.
+#       The FunctionChoiceBehavior class should be used in place of this class.
+#       If this class is configured, it will be converted to a FunctionChoiceBehavior object
+#       as part of the prompt execution settings.
+####################################################################################################
+
 
 @dataclass
 class FunctionCallConfiguration:

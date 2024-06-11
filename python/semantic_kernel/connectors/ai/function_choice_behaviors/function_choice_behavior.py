@@ -31,7 +31,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         max_auto_invoke_attempts (int): The maximum number of auto invoke attempts.
 
     Attributes:
-        function_short_names (list[str] | None): The short names of the functions to use.
+        function_qualified_names (list[str] | None): The short names of the functions to use.
             For example, ["plugin1.function1", "plugin2.function2"]
         enable_kernel_functions (bool): Enable kernel functions.
         max_auto_invoke_attempts (int): The maximum number of auto invoke attempts.
