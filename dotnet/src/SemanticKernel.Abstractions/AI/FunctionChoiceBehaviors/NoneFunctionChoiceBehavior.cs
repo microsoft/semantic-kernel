@@ -76,7 +76,7 @@ internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
                     continue;
                 }
 
-                throw new KernelException($"The specified function {functionFQN} is not available.");
+                throw new KernelException($"The specified function {functionFQN} was not found.");
             }
         }
         // Provide all functions from the kernel.

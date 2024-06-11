@@ -72,8 +72,8 @@ public readonly struct FunctionChoice : IEquatable<FunctionChoice>
 
     /// <inheritdoc/>
     public override int GetHashCode()
-        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label ?? string.Empty);
+        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label);
 
     /// <inheritdoc/>
-    public override string ToString() => this.Label ?? string.Empty;
+    public override string ToString() => this.Label;
 }

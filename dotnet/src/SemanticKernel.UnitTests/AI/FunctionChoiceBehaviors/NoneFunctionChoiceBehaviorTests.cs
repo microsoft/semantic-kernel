@@ -34,7 +34,7 @@ public sealed class NoneFunctionChoiceBehaviorTests
         Assert.NotNull(config);
 
         Assert.NotNull(config.Functions);
-        Assert.Equal(3, config.Functions.Count());
+        Assert.Equal(3, config.Functions.Count);
         Assert.Contains(config.Functions, f => f.Name == "Function1");
         Assert.Contains(config.Functions, f => f.Name == "Function2");
         Assert.Contains(config.Functions, f => f.Name == "Function3");
@@ -55,7 +55,7 @@ public sealed class NoneFunctionChoiceBehaviorTests
         Assert.NotNull(config);
 
         Assert.NotNull(config.Functions);
-        Assert.Equal(2, config.Functions.Count());
+        Assert.Equal(2, config.Functions.Count);
         Assert.Contains(config.Functions, f => f.Name == "Function1");
         Assert.Contains(config.Functions, f => f.Name == "Function3");
     }

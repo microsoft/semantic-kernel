@@ -26,7 +26,7 @@ public sealed class FunctionChoiceBehaviorConfiguration
     /// <summary>
     /// The functions available for AI model.
     /// </summary>
-    public IEnumerable<KernelFunction>? Functions { get; internal set; }
+    public IReadOnlyList<KernelFunction>? Functions { get; internal set; }
 
     /// <summary>
     /// Indicates whether the functions should be automatically invoked by the AI service/connector.

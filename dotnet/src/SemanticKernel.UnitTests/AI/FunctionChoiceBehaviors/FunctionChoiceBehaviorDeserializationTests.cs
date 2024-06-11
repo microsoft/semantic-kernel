@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.AI.FunctionChoiceBehaviors;
-public class FunctionNameFormatJsonConverterTests
+public class FunctionChoiceBehaviorDeserializationTests
 {
     [Fact]
     public void ItShouldDeserializeAutoFunctionChoiceBehavior()

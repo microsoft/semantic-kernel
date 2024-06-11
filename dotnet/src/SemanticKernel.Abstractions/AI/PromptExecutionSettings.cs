@@ -135,8 +135,8 @@ public class PromptExecutionSettings
         return new()
         {
             ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            FunctionChoiceBehavior = this.FunctionChoiceBehavior
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
         };
     }
 

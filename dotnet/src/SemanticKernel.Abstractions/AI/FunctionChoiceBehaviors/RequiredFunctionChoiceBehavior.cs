@@ -96,7 +96,7 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
                     continue;
                 }
 
-                throw new KernelException($"No instance of the specified function {functionFQN} is found.");
+                throw new KernelException($"The specified function {functionFQN} was not found.");
             }
         }
         // Provide all functions from the kernel.

@@ -35,7 +35,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         Assert.NotNull(config);
 
         Assert.NotNull(config.Functions);
-        Assert.Equal(3, config.Functions.Count());
+        Assert.Equal(3, config.Functions.Count);
         Assert.Contains(config.Functions, f => f.Name == "Function1");
         Assert.Contains(config.Functions, f => f.Name == "Function2");
         Assert.Contains(config.Functions, f => f.Name == "Function3");
@@ -57,7 +57,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         Assert.NotNull(config);
 
         Assert.NotNull(config.Functions);
-        Assert.Equal(2, config.Functions.Count());
+        Assert.Equal(2, config.Functions.Count);
         Assert.Contains(config.Functions, f => f.Name == "Function1");
         Assert.Contains(config.Functions, f => f.Name == "Function2");
     }
@@ -81,7 +81,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         Assert.NotNull(config);
 
         Assert.NotNull(config.Functions);
-        Assert.Equal(2, config.Functions.Count());
+        Assert.Equal(2, config.Functions.Count);
         Assert.Contains(config.Functions, f => f.Name == "Function1");
         Assert.Contains(config.Functions, f => f.Name == "Function2");
     }
@@ -101,7 +101,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         Assert.NotNull(config);
 
         Assert.NotNull(config.Functions);
-        Assert.Equal(2, config.Functions.Count());
+        Assert.Equal(2, config.Functions.Count);
         Assert.Contains(config.Functions, f => f.Name == "Function1");
         Assert.Contains(config.Functions, f => f.Name == "Function2");
     }
@@ -122,7 +122,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         Assert.NotNull(config);
 
         Assert.NotNull(config.Functions);
-        Assert.Equal(3, config.Functions.Count());
+        Assert.Equal(3, config.Functions.Count);
         Assert.Contains(config.Functions, f => f.Name == "Function1");
         Assert.Contains(config.Functions, f => f.Name == "Function2");
         Assert.Contains(config.Functions, f => f.Name == "Function3");
@@ -233,7 +233,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
             choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
         });
 
-        Assert.Equal("No instance of the specified function MyPlugin.NonKernelFunction is found.", exception.Message);
+        Assert.Equal("The specified function MyPlugin.NonKernelFunction was not found.", exception.Message);
     }
 
     [Fact]

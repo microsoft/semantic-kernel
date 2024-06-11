@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// The context to be provided by the choice behavior consumer in order to obtain the choice behavior configuration.
 /// </summary>
 [Experimental("SKEXP0001")]
-public class FunctionChoiceBehaviorContext
+public sealed class FunctionChoiceBehaviorContext
 {
     /// <summary>
     /// The <see cref="Kernel"/> to be used for function calling.

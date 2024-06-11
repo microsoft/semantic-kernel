@@ -409,7 +409,7 @@ internal abstract class ClientCore
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
         var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
-        var functionCallConfiguration = this.ConfigureFunctionCalling(kernel, chatExecutionSettings, chatOptions, 0);
+        var functionCallConfiguration = this.ConfigureFunctionCalling(requestIndex: 0, kernel, chatExecutionSettings, chatOptions);
 
         bool autoInvoke = kernel is not null && functionCallConfiguration?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
@@ -614,7 +614,7 @@ internal abstract class ClientCore
             }
 
             // Update tool use information for the next go-around based on having completed another iteration.
-            functionCallConfiguration = this.ConfigureFunctionCalling(kernel, chatExecutionSettings, chatOptions, requestIndex);
+            functionCallConfiguration = this.ConfigureFunctionCalling(requestIndex, kernel, chatExecutionSettings, chatOptions);
 
             // Disable auto invocation if we've exceeded the allowed limit.
             if (requestIndex >= functionCallConfiguration?.MaximumAutoInvokeAttempts)
@@ -641,7 +641,7 @@ internal abstract class ClientCore
 
         var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
-        var functionCallConfiguration = this.ConfigureFunctionCalling(kernel, chatExecutionSettings, chatOptions, 0);
+        var functionCallConfiguration = this.ConfigureFunctionCalling(requestIndex: 0, kernel, chatExecutionSettings, chatOptions);
 
         bool autoInvoke = kernel is not null && functionCallConfiguration?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
@@ -893,7 +893,7 @@ internal abstract class ClientCore
             }
 
             // Update tool use information for the next go-around based on having completed another iteration.
-            functionCallConfiguration = this.ConfigureFunctionCalling(kernel, chatExecutionSettings, chatOptions, requestIndex);
+            functionCallConfiguration = this.ConfigureFunctionCalling(requestIndex, kernel, chatExecutionSettings, chatOptions);
 
             // Disable auto invocation if we've exceeded the allowed limit.
             if (requestIndex >= functionCallConfiguration?.MaximumAutoInvokeAttempts)
@@ -1538,11 +1538,11 @@ internal abstract class ClientCore
     /// <summary>
     /// Configures the function calling functionality based on the provided parameters.
     /// </summary>
+    /// <param name="requestIndex">Request sequence index of automatic function invocation process.</param>
     /// <param name="kernel">The <see cref="Kernel"/> to be used for function calling.</param>
     /// <param name="executionSettings">Execution settings for the completion API.</param>
     /// <param name="chatOptions">The chat completion options from the Azure.AI.OpenAI package.</param>
-    /// <param name="requestIndex">Request sequence index of automatic function invocation process.</param>
-    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions, int requestIndex)
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(int requestIndex, Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions)
     {
         (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? result = null;
 
@@ -1565,12 +1565,12 @@ internal abstract class ClientCore
         // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
         if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
         {
-            result = this.ConfigureFunctionCalling(kernel, chatOptions, requestIndex, functionChoiceBehavior);
+            result = this.ConfigureFunctionCalling(requestIndex, kernel, chatOptions, functionChoiceBehavior);
         }
         // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
         else if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
         {
-            result = this.ConfigureFunctionCalling(kernel, chatOptions, requestIndex, toolCallBehavior);
+            result = this.ConfigureFunctionCalling(requestIndex, kernel, chatOptions, toolCallBehavior);
         }
 
         // Having already sent tools and with tool call information in history, the service can become unhappy "Invalid 'tools': empty array. Expected an array with minimum length 1, but got an empty array instead."
@@ -1585,7 +1585,7 @@ internal abstract class ClientCore
         return result;
     }
 
-    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(Kernel? kernel, ChatCompletionsOptions chatOptions, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior)
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(int requestIndex, Kernel? kernel, ChatCompletionsOptions chatOptions, FunctionChoiceBehavior functionChoiceBehavior)
     {
         // Regenerate the tool list as necessary and getting other call behavior properties. The invocation of the function(s) could have augmented
         // what functions are available in the kernel.
@@ -1626,14 +1626,14 @@ internal abstract class ClientCore
 
         if (config.Choice == FunctionChoice.Required)
         {
-            if (config.Functions is { } functions && functions.Any())
+            if (config.Functions is { Count: > 0 } functions)
             {
-                if (functions.Count() > 1)
+                if (functions.Count > 1)
                 {
                     throw new KernelException("Only one required function is allowed.");
                 }
 
-                var functionDefinition = functions.First().Metadata.ToOpenAIFunction().ToFunctionDefinition();
+                var functionDefinition = functions[0].Metadata.ToOpenAIFunction().ToFunctionDefinition();
 
                 chatOptions.ToolChoice = new ChatCompletionsToolChoice(functionDefinition);
                 chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
@@ -1661,7 +1661,7 @@ internal abstract class ClientCore
         throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
     }
 
-    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(Kernel? kernel, ChatCompletionsOptions chatOptions, int requestIndex, ToolCallBehavior toolCallBehavior)
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(int requestIndex, Kernel? kernel, ChatCompletionsOptions chatOptions, ToolCallBehavior toolCallBehavior)
     {
         if (requestIndex >= toolCallBehavior.MaximumUseAttempts)
         {
