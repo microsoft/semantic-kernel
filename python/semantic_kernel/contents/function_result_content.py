@@ -10,6 +10,7 @@ from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CON
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -83,7 +84,7 @@ class FunctionResultContent(KernelContent):
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != cls.tag:
-            raise ValueError(f"Element tag is not {cls.tag}")
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")
         return cls(id=element.get("id", ""), result=element.text, name=element.get("name", None))
 
     @classmethod

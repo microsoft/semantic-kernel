@@ -10,6 +10,7 @@ from pydantic_core import Url
 from semantic_kernel.contents.const import BINARY_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.utils.data_uri import DataUri
+from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger = logging.getLogger(__name__)
@@ -149,7 +150,7 @@ class BinaryContent(KernelContent):
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != cls.tag:
-            raise ValueError(f"Element tag is not {cls.tag}")  # pragma: no cover
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
 
         if element.text:
             return cls(data_uri=element.text, uri=element.get("uri", None))

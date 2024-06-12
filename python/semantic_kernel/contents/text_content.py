@@ -8,6 +8,7 @@ from pydantic import Field
 
 from semantic_kernel.contents.const import TEXT_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 _T = TypeVar("_T", bound="TextContent")
 
@@ -52,7 +53,7 @@ class TextContent(KernelContent):
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != cls.tag:
-            raise ValueError(f"Element tag is not {cls.tag}")
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")
 
         return cls(text=unescape(element.text) if element.text else "", encoding=element.get("encoding", None))
 
