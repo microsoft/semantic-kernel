@@ -15,11 +15,7 @@ from semantic_kernel.connectors.openai_plugin.openai_function_execution_paramete
     OpenAIFunctionExecutionParameters,
 )
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
-from semantic_kernel.exceptions import (
-    KernelFunctionAlreadyExistsError,
-    KernelServiceNotFoundError,
-    ServiceInvalidTypeError,
-)
+from semantic_kernel.exceptions import KernelFunctionAlreadyExistsError, KernelServiceNotFoundError
 from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.exceptions.template_engine_exceptions import TemplateSyntaxError
 from semantic_kernel.functions.function_result import FunctionResult
@@ -472,7 +468,7 @@ def test_get_service_with_multiple_types_union(kernel_with_service: Kernel):
 
 
 def test_get_service_with_type_not_found(kernel_with_service: Kernel):
-    with pytest.raises(ServiceInvalidTypeError):
+    with pytest.raises(KernelServiceNotFoundError):
         kernel_with_service.get_service("service", type=ChatCompletionClientBase)
 
 

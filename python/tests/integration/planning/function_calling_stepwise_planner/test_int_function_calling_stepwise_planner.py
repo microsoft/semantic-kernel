@@ -51,7 +51,7 @@ async def test_can_execute_function_calling_stepwise_plan(kernel: Kernel):
                 result = await planner.invoke(kernel, question)
                 print(f"Q: {question}\nA: {result.final_answer}\n")
                 assert isinstance(result, FunctionCallingStepwisePlannerResult)
-                assert 0 < len(result.final_answer)
+                assert len(result.final_answer) > 0
                 break
             except Exception as e:
                 if attempt < retry_attempts - 1:

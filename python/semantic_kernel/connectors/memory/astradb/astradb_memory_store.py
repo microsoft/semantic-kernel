@@ -74,7 +74,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         if self._embedding_dim > MAX_DIMENSIONALITY:
             raise MemoryConnectorInitializationError(
                 f"Dimensionality of {self._embedding_dim} exceeds "
-                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
         self._client = AstraClient(
@@ -170,7 +170,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         update = {"$set": build_payload(record)}
         status = await self._client.update_document(collection_name, filter, update, True)
 
-        return status["upsertedId"] if "upsertedId" in status else record._id
+        return status.get("upsertedId", record._id)
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upsert a batch of memory records into the data store.

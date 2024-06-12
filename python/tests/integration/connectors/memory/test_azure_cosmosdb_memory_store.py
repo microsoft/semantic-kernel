@@ -22,10 +22,7 @@ except AssertionError:
     azure_cosmosdb_memory_store_installed = False
 
 ENV_VAR_COSMOS_CONN_STR = "AZCOSMOS_CONNSTR"
-if not os.getenv(ENV_VAR_COSMOS_CONN_STR):
-    skip_test = True
-else:
-    skip_test = False
+skip_test = bool(not os.getenv(ENV_VAR_COSMOS_CONN_STR))
 
 # Either add your azure connection string here, or set it in the environment variable AZCOSMOS_CONNSTR.
 cosmos_connstr = ""
@@ -98,7 +95,7 @@ def memory_record3():
 
 
 async def azurecosmosdb_memorystore() -> MemoryStoreBase:
-    store = await AzureCosmosDBMemoryStore.create(
+    return await AzureCosmosDBMemoryStore.create(
         cosmos_connstr=cosmos_connstr,
         application_name=application_name,
         cosmos_api=cosmos_api,
@@ -113,7 +110,6 @@ async def azurecosmosdb_memorystore() -> MemoryStoreBase:
         ef_construction=ef_construction,
         ef_search=ef_search,
     )
-    return store
 
 
 @pytest.mark.asyncio

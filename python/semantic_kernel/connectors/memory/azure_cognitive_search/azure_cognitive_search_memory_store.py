@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import contextlib
 import logging
 import uuid
 from inspect import isawaitable
@@ -149,10 +150,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         # Check to see if collection exists
         collection_index = None
-        try:
+        with contextlib.suppress(ResourceNotFoundError):
             collection_index = await self._search_index_client.get_index(collection_name.lower())
-        except ResourceNotFoundError:
-            pass
 
         if not collection_index:
             # Create the search index with the semantic settings
@@ -204,10 +203,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         try:
             collection_result = await self._search_index_client.get_index(name=collection_name.lower())
 
-            if collection_result:
-                return True
-            else:
-                return False
+            return bool(collection_result)
         except ResourceNotFoundError:
             return False
 
@@ -259,8 +255,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         if result[0].succeeded:
             return search_ids
-        else:
-            return None
+        return None
 
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
@@ -372,8 +367,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         if len(memory_records) > 0:
             return memory_records[0]
-        else:
-            return None
+        return None
 
     async def get_nearest_matches(
         self,

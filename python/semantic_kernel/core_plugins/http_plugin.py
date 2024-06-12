@@ -36,9 +36,8 @@ class HttpPlugin(KernelBaseModel):
         if not url:
             raise FunctionExecutionException("url cannot be `None` or empty")
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, raise_for_status=True) as response:
-                return await response.text()
+        async with aiohttp.ClientSession() as session, session.get(url, raise_for_status=True) as response:
+            return await response.text()
 
     @kernel_function(description="Makes a POST request to a uri", name="postAsync")
     async def post(
@@ -59,9 +58,11 @@ class HttpPlugin(KernelBaseModel):
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers=headers, data=data, raise_for_status=True) as response:
-                return await response.text()
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(url, headers=headers, data=data, raise_for_status=True) as response,
+        ):
+            return await response.text()
 
     @kernel_function(description="Makes a PUT request to a uri", name="putAsync")
     async def put(
@@ -83,9 +84,11 @@ class HttpPlugin(KernelBaseModel):
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
-        async with aiohttp.ClientSession() as session:
-            async with session.put(url, headers=headers, data=data, raise_for_status=True) as response:
-                return await response.text()
+        async with (
+            aiohttp.ClientSession() as session,
+            session.put(url, headers=headers, data=data, raise_for_status=True) as response,
+        ):
+            return await response.text()
 
     @kernel_function(description="Makes a DELETE request to a uri", name="deleteAsync")
     async def delete(self, url: Annotated[str, "The URI to send the request to."]) -> str:
@@ -99,6 +102,5 @@ class HttpPlugin(KernelBaseModel):
         """
         if not url:
             raise FunctionExecutionException("url cannot be `None` or empty")
-        async with aiohttp.ClientSession() as session:
-            async with session.delete(url, raise_for_status=True) as response:
-                return await response.text()
+        async with aiohttp.ClientSession() as session, session.delete(url, raise_for_status=True) as response:
+            return await response.text()

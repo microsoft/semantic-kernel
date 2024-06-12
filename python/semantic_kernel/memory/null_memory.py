@@ -16,7 +16,7 @@ class NullMemory(SemanticTextMemoryBase):
         additional_metadata: str | None = None,
     ) -> None:
         """Nullifies behavior of SemanticTextMemoryBase save_information."""
-        return None
+        return
 
     async def save_reference(
         self,
@@ -28,7 +28,7 @@ class NullMemory(SemanticTextMemoryBase):
         additional_metadata: str | None = None,
     ) -> None:
         """Nullifies behavior of SemanticTextMemoryBase save_reference."""
-        return None
+        return
 
     async def get(self, collection: str, query: str) -> MemoryQueryResult | None:
         """Nullifies behavior of SemanticTextMemoryBase get."""
