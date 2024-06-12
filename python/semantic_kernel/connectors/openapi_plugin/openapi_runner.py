@@ -163,8 +163,7 @@ class OpenApiRunner:
 
             if hasattr(self, "http_client") and self.http_client is not None:
                 return await make_request(self.http_client)
-            else:
-                async with httpx.AsyncClient() as client:
-                    return await make_request(client)
+            async with httpx.AsyncClient() as client:
+                return await make_request(client)
 
         return await fetch()

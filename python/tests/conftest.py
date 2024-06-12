@@ -129,9 +129,7 @@ def create_mock_function() -> Callable:
                 self.call_count += 1
                 context.result = FunctionResult(function=kernel_function_metadata, value=value, metadata={})
 
-        mock_function = CustomKernelFunction(metadata=kernel_function_metadata)
-
-        return mock_function
+        return CustomKernelFunction(metadata=kernel_function_metadata)
 
     return create_mock_function
 
@@ -288,7 +286,7 @@ def aca_python_sessions_unit_test_env(monkeypatch, exclude_list, override_env_pa
         override_env_param_dict = {}
 
     env_vars = {
-        "ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint/python/excute/",
+        "ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint/",
     }
 
     env_vars.update(override_env_param_dict)

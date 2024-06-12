@@ -68,7 +68,7 @@ class TextMemoryPlugin(KernelBaseModel):
             logger.warning(f"Memory not found in collection: {collection}")
             return ""
 
-        return results[0].text if limit == 1 else json.dumps([r.text for r in results])
+        return results[0].text if limit == 1 else json.dumps([r.text for r in results])  # type: ignore
 
     @kernel_function(
         description="Save information to semantic memory",

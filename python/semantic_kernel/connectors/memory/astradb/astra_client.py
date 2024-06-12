@@ -11,10 +11,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 ASTRA_CALLER_IDENTITY: str
 SEMANTIC_KERNEL_VERSION = APP_INFO.get("Semantic-Kernel-Version")
-if SEMANTIC_KERNEL_VERSION:
-    ASTRA_CALLER_IDENTITY = f"semantic-kernel/{SEMANTIC_KERNEL_VERSION}"
-else:
-    ASTRA_CALLER_IDENTITY = "semantic-kernel"
+ASTRA_CALLER_IDENTITY = f"semantic-kernel/{SEMANTIC_KERNEL_VERSION}" if SEMANTIC_KERNEL_VERSION else "semantic-kernel"
 
 
 @experimental_class
@@ -48,16 +45,16 @@ class AstraClient:
         self._session = session
 
     async def _run_query(self, request_url: str, query: dict):
-        async with AsyncSession(self._session) as session:
-            async with session.post(request_url, data=json.dumps(query), headers=self.request_header) as response:
-                if response.status == 200:
-                    response_dict = await response.json()
-                    if "errors" in response_dict:
-                        raise ServiceResponseException(f"Astra DB request error - {response_dict['errors']}")
-                    else:
-                        return response_dict
-                else:
-                    raise ServiceResponseException(f"Astra DB not available. Status : {response}")
+        async with (
+            AsyncSession(self._session) as session,
+            session.post(request_url, data=json.dumps(query), headers=self.request_header) as response,
+        ):
+            if response.status == 200:
+                response_dict = await response.json()
+                if "errors" in response_dict:
+                    raise ServiceResponseException(f"Astra DB request error - {response_dict['errors']}")
+                return response_dict
+            raise ServiceResponseException(f"Astra DB not available. Status : {response}")
 
     async def find_collections(self, include_detail: bool = True):
         """Finds all collections in the keyspace."""
@@ -94,13 +91,13 @@ class AstraClient:
             }
         }
         result = await self._run_query(self.request_base_url, query)
-        return True if result["status"]["ok"] == 1 else False
+        return result["status"]["ok"] == 1
 
     async def delete_collection(self, collection_name: str):
         """Deletes a collection from the keyspace."""
         query = {"deleteCollection": {"name": collection_name}}
         result = await self._run_query(self.request_base_url, query)
-        return True if result["status"]["ok"] == 1 else False
+        return result["status"]["ok"] == 1
 
     def _build_request_collection_url(self, collection_name: str):
         return f"{self.request_base_url}/{collection_name}"

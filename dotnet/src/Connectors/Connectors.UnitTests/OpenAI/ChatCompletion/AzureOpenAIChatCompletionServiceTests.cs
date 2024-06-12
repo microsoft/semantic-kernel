@@ -163,7 +163,18 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             TokenSelectionBiases = new Dictionary<int, int> { { 2, 3 } },
             StopSequences = ["stop_sequence"],
             Logprobs = true,
-            TopLogprobs = 5
+            TopLogprobs = 5,
+            AzureChatExtensionsOptions = new AzureChatExtensionsOptions
+            {
+                Extensions =
+                {
+                    new AzureSearchChatExtensionConfiguration
+                    {
+                        SearchEndpoint = new Uri("http://test-search-endpoint"),
+                        IndexName = "test-index-name"
+                    }
+                }
+            }
         };
 
         var chatHistory = new ChatHistory();
@@ -222,6 +233,14 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("stop_sequence", content.GetProperty("stop")[0].GetString());
         Assert.True(content.GetProperty("logprobs").GetBoolean());
         Assert.Equal(5, content.GetProperty("top_logprobs").GetInt32());
+
+        var dataSources = content.GetProperty("data_sources");
+        Assert.Equal(1, dataSources.GetArrayLength());
+        Assert.Equal("azure_search", dataSources[0].GetProperty("type").GetString());
+
+        var dataSourceParameters = dataSources[0].GetProperty("parameters");
+        Assert.Equal("http://test-search-endpoint/", dataSourceParameters.GetProperty("endpoint").GetString());
+        Assert.Equal("test-index-name", dataSourceParameters.GetProperty("index_name").GetString());
     }
 
     [Theory]

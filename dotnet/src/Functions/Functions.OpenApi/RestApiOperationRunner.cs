@@ -25,6 +25,21 @@ internal sealed class RestApiOperationRunner
     private const string DefaultResponseKey = "default";
 
     /// <summary>
+    /// HTTP request method.
+    /// </summary>
+    private const string HttpRequestMethod = "http.request.method";
+
+    /// <summary>
+    /// The HTTP request payload body.
+    /// </summary>
+    private const string HttpRequestBody = "http.request.body";
+
+    /// <summary>
+    /// Absolute URL describing a network resource according to RFC3986.
+    /// </summary>
+    private const string UrlFull = "url.full";
+
+    /// <summary>
     /// List of payload builders/factories.
     /// </summary>
     private readonly Dictionary<string, HttpContentFactory> _payloadFactoryByMediaType;
@@ -178,7 +193,7 @@ internal sealed class RestApiOperationRunner
         {
             using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-            var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage.Content).ConfigureAwait(false);
+            var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
 
             response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
@@ -186,9 +201,23 @@ internal sealed class RestApiOperationRunner
         }
         catch (HttpOperationException ex)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             ex.RequestMethod = requestMessage.Method.Method;
             ex.RequestUri = requestMessage.RequestUri;
             ex.RequestPayload = payload;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(HttpRequestBody, payload);
+
+            throw;
+        }
+        catch (KernelException ex)
+        {
+            ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(HttpRequestBody, payload);
 
             throw;
         }
@@ -199,11 +228,21 @@ internal sealed class RestApiOperationRunner
     /// </summary>
     /// <param name="request">The HttpRequestMessage associated with the HTTP request.</param>
     /// <param name="payload">The payload sent in the HTTP request.</param>
-    /// <param name="content">The HttpContent object containing the response content to be serialized.</param>
+    /// <param name="responseMessage">The HttpResponseMessage object containing the response content to be serialized.</param>
     /// <returns>The serialized content.</returns>
-    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpRequestMessage request, object? payload, HttpContent content)
+    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpRequestMessage request, object? payload, HttpResponseMessage responseMessage)
     {
-        var contentType = content.Headers.ContentType;
+        if (responseMessage.StatusCode == HttpStatusCode.NoContent)
+        {
+            return new RestApiOperationResponse(null, null)
+            {
+                RequestMethod = request.Method.Method,
+                RequestUri = request.RequestUri,
+                RequestPayload = payload,
+            };
+        }
+
+        var contentType = responseMessage.Content.Headers.ContentType;
 
         var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
 
@@ -227,7 +266,7 @@ internal sealed class RestApiOperationRunner
         }
 
         // Serialize response content and return it
-        var serializedContent = await serializer.Invoke(content).ConfigureAwait(false);
+        var serializedContent = await serializer.Invoke(responseMessage.Content).ConfigureAwait(false);
 
         return new RestApiOperationResponse(serializedContent, contentType!.ToString())
         {

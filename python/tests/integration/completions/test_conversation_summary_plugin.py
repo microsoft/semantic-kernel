@@ -6,9 +6,7 @@ from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.core_plugins.conversation_summary_plugin import (
-    ConversationSummaryPlugin,
-)
+from semantic_kernel.core_plugins.conversation_summary_plugin import ConversationSummaryPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -23,15 +21,14 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
         service_id=service_id, max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5
     )
     prompt_template_config = PromptTemplateConfig(
-        template=ConversationSummaryPlugin._summarize_conversation_prompt_template,
-        description="Given a section of a conversation transcript, summarize the part of" " the conversation.",
+        description="Given a section of a conversation transcript, summarize the part of the conversation.",
         execution_settings=execution_settings,
     )
 
     kernel.add_service(sk_oai.AzureTextCompletion(service_id=service_id))
 
     conversationSummaryPlugin = kernel.add_plugin(
-        ConversationSummaryPlugin(kernel, prompt_template_config), "conversationSummary"
+        ConversationSummaryPlugin(prompt_template_config), "conversationSummary"
     )
 
     arguments = KernelArguments(input=chatTranscript)
@@ -55,14 +52,14 @@ async def test_oai_summarize_conversation_using_plugin(
     )
     prompt_template_config = PromptTemplateConfig(
         template=ConversationSummaryPlugin._summarize_conversation_prompt_template,
-        description="Given a section of a conversation transcript, summarize the part of" " the conversation.",
+        description="Given a section of a conversation transcript, summarize the part of the conversation.",
         execution_settings=execution_settings,
     )
 
     kernel.add_service(sk_oai.OpenAITextCompletion(service_id="conversation_summary"))
 
     conversationSummaryPlugin = kernel.add_plugin(
-        ConversationSummaryPlugin(kernel, prompt_template_config), "conversationSummary"
+        ConversationSummaryPlugin(prompt_template_config), "conversationSummary"
     )
 
     arguments = KernelArguments(input=chatTranscript)
