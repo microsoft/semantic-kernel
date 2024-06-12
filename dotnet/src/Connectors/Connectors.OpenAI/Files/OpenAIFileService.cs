@@ -109,11 +109,22 @@ public sealed class OpenAIFileService
     /// <remarks>
     /// Files uploaded with <see cref="OpenAIFilePurpose.Assistants"/> do not support content retrieval.
     /// </remarks>
-    public BinaryContent GetFileContent(string id, CancellationToken cancellationToken = default)
+    public async Task<BinaryContent> GetFileContentAsync(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
+        var (stream, mimetype) = await this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken).ConfigureAwait(false);
 
-        return new BinaryContent(() => this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken));
+        using (stream)
+        {
+            using var memoryStream = new MemoryStream();
+#if NETSTANDARD2_0
+            const int DefaultCopyBufferSize = 81920;
+            await stream.CopyToAsync(memoryStream, DefaultCopyBufferSize, cancellationToken).ConfigureAwait(false);
+#else
+            await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+#endif
+            return new BinaryContent(memoryStream.ToArray(), mimetype);
+        }
     }
 
     /// <summary>
@@ -153,11 +164,11 @@ public sealed class OpenAIFileService
     public async Task<OpenAIFileReference> UploadContentAsync(BinaryContent fileContent, OpenAIFileUploadExecutionSettings settings, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(settings, nameof(settings));
+        Verify.NotNull(fileContent.Data, nameof(fileContent.Data));
 
         using var formData = new MultipartFormDataContent();
         using var contentPurpose = new StringContent(this.ConvertPurpose(settings.Purpose));
-        using var contentStream = await fileContent.GetStreamAsync().ConfigureAwait(false);
-        using var contentFile = new StreamContent(contentStream);
+        using var contentFile = new ByteArrayContent(fileContent.Data.Value.ToArray());
         formData.Add(contentPurpose, "purpose");
         formData.Add(contentFile, "file", settings.FileName);
 
@@ -191,7 +202,7 @@ public sealed class OpenAIFileService
             };
     }
 
-    private async Task<Stream> StreamGetRequestAsync(string url, CancellationToken cancellationToken)
+    private async Task<(Stream Stream, string? MimeType)> StreamGetRequestAsync(string url, CancellationToken cancellationToken)
     {
         using var request = HttpRequest.CreateGetRequest(this.PrepareUrl(url));
         this.AddRequestHeaders(request);
@@ -199,9 +210,10 @@ public sealed class OpenAIFileService
         try
         {
             return
-                new HttpResponseStream(
+                (new HttpResponseStream(
                     await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false),
-                    response);
+                    response),
+                    response.Content.Headers.ContentType?.MediaType);
         }
         catch
         {
