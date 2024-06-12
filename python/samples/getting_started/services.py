@@ -1,5 +1,6 @@
-"""This module defines an enumeration representing different services.
-"""
+# Copyright (c) Microsoft. All rights reserved.
+
+"""This module defines an enumeration representing different services."""
 
 from enum import Enum
 

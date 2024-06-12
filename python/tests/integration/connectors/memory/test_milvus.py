@@ -9,7 +9,7 @@ from semantic_kernel.connectors.memory.milvus import MilvusMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    from milvus import default_server  # noqa: F401
+    from milvus import default_server
 
     milvus_installed = True
 except ImportError:

@@ -67,8 +67,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             CollectionInfo -- Collection Information from Qdrant about collection.
         """
-        collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
-        return collection_info
+        return self._qdrantclient.get_collection(collection_name=collection_name)
 
     @override
     async def delete_collection(self, collection_name: str) -> None:
@@ -96,8 +95,7 @@ class QdrantMemoryStore(MemoryStoreBase):
 
         if result.status == qdrant_models.UpdateStatus.COMPLETED:
             return data_to_upsert.id
-        else:
-            raise ServiceResponseException("Upsert failed")
+        raise ServiceResponseException("Upsert failed")
 
     @override
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
@@ -119,8 +117,7 @@ class QdrantMemoryStore(MemoryStoreBase):
 
         if result.status == qdrant_models.UpdateStatus.COMPLETED:
             return [data.id for data in data_to_upsert]
-        else:
-            raise ServiceResponseException("Batch upsert failed")
+        raise ServiceResponseException("Batch upsert failed")
 
     @override
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord | None:
@@ -142,8 +139,7 @@ class QdrantMemoryStore(MemoryStoreBase):
                 key=result.id,
                 timestamp=result.payload["_timestamp"],
             )
-        else:
-            return None
+        return None
 
     @override
     async def get_batch(
@@ -287,8 +283,7 @@ class QdrantMemoryStore(MemoryStoreBase):
 
         if existing_record:
             return existing_record[0]
-        else:
-            return None
+        return None
 
     async def _convert_from_memory_record(
         self, collection_name: str, record: MemoryRecord
@@ -302,10 +297,7 @@ class QdrantMemoryStore(MemoryStoreBase):
                 payload_id=record._id,
             )
 
-            if existing_record:
-                pointId = str(existing_record.id)
-            else:
-                pointId = str(uuid.uuid4())
+            pointId = str(existing_record.id) if existing_record else str(uuid.uuid4())
 
         payload = record.__dict__.copy()
         embedding = payload.pop("_embedding")

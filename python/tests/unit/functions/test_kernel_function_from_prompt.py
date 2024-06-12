@@ -9,6 +9,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion impo
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -161,14 +162,16 @@ async def test_invoke_chat_stream(openai_unit_test_env):
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_chat_message_contents"
     ) as mock:
-        mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
+        mock.return_value = [ChatMessageContent(role=AuthorRole.ASSISTANT, content="test", metadata={})]
         result = await function.invoke(kernel=kernel)
         assert str(result) == "test"
 
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_streaming_chat_message_contents"
     ) as mock:
-        mock.return_value = [StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})]
+        mock.return_value = [
+            StreamingChatMessageContent(choice_index=0, role=AuthorRole.ASSISTANT, content="test", metadata={})
+        ]
         async for result in function.invoke_stream(kernel=kernel):
             assert str(result) == "test"
 
@@ -187,7 +190,7 @@ async def test_invoke_exception(openai_unit_test_env):
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_chat_message_contents",
         side_effect=Exception,
     ) as mock:
-        mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
+        mock.return_value = [ChatMessageContent(role=AuthorRole.ASSISTANT, content="test", metadata={})]
         with pytest.raises(Exception, match="test"):
             await function.invoke(kernel=kernel)
 
@@ -195,7 +198,9 @@ async def test_invoke_exception(openai_unit_test_env):
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_streaming_chat_message_contents",
         side_effect=Exception,
     ) as mock:
-        mock.return_value = [StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})]
+        mock.return_value = [
+            StreamingChatMessageContent(choice_index=0, role=AuthorRole.ASSISTANT, content="test", metadata={})
+        ]
         with pytest.raises(Exception):
             async for result in function.invoke_stream(kernel=kernel):
                 assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], Exception)
@@ -270,7 +275,7 @@ async def test_invoke_defaults(openai_unit_test_env):
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_chat_message_contents"
     ) as mock:
-        mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
+        mock.return_value = [ChatMessageContent(role=AuthorRole.ASSISTANT, content="test", metadata={})]
         result = await function.invoke(kernel=kernel)
         assert str(result) == "test"
 
@@ -313,7 +318,7 @@ async def test_create_with_multiple_settings_one_service_registered(openai_unit_
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_chat_message_contents"
     ) as mock:
-        mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
+        mock.return_value = [ChatMessageContent(role=AuthorRole.ASSISTANT, content="test", metadata={})]
         result = await function.invoke(kernel=kernel)
         assert str(result) == "test"
 

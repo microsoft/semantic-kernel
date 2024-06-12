@@ -1,11 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
+import re
 import uuid
 from enum import Enum
 from typing import ClassVar
+from urllib.parse import urlsplit, urlunsplit
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseModel, KernelBaseSettings
 
@@ -45,3 +46,17 @@ class ACASessionsSettings(KernelBaseSettings):
     env_prefix: ClassVar[str] = "ACA_"
 
     pool_management_endpoint: HttpsUrl
+
+    @field_validator("pool_management_endpoint", mode="before")
+    @classmethod
+    def _validate_endpoint(cls, endpoint: str) -> str:
+        """Validates the pool management endpoint."""
+        if "python/execute" in endpoint:
+            endpoint_parsed = urlsplit(endpoint.replace("python/execute", ""))._asdict()
+        else:
+            endpoint_parsed = urlsplit(endpoint)._asdict()
+        if endpoint_parsed["path"]:
+            endpoint_parsed["path"] = re.sub("/{2,}", "/", endpoint_parsed["path"])
+        else:
+            endpoint_parsed["path"] = "/"
+        return str(urlunsplit(endpoint_parsed.values()))

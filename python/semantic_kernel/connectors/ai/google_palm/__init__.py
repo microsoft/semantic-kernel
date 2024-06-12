@@ -15,9 +15,9 @@ from semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding import
 )
 
 __all__ = [
-    "GooglePalmTextCompletion",
     "GooglePalmChatCompletion",
-    "GooglePalmTextEmbedding",
     "GooglePalmChatPromptExecutionSettings",
+    "GooglePalmTextCompletion",
+    "GooglePalmTextEmbedding",
     "GooglePalmTextPromptExecutionSettings",
 ]

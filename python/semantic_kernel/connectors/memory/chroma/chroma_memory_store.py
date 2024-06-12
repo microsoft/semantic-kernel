@@ -65,7 +65,7 @@ class ChromaMemoryStore(MemoryStoreBase):
 
         except ImportError as exc:
             raise ServiceInitializationError(
-                "Could not import chromadb python package. " "Please install it with `pip install chromadb`."
+                "Could not import chromadb python package. Please install it with `pip install chromadb`."
             ) from exc
 
         if client_settings:
@@ -131,10 +131,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         Returns:
             bool: True if the collection exists; otherwise, False.
         """
-        if await self.get_collection(collection_name) is None:
-            return False
-        else:
-            return True
+        return await self.get_collection(collection_name) is not None
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upsert a single MemoryRecord.
@@ -219,8 +216,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         query_includes = ["embeddings", "metadatas", "documents"] if with_embeddings else ["metadatas", "documents"]
 
         value = collection.get(ids=keys, include=query_includes)
-        record = query_results_to_records(value, with_embeddings)
-        return record
+        return query_results_to_records(value, with_embeddings)
 
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
@@ -312,9 +308,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         )
 
         filtered_results = [x for x in sorted_results if x[1] >= min_relevance_score]
-        top_results = filtered_results[:limit]
-
-        return top_results
+        return filtered_results[:limit]
 
     async def get_nearest_match(
         self,

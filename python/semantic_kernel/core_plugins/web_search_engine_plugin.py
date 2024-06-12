@@ -27,12 +27,12 @@ class WebSearchEnginePlugin:
         """Initializes a new instance of the WebSearchEnginePlugin class."""
         self._connector = connector
 
-    @kernel_function(description="Performs a web search for a given query")
+    @kernel_function(name="search", description="Performs a web search for a given query")
     async def search(
         self,
         query: Annotated[str, "The search query"],
-        num_results: Annotated[int | None, "The number of search results to return"] = 1,
-        offset: Annotated[int | None, "The number of search results to skip"] = 0,
+        num_results: Annotated[int, "The number of search results to return"] = 1,
+        offset: Annotated[int, "The number of search results to skip"] = 0,
     ) -> list[str]:
         """Returns the search results of the query provided."""
         return await self._connector.search(query, num_results, offset)
