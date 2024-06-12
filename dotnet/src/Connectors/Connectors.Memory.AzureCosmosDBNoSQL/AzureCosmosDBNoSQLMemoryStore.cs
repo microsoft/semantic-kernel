@@ -139,6 +139,13 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                 be specified as {nameof(DistanceFunction)}.{nameof(DistanceFunction.Cosine)}.
                 """);
         }
+        else if (embedding.DataType != VectorDataType.Float16 && embedding.DataType != VectorDataType.Float32)
+        {
+            throw new NotSupportedException($"""
+                Only {nameof(VectorDataType)}.{nameof(VectorDataType.Float16)} and {nameof(VectorDataType)}.{nameof(VectorDataType.Float32)}
+                are supported.
+                """);
+        }
         this._cosmosClient = cosmosClient;
         this._databaseName = databaseName;
         this._vectorEmbeddingPolicy = vectorEmbeddingPolicy;
