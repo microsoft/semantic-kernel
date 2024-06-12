@@ -23,8 +23,13 @@ public class MethodFunctions_Yaml(ITestOutputHelper output) : BaseTest(output)
     /// <summary>
     /// This example create a plugin and uses a separate configuration file for the function metadata.
     /// </summary>
+    /// <remarks>
+    /// Some reasons you would want to do this:
+    /// 1. It's not possible to modify the existing code to add the KernelFunction attribute.
+    /// 2. You want to keep the function metadata separate from the function implementation.
+    /// </remarks>
     [Fact]
-    public async Task CreateFunctionFromMethodWithYamlAsync()
+    public async Task CreateFunctionFromMethodWithYamlConfigAsync()
     {
         var kernel = new Kernel();
 
