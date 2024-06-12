@@ -49,7 +49,7 @@ async def test_oai_chat_service_with_tool_call(setup_tldr_function_for_oai_model
     kernel.add_service(
         sk_oai.OpenAIChatCompletion(
             service_id="chat-gpt",
-            ai_model_id="gpt-3.5-turbo-1106",
+            ai_model_id="gpt-3.5-turbo",
         ),
     )
 
@@ -88,7 +88,7 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
     kernel.add_service(
         sk_oai.OpenAIChatCompletion(
             service_id="chat-gpt",
-            ai_model_id="gpt-3.5-turbo-1106",
+            ai_model_id="gpt-3.5-turbo",
         ),
     )
 

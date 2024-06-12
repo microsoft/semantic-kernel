@@ -11,7 +11,7 @@ from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 kernel = Kernel()
 
 useAzureOpenAI = False
-model = "gpt-35-turbo" if useAzureOpenAI else "gpt-3.5-turbo-1106"
+model = "gpt-35-turbo" if useAzureOpenAI else "gpt-3.5-turbo"
 service_id = model
 
 kernel.add_service(
