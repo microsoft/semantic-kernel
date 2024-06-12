@@ -78,14 +78,22 @@ class BingConnector(ConnectorBase):
 
         headers = {"Ocp-Apim-Subscription-Key": self._settings.api_key.get_secret_value()}
 
-        async with (
-            aiohttp.ClientSession() as session,
-            session.get(_request_url, headers=headers, raise_for_status=True) as response,
-        ):
-            if response.status == 200:
-                data = await response.json()
-                pages = data.get("webPages", {}).get("value")
-                if pages:
-                    return list(map(lambda x: x["snippet"], pages)) or []
-                return None
-            return []
+        try:
+            async with aiohttp.ClientSession() as session, session.get(_request_url, headers=headers) as response:
+                response.raise_for_status()
+                if response.status == 200:
+                    data = await response.json()
+                    pages = data.get("webPages", {}).get("value")
+                    if pages:
+                        return list(map(lambda x: x["snippet"], pages)) or []
+                    return None
+                return []
+        except aiohttp.ClientResponseError as ex:
+            logger.error(f"Failed to get search results: {ex}")
+            raise ServiceInvalidRequestError("Failed to get search results.") from ex
+        except aiohttp.ClientError as ex:
+            logger.error(f"Client error occurred: {ex}")
+            raise ServiceInvalidRequestError("A client error occurred while getting search results.") from ex
+        except Exception as ex:
+            logger.error(f"An unexpected error occurred: {ex}")
+            raise ServiceInvalidRequestError("An unexpected error occurred while getting search results.") from ex

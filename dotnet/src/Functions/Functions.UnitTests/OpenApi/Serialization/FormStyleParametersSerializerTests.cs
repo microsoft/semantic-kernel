@@ -75,7 +75,7 @@ public class FormStyleParametersSerializerTests
     }
 
     [Fact]
-    public void ItShouldCreateParameterForStringValue()
+    public void ItShouldCreateParameterForDateTimeValue()
     {
         // Arrange
         var parameter = new RestApiOperationParameter(
@@ -93,6 +93,28 @@ public class FormStyleParametersSerializerTests
         Assert.NotNull(result);
 
         Assert.Equal("id=2023-12-06T11%3a53%3a36Z", result);
+    }
+
+    [Theory]
+    [InlineData("2024-01-01T00:00:00+00:00", "2024-01-01T00%3a00%3a00%2b00%3a00")]
+    public void ItShouldCreateParameterForStringValue(string value, string encodedValue)
+    {
+        // Arrange
+        var parameter = new RestApiOperationParameter(
+                name: "id",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form);
+
+        // Act
+        var result = FormStyleParameterSerializer.Serialize(parameter, JsonValue.Create(value));
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Equal($"id={encodedValue}", result);
     }
 
     [Theory]
