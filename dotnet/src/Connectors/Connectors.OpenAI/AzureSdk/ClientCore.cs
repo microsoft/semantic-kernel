@@ -1610,10 +1610,10 @@ internal abstract class ClientCore
 
         if (config.Choice == FunctionChoice.Auto)
         {
-            chatOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
-
-            if (config.Functions is { } functions)
+            if (config.Functions is { Count: > 0 } functions)
             {
+                chatOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
+
                 foreach (var function in functions)
                 {
                     var functionDefinition = function.Metadata.ToOpenAIFunction().ToFunctionDefinition();
@@ -1644,10 +1644,10 @@ internal abstract class ClientCore
 
         if (config.Choice == FunctionChoice.None)
         {
-            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
-
-            if (config.Functions is { } functions)
+            if (config.Functions is { Count: > 0 } functions)
             {
+                chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+
                 foreach (var function in functions)
                 {
                     var functionDefinition = function.Metadata.ToOpenAIFunction().ToFunctionDefinition();
