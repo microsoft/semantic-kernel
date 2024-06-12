@@ -25,17 +25,15 @@ from semantic_kernel.functions import KernelArguments, KernelFunction, KernelPlu
 def get_file_url(relative_path):
     absolute_path = os.path.abspath(relative_path)
     if platform.system() == "Windows":
-        return f"file:///{absolute_path.replace('\\', '/')}"
+        backslash_char = "\\"
+        return f"file:///{absolute_path.replace(backslash_char, '/')}"
     return f"file://{absolute_path}"
 
 
 def load_and_update_openai_spec():
     # Construct the path to the OpenAI spec file
     openai_spec_file = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
-        "resources", 
-        "open_ai_plugins", 
-        "akv-openai.json"
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "open_ai_plugins", "akv-openai.json"
     )
 
     # Read the OpenAI spec file
@@ -44,10 +42,7 @@ def load_and_update_openai_spec():
 
     # Adjust the OpenAI spec file to use the correct file URL based on platform
     openapi_yaml_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
-        "resources", 
-        "open_ai_plugins", 
-        "akv-openapi.yaml"
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "open_ai_plugins", "akv-openapi.yaml"
     )
     openai_spec["api"]["url"] = get_file_url(openapi_yaml_path)
 
@@ -71,6 +66,7 @@ def print_tool_calls(message: ChatMessageContent) -> None:
             )
             formatted_tool_calls.append(formatted_str)
     print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+
 
 # endregion
 
@@ -137,6 +133,7 @@ class OpenAIAuthenticationProvider:
         auth_header = f"{scheme} {credential}"
         return {"Authorization": auth_header}
 
+
 # endregion
 
 # region AKV Plugin Functions
@@ -168,6 +165,7 @@ async def get_secret_from_key_vault(kernel: Kernel, plugin: KernelPlugin):
     )
 
     print(f"Secret retrieved from Key Vault: {result}")
+
 
 # endregion
 
