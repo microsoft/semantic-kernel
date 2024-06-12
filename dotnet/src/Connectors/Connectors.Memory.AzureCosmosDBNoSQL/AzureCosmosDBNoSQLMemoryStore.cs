@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// </summary>
 public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 {
-    private const string EMBEDDING_PATH = "/embedding";
+    private const string EmbeddingPath = "/embedding";
 
     private readonly CosmosClient _cosmosClient;
     private readonly VectorEmbeddingPolicy _vectorEmbeddingPolicy;
@@ -63,7 +63,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                         DataType = vectorDataType,
                         Dimensions = dimensions,
                         DistanceFunction = DistanceFunction.Cosine,
-                        Path = EMBEDDING_PATH,
+                        Path = EmbeddingPath,
                     }
                 ]),
             new IndexingPolicy
@@ -71,7 +71,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                 VectorIndexes = new Collection<VectorIndexPath> {
                     new()
                     {
-                        Path = EMBEDDING_PATH,
+                        Path = EmbeddingPath,
                         Type = vectorIndexType,
                     },
                 },
@@ -123,12 +123,12 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         VectorEmbeddingPolicy vectorEmbeddingPolicy,
         IndexingPolicy indexingPolicy)
     {
-        var embedding = vectorEmbeddingPolicy.Embeddings.FirstOrDefault(e => e.Path == EMBEDDING_PATH);
+        var embedding = vectorEmbeddingPolicy.Embeddings.FirstOrDefault(e => e.Path == EmbeddingPath);
         if (embedding is null)
         {
             throw new InvalidOperationException($"""
                 In order for {nameof(GetNearestMatchAsync)} to function, {nameof(vectorEmbeddingPolicy)} should
-                contain an embedding path at {EMBEDDING_PATH}. It's also recommended to include that path in the
+                contain an embedding path at {EmbeddingPath}. It's also recommended to include that path in the
                 {nameof(indexingPolicy)} to improve performance and reduce cost for searches.
                 """);
         }
