@@ -37,7 +37,7 @@ def load_and_update_openai_spec():
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
         "resources",
         "open_ai_plugins",
-        "akv-openai.json"
+        "akv-openai.json",
     )
 
     # Read the OpenAI spec file
@@ -49,7 +49,7 @@ def load_and_update_openai_spec():
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
         "resources",
         "open_ai_plugins",
-        "akv-openapi.yaml"
+        "akv-openapi.yaml",
     )
     openai_spec["api"]["url"] = get_file_url(openapi_yaml_path)
 
@@ -73,6 +73,7 @@ def print_tool_calls(message: ChatMessageContent) -> None:
             )
             formatted_tool_calls.append(formatted_str)
     print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+
 
 # endregion
 
@@ -139,6 +140,7 @@ class OpenAIAuthenticationProvider:
         auth_header = f"{scheme} {credential}"
         return {"Authorization": auth_header}
 
+
 # endregion
 
 # region AKV Plugin Functions
@@ -170,6 +172,7 @@ async def get_secret_from_key_vault(kernel: Kernel, plugin: KernelPlugin):
     )
 
     print(f"Secret retrieved from Key Vault: {result}")
+
 
 # endregion
 
