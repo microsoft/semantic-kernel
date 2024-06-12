@@ -13,15 +13,18 @@ async def main():
 
     service_id = "default"
     chat_service = OpenAIChatCompletion(
-        ai_model_id="gpt-4-0613",
+        ai_model_id="gpt-3.5-turbo-1106",
         service_id=service_id,
     )
     kernel.add_service(chat_service)
 
     chat_history = ChatHistory(system_message="Assistant is a large language model")
 
-    cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources")
-    plugin = kernel.add_plugin(plugin_name="sample_plugins", parent_directory=cur_dir)
+    plugin_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
+        "resources", 
+    )
+    plugin = kernel.add_plugin(plugin_name="sample_plugins", parent_directory=plugin_path)
 
     result = await kernel.invoke(plugin["Parrot"], count=2, user_message="I love parrots.", chat_history=chat_history)
     print(result)

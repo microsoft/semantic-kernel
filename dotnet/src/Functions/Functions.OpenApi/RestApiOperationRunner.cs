@@ -193,7 +193,7 @@ internal sealed class RestApiOperationRunner
         {
             using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-            var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage.Content).ConfigureAwait(false);
+            var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
 
             response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
@@ -228,11 +228,21 @@ internal sealed class RestApiOperationRunner
     /// </summary>
     /// <param name="request">The HttpRequestMessage associated with the HTTP request.</param>
     /// <param name="payload">The payload sent in the HTTP request.</param>
-    /// <param name="content">The HttpContent object containing the response content to be serialized.</param>
+    /// <param name="responseMessage">The HttpResponseMessage object containing the response content to be serialized.</param>
     /// <returns>The serialized content.</returns>
-    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpRequestMessage request, object? payload, HttpContent content)
+    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpRequestMessage request, object? payload, HttpResponseMessage responseMessage)
     {
-        var contentType = content.Headers.ContentType;
+        if (responseMessage.StatusCode == HttpStatusCode.NoContent)
+        {
+            return new RestApiOperationResponse(null, null)
+            {
+                RequestMethod = request.Method.Method,
+                RequestUri = request.RequestUri,
+                RequestPayload = payload,
+            };
+        }
+
+        var contentType = responseMessage.Content.Headers.ContentType;
 
         var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
 
@@ -256,7 +266,7 @@ internal sealed class RestApiOperationRunner
         }
 
         // Serialize response content and return it
-        var serializedContent = await serializer.Invoke(content).ConfigureAwait(false);
+        var serializedContent = await serializer.Invoke(responseMessage.Content).ConfigureAwait(false);
 
         return new RestApiOperationResponse(serializedContent, contentType!.ToString())
         {
