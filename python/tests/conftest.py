@@ -3,12 +3,15 @@
 import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
-    from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+    from semantic_kernel.filters.functions.function_invocation_context import (
+        FunctionInvocationContext,
+    )
     from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
@@ -42,7 +45,9 @@ def kernel_with_service(kernel: "Kernel", service: "AIServiceClientBase") -> "Ke
 
 
 @pytest.fixture(scope="function")
-def kernel_with_default_service(kernel: "Kernel", default_service: "AIServiceClientBase") -> "Kernel":
+def kernel_with_default_service(
+    kernel: "Kernel", default_service: "AIServiceClientBase"
+) -> "Kernel":
     kernel.add_service(default_service)
     return kernel
 
@@ -97,7 +102,9 @@ def create_mock_function() -> Callable:
     from semantic_kernel.contents.streaming_text_content import StreamingTextContent
     from semantic_kernel.functions.function_result import FunctionResult
     from semantic_kernel.functions.kernel_function import KernelFunction
-    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+    from semantic_kernel.functions.kernel_function_metadata import (
+        KernelFunctionMetadata,
+    )
 
     async def stream_func(*args, **kwargs):
         yield [StreamingTextContent(choice_index=0, text="test", metadata={})]
@@ -127,7 +134,9 @@ def create_mock_function() -> Callable:
 
             async def _invoke_internal(self, context: "FunctionInvocationContext"):
                 self.call_count += 1
-                context.result = FunctionResult(function=kernel_function_metadata, value=value, metadata={})
+                context.result = FunctionResult(
+                    function=kernel_function_metadata, value=value, metadata={}
+                )
 
         return CustomKernelFunction(metadata=kernel_function_metadata)
 
@@ -277,7 +286,9 @@ def google_palm_unit_test_env(monkeypatch, exclude_list, override_env_param_dict
 
 
 @pytest.fixture()
-def aca_python_sessions_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+def aca_python_sessions_unit_test_env(
+    monkeypatch, exclude_list, override_env_param_dict
+):
     """Fixture to set environment variables for ACA Python Unit Tests."""
     if exclude_list is None:
         exclude_list = []
@@ -327,7 +338,9 @@ def azure_ai_search_unit_test_env(monkeypatch, exclude_list, override_env_param_
 
 
 @pytest.fixture()
-def azure_ai_inference_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+def azure_ai_inference_unit_test_env(
+    monkeypatch, exclude_list, override_env_param_dict
+):
     """Fixture to set environment variables for Azure AI Inference Unit Tests."""
     if exclude_list is None:
         exclude_list = []
@@ -349,3 +362,51 @@ def azure_ai_inference_unit_test_env(monkeypatch, exclude_list, override_env_par
             monkeypatch.delenv(key, raising=False)
 
     return env_vars
+
+
+@pytest.fixture()
+def azure_ai_inference_service(azure_ai_inference_unit_test_env, request):
+    """Fixture to create Azure AI Inference service for unit tests.
+
+    This is required because the Azure AI Inference services require a client to be created,
+    and the client will be talking to the endpoint at creation time.
+    """
+    from azure.ai.inference.aio import ChatCompletionsClient, EmbeddingsClient
+    from azure.ai.inference.models import ModelInfo, ModelType
+    from azure.core.credentials import AzureKeyCredential
+
+    from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
+        AzureAIInferenceChatCompletion,
+    )
+    from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_text_embedding import (
+        AzureAIInferenceTextEmbedding,
+    )
+
+    endpoint = azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_ENDPOINT"]
+    api_key = azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_API_KEY"]
+    credential = AzureKeyCredential(api_key)
+
+    if request.param == AzureAIInferenceChatCompletion.__name__:
+        with patch.object(
+            AzureAIInferenceChatCompletion, "_create_client"
+        ) as mock_create_client:
+            mock_client = ChatCompletionsClient(
+                endpoint=endpoint, credential=credential
+            )
+            mock_model_info = ModelInfo(
+                model_name="test_model_id", model_type=ModelType.CHAT
+            )
+            mock_create_client.return_value = (mock_client, mock_model_info)
+            return AzureAIInferenceChatCompletion(api_key=api_key, endpoint=endpoint)
+    if request.param == AzureAIInferenceTextEmbedding.__name__:
+        with patch.object(
+            AzureAIInferenceTextEmbedding, "_create_client"
+        ) as mock_create_client:
+            mock_client = EmbeddingsClient(endpoint=endpoint, credential=credential)
+            mock_model_info = ModelInfo(
+                model_name="test_model_id", model_type=ModelType.EMBEDDINGS
+            )
+            mock_create_client.return_value = (mock_client, mock_model_info)
+            return AzureAIInferenceTextEmbedding(api_key=api_key, endpoint=endpoint)
+
+    raise ValueError(f"Service {request.param} not supported.")

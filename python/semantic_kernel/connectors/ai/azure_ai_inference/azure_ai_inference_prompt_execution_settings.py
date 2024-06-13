@@ -33,3 +33,5 @@ class AzureAIInferenceEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     dimensions: int = Field(1024, gt=0)
     encoding_format: str = "json"
     input_type: str = "text"
+    # `extra_parameters` is a dictionary to pass additional model-specific parameters to the model.
+    extra_parameters: dict[str, str] | None = None

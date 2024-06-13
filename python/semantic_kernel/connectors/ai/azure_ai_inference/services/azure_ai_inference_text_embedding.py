@@ -85,6 +85,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase):
             dimensions=settings.dimensions if settings else None,
             encoding_format=settings.encoding_format if settings else None,
             input_type=settings.input_type if settings else None,
+            kwargs=kwargs,
         )
 
         return array([item.embedding for item in response.data])
