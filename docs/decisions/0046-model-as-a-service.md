@@ -1,4 +1,4 @@
-﻿---
+---
 # These are optional elements. Feel free to remove any of them.
 status: { proposed }
 contact: { rogerbarreto, taochen }
@@ -22,7 +22,7 @@ The Azure team will be providing a new client library, namely `Azure.AI.Inferenc
 
 ### Limitations
 
-The initial release of the client SDK will only support chat completion and embedding generation, with image generation to be added later.
+The initial release of the client SDK will only support chat completion and text/image embedding generation, with image generation to be added later.
 
 Plans to support for text completion are currently unclear, and it is highly unlikely that the SDK will ever include support for text completion.
 
@@ -34,6 +34,7 @@ TODO: Should we add support for text completion in SK by skipping the client SDK
 
 - Azure
 - AzureAI
+- AzureAIInference
 - AzureAIModelInference
 
 ### Support for model-specific parameters
