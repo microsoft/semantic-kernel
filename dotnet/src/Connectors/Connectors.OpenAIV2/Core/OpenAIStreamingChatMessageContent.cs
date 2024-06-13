@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -18,7 +20,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     /// <summary>
     /// The reason why the completion finished.
     /// </summary>
-    public CompletionsFinishReason? FinishReason { get; set; }
+    public ChatFinishReason? FinishReason { get; set; }
 
     /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
@@ -28,20 +30,20 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
     internal OpenAIStreamingChatMessageContent(
-        StreamingChatCompletionsUpdate chatUpdate,
+        StreamingChatCompletionUpdate chatUpdate,
         int choiceIndex,
         string modelId,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
             chatUpdate.Role.HasValue ? new AuthorRole(chatUpdate.Role.Value.ToString()) : null,
-            chatUpdate.ContentUpdate,
+            chatUpdate.ContentUpdate.FirstOrDefault(p => p.Kind == ChatMessageContentPartKind.Text)?.Text,
             chatUpdate,
             choiceIndex,
             modelId,
             Encoding.UTF8,
             metadata)
     {
-        this.ToolCallUpdate = chatUpdate.ToolCallUpdate;
+        this.ToolCallUpdate = chatUpdate.ToolCallUpdates;
         this.FinishReason = chatUpdate?.FinishReason;
     }
 
@@ -58,8 +60,8 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     internal OpenAIStreamingChatMessageContent(
         AuthorRole? authorRole,
         string? content,
-        StreamingToolCallUpdate? tootToolCallUpdate = null,
-        CompletionsFinishReason? completionsFinishReason = null,
+        StreamingChatToolCallUpdate? tootToolCallUpdate = null,
+        ChatFinishReason? completionsFinishReason = null,
         int choiceIndex = 0,
         string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
@@ -77,7 +79,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     }
 
     /// <summary>Gets any update information in the message about a tool call.</summary>
-    public StreamingToolCallUpdate? ToolCallUpdate { get; }
+    public StreamingChatToolCallUpdate? ToolCallUpdate { get; }
 
     /// <inheritdoc/>
     public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());

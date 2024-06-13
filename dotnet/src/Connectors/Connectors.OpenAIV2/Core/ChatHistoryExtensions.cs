@@ -62,7 +62,7 @@ public static class ChatHistoryExtensions
                     role,
                     contentBuilder?.ToString() ?? string.Empty,
                     messageContents[0].ModelId!,
-                    OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
+                    OpenAIFunctionToolCall.ConvertToolCallsToChatToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
                     metadata)
                 { AuthorName = streamedName });
         }

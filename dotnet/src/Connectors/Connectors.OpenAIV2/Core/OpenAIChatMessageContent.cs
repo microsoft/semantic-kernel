@@ -15,26 +15,19 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class OpenAIChatMessageContent : ChatMessageContent
 {
     /// <summary>
-    /// Gets the metadata key for the <see cref="ChatCompletionsToolCall.Id"/> name property.
+    /// Gets the metadata key for the <see cref="ChatToolCall.Id"/> name property.
     /// </summary>
-    public static string ToolIdProperty => $"{nameof(ChatCompletionsToolCall)}.{nameof(ChatCompletionsToolCall.Id)}";
+    public static string ToolIdProperty => $"{nameof(ChatToolCall)}.{nameof(ChatToolCall.Id)}";
 
     /// <summary>
-    /// Gets the metadata key for the list of <see cref="ChatCompletionsFunctionToolCall"/>.
+    /// Gets the metadata key for the list of <see cref="ChatToolCall"/>.
     /// </summary>
-    internal static string FunctionToolCallsProperty => $"{nameof(ChatResponseMessage)}.FunctionToolCalls";
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
-    /// </summary>
-    internal OpenAIChatMessageContent(ChatResponseMessage chatMessage, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, CreateMetadataDictionary(chatMessage.ToolCalls, metadata))
-    {
-        this.ToolCalls = chatMessage.ToolCalls;
-    }
+    internal static string FunctionToolCallsProperty => $"{nameof(ChatMessage)}.FunctionToolCalls";
 
     internal OpenAIChatMessageContent(OpenAIChatCompletion chatCompletionResult)
     {
+        this.Role = new AuthorRole(chatCompletionResult.Role.ToString());
+
         foreach (var item in chatCompletionResult.Content)
         {
             switch (item.Kind.ToString())
@@ -78,7 +71,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
-    internal OpenAIChatMessageContent(ChatRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
+    internal OpenAIChatMessageContent(ChatMessageRole role, string? content, string modelId, IReadOnlyList<ChatToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(new AuthorRole(role.ToString()), content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
     {
         this.ToolCalls = toolCalls;
@@ -87,7 +80,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
-    internal OpenAIChatMessageContent(AuthorRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
+    internal OpenAIChatMessageContent(AuthorRole role, string? content, string modelId, IReadOnlyList<ChatToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(role, content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
     {
         this.ToolCalls = toolCalls;

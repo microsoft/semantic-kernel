@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using Azure.AI.OpenAI;
-using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI.Core.AzureSdk;
 using Microsoft.SemanticKernel.Services;
+using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -53,7 +53,7 @@ internal sealed class OpenAIClientCore : ClientCore
 
         if (!string.IsNullOrWhiteSpace(organization))
         {
-            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organization!), HttpPipelinePosition.PerCall);
+            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organization!), PipelinePosition.PerCall);
         }
 
         // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
@@ -65,7 +65,7 @@ internal sealed class OpenAIClientCore : ClientCore
         }
         else
         {
-            options.AddPolicy(new CustomHostPipelinePolicy(providedEndpoint), Azure.Core.HttpPipelinePosition.PerRetry);
+            options.AddPolicy(new CustomHostPipelinePolicy(providedEndpoint), PipelinePosition.PerTry);
             this.Endpoint = providedEndpoint;
         }
 
