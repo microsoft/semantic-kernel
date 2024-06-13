@@ -8,11 +8,6 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic;
 public class SqlServerConfig
 {
     /// <summary>
-    /// The default SQL Server collections table name.
-    /// </summary>
-    internal const string DefaultMemoryCollectionTableName = "SKMemoryCollections";
-
-    /// <summary>
     /// The default SQL Server memories table name.
     /// </summary>
     internal const string DefaultMemoryTableName = "SKMemories";
@@ -36,11 +31,6 @@ public class SqlServerConfig
     /// The schema used by the SQL Server memory store.
     /// </summary>
     public string Schema { get; set; } = DefaultSchema;
-
-    /// <summary>
-    /// The SQL Server collections table name.
-    /// </summary>
-    public string MemoryCollectionTableName { get; set; } = DefaultMemoryCollectionTableName;
 
     /// <summary>
     /// The SQL Server memories table name.

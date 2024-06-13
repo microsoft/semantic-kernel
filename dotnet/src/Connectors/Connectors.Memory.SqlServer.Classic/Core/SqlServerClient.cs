@@ -36,41 +36,6 @@ internal sealed class SqlServerClient
     }
 
     /// <inheritdoc />
-    public async Task CreateTablesAsync(CancellationToken cancellationToken = default)
-    {
-        var sql = $@"IF NOT EXISTS (SELECT  *
-                                    FROM    sys.schemas
-                                    WHERE   name = N'{NormalizeSQLObjectName(this._configuration.Schema)}' )
-                    EXEC('CREATE SCHEMA [{NormalizeSQLObjectName(this._configuration.Schema)}]');
-                    IF OBJECT_ID(N'{this.GetFullTableName(this._configuration.MemoryCollectionTableName)}', N'U') IS NULL
-                    CREATE TABLE {this.GetFullTableName(this._configuration.MemoryCollectionTableName)}
-                    (   [id] NVARCHAR(256) NOT NULL,
-                        PRIMARY KEY ([id])
-                    );
-
-                    IF OBJECT_ID(N'{this.GetFullTableName(this._configuration.MemoryTableName)}', N'U') IS NULL
-                    CREATE TABLE {this.GetFullTableName(this._configuration.MemoryTableName)}
-                    (   [id] UNIQUEIDENTIFIER NOT NULL,
-                        [key] NVARCHAR(256)  NOT NULL,
-                        [collection] NVARCHAR(256) NOT NULL,
-                        [metadata] TEXT,
-                        [embedding] TEXT,
-                        [timestamp] DATETIMEOFFSET,
-                        PRIMARY KEY ([id]),
-                        FOREIGN KEY ([collection]) REFERENCES {this.GetFullTableName(this._configuration.MemoryCollectionTableName)}([id]) ON DELETE CASCADE,
-                        CONSTRAINT UK_{NormalizeSQLObjectName(this._configuration.MemoryTableName)} UNIQUE([collection], [key])
-                    );";
-
-        using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
-        {
-            using var command = this._connection.CreateCommand();
-
-            command.CommandText = sql;
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         collectionName = NormalizeIndexName(collectionName);
@@ -86,8 +51,15 @@ internal sealed class SqlServerClient
             using var command = this._connection.CreateCommand();
 
             command.CommandText = $@"
-                    INSERT INTO {this.GetFullTableName(this._configuration.MemoryCollectionTableName)}([id])
-                    VALUES (@collectionName);
+                    IF OBJECT_ID(N'{this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}', N'U') IS NULL
+                    CREATE TABLE {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
+                    (   [id] UNIQUEIDENTIFIER NOT NULL,
+                        [key] NVARCHAR(256)  NOT NULL,
+                        [metadata] TEXT,
+                        [embedding] TEXT,
+                        [timestamp] DATETIMEOFFSET,
+                        PRIMARY KEY ([id])
+                    );
 
                     IF OBJECT_ID(N'{this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}', N'U') IS NULL
                     CREATE TABLE {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}
@@ -95,7 +67,6 @@ internal sealed class SqlServerClient
                         [memory_id] UNIQUEIDENTIFIER NOT NULL,
                         [vector_value_id] [int] NOT NULL,
                         [vector_value] [float] NOT NULL
-                        FOREIGN KEY ([memory_id]) REFERENCES {this.GetFullTableName(this._configuration.MemoryTableName)}([id]) ON DELETE CASCADE
                     );
 
                     IF OBJECT_ID(N'{NormalizeSQLObjectName(this._configuration.Schema)}.IXC_{$"{NormalizeSQLObjectName(this._configuration.EmbeddingsTableName)}_{collectionName}"}', N'U') IS NULL
@@ -136,13 +107,23 @@ internal sealed class SqlServerClient
         {
             using var command = this._connection.CreateCommand();
 
-            command.CommandText = $"SELECT [id] FROM {this.GetFullTableName(this._configuration.MemoryCollectionTableName)}";
+            command.CommandText = """
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_type = 'BASE TABLE'
+                    AND table_schema = @schema
+                AND table_name LIKE @tableName
+                """;
+
+            command.Parameters.AddWithValue("@schema", this._configuration.Schema);
+            command.Parameters.AddWithValue("@tableName", $"{this._configuration.MemoryTableName}_%");
 
             using var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                yield return dataReader.GetString(dataReader.GetOrdinal("id"));
+                yield return dataReader.GetString(dataReader.GetOrdinal("table_name"))
+                                .Replace($"{this._configuration.MemoryTableName}_", string.Empty);
             }
         }
     }
@@ -162,12 +143,8 @@ internal sealed class SqlServerClient
         {
             using var command = this._connection.CreateCommand();
 
-            command.CommandText = $@"DELETE FROM {this.GetFullTableName(this._configuration.MemoryCollectionTableName)}
-                                     WHERE [id] = @collectionName;
-
+            command.CommandText = $@"DROP TABLE {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")};
                                      DROP TABLE {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")};";
-
-            command.Parameters.AddWithValue("@collectionName", collectionName);
 
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -191,12 +168,10 @@ internal sealed class SqlServerClient
 
             command.CommandText = $@"
                                     SELECT {queryColumns}
-                                    FROM {this.GetFullTableName(this._configuration.MemoryTableName)}
-                                    WHERE [collection] = @collection
-                                    AND [key] = @key";
+                                    FROM {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
+                                    WHERE [key] = @key";
 
             command.Parameters.AddWithValue("@key", key);
-            command.Parameters.AddWithValue("@collection", collectionName);
 
             using var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
@@ -235,10 +210,8 @@ internal sealed class SqlServerClient
 
             command.CommandText = $@"
                 SELECT {queryColumns}
-                FROM {this.GetFullTableName(this._configuration.MemoryTableName)}
+                FROM {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
                 WHERE [key] IN ({string.Join(",", Enumerable.Range(0, keysArray.Length).Select(c => $"@key{c}"))})";
-
-            command.Parameters.AddWithValue("@collectionName", collectionName);
 
             for (int i = 0; i < keysArray.Length; i++)
             {
@@ -263,8 +236,7 @@ internal sealed class SqlServerClient
         {
             using var command = this._connection.CreateCommand();
 
-            command.CommandText = $"DELETE FROM {this.GetFullTableName(this._configuration.MemoryTableName)} WHERE [collection] = @collectionName AND [key] = @key";
-            command.Parameters.AddWithValue("@collectionName", collectionName);
+            command.CommandText = $"DELETE FROM {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")} WHERE [key] = @key";
             command.Parameters.AddWithValue("@key", key);
 
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
@@ -289,11 +261,8 @@ internal sealed class SqlServerClient
 
             command.CommandText = $@"
                     DELETE
-                    FROM {this.GetFullTableName(this._configuration.MemoryTableName)}
-                    WHERE [collection] = @collectionName
-                        AND [key] IN ({string.Join(",", Enumerable.Range(0, keysArray.Length).Select(c => $"@key{c}"))})";
-
-            command.Parameters.AddWithValue("@collectionName", collectionName);
+                    FROM {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
+                    WHERE [key] IN ({string.Join(",", Enumerable.Range(0, keysArray.Length).Select(c => $"@key{c}"))})";
 
             for (int i = 0; i < keysArray.Length; i++)
             {
@@ -351,16 +320,16 @@ internal sealed class SqlServerClient
                 cosine_similarity DESC
             )
             SELECT
-                {this.GetFullTableName(this._configuration.MemoryTableName)}.[id],
-                {this.GetFullTableName(this._configuration.MemoryTableName)}.[key],
-                {this.GetFullTableName(this._configuration.MemoryTableName)}.[metadata],
-                {this.GetFullTableName(this._configuration.MemoryTableName)}.[timestamp],
-                {this.GetFullTableName(this._configuration.MemoryTableName)}.[embedding],
+                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[id],
+                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[key],
+                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[metadata],
+                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[timestamp],
+                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[embedding],
                 (
                     SELECT
                         [vector_value]
                     FROM {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}
-                    WHERE {this.GetFullTableName(this._configuration.MemoryTableName)}.[id] = {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}.[memory_id]
+                    WHERE {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[id] = {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}.[memory_id]
                     ORDER BY vector_value_id
                     FOR JSON AUTO
                 ) AS [embeddings],
@@ -368,12 +337,11 @@ internal sealed class SqlServerClient
             FROM
                 [similarity]
             INNER JOIN
-                {this.GetFullTableName(this._configuration.MemoryTableName)} ON [similarity].[memory_id] = {this.GetFullTableName(this._configuration.MemoryTableName)}.[id]
+                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")} ON [similarity].[memory_id] = {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[id]
             WHERE [cosine_similarity] >= @min_relevance_score
             ORDER BY [cosine_similarity] desc";
 
             command.Parameters.AddWithValue("@vector", embedding);
-            command.Parameters.AddWithValue("@collection", collectionName);
             command.Parameters.AddWithValue("@min_relevance_score", minRelevanceScore);
             command.Parameters.AddWithValue("@limit", limit);
 
@@ -402,26 +370,25 @@ internal sealed class SqlServerClient
             using var command = this._connection.CreateCommand();
 
             command.CommandText = $@"
-                MERGE INTO {this.GetFullTableName(this._configuration.MemoryTableName)}
+                MERGE INTO {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
                 USING (SELECT @key) as [src]([key])
-                ON {this.GetFullTableName(this._configuration.MemoryTableName)}.[key] = [src].[key]
+                ON {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[key] = [src].[key]
                 WHEN MATCHED THEN
                     UPDATE SET metadata = @metadata, embedding = @embedding, timestamp = @timestamp
                 WHEN NOT MATCHED THEN
-                    INSERT ([id], [collection], [key], [metadata], [timestamp], [embedding])
-                    VALUES (NEWID(), @collection, @key, @metadata, @timestamp, @embedding);
+                    INSERT ([id], [key], [metadata], [timestamp], [embedding])
+                    VALUES (NEWID(), @key, @metadata, @timestamp, @embedding);
 
                 MERGE {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")} AS [tgt]
                 USING (
                     SELECT
-                        {this.GetFullTableName(this._configuration.MemoryTableName)}.[id],
+                        {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[id],
                         cast([vector].[key] AS INT) AS [vector_value_id],
                         cast([vector].[value] AS FLOAT) AS [vector_value]
-                    FROM {this.GetFullTableName(this._configuration.MemoryTableName)}
+                    FROM {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
                     CROSS APPLY
                         openjson(@embedding) [vector]
-                    WHERE {this.GetFullTableName(this._configuration.MemoryTableName)}.[key] = @key
-                        AND {this.GetFullTableName(this._configuration.MemoryTableName)}.[collection] = @collection
+                    WHERE {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[key] = @key
                 ) AS [src]
                 ON [tgt].[memory_id] = [src].[id] AND [tgt].[vector_value_id] = [src].[vector_value_id]
                 WHEN MATCHED THEN
@@ -474,9 +441,8 @@ internal sealed class SqlServerClient
         return entry;
     }
 
-    // Note: "_" is allowed in SQL Server, but we normalize it to "-" for consistency with other DBs
-    private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|_|:]");
-    private static readonly Regex s_replaceSQLObjectNameCharsRegex = new(@"[\s|\\|/|.|_|:\[|\]|\`|\'|\""]");
+    private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|:]");
+    private static readonly Regex s_replaceSQLObjectNameCharsRegex = new(@"[\s|\\|/|.|:\[|\]|\`|\'|\""]");
     private const string ValidSeparator = "-";
 
     private static string NormalizeIndexName(string index)

@@ -59,6 +59,7 @@
     <PackageReference Include="Testcontainers.Milvus" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Connectors\Connectors.Memory.SqlServer.Classic\Connectors.Memory.SqlServer.Classic.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\Agents\OpenAI\Agents.OpenAI.csproj" />
@@ -86,6 +87,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="testsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="testsettings.development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

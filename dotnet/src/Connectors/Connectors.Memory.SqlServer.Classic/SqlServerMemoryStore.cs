@@ -22,27 +22,23 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic;
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 public class SqlServerMemoryStore : IMemoryStore, IDisposable
 {
-    private readonly SqlServerClient? _dbClient;
+    private readonly SqlServerClient _dbClient;
 
     /// <summary>
-    /// Connects to a SQL Server database using the provided connection string and schema, and returns a new instance of <see cref="SqlServerMemoryStore"/>.
+    /// Initializes a new instance of the <see cref="SqlServerMemoryStore"/> class.
     /// </summary>
-    /// <param name="connectionString">The connection string to use for connecting to the SQL Server database.</param>
-    /// <param name="config">The SQL server configuration.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A new instance of <see cref="SqlServerMemoryStore"/> connected to the specified SQL Server database.</returns>
-    public static async Task<SqlServerMemoryStore> ConnectAsync(string connectionString, SqlServerConfig? config = default, CancellationToken cancellationToken = default)
+    /// <param name="connectionString">The connection string.</param>
+    /// <param name="config">The SQL memoryDB configuration.</param>
+    public SqlServerMemoryStore(string connectionString, SqlServerConfig? config = default)
+        : this(new SqlServerClient(new SqlConnection(connectionString), config ?? new()))
     {
-        var client = new SqlServerClient(new SqlConnection(connectionString), config ?? new());
 
-        await client.CreateTablesAsync(cancellationToken).ConfigureAwait(false);
-
-        return new SqlServerMemoryStore(client);
     }
 
     /// <summary>
-    /// Represents a memory store implementation that uses a SQL Server database as its backing store.
+    /// Initializes a new instance of the <see cref="SqlServerMemoryStore"/> class.
     /// </summary>
+    /// <param name="dbClient">The SQL db client.</param>
     internal SqlServerMemoryStore(SqlServerClient dbClient)
     {
         this._dbClient = dbClient;
