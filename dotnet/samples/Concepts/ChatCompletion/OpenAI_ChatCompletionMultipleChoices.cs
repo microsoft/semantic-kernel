@@ -105,7 +105,7 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
     /// <summary>
     /// Example of filter which is responsible for result selection in case if some function produces multiple results.
     /// </summary>
-    private class FunctionResultSelectionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
+    private sealed class FunctionResultSelectionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
