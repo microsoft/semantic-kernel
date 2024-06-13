@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pytest import mark
+from pytest import mark, param
 
 from samples.concepts.auto_function_calling.azure_python_code_interpreter_function_calling import (
     main as azure_python_code_interpreter_function_calling,
 )
 from samples.concepts.auto_function_calling.chat_gpt_api_function_calling import main as chat_gpt_api_function_calling
 from samples.concepts.chat_completion.azure_chat_gpt_api import main as azure_chat_gpt_api
+from samples.concepts.chat_completion.azure_chat_image_input import main as azure_chat_image_input
 from samples.concepts.chat_completion.chat_gpt_api import main as chat_gpt_api
 from samples.concepts.chat_completion.chat_streaming import main as chat_streaming
 from samples.concepts.chat_completion.openai_logit_bias import main as openai_logit_bias
@@ -40,73 +41,50 @@ from samples.concepts.prompt_templates.template_language import main as template
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
 from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
 
+concepts = [
+    param(
+        azure_python_code_interpreter_function_calling,
+        ["print('Hello, World!')", "exit"],
+        id="azure_python_code_interpreter_function_calling",
+    ),
+    param(chat_gpt_api_function_calling, ["What is 3+3?", "exit"], id="cht_gpt_api_function_calling"),
+    param(azure_chat_gpt_api, ["Why is the sky blue?", "exit"], id="azure_chat_gpt_api"),
+    param(chat_gpt_api, ["What is life?", "exit"], id="chat_gpt_api"),
+    param(chat_streaming, ["Why is the sun hot?", "exit"], id="chat_streaming"),
+    param(openai_logit_bias, [], id="openai_logit_bias"),
+    param(auto_function_invoke_filters, ["What is 3+3?", "exit"], id="auo_function_invoke_filters"),
+    param(function_invocation_filters, ["What is 3+3?", "exit"], id="function_invocation_filters"),
+    param(function_invocation_filters_stream, ["What is 3+3?", "exit"], id="function_invocation_filters_stream"),
+    param(prompt_filters, ["What is the fastest animal?", "exit"], id="prompt_filters"),
+    param(kernel_arguments, [], id="kernel_arguments"),
+    param(grounded, [], id="grounded"),
+    param(azure_cognitive_search_memory, [], id="azure_cognitive_search_memory"),
+    param(memory, ["What are my investments?", "exit"], id="memory"),
+    param(azure_openai_function_calling_stepwise_planner, [], id="azure_openai_function_calling_stepwise_planner"),
+    param(openai_function_calling_stepwise_planner, [], id="openai_function_calling_stepwise_planner"),
+    param(sequential_planner, [], id="sequential_planner"),
+    param(azure_python_code_interpreter, [], id="azure_python_code_interpreter"),
+    param(openai_function_calling_with_custom_plugin, [], id="openai_function_calling_with_custom_plugin"),
+    param(
+        openai_plugin_azure_key_vault,
+        ["Create a secret with the name 'Foo' and value 'Bar'", "exit"],
+        id="openai_plugin_azure_key_vault",
+    ),
+    param(openai_plugin_klarna, [], id="openai_plugin_klarna"),
+    param(plugins_from_dir, [], id="plugins_from_dir"),
+    param(azure_chat_gpt_api_handlebars, ["What is 3+3?", "exit"], id="azure_chat_gpt_api_handlebars"),
+    param(azure_chat_gpt_api_jinja2, ["What is 3+3?", "exit"], id="azure_chat_gpt_api_jinja2"),
+    param(configuring_prompts, ["What is my name?", "exit"], id="configuring_prompts"),
+    param(load_yaml_prompt, [], id="load_yaml_prompt"),
+    param(template_language, [], id="template_language"),
+    param(rag_with_text_memory_plugin, [], id="rag_with_text_memory_plugin"),
+    param(bing_search_plugin, [], id="bing_search_plugin"),
+    param(azure_chat_image_input, [], id="azure_chat_image_input"),
+]
+
 
 @mark.asyncio
-@mark.parametrize(
-    "func,responses",
-    [
-        (azure_python_code_interpreter_function_calling, ["print('Hello, World!')", "exit"]),
-        (chat_gpt_api_function_calling, ["What is 3+3?", "exit"]),
-        (azure_chat_gpt_api, ["Why is the sky blue?", "exit"]),
-        (chat_gpt_api, ["What is life?", "exit"]),
-        (chat_streaming, ["Why is the sun hot?", "exit"]),
-        (openai_logit_bias, []),
-        (auto_function_invoke_filters, ["What is 3+3?", "exit"]),
-        (function_invocation_filters, ["What is 3+3?", "exit"]),
-        (function_invocation_filters_stream, ["What is 3+3?", "exit"]),
-        (prompt_filters, ["What is the fastest animal?", "exit"]),
-        (kernel_arguments, []),
-        (grounded, []),
-        (azure_cognitive_search_memory, []),
-        (memory, ["What are my investments?", "exit"]),
-        (azure_openai_function_calling_stepwise_planner, []),
-        (openai_function_calling_stepwise_planner, []),
-        (sequential_planner, []),
-        (azure_python_code_interpreter, []),
-        (openai_function_calling_with_custom_plugin, []),
-        (openai_plugin_azure_key_vault, ["Create a secret with the name 'Foo' and value 'Bar'", "exit"]),
-        (openai_plugin_klarna, []),
-        (plugins_from_dir, []),
-        (azure_chat_gpt_api_handlebars, ["What is 3+3?", "exit"]),
-        (azure_chat_gpt_api_jinja2, ["What is 3+3?", "exit"]),
-        (configuring_prompts, ["What is my name?", "exit"]),
-        (load_yaml_prompt, []),
-        (template_language, []),
-        (rag_with_text_memory_plugin, []),
-        (bing_search_plugin, []),
-    ],
-    ids=[
-        "azure_python_code_interpreter_function_calling",
-        "chat_gpt_api_function_calling",
-        "azure_chat_gpt_api",
-        "chat_gpt_api",
-        "chat_streaming",
-        "openai_logit_bias",
-        "auto_function_invoke_filters",
-        "function_invocation_filters",
-        "function_invocation_filters_stream",
-        "prompt_filters",
-        "kernel_arguments",
-        "grounded",
-        "azure_cognitive_search_memory",
-        "memory",
-        "azure_openai_function_calling_stepwise_planner",
-        "openai_function_calling_stepwise_planner",
-        "sequential_planner",
-        "azure_python_code_interpreter",
-        "openai_function_calling_with_custom_plugin",
-        "openai_plugin_azure_key_vault",
-        "openai_plugin_klarna",
-        "plugins_from_dir",
-        "azure_chat_gpt_api_handlebars",
-        "azure_chat_gpt_api_jinja2",
-        "configuring_prompts",
-        "load_yaml_prompt",
-        "template_language",
-        "rag_with_text_memory_plugin",
-        "bing_search_plugin",
-    ],
-)
+@mark.parametrize("func, responses", concepts)
 async def test_concepts(func, responses, monkeypatch):
     monkeypatch.setattr("builtins.input", lambda _: responses.pop(0))
     await func()
