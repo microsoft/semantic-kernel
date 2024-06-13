@@ -247,7 +247,7 @@ classDiagram
     ISemanticTextMemory <.. ChatHistoryPlugin
 ```
 
-### Vector Store Cross Store support
+### Vector Store Cross Store support - General Features
 
 A comparison of the different ways in which stores implement storage capabilities to help drive decisions:
 
@@ -264,16 +264,6 @@ A comparison of the different ways in which stores implement storage capabilitie
 |Is Key separate from data|N|Y|Y|Y||Y||N|Y|N|
 |Can Generate Ids|N|Y|N|N||Y||Y|N|Y|
 |Can Generate Embedding|Not Available Via API yet|Y|N|Client Side Abstraction|||||N||
-|Index allows text search|Y|Y|Y|Y (On Metadata by default)||||Y (with TSVECTOR field)|Y|Y|
-|Allows filtering|Y|Y|Y (on TAG)|Y (On Metadata by default)||[Y](https://docs.pinecone.io/guides/indexes/configure-pod-based-indexes#selective-metadata-indexing)||Y|Y|Y|
-|Allows scalar index field setup|Y|Y|Y|N||Y|||Y|Y|
-|Requires scalar index field setup to filter|Y|Y|Y|N||N (on by default for all)|||N|N (can filter without index)|
-|Field Differentiation|Fields|Key, Props, Vectors|Key, Fields|Key, Documents, Metadata, Vectors||Key, Metadata, SparseValues, Vectors||Fields|Key, Props(Payload), Vectors|Fields|
-|Index to Collection|1 to 1|1 to 1|1 to many|1 to 1|-|1 to 1|-|1 to 1|1 to 1|1 to 1|
-|Id Type|String|UUID|string with collection name prefix|string||string|UUID|64Bit Int / UUID / ULID|64Bit Unsigned Int / UUID|Int64 / varchar|
-|Supported Vector Types|[Collection(Edm.Byte) / Collection(Edm.Single) / Collection(Edm.Half) / Collection(Edm.Int16) / Collection(Edm.SByte)](https://learn.microsoft.com/en-us/rest/api/searchservice/supported-data-types)|float32|FLOAT32 and FLOAT64|||[Rust f32](https://docs.pinecone.io/troubleshooting/embedding-values-changed-when-upserted)||[single-precision (4 byte float) / half-precision (2 byte float) / binary (1bit) / sparse vectors (4 bytes)](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|UInt8 / Float32|Binary / Float32 / Float16 / BFloat16 / SparseFloat|
-|Supported Distance Functions|[Cosine / dot prod / euclidean dist (l2 norm)](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#similarity-metrics-used-to-measure-nearness)|[Cosine dist / dot prod / Squared L2 dist / hamming (num of diffs) / manhattan dist](https://weaviate.io/developers/weaviate/config-refs/distances#available-distance-metrics)|[Euclidean dist (L2) / Inner prod (IP) / Cosine dist](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/)|[Squared L2 / Inner prod / Cosine similarity](https://docs.trychroma.com/guides#changing-the-distance-function)||[cosine sim / euclidean dist / dot prod](https://docs.pinecone.io/reference/api/control-plane/create_index)||[L2 dist / inner prod / cosine dist / L1 dist / Hamming dist / Jaccard dist](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|[Dot prod / Cosine sim / Euclidean dist (L2) / Manhattan dist](https://qdrant.tech/documentation/concepts/search/)|[Cosine sim / Euclidean dist / Inner Prod](https://milvus.io/docs/index-vector-fields.md)|
-|Supported index types|[Exhaustive KNN / HNSW](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#algorithms-used-in-vector-search)|[HNSW / Flat / Dynamic](https://weaviate.io/developers/weaviate/config-refs/schema/vector-index)|[HNSW / FLAT](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/#create-a-vector-field)|[HNSW not configurable](https://cookbook.chromadb.dev/core/concepts/#vector-index-hnsw-index)||[PGA](https://www.pinecone.io/blog/hnsw-not-enough/)||[HNSW / IVFFlat](https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing)|[HNSW for dense](https://qdrant.tech/documentation/concepts/indexing/#vector-index)|<p>[In Memory: FLAT / IVF_FLAT / IVF_SQ8 / IVF_PQ / HNSW / SCANN](https://milvus.io/docs/index.md)</p><p>[On Disk: DiskANN](https://milvus.io/docs/disk_index.md)</p><p>[GPU: GPU_CAGRA / GPU_IVF_FLAT / GPU_IVF_PQ / GPU_BRUTE_FORCE](https://milvus.io/docs/gpu_index.md)</p>|
 
 Footnotes:
 - P = Partial Support
@@ -281,11 +271,40 @@ Footnotes:
 - <sup>2</sup> Supports broad categories of fields only.
 - <sup>3</sup> Id is required in request, so can be returned if needed.
 - <sup>4</sup> No strong typed support when specifying field list.
+
+### Vector Store Cross Store support - Fields, types and indexing
+
+|Feature|Azure AI Search|Weaviate|Redis|Chroma|FAISS|Pinecone|LLamaIndex|PostgreSql|Qdrant|Milvus|
+|-|-|-|-|-|-|-|-|-|-|-|
+|Field Differentiation|Fields|Key, Props, Vectors|Key, Fields|Key, Document, Metadata, Vector||Key, Metadata, SparseValues, Vector||Fields|Key, Props(Payload), Vectors|Fields|
+|Multiple Vector per record support|Y|Y|Y|N||[N](https://docs.pinecone.io/guides/data/upsert-data#upsert-records-with-metadata)||Y|Y|Y|
+|Index to Collection|1 to 1|1 to 1|1 to many|1 to 1|-|1 to 1|-|1 to 1|1 to 1|1 to 1|
+|Id Type|String|UUID|string with collection name prefix|string||string|UUID|64Bit Int / UUID / ULID|64Bit Unsigned Int / UUID|Int64 / varchar|
+|Supported Vector Types|[Collection(Edm.Byte) / Collection(Edm.Single) / Collection(Edm.Half) / Collection(Edm.Int16) / Collection(Edm.SByte)](https://learn.microsoft.com/en-us/rest/api/searchservice/supported-data-types)|float32|FLOAT32 and FLOAT64|||[Rust f32](https://docs.pinecone.io/troubleshooting/embedding-values-changed-when-upserted)||[single-precision (4 byte float) / half-precision (2 byte float) / binary (1bit) / sparse vectors (4 bytes)](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|UInt8 / Float32|Binary / Float32 / Float16 / BFloat16 / SparseFloat|
+|Supported Distance Functions|[Cosine / dot prod / euclidean dist (l2 norm)](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#similarity-metrics-used-to-measure-nearness)|[Cosine dist / dot prod / Squared L2 dist / hamming (num of diffs) / manhattan dist](https://weaviate.io/developers/weaviate/config-refs/distances#available-distance-metrics)|[Euclidean dist (L2) / Inner prod (IP) / Cosine dist](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/)|[Squared L2 / Inner prod / Cosine similarity](https://docs.trychroma.com/guides#changing-the-distance-function)||[cosine sim / euclidean dist / dot prod](https://docs.pinecone.io/reference/api/control-plane/create_index)||[L2 dist / inner prod / cosine dist / L1 dist / Hamming dist / Jaccard dist (NB: Specified at query time, not index creation time)](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|[Dot prod / Cosine sim / Euclidean dist (L2) / Manhattan dist](https://qdrant.tech/documentation/concepts/search/)|[Cosine sim / Euclidean dist / Inner Prod](https://milvus.io/docs/index-vector-fields.md)|
+|Supported index types|[Exhaustive KNN / HNSW](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#algorithms-used-in-vector-search)|[HNSW / Flat / Dynamic](https://weaviate.io/developers/weaviate/config-refs/schema/vector-index)|[HNSW / FLAT](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/#create-a-vector-field)|[HNSW not configurable](https://cookbook.chromadb.dev/core/concepts/#vector-index-hnsw-index)||[PGA](https://www.pinecone.io/blog/hnsw-not-enough/)||[HNSW / IVFFlat](https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing)|[HNSW for dense](https://qdrant.tech/documentation/concepts/indexing/#vector-index)|<p>[In Memory: FLAT / IVF_FLAT / IVF_SQ8 / IVF_PQ / HNSW / SCANN](https://milvus.io/docs/index.md)</p><p>[On Disk: DiskANN](https://milvus.io/docs/disk_index.md)</p><p>[GPU: GPU_CAGRA / GPU_IVF_FLAT / GPU_IVF_PQ / GPU_BRUTE_FORCE](https://milvus.io/docs/gpu_index.md)</p>|
+
+Footnotes:
 - HNSW = Hierarchical Navigable Small World (HNSW performs an [approximate nearest neighbor (ANN)](https://learn.microsoft.com/en-us/azure/search/vector-search-overview#approximate-nearest-neighbors) search)
 - KNN = k-nearest neighbors (performs a brute-force search that scans the entire vector space)
 - IVFFlat = Inverted File with Flat Compression (This index type uses approximate nearest neighbor search (ANNS) to provide fast searches)
 - Weaviate Dynamic = Starts as flat and switches to HNSW if the number of objects exceed a limit
 - PGA = [Pinecone Graph Algorithm](https://www.pinecone.io/blog/hnsw-not-enough/)
+
+### Vector Store Cross Store support - Search and filtering
+
+|Feature|Azure AI Search|Weaviate|Redis|Chroma|FAISS|Pinecone|LLamaIndex|PostgreSql|Qdrant|Milvus|
+|-|-|-|-|-|-|-|-|-|-|-|
+|Index allows text search|Y|Y|Y|Y (On Metadata by default)||[Only in combination with Vector](https://docs.pinecone.io/guides/data/understanding-hybrid-search)||Y (with TSVECTOR field)|Y|Y|
+|Text search query format|[Simple or Full Lucene](https://learn.microsoft.com/en-us/azure/search/search-query-create?tabs=portal-text-query#choose-a-query-type-simple--full)|[wildcard](https://weaviate.io/developers/weaviate/search/filters#filter-text-on-partial-matches)|wildcard & fuzzy|[contains & not contains](https://docs.trychroma.com/guides#filtering-by-document-contents)||Text only||[wildcard & binary operators](https://www.postgresql.org/docs/16/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES)|[Text only](https://qdrant.tech/documentation/concepts/filtering/#full-text-match)|[wildcard](https://milvus.io/docs/single-vector-search.md#Filtered-search)|
+|Multi Field Vector Search Support|Y|[N](https://weaviate.io/developers/weaviate/search/similarity)||N (no multi vector support)||N||[Unclear due to order by syntax](https://github.com/pgvector/pgvector?tab=readme-ov-file#querying)|[N](https://qdrant.tech/documentation/concepts/search/)|[Y](https://milvus.io/api-reference/restful/v2.4.x/v2/Vector%20(v2)/Hybrid%20Search.md)|
+|Targeted Multi Field Text Search Support|Y|[Y](https://weaviate.io/developers/weaviate/search/hybrid#set-weights-on-property-values)|[Y](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/query_syntax/#field-modifiers)|N (only on document)||N||Y|Y|Y|
+|Vector per Vector Field for Search|Y|N/A||N/A|||N/A||N/A|N/A|[Y](https://milvus.io/docs/multi-vector-search.md#Step-1-Create-Multiple-AnnSearchRequest-Instances)|
+|Separate text search query from vectors|Y|[Y](https://weaviate.io/developers/weaviate/search/hybrid#specify-a-search-vector)|Y|Y||Y||Y|Y|[Y](https://milvus.io/api-reference/restful/v2.4.x/v2/Vector%20(v2)/Hybrid%20Search.md)|
+|Allows filtering|Y|Y|Y (on TAG)|Y (On Metadata by default)||[Y](https://docs.pinecone.io/guides/indexes/configure-pod-based-indexes#selective-metadata-indexing)||Y|Y|Y|
+|Allows filter grouping|Y (Odata)|[Y](https://weaviate.io/developers/weaviate/search/filters#nested-filters)||[Y](https://docs.trychroma.com/guides#using-logical-operators)||Y||Y|[Y](https://qdrant.tech/documentation/concepts/filtering/#clauses-combination)|[Y](https://milvus.io/docs/get-and-scalar-query.md#Use-Basic-Operators)|
+|Allows scalar index field setup|Y|Y|Y|N||Y||Y|Y|Y|
+|Requires scalar index field setup to filter|Y|Y|Y|N||N (on by default for all)||N|N|N (can filter without index)|
 
 ### Support for different mappers
 
@@ -337,23 +356,23 @@ public record HotelInfo(
 Here is what the configuration objects would look like.
 
 ```cs
-abstract class Field(string fieldName);
+abstract class MemoryRecordProperty(string propertyName);
 
-sealed class KeyField(string fieldName): Field(fieldName)
+sealed class MemoryRecordKeyProperty(string propertyName): Field(propertyName)
 {
 }
-sealed class DataField(string fieldName): Field(fieldName)
+sealed class MemoryRecordDataProperty(string propertyName): Field(propertyName)
 {
     bool HasEmbedding;
     string EmbeddingPropertyName;
 }
-sealed class VectorField(string fieldName): Field(fieldName)
+sealed class MemoryRecordVectorProperty(string propertyName): Field(propertyName)
 {
 }
 
 sealed class MemoryRecordDefinition
 {
-    IReadOnlyList<Field> Fields;
+    IReadOnlyList<MemoryRecordProperty> Properties;
 }
 ```
 
@@ -831,6 +850,114 @@ databases are currently adding vector support, including relational, it's import
 Here, the purpose is not to provide generic database access to all databases that support vectors, but rather for memory storage and retrieval. The
 concern with using a term such as VectorDB is that it opens up the scope of the feature set to include anything that stores a vector, without
 constraining it to any specific purpose.
+
+## Usage Examples
+
+Common Code across all examples
+
+```cs
+class CacheEntryModel(string prompt, string result, ReadOnlyMemory<float> promptEmbedding);
+
+class SemanticTextMemory<TDataType>(IMemoryRecordService<TDataType> recordService, IMemoryCollectionService collectionService, ITextEmbeddingGenerationService embeddingGenerator): ISemanticTextMemory;
+
+class CacheSetFunctionFilter(ISemanticTextMemory<CacheEntryModel> memory); // Saves results to cache.
+class CacheGetPromptFilter(ISemanticTextMemory<CacheEntryModel> memory);   // Check cache for entries.
+
+var builder = Kernel.CreateBuilder();
+```
+
+### DI Framework: Named Instances
+
+Similar to HttpClient, register implementations using names, that can only be constructed again
+using a specific factory implementation.
+
+```cs
+builder
+    .AddAzureOpenAITextEmbeddingGeneration(textEmbeddingDeploymentName, azureAIEndpoint, apiKey)
+
+    // Collection Registration:
+    // Variant 1: Register just create.
+    .AddNamedAzureAISearchCollectionCreate(name: "CacheCreate", azureAISearchEndpoint, apiKey, createConfiguration)         // Config
+    .AddNamedAzureAISearchCollectionCreate(name: "CacheCreate", sp => new CacheCreate(...));                                // Custom implementation
+    // Create combined collection management that references the previously registered create instance.
+    .AddNamedAzureAISearchCollectionService(name: "Cache", azureAISearchEndpoint, apiKey, createName: "CacheCreate")
+
+    // Variant 2: Register collection service in one line with config or custom create implementation.
+    .AddNamedAzureAISearchCollectionService(name: "Cache", azureAISearchEndpoint, apiKey, createConfiguration)              // Config
+    .AddNamedAzureAISearchCollectionService(name: "Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...))       // Custom implementation
+
+    // Record Registration with variants 1 and 2:
+    // Add record services.
+    .AddAzureAISearchRecordService<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey)
+
+    // Variant 3: Register collection and record service in one line with config or custom create implementation.
+    // Does all of the preious variants in one line.
+    .AddAzureAISearchStorageServices<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey, createConfiguration)         // Config
+    .AddAzureAISearchStorageServices<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...))  // Custom implementation
+
+    // Add semantic text memory referencing collection and record services.
+    // This would register ISemanticTextMemory<CacheEntryModel> in the services container.
+    .AddSemanticTextMemory<CacheEntryModel>(collectionServiceName: "Cache", recordServiceName: "Cache");
+
+// Add filter to retrieve items from cache and one to add items to cache.
+// Since these filters depend on ISemanticTextMemory<CacheEntryModel> and that is already registered, it should get matched automatically.
+builder.Services.AddTransient<IPromptRenderFilter, CacheGetPromptFilter>();
+builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>();
+
+var kernel =
+    .Build();
+
+var memoryFactory = kernel.Services.GetRequiredService<IMemoryFactory>();
+var cacheCollectionService = memoryFactory.CreateCollectionService(name: "Cache");
+var cacheRecordService = memoryFactory.CreateRecordService<CacheEntryModel>(name: "Cache");
+```
+
+### DI Framework: Registration based on consumer type.
+
+Similar to `AddHttpClient<TTargetService>`, this approach will register a specific implementation of
+the storage implementations, for a provided consumer type.
+
+```cs
+builder
+    .AddAzureOpenAITextEmbeddingGeneration(textEmbeddingDeploymentName, azureAIEndpoint, apiKey)
+    
+    // Collection and record registration with config or custom create implementation.
+    // This will register both IMemoryCollectionService and IMemoryRecordService<CacheEntryModel> and tie it to usage with SemanticTextMemory<CacheEntryModel>.
+    .AddAzureAISearchStorage<SemanticTextMemory<CacheEntryModel>>(azureAISearchEndpoint, apiKey, createConfiguration)           // Config
+    .AddAzureAISearchStorage<SemanticTextMemory<CacheEntryModel>>(azureAISearchEndpoint, apiKey, sp => new CacheCreate(...));   // Custom implementation
+
+// Add Semantic Cache Memory for the cache entry model.
+builder.Services.AddTransient<ISemanticTextMemory<CacheEntryModel>, SemanticTextMemory<CacheEntryModel>>();
+
+// Add filter to retrieve items from cache and one to add items to cache.
+// Since these filters depend on ISemanticTextMemory<CacheEntryModel> and that is already registered, it should get matched automatically.
+builder.Services.AddTransient<IPromptRenderFilter, CacheGetPromptFilter>();
+builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>();
+```
+
+### DI Framework: .net 8 Keyed Services
+
+```cs
+builder
+    .AddAzureOpenAITextEmbeddingGeneration(textEmbeddingDeploymentName, azureAIEndpoint, apiKey)
+
+    // Collection and record registration with config or custom create implementation.
+    .AddAzureAISearchStorageKeyedTransient<CacheEntryModel>("Cache", azureAISearchEndpoint, apiKey, createConfiguration)
+    .AddAzureAISearchStorageKeyedTransient<CacheEntryModel>("Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...));
+
+// Add Semantic Cache Memory for the cache entry model.
+builder.Services.AddTransient<ISemanticTextMemory<CacheEntryModel>>(sp => {
+    return new SemanticTextMemory<CacheEntryModel>(
+        sp.GetKeyedService<IMemoryRecordService<CacheEntryModel>>("Cache"),
+        sp.GetKeyedService<IMemoryCollectionService>("Cache"),
+        sp.GetRequiredService<ITextEmbeddingGenerationService>());
+});
+
+// Add filter to retrieve items from cache and one to add items to cache.
+// Since these filters depend on ISemanticTextMemory<CacheEntryModel> and that is already registered, it should get matched automatically.
+builder.Services.AddTransient<IPromptRenderFilter, CacheGetPromptFilter>();
+builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>();
+```
 
 ## Roadmap
 
