@@ -25,7 +25,6 @@ from samples.concepts.planners.openai_function_calling_stepwise_planner import (
     main as openai_function_calling_stepwise_planner,
 )
 from samples.concepts.planners.sequential_planner import main as sequential_planner
-from samples.concepts.plugins.azure_python_code_interpreter import main as azure_python_code_interpreter
 from samples.concepts.plugins.openai_function_calling_with_custom_plugin import (
     main as openai_function_calling_with_custom_plugin,
 )
@@ -63,7 +62,6 @@ from tests.samples.test_samples_utils import retry
         (azure_openai_function_calling_stepwise_planner, []),
         (openai_function_calling_stepwise_planner, []),
         (sequential_planner, []),
-        (azure_python_code_interpreter, []),
         (openai_function_calling_with_custom_plugin, []),
         (openai_plugin_azure_key_vault, ["Create a secret with the name 'Foo' and value 'Bar'", "exit"]),
         (openai_plugin_klarna, []),
@@ -94,7 +92,6 @@ from tests.samples.test_samples_utils import retry
         "azure_openai_function_calling_stepwise_planner",
         "openai_function_calling_stepwise_planner",
         "sequential_planner",
-        "azure_python_code_interpreter",
         "openai_function_calling_with_custom_plugin",
         "openai_plugin_azure_key_vault",
         "openai_plugin_klarna",
