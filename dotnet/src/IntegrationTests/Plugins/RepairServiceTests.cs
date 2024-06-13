@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -36,7 +37,7 @@ public class RepairServiceTests
         Assert.Equal("New repair created", result.ToString());
 
         // List All Repairs
-        result = await plugin["listRepairs"].InvokeAsync(kernel, arguments);
+        result = await plugin["listRepairs"].InvokeAsync(kernel);
 
         Assert.NotNull(result);
         var repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
@@ -106,7 +107,51 @@ public class RepairServiceTests
         }
     }
 
-    public class Repair
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task UseFilterToAssignNewRepairAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.FunctionInvocationFilters.Add(new CreateRepairFilter());
+        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
+        using HttpClient httpClient = new();
+
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
+            "RepairService",
+            stream,
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+
+        // Create Repair - oil change
+        var arguments = new KernelArguments
+        {
+            ["payload"] = """{ "title": "Engine oil change", "description": "Need to drain the old engine oil and replace it with fresh oil.", "assignedTo": "", "date": "", "image": "" }"""
+        };
+        var result = await plugin["createRepair"].InvokeAsync(kernel, arguments);
+
+        Assert.NotNull(result);
+        Assert.Equal("New repair created", result.ToString());
+
+        // Create Repair - brake pads change
+        arguments = new KernelArguments
+        {
+            ["payload"] = """{ "title": "Brake pads change", "description": "Need to replace the brake pads on all wheels.", "assignedTo": "", "date": "", "image": "" }"""
+        };
+        result = await plugin["createRepair"].InvokeAsync(kernel, arguments);
+
+        Assert.NotNull(result);
+        Assert.Equal("New repair created", result.ToString());
+
+        // List All Repairs
+        result = await plugin["listRepairs"].InvokeAsync(kernel);
+
+        Assert.NotNull(result);
+        var repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
+        Assert.True(repairs?.Length > 0);
+
+        var id = repairs[repairs.Length - 1].Id;
+    }
+
+    public sealed class Repair
     {
         [JsonPropertyName("id")]
         public int? Id { get; set; }
@@ -115,15 +160,35 @@ public class RepairServiceTests
         public string? Title { get; set; }
 
         [JsonPropertyName("description")]
-        public string? description { get; set; }
+        public string? Description { get; set; }
 
         [JsonPropertyName("assignedTo")]
-        public string? assignedTo { get; set; }
+        public string? AssignedTo { get; set; }
 
         [JsonPropertyName("date")]
         public string? Date { get; set; }
 
         [JsonPropertyName("image")]
         public string? Image { get; set; }
+    }
+
+    public sealed class CreateRepairFilter() : IFunctionInvocationFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            if (context.Function.Name == "createRepair")
+            {
+                var payload = context.Arguments["payload"];
+                var repair = JsonSerializer.Deserialize<Repair>(payload?.ToString() ?? string.Empty);
+                if (repair is not null && string.IsNullOrEmpty(repair.AssignedTo))
+                {
+                    repair.Date = DateTime.UtcNow.ToString();
+                    repair.AssignedTo = "John Doe";
+                    context.Arguments["payload"] = JsonSerializer.Serialize(repair);
+                }
+            }
+
+            await next(context);
+        }
     }
 }
