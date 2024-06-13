@@ -657,6 +657,7 @@ public class KernelFunctionFromPromptTests
     [Fact]
     public async Task InvokePromptAsyncWithTextGenerationReturnsSingleResultAsync()
     {
+        // Arrange
         var expectedTextContent = new TextContent("text", "model-id", metadata: new Dictionary<string, object?> { { "key", "value" } });
         var fakeService = new FakeTextGenerationService(textContents: [expectedTextContent]);
 
@@ -664,8 +665,10 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
         Kernel kernel = builder.Build();
 
+        // Act
         var result = await kernel.InvokePromptAsync("Prompt");
 
+        // Assert
         Assert.Equal("text", result.GetValue<string>());
         Assert.Equal("text", result.GetValue<KernelContent>()!.ToString());
 
@@ -682,6 +685,7 @@ public class KernelFunctionFromPromptTests
     [Fact]
     public async Task InvokePromptAsyncWithTextGenerationReturnsMultipleResultsAsync()
     {
+        // Arrange
         List<TextContent> expectedTextContents =
         [
             new TextContent("text1", "model-id", metadata: new Dictionary<string, object?> { { "key1", "value1" } }),
@@ -694,8 +698,10 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
         Kernel kernel = builder.Build();
 
+        // Act
         var result = await kernel.InvokePromptAsync("Prompt");
 
+        // Assert
         Assert.Throws<InvalidCastException>(() => result.GetValue<string>());
         Assert.Throws<InvalidCastException>(() => result.GetValue<KernelContent>());
 
@@ -717,6 +723,7 @@ public class KernelFunctionFromPromptTests
     [Fact]
     public async Task InvokePromptAsyncWithChatCompletionReturnsSingleResultAsync()
     {
+        // Arrange
         var expectedChatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "chat-message", "model-id", new Dictionary<string, object?> { { "key", "value" } });
         var fakeService = new FakeChatCompletionService(chatMessageContents: [expectedChatMessageContent]);
 
@@ -724,8 +731,10 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
         Kernel kernel = builder.Build();
 
+        // Act
         var result = await kernel.InvokePromptAsync("Prompt");
 
+        // Assert
         Assert.Equal("chat-message", result.GetValue<string>());
         Assert.Equal("chat-message", result.GetValue<KernelContent>()!.ToString());
 
@@ -743,6 +752,7 @@ public class KernelFunctionFromPromptTests
     [Fact]
     public async Task InvokePromptAsyncWithChatCompletionReturnsMultipleResultsAsync()
     {
+        // Arrange
         List<ChatMessageContent> expectedChatMessageContents =
         [
             new ChatMessageContent(AuthorRole.Assistant, "chat-message1", "model-id", new Dictionary<string, object?> { { "key1", "value1" } }),
@@ -755,8 +765,10 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
         Kernel kernel = builder.Build();
 
+        // Act
         var result = await kernel.InvokePromptAsync("Prompt");
 
+        // Assert
         Assert.Throws<InvalidCastException>(() => result.GetValue<string>());
         Assert.Throws<InvalidCastException>(() => result.GetValue<KernelContent>());
 
