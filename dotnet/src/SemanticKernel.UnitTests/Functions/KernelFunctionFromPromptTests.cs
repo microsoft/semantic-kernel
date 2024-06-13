@@ -659,10 +659,10 @@ public class KernelFunctionFromPromptTests
     {
         // Arrange
         var expectedTextContent = new TextContent("text", "model-id", metadata: new Dictionary<string, object?> { { "key", "value" } });
-        var fakeService = new FakeTextGenerationService(textContents: [expectedTextContent]);
+        var mockTextGenerationService = this.GetMockTextGenerationService(textContents: [expectedTextContent]);
 
         KernelBuilder builder = new();
-        builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
+        builder.Services.AddTransient<ITextGenerationService>((sp) => mockTextGenerationService.Object);
         Kernel kernel = builder.Build();
 
         // Act
@@ -692,10 +692,10 @@ public class KernelFunctionFromPromptTests
             new TextContent("text2", "model-id", metadata: new Dictionary<string, object?> { { "key2", "value2" } }),
         ];
 
-        var fakeService = new FakeTextGenerationService(textContents: expectedTextContents);
+        var mockTextGenerationService = this.GetMockTextGenerationService(textContents: expectedTextContents);
 
         KernelBuilder builder = new();
-        builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
+        builder.Services.AddTransient<ITextGenerationService>((sp) => mockTextGenerationService.Object);
         Kernel kernel = builder.Build();
 
         // Act
@@ -725,10 +725,10 @@ public class KernelFunctionFromPromptTests
     {
         // Arrange
         var expectedChatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "chat-message", "model-id", new Dictionary<string, object?> { { "key", "value" } });
-        var fakeService = new FakeChatCompletionService(chatMessageContents: [expectedChatMessageContent]);
+        var mockChatCompletionService = this.GetMockChatCompletionService(chatMessageContents: [expectedChatMessageContent]);
 
         KernelBuilder builder = new();
-        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        builder.Services.AddTransient<IChatCompletionService>((sp) => mockChatCompletionService.Object);
         Kernel kernel = builder.Build();
 
         // Act
@@ -759,10 +759,10 @@ public class KernelFunctionFromPromptTests
             new ChatMessageContent(AuthorRole.Assistant, "chat-message2", "model-id", new Dictionary<string, object?> { { "key2", "value2" } })
         ];
 
-        var fakeService = new FakeChatCompletionService(chatMessageContents: expectedChatMessageContents);
+        var mockChatCompletionService = this.GetMockChatCompletionService(chatMessageContents: expectedChatMessageContents);
 
         KernelBuilder builder = new();
-        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        builder.Services.AddTransient<IChatCompletionService>((sp) => mockChatCompletionService.Object);
         Kernel kernel = builder.Build();
 
         // Act
@@ -786,6 +786,35 @@ public class KernelFunctionFromPromptTests
             Assert.Equal(expectedChatMessageContents[i].Content, actualChatMessageContents[i].Content);
             Assert.Equal(expectedChatMessageContents[i].Metadata, actualChatMessageContents[i].Metadata);
         }
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithPromptFunctionInTemplateAndSingleResultAsync()
+    {
+        // Arrange
+        var expectedChatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "chat-message", "model-id", new Dictionary<string, object?> { { "key", "value" } });
+        var mockChatCompletionService = this.GetMockChatCompletionService(chatMessageContents: [expectedChatMessageContent]);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => mockChatCompletionService.Object);
+        Kernel kernel = builder.Build();
+
+        var innerFunction = KernelFunctionFactory.CreateFromPrompt("Prompt", functionName: "GetData");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [innerFunction]);
+
+        kernel.Plugins.Add(plugin);
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Data: {{MyPlugin.GetData}}");
+
+        // Assert
+        Assert.True(mockChatCompletionService.Invocations is { Count: 2 });
+
+        var lastInvocation = mockChatCompletionService.Invocations[^1];
+        var lastInvocationChatHistory = lastInvocation!.Arguments[0] as ChatHistory;
+
+        Assert.NotNull(lastInvocationChatHistory);
+        Assert.Equal("Data: chat-message", lastInvocationChatHistory[0].Content);
     }
 
     public enum KernelInvocationType
@@ -831,26 +860,26 @@ public class KernelFunctionFromPromptTests
         }
     }
 
-    private sealed class FakeTextGenerationService(IReadOnlyList<TextContent>? textContents = null) : ITextGenerationService
+    private Mock<ITextGenerationService> GetMockTextGenerationService(IReadOnlyList<TextContent>? textContents = null)
     {
-        public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
+        var mockTextGenerationService = new Mock<ITextGenerationService>();
 
-        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
-            throw new NotImplementedException();
+        mockTextGenerationService
+            .Setup(l => l.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings?>(), It.IsAny<Kernel?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult<IReadOnlyList<TextContent>>(textContents ?? [new TextContent("Default result")]));
 
-        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<TextContent>>(textContents ?? [new TextContent("Default result")]);
+        return mockTextGenerationService;
     }
 
-    private sealed class FakeChatCompletionService(IReadOnlyList<ChatMessageContent>? chatMessageContents = null) : IChatCompletionService
+    private Mock<IChatCompletionService> GetMockChatCompletionService(IReadOnlyList<ChatMessageContent>? chatMessageContents = null)
     {
-        public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
+        var mockChatCompletionService = new Mock<IChatCompletionService>();
 
-        public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<ChatMessageContent>>(chatMessageContents ?? [new(AuthorRole.Assistant, "Default result")]);
+        mockChatCompletionService
+            .Setup(l => l.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings?>(), It.IsAny<Kernel?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult<IReadOnlyList<ChatMessageContent>>(chatMessageContents ?? [new(AuthorRole.Assistant, "Default result")]));
 
-        public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
-            throw new NotImplementedException();
+        return mockChatCompletionService;
     }
 
     #endregion

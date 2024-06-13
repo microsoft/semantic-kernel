@@ -65,17 +65,84 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
     }
 
     /// <summary>
+    /// This example shows how to handle multiple results in case if prompt template contains a call to another prompt function.
+    /// <see cref="FunctionResultSelectionFilter"/> is used for result selection.
+    /// </summary>
+    [Fact]
+    public async Task MultipleChatCompletionResultsInPromptTemplateAsync()
+    {
+        var kernel = Kernel
+            .CreateBuilder()
+            .AddOpenAIChatCompletion(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        var executionSettings = new OpenAIPromptExecutionSettings { MaxTokens = 200, ResultsPerPrompt = 3 };
+
+        // Initializing a function with execution settings for multiple results.
+        // We ask AI to write one paragraph, but in execution settings we specified that we want 3 different results for this request.
+        var function = KernelFunctionFactory.CreateFromPrompt("Write one paragraph about why AI is awesome", executionSettings, "GetParagraph");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
+
+        kernel.Plugins.Add(plugin);
+
+        // Add function result selection filter.
+        kernel.FunctionInvocationFilters.Add(new FunctionResultSelectionFilter(this.Output));
+
+        // Inside our main request, we call MyPlugin.GetParagraph function for text summarization.
+        // Taking into account that MyPlugin.GetParagraph function produces 3 results, for text summarization we need to choose only one of them.
+        // During execution, the filter will be invoked, which will select and return only 1 result, which will be inserted in our main request for summarization.
+        var result = await kernel.InvokePromptAsync("Summarize this text: {{MyPlugin.GetParagraph}}");
+
+        // It's possible to check what prompt was rendered for our main request.
+        Console.WriteLine($"Rendered prompt: '{result.RenderedPrompt}'");
+
+        // Output:
+        // Rendered prompt: 'Summarize this text: AI is awesome because...'
+    }
+
+    /// <summary>
+    /// Example of filter which is responsible for result selection in case if some function produces multiple results.
+    /// </summary>
+    private class FunctionResultSelectionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            await next(context);
+
+            // Selection logic for function which is expected to produce multiple results.
+            if (context.Function.Name == "GetParagraph")
+            {
+                // Get multiple results from function invocation
+                var contents = context.Result.GetValue<IReadOnlyList<KernelContent>>()!;
+
+                output.WriteLine("Multiple results:");
+
+                foreach (var content in contents)
+                {
+                    output.WriteLine(content.ToString());
+                }
+
+                // Select first result for correct prompt rendering
+                var selectedContent = contents[0];
+                context.Result = new FunctionResult(context.Function, selectedContent, context.Kernel.Culture, selectedContent.Metadata);
+            }
+        }
+    }
+
+    /// <summary>
     /// Example with multiple chat completion results using <see cref="Kernel"/>.
     /// </summary>
     private async Task UsingKernelAsync(Kernel kernel)
     {
         Console.WriteLine("======== Using Kernel ========");
 
-        var chatMessageContents = await kernel.InvokePromptAsync<IReadOnlyList<ChatMessageContent>>("Write one paragraph about why AI is awesome", new(this._executionSettings));
+        var contents = await kernel.InvokePromptAsync<IReadOnlyList<KernelContent>>("Write one paragraph about why AI is awesome", new(this._executionSettings));
 
-        foreach (var chatMessageContent in chatMessageContents!)
+        foreach (var content in contents!)
         {
-            Console.Write(chatMessageContent.Content ?? string.Empty);
+            Console.Write(content.ToString() ?? string.Empty);
             Console.WriteLine("\n-------------\n");
         }
 
