@@ -18,7 +18,7 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
     protected override bool ForceOpenAI => true;
 
     [Fact]
-    public async Task UploadAndRetreiveFilesAsync()
+    public async Task UploadAndRetrieveFilesAsync()
     {
         var openAIClient = new AssistantsClient(TestConfiguration.OpenAI.ApiKey);
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
