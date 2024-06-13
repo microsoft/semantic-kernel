@@ -44,8 +44,9 @@ public class AzureAISearchMemoryFixture : IAsyncLifetime
     /// </summary>
     public AzureAISearchMemoryFixture()
     {
-        var config = this._configuration.GetSection("AzureAISearch").Get<AzureAISearchConfiguration>();
+        var config = this._configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
         Assert.NotNull(config);
+        this.Config = config;
         this.SearchIndexClient = new SearchIndexClient(new Uri(config.ServiceUrl), new AzureKeyCredential(config.ApiKey));
         this.MemoryRecordDefinition = new MemoryRecordDefinition
         {
@@ -78,6 +79,11 @@ public class AzureAISearchMemoryFixture : IAsyncLifetime
     /// Gets the manually created memory record definition for our test model.
     /// </summary>
     public MemoryRecordDefinition MemoryRecordDefinition { get; private set; }
+
+    /// <summary>
+    /// Gets the configuration for the Azure AI Search service.
+    /// </summary>
+    public AzureAISearchConfiguration Config { get; private set; }
 
     /// <summary>
     /// Create / Recreate index and upload documents before test run.

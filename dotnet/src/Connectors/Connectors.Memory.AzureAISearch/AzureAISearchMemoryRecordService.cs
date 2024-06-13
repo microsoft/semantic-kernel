@@ -63,6 +63,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     /// <param name="searchIndexClient">Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="searchIndexClient"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when options are misconfigured.</exception>
     public AzureAISearchMemoryRecordService(SearchIndexClient searchIndexClient, AzureAISearchMemoryRecordServiceOptions<TDataModel>? options = default)
     {
         // Verify.
@@ -336,7 +337,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         }
         catch (AggregateException ex) when (ex.InnerException is RequestFailedException innerEx)
         {
-            var wrapperException = new MemoryServiceOperationException("Call to memory service failed.", ex);
+            var wrapperException = new MemoryServiceCommandExecutionException("Call to memory service failed.", ex);
 
             // Using Open Telemetry standard for naming of these entries.
             // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
@@ -348,7 +349,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         }
         catch (RequestFailedException ex)
         {
-            var wrapperException = new MemoryServiceOperationException("Call to memory service failed.", ex);
+            var wrapperException = new MemoryServiceCommandExecutionException("Call to memory service failed.", ex);
 
             // Using Open Telemetry standard for naming of these entries.
             // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/

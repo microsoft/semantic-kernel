@@ -24,6 +24,8 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <param name="options">Optional options for retrieving the record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The memory record if found, otherwise null.</returns>
+    /// <exception cref="MemoryServiceCommandExecutionException">Throw when the command fails to execute for any reason.</exception>
+    /// <exception cref="MemoryDataModelMappingException">Throw when mapping between the storage model and data model fails.</exception>
     Task<TDataModel> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -35,6 +37,8 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <param name="options">Optional options for retrieving the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The vecmemorytor records associated with the unique keys provided.</returns>
+    /// <exception cref="MemoryServiceCommandExecutionException">Throw when the command fails to execute for any reason.</exception>
+    /// <exception cref="MemoryDataModelMappingException">Throw when mapping between the storage model and data model fails.</exception>
     IAsyncEnumerable<TDataModel> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -44,6 +48,7 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <param name="options">Optional options for removing the record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifier for the memory record.</returns>
+    /// <exception cref="MemoryServiceCommandExecutionException">Throw when the command fails to execute for any reason.</exception>
     Task DeleteAsync(TKey key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -53,6 +58,7 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <param name="keys">The unique ids associated with the memory records to remove.</param>
     /// <param name="options">Optional options for removing the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <exception cref="MemoryServiceCommandExecutionException">Throw when the command fails to execute for any reason.</exception>
     Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -64,6 +70,8 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <param name="options">Optional options for upserting the record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifier for the memory record.</returns>
+    /// <exception cref="MemoryServiceCommandExecutionException">Throw when the command fails to execute for any reason.</exception>
+    /// <exception cref="MemoryDataModelMappingException">Throw when mapping between the storage model and data model fails.</exception>
     Task<TKey> UpsertAsync(TDataModel record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -76,5 +84,7 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <param name="options">Optional options for upserting the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifiers for the memory records.</returns>
+    /// <exception cref="MemoryServiceCommandExecutionException">Throw when the command fails to execute for any reason.</exception>
+    /// <exception cref="MemoryDataModelMappingException">Throw when mapping between the storage model and data model fails.</exception>
     IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TDataModel> records, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
 }
