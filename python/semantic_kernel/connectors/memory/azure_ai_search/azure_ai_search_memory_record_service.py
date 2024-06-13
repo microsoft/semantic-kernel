@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import contextlib
 import logging
 import uuid
 from inspect import isawaitable
-from typing import TypeVar, overload
+from typing import Any, TypeVar, overload
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -46,6 +47,7 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
         self,
         item_type: DataModelT,
         vector_size: int,
+        collection_name: str | None = None,
         search_endpoint: str | None = None,
         admin_key: str | None = None,
         azure_credentials: AzureKeyCredential | None = None,
@@ -62,6 +64,7 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
         Args:
             item_type (DataModelT): The type of the data model.
             vector_size (int): Embedding vector size.
+            collection_name (str): The name of the collection, optional.
             search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
                 (default: {None}).
             admin_key (str | None): Azure Cognitive Search API key (default: {None}).
@@ -73,7 +76,7 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
             env_file_encoding (str | None): The encoding of the environment settings file
 
         """
-        super().__init__(item_type=item_type, key_type=str)
+        super().__init__(item_type=item_type, key_type=str, collection_name=collection_name)
         from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_settings import (
             AzureAISearchSettings,
         )
@@ -105,23 +108,25 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
 
     async def create_collection(
         self,
-        collection_name: str,
+        collection_name: str | None = None,
         vector_config: HnswAlgorithmConfiguration | None = None,
         search_resource_encryption_key: SearchResourceEncryptionKey | None = None,
+        **kwargs: Any,
     ) -> None:
         """Creates a new collection if it does not exist.
 
         Args:
             collection_name (str): The name of the collection to create.
-            vector_config (HnswVectorSearchAlgorithmConfiguration): Optional search algorithm configuration
-                                                                      (default: {None}).
-            semantic_config (SemanticConfiguration): Optional search index configuration (default: {None}).
-            search_resource_encryption_key (SearchResourceEncryptionKey): Optional Search Encryption Key
-                                                                                       (default: {None}).
+            vector_config (HnswVectorSearchAlgorithmConfiguration):
+                Optional search algorithm configuration (default: {None}).
+            search_resource_encryption_key (SearchResourceEncryptionKey):
+                Optional Search Encryption Key (default: {None}).
+            kwargs: Additional keyword arguments.
 
         Returns:
             None
         """
+        collection_name = self._get_collection_name(collection_name).lower()
         vector_search_profile_name = "az-vector-config"
         if vector_config:
             vector_search_profile = VectorSearchProfile(
@@ -155,12 +160,12 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
         # Check to see if collection exists
         collection_index = None
         with contextlib.suppress(ResourceNotFoundError):
-            collection_index = await self._search_index_client.get_index(collection_name.lower())
+            collection_index = await self._search_index_client.get_index(collection_name)
 
         if not collection_index:
             # Create the search index with the semantic settings
             index = SearchIndex(
-                name=collection_name.lower(),
+                name=collection_name,
                 fields=get_index_schema(self._vector_size, vector_search_profile_name),
                 vector_search=vector_search,
                 encryption_key=search_resource_encryption_key,
@@ -173,6 +178,9 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
 
     async def get_collection_names(self, **kwargs) -> list[str]:
         """Gets the list of collections.
+
+        Args:
+            kwargs: Additional keyword arguments.
 
         Returns:
             List[str]: The list of collections.
@@ -187,28 +195,32 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
 
         return results_list
 
-    async def delete_collection(self, collection_name: str, **kwargs) -> None:
+    async def delete_collection(self, collection_name: str | None = None, **kwargs) -> None:
         """Deletes a collection.
 
         Args:
             collection_name (str): The name of the collection to delete.
+            kwargs: Additional keyword arguments.
 
         Returns:
             None
         """
-        await self._search_index_client.delete_index(index=collection_name.lower())
+        await self._search_index_client.delete_index(index=self._get_collection_name(collection_name).lower())
 
-    async def collection_exists(self, collection_name: str, **kwargs) -> bool:
+    async def collection_exists(self, collection_name: str | None = None, **kwargs) -> bool:
         """Checks if a collection exists.
 
         Args:
             collection_name (str): The name of the collection to check.
+            kwargs: Additional keyword arguments.
 
         Returns:
             bool: True if the collection exists; otherwise, False.
         """
         try:
-            collection_result = await self._search_index_client.get_index(name=collection_name.lower())
+            collection_result = await self._search_index_client.get_index(
+                name=self._get_collection_name(collection_name).lower()
+            )
 
             return bool(collection_result)
         except ResourceNotFoundError:
@@ -217,32 +229,14 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
     # endregion
 
     @overload
-    async def upsert(self, collection_name: str, record: DataModelT) -> str:
-        """Upsert a record.
-
-        Args:
-            collection_name (str): The name of the collection to upsert the record into.
-            record (MemoryRecord): The record to upsert.
-
-        Returns:
-            str: The unique record id of the record.
-        """
-        result = await self.upsert_batch(collection_name, [record])
+    async def upsert(self, record: DataModelT, collection_name: str | None = None, **kwargs: Any) -> str:
+        result = await self.upsert_batch([record], self._get_collection_name(collection_name).lower())
         if result:
             return result[0]
         return None
 
     @overload
-    async def upsert_batch(self, collection_name: str, records: list[DataModelT], **kwargs) -> list[str]:
-        """Upsert a batch of records.
-
-        Args:
-            collection_name (str): The name of the collection to upsert the records into.
-            records (List[MemoryRecord]): The records to upsert.
-
-        Returns:
-            List[str]: The unique database keys of the records.
-        """
+    async def upsert_batch(self, records: list[DataModelT], collection_name: str | None = None, **kwargs) -> list[str]:
         # Initialize search client here
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
@@ -250,6 +244,7 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
         search_records = []
         search_ids = []
 
+        # TODO (eavanvalkenburg): figure out serialization of DataModelT to record for storage.
         for record in records:
             # Note:
             # * Document id     = user provided value
@@ -270,16 +265,6 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
 
     @overload
     async def get(self, collection_name: str, key: str, with_embedding: bool = False, **kwargs) -> DataModelT:
-        """Gets a record.
-
-        Args:
-            collection_name (str): The name of the collection to get the record from.
-            key (str): The unique database key of the record.
-            with_embedding (bool): Whether to include the embedding in the result. (default: {False})
-
-        Returns:
-            MemoryRecord: The record.
-        """
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
 
@@ -298,23 +283,13 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
 
     @overload
     async def get_batch(
-        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+        self, keys: list[str], collection_name: str | None = None, with_embeddings: bool = False, **kwargs: Any
     ) -> list[MemoryRecord]:
-        """Gets a batch of records.
-
-        Args:
-            collection_name (str): The name of the collection to get the records from.
-            keys (List[str]): The unique database keys of the records.
-            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
-
-        Returns:
-            List[MemoryRecord]: The records.
-        """
         search_results = []
 
         for key in keys:
             search_result = await self.get(
-                collection_name=collection_name.lower(),
+                collection_name=self._get_collection_name(collection_name).lower(),
                 key=key,
                 with_embedding=with_embeddings,
             )
@@ -323,33 +298,16 @@ class AzureAISearchMemoryRecordService(MemoryRecordServiceBase[DataModelT, str])
         return search_results
 
     @overload
-    async def delete_batch(self, collection_name: str, keys: list[str]) -> None:
-        """Removes a batch of records.
-
-        Args:
-            collection_name (str): The name of the collection to remove the records from.
-            keys (List[str]): The unique database keys of the records to remove.
-
-        Returns:
-            None
-        """
-        for record_id in keys:
-            await self.remove(collection_name=collection_name.lower(), key=encode_id(record_id))
+    async def delete_batch(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> None:
+        await asyncio.gather(
+            *(self.remove(key=key, collection_name=self._get_collection_name(collection_name).lower()) for key in keys)
+        )
 
     @overload
-    async def delete(self, collection_name: str, key: str) -> None:
-        """Removes a record.
-
-        Args:
-            collection_name (str): The name of the collection to remove the record from.
-            key (str): The unique database key of the record to remove.
-
-        Returns:
-            None
-        """
+    async def delete(self, key: str, collection_name: str | None = None, **kwargs: Any) -> None:
         # Look up Search client class to see if exists or create
-        search_client = self._search_index_client.get_search_client(collection_name.lower())
-        docs_to_delete = {SEARCH_FIELD_ID: encode_id(key)}
+        search_client = self._search_index_client.get_search_client(self._get_collection_name(collection_name).lower())
+        docs_to_delete = {SEARCH_FIELD_ID: key}
 
         await search_client.delete_documents(documents=[docs_to_delete])
         await search_client.close()
