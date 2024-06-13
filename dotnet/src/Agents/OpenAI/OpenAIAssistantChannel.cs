@@ -35,12 +35,6 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             RunStatus.Cancelled,
         ];
 
-    // Capture kernel function references for content processing
-    private sealed record KernelFunctionStep(string ToolCallId, KernelFunction Function, KernelArguments Arguments);
-
-    // Capture kernel function result for content processing
-    private sealed record KernelFunctionResult(string ToolCallId, FunctionResult Result);
-
     private readonly AssistantsClient _client = client;
     private readonly string _threadId = threadId;
     private readonly Dictionary<string, ToolDefinition[]> _agentTools = [];
@@ -101,7 +95,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
-        Dictionary<string, KernelFunctionStep> functionSteps = [];
+        Dictionary<string, FunctionCallContent> functionSteps = [];
 
         do
         {
@@ -120,17 +114,17 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 this.Logger.LogDebug("[{MethodName}] Processing run steps: {RunId}", nameof(InvokeAsync), run.Id);
 
                 // Execute functions in parallel and post results at once.
-                KernelFunctionStep[] activeFunctionSteps = steps.Data.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
+                FunctionCallContent[] activeFunctionSteps = steps.Data.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
                 if (activeFunctionSteps.Length > 0)
                 {
                     // Emit function-call content
                     yield return GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
 
                     // Invoke functions for each tool-step
-                    IEnumerable<Task<KernelFunctionResult>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
+                    IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
 
                     // Block for function results
-                    KernelFunctionResult[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
+                    FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
 
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
@@ -171,7 +165,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                         // Process function result content
                         else if (toolCall is RunStepFunctionToolCall toolFunction)
                         {
-                            KernelFunctionStep functionStep = functionSteps[toolFunction.Id]; // Function step always captured on invocation
+                            FunctionCallContent functionStep = functionSteps[toolFunction.Id]; // Function step always captured on invocation
                             content = GenerateFunctionResultContent(agent.GetName(), functionStep, toolFunction.Output);
                         }
 
@@ -263,13 +257,13 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         }
 
         // Local function to capture kernel function state for further processing (participates in method closure).
-        IEnumerable<KernelFunctionStep> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
+        IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
         {
             if (step.Status == RunStepStatus.InProgress && step.StepDetails is RunStepToolCallDetails callDetails)
             {
                 foreach (RunStepFunctionToolCall toolCall in callDetails.ToolCalls.OfType<RunStepFunctionToolCall>())
                 {
-                    KernelFunction function = agent.Kernel.GetKernelFunction(toolCall.Name, FunctionDelimiter);
+                    var nameParts = FunctionName.Parse(toolCall.Name, FunctionDelimiter.ToString());
 
                     KernelArguments functionArguments = [];
                     if (!string.IsNullOrWhiteSpace(toolCall.Arguments))
@@ -281,10 +275,11 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                         }
                     }
 
-                    // Capture function-step for tool processing and content generation
-                    KernelFunctionStep functionStep = new(toolCall.Id, function, functionArguments);
-                    functionSteps.Add(functionStep.ToolCallId, functionStep);
-                    yield return functionStep;
+                    var content = new FunctionCallContent(nameParts.Name, nameParts.PluginName, toolCall.Id, functionArguments);
+
+                    functionSteps.Add(toolCall.Id, content);
+
+                    yield return content;
                 }
             }
         }
@@ -412,26 +407,19 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             };
     }
 
-    private static ChatMessageContent GenerateFunctionCallContent(string agentName, KernelFunctionStep[] functionSteps)
+    private static ChatMessageContent GenerateFunctionCallContent(string agentName, FunctionCallContent[] functionSteps)
     {
         ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
         {
             AuthorName = agentName
         };
 
-        functionCallContent.Items.AddRange(
-            functionSteps.Select(
-                s =>
-                    new FunctionCallContent(
-                        s.Function.Name,
-                        s.Function.PluginName,
-                        s.ToolCallId,
-                        s.Arguments)));
+        functionCallContent.Items.AddRange(functionSteps);
 
         return functionCallContent;
     }
 
-    private static ChatMessageContent GenerateFunctionResultContent(string agentName, KernelFunctionStep functionStep, string result)
+    private static ChatMessageContent GenerateFunctionResultContent(string agentName, FunctionCallContent functionStep, string result)
     {
         ChatMessageContent functionCallContent = new(AuthorRole.Tool, content: null)
         {
@@ -440,17 +428,17 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
         functionCallContent.Items.Add(
             new FunctionResultContent(
-                functionStep.Function.Name,
-                functionStep.Function.PluginName,
-                functionStep.ToolCallId,
+                functionStep.FunctionName,
+                functionStep.PluginName,
+                functionStep.Id,
                 result));
 
         return functionCallContent;
     }
 
-    private static Task<KernelFunctionResult>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, KernelFunctionStep[] functionSteps, CancellationToken cancellationToken)
+    private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionSteps, CancellationToken cancellationToken)
     {
-        Task<KernelFunctionResult>[] functionTasks = new Task<KernelFunctionResult>[functionSteps.Length];
+        Task<FunctionResultContent>[] functionTasks = new Task<FunctionResultContent>[functionSteps.Length];
 
         for (int index = 0; index < functionSteps.Length; ++index)
         {
@@ -459,32 +447,30 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
         return functionTasks;
 
-        async Task<KernelFunctionResult> ExecuteFunctionStepAsync(KernelFunctionStep functionStep)
+        async Task<FunctionResultContent> ExecuteFunctionStepAsync(FunctionCallContent functionStep)
         {
-            FunctionResult functionResult = await functionStep.Function.InvokeAsync(agent.Kernel, functionStep.Arguments, cancellationToken).ConfigureAwait(false);
+            FunctionResultContent functionResult = await functionStep.InvokeAsync(agent.Kernel, cancellationToken).ConfigureAwait(false);
 
-            KernelFunctionResult kernelFunctionResult = new(functionStep.ToolCallId, functionResult);
-
-            return kernelFunctionResult;
+            return functionResult;
         }
     }
 
-    private static ToolOutput[] GenerateToolOutputs(KernelFunctionResult[] functionResults)
+    private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
     {
         ToolOutput[] toolOutputs = new ToolOutput[functionResults.Length];
 
         for (int index = 0; index < functionResults.Length; ++index)
         {
-            KernelFunctionResult functionResult = functionResults[index];
+            FunctionResultContent functionResult = functionResults[index];
 
-            object resultValue = functionResult.Result.GetValue<object>() ?? string.Empty;
+            object resultValue = (functionResult.Result as FunctionResult)?.GetValue<object>() ?? string.Empty;
 
             if (resultValue is not string textResult)
             {
                 textResult = JsonSerializer.Serialize(resultValue);
             }
 
-            toolOutputs[index] = new ToolOutput(functionResult.ToolCallId, textResult!);
+            toolOutputs[index] = new ToolOutput(functionResult.CallId, textResult!);
         }
 
         return toolOutputs;
