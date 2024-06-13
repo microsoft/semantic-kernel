@@ -9,17 +9,17 @@ using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 using Xunit.Abstractions;
-using static SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch.AzureAISearchMemoryFixture;
+using static SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch.AzureAISearchVectorStoreFixture;
 using System.Text.Json.Nodes;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 
 /// <summary>
-/// Integration tests for <see cref="AzureAISearchMemoryRecordService{TDataModel}"/> class.
+/// Integration tests for <see cref="AzureAISearchVectorRecordStore{TRecord}"/> class.
 /// Tests work with Azure AI Search Instance.
 /// </summary>
-[Collection("AzureAISearchMemoryCollection")]
-public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper output, AzureAISearchMemoryFixture fixture) : IClassFixture<AzureAISearchMemoryFixture>
+[Collection("AzureAISearchVectorStoreCollection")]
+public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output, AzureAISearchVectorStoreFixture fixture) : IClassFixture<AzureAISearchVectorStoreFixture>
 {
     // If null, all tests will be enabled
     private const string SkipReason = null; //"Requires Azure AI Search Service instance up and running";
@@ -27,15 +27,15 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task ItCanUpsertDocumentToMemoryStoreAsync(bool useRecordDefinition)
+    public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange
-        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
         {
             DefaultCollectionName = fixture.TestIndexName,
-            MemoryRecordDefinition = useRecordDefinition ? fixture.MemoryRecordDefinition : null
+            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
 
         // Act
         var hotel = new Hotel()
@@ -79,14 +79,14 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanUpsertManyDocumentsToMemoryStoreAsync()
+    public async Task ItCanUpsertManyDocumentsToVectorStoreAsync()
     {
         // Arrange
-        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
         {
             DefaultCollectionName = fixture.TestIndexName
         };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
 
         // Act
         var results = sut.UpsertBatchAsync(
@@ -117,15 +117,15 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    public async Task ItCanGetDocumentFromMemoryStoreAsync(bool includeVectors, bool useRecordDefinition)
+    public async Task ItCanGetDocumentFromVectorStoreAsync(bool includeVectors, bool useRecordDefinition)
     {
         // Arrange
-        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
         {
             DefaultCollectionName = fixture.TestIndexName,
-            MemoryRecordDefinition = useRecordDefinition ? fixture.MemoryRecordDefinition : null
+            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
 
         // Act
         var getResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = includeVectors });
@@ -152,14 +152,14 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanGetManyDocumentsFromMemoryStoreAsync()
+    public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
-        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
         {
             DefaultCollectionName = fixture.TestIndexName
         };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
 
         // Act
         var hotels = sut.GetBatchAsync(["BaseSet-1", "BaseSet-2", "BaseSet-3", "BaseSet-4"], new GetRecordOptions { IncludeVectors = true });
@@ -180,46 +180,46 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
     public async Task ItThrowsForPartialGetBatchResultAsync()
     {
         // Arrange.
-        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
         {
             DefaultCollectionName = fixture.TestIndexName
         };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
 
         // Act.
-        await Assert.ThrowsAsync<MemoryServiceCommandExecutionException>(async () => await sut.GetBatchAsync(["BaseSet-1", "BaseSet-5", "BaseSet-2"]).ToListAsync());
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetBatchAsync(["BaseSet-1", "BaseSet-5", "BaseSet-2"]).ToListAsync());
     }
 
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task ItCanRemoveDocumentFromMemoryStoreAsync(bool useRecordDefinition)
+    public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange
-        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
         {
             DefaultCollectionName = fixture.TestIndexName,
-            MemoryRecordDefinition = useRecordDefinition ? fixture.MemoryRecordDefinition : null
+            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
         await sut.UpsertAsync(CreateTestHotel("Remove-1"));
 
         // Act
         await sut.DeleteAsync("Remove-1");
 
         // Assert
-        await Assert.ThrowsAsync<MemoryServiceCommandExecutionException>(async () => await sut.GetAsync("Remove-1", new GetRecordOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("Remove-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanRemoveManyDocumentsFromMemoryStoreAsync()
+    public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
-        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel>
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
         {
             DefaultCollectionName = fixture.TestIndexName
         };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-1"));
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-2"));
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-3"));
@@ -228,44 +228,44 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
         await sut.DeleteBatchAsync(["RemoveMany-1", "RemoveMany-2", "RemoveMany-3"]);
 
         // Assert
-        await Assert.ThrowsAsync<MemoryServiceCommandExecutionException>(async () => await sut.GetAsync("RemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
-        await Assert.ThrowsAsync<MemoryServiceCommandExecutionException>(async () => await sut.GetAsync("RemoveMany-2", new GetRecordOptions { IncludeVectors = true }));
-        await Assert.ThrowsAsync<MemoryServiceCommandExecutionException>(async () => await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-2", new GetRecordOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
     public async Task ItThrowsCommandExecutionExceptionForFailedConnectionAsync()
     {
         // Arrange
-        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel> { DefaultCollectionName = fixture.TestIndexName };
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel> { DefaultCollectionName = fixture.TestIndexName };
         var searchIndexClient = new SearchIndexClient(new Uri("https://localhost:12345"), new AzureKeyCredential("12345"));
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(searchIndexClient, options);
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(searchIndexClient, options);
 
         // Act & Assert
-        await Assert.ThrowsAsync<MemoryServiceCommandExecutionException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
     public async Task ItThrowsCommandExecutionExceptionForFailedAuthenticationAsync()
     {
         // Arrange
-        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel> { DefaultCollectionName = fixture.TestIndexName };
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel> { DefaultCollectionName = fixture.TestIndexName };
         var searchIndexClient = new SearchIndexClient(new Uri(fixture.Config.ServiceUrl), new AzureKeyCredential("12345"));
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(searchIndexClient, options);
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(searchIndexClient, options);
 
         // Act & Assert
-        await Assert.ThrowsAsync<MemoryServiceCommandExecutionException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
     public async Task ItThrowsMappingExceptionForFailedMapperAsync()
     {
         // Arrange
-        var options = new AzureAISearchMemoryRecordServiceOptions<Hotel> { DefaultCollectionName = fixture.TestIndexName, MapperType = AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper, JsonObjectCustomMapper = new FailingMapper() };
-        var sut = new AzureAISearchMemoryRecordService<Hotel>(fixture.SearchIndexClient, options);
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel> { DefaultCollectionName = fixture.TestIndexName, MapperType = AzureAISearchRecordMapperType.JsonObjectCustomMapper, JsonObjectCustomMapper = new FailingMapper() };
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
 
         // Act & Assert
-        await Assert.ThrowsAsync<MemoryDataModelMappingException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
     private static Hotel CreateTestHotel(string hotelId) => new()
@@ -285,7 +285,7 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
         }
     };
 
-    private class FailingMapper : IMemoryRecordMapper<Hotel, JsonObject>
+    private class FailingMapper : IVectorStoreRecordMapper<Hotel, JsonObject>
     {
         public JsonObject MapFromDataToStorageModel(Hotel dataModel)
         {
