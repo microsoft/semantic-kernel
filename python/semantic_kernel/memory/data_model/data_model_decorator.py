@@ -1,13 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
+import logging
 from inspect import signature
 
 from semantic_kernel.memory.data_model.memory_record_fields import (
     Field,
-    MemoryRecordDataField,
-    MemoryRecordVectorField,
+    MemoryRecordDefinition,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def datamodel(
@@ -31,7 +32,7 @@ def datamodel(
 def _parse_cls(cls):
     # get fields and annotations
     setattr(cls, "__sk_data_model__", True)
-    fields = {}
+    fields = []
     cls_sig = signature(cls)
     for field in cls_sig.parameters.values():
         annotation = field.annotation
@@ -47,18 +48,11 @@ def _parse_cls(cls):
                     field_type = annotation(name=field.name)
                     break
         else:
-            field_type = MemoryRecordDataField(field.name)
+            logger.info('Field "%s" does not have a Field annotation, will not be part of the record.', field.name)
         if field_type.name is None or field_type.name != field.name:
             field_type.name = field.name
-        fields[field.name] = field_type
-    # check if any data fields, that have a vector field defined refers to a existing vector field
-    for field in fields.values():
-        if isinstance(field, MemoryRecordDataField) and field.has_embedding:
-            vector_field_name = field.embedding_property_name
-            if vector_field_name not in fields:
-                raise ValueError(f"Field {vector_field_name} not found in data model")
-            vector_field = fields[vector_field_name]
-            if not isinstance(vector_field, MemoryRecordVectorField):
-                raise ValueError(f"Field {vector_field_name} is not a vector field")
-    setattr(cls, "__sk_data_model_fields__", fields)
+        fields.append(field_type)
+    model = MemoryRecordDefinition(fields=fields)
+    model.validate_fields()
+    setattr(cls, "__sk_data_model_fields__", model)
     return cls
