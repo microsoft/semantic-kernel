@@ -63,6 +63,24 @@ class DataUri(KernelBaseModel, validate_assignment=True):
                 raise ContentInitializationError("Invalid base64 data.") from exc
         return self
 
+    @field_validator("parameters", mode="before")
+    def _validate_parameters(cls, value: list[str] | dict[str, str] | None = None) -> dict[str, str]:
+        if not value:
+            return {}
+        if isinstance(value, dict):
+            return value
+
+        new: dict[str, str] = {}
+        for item in value:
+            item = item.strip()
+            if not item:
+                continue
+            if "=" not in item:
+                raise ContentInitializationError("Invalid data uri format. The parameter is missing a value.")
+            name, val = item.split("=", maxsplit=1)
+            new[name] = val
+        return new
+
     @classmethod
     def from_data_uri(cls: type[_T], data_uri: str | Url, default_mime_type: str = "text/plain") -> _T:
         """Create a DataUri object from a data URI string or pydantic URL."""
@@ -90,23 +108,6 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         if not matches.get("mime_type"):
             matches["mime_type"] = default_mime_type
         return cls(**matches)
-
-    @field_validator("parameters", mode="before")
-    def _validate_parameters(cls, value: list[str] | dict[str, str] | None = None) -> dict[str, str]:
-        if not value:
-            return {}
-        if isinstance(value, dict):
-            return value
-
-        new: dict[str, str] = {}
-        for item in value:
-            if item.strip() == "":
-                continue
-            if "=" not in item:
-                raise ContentInitializationError("Invalid data uri format. The parameter is missing a value.")
-            name, val = item.split("=", maxsplit=1)
-            new[name] = val
-        return new
 
     def to_string(self, metadata: dict[str, str] = {}) -> str:
         """Return the data uri as a string."""
