@@ -27,7 +27,7 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
         // Execution settings with configured ResultsPerPrompt property.
         var executionSettings = new OpenAIPromptExecutionSettings { MaxTokens = 200, ResultsPerPrompt = 3 };
 
-        var contents = await kernel.InvokePromptAsync<IReadOnlyList<KernelContent>>("Write one paragraph about why AI is awesome", new(executionSettings));
+        var contents = await kernel.InvokePromptAsync<IReadOnlyList<KernelContent>>("Write a paragraph about why AI is awesome", new(executionSettings));
 
         foreach (var content in contents!)
         {
@@ -53,7 +53,7 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
         var executionSettings = new OpenAIPromptExecutionSettings { MaxTokens = 200, ResultsPerPrompt = 3 };
 
         var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Write one paragraph about why AI is awesome");
+        chatHistory.AddUserMessage("Write a paragraph about why AI is awesome");
 
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -82,7 +82,7 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
 
         // Initializing a function with execution settings for multiple results.
         // We ask AI to write one paragraph, but in execution settings we specified that we want 3 different results for this request.
-        var function = KernelFunctionFactory.CreateFromPrompt("Write one paragraph about why AI is awesome", executionSettings, "GetParagraph");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a paragraph about why AI is awesome", executionSettings, "GetParagraph");
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
 
         kernel.Plugins.Add(plugin);

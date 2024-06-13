@@ -467,6 +467,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
         }
 
+        // Otherwise, return multiple results
         return new FunctionResult(this, chatContents, kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
     }
 
