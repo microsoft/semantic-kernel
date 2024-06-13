@@ -33,7 +33,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgentAsync()
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =

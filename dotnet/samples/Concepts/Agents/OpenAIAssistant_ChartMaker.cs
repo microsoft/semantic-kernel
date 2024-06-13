@@ -21,7 +21,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
     private const string AgentInstructions = "Create charts as requested without explanation.";
 
     [Fact]
-    public async Task RunAsync()
+    public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
         // Define the agent
         OpenAIAssistantAgent agent =

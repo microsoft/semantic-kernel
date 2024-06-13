@@ -14,7 +14,7 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
     protected override bool ForceOpenAI => true;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseCodeInterpreterToolWithOpenAIAssistantAgentAsync()
     {
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -33,7 +33,7 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("Use code to determine the value of term in the Fibonacci sequence that does not exceed a value of 101?");
+            await InvokeAgentAsync("Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
         }
         finally
         {

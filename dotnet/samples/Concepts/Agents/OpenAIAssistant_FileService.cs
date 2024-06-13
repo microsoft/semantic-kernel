@@ -8,7 +8,7 @@ using Resources;
 namespace Agents;
 
 /// <summary>
-/// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
+/// Demonstrate uploading and retrieving files with <see cref="OpenAIFileService"/> .
 /// </summary>
 public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(output)
 {
@@ -18,7 +18,7 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
     protected override bool ForceOpenAI => true;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UploadAndRetreiveFilesAsync()
     {
         var openAIClient = new AssistantsClient(TestConfiguration.OpenAI.ApiKey);
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
@@ -57,10 +57,11 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
                 _ => new BinaryContent(data, mimeType) { Uri = uri, InnerContent = fileName, Metadata = metadata }
             };
 
+            // Display the the file-name and mime-tyupe for each content type.
             Console.WriteLine($"File: {fileName} - {mimeType}");
 
-            // Images tostring are different from the graduated contents for retrocompatibility
-            Console.WriteLine(content.ToString());
+            // Display the each content type-name.
+            Console.WriteLine($"Type: {content}");
 
             // Delete the test file remotely
             await openAIClient.DeleteFileAsync(file.Id);
