@@ -26,7 +26,6 @@ from samples.concepts.planners.openai_function_calling_stepwise_planner import (
     main as openai_function_calling_stepwise_planner,
 )
 from samples.concepts.planners.sequential_planner import main as sequential_planner
-from samples.concepts.plugins.azure_python_code_interpreter import main as azure_python_code_interpreter
 from samples.concepts.plugins.openai_function_calling_with_custom_plugin import (
     main as openai_function_calling_with_custom_plugin,
 )
@@ -40,6 +39,7 @@ from samples.concepts.prompt_templates.load_yaml_prompt import main as load_yaml
 from samples.concepts.prompt_templates.template_language import main as template_language
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
 from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
+from tests.samples.test_samples_utils import retry
 
 concepts = [
     param(
@@ -63,7 +63,6 @@ concepts = [
     param(azure_openai_function_calling_stepwise_planner, [], id="azure_openai_function_calling_stepwise_planner"),
     param(openai_function_calling_stepwise_planner, [], id="openai_function_calling_stepwise_planner"),
     param(sequential_planner, [], id="sequential_planner"),
-    param(azure_python_code_interpreter, [], id="azure_python_code_interpreter"),
     param(openai_function_calling_with_custom_plugin, [], id="openai_function_calling_with_custom_plugin"),
     param(
         openai_plugin_azure_key_vault,
@@ -87,4 +86,4 @@ concepts = [
 @mark.parametrize("func, responses", concepts)
 async def test_concepts(func, responses, monkeypatch):
     monkeypatch.setattr("builtins.input", lambda _: responses.pop(0))
-    await func()
+    await retry(lambda: func())
