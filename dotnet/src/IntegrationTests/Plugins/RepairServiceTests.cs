@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -213,6 +215,61 @@ public class RepairServiceTests
         Assert.Equal(count + 2, repairs?.Length);
     }
 
+    [Fact] // (Skip = "This test is for manual verification.")
+    public async Task UseFunctionHandlerAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Data["FunctionStack"] = new Stack();
+        using var clientHandler = new HttpClientHandler();
+        using var functionHandler = new FunctionMessageHandler(clientHandler);
+        kernel.FunctionInvocationFilters.Add(functionHandler);
+        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
+
+        using HttpClient httpClient = new(functionHandler);
+
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
+            "RepairService",
+            stream,
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+
+        // List All Repairs
+        var result = await plugin["listRepairs"].InvokeAsync(kernel);
+
+        Assert.NotNull(result);
+        var repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
+        Assert.True(repairs?.Length > 0);
+        var count = repairs?.Length ?? 0;
+
+        // Create Repair - oil change
+        var arguments = new KernelArguments
+        {
+            ["payload"] = """{ "title": "Engine oil change", "description": "Need to drain the old engine oil and replace it with fresh oil.", "assignedTo": "", "date": "", "image": "" }"""
+        };
+        result = await plugin["createRepair"].InvokeAsync(kernel, arguments);
+
+        Assert.NotNull(result);
+        Assert.Equal("New repair created", result.ToString());
+
+        // Create Repair - brake pads change
+        arguments = new KernelArguments
+        {
+            ["payload"] = """{ "title": "Brake pads change", "description": "Need to replace the brake pads on all wheels.", "assignedTo": "", "date": "", "image": "" }"""
+        };
+        result = await plugin["createRepair"].InvokeAsync(kernel, arguments);
+
+        Assert.NotNull(result);
+        Assert.Equal("New repair created", result.ToString());
+
+        // List All Repairs
+        result = await plugin["listRepairs"].InvokeAsync(kernel);
+
+        Assert.NotNull(result);
+        repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
+        Assert.True(repairs?.Length > 0);
+        Assert.Equal(count + 2, repairs?.Length);
+    }
+
     public sealed class Repair
     {
         [JsonPropertyName("id")]
@@ -260,6 +317,42 @@ public class RepairServiceTests
         {
             // Modify the HttpRequestMessage
             request.Headers.Add("CustomHeader", "CustomValue");
+
+            // Call the next handler in the pipeline
+            return await base.SendAsync(request, cancellationToken);
+        }
+    }
+
+    public sealed class FunctionMessageHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler), IFunctionInvocationFilter
+    {
+        private readonly AsyncLocal<Stack<KernelFunction>> _asyncLocalStack = new();
+
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            try
+            {
+                this._asyncLocalStack.Value ??= new Stack<KernelFunction>();
+                this._asyncLocalStack.Value.Push(context.Function);
+
+                await next(context);
+            }
+            finally
+            {
+                this._asyncLocalStack.Value?.Pop();
+            }
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            // Modify the HttpRequestMessage
+            if (this._asyncLocalStack.Value is not null)
+            {
+                KernelFunction? kernelFunction = this._asyncLocalStack.Value.Peek();
+                if (kernelFunction is not null)
+                {
+                    request.Headers.Add("FunctionName", kernelFunction.Name);
+                }
+            }
 
             // Call the next handler in the pipeline
             return await base.SendAsync(request, cancellationToken);
