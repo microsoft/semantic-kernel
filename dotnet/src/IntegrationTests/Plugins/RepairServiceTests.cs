@@ -183,7 +183,7 @@ public class RepairServiceTests
                 if (repair is not null && string.IsNullOrEmpty(repair.AssignedTo))
                 {
                     repair.Date = DateTime.UtcNow.ToString();
-                    repair.AssignedTo = "John Doe";
+                    repair.AssignedTo = "Karin Blair";
                     context.Arguments["payload"] = JsonSerializer.Serialize(repair);
                 }
             }
