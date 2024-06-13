@@ -657,7 +657,7 @@ public class KernelFunctionFromPromptTests
     [Theory]
     [InlineData("semantic-kernel", "This is my prompt {{$input}}")]
     [InlineData("handlebars", "This is my prompt {{input}}")]
-    public async Task ItUsesPromptWithNoopPromptTemplateFactoryAsync(string templateFormat, string template)
+    public async Task ItUsesPromptWithEchoPromptTemplateFactoryAsync(string templateFormat, string template)
     {
         // Arrange
         var mockTextGeneration = new Mock<ITextGenerationService>();
