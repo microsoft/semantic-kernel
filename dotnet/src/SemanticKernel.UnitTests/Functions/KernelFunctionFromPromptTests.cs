@@ -654,6 +654,128 @@ public class KernelFunctionFromPromptTests
         Assert.Equal("Test prompt as user message", messageContent.Content);
     }
 
+    [Fact]
+    public async Task InvokePromptAsyncWithTextGenerationReturnsSingleResultAsync()
+    {
+        var expectedTextContent = new TextContent("text", "model-id", metadata: new Dictionary<string, object?> { { "key", "value" } });
+        var fakeService = new FakeTextGenerationService(textContents: [expectedTextContent]);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        var result = await kernel.InvokePromptAsync("Prompt");
+
+        Assert.Equal("text", result.GetValue<string>());
+        Assert.Equal("text", result.GetValue<KernelContent>()!.ToString());
+
+        var actualTextContent = result.GetValue<TextContent>();
+
+        Assert.NotNull(actualTextContent);
+        Assert.Equal(result.Metadata, actualTextContent.Metadata);
+
+        Assert.Equal(expectedTextContent.ModelId, actualTextContent.ModelId);
+        Assert.Equal(expectedTextContent.Text, actualTextContent.Text);
+        Assert.Equal(expectedTextContent.Metadata, actualTextContent.Metadata);
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithTextGenerationReturnsMultipleResultsAsync()
+    {
+        List<TextContent> expectedTextContents =
+        [
+            new TextContent("text1", "model-id", metadata: new Dictionary<string, object?> { { "key1", "value1" } }),
+            new TextContent("text2", "model-id", metadata: new Dictionary<string, object?> { { "key2", "value2" } }),
+        ];
+
+        var fakeService = new FakeTextGenerationService(textContents: expectedTextContents);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        var result = await kernel.InvokePromptAsync("Prompt");
+
+        Assert.Throws<InvalidCastException>(() => result.GetValue<string>());
+        Assert.Throws<InvalidCastException>(() => result.GetValue<KernelContent>());
+
+        var actualTextContents = result.GetValue<IReadOnlyList<TextContent>>();
+
+        Assert.NotNull(actualTextContents);
+        Assert.Null(result.Metadata);
+
+        Assert.Equal(expectedTextContents.Count, actualTextContents.Count);
+
+        for (var i = 0; i < expectedTextContents.Count; i++)
+        {
+            Assert.Equal(expectedTextContents[i].ModelId, actualTextContents[i].ModelId);
+            Assert.Equal(expectedTextContents[i].Text, actualTextContents[i].Text);
+            Assert.Equal(expectedTextContents[i].Metadata, actualTextContents[i].Metadata);
+        }
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithChatCompletionReturnsSingleResultAsync()
+    {
+        var expectedChatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "chat-message", "model-id", new Dictionary<string, object?> { { "key", "value" } });
+        var fakeService = new FakeChatCompletionService(chatMessageContents: [expectedChatMessageContent]);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        var result = await kernel.InvokePromptAsync("Prompt");
+
+        Assert.Equal("chat-message", result.GetValue<string>());
+        Assert.Equal("chat-message", result.GetValue<KernelContent>()!.ToString());
+
+        var actualChatMessageContent = result.GetValue<ChatMessageContent>();
+
+        Assert.NotNull(actualChatMessageContent);
+        Assert.Equal(result.Metadata, expectedChatMessageContent.Metadata);
+
+        Assert.Equal(expectedChatMessageContent.ModelId, actualChatMessageContent.ModelId);
+        Assert.Equal(expectedChatMessageContent.Role, actualChatMessageContent.Role);
+        Assert.Equal(expectedChatMessageContent.Content, actualChatMessageContent.Content);
+        Assert.Equal(expectedChatMessageContent.Metadata, actualChatMessageContent.Metadata);
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithChatCompletionReturnsMultipleResultsAsync()
+    {
+        List<ChatMessageContent> expectedChatMessageContents =
+        [
+            new ChatMessageContent(AuthorRole.Assistant, "chat-message1", "model-id", new Dictionary<string, object?> { { "key1", "value1" } }),
+            new ChatMessageContent(AuthorRole.Assistant, "chat-message2", "model-id", new Dictionary<string, object?> { { "key2", "value2" } })
+        ];
+
+        var fakeService = new FakeChatCompletionService(chatMessageContents: expectedChatMessageContents);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => fakeService);
+        Kernel kernel = builder.Build();
+
+        var result = await kernel.InvokePromptAsync("Prompt");
+
+        Assert.Throws<InvalidCastException>(() => result.GetValue<string>());
+        Assert.Throws<InvalidCastException>(() => result.GetValue<KernelContent>());
+
+        var actualChatMessageContents = result.GetValue<IReadOnlyList<ChatMessageContent>>();
+
+        Assert.NotNull(actualChatMessageContents);
+        Assert.Null(result.Metadata);
+
+        Assert.Equal(expectedChatMessageContents.Count, actualChatMessageContents.Count);
+
+        for (var i = 0; i < expectedChatMessageContents.Count; i++)
+        {
+            Assert.Equal(expectedChatMessageContents[i].ModelId, actualChatMessageContents[i].ModelId);
+            Assert.Equal(expectedChatMessageContents[i].Role, actualChatMessageContents[i].Role);
+            Assert.Equal(expectedChatMessageContents[i].Content, actualChatMessageContents[i].Content);
+            Assert.Equal(expectedChatMessageContents[i].Metadata, actualChatMessageContents[i].Metadata);
+        }
+    }
+
     public enum KernelInvocationType
     {
         InvokePrompt,
@@ -695,6 +817,28 @@ public class KernelFunctionFromPromptTests
         {
             throw new NotImplementedException();
         }
+    }
+
+    private sealed class FakeTextGenerationService(IReadOnlyList<TextContent>? textContents = null) : ITextGenerationService
+    {
+        public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
+
+        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
+
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<TextContent>>(textContents ?? [new TextContent("Default result")]);
+    }
+
+    private sealed class FakeChatCompletionService(IReadOnlyList<ChatMessageContent>? chatMessageContents = null) : IChatCompletionService
+    {
+        public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<ChatMessageContent>>(chatMessageContents ?? [new(AuthorRole.Assistant, "Default result")]);
+
+        public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
     }
 
     #endregion
