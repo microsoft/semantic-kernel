@@ -12,10 +12,9 @@ kernel = Kernel()
 
 useAzureOpenAI = False
 model = "gpt-35-turbo" if useAzureOpenAI else "gpt-3.5-turbo"
-service_id = model
 
 kernel.add_service(
-    OpenAIChatCompletion(service_id=service_id, ai_model_id=model),
+    OpenAIChatCompletion(service_id=model, ai_model_id=model),
 )
 
 template = """
@@ -37,7 +36,7 @@ prompt_template_config = PromptTemplateConfig(
         InputVariable(name="chat_history", description="The conversation history", is_required=False, default=""),
         InputVariable(name="request", description="The user's request", is_required=True),
     ],
-    execution_settings=OpenAIChatPromptExecutionSettings(service_id=service_id, max_tokens=4000, temperature=0.2),
+    execution_settings=OpenAIChatPromptExecutionSettings(service_id=model, max_tokens=4000, temperature=0.2),
 )
 
 chat_function = kernel.add_function(
@@ -65,7 +64,7 @@ async def chat() -> bool:
 
     answer = await kernel.invoke(
         function=chat_function, arguments=KernelArguments(
-            user_input=user_input, chat_history=chat_history,
+            request=user_input, chat_history=chat_history,
         ),
     )
     chat_history.add_user_message(user_input)
