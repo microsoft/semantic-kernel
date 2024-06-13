@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Chat;
 
@@ -43,7 +42,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             Encoding.UTF8,
             metadata)
     {
-        this.ToolCallUpdate = chatUpdate.ToolCallUpdates;
+        this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
         this.FinishReason = chatUpdate?.FinishReason;
     }
 
@@ -52,7 +51,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     /// </summary>
     /// <param name="authorRole">Author role of the message</param>
     /// <param name="content">Content of the message</param>
-    /// <param name="tootToolCallUpdate">Tool call update</param>
+    /// <param name="tootToolCallUpdates">Tool call updates</param>
     /// <param name="completionsFinishReason">Completion finish reason</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="modelId">The model ID used to generate the content</param>
@@ -60,7 +59,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     internal OpenAIStreamingChatMessageContent(
         AuthorRole? authorRole,
         string? content,
-        StreamingChatToolCallUpdate? tootToolCallUpdate = null,
+        IReadOnlyList<StreamingChatToolCallUpdate>? tootToolCallUpdates = null,
         ChatFinishReason? completionsFinishReason = null,
         int choiceIndex = 0,
         string? modelId = null,
@@ -74,12 +73,12 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             Encoding.UTF8,
             metadata)
     {
-        this.ToolCallUpdate = tootToolCallUpdate;
+        this.ToolCallUpdates = tootToolCallUpdates;
         this.FinishReason = completionsFinishReason;
     }
 
     /// <summary>Gets any update information in the message about a tool call.</summary>
-    public StreamingChatToolCallUpdate? ToolCallUpdate { get; }
+    public IReadOnlyList<StreamingChatToolCallUpdate>? ToolCallUpdates { get; }
 
     /// <inheritdoc/>
     public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());

@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Azure.Core;
-using Azure.Core.Pipeline;
+using System.ClientModel.Primitives;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI.Core.AzureSdk;
 
@@ -15,9 +14,9 @@ internal sealed class CustomHostPipelinePolicy : HttpPipelineSynchronousPolicy
         this._endpoint = endpoint;
     }
 
-    public override void OnSendingRequest(HttpMessage message)
+    public override void OnSendingRequest(PipelineMessage message)
     {
         // Update current host to provided endpoint
-        message.Request?.Uri.Reset(this._endpoint);
+        message.Request.Uri = this._endpoint;
     }
 }

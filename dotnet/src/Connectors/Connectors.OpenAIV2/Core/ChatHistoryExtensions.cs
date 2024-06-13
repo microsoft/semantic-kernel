@@ -43,7 +43,13 @@ public static class ChatHistoryExtensions
                 (contentBuilder ??= new()).Append(contentUpdate);
             }
 
-            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatMessage.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+            if (chatMessage.ToolCallUpdates is not null)
+            {
+                foreach (var toolCallUpdate in chatMessage.ToolCallUpdates)
+                {
+                    OpenAIFunctionToolCall.TrackStreamingToolingUpdate(toolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                }
+            }
 
             // Is always expected to have at least one chunk with the role provided from a streaming message
             streamedRole ??= chatMessage.Role;

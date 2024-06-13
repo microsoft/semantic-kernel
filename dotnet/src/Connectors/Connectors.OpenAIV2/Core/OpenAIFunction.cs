@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Azure.AI.OpenAI;
 using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;

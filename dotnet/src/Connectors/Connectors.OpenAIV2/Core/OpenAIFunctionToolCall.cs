@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using Azure.AI.OpenAI;
 using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
