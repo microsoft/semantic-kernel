@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
 
@@ -330,7 +329,6 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             ChatSystemPrompt = this.ChatSystemPrompt,
             Logprobs = this.Logprobs,
             TopLogprobs = this.TopLogprobs,
-            AzureChatExtensionsOptions = this.AzureChatExtensionsOptions,
         };
     }
 
@@ -409,7 +407,6 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private string? _chatSystemPrompt;
     private bool? _logprobs;
     private int? _topLogprobs;
-    private AzureChatExtensionsOptions? _azureChatExtensionsOptions;
 
     #endregion
 }

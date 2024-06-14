@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using Azure.AI.OpenAI;
+using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -20,7 +20,7 @@ public static class OpenAIPluginCollectionExtensions
     /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
     public static bool TryGetFunctionAndArguments(
         this IReadOnlyKernelPluginCollection plugins,
-        ChatCompletionsFunctionToolCall functionToolCall,
+        ChatToolCall functionToolCall,
         [NotNullWhen(true)] out KernelFunction? function,
         out KernelArguments? arguments) =>
         plugins.TryGetFunctionAndArguments(new OpenAIFunctionToolCall(functionToolCall), out function, out arguments);
