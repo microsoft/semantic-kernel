@@ -6,8 +6,8 @@ from uuid import UUID, uuid4
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.memory.data_model.data_model_decorator import datamodel
-from semantic_kernel.memory.data_model.vector_record_fields import (
+from semantic_kernel.vectors.data_models.data_model_decorator import datamodel
+from semantic_kernel.vectors.data_models.vector_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,

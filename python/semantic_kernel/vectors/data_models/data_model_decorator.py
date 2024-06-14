@@ -2,16 +2,17 @@
 
 import logging
 from inspect import signature
+from typing import Any
 
 from semantic_kernel.exceptions.memory_connector_exceptions import DataModelException
-from semantic_kernel.memory.data_model.vector_record_fields import VectorStoreRecordDefinition, VectorStoreRecordField
-from semantic_kernel.memory.protocols.data_model_serde_protocol import DataModelSerdeProtocol
+from semantic_kernel.vectors.data_models.vector_record_fields import VectorStoreRecordDefinition, VectorStoreRecordField
+from semantic_kernel.vectors.protocols.data_model_serde_protocol import DataModelSerdeProtocol
 
 logger = logging.getLogger(__name__)
 
 
 def datamodel(
-    cls: object | None = None,
+    cls: Any | None = None,
 ):
     """Returns the class as a datamodel.
 
@@ -35,13 +36,13 @@ def datamodel(
         DataModelException: If there is a field with an embedding property name but no corresponding vector field.
     """
 
-    def wrap(cls: object):
+    def wrap(cls: Any):
         # get fields and annotations
+        cls_sig = signature(cls)
         if not isinstance(cls, DataModelSerdeProtocol):
             raise DataModelException("Data model must implement self.serialize and cls.deserialize methods.")
 
         fields = []
-        cls_sig = signature(cls)
         for field in cls_sig.parameters.values():
             annotation = field.annotation
             if getattr(annotation, "_name", "") == "Optional":

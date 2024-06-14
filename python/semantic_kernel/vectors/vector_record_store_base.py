@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
+from semantic_kernel.vectors.protocols.data_model_serde_protocol import DataModelSerdeProtocol
 
 TModel = TypeVar("TModel", bound=object)
 TKey = TypeVar("TKey")
@@ -14,7 +15,6 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
     def __init__(
         self,
         item_type: type[TModel],
-        key_type: type[TKey] | None = None,
         collection_name: str | None = None,
     ):
         """Create a VectorStoreBase instance.
@@ -36,14 +36,9 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
         model_fields = getattr(item_type, "__kernel_data_model_fields__")
         if not model_fields:
             raise ValueError(f"Item type {item_type} must have fields defined")
-        self._key_field = getattr(self._item_type, model_fields.key_field.name)
+        self._key_field = model_fields.key_field.name
         if not self._key_field:
-            raise ValueError(f"Item type {item_type} must have the key field defined: {model_fields.key_field.name}")
-        # TODO (eavanvalkenburg): do we need to store keytype or is it just used for typing?
-        if not key_type:
-            self._key_type: type[TKey] = type(self._key_field)
-        else:
-            self._key_type: type[TKey] = key_type
+            raise ValueError(f"Item type {item_type} must have the key field defined.")
 
     async def __aenter__(self):
         """Enter the context manager."""
@@ -58,12 +53,17 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
         pass
 
     @abstractmethod
-    async def upsert(self, record: TModel, collection_name: str | None = None, **kwargs: Any) -> TKey:
+    async def upsert(
+        self, record: TModel, collection_name: str | None = None, generate_vectors: bool = True, **kwargs: Any
+    ) -> TKey:
         """Upsert a record.
 
         Args:
             record (TModel): The record.
             collection_name (str, optional): The collection name. Defaults to None.
+            generate_vectors (bool): Whether to generate vectors. Defaults to True.
+                If there are no vector fields in the model or the vectors are created
+                by the service, this is ignored, defaults to True.
             **kwargs (Any): Additional arguments.
 
         Returns:
@@ -72,13 +72,16 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
 
     @abstractmethod
     async def upsert_batch(
-        self, records: list[TModel], collection_name: str | None = None, **kwargs: Any
+        self, records: list[TModel], collection_name: str | None = None, generate_vectors: bool = True, **kwargs: Any
     ) -> list[TKey]:
         """Upsert a batch of records.
 
         Args:
             records (list[TModel]): The record.
             collection_name (str, optional): The collection name. Defaults to None.
+            generate_vectors (bool): Whether to generate vectors. Defaults to True.
+                If there are no vector fields in the model or the vectors are created
+                by the service, this is ignored, defaults to True.
             **kwargs (Any): Additional arguments.
 
         Returns:
@@ -151,12 +154,14 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
 
     def _serialize_data_model_to_store_model(self, record: TModel) -> dict[str, Any]:
         """Internal function that should be overloaded by child classes to serialize the data model to the store model."""  # noqa: E501
-        assert hasattr(record, "serialize")  # nosec
-        return record.serialize()
+        if isinstance(record, DataModelSerdeProtocol):
+            return record.serialize()
+        raise ValueError("Item type must implement the DataModelSerdeProtocol")
 
     def _deserialize_store_model_to_data_model(self, record: dict[str, Any]) -> TModel:
         """Internal function that should be overloaded by child classes to deserialize the store model to the data model."""  # noqa: E501
-        assert hasattr(self._item_type, "deserialize")  # nosec
-        return self._item_type.deserialize(record)
+        if isinstance(self._item_type, DataModelSerdeProtocol):
+            return self._item_type.deserialize(record)
+        raise ValueError("Item type must implement the DataModelSerdeProtocol")
 
     # endregion

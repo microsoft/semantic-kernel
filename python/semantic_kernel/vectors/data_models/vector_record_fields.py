@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
+from typing import Any
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.memory_connector_exceptions import DataModelException
 
 
@@ -31,6 +33,9 @@ class VectorStoreRecordDataField(VectorStoreRecordField):
 class VectorStoreRecordVectorField(VectorStoreRecordField):
     """Memory record vector field."""
 
+    local_embedding: bool = True
+    embedding_settings: dict[str, PromptExecutionSettings | dict[str, Any]] = field(default_factory=dict)
+
 
 @dataclass
 class VectorStoreRecordDefinition:
@@ -38,17 +43,24 @@ class VectorStoreRecordDefinition:
 
     fields: list[VectorStoreRecordField]
 
+    def get_field_by_name(self, name: str) -> VectorStoreRecordField:
+        """Get the field by name."""
+        for fld in self.fields:
+            if fld.name == name:
+                return fld
+        raise ValueError(f"Field with name '{name}' not found.")
+
     @cached_property
     def field_names(self) -> list[str]:
         """Get the names of the fields."""
-        return [field.name for field in self.fields if field.name is not None]
+        return [fld.name for fld in self.fields if fld.name is not None]
 
     @cached_property
     def key_field(self) -> "VectorStoreRecordKeyField":
         """Get the key field."""
-        for field in self.fields:
-            if isinstance(field, VectorStoreRecordKeyField):
-                return field
+        for fld in self.fields:
+            if isinstance(fld, VectorStoreRecordKeyField):
+                return fld
         raise ValueError("Memory record definition must have a key field.")
 
     def validate_fields(self):
@@ -61,14 +73,14 @@ class VectorStoreRecordDefinition:
 
         """
         key_found = False
-        for field in self.fields:
-            if field.name is None:
+        for fld in self.fields:
+            if fld.name is None:
                 raise DataModelException("Fields must have a name.")
-            if isinstance(field, VectorStoreRecordDataField) and field.embedding_property_name not in self.field_names:
+            if isinstance(fld, VectorStoreRecordDataField) and fld.embedding_property_name not in self.field_names:
                 raise DataModelException(
                     "Data field with embedding property name must have a corresponding vector field."
                 )
-            if isinstance(field, VectorStoreRecordKeyField):
+            if isinstance(fld, VectorStoreRecordKeyField):
                 key_found = True
         if not key_found:
             raise DataModelException("Memory record definition must have a key field.")
