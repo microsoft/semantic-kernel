@@ -12,7 +12,7 @@ else:
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.function_choice_behaviors.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
@@ -82,12 +82,12 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 
     @model_validator(mode="after")
     def validate_function_calling_behaviors(self) -> Self:
-        """Check that only one of function_call_behavior and function_choice_behavior is set."""
+        """Check if function_call_behavior is set and if so, move to use function_choice_behavior instead."""
         # In an attempt to phase out the use of `function_call_behavior` in favor of `function_choice_behavior`,
         # we are re-writing the `function_call_behavior` to `function_choice_behavior` if the former is set.
         if self.function_call_behavior is not None:
             logger.warning(
-                "The function_call_behavior may be deprecated in the future. Switching to use the `function_choice_behavior` attribute instead."  # noqa: E501
+                "The `function_call_behavior` will deprecated in the future. Switching to use the `function_choice_behavior` attribute instead."  # noqa: E501
             )
             function_call_behavior = self.function_call_behavior.model_copy(deep=True)
             self.function_call_behavior = None

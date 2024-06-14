@@ -2,22 +2,32 @@
 
 import asyncio
 import os
-from functools import reduce
 from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions import KernelArguments
 
 if TYPE_CHECKING:
-    from semantic_kernel.functions import KernelFunction
+    pass
 
+
+system_message = """
+You are a chat bot. Your name is Mosscap and
+you have one goal: figure out what people need.
+Your full name, should you need to know it, is
+Splendid Speckled Mosscap. You communicate
+effectively, but you tend to answer with long
+flowery prose. You are also a math wizard,
+especially for adding and subtracting.
+You also excel at joke telling, where your tone is often sarcastic.
+Once you have the answer I am looking for,
+you will return a full answer to me as soon as possible.
+"""
 
 kernel = Kernel()
 
@@ -34,27 +44,33 @@ chat_function = kernel.add_function(
     plugin_name="ChatBot",
     function_name="Chat",
 )
-# enabling or disabling function calling is done by setting the function_call parameter for the completion.
-# when the function_call parameter is set to "auto" the model will decide which function to use, if any.
-# if you only want to use a specific function, set the name of that function in this parameter,
-# the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
-# if the model or api version does not support this you will get an error.
+
+plugin_path = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
+    "resources",
+)
+chat_plugin = kernel.add_plugin(plugin_name="function_choice_yaml", parent_directory=plugin_path)
 
 # Note: the number of responses for auto invoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
-execution_settings = OpenAIChatPromptExecutionSettings(
-    service_id="chat",
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["math", "time"]}
-    ),
-)
+# execution_settings = OpenAIChatPromptExecutionSettings(
+#     service_id="chat",
+#     max_tokens=2000,
+#     temperature=0.7,
+#     top_p=0.8,
+#     function_call_behavior=FunctionCallBehavior.EnableFunctions(
+#         auto_invoke=True, filters={"included_plugins": ["math", "time"]}
+#     ),
+# )
 
 history = ChatHistory()
 
-arguments = KernelArguments(settings=execution_settings)
+history.add_system_message(system_message)
+history.add_user_message("Hi there, who are you?")
+history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+
+# arguments = KernelArguments(settings=execution_settings)
+arguments = KernelArguments()
 
 
 def print_tool_calls(message: ChatMessageContent) -> None:
@@ -76,33 +92,33 @@ def print_tool_calls(message: ChatMessageContent) -> None:
     print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
 
 
-async def handle_streaming(
-    kernel: Kernel,
-    chat_function: "KernelFunction",
-    arguments: KernelArguments,
-) -> None:
-    response = kernel.invoke_stream(
-        chat_function,
-        return_function_results=False,
-        arguments=arguments,
-    )
+# async def handle_streaming(
+#     kernel: Kernel,
+#     chat_function: "KernelFunction",
+#     arguments: KernelArguments,
+# ) -> None:
+#     response = kernel.invoke_stream(
+#         chat_function,
+#         return_function_results=False,
+#         arguments=arguments,
+#     )
 
-    print("Mosscap:> ", end="")
-    streamed_chunks: list[StreamingChatMessageContent] = []
-    async for message in response:
-        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and isinstance(
-            message[0], StreamingChatMessageContent
-        ):
-            streamed_chunks.append(message[0])
-        else:
-            print(str(message[0]), end="")
+#     print("Mosscap:> ", end="")
+#     streamed_chunks: list[StreamingChatMessageContent] = []
+#     async for message in response:
+#         if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
+#             message[0], StreamingChatMessageContent
+#         ):
+#             streamed_chunks.append(message[0])
+#         else:
+#             print(str(message[0]), end="")
 
-    if streamed_chunks:
-        streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
-        print("Auto tool calls is disabled, printing returned tool calls...")
-        print_tool_calls(streaming_chat_message)
+#     if streamed_chunks:
+#         streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
+#         print("Auto tool calls is disabled, printing returned tool calls...")
+#         print_tool_calls(streaming_chat_message)
 
-    print("\n")
+#     print("\n")
 
 
 async def chat() -> bool:
@@ -121,19 +137,20 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
-    stream = True
+    stream = False
     if stream:
-        await handle_streaming(kernel, chat_function, arguments=arguments)
+        pass
+        # await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
-        result = await kernel.invoke(chat_function, arguments=arguments)
+        result = await kernel.invoke(chat_plugin["ChatBot"], arguments=arguments)
 
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
-        function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
-        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
-            print_tool_calls(result.value[0])
-            return True
+        # function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
+        # if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
+        #     print_tool_calls(result.value[0])
+        #     return True
 
         print(f"Mosscap:> {result}")
     return True

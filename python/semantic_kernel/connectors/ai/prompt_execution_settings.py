@@ -5,7 +5,7 @@ from typing import Any
 
 from pydantic import Field, model_validator
 
-from semantic_kernel.connectors.ai.function_choice_behaviors.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)

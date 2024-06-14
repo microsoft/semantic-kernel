@@ -13,7 +13,7 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_choice_behaviors.function_choice_behavior import (
+from semantic_kernel.connectors.ai.function_choice_behavior import (
     EnabledFunctions,
     FunctionChoiceBehavior,
     RequiredFunction,

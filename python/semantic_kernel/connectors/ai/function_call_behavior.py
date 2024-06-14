@@ -3,6 +3,7 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Literal
 
+import typing_extensions
 from pydantic.dataclasses import dataclass
 
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -14,13 +15,6 @@ if TYPE_CHECKING:
 
 DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS = 5
 
-####################################################################################################
-# NOTE: this class was the precursor to the now used FunctionChoiceBehavior class.
-#       The FunctionChoiceBehavior class should be used in place of this class.
-#       If this class is configured, it will be converted to a FunctionChoiceBehavior object
-#       as part of the prompt execution settings.
-####################################################################################################
-
 
 @dataclass
 class FunctionCallConfiguration:
@@ -30,8 +24,13 @@ class FunctionCallConfiguration:
     required_functions: list["KernelFunctionMetadata"] | None = None
 
 
+@typing_extensions.deprecated(
+    "The `FunctionCallBehavior` class is deprecated; use `FunctionChoiceBehavior` instead.", category=None
+)
 class FunctionCallBehavior(KernelBaseModel):
     """Class that controls function calling behavior.
+
+    DEPRECATED: This class has been replaced by FunctionChoiceBehavior.
 
     Args:
         enable_kernel_functions (bool): Enable kernel functions.
