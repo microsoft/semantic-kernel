@@ -12,7 +12,7 @@ Set the keys/secrets/endpoints as environment variables in your system. In Seman
 
 ####  Option 1: using OpenAI
 
-Add your [OpenAI Key](https://openai.com/api/) key to either your environment variables or to the `.env` file in the same folder (org Id only if you have multiple orgs):
+Add your [OpenAI Key](https://platform.openai.com/docs/overview) key to either your environment variables or to the `.env` file in the same folder (org Id only if you have multiple orgs):
 
 ```
 GLOBAL_LLM_SERVICE="OpenAI"
