@@ -10,17 +10,17 @@ from semantic_kernel.exceptions.function_exceptions import FunctionExecutionExce
 from semantic_kernel.kernel import Kernel
 
 
-def test_auth_callback():
+def auth_callback_test():
     return "sample_token"
 
 
 def test_it_can_be_instantiated(aca_python_sessions_unit_test_env):
-    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+    plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     assert plugin is not None
 
 
 def test_validate_endpoint(aca_python_sessions_unit_test_env):
-    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+    plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     assert plugin is not None
     assert str(plugin.pool_management_endpoint) == aca_python_sessions_unit_test_env["ACA_POOL_MANAGEMENT_ENDPOINT"]
 
@@ -34,7 +34,7 @@ def test_validate_endpoint(aca_python_sessions_unit_test_env):
     indirect=True,
 )
 def test_validate_endpoint_with_execute(aca_python_sessions_unit_test_env):
-    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+    plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     assert plugin is not None
     assert "/python/execute" not in str(plugin.pool_management_endpoint)
 
@@ -45,7 +45,7 @@ def test_validate_endpoint_with_execute(aca_python_sessions_unit_test_env):
     indirect=True,
 )
 def test_validate_endpoint_no_final_slash(aca_python_sessions_unit_test_env):
-    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+    plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     assert plugin is not None
     assert str(plugin.pool_management_endpoint) == "https://test.endpoint/"
 
@@ -53,11 +53,11 @@ def test_validate_endpoint_no_final_slash(aca_python_sessions_unit_test_env):
 @pytest.mark.parametrize("exclude_list", [["ACA_POOL_MANAGEMENT_ENDPOINT"]], indirect=True)
 def test_validate_settings_fail(aca_python_sessions_unit_test_env):
     with pytest.raises(FunctionInitializationError):
-        SessionsPythonTool(auth_callback=test_auth_callback)
+        SessionsPythonTool(auth_callback=auth_callback_test)
 
 
 def test_it_can_be_imported(kernel: Kernel, aca_python_sessions_unit_test_env):
-    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+    plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     assert kernel.add_plugin(plugin=plugin, plugin_name="PythonCodeInterpreter")
     assert kernel.get_plugin(plugin_name="PythonCodeInterpreter") is not None
     assert kernel.get_plugin(plugin_name="PythonCodeInterpreter").name == "PythonCodeInterpreter"
@@ -81,7 +81,7 @@ async def test_call_to_container_succeeds(mock_post, aca_python_sessions_unit_te
 
         mock_post.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+        plugin = SessionsPythonTool(auth_callback=auth_callback_test)
         result = await plugin.execute_code("print('hello world')")
 
         assert result is not None
@@ -104,7 +104,7 @@ async def test_call_to_container_fails_raises_exception(mock_post, aca_python_se
 
         mock_post.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+        plugin = SessionsPythonTool(auth_callback=auth_callback_test)
 
         with pytest.raises(Exception):
             _ = await plugin.execute_code("print('hello world')")
@@ -112,7 +112,7 @@ async def test_call_to_container_fails_raises_exception(mock_post, aca_python_se
 
 @pytest.mark.asyncio
 async def test_empty_call_to_container_fails_raises_exception(aca_python_sessions_unit_test_env):
-    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+    plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     with pytest.raises(FunctionExecutionException):
         await plugin.execute_code(code="")
 
@@ -135,17 +135,19 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
         mock_response = httpx.Response(
-            status_code=200, json={
-                '$id': '1', 
-                '$values': [
+            status_code=200,
+            json={
+                "$id": "1",
+                "$values": [
                     {
-                        '$id': '2', 
-                        'filename': 'test.txt', 
-                        'size': 123, 
-                        'last_modified_time': '2024-06-03T17:48:46.2672398Z'
+                        "$id": "2",
+                        "filename": "test.txt",
+                        "size": 123,
+                        "last_modified_time": "2024-06-03T17:48:46.2672398Z",
                     }
-                ]
-            }, request=mock_request
+                ],
+            },
+            request=mock_request,
         )
         mock_post.return_value = await async_return(mock_response)
 
@@ -176,17 +178,19 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
         mock_response = httpx.Response(
-            status_code=200, json={
-                '$id': '1', 
-                '$values': [
+            status_code=200,
+            json={
+                "$id": "1",
+                "$values": [
                     {
-                        '$id': '2', 
-                        'filename': 'test.txt', 
-                        'size': 123, 
-                        'last_modified_time': '2024-06-03T17:00:00.0000000Z'
+                        "$id": "2",
+                        "filename": "test.txt",
+                        "size": 123,
+                        "last_modified_time": "2024-06-03T17:00:00.0000000Z",
                     }
-                ]
-            }, request=mock_request
+                ],
+            },
+            request=mock_request,
         )
         mock_post.return_value = await async_return(mock_response)
 
@@ -203,7 +207,7 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
     [
         ("./file.py", "uploaded_test.txt", "/mnt/data/uploaded_test.txt"),
         ("./file.py", "/mnt/data/input.py", "/mnt/data/input.py"),
-    ]
+    ],
 )
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
@@ -215,25 +219,27 @@ async def test_upload_file_with_buffer(
     async def async_return(result):
         return result
 
-    with patch(
-        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
-        return_value="test_token",
-    ), patch("builtins.open", mock_open(read_data="print('hello, world~')")):
-
+    with (
+        patch(
+            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+            return_value="test_token",
+        ),
+        patch("builtins.open", mock_open(read_data="print('hello, world~')")),
+    ):
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
         mock_response = httpx.Response(
             status_code=200,
             json={
-                '$id': '1',
-                '$values': [
+                "$id": "1",
+                "$values": [
                     {
-                        '$id': '2',
-                        'filename': expected_remote_file_path,
-                        'size': 456,
-                        'last_modified_time': '2024-06-03T17:00:00.0000000Z'
+                        "$id": "2",
+                        "filename": expected_remote_file_path,
+                        "size": 456,
+                        "last_modified_time": "2024-06-03T17:00:00.0000000Z",
                     }
-                ]
+                ],
             },
             request=mock_request,
         )
@@ -276,11 +282,21 @@ async def test_list_files(mock_get, aca_python_sessions_unit_test_env):
         mock_response = httpx.Response(
             status_code=200,
             json={
-                '$id': '1',
-                '$values': [
-                    {'$id': '2', 'filename': 'test1.txt', 'size': 123, 'last_modified_time': '2024-06-03T17:00:00.0000000Z'},  # noqa: E501
-                    {'$id': '3', 'filename': 'test2.txt', 'size': 456, 'last_modified_time': '2024-06-03T18:00:00.0000000Z'}  # noqa: E501
-                ]
+                "$id": "1",
+                "$values": [
+                    {
+                        "$id": "2",
+                        "filename": "test1.txt",
+                        "size": 123,
+                        "last_modified_time": "2024-06-03T17:00:00.0000000Z",
+                    },  # noqa: E501
+                    {
+                        "$id": "3",
+                        "filename": "test2.txt",
+                        "size": 456,
+                        "last_modified_time": "2024-06-03T18:00:00.0000000Z",
+                    },  # noqa: E501
+                ],
             },
             request=mock_request,
         )

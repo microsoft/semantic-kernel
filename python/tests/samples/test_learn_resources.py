@@ -12,6 +12,7 @@ from samples.learn_resources.serializing_prompts import main as serializing_prom
 from samples.learn_resources.templates import main as templates
 from samples.learn_resources.using_the_kernel import main as using_the_kernel
 from samples.learn_resources.your_first_prompt import main as your_first_prompt
+from tests.samples.test_samples_utils import retry
 
 
 @mark.asyncio
@@ -45,6 +46,6 @@ from samples.learn_resources.your_first_prompt import main as your_first_prompt
 async def test_learn_resources(func, responses, monkeypatch):
     monkeypatch.setattr("builtins.input", lambda _: responses.pop(0))
     if func.__module__ == "samples.learn_resources.your_first_prompt":
-        await func(delay=10)
+        await retry(lambda: func(delay=10))
         return
-    await func()
+    await retry(lambda: func())
