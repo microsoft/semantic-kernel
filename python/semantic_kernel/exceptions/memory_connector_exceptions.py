@@ -8,6 +8,10 @@ class MemoryConnectorException(KernelException):
     pass
 
 
+class DataModelException(MemoryConnectorException):
+    pass
+
+
 class MemoryConnectorInitializationError(MemoryConnectorException):
     pass
 
@@ -17,6 +21,7 @@ class MemoryConnectorResourceNotFound(MemoryConnectorException):
 
 
 __all__ = [
+    "DataModelException",
     "MemoryConnectorException",
     "MemoryConnectorInitializationError",
     "MemoryConnectorResourceNotFound",

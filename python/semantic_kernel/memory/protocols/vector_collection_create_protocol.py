@@ -4,7 +4,6 @@ from typing import Protocol, runtime_checkable
 
 
 @runtime_checkable()
-class MemoryCollectionCreateProtocol(Protocol):
+class VectorCollectionCreateProtocol(Protocol):
     async def create_collection(self, collection_name: str, **kwargs):
-        """Create a collection."""
-        ...
+        pass

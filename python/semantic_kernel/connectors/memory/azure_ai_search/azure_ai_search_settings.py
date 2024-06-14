@@ -20,15 +20,18 @@ class AzureAISearchSettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "AZURE_AI_SEARCH_"
 
-    api_key: SecretStr
+    api_key: SecretStr | None = None
     endpoint: HttpsUrl
     index_name: str | None = None
 
     def model_dump(self) -> dict[str, str]:
         """Dump the model to a dictionary."""
         data = super().model_dump()
-        data.update({
-            "api_key": self.api_key.get_secret_value(),
-            "endpoint": str(self.endpoint),
-        })
+        data.update(
+            {
+                "endpoint": str(self.endpoint),
+            }
+        )
+        if self.api_key:
+            data["api_key"] = self.api_key.get_secret_value()
         return data

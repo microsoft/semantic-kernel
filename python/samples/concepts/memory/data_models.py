@@ -1,59 +1,113 @@
 # Copyright (c) Microsoft. All rights reserved.
 from dataclasses import dataclass, field
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID, uuid4
 
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.data_model.data_model_decorator import datamodel
-from semantic_kernel.memory.data_model.memory_record_fields import (
-    MemoryRecordDataField,
-    MemoryRecordKeyField,
-    MemoryRecordVectorField,
+from semantic_kernel.memory.data_model.vector_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordKeyField,
+    VectorStoreRecordVectorField,
 )
 
 
 @datamodel
 @dataclass
 class DataModelDataclass:
-    vector: Annotated[list[float], MemoryRecordVectorField]
+    vector: Annotated[list[float], VectorStoreRecordVectorField]
     other: str | None
-    key: Annotated[UUID, MemoryRecordKeyField()] = field(default_factory=uuid4)
-    content: Annotated[str, MemoryRecordDataField(has_embedding=True, embedding_property_name="vector")] = "content1"
+    key: Annotated[UUID, VectorStoreRecordKeyField()] = field(default_factory=uuid4)
+    content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
+        "content1"
+    )
+
+    def serialize(self) -> dict[str, Any]:
+        return {
+            "vector": self.vector,
+            "other": self.other,
+            "key": self.key,
+            "content": self.content,
+        }
+
+    @classmethod
+    def deserialize(cls, obj: dict[str, Any]) -> "DataModelDataclass":
+        return cls(
+            vector=obj["vector"],
+            other=obj["other"],
+            key=obj["key"],
+            content=obj["content"],
+        )
 
 
 @datamodel
 class DataModelPydantic(KernelBaseModel):
-    vector: Annotated[list[float], MemoryRecordVectorField]
+    vector: Annotated[list[float], VectorStoreRecordVectorField]
     other: str | None
-    key: Annotated[UUID, MemoryRecordKeyField()] = Field(default_factory=uuid4)
-    content: Annotated[str, MemoryRecordDataField(has_embedding=True, embedding_property_name="vector")] = "content1"
+    key: Annotated[UUID, VectorStoreRecordKeyField()] = Field(default_factory=uuid4)
+    content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
+        "content1"
+    )
+
+    def serialize(self) -> dict[str, Any]:
+        return self.model_dump()
+
+    @classmethod
+    def deserialize(cls, obj: dict[str, Any]) -> "DataModelDataclass":
+        return cls.model_validate(obj)
 
 
 @datamodel
 class DataModelPydanticComplex(KernelBaseModel):
-    vector: Annotated[list[float], MemoryRecordVectorField]
+    vector: Annotated[list[float], VectorStoreRecordVectorField]
     other: str | None
-    key: Annotated[UUID, Field(default_factory=uuid4), MemoryRecordKeyField()]
-    content: Annotated[str, MemoryRecordDataField(has_embedding=True, embedding_property_name="vector")] = "content1"
+    key: Annotated[UUID, Field(default_factory=uuid4), VectorStoreRecordKeyField()]
+    content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
+        "content1"
+    )
+
+    def serialize(self) -> dict[str, Any]:
+        return self.model_dump()
+
+    @classmethod
+    def deserialize(cls, obj: dict[str, Any]) -> "DataModelDataclass":
+        return cls.model_validate(obj)
 
 
 @datamodel
 class DataModelPython:
     def __init__(
         self,
-        vector: Annotated[list[float], MemoryRecordVectorField],
+        vector: Annotated[list[float], VectorStoreRecordVectorField],
         other: str | None,
-        key: Annotated[UUID, MemoryRecordKeyField] | None = None,
+        key: Annotated[UUID, VectorStoreRecordKeyField] | None = None,
         content: Annotated[
-            str, MemoryRecordDataField(has_embedding=True, embedding_property_name="vector")
+            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")
         ] = "content1",
     ):
         self.vector = vector
         self.other = other
         self.key = key or uuid4()
         self.content = content
+
+    def serialize(self) -> dict[str, Any]:
+        return {
+            "vector": self.vector,
+            "other": self.other,
+            "key": self.key,
+            "content": self.content,
+        }
+
+    @classmethod
+    def deserialize(cls, obj: dict[str, Any]) -> "DataModelDataclass":
+        return cls(
+            vector=obj["vector"],
+            other=obj["other"],
+            key=obj["key"],
+            content=obj["content"],
+        )
 
 
 if __name__ == "__main__":
@@ -75,28 +129,15 @@ if __name__ == "__main__":
     )
     print("item1 details:")
     item = "item1"
-    for name, value in data_item1.__sk_data_model_fields__.items():
-        print(f"    {item}: {name} -> {value}")
-
-    print("item2 details:")
-    item = "item2"
-    for name, value in data_item2.__sk_data_model_fields__.items():
-        print(f"    {item}: {name} -> {value}")
-
-    print("item3 details:")
-    item = "item3"
-    for name, value in data_item3.__sk_data_model_fields__.items():
-        print(f"    {item}: {name} -> {value}")
-
-    print("item4 details:")
-    item = "item4"
-    for name, value in data_item4.__sk_data_model_fields__.items():
-        print(f"    {item}: {name} -> {value}")
+    print(f"{data_item1.__kernel_data_model_fields__=}")
+    print(f"{data_item2.__kernel_data_model_fields__=}")
+    print(f"{data_item3.__kernel_data_model_fields__=}")
+    print(f"{data_item4.__kernel_data_model_fields__=}")
     if (
-        data_item1.__sk_data_model_fields__
-        == data_item2.__sk_data_model_fields__
-        == data_item3.__sk_data_model_fields__
-        == data_item4.__sk_data_model_fields__
+        data_item1.__kernel_data_model_fields__
+        == data_item2.__kernel_data_model_fields__
+        == data_item3.__kernel_data_model_fields__
+        == data_item4.__kernel_data_model_fields__
     ):
         print("All data models are the same")
     else:
