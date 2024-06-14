@@ -94,7 +94,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task NestedChatWithAggregatorAgentAsync()
     {
         Console.WriteLine($"! {Model}");
 
