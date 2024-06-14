@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.TextToImage;
-using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -20,7 +19,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class OpenAITextToImageService : ITextToImageService
 {
     private readonly OpenAITextToImageClientCore _core;
-    private readonly OpenAIClient _client;
 
     /// <summary>
     /// OpenAI REST API endpoint

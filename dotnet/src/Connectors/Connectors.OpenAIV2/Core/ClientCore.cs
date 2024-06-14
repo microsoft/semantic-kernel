@@ -298,7 +298,6 @@ internal abstract class ClientCore
             { nameof(completions.FinishReason), completions.FinishReason?.ToString() },
         };
     }
-    
 
     private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)
     {
@@ -1030,7 +1029,6 @@ internal abstract class ClientCore
 
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="serviceVersion">Optional API version.</param>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
     internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient)
     {
@@ -1096,7 +1094,13 @@ internal abstract class ClientCore
                 JsonSerializer.Serialize(executionSettings));
         }
 
-        ChatResponseFormat? responseFormat = null; 
+        /* Unmerged change from project 'Connectors.OpenAIV2(netstandard2.0)'
+        Before:
+                ChatResponseFormat? responseFormat = null; 
+        After:
+                ChatResponseFormat? responseFormat = null;
+        */
+        ChatResponseFormat? responseFormat = null;
         switch (executionSettings.ResponseFormat)
         {
             case string formatString:
@@ -1283,9 +1287,9 @@ internal abstract class ClientCore
                         _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
                     }
                 )))
-                {
-                    ParticipantName = message.AuthorName
-                }];
+            {
+                ParticipantName = message.AuthorName
+            }];
         }
 
         if (message.Role == AuthorRole.Assistant)

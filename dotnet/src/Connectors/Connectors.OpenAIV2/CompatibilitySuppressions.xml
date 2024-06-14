@@ -2,22 +2,120 @@
 <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAITextEmbeddingGenerationService.#ctor(System.String,Azure.AI.OpenAI.OpenAIClient,System.String,Microsoft.Extensions.Logging.ILoggerFactory)</Target>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAIAudioToTextService</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAIChatCompletionService</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAIChatCompletionWithDataConfig</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAIChatCompletionWithDataService</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAITextEmbeddingGenerationService</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAITextGenerationService</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAITextToAudioService</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAITextToImageService</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAIWithDataChatMessageContent</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAIWithDataStreamingChatMessageContent</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextGenerationService</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAITextEmbeddingGenerationService.#ctor(System.String,System.String,Azure.Core.TokenCredential,System.String,System.Net.Http.HttpClient,Microsoft.Extensions.Logging.ILoggerFactory)</Target>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIAudioToTextService.#ctor(System.String,Azure.AI.OpenAI.OpenAIClient,Microsoft.Extensions.Logging.ILoggerFactory)</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAITextEmbeddingGenerationService.#ctor(System.String,System.String,System.String,System.String,System.Net.Http.HttpClient,Microsoft.Extensions.Logging.ILoggerFactory)</Target>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIChatCompletionService.#ctor(System.String,Azure.AI.OpenAI.OpenAIClient,Microsoft.Extensions.Logging.ILoggerFactory)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIChatCompletionService.GetStreamingTextContentsAsync(System.String,Microsoft.SemanticKernel.PromptExecutionSettings,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIChatCompletionService.GetTextContentsAsync(System.String,Microsoft.SemanticKernel.PromptExecutionSettings,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIChatMessageContent.get_ToolCalls</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFunction.ToFunctionDefinition</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -45,6 +143,27 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIPluginCollectionExtensions.TryGetFunctionAndArguments(Microsoft.SemanticKernel.IReadOnlyKernelPluginCollection,Azure.AI.OpenAI.ChatCompletionsFunctionToolCall,Microsoft.SemanticKernel.KernelFunction@,Microsoft.SemanticKernel.KernelArguments@)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIStreamingChatMessageContent.get_FinishReason</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIStreamingChatMessageContent.get_ToolCallUpdate</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextEmbeddingGenerationService.#ctor(System.String,Azure.AI.OpenAI.OpenAIClient,Microsoft.Extensions.Logging.ILoggerFactory)</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
@@ -53,6 +172,118 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextEmbeddingGenerationService.#ctor(System.String,System.String,System.String,System.Net.Http.HttpClient,Microsoft.Extensions.Logging.ILoggerFactory)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIAudioToText(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,Azure.AI.OpenAI.OpenAIClient,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIAudioToText(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,Azure.Core.TokenCredential,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIAudioToText(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIAudioToText(Microsoft.SemanticKernel.IKernelBuilder,System.String,Azure.AI.OpenAI.OpenAIClient,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIAudioToText(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,Azure.Core.TokenCredential,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIAudioToText(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIChatCompletion(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAIChatCompletionWithDataConfig,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIChatCompletion(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,Azure.AI.OpenAI.OpenAIClient,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIChatCompletion(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,Azure.Core.TokenCredential,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIChatCompletion(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIChatCompletion(Microsoft.SemanticKernel.IKernelBuilder,Microsoft.SemanticKernel.Connectors.OpenAI.AzureOpenAIChatCompletionWithDataConfig,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIChatCompletion(Microsoft.SemanticKernel.IKernelBuilder,System.String,Azure.AI.OpenAI.OpenAIClient,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIChatCompletion(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,Azure.Core.TokenCredential,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIChatCompletion(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIFiles(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAIFiles(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -101,6 +332,132 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,Azure.AI.OpenAI.OpenAIClient,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,Azure.Core.TokenCredential,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextGeneration(Microsoft.SemanticKernel.IKernelBuilder,System.String,Azure.AI.OpenAI.OpenAIClient,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextGeneration(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,Azure.Core.TokenCredential,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextGeneration(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextToAudio(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextToAudio(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextToImage(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,Azure.AI.OpenAI.OpenAIClient,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextToImage(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,Azure.Core.TokenCredential,System.String,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextToImage(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String,System.String,System.Int32)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextToImage(Microsoft.SemanticKernel.IKernelBuilder,System.String,Azure.AI.OpenAI.OpenAIClient,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextToImage(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,Azure.Core.TokenCredential,System.String,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddAzureOpenAITextToImage(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAIAudioToText(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,Azure.AI.OpenAI.OpenAIClient,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAIAudioToText(Microsoft.SemanticKernel.IKernelBuilder,System.String,Azure.AI.OpenAI.OpenAIClient,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAIChatCompletion(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,Azure.AI.OpenAI.OpenAIClient,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAIChatCompletion(Microsoft.SemanticKernel.IKernelBuilder,System.String,Azure.AI.OpenAI.OpenAIClient,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAITextEmbeddingGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,Azure.AI.OpenAI.OpenAIClient,System.String)</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
@@ -123,6 +480,41 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAITextEmbeddingGeneration(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAITextGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,Azure.AI.OpenAI.OpenAIClient,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAITextGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAITextGeneration(Microsoft.SemanticKernel.IKernelBuilder,System.String,Azure.AI.OpenAI.OpenAIClient,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAITextGeneration(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,System.String,System.String,System.Net.Http.HttpClient)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIChatCompletionService</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

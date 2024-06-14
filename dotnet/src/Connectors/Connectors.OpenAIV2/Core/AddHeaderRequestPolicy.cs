@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading.Tasks;
 using System;
 using System.ClientModel.Primitives;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -62,7 +62,7 @@ internal class HttpPipelineSynchronousPolicy : HttpPipelinePolicy
     /// </summary>
     protected HttpPipelineSynchronousPolicy()
     {
-        var onReceivedResponseMethod = GetType().GetMethod(nameof(OnReceivedResponse), BindingFlags.Instance | BindingFlags.Public, null, s_onReceivedResponseParameters, null);
+        var onReceivedResponseMethod = this.GetType().GetMethod(nameof(OnReceivedResponse), BindingFlags.Instance | BindingFlags.Public, null, s_onReceivedResponseParameters, null);
         if (onReceivedResponseMethod != null)
         {
             this._hasOnReceivedResponse = onReceivedResponseMethod.GetBaseDefinition().DeclaringType != onReceivedResponseMethod.DeclaringType;
