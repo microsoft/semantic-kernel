@@ -55,9 +55,9 @@ async def main():
     kernel.add_service(OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embedding-3-small"))
     async with AzureAISearchVectorRecordStore[MyDataModel](
         item_type=MyDataModel,
-        collection_name=os.environ["WESLEY_SEARCH_INDEX_NAME"],
-        search_endpoint=os.environ["WESLEY_SEARCH_ENDPOINT"],
-        api_key=os.environ["WESLEY_SEARCH_API_KEY"],
+        collection_name=os.environ["ALT_SEARCH_INDEX_NAME"],
+        search_endpoint=os.environ["ALT_SEARCH_ENDPOINT"],
+        api_key=os.environ["ALT_SEARCH_API_KEY"],
     ) as record_store:
         record1 = MyDataModel(content="My text")
         record2 = MyDataModel(content="My other text")
