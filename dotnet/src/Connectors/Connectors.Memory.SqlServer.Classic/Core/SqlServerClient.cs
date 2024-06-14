@@ -51,8 +51,8 @@ internal sealed class SqlServerClient
             using var command = this._connection.CreateCommand();
 
             command.CommandText = $@"
-                    IF OBJECT_ID(N'{this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}', N'U') IS NULL
-                    CREATE TABLE {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
+                    IF OBJECT_ID(N'{this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}', N'U') IS NULL
+                    CREATE TABLE {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}
                     (   [id] UNIQUEIDENTIFIER NOT NULL,
                         [key] NVARCHAR(256)  NOT NULL,
                         [metadata] TEXT,
@@ -61,17 +61,17 @@ internal sealed class SqlServerClient
                         PRIMARY KEY ([id])
                     );
 
-                    IF OBJECT_ID(N'{this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}', N'U') IS NULL
-                    CREATE TABLE {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}
+                    IF OBJECT_ID(N'{this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}', N'U') IS NULL
+                    CREATE TABLE {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}
                     (
                         [memory_id] UNIQUEIDENTIFIER NOT NULL,
                         [vector_value_id] [int] NOT NULL,
                         [vector_value] [float] NOT NULL
                     );
 
-                    IF OBJECT_ID(N'{NormalizeSQLObjectName(this._configuration.Schema)}.IXC_{$"{NormalizeSQLObjectName(this._configuration.EmbeddingsTableName)}_{collectionName}"}', N'U') IS NULL
-                    CREATE CLUSTERED COLUMNSTORE INDEX [IXC_{$"{NormalizeSQLObjectName(this._configuration.EmbeddingsTableName)}_{collectionName}]"}
-                    ON {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")};";
+                    IF OBJECT_ID(N'{NormalizeSQLObjectName(this._configuration.Schema)}.IXC_{$"{NormalizeSQLObjectName(this._configuration.EmbeddingsTableNamePrefix)}_{collectionName}"}', N'U') IS NULL
+                    CREATE CLUSTERED COLUMNSTORE INDEX [IXC_{$"{NormalizeSQLObjectName(this._configuration.EmbeddingsTableNamePrefix)}_{collectionName}]"}
+                    ON {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")};";
 
             command.Parameters.AddWithValue("@collectionName", collectionName);
 
@@ -85,15 +85,26 @@ internal sealed class SqlServerClient
     {
         collectionName = NormalizeIndexName(collectionName);
 
-        var collections = this.GetCollectionsAsync(cancellationToken)
-                            .WithCancellation(cancellationToken)
-                            .ConfigureAwait(false);
-
-        await foreach (var item in collections)
+        using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
-            if (item.Equals(collectionName, StringComparison.OrdinalIgnoreCase))
+            using var command = this._connection.CreateCommand();
+
+            command.CommandText = """
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_type = 'BASE TABLE'
+                    AND table_schema = @schema
+                    AND table_name = @tableName
+                """;
+
+            command.Parameters.AddWithValue("@schema", this._configuration.Schema);
+            command.Parameters.AddWithValue("@tableName", $"{this._configuration.CollectionTableNamePrefix}_{collectionName}");
+
+            using var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+            while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                return true;
+                return Convert.ToBoolean(dataReader.GetInt32(0));
             }
         }
 
@@ -116,14 +127,14 @@ internal sealed class SqlServerClient
                 """;
 
             command.Parameters.AddWithValue("@schema", this._configuration.Schema);
-            command.Parameters.AddWithValue("@tableName", $"{this._configuration.MemoryTableName}_%");
+            command.Parameters.AddWithValue("@tableName", $"{this._configuration.CollectionTableNamePrefix}_%");
 
             using var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return dataReader.GetString(dataReader.GetOrdinal("table_name"))
-                                .Replace($"{this._configuration.MemoryTableName}_", string.Empty);
+                                .Replace($"{this._configuration.CollectionTableNamePrefix}_", string.Empty);
             }
         }
     }
@@ -143,8 +154,8 @@ internal sealed class SqlServerClient
         {
             using var command = this._connection.CreateCommand();
 
-            command.CommandText = $@"DROP TABLE {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")};
-                                     DROP TABLE {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")};";
+            command.CommandText = $@"DROP TABLE {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")};
+                                     DROP TABLE {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")};";
 
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -168,7 +179,7 @@ internal sealed class SqlServerClient
 
             command.CommandText = $@"
                                     SELECT {queryColumns}
-                                    FROM {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
+                                    FROM {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}
                                     WHERE [key] = @key";
 
             command.Parameters.AddWithValue("@key", key);
@@ -210,7 +221,7 @@ internal sealed class SqlServerClient
 
             command.CommandText = $@"
                 SELECT {queryColumns}
-                FROM {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
+                FROM {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}
                 WHERE [key] IN ({string.Join(",", Enumerable.Range(0, keysArray.Length).Select(c => $"@key{c}"))})";
 
             for (int i = 0; i < keysArray.Length; i++)
@@ -236,7 +247,7 @@ internal sealed class SqlServerClient
         {
             using var command = this._connection.CreateCommand();
 
-            command.CommandText = $"DELETE FROM {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")} WHERE [key] = @key";
+            command.CommandText = $"DELETE FROM {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")} WHERE [key] = @key";
             command.Parameters.AddWithValue("@key", key);
 
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
@@ -261,7 +272,7 @@ internal sealed class SqlServerClient
 
             command.CommandText = $@"
                     DELETE
-                    FROM {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
+                    FROM {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}
                     WHERE [key] IN ({string.Join(",", Enumerable.Range(0, keysArray.Length).Select(c => $"@key{c}"))})";
 
             for (int i = 0; i < keysArray.Length; i++)
@@ -302,34 +313,34 @@ internal sealed class SqlServerClient
             [similarity] AS
             (
                 SELECT TOP (@limit)
-                {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}.[memory_id],
-                SUM([embedding].[vector_value] * {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}.[vector_value]) /
+                {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}.[memory_id],
+                SUM([embedding].[vector_value] * {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}.[vector_value]) /
                 (
                     SQRT(SUM([embedding].[vector_value] * [embedding].[vector_value]))
                     *
-                    SQRT(SUM({this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}.[vector_value] * {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}.[vector_value]))
+                    SQRT(SUM({this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}.[vector_value] * {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}.[vector_value]))
                 ) AS cosine_similarity
-                -- sum([embedding].[vector_value] * {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}.[vector_value]) as cosine_distance -- Optimized as per https://platform.openai.com/docs/guides/embeddings/which-distance-function-should-i-use
+                -- sum([embedding].[vector_value] * {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}.[vector_value]) as cosine_distance -- Optimized as per https://platform.openai.com/docs/guides/embeddings/which-distance-function-should-i-use
             FROM
                 [embedding]
             INNER JOIN
-                {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")} ON [embedding].vector_value_id = {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}.vector_value_id
+                {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")} ON [embedding].vector_value_id = {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}.vector_value_id
             GROUP BY
-                {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}.[memory_id]
+                {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}.[memory_id]
             ORDER BY
                 cosine_similarity DESC
             )
             SELECT
-                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[id],
-                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[key],
-                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[metadata],
-                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[timestamp],
-                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[embedding],
+                {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}.[id],
+                {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}.[key],
+                {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}.[metadata],
+                {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}.[timestamp],
+                {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}.[embedding],
                 (
                     SELECT
                         [vector_value]
-                    FROM {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}
-                    WHERE {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[id] = {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")}.[memory_id]
+                    FROM {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}
+                    WHERE {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}.[id] = {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")}.[memory_id]
                     ORDER BY vector_value_id
                     FOR JSON AUTO
                 ) AS [embeddings],
@@ -337,7 +348,7 @@ internal sealed class SqlServerClient
             FROM
                 [similarity]
             INNER JOIN
-                {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")} ON [similarity].[memory_id] = {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[id]
+                {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")} ON [similarity].[memory_id] = {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}.[id]
             WHERE [cosine_similarity] >= @min_relevance_score
             ORDER BY [cosine_similarity] desc";
 
@@ -370,25 +381,25 @@ internal sealed class SqlServerClient
             using var command = this._connection.CreateCommand();
 
             command.CommandText = $@"
-                MERGE INTO {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
+                MERGE INTO {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}
                 USING (SELECT @key) as [src]([key])
-                ON {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[key] = [src].[key]
+                ON {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}.[key] = [src].[key]
                 WHEN MATCHED THEN
                     UPDATE SET metadata = @metadata, embedding = @embedding, timestamp = @timestamp
                 WHEN NOT MATCHED THEN
                     INSERT ([id], [key], [metadata], [timestamp], [embedding])
                     VALUES (NEWID(), @key, @metadata, @timestamp, @embedding);
 
-                MERGE {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")} AS [tgt]
+                MERGE {this.GetFullTableName($"{this._configuration.EmbeddingsTableNamePrefix}_{collectionName}")} AS [tgt]
                 USING (
                     SELECT
-                        {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[id],
+                        {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}.[id],
                         cast([vector].[key] AS INT) AS [vector_value_id],
                         cast([vector].[value] AS FLOAT) AS [vector_value]
-                    FROM {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}
+                    FROM {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}
                     CROSS APPLY
                         openjson(@embedding) [vector]
-                    WHERE {this.GetFullTableName($"{this._configuration.MemoryTableName}_{collectionName}")}.[key] = @key
+                    WHERE {this.GetFullTableName($"{this._configuration.CollectionTableNamePrefix}_{collectionName}")}.[key] = @key
                 ) AS [src]
                 ON [tgt].[memory_id] = [src].[id] AND [tgt].[vector_value_id] = [src].[vector_value_id]
                 WHEN MATCHED THEN

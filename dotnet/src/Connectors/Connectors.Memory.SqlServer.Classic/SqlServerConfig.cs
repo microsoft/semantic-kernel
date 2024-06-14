@@ -10,12 +10,12 @@ public class SqlServerConfig
     /// <summary>
     /// The default SQL Server memories table name.
     /// </summary>
-    internal const string DefaultMemoryTableName = "SKMemories";
+    internal const string DefaultMemoryTableNamePrefix = "SKMemories";
 
     /// <summary>
     /// The default SQL Server embeddings table name.
     /// </summary>
-    internal const string DefaultEmbeddingsTableName = "SKEmbeddings";
+    internal const string DefaultEmbeddingsTableNamePrefix = "SKEmbeddings";
 
     /// <summary>
     /// The default schema used by the SQL Server memory store.
@@ -33,12 +33,14 @@ public class SqlServerConfig
     public string Schema { get; set; } = DefaultSchema;
 
     /// <summary>
-    /// The SQL Server memories table name.
+    /// The SQL Server memories table name prefix.
+    /// When creating a collection, real table name will be '{CollectionTableNamePrefix}_{CollectionName}'.
     /// </summary>
-    public string MemoryTableName { get; set; } = DefaultMemoryTableName;
+    public string CollectionTableNamePrefix { get; set; } = DefaultMemoryTableNamePrefix;
 
     /// <summary>
-    /// The SQL Server embeddings table name.
+    /// The SQL Server embeddings table name prefix.
+    /// When creating a collection, real table name will be '{EmbeddingsTableNamePrefix}_{CollectionName}'.
     /// </summary>
-    public string EmbeddingsTableName { get; set; } = DefaultEmbeddingsTableName;
+    public string EmbeddingsTableNamePrefix { get; set; } = DefaultEmbeddingsTableNamePrefix;
 }

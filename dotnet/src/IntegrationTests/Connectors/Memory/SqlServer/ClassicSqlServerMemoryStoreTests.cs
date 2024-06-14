@@ -4,14 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.SqlServer.Classic;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Driver;
-using SharpYaml.Schemas;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.SqlServer;
@@ -21,9 +19,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.SqlServer;
 public class ClassicSqlServerMemoryStoreTests : IAsyncLifetime
 {
     // If null, all tests will be enabled
-    //private const string? SkipReason = "Requires SqlServer server up and running";
-
-    private const string? SkipReason = null;
+    private const string? SkipReason = "Requires SqlServer server up and running";
 
     public async Task InitializeAsync()
     {
@@ -46,7 +42,7 @@ public class ClassicSqlServerMemoryStoreTests : IAsyncLifetime
         this._config = new SqlServerConfig
         {
             Schema = "sk_it",
-            MemoryTableName = "SKMemories",
+            CollectionTableNamePrefix = "SKMemories",
         };
 
         await this.CleanupDatabaseAsync();
