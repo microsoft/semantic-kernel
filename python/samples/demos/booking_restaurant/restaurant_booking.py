@@ -21,7 +21,7 @@ from semantic_kernel.kernel import Kernel
 kernel = Kernel()
 
 service_id = "open_ai"
-ai_service = OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo-1106")
+ai_service = OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo")
 kernel.add_service(ai_service)
 
 try:

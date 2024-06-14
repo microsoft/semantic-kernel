@@ -460,6 +460,253 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
     }
 
+    [Fact]
+    public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForManualFunctionCallingForStreamingAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        string? result = null;
+
+        // Act
+        while (true)
+        {
+            AuthorRole? authorRole = null;
+            var fccBuilder = new FunctionCallContentBuilder();
+            var textContent = new StringBuilder();
+
+            await foreach (var streamingContent in sut.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
+            {
+                textContent.Append(streamingContent.Content);
+                authorRole ??= streamingContent.Role;
+                fccBuilder.Append(streamingContent);
+            }
+
+            var functionCalls = fccBuilder.Build();
+            if (functionCalls.Any())
+            {
+                var fcContent = new ChatMessageContent(role: authorRole ?? default, content: null);
+                chatHistory.Add(fcContent);
+
+                // Iterating over the requested function calls and invoking them
+                foreach (var functionCall in functionCalls)
+                {
+                    fcContent.Items.Add(functionCall);
+
+                    var functionResult = await functionCall.InvokeAsync(kernel);
+
+                    chatHistory.Add(functionResult.ToChatMessage());
+                }
+
+                continue;
+            }
+
+            result = textContent.ToString();
+            break;
+        }
+
+        // Assert
+        Assert.Contains("rain", result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForAutoFunctionCallingForStreamingAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        var result = new StringBuilder();
+
+        // Act
+        await foreach (var contentUpdate in sut.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
+        {
+            result.Append(contentUpdate.Content);
+        }
+
+        // Assert
+        Assert.Equal(5, chatHistory.Count);
+
+        var userMessage = chatHistory[0];
+        Assert.Equal(AuthorRole.User, userMessage.Role);
+
+        // LLM requested the current time.
+        var getCurrentTimeFunctionCallRequestMessage = chatHistory[1];
+        Assert.Equal(AuthorRole.Assistant, getCurrentTimeFunctionCallRequestMessage.Role);
+
+        var getCurrentTimeFunctionCallRequest = getCurrentTimeFunctionCallRequestMessage.Items.OfType<FunctionCallContent>().Single();
+        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallRequest.FunctionName);
+        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallRequest.PluginName);
+        Assert.NotNull(getCurrentTimeFunctionCallRequest.Id);
+
+        // Connector invoked the GetCurrentUtcTime function and added result to chat history.
+        var getCurrentTimeFunctionCallResultMessage = chatHistory[2];
+        Assert.Equal(AuthorRole.Tool, getCurrentTimeFunctionCallResultMessage.Role);
+        Assert.Single(getCurrentTimeFunctionCallResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
+
+        var getCurrentTimeFunctionCallResult = getCurrentTimeFunctionCallResultMessage.Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallResult.FunctionName);
+        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallResult.PluginName);
+        Assert.Equal(getCurrentTimeFunctionCallRequest.Id, getCurrentTimeFunctionCallResult.CallId);
+        Assert.NotNull(getCurrentTimeFunctionCallResult.Result);
+
+        // LLM requested the weather for Boston.
+        var getWeatherForCityFunctionCallRequestMessage = chatHistory[3];
+        Assert.Equal(AuthorRole.Assistant, getWeatherForCityFunctionCallRequestMessage.Role);
+
+        var getWeatherForCityFunctionCallRequest = getWeatherForCityFunctionCallRequestMessage.Items.OfType<FunctionCallContent>().Single();
+        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallRequest.FunctionName);
+        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallRequest.PluginName);
+        Assert.NotNull(getWeatherForCityFunctionCallRequest.Id);
+
+        // Connector invoked the Get_Weather_For_City function and added result to chat history.
+        var getWeatherForCityFunctionCallResultMessage = chatHistory[4];
+        Assert.Equal(AuthorRole.Tool, getWeatherForCityFunctionCallResultMessage.Role);
+        Assert.Single(getWeatherForCityFunctionCallResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
+
+        var getWeatherForCityFunctionCallResult = getWeatherForCityFunctionCallResultMessage.Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallResult.FunctionName);
+        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallResult.PluginName);
+        Assert.Equal(getWeatherForCityFunctionCallRequest.Id, getWeatherForCityFunctionCallResult.CallId);
+        Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
+    }
+
+    [Fact(Skip = "The test is temporarily disabled until a more stable solution is found.")]
+    public async Task ConnectorAgnosticFunctionCallingModelClassesCanPassFunctionExceptionToConnectorForStreamingAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("If you are unable to answer the question for whatever reason, please add the 'error' keyword to the response.");
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        string? result = null;
+
+        // Act
+        while (true)
+        {
+            AuthorRole? authorRole = null;
+            var fccBuilder = new FunctionCallContentBuilder();
+            var textContent = new StringBuilder();
+
+            await foreach (var streamingContent in sut.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
+            {
+                textContent.Append(streamingContent.Content);
+                authorRole ??= streamingContent.Role;
+                fccBuilder.Append(streamingContent);
+            }
+
+            var functionCalls = fccBuilder.Build();
+            if (functionCalls.Any())
+            {
+                var fcContent = new ChatMessageContent(role: authorRole ?? default, content: null);
+                chatHistory.Add(fcContent);
+
+                // Iterating over the requested function calls and invoking them
+                foreach (var functionCall in functionCalls)
+                {
+                    fcContent.Items.Add(functionCall);
+
+                    // Simulating an exception
+                    var exception = new OperationCanceledException("The operation was canceled due to timeout.");
+
+                    chatHistory.Add(new FunctionResultContent(functionCall, exception).ToChatMessage());
+                }
+
+                continue;
+            }
+
+            result = textContent.ToString();
+            break;
+        }
+
+        // Assert
+        Assert.Contains("error", result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ConnectorAgnosticFunctionCallingModelClassesSupportSimulatedFunctionCallsForStreamingAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("if there's a tornado warning, please add the 'tornado' keyword to the response.");
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        string? result = null;
+
+        // Act
+        while (true)
+        {
+            AuthorRole? authorRole = null;
+            var fccBuilder = new FunctionCallContentBuilder();
+            var textContent = new StringBuilder();
+
+            await foreach (var streamingContent in sut.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
+            {
+                textContent.Append(streamingContent.Content);
+                authorRole ??= streamingContent.Role;
+                fccBuilder.Append(streamingContent);
+            }
+
+            var functionCalls = fccBuilder.Build();
+            if (functionCalls.Any())
+            {
+                var fcContent = new ChatMessageContent(role: authorRole ?? default, content: null);
+                chatHistory.Add(fcContent);
+
+                // Iterating over the requested function calls and invoking them
+                foreach (var functionCall in functionCalls)
+                {
+                    fcContent.Items.Add(functionCall);
+
+                    var functionResult = await functionCall.InvokeAsync(kernel);
+
+                    chatHistory.Add(functionResult.ToChatMessage());
+                }
+
+                // Adding a simulated function call to the connector response message
+                var simulatedFunctionCall = new FunctionCallContent("weather-alert", id: "call_123");
+                fcContent.Items.Add(simulatedFunctionCall);
+
+                // Adding a simulated function result to chat history
+                var simulatedFunctionResult = "A Tornado Watch has been issued, with potential for severe thunderstorms causing unusual sky colors like green, yellow, or dark gray. Stay informed and follow safety instructions from authorities.";
+                chatHistory.Add(new FunctionResultContent(simulatedFunctionCall, simulatedFunctionResult).ToChatMessage());
+
+                continue;
+            }
+
+            result = textContent.ToString();
+            break;
+        }
+
+        // Assert
+        Assert.Contains("tornado", result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
     private Kernel InitializeKernel(bool importHelperPlugin = false)
     {
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
