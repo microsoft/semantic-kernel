@@ -5,6 +5,7 @@ from collections.abc import AsyncGenerator, AsyncIterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -18,6 +19,7 @@ from semantic_kernel.exceptions import (
     OperationCancelledException,
     TemplateSyntaxError,
 )
+from semantic_kernel.exceptions.kernel_exceptions import KernelServiceNotFoundError
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
@@ -37,20 +39,31 @@ from semantic_kernel.reliability.kernel_reliability_extension import KernelRelia
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
 from semantic_kernel.utils.naming import generate_random_ascii_name
+from semantic_kernel.vectors.data_models.vector_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordVectorField,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (
         FunctionChoiceBehavior,
     )
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.functions.kernel_function import KernelFunction
 
 T = TypeVar("T")
 
+TDataModel = TypeVar("TDataModel")
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExtension, KernelReliabilityExtension):
+class Kernel(
+    KernelFilterExtension,
+    KernelFunctionExtension,
+    KernelServicesExtension,
+    KernelReliabilityExtension,
+):
     """The main Kernel class of Semantic Kernel.
 
     This is the main entry point for the Semantic Kernel. It provides the ability to run
@@ -421,3 +434,67 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             else:
                 context.function_result = FunctionResult(function=context.function.metadata, value=value)
             return
+
+    async def add_vector_to_records(self, records: list[TDataModel], **kwargs) -> list[TDataModel]:
+        """Vectorize the vector record.
+
+        Args:
+            records (list[TDataModel]): The records to vectorize.
+                These should all be the same type, but they can have multiple vectors.
+            kwargs (Any): Additional arguments to pass to the embeddings service.
+
+        """
+        # dict of embedding_field.name and tuple of record, settings, field_name
+        embeddings_to_make: dict[str, Any] = {}
+        for record in records:
+            model = getattr(record, "__kernel_data_model_fields__")
+            for field in model.fields:
+                if (
+                    not isinstance(field, VectorStoreRecordDataField)
+                    or not field.has_embedding
+                    or not field.embedding_property_name
+                ):
+                    continue
+                embedding_field_name = field.embedding_property_name
+                embedding_field = model.get_field_by_name(embedding_field_name)
+                assert isinstance(embedding_field, VectorStoreRecordVectorField)  # nosec
+                if not embedding_field.local_embedding and getattr(record, embedding_field_name):
+                    continue
+                setting = embedding_field.embedding_settings
+                if embedding_field_name not in embeddings_to_make:
+                    embeddings_to_make[embedding_field_name] = [(record, setting, field.name)]
+                else:
+                    embeddings_to_make[embedding_field_name].append((record, setting, field.name))
+
+        for embedding_field_name, inputs in embeddings_to_make.items():
+            await self.create_embedding(embedding_field_name, inputs, **kwargs)
+        return records
+
+    async def create_embedding(
+        self,
+        embedding_field_name: str,
+        inputs: list[tuple[TDataModel, dict[str, "PromptExecutionSettings"], str]],
+        **kwargs: Any,
+    ) -> list[TDataModel]:
+        """Create an embedding from the content."""
+        records: list[TDataModel] = []
+        contents: list[Any] = []
+        # since the same model is used with the same field, there is only a single settings record.
+        settings: dict[str, "PromptExecutionSettings"] = inputs[0][1]
+        for record, _, field_name in inputs:
+            records.append(record)
+            contents.append(getattr(record, field_name))
+        vectors = None
+        service = None
+        for service_id, setting in settings.items():
+            service = self.get_service(service_id, type=EmbeddingGeneratorBase)
+            if service:
+                vectors = await service.generate_embeddings(texts=contents, **setting)  # type: ignore
+                break
+        if not service:
+            raise KernelServiceNotFoundError("No service found to generate embeddings.")
+        if vectors is None:
+            raise KernelInvokeException("No vectors were generated.")
+        for record, vector in zip(records, vectors):
+            setattr(record, embedding_field_name, vector)
+        return records

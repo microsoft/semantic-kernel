@@ -1,15 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import os
 from dataclasses import dataclass, field
-from re import M
 from typing import Annotated, Any
 from uuid import UUID, uuid4
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_vector_record_store import (
+
+from numpy import array, ndarray
+
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
+from semantic_kernel.connectors.vectors.azure_ai_search.azure_ai_search_vector_record_store import (
     AzureAISearchVectorRecordStore,
 )
-from semantic_kernel.memory.data_model.data_model_decorator import datamodel
-from semantic_kernel.memory.data_model.vector_record_fields import (
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.vectors.data_models.data_model_decorator import datamodel
+from semantic_kernel.vectors.data_models.vector_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
@@ -19,35 +24,52 @@ from semantic_kernel.memory.data_model.vector_record_fields import (
 @datamodel
 @dataclass
 class MyDataModel:
-    vector: Annotated[list[float], VectorStoreRecordVectorField]
-    other: str | None
-    key: Annotated[UUID, VectorStoreRecordKeyField()] = field(default_factory=uuid4)
+    vector: Annotated[
+        ndarray | None,
+        VectorStoreRecordVectorField(embedding_settings={"embedding": {"dimensions": 1536}}),
+    ] = None
+    other: str | None = None
+    id: Annotated[UUID, VectorStoreRecordKeyField()] = field(default_factory=uuid4)
     content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
         "content1"
     )
 
     def serialize(self) -> dict[str, Any]:
         return {
-            "vector": self.vector,
-            "other": self.other,
-            "key": self.key,
+            "vector": self.vector.tolist(),
+            "id": str(self.id),
             "content": self.content,
         }
 
     @classmethod
-    def deserialize(cls, obj: dict[str, Any]) -> "MyDataModel":
+    def deserialize(cls, obj: dict[str, Any]):
         return cls(
-            vector=obj["vector"],
-            other=obj["other"],
-            key=obj["key"],
+            vector=array(obj["vector"]),
+            id=UUID(obj["id"]),
             content=obj["content"],
         )
 
 
-record_store = AzureAISearchVectorRecordStore(item_type=MyDataModel, collection_name="edvan-index")
+async def main():
+    kernel = Kernel()
+    kernel.add_service(OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embedding-3-small"))
+    async with AzureAISearchVectorRecordStore[MyDataModel](
+        item_type=MyDataModel,
+        collection_name=os.environ["WESLEY_SEARCH_INDEX_NAME"],
+        search_endpoint=os.environ["WESLEY_SEARCH_ENDPOINT"],
+        api_key=os.environ["WESLEY_SEARCH_API_KEY"],
+    ) as record_store:
+        record1 = MyDataModel(content="My text")
+        record2 = MyDataModel(content="My other text")
 
-record1 = MyDataModel(vector=[1.0, 2.0, 3.0], other="other1")
-record2 = MyDataModel(vector=[4.0, 5.0, 6.0], other="other2")
+        await record_store.upsert(record1, kernel=kernel)
+        await record_store.upsert(record2, kernel=kernel)
 
-record_store.upsert(record1)
-record_store.upsert(record2)
+        result = await record_store.get(record1.id)
+        print(result)
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(main())
