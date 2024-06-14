@@ -442,17 +442,10 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
         for (int index = 0; index < functionSteps.Length; ++index)
         {
-            functionTasks[index] = ExecuteFunctionStepAsync(functionSteps[index]);
+            functionTasks[index] = functionSteps[index].InvokeAsync(agent.Kernel, cancellationToken);
         }
 
         return functionTasks;
-
-        async Task<FunctionResultContent> ExecuteFunctionStepAsync(FunctionCallContent functionStep)
-        {
-            FunctionResultContent functionResult = await functionStep.InvokeAsync(agent.Kernel, cancellationToken).ConfigureAwait(false);
-
-            return functionResult;
-        }
     }
 
     private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
