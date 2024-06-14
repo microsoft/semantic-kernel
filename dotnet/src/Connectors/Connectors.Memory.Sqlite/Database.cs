@@ -88,21 +88,6 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task InsertOrIgnoreAsync(SqliteConnection conn,
-        string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancellationToken = default)
-    {
-        using SqliteCommand cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-             INSERT OR IGNORE INTO {TableName}(collection, key, metadata, embedding, timestamp)
-             VALUES(@collection, @key, @metadata, @embedding, @timestamp); ";
-        cmd.Parameters.AddWithValue("@collection", collection);
-        cmd.Parameters.AddWithValue("@key", key);
-        cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
-        cmd.Parameters.AddWithValue("@embedding", embedding ?? string.Empty);
-        cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-    }
-
     public async Task<bool> DoesCollectionExistsAsync(SqliteConnection conn,
         string collectionName,
         CancellationToken cancellationToken = default)
