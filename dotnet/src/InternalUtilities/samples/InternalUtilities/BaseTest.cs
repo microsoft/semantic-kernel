@@ -98,9 +98,7 @@ public abstract class BaseTest
     /// </summary>
     /// <param name="target">Target object to write</param>
     public void Write(object? target = null)
-    {
-        this.Output.WriteLine(target ?? string.Empty);
-    }
+        => this.Output.WriteLine(target ?? string.Empty);
 
     protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
