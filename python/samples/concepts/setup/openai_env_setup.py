@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-# Semantic Kernel allows you muliple ways to setup your connectors.
+# Semantic Kernel allows you multiple ways to setup your connectors.
 # this sample shows that for OpenAI Connectors.
 
 # After installing the semantic-kernel package

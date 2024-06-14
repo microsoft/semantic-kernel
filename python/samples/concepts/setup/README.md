@@ -1,6 +1,6 @@
 # Using environment variables to setup Semantic Kernel
 
-Semantic Kernel allows you muliple ways to setup your connectors. This guide shows that for OpenAI Connectors.
+Semantic Kernel allows you multiple ways to setup your connectors. This guide shows that for OpenAI Connectors.
 
 After installing the semantic-kernel package, you can try these out.
 

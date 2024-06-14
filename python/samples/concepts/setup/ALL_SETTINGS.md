@@ -3,29 +3,35 @@
 | Service | Class | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |
 OpenAI | [OpenAIChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py) |  |  |  | [OpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/open_ai_settings.py)
+|  |  |  ai_model_id | OPENAI_CHAT_MODEL_ID | Yes 
 |  |  |  api_key | OPENAI_API_KEY | Yes
 |  |  |  org_id | OPENAI_ORG_ID | No 
-|  |  |  ai_model_id | OPENAI_CHAT_MODEL_ID | Yes 
 |  | [OpenAITextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_completion.py)
-|  |  |  api_key | OPENAI_API_KEY | Yes
-|  |  |  org_id | OPENAI_ORG_ID | No
 |  |  |  ai_model_id | OPENAI_TEXT_MODEL_ID | Yes
-|  | [OpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_embedding.py)
 |  |  |  api_key | OPENAI_API_KEY | Yes
 |  |  |  org_id | OPENAI_ORG_ID | No
+|  | [OpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_embedding.py)
 |  |  |  ai_model_id | OPENAI_EMBEDDING_MODEL_ID | Yes
-Azure OpenAI | [AzureOpenAIChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_open_ai_chat_completion.py) |  |  |  | [AzureOpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/azure_open_ai_settings.py)
-|  |  |  api_key | AZURE_OPENAI_API_KEY | Yes
-|  |  |  endpoint | AZURE_OPENAI_ENDPOINT | Yes
-|  |  |  ai_model_id | AZURE_OPENAI_CHAT_MODEL_ID | Yes
-|  | [AzureOpenAITextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_open_ai_text_completion.py)
-|  |  |  api_key | AZURE_OPENAI_API_KEY | Yes
-|  |  |  endpoint | AZURE_OPENAI_ENDPOINT | Yes
-|  |  |  ai_model_id | AZURE_OPENAI_TEXT_MODEL_ID | Yes
-|  | [AzureOpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/azure_open_ai_text_embedding.py)
-|  |  |  api_key | AZURE_OPENAI_API_KEY | Yes
-|  |  |  endpoint | AZURE_OPENAI_ENDPOINT | Yes
-|  |  |  ai_model_id | AZURE_OPENAI_EMBEDDING_MODEL_ID | Yes
+|  |  |  api_key | OPENAI_API_KEY | Yes
+|  |  |  org_id | OPENAI_ORG_ID | No
+Azure OpenAI | [AzureOpenAIChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_chat_completion.py) |  |  |  | [AzureOpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/azure_open_ai_settings.py)
+| | | deployment_name | AZURE_OPENAI_CHAT_DEPLOYMENT_NAME | Yes
+| | | api_key | AZURE_OPENAI_API_KEY | Yes
+| | | endpoint | AZURE_OPENAI_ENDPOINT | Yes
+| | | api_version | AZURE_OPENAI_API_VERSION | Yes
+| | | base_url | AZURE_OPENAI_BASE_URL | Yes
+|  | [AzureOpenAITextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_completion.py)
+| | | deployment_name | AZURE_OPENAI_TEXT_DEPLOYMENT_NAME | Yes
+| | | api_key | AZURE_OPENAI_API_KEY | Yes
+| | | endpoint | AZURE_OPENAI_ENDPOINT | Yes
+| | | api_version | AZURE_OPENAI_API_VERSION | Yes
+| | | base_url | AZURE_OPENAI_BASE_URL | Yes
+|  | [AzureOpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_embedding.py)
+| | | deployment_name | AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME | Yes
+| | | api_key | AZURE_OPENAI_API_KEY | Yes
+| | | endpoint | AZURE_OPENAI_ENDPOINT | Yes
+| | | api_version | AZURE_OPENAI_API_VERSION | Yes
+| | | base_url | AZURE_OPENAI_BASE_URL | Yes
 
 ## Memory Service Settings used across SK:
 
@@ -57,3 +63,13 @@ Weaviate | [WeaviateMemoryService](../../../semantic_kernel/connectors/memory/we
 |  |  |  url | WEAVIATE_URL | No
 |  |  |  api_key | WEAVIATE_API_KEY | No
 | | | use_embed | WEAVIATE_USE_EMBED | No
+
+## Other settings used:
+
+| Service | Class | Constructor Settings | Environment Variable | Required? | Settings Class |
+| --- | --- | --- | --- | --- | --- |
+Bing | [BingSearch](../../../semantic_kernel/connectors/search_engine/bing_connector.py) |  |  |  | [BingSettings](../../../semantic_kernel/connectors/search_engine/bing_connector_settings.py)
+| | | api_key | BING_API_KEY | No
+| | | custom_config | BING_CUSTOM_CONFIG | No
+Azure Container Apps Sessions | [ACASessionsPlugin](../../../semantic_kernel/core_plugins/sessions_python_tool/sessions_python_plugin.py) |  |  |  | [ACASessionsSettings](../../../semantic_kernel/core_plugins/sessions_python_tool/sessions_python_settings.py)
+| | | pool_management_endpoint | ACA_POOL_MANAGEMENT_ENDPOINT | Yes
