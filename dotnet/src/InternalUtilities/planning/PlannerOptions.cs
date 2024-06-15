@@ -14,12 +14,12 @@ public abstract class PlannerOptions
     /// <summary>
     /// A list of plugins to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedPlugins { get; } = new();
+    public HashSet<string> ExcludedPlugins { get; } = [];
 
     /// <summary>
     /// A list of functions to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedFunctions { get; } = new();
+    public HashSet<string> ExcludedFunctions { get; } = [];
 
     /// <summary>
     /// Callback to get the available functions for planning (optional).

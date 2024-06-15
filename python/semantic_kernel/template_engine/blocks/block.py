@@ -18,4 +18,5 @@ class Block(KernelBaseModel):
     @field_validator("content", mode="before")
     @classmethod
     def content_strip(cls, content: str):
+        """Strip the content of the block."""
         return content.strip()

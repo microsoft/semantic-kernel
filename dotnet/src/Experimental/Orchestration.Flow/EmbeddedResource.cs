@@ -11,8 +11,8 @@ internal static class EmbeddedResource
 
     internal static string? Read(string name, bool throwIfNotFound = true)
     {
-        var assembly = typeof(EmbeddedResource).GetTypeInfo().Assembly;
-        if (assembly is null) { throw new KernelException($"[{s_namespace}] {name} assembly not found"); }
+        var assembly = typeof(EmbeddedResource).GetTypeInfo().Assembly ??
+            throw new KernelException($"[{s_namespace}] {name} assembly not found");
 
         using Stream? resource = assembly.GetManifestResourceStream($"{s_namespace}." + name);
         if (resource is null)

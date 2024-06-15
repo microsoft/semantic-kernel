@@ -21,7 +21,9 @@ internal static class MicrosoftGraphModelExtensions
         {
             BccRecipients = graphMessage.BccRecipients?.Select(r => r.EmailAddress.ToEmailAddress()),
             Body = graphMessage.Body?.Content,
+#pragma warning disable CA1307 // Specify StringComparison for clarity
             BodyPreview = graphMessage.BodyPreview.Replace("\u200C", ""), // BodyPreviews are sometimes filled with zero-width non-joiner characters - remove them.
+#pragma warning restore CA1307
             CcRecipients = graphMessage.CcRecipients?.Select(r => r.EmailAddress.ToEmailAddress()),
             From = graphMessage.From?.EmailAddress?.ToEmailAddress(),
             IsRead = graphMessage.IsRead,

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -9,12 +11,11 @@ from semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognit
 
 
 @pytest.fixture
-def azure_cognitive_search_memory_store():
+def azure_cognitive_search_memory_store(azure_ai_search_unit_test_env):
     """Fixture to instantiate AzureCognitiveSearchMemoryStore with basic configuration."""
-    store = AzureCognitiveSearchMemoryStore(
+    return AzureCognitiveSearchMemoryStore(
         1536, "https://test.search.windows.net", azure_credentials=AzureKeyCredential("test_key")
     )
-    return store
 
 
 @pytest.fixture
@@ -44,13 +45,15 @@ def mock_get_index_client():
 
 @pytest.mark.asyncio
 async def test_create_collection_without_encryption_key(
-    azure_cognitive_search_memory_store, mock_search_index_client, mock_get_index_client
+    azure_cognitive_search_memory_store: AzureCognitiveSearchMemoryStore,
+    mock_search_index_client,
+    mock_get_index_client,
 ):
     mock_search_index_client.return_value = SearchIndex(name="testIndex", fields=[])
     await azure_cognitive_search_memory_store.create_collection("testIndex")
 
     mock_search_index_client.assert_called_once()
-    args, kwargs = mock_search_index_client.call_args
+    args, _kwargs = mock_search_index_client.call_args
     created_index: SearchIndex = args[0]
 
     assert created_index.encryption_key is None, "Encryption key should be None"
@@ -58,7 +61,10 @@ async def test_create_collection_without_encryption_key(
 
 @pytest.mark.asyncio
 async def test_create_collection_with_encryption_key(
-    azure_cognitive_search_memory_store, mock_search_index_client, mock_encryption_key, mock_get_index_client
+    azure_cognitive_search_memory_store: AzureCognitiveSearchMemoryStore,
+    mock_search_index_client,
+    mock_encryption_key,
+    mock_get_index_client,
 ):
     mock_search_index_client.return_value = SearchIndex(
         name="testIndexWithEncryption", fields=[], search_resource_encryption_key=mock_encryption_key
@@ -68,7 +74,7 @@ async def test_create_collection_with_encryption_key(
     )
 
     mock_search_index_client.assert_called_once()
-    args, kwargs = mock_search_index_client.call_args
+    args, _kwargs = mock_search_index_client.call_args
     created_index: SearchIndex = args[0]
 
     assert created_index.encryption_key == mock_encryption_key, "Encryption key was not set correctly"

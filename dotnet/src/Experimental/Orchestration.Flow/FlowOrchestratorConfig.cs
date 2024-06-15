@@ -13,12 +13,12 @@ public sealed class FlowOrchestratorConfig
     /// <summary>
     /// A list of plugins to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedPlugins { get; } = new();
+    public HashSet<string> ExcludedPlugins { get; } = [];
 
     /// <summary>
     /// A list of functions to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedFunctions { get; } = new();
+    public HashSet<string> ExcludedFunctions { get; } = [];
 
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
@@ -59,7 +59,7 @@ public sealed class FlowOrchestratorConfig
     /// <summary>
     /// Optional. The allowed AI service id for the React engine.
     /// </summary>
-    public HashSet<string> AIServiceIds { get; set; } = new();
+    public HashSet<string> AIServiceIds { get; set; } = [];
 
     /// <summary>
     /// Optional. The AI request settings for the ReAct engine.

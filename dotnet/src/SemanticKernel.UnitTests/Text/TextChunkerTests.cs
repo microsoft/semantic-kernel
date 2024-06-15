@@ -28,11 +28,11 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitMarkdownParagraphs()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
         var expected = new[]
         {
             "This is a test of the emergency broadcast system.",
@@ -48,11 +48,11 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitMarkdownParagraphsWithOverlap()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -71,11 +71,11 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphs()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -92,11 +92,11 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsWithOverlap()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -130,7 +130,7 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsWithEmptyInput()
     {
-        List<string> input = new();
+        List<string> input = [];
 
         var expected = new List<string>();
 
@@ -142,7 +142,7 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitMarkdownParagraphsWithEmptyInput()
     {
-        List<string> input = new();
+        List<string> input = [];
 
         var expected = new List<string>();
 
@@ -154,13 +154,13 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsEvenly()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test.",
             "A small note. And another. And once again. Seriously, this is the end. We're finished. All set. Bye.",
             "Done."
-        };
+        ];
 
         var expected = new[]
         {
@@ -180,13 +180,13 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsOnNewlines()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system\r\nThis is only a test",
             "We repeat this is only a test\nA unit test",
             "A small note\nAnd another\r\nAnd once again\rSeriously this is the end\nWe're finished\nAll set\nBye\n",
             "Done"
-        };
+        ];
 
         var expected = new[]
         {
@@ -206,13 +206,13 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsOnPunctuation()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test",
             "We repeat, this is only a test? A unit test",
             "A small note! And another? And once again! Seriously, this is the end. We're finished. All set. Bye.",
             "Done."
-        };
+        ];
 
         var expected = new[]
         {
@@ -233,13 +233,13 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsOnSemicolons()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system; This is only a test",
             "We repeat; this is only a test; A unit test",
             "A small note; And another; And once again; Seriously, this is the end; We're finished; All set; Bye.",
             "Done."
-        };
+        ];
 
         var expected = new[]
         {
@@ -259,13 +259,13 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsOnColons()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system: This is only a test",
             "We repeat: this is only a test: A unit test",
             "A small note: And another: And once again: Seriously, this is the end: We're finished: All set: Bye.",
             "Done."
-        };
+        ];
 
         var expected = new[]
         {
@@ -285,13 +285,13 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsOnCommas()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system, This is only a test",
             "We repeat, this is only a test, A unit test",
             "A small note, And another, And once again, Seriously, this is the end, We're finished, All set, Bye.",
             "Done."
-        };
+        ];
 
         var expected = new[]
         {
@@ -311,13 +311,13 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsOnClosingBrackets()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system) This is only a test",
             "We repeat) this is only a test) A unit test",
             "A small note] And another) And once again] Seriously this is the end} We're finished} All set} Bye.",
             "Done."
-        };
+        ];
 
         var expected = new[]
         {
@@ -337,13 +337,13 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsOnSpaces()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system This is only a test",
             "We repeat this is only a test A unit test",
             "A small note And another And once again Seriously this is the end We're finished All set Bye.",
             "Done."
-        };
+        ];
 
         var expected = new[]
         {
@@ -363,13 +363,13 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsOnHyphens()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system-This is only a test",
             "We repeat-this is only a test-A unit test",
             "A small note-And another-And once again-Seriously, this is the end-We're finished-All set-Bye.",
             "Done."
-        };
+        ];
 
         var expected = new[]
         {
@@ -389,14 +389,14 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsWithNoDelimiters()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "Thisisatestoftheemergencybroadcastsystem",
             "Thisisonlyatest",
             "WerepeatthisisonlyatestAunittest",
             "AsmallnoteAndanotherAndonceagain",
             "SeriouslythisistheendWe'refinishedAllsetByeDoneThisOneWillBeSplitToMeetTheLimit",
-        };
+        ];
 
         var expected = new[]
         {
@@ -432,13 +432,13 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitMarkdownParagraphsOnNewlines()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This_is_a_test_of_the_emergency_broadcast_system\r\nThis_is_only_a_test",
             "We_repeat_this_is_only_a_test\nA_unit_test",
             "A_small_note\nAnd_another\r\nAnd_once_again\rSeriously_this_is_the_end\nWe're_finished\nAll_set\nBye\n",
             "Done"
-        };
+        ];
 
         var expected = new[]
         {
@@ -497,11 +497,11 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitMarkdownParagraphsWithCustomTokenCounter()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
         var expected = new[]
         {
             "This is a test of the emergency broadcast system.",
@@ -517,11 +517,11 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitMarkdownParagraphsWithOverlapAndCustomTokenCounter()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -540,11 +540,11 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsWithCustomTokenCounter()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -561,11 +561,11 @@ public sealed class TextChunkerTests
     [Fact]
     public void CanSplitTextParagraphsWithOverlapAndCustomTokenCounter()
     {
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -600,11 +600,11 @@ public sealed class TextChunkerTests
     public void CanSplitMarkdownParagraphsWithHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
         var expected = new[]
         {
             $"{ChunkHeader}This is a test of the emergency broadcast system.",
@@ -621,11 +621,11 @@ public sealed class TextChunkerTests
     public void CanSplitMarkdownParagraphsWithOverlapAndHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -645,11 +645,11 @@ public sealed class TextChunkerTests
     public void CanSplitTextParagraphsWithHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -667,11 +667,11 @@ public sealed class TextChunkerTests
     public void CanSplitTextParagraphsWithOverlapAndHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -691,11 +691,11 @@ public sealed class TextChunkerTests
     public void CanSplitMarkdownParagraphsWithHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
         var expected = new[]
         {
             $"{ChunkHeader}This is a test of the emergency broadcast system.",
@@ -712,11 +712,11 @@ public sealed class TextChunkerTests
     public void CanSplitMarkdownParagraphsWithOverlapAndHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -736,11 +736,11 @@ public sealed class TextChunkerTests
     public void CanSplitTextParagraphsWithHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {
@@ -758,11 +758,11 @@ public sealed class TextChunkerTests
     public void CanSplitTextParagraphsWithOverlapAndHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-        List<string> input = new()
-        {
+        List<string> input =
+        [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
-        };
+        ];
 
         var expected = new[]
         {

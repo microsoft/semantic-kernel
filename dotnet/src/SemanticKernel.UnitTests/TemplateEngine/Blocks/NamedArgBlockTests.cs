@@ -251,7 +251,7 @@ public class NamedArgBlockTests
         var target = new NamedArgBlock("a=$var");
 
         // Act
-        var result = target.GetValue(new KernelArguments());
+        var result = target.GetValue([]);
 
         // Assert
         Assert.Null(result);

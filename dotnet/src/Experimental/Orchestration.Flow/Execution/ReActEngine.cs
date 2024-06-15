@@ -173,7 +173,7 @@ internal sealed class ReActEngine
 
     internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, KernelArguments contextVariables)
     {
-        var variables = actionStep.ActionVariables ?? new Dictionary<string, string>();
+        var variables = actionStep.ActionVariables ?? [];
 
         variables[Constants.ActionVariableNames.ChatInput] = chatInput;
         variables[Constants.ActionVariableNames.ChatHistory] = ChatHistorySerializer.Serialize(chatHistory);
@@ -274,7 +274,7 @@ internal sealed class ReActEngine
             {
                 // ignore the built-in context variables
                 var variablesToPrint = s.ActionVariables?.Where(v => !Constants.ActionVariableNames.All.Contains(v.Key)).ToDictionary(_ => _.Key, _ => _.Value);
-                scratchPadLines.Insert(insertPoint, $"{Action} {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(variablesToPrint)}}}");
+                scratchPadLines.Insert(insertPoint, $$"""{{Action}} {"action": "{{s.Action}}","action_variables": {{JsonSerializer.Serialize(variablesToPrint)}}}""");
             }
 
             if (i != 0)
@@ -370,8 +370,8 @@ internal sealed class ReActEngine
     {
         var functionViews = kernel.Plugins.GetFunctionsMetadata();
 
-        var excludedPlugins = this._config.ExcludedPlugins ?? new HashSet<string>();
-        var excludedFunctions = this._config.ExcludedFunctions ?? new HashSet<string>();
+        var excludedPlugins = this._config.ExcludedPlugins ?? [];
+        var excludedFunctions = this._config.ExcludedFunctions ?? [];
 
         var availableFunctions =
             functionViews
@@ -390,14 +390,14 @@ internal sealed class ReActEngine
         {
             Description = "The message to be shown to the user.",
             ParameterType = typeof(string),
-            Schema = KernelJsonSchema.Parse("{\"type\":\"string\"}"),
+            Schema = KernelJsonSchema.Parse("""{"type":"string"}"""),
         };
 
         return new KernelFunctionMetadata(Constants.StopAndPromptFunctionName)
         {
             PluginName = "_REACT_ENGINE_",
             Description = "Terminate the session, only used when previous attempts failed with FATAL error and need notify user",
-            Parameters = new[] { promptParameter }
+            Parameters = [promptParameter]
         };
     }
 

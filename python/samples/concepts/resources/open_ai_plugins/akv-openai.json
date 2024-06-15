@@ -1,0 +1,20 @@
+{
+    "schema_version": "v1",
+    "name_for_model": "AzureKeyVault",
+    "name_for_human": "AzureKeyVault",
+    "description_for_model": "An Azure Key Vault plugin for interacting with secrets.",
+    "description_for_human": "An Azure Key Vault plugin for interacting with secrets.",
+    "auth": {
+        "type": "oauth",
+        "scope": "https://vault.azure.net/.default",
+        "authorization_url": "https://login.microsoftonline.com/e80e3e25-bb8d-4b4d-ab3f-b91669dd8ae4/oauth2/v2.0/token",
+        "authorization_content_type": "application/x-www-form-urlencoded"
+    },
+    "api": {
+        "type": "openapi",
+        "url": "file:///./python/samples/concepts/resources/open_ai_plugins/akv-openapi.yaml"
+    },
+    "logo_url": "",
+    "contact_email": "",
+    "legal_info_url": ""
+}

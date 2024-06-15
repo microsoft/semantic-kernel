@@ -10,5 +10,5 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// </summary>
 /// <param name="payload">The operation payload metadata.</param>
 /// <param name="arguments">The operation arguments.</param>
-/// <returns>The HTTP content representing the operation payload.</returns>
-internal delegate HttpContent HttpContentFactory(RestApiOperationPayload? payload, IDictionary<string, object?> arguments);
+/// <returns>The object and HttpContent representing the operation payload.</returns>
+internal delegate (object? Payload, HttpContent Content) HttpContentFactory(RestApiOperationPayload? payload, IDictionary<string, object?> arguments);

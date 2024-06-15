@@ -5,30 +5,20 @@ namespace Microsoft.SemanticKernel.Plugins.Grpc.Model;
 /// <summary>
 /// The gRPC operation data contract field.
 /// </summary>
-internal sealed class GrpcOperationDataContractTypeFiled
+internal sealed class GrpcOperationDataContractTypeFiled(string name, int number, string typeName)
 {
-    /// <summary>
-    /// Creates an instance of a <see cref="GrpcOperationDataContractTypeFiled"/> class.
-    /// </summary>
-    public GrpcOperationDataContractTypeFiled(string name, int number, string typeName)
-    {
-        this.Name = name;
-        this.Number = number;
-        this.TypeName = typeName;
-    }
-
     /// <summary>
     /// Field name.
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; } = name;
 
     /// <summary>
     /// Field number.
     /// </summary>
-    public int Number { get; private set; }
+    public int Number { get; } = number;
 
     /// <summary>
     /// Field type name.
     /// </summary>
-    public string TypeName { get; private set; }
+    public string TypeName { get; } = typeName;
 }

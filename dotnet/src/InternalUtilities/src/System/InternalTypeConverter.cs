@@ -22,13 +22,13 @@ internal static class InternalTypeConverter
     /// <returns>A string representation of the object value, considering the specified CultureInfo.</returns>
     public static string? ConvertToString(object? value, CultureInfo? culture = null)
     {
-        if (value == null) { return null; }
+        if (value is null) { return null; }
 
         var sourceType = value.GetType();
 
         var converterDelegate = GetTypeToStringConverterDelegate(sourceType);
 
-        return converterDelegate == null
+        return converterDelegate is null
             ? value.ToString()
             : converterDelegate(value, culture ?? CultureInfo.InvariantCulture);
     }

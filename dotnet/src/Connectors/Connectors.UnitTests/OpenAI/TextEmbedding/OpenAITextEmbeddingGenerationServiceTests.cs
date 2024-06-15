@@ -3,6 +3,7 @@
 using System;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
@@ -80,11 +81,13 @@ public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
         var service = new OpenAITextEmbeddingGenerationService("model-id", "api-key", "organization", this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"{
-                                            ""object"": ""list"",
-                                            ""data"": [],
-                                            ""model"": ""model-id""
-                                        }", Encoding.UTF8, "application/json")
+            Content = new StringContent("""
+                                        {
+                                            "object": "list",
+                                            "data": [],
+                                            "model": "model-id"
+                                        }
+                                        """, Encoding.UTF8, "application/json")
         };
 
         // Act & Assert
@@ -97,23 +100,7 @@ public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
     {
         // Arrange
         var service = new OpenAITextEmbeddingGenerationService("model-id", "api-key", "organization", this._httpClient);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent(@"{
-                                            ""object"": ""list"",
-                                            ""data"": [
-                                                {
-                                                    ""object"": ""embedding"",
-                                                    ""embedding"": [
-                                                        0.018990106880664825,
-                                                        -0.0073809814639389515
-                                                    ],
-                                                    ""index"": 0
-                                                }
-                                            ],
-                                            ""model"": ""model-id""
-                                        }", Encoding.UTF8, "application/json")
-        };
+        this._messageHandlerStub.ResponseToReturn = this.SuccessfulResponse;
 
         // Act
         var result = await service.GenerateEmbeddingsAsync(["test"]);
@@ -127,9 +114,51 @@ public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
         Assert.Equal(-0.0073809814639389515, memory.Span[1]);
     }
 
+    [Fact]
+    public async Task GenerateEmbeddingsWithDimensionsWorksCorrectlyAsync()
+    {
+        // Arrange
+        var service = new OpenAITextEmbeddingGenerationService("model-id", "api-key", "organization", this._httpClient, dimensions: 256);
+        this._messageHandlerStub.ResponseToReturn = this.SuccessfulResponse;
+
+        // Act
+        await service.GenerateEmbeddingsAsync(["test"]);
+
+        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
+
+        // Assert
+        Assert.Equal(256, optionsJson.GetProperty("dimensions").GetInt32());
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
+
+    #region private
+
+    private HttpResponseMessage SuccessfulResponse
+        => new(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("""
+                                        {
+                                            "object": "list",
+                                            "data": [
+                                                {
+                                                    "object": "embedding",
+                                                    "embedding": [
+                                                        0.018990106880664825,
+                                                        -0.0073809814639389515
+                                                    ],
+                                                    "index": 0
+                                                }
+                                            ],
+                                            "model": "model-id"
+                                        }
+                                        """, Encoding.UTF8, "application/json")
+        };
+
+    #endregion
 }

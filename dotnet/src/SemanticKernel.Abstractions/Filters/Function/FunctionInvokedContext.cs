@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// Class with data related to function after invocation.
 /// </summary>
 [Experimental("SKEXP0001")]
+[Obsolete("This class is deprecated in favor of FunctionInvocationContext class, which is used in IFunctionInvocationFilter interface.")]
 public sealed class FunctionInvokedContext : FunctionFilterContext
 {
     /// <summary>

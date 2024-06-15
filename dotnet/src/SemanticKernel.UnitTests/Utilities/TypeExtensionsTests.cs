@@ -33,5 +33,5 @@ public sealed class TypeExtensionsTests
         Assert.Equal(expectedType, resultType);
     }
 
-    private struct TestType { }
+    private struct TestType;
 }

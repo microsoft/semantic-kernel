@@ -26,17 +26,14 @@
     },
     {
       "pattern": "^https://platform.openai.com"
+    },
+    {
+      "pattern": "^https://outlook.office.com/bookings"
     }
   ],
   "timeout": "20s",
   "retryOn429": true,
   "retryCount": 3,
   "fallbackRetryDelay": "30s",
-  "aliveStatusCodes": [
-    200,
-    206,
-    429,
-    500,
-    503
-  ]
+  "aliveStatusCodes": [200, 206, 429, 500, 503]
 }

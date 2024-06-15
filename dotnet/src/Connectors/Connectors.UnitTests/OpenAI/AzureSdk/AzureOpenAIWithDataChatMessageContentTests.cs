@@ -9,6 +9,8 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.AzureSdk;
 
+#pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
+
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAIWithDataChatMessageContent"/> class.
 /// </summary>

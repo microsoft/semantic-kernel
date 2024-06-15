@@ -41,6 +41,14 @@
               "name": "MyPlugin-InvalidArguments",
               "arguments": "invalid_arguments_format"
             }
+          },
+          {
+            "id": "5",
+            "type": "function",
+            "function": {
+              "name": "MyPlugin-IntArguments",
+              "arguments": "{\n\"age\": 36\n}"
+            }
           }
         ]
       },

@@ -18,7 +18,6 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "pythonTestExplorer.testFramework": "pytest",
     "[python]": {
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit",

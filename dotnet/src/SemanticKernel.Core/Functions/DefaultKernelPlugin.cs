@@ -30,7 +30,9 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
             foreach (KernelFunction f in functions)
             {
                 Verify.NotNull(f, nameof(functions));
-                this._functions.Add(f.Name, f);
+
+                var cloned = f.Clone(name);
+                this._functions.Add(cloned.Name, cloned);
             }
         }
     }

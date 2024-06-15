@@ -32,7 +32,7 @@ jobs:
         cache: "poetry"
         cache-dependency-path: "python/pyproject.toml"
         
-    - name: Install SemanticKernel
+    - name: Install Semantic Kernel
       run: poetry install --no-ansi
       
     - name: Build wheel

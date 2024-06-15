@@ -12,7 +12,7 @@ internal static class ExceptionExtensions
         bool isContentFilterException = ex is HttpOperationException
         {
             StatusCode: HttpStatusCode.BadRequest, InnerException: { }
-        } hoe && hoe.InnerException.Message.Contains("content_filter");
+        } hoe && hoe.InnerException?.Message.Contains("content_filter") is true;
 
         return isContentFilterException || ex.IsCriticalException();
     }

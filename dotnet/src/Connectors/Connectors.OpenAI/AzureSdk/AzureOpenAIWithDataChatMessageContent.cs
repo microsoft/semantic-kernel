@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// OpenAI specialized with data chat message content
 /// </summary>
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
 {
     /// <summary>

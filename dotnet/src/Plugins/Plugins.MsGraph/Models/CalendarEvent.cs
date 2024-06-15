@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
@@ -39,5 +38,5 @@ public class CalendarEvent
     /// <summary>
     /// Attendees of the event.
     /// </summary>
-    public IEnumerable<string>? Attendees { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<string>? Attendees { get; set; } = [];
 }

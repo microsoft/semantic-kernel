@@ -136,7 +136,7 @@ public class KernelFunctionYamlTests
             default: English
         ";
 
-    private readonly string _yaml = @"
+    private readonly string _yaml = """
         template_format: semantic-kernel
         template:        Say hello world to {{$name}} in {{$language}}
         description:     Say hello to the specified person using the specified language
@@ -164,10 +164,10 @@ public class KernelFunctionYamlTests
             presence_penalty:  0.0
             frequency_penalty: 0.0
             max_tokens:        256
-            stop_sequences:    [ ""foo"", ""bar"", ""baz"" ]
-        ";
+            stop_sequences:    [ "foo", "bar", "baz" ]
+        """;
 
-    private readonly string _yamlWithCustomSettings = @"
+    private readonly string _yamlWithCustomSettings = """
         template_format: semantic-kernel
         template:        Say hello world to {{$name}} in {{$language}}
         description:     Say hello to the specified person using the specified language
@@ -194,6 +194,6 @@ public class KernelFunctionYamlTests
             top_q:             0.0
             rando_penalty:     0.0
             max_token_count:   256
-            stop_sequences:    [ ""foo"", ""bar"", ""baz"" ]
-        ";
+            stop_sequences:    [ "foo", "bar", "baz" ]
+        """;
 }

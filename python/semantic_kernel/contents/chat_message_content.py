@@ -1,18 +1,43 @@
 # Copyright (c) Microsoft. All rights reserved.
-import json
-from typing import Optional
-from xml.etree.ElementTree import Element
+
+import logging
+from enum import Enum
+from html import unescape
+from typing import Any, Union, overload
+from xml.etree.ElementTree import Element  # nosec
 
 from defusedxml import ElementTree
+from pydantic import Field
 
-from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.author_role import AuthorRole
+from semantic_kernel.contents.const import (
+    CHAT_MESSAGE_CONTENT_TAG,
+    FUNCTION_CALL_CONTENT_TAG,
+    FUNCTION_RESULT_CONTENT_TAG,
+    TEXT_CONTENT_TAG,
+)
+from semantic_kernel.contents.finish_reason import FinishReason
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
+
+TAG_CONTENT_MAP = {
+    TEXT_CONTENT_TAG: TextContent,
+    FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
+    FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
+}
+
+ITEM_TYPES = Union[TextContent, StreamingTextContent, FunctionResultContent, FunctionCallContent]
+
+logger = logging.getLogger(__name__)
 
 
 class ChatMessageContent(KernelContent):
-    """This is the base class for chat message response content.
+    """This is the class for chat message response content.
 
-    All Chat Completion Services should return a instance of this class as response.
+    All Chat Completion Services should return an instance of this class as response.
     Or they can implement their own subclass of this class and return an instance.
 
     Args:
@@ -29,37 +54,230 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
-    role: ChatRole
-    content: Optional[str] = None
-    encoding: Optional[str] = None
+    role: AuthorRole
+    name: str | None = None
+    items: list[ITEM_TYPES] = Field(default_factory=list)
+    encoding: str | None = None
+    finish_reason: FinishReason | None = None
+
+    @overload
+    def __init__(
+        self,
+        role: AuthorRole,
+        items: list[ITEM_TYPES],
+        name: str | None = None,
+        inner_content: Any | None = None,
+        encoding: str | None = None,
+        finish_reason: FinishReason | None = None,
+        ai_model_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self,
+        role: AuthorRole,
+        content: str,
+        name: str | None = None,
+        inner_content: Any | None = None,
+        encoding: str | None = None,
+        finish_reason: FinishReason | None = None,
+        ai_model_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None: ...
+
+    def __init__(  # type: ignore
+        self,
+        role: AuthorRole,
+        items: list[ITEM_TYPES] | None = None,
+        content: str | None = None,
+        inner_content: Any | None = None,
+        name: str | None = None,
+        encoding: str | None = None,
+        finish_reason: FinishReason | None = None,
+        ai_model_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ):
+        """Create a ChatMessageContent instance.
+
+        Args:
+            role: ChatRole - The role of the chat message.
+            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent] - The content.
+            content: str - The text of the response.
+            inner_content: Optional[Any] - The inner content of the response,
+                this should hold all the information from the response so even
+                when not creating a subclass a developer can leverage the full thing.
+            name: Optional[str] - The name of the response.
+            encoding: Optional[str] - The encoding of the text.
+            finish_reason: Optional[FinishReason] - The reason the response was finished.
+            ai_model_id: Optional[str] - The id of the AI model that generated this response.
+            metadata: Dict[str, Any] - Any metadata that should be attached to the response.
+            **kwargs: Any - Any additional fields to set on the instance.
+        """
+        kwargs["role"] = role
+        if encoding:
+            kwargs["encoding"] = encoding
+        if finish_reason:
+            kwargs["finish_reason"] = finish_reason
+        if name:
+            kwargs["name"] = name
+        if content:
+            item = TextContent(
+                ai_model_id=ai_model_id,
+                inner_content=inner_content,
+                metadata=metadata or {},
+                text=content,
+                encoding=encoding,
+            )
+            if items:
+                items.append(item)
+            else:
+                items = [item]
+        if items:
+            kwargs["items"] = items
+        if inner_content:
+            kwargs["inner_content"] = inner_content
+        if metadata:
+            kwargs["metadata"] = metadata
+        if ai_model_id:
+            kwargs["ai_model_id"] = ai_model_id
+        super().__init__(
+            **kwargs,
+        )
+
+    @property
+    def content(self) -> str:
+        """Get the content of the response, will find the first TextContent's text."""
+        for item in self.items:
+            if isinstance(item, TextContent):
+                return item.text
+        return ""
+
+    @content.setter
+    def content(self, value: str):
+        """Set the content of the response."""
+        if not value:
+            logger.warning(
+                "Setting empty content on ChatMessageContent does not work, "
+                "you can do this through the underlying items if needed, ignoring."
+            )
+            return
+        for item in self.items:
+            if isinstance(item, TextContent):
+                item.text = value
+                item.encoding = self.encoding
+                return
+        self.items.append(
+            TextContent(
+                ai_model_id=self.ai_model_id,
+                inner_content=self.inner_content,
+                metadata=self.metadata,
+                text=value,
+                encoding=self.encoding,
+            )
+        )
 
     def __str__(self) -> str:
+        """Get the content of the response as a string."""
         return self.content or ""
 
-    def to_prompt(self, root_key: str) -> str:
+    def to_element(self) -> "Element":
+        """Convert the ChatMessageContent to an XML Element.
+
+        Args:
+            root_key: str - The key to use for the root of the XML Element.
+
+        Returns:
+            Element - The XML Element representing the ChatMessageContent.
+        """
+        root = Element(CHAT_MESSAGE_CONTENT_TAG)
+        for field in self.model_fields_set:
+            if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id"]:
+                continue
+            value = getattr(self, field)
+            if isinstance(value, Enum):
+                value = value.value
+            root.set(field, value)
+        for index, item in enumerate(self.items):
+            root.insert(index, item.to_element())
+        return root
+
+    @classmethod
+    def from_element(cls, element: Element) -> "ChatMessageContent":
+        """Create a new instance of ChatMessageContent from an XML element.
+
+        Args:
+            element: Element - The XML Element to create the ChatMessageContent from.
+
+        Returns:
+            ChatMessageContent - The new instance of ChatMessageContent or a subclass.
+        """
+        kwargs: dict[str, Any] = {key: value for key, value in element.items()}
+        items: list[KernelContent] = []
+        if element.text:
+            items.append(TextContent(text=unescape(element.text)))
+        for child in element:
+            if child.tag not in TAG_CONTENT_MAP:
+                logger.warning('Unknown tag "%s" in ChatMessageContent, treating as text', child.tag)
+                text = ElementTree.tostring(child, encoding="unicode", short_empty_elements=False)
+                items.append(TextContent(text=unescape(text) or ""))
+            else:
+                items.append(TAG_CONTENT_MAP[child.tag].from_element(child))  # type: ignore
+        if len(items) == 1 and isinstance(items[0], TextContent):
+            kwargs["content"] = items[0].text
+        elif all(isinstance(item, TextContent) for item in items):
+            kwargs["content"] = "".join(item.text for item in items)  # type: ignore
+        else:
+            kwargs["items"] = items
+        if "choice_index" in kwargs and cls is ChatMessageContent:
+            logger.info(
+                "Seems like you are trying to create a StreamingChatMessageContent, "
+                "use StreamingChatMessageContent.from_element instead, ignoring that field "
+                "and creating a ChatMessageContent instance."
+            )
+            kwargs.pop("choice_index")
+        return cls(**kwargs)
+
+    def to_prompt(self) -> str:
         """Convert the ChatMessageContent to a prompt.
 
         Returns:
             str - The prompt from the ChatMessageContent.
         """
-
-        root = Element(root_key)
-        root.set("role", self.role.value)
-        root.set("metadata", json.dumps(self.metadata))
-        root.text = self.content or ""
+        root = self.to_element()
         return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
 
-    @classmethod
-    def from_element(cls, element: Element) -> "ChatMessageContent":
-        """Create a new instance of ChatMessageContent from a prompt.
-
-        Args:
-            prompt: str - The prompt to create the ChatMessageContent from.
+    def to_dict(self, role_key: str = "role", content_key: str = "content") -> dict[str, Any]:
+        """Serialize the ChatMessageContent to a dictionary.
 
         Returns:
-            ChatMessageContent - The new instance of ChatMessageContent.
+            dict - The dictionary representing the ChatMessageContent.
         """
-        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
-        if metadata := element.get("metadata"):
-            args["metadata"] = json.loads(metadata)
-        return cls(**args)
+        ret: dict[str, Any] = {
+            role_key: self.role.value,
+        }
+        if self.role == AuthorRole.ASSISTANT and any(isinstance(item, FunctionCallContent) for item in self.items):
+            ret["tool_calls"] = [item.to_dict() for item in self.items if isinstance(item, FunctionCallContent)]
+        else:
+            ret[content_key] = self._parse_items()
+        if self.role == AuthorRole.TOOL:
+            assert isinstance(self.items[0], FunctionResultContent)  # nosec
+            ret["tool_call_id"] = self.items[0].id or ""
+        if self.role != AuthorRole.TOOL and self.name:
+            ret["name"] = self.name
+        return ret
+
+    def _parse_items(self) -> str | list[dict[str, Any]]:
+        """Parse the items of the ChatMessageContent.
+
+        Returns:
+            str | dict - The parsed items.
+        """
+        if len(self.items) == 1 and isinstance(self.items[0], TextContent):
+            return self.items[0].text
+        if len(self.items) == 1 and isinstance(self.items[0], FunctionResultContent):
+            return self.items[0].result
+        return [item.to_dict() for item in self.items]

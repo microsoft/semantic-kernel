@@ -55,9 +55,9 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     public HandlebarsPromptTemplateOptions()
     {
         this.PrefixSeparator = "-";
-        this.Categories = new Category[] {
+        this.Categories = [
             Category.Math, // Enables basic math operations (https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki/Math)
             Category.String // Enables string manipulation (https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki/String)
-        };
+        ];
     }
 }

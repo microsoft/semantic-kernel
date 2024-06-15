@@ -35,6 +35,7 @@ public sealed class InputVariable
         this.Default = inputVariable.Default;
         this.IsRequired = inputVariable.IsRequired;
         this.JsonSchema = inputVariable.JsonSchema;
+        this.AllowDangerouslySetContent = inputVariable.AllowDangerouslySetContent;
     }
 
     /// <summary>
@@ -88,4 +89,17 @@ public sealed class InputVariable
     /// </remarks>
     [JsonPropertyName("json_schema")]
     public string? JsonSchema { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to handle the variable value as potential dangerous content.
+    /// </summary>
+    /// <remarks>
+    /// The default is false.
+    /// When set to true the value of the input variable is treated as safe content.
+    /// For prompts which are being used with a chat completion service this should be set to false to protect against prompt injection attacks.
+    /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    [JsonPropertyName("allow_dangerously_set_content")]
+    public bool AllowDangerouslySetContent { get; set; } = false;
 }

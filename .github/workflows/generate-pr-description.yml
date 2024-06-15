@@ -13,7 +13,7 @@ jobs:
     if: github.event.issue.pull_request && contains(github.event.comment.body, '/sk generate-pr-description')
     steps:
       - name: Get PR branch
-        uses: xt0rted/pull-request-comment-branch@v1
+        uses: xt0rted/pull-request-comment-branch@v2
         id: comment-branch
 
       - name: Set latest commit status as pending
@@ -44,7 +44,7 @@ jobs:
           status: ${{ job.status }}
 
       - name: Add comment to PR
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         if: always()
         with:
           script: |

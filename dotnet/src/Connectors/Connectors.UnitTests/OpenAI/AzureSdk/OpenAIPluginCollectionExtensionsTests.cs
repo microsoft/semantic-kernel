@@ -16,7 +16,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
     public void TryGetFunctionAndArgumentsWithNonExistingFunctionReturnsFalse()
     {
         // Arrange
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", []);
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin");
         var plugins = new KernelPluginCollection([plugin]);
 
         var toolCall = new ChatCompletionsFunctionToolCall("id", "MyPlugin_MyFunction", string.Empty);
@@ -45,7 +45,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 
         // Assert
         Assert.True(result);
-        Assert.Same(function, actualFunction);
+        Assert.Equal(function.Name, actualFunction?.Name);
         Assert.Null(actualArguments);
     }
 
@@ -64,7 +64,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 
         // Assert
         Assert.True(result);
-        Assert.Same(function, actualFunction);
+        Assert.Equal(function.Name, actualFunction?.Name);
 
         Assert.NotNull(actualArguments);
 

@@ -1,31 +1,42 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+
 from unittest.mock import Mock
 
 import pytest
 
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planners.sequential_planner.sequential_planner_config import (
-    SequentialPlannerConfig,
-)
-from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
-    SequentialPlannerKernelExtension,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
+from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import SequentialPlannerKernelExtension
 
 
 async def _async_generator(query_result):
     yield query_result
 
 
+def create_mock_function(
+    kernel_function_metadata: KernelFunctionMetadata, return_value: FunctionResult
+) -> KernelFunction:
+    mock_function = Mock(spec=KernelFunction)
+    mock_function.metadata = kernel_function_metadata
+    mock_function.name = kernel_function_metadata.name
+    mock_function.plugin_name = kernel_function_metadata.plugin_name
+    mock_function.is_prompt = kernel_function_metadata.is_prompt
+    mock_function.description = kernel_function_metadata.description
+    mock_function.prompt_execution_settings = PromptExecutionSettings()
+    mock_function.invoke.return_value = return_value
+    mock_function.function_copy.return_value = mock_function
+    return mock_function
+
+
 @pytest.mark.asyncio
-async def test_can_call_get_available_functions_with_no_functions():
+async def test_can_call_get_available_functions_with_no_functions(kernel: Kernel):
     arguments = KernelArguments()
-    kernel = Kernel()
 
     # Arrange GetAvailableFunctionsAsync parameters
     config = SequentialPlannerConfig()
@@ -39,10 +50,8 @@ async def test_can_call_get_available_functions_with_no_functions():
 
 
 @pytest.mark.asyncio
-async def test_can_call_get_available_functions_with_functions():
+async def test_can_call_get_available_functions_with_functions(kernel: Kernel):
     arguments = KernelArguments()
-    kernel = Kernel()
-    functions_list = []
     kernel_function_metadata = KernelFunctionMetadata(
         name="functionName",
         plugin_name="pluginName",
@@ -59,13 +68,8 @@ async def test_can_call_get_available_functions_with_functions():
         is_prompt=False,
         is_asynchronous=False,
     )
-    functions_list.append(kernel_function_metadata)
-    functions_list.append(native_kernel_function_metadata)
-
-    mock_plugins = Mock(spec=KernelPluginCollection)
-    mock_plugins.get_list_of_function_metadata.return_value = functions_list
-
-    kernel.plugins = mock_plugins
+    kernel.add_function("pluginName", create_mock_function(kernel_function_metadata, None))
+    kernel.add_function("pluginName", create_mock_function(native_kernel_function_metadata, None))
 
     # Arrange GetAvailableFunctionsAsync parameters
     config = SequentialPlannerConfig()
@@ -93,11 +97,8 @@ async def test_can_call_get_available_functions_with_functions():
 
 
 @pytest.mark.asyncio
-async def test_can_call_get_available_functions_with_default_relevancy():
+async def test_can_call_get_available_functions_with_default_relevancy(kernel: Kernel):
     # Arrange
-    plugins = KernelPluginCollection()
-    kernel = Kernel()
-    kernel.plugins = plugins
     arguments = KernelArguments()
 
     # Arrange GetAvailableFunctionsAsync parameters

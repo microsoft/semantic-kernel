@@ -26,9 +26,7 @@ internal static class HttpHeaderConstant
         /// <param name="type">Type for which the assembly version is returned.</param>
         public static string GetAssemblyVersion(Type type)
         {
-#pragma warning disable CS8602 // Dereference of a possibly null reference. Impacts Milvus connector package because it targets net6.0 and netstandard2.0
-            return type.Assembly.GetName().Version.ToString();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+            return type.Assembly.GetName().Version!.ToString();
         }
     }
 }

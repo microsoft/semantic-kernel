@@ -90,7 +90,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         var data = JsonSerializer.Deserialize<GetVectorsResponse>(responseContent);
 
-        if (data == null)
+        if (data is null)
         {
             this._logger.LogWarning("Unable to deserialize Get response");
             yield break;
@@ -145,7 +145,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
 
-        if (data == null)
+        if (data is null)
         {
             this._logger.LogWarning("Unable to deserialize Search response");
             return null;
@@ -209,7 +209,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     {
         QdrantVectorRecord? existingRecord = await this.GetVectorByPayloadIdAsync(collectionName, metadataId, false, cancellationToken).ConfigureAwait(false);
 
-        if (existingRecord == null)
+        if (existingRecord is null)
         {
             this._logger.LogDebug("Vector not found, nothing to delete");
             return;
@@ -317,7 +317,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
 
-        if (data == null)
+        if (data is null)
         {
             this._logger.LogWarning("Unable to deserialize Search response");
             yield break;
@@ -476,7 +476,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         CancellationToken cancellationToken = default)
     {
         //Apply endpoint override if it's specified.
-        if (this._endpointOverride != null)
+        if (this._endpointOverride is not null)
         {
             request.RequestUri = new Uri(this._endpointOverride, request.RequestUri!);
         }

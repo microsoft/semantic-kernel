@@ -71,20 +71,27 @@ internal static partial class KernelFunctionLogMessages
             logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
             eventId: 0,
             "Function result: {ResultValue}");
-    public static void LogFunctionResultValue(this ILogger logger, object? resultValue)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
+    public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
+            // Attempt to convert the result value to string using the GetValue heuristic
             try
             {
-                var jsonString = resultValue?.GetType() == typeof(string)
-                    ? resultValue.ToString()
-                    : JsonSerializer.Serialize(resultValue);
-                s_logFunctionResultValue(logger, jsonString ?? string.Empty, null);
+                s_logFunctionResultValue(logger, resultValue?.GetValue<string>() ?? string.Empty, null);
+                return;
+            }
+            catch { }
+
+            // Falling back to Json serialization
+            try
+            {
+                s_logFunctionResultValue(logger, JsonSerializer.Serialize(resultValue?.Value), null);
             }
             catch (NotSupportedException ex)
             {
-                s_logFunctionResultValue(logger, "Failed to serialize result value to Json", ex);
+                s_logFunctionResultValue(logger, "Failed to log function result value", ex);
             }
         }
     }

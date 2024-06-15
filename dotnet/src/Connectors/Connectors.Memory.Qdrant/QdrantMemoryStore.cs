@@ -95,18 +95,14 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancellationToken).ConfigureAwait(false);
-
-        if (vectorData == null)
-        {
+        var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancellationToken).ConfigureAwait(false) ??
             throw new KernelException("Failed to convert memory record to Qdrant vector record");
-        }
 
         try
         {
             await this._qdrantClient.UpsertVectorsAsync(
                 collectionName,
-                new[] { vectorData },
+                [vectorData],
                 cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
@@ -149,7 +145,7 @@ public class QdrantMemoryStore : IMemoryStore
         try
         {
             var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
-            if (vectorData == null) { return null; }
+            if (vectorData is null) { return null; }
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
@@ -170,7 +166,7 @@ public class QdrantMemoryStore : IMemoryStore
         foreach (var key in keys)
         {
             MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (record != null)
+            if (record is not null)
             {
                 yield return record;
             }
@@ -192,11 +188,11 @@ public class QdrantMemoryStore : IMemoryStore
         try
         {
             var vectorDataList = this._qdrantClient
-                .GetVectorsByIdAsync(collectionName, new[] { pointId }, withEmbedding, cancellationToken);
+                .GetVectorsByIdAsync(collectionName, [pointId], withEmbedding, cancellationToken);
 
             var vectorData = await vectorDataList.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
-            if (vectorData == null) { return null; }
+            if (vectorData is null) { return null; }
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
@@ -226,7 +222,7 @@ public class QdrantMemoryStore : IMemoryStore
         var vectorDataList = this._qdrantClient
             .GetVectorsByIdAsync(collectionName, pointIds, withEmbeddings, cancellationToken);
 
-        await foreach (var vectorData in vectorDataList)
+        await foreach (var vectorData in vectorDataList.ConfigureAwait(false))
         {
             yield return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
@@ -266,7 +262,7 @@ public class QdrantMemoryStore : IMemoryStore
     {
         try
         {
-            await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, new[] { pointId }, cancellationToken).ConfigureAwait(false);
+            await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, [pointId], cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
@@ -338,7 +334,7 @@ public class QdrantMemoryStore : IMemoryStore
                 hasResult = false;
             }
 
-            if (result != null)
+            if (result is not null)
             {
                 yield return (
                     MemoryRecord.FromJsonMetadata(
@@ -395,7 +391,7 @@ public class QdrantMemoryStore : IMemoryStore
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-            if (existingRecord != null)
+            if (existingRecord is not null)
             {
                 pointId = existingRecord.PointId;
             }
@@ -405,23 +401,17 @@ public class QdrantMemoryStore : IMemoryStore
                 {
                     // If no matching record can be found, generate an ID for the new record
                     pointId = Guid.NewGuid().ToString();
-                    existingRecord = await this._qdrantClient.GetVectorsByIdAsync(collectionName, new[] { pointId }, cancellationToken: cancellationToken)
+                    existingRecord = await this._qdrantClient.GetVectorsByIdAsync(collectionName, [pointId], cancellationToken: cancellationToken)
                         .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
-                } while (existingRecord != null);
+                } while (existingRecord is not null);
             }
         }
 
-        var vectorData = QdrantVectorRecord.FromJsonMetadata(
+        return QdrantVectorRecord.FromJsonMetadata(
             pointId: pointId,
             embedding: record.Embedding,
-            json: record.GetSerializedMetadata());
-
-        if (vectorData == null)
-        {
+            json: record.GetSerializedMetadata()) ??
             throw new KernelException("Failed to convert memory record to Qdrant vector record");
-        }
-
-        return vectorData;
     }
 
     #endregion

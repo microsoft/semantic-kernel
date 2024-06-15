@@ -71,7 +71,7 @@ public class FunctionResultTests
         FunctionResult target = new(s_nopFunction, value, CultureInfo.InvariantCulture);
 
         // Act,Assert
-        Assert.Throws<InvalidCastException>(() => target.GetValue<string>());
+        Assert.Throws<InvalidCastException>(target.GetValue<string>);
     }
 
     [Fact]

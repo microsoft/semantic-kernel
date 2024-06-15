@@ -327,12 +327,12 @@
     // ****************
     // Kernel Syntax Examples
     {
-      "label": "build (KernelSyntaxExamples)",
+      "label": "build (Concepts)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj",
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary",
         "/property:DebugType=portable"
@@ -341,26 +341,26 @@
       "group": "build"
     },
     {
-      "label": "watch (KernelSyntaxExamples)",
+      "label": "watch (Concepts)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj"
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "build"
     },
     {
-      "label": "run (KernelSyntaxExamples)",
+      "label": "run (Concepts)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "run",
         "--project",
-        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj",
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj",
         "${input:filter}"
       ],
       "problemMatcher": "$msCompile",
@@ -370,7 +370,7 @@
         "panel": "shared",
         "group": "PR-Validate"
       }
-    },
+    }
   ],
   "inputs": [
     {

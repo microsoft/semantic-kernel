@@ -35,7 +35,7 @@ public class OpenApiSchemaExtensionsTests
         {
             CultureInfo.CurrentCulture = new CultureInfo("fr-FR"); // French culture uses comma as decimal separator
 
-            var result = OpenApiSchemaExtensions.ToJsonSchema(schema); // Should use invariant culture
+            var result = schema.ToJsonSchema(); // Should use invariant culture
 
             Assert.True(result.RootElement.TryGetProperty("properties", out var properties));
             Assert.True(properties.TryGetProperty("property1", out var property2));

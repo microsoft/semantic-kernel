@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,10 +34,61 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null
+)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+        this._core = new(
+            modelId,
+            apiKey,
+            endpoint: null,
+            organization,
+            httpClient,
+            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
 
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
+    }
+
+    /// <summary>
+    /// Create an instance of the Custom Message API OpenAI chat completion connector
+    /// </summary>
+    /// <param name="modelId">Model name</param>
+    /// <param name="endpoint">Custom Message API compatible endpoint</param>
+    /// <param name="apiKey">OpenAI API Key</param>
+    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    [Experimental("SKEXP0010")]
+    public OpenAIChatCompletionService(
+            string modelId,
+            Uri endpoint,
+            string? apiKey = null,
+            string? organization = null,
+            HttpClient? httpClient = null,
+            ILoggerFactory? loggerFactory = null)
+    {
+        Uri? internalClientEndpoint = null;
+        var providedEndpoint = endpoint ?? httpClient?.BaseAddress;
+        if (providedEndpoint is not null)
+        {
+            // If the provided endpoint does not have a path specified, updates it to the default Message API Chat Completions endpoint
+            internalClientEndpoint = providedEndpoint.PathAndQuery == "/" ?
+                new Uri(providedEndpoint, "v1/chat/completions")
+                : providedEndpoint;
+        }
+
+        this._core = new(
+            modelId,
+            apiKey,
+            internalClientEndpoint,
+            organization,
+            httpClient,
+            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+
+        if (providedEndpoint is not null)
+        {
+            this._core.AddAttribute(AIServiceExtensions.EndpointKey, providedEndpoint.ToString());
+        }
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
     }
@@ -51,7 +104,10 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+        this._core = new(
+            modelId,
+            openAIClient,
+            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }

@@ -11,7 +11,7 @@ public class KernelArgumentsTests
     [Fact]
     public void ItCanBeCreatedWithNoArguments()
     {
-        KernelArguments sut = new() { };
+        KernelArguments sut = [];
 
         Assert.Null(sut.ExecutionSettings);
         Assert.Empty(sut);

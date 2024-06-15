@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -11,19 +10,20 @@ using Microsoft.SemanticKernel.Experimental.Orchestration;
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
-public sealed class CollectEmailPlugin
+public sealed partial class CollectEmailPlugin
 {
     private const string Goal = "Collect email from user";
 
-    private const string EmailRegex = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
+    private const string EmailPattern = /*lang=regex*/ @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
 
     private const string SystemPrompt =
-        $@"I am AI assistant and will only answer questions related to collect email.
-The email should conform the regex: {EmailRegex}
+        $"""
+        I am AI assistant and will only answer questions related to collect email.
+        The email should conform to the regex: {EmailPattern}
 
-If I cannot answer, say that I don't know.
-Do not expose the regex unless asked.
-";
+        If I cannot answer, say that I don't know.
+        Do not expose the regex unless asked.
+        """;
 
     private readonly IChatCompletionService _chat;
 
@@ -37,7 +37,7 @@ Do not expose the regex unless asked.
         this._chatRequestSettings = new OpenAIPromptExecutionSettings
         {
             MaxTokens = this.MaxTokens,
-            StopSequences = new List<string>() { "Observation:" },
+            StopSequences = ["Observation:"],
             Temperature = 0
         };
     }
@@ -61,7 +61,7 @@ Do not expose the regex unless asked.
             chat.AddRange(chatHistory);
         }
 
-        if (!string.IsNullOrEmpty(email_address) && IsValidEmail(email_address))
+        if (!string.IsNullOrEmpty(email_address) && EmailRegex().IsMatch(email_address))
         {
             return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_address;
         }
@@ -75,10 +75,11 @@ Do not expose the regex unless asked.
         return response.Content ?? string.Empty;
     }
 
-    private static bool IsValidEmail(string email)
-    {
-        // check using regex
-        var regex = new Regex(EmailRegex);
-        return regex.IsMatch(email);
-    }
+#if NET
+    [GeneratedRegex(EmailPattern)]
+    private static partial Regex EmailRegex();
+#else
+    private static Regex EmailRegex() => s_emailRegex;
+    private static readonly Regex s_emailRegex = new(EmailPattern, RegexOptions.Compiled);
+#endif
 }

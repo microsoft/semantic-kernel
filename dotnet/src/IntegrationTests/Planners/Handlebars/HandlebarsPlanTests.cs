@@ -19,27 +19,28 @@ public sealed class HandlebarsPlanTests
         this._arguments = new() { ["input"] = Guid.NewGuid().ToString("X") };
     }
 
-    private const string PlanTemplate =
-    @"{{!-- Step 1: Call Bar function --}}  
-{{set ""barResult"" (Foo-Bar)}}  
+    private const string PlanTemplate = """
+        {{!-- Step 1: Call Bar function --}}  
+        {{set "barResult" (Foo-Bar)}}  
 
-{{!-- Step 2: Call BazAsync function --}}  
-{{set ""bazAsyncResult"" (Foo-Baz)}}
+        {{!-- Step 2: Call BazAsync function --}}  
+        {{set "bazAsyncResult" (Foo-Baz)}}
 
-{{!-- Step 3: Call Combine function with two words --}}  
-{{set ""combinedWords"" (Foo-Combine x=""Hello"" y=""World"")}}  
+        {{!-- Step 3: Call Combine function with two words --}}  
+        {{set "combinedWords" (Foo-Combine x="Hello" y="World")}}  
 
-{{!-- Step 4: Call StringifyInt function with an integer --}}  
-{{set ""stringifiedInt"" (Foo-StringifyInt x=42)}}  
+        {{!-- Step 4: Call StringifyInt function with an integer --}}  
+        {{set "stringifiedInt" (Foo-StringifyInt x=42)}}  
 
-{{!-- Step 5: Output the results --}}  
-{{concat barResult bazAsyncResult combinedWords stringifiedInt}}";
+        {{!-- Step 5: Output the results --}}  
+        {{concat barResult bazAsyncResult combinedWords stringifiedInt}}
+        """;
 
     [Fact]
     public async Task InvokeValidPlanAsync()
     {
         // Arrange & Act  
-        var result = await this.InvokePlanAsync(PlanTemplate);
+        var result = await this.InvokePlanAsync(PlanTemplate1);
 
         // Assert  
         Assert.Equal("BarBazWorldHello42", result);
@@ -49,7 +50,7 @@ public sealed class HandlebarsPlanTests
     public async Task InvokePlanWithHallucinatedFunctionAsync()
     {
         // Arrange
-        var planWithInvalidHelper = PlanTemplate.Replace("Foo-Combine", "Foo-HallucinatedHelper", StringComparison.CurrentCulture);
+        var planWithInvalidHelper = PlanTemplate1.Replace("Foo-Combine", "Foo-HallucinatedHelper", StringComparison.CurrentCulture);
 
         // Act & Assert  
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await this.InvokePlanAsync(planWithInvalidHelper));
@@ -61,6 +62,8 @@ public sealed class HandlebarsPlanTests
 
     private readonly Kernel _kernel;
     private readonly KernelArguments _arguments;
+
+    public static string PlanTemplate1 => PlanTemplate;
 
     private async Task<string> InvokePlanAsync(string planTemplate)
     {

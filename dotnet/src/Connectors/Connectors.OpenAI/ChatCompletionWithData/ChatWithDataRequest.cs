@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 internal sealed class ChatWithDataRequest
 {
     [JsonPropertyName("temperature")]
@@ -42,6 +43,7 @@ internal sealed class ChatWithDataRequest
 }
 
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 internal sealed class ChatWithDataSource
 {
     [JsonPropertyName("type")]
@@ -55,6 +57,7 @@ internal sealed class ChatWithDataSource
 }
 
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 internal sealed class ChatWithDataSourceParameters
 {
     [JsonPropertyName("endpoint")]

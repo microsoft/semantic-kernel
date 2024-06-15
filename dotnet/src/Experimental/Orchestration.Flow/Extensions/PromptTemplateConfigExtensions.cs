@@ -17,7 +17,7 @@ internal static class PromptTemplateConfigExtensions
         var executionSettings = config.ExecutionSettings;
         foreach (var setting in executionSettings)
         {
-            if (setting.Value.ExtensionData != null)
+            if (setting.Value.ExtensionData is not null)
             {
                 setting.Value.ExtensionData["max_tokens"] = maxTokens;
             }

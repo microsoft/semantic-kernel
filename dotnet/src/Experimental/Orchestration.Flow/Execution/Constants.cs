@@ -29,7 +29,7 @@ internal static class Constants
         /// <summary>
         /// All reserved variable names
         /// </summary>
-        public static readonly string[] All = new[] { ChatHistory, ChatInput };
+        public static readonly string[] All = [ChatHistory, ChatInput];
     }
 
     internal static class ChatPluginVariables
@@ -62,6 +62,6 @@ internal static class Constants
         /// <summary>
         /// The variables that change the default flow
         /// </summary>
-        public static readonly string[] ControlVariables = new[] { PromptInputName, ExitLoopName, ContinueLoopName, StopFlowName };
+        public static readonly string[] ControlVariables = [PromptInputName, ExitLoopName, ContinueLoopName, StopFlowName];
     }
 }

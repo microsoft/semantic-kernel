@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
 
@@ -30,7 +29,7 @@ public class MsGraphConfiguration
     /// nested types not working with IConfigurationSection.Get.
     /// See https://github.com/dotnet/runtime/issues/77677
     /// </remarks>
-    public IEnumerable<string> Scopes { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<string> Scopes { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the redirect URI to use.

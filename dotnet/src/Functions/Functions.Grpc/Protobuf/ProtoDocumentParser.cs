@@ -33,7 +33,7 @@ internal sealed class ProtoDocumentParser
         descriptor.Process();
 
         var errors = descriptor.GetErrors();
-        if (errors != null && errors.Length != 0)
+        if (errors is not null && errors.Length != 0)
         {
             throw new KernelException($"Parsing of '{protoFileName}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
         }
@@ -58,10 +58,10 @@ internal sealed class ProtoDocumentParser
 
                 var responseContract = this.CreateDataContract(model.MessageTypes, method.OutputType, model.Package, method.Name);
 
-                var operation = new GrpcOperation(service.Name, method.Name, requestContract, responseContract);
-                operation.Package = model.Package;
-
-                operations.Add(operation);
+                operations.Add(new GrpcOperation(service.Name, method.Name, requestContract, responseContract)
+                {
+                    Package = model.Package
+                });
             }
         }
 
@@ -87,11 +87,8 @@ internal sealed class ProtoDocumentParser
             typeName = fullTypeName.Replace($"{package}.", "");
         }
 
-        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName);
-        if (messageType == null)
-        {
+        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName) ??
             throw new KernelException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
-        }
 
         var fields = this.GetDataContractFields(messageType.Fields);
 
@@ -125,11 +122,11 @@ internal sealed class ProtoDocumentParser
     private static string GetProtobufDataTypeName(FieldDescriptorProto.Type type)
     {
         var fieldInfo = typeof(FieldDescriptorProto.Type).GetField(type.ToString());
-        if (fieldInfo != null)
+        if (fieldInfo is not null)
         {
             //Get protobuf type name from enum attribute - [global::ProtoBuf.ProtoEnum(Name = @"TYPE_DOUBLE")]
             var attribute = (ProtoEnumAttribute?)Attribute.GetCustomAttribute(fieldInfo, typeof(ProtoEnumAttribute));
-            if (attribute != null)
+            if (attribute is not null)
             {
                 return attribute.Name;
             }

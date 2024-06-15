@@ -14,9 +14,13 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 /// <remarks>
 /// <para>
-/// When the system imports functions from an object, it searches for all public methods tagged with this attribute.
+/// When the system imports functions from an object, it searches for all methods tagged with this attribute.
 /// If a method is not tagged with this attribute, it may still be imported directly via a <see cref="Delegate"/>
 /// or <see cref="MethodInfo"/> referencing the method directly.
+/// </para>
+/// <para>
+/// Method visibility does not impact whether a method may be imported. Any method tagged with this attribute, regardless
+/// of whether it's public or not, will be imported.
 /// </para>
 /// <para>
 /// A description of the method should be supplied using the <see cref="DescriptionAttribute"/>.

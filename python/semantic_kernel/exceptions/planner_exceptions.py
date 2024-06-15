@@ -12,27 +12,27 @@ class PlannerExecutionException(PlannerException):
     pass
 
 
-class PlannerInvalidGoalError(KernelException):
+class PlannerInvalidGoalError(PlannerException):
     pass
 
 
-class PlannerInvalidPlanError(KernelException):
+class PlannerInvalidPlanError(PlannerException):
     pass
 
 
-class PlannerInvalidConfigurationError(KernelException):
+class PlannerInvalidConfigurationError(PlannerException):
     pass
 
 
-class PlannerCreatePlanError(KernelException):
+class PlannerCreatePlanError(PlannerException):
     pass
 
 
 __all__ = [
+    "PlannerCreatePlanError",
     "PlannerException",
     "PlannerExecutionException",
+    "PlannerInvalidConfigurationError",
     "PlannerInvalidGoalError",
     "PlannerInvalidPlanError",
-    "PlannerInvalidConfigurationError",
-    "PlannerCreatePlanError",
 ]
