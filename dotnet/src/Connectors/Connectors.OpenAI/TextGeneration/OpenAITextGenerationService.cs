@@ -36,7 +36,12 @@ public sealed class OpenAITextGenerationService : ITextGenerationService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
+        this._core = new(
+            modelId: modelId,
+            apiKey: apiKey,
+            organization: organization,
+            httpClient: httpClient,
+            logger: loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);

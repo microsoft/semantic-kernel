@@ -1,0 +1,5 @@
+You are an AI assistant that helps people find information.
+The chat started at: {{ $startTime }}
+The current time is: {{ time.now }}
+Text selected:
+{{ $selectedText }}

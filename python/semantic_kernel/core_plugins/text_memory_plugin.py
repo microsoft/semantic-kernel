@@ -1,37 +1,35 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
-import sys
-from typing import ClassVar, Optional
+from typing import Annotated, Any, Final
 
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+from pydantic import Field
+
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+DEFAULT_COLLECTION: Final[str] = "generic"
+COLLECTION_PARAM: Final[str] = "collection"
+DEFAULT_RELEVANCE: Final[float] = 0.75
+RELEVANCE_PARAM: Final[str] = "relevance"
+DEFAULT_LIMIT: Final[int] = 1
+
 
 class TextMemoryPlugin(KernelBaseModel):
-    DEFAULT_COLLECTION: ClassVar[str] = "generic"
-    COLLECTION_PARAM: ClassVar[str] = "collection"
-    DEFAULT_RELEVANCE: ClassVar[float] = 0.75
-    RELEVANCE_PARAM: ClassVar[str] = "relevance"
-    DEFAULT_LIMIT: ClassVar[int] = 1
-
     memory: SemanticTextMemoryBase
+    embeddings_kwargs: dict[str, Any] = Field(default_factory=dict)
 
-    def __init__(self, memory: SemanticTextMemoryBase) -> None:
-        """
-        Initialize a new instance of the TextMemoryPlugin
+    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: dict[str, Any] = {}) -> None:
+        """Initialize a new instance of the TextMemoryPlugin.
 
         Args:
-            memory (SemanticTextMemoryBase) - the underlying Semantic Text Memory to use
+            memory (SemanticTextMemoryBase): the underlying Semantic Text Memory to use
+            embeddings_kwargs (Optional[Dict[str, Any]]): the keyword arguments to pass to the embedding generator
         """
-        super().__init__(memory=memory)
+        super().__init__(memory=memory, embeddings_kwargs=embeddings_kwargs)
 
     @kernel_function(
         description="Recall a fact from the long term memory",
@@ -40,23 +38,22 @@ class TextMemoryPlugin(KernelBaseModel):
     async def recall(
         self,
         ask: Annotated[str, "The information to retrieve"],
-        collection: Annotated[Optional[str], "The collection to search for information."] = DEFAULT_COLLECTION,
+        collection: Annotated[str, "The collection to search for information."] = DEFAULT_COLLECTION,
         relevance: Annotated[
-            Optional[float], "The relevance score, from 0.0 to 1.0; 1.0 means perfect match"
+            float, "The relevance score, from 0.0 to 1.0; 1.0 means perfect match"
         ] = DEFAULT_RELEVANCE,
-        limit: Annotated[Optional[int], "The maximum number of relevant memories to recall."] = DEFAULT_LIMIT,
+        limit: Annotated[int, "The maximum number of relevant memories to recall."] = DEFAULT_LIMIT,
     ) -> str:
-        """
-        Recall a fact from the long term memory.
+        """Recall a fact from the long term memory.
 
         Example:
             {{memory.recall $ask}} => "Paris"
 
         Args:
-            ask -- The question to ask the memory
-            collection -- The collection to search for information
-            relevance -- The relevance score, from 0.0 to 1.0; 1.0 means perfect match
-            limit -- The maximum number of relevant memories to recall
+            ask: The question to ask the memory
+            collection: The collection to search for information
+            relevance: The relevance score, from 0.0 to 1.0; 1.0 means perfect match
+            limit: The maximum number of relevant memories to recall
 
         Returns:
             The nearest item from the memory store as a string or empty string if not found.
@@ -71,7 +68,7 @@ class TextMemoryPlugin(KernelBaseModel):
             logger.warning(f"Memory not found in collection: {collection}")
             return ""
 
-        return results[0].text if limit == 1 else json.dumps([r.text for r in results])
+        return results[0].text if limit == 1 else json.dumps([r.text for r in results])  # type: ignore
 
     @kernel_function(
         description="Save information to semantic memory",
@@ -81,17 +78,17 @@ class TextMemoryPlugin(KernelBaseModel):
         self,
         text: Annotated[str, "The information to save."],
         key: Annotated[str, "The unique key to associate with the information."],
-        collection: Annotated[Optional[str], "The collection to save the information."] = DEFAULT_COLLECTION,
+        collection: Annotated[str, "The collection to save the information."] = DEFAULT_COLLECTION,
     ) -> None:
-        """
-        Save a fact to the long term memory.
+        """Save a fact to the long term memory.
 
         Args:
-            text -- The text to save to the memory
-            kernel -- The kernel instance, that has a memory store
-            collection -- The collection to save the information
-            key -- The unique key to associate with the information
+            text: The text to save to the memory
+            kernel: The kernel instance, that has a memory store
+            collection: The collection to save the information
+            key: The unique key to associate with the information
 
         """
-
-        await self.memory.save_information(collection, text=text, id=key)
+        await self.memory.save_information(
+            collection=collection, text=text, id=key, embeddings_kwargs=self.embeddings_kwargs
+        )

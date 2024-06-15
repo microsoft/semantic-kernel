@@ -2,21 +2,13 @@
 
 import base64
 import os
-from typing import List, Optional
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.indexes.aio import SearchIndexClient
-from azure.search.documents.indexes.models import (
-    SearchableField,
-    SearchField,
-    SearchFieldDataType,
-    SimpleField,
-)
+from azure.search.documents.indexes.models import SearchableField, SearchField, SearchFieldDataType, SimpleField
 from dotenv import load_dotenv
 
-from semantic_kernel.connectors.ai.open_ai.const import (
-    USER_AGENT,
-)
+from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
@@ -30,20 +22,19 @@ SEARCH_FIELD_IS_REF = "IsReference"
 
 
 def get_search_index_async_client(
-    search_endpoint: Optional[str] = None,
-    admin_key: Optional[str] = None,
-    azure_credential: Optional[AzureKeyCredential] = None,
-    token_credential: Optional[TokenCredential] = None,
+    search_endpoint: str | None = None,
+    admin_key: str | None = None,
+    azure_credential: AzureKeyCredential | None = None,
+    token_credential: TokenCredential | None = None,
 ):
     """Return a client for Azure Cognitive Search.
 
-    Arguments:
-        search_endpoint {str}                 -- Optional endpoint (default: {None}).
-        admin_key {str}                       -- Optional API key (default: {None}).
-        azure_credential {AzureKeyCredential} -- Optional Azure credentials (default: {None}).
-        token_credential {TokenCredential}    -- Optional Token credential (default: {None}).
+    Args:
+        search_endpoint (str): Optional endpoint (default: {None}).
+        admin_key (str): Optional API key (default: {None}).
+        azure_credential (AzureKeyCredential): Optional Azure credentials (default: {None}).
+        token_credential (TokenCredential): Optional Token credential (default: {None}).
     """
-
     ENV_VAR_ENDPOINT = "AZURE_COGNITIVE_SEARCH_ENDPOINT"
     ENV_VAR_API_KEY = "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
 
@@ -88,17 +79,17 @@ def get_search_index_async_client(
     raise ValueError("Error: unable to create Azure Cognitive Search client.")
 
 
-def get_index_schema(vector_size: int) -> list:
+def get_index_schema(vector_size: int, vector_search_profile_name: str) -> list:
     """Return the schema of search indexes.
 
-    Arguments:
-        vector_size {int} -- The size of the vectors being stored in collection/index.
+    Args:
+        vector_size (int): The size of the vectors being stored in collection/index.
+        vector_search_profile_name (str): The name of the vector search profile.
 
     Returns:
-        list -- The Azure Cognitive Search schema as list type.
+        list: The Azure Cognitive Search schema as list type.
     """
-
-    search_fields = [
+    return [
         SimpleField(
             name=SEARCH_FIELD_ID,
             type=SearchFieldDataType.String,
@@ -119,7 +110,7 @@ def get_index_schema(vector_size: int) -> list:
             type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
             searchable=True,
             vector_search_dimensions=vector_size,
-            vector_search_configuration="az-vector-config",
+            vector_search_profile_name=vector_search_profile_name,
         ),
         SimpleField(
             name=SEARCH_FIELD_SRC,
@@ -151,19 +142,16 @@ def get_index_schema(vector_size: int) -> list:
         ),
     ]
 
-    return search_fields
 
-
-def get_field_selection(with_embeddings: bool) -> List[str]:
+def get_field_selection(with_embeddings: bool) -> list[str]:
     """Get the list of fields to search and load.
 
-    Arguments:
-        with_embedding {bool} -- Whether to include the embedding vector field.
+    Args:
+        with_embeddings (bool): Whether to include the embedding vector field.
 
     Returns:
-        List[str] -- List of fields.
+        List[str]: List of fields.
     """
-
     field_selection = [
         SEARCH_FIELD_ID,
         SEARCH_FIELD_TEXT,
@@ -182,14 +170,14 @@ def get_field_selection(with_embeddings: bool) -> List[str]:
 def dict_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
     """Converts a search result to a MemoryRecord.
 
-    Arguments:
-        data {dict} -- Azure Cognitive Search result data.
+    Args:
+        data (dict): Azure Cognitive Search result data.
+        with_embeddings (bool): Whether to include the embedding vector field.
 
     Returns:
-        MemoryRecord -- The MemoryRecord from Azure Cognitive Search Data Result.
+        MemoryRecord: The MemoryRecord from Azure Cognitive Search Data Result.
     """
-
-    sk_result = MemoryRecord(
+    return MemoryRecord(
         id=decode_id(data[SEARCH_FIELD_ID]),
         key=data[SEARCH_FIELD_ID],
         text=data[SEARCH_FIELD_TEXT],
@@ -200,19 +188,17 @@ def dict_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
         embedding=data[SEARCH_FIELD_EMBEDDING] if with_embeddings else None,
         timestamp=None,
     )
-    return sk_result
 
 
 def memory_record_to_search_record(record: MemoryRecord) -> dict:
-    """Convert a MemoryRecord to a dictionary
+    """Convert a MemoryRecord to a dictionary.
 
-    Arguments:
-        record {MemoryRecord} -- The MemoryRecord from Azure Cognitive Search Data Result.
+    Args:
+        record (MemoryRecord): The MemoryRecord from Azure Cognitive Search Data Result.
 
     Returns:
-        data {dict} -- Dictionary data.
+        data (dict): Dictionary data.
     """
-
     return {
         SEARCH_FIELD_ID: encode_id(record._id),
         SEARCH_FIELD_TEXT: str(record._text),
@@ -230,7 +216,6 @@ def encode_id(id: str) -> str:
     Azure Cognitive Search keys can contain only letters, digits, underscore, dash,
     equal sign, recommending to encode values with a URL-safe algorithm.
     """
-
     id_bytes = id.encode("ascii")
     base64_bytes = base64.b64encode(id_bytes)
     return base64_bytes.decode("ascii")
@@ -242,7 +227,6 @@ def decode_id(base64_id: str) -> str:
     Azure Cognitive Search keys can contain only letters, digits, underscore, dash,
     equal sign, recommending to encode values with a URL-safe algorithm.
     """
-
     base64_bytes = base64_id.encode("ascii")
     message_bytes = base64.b64decode(base64_bytes)
     return message_bytes.decode("ascii")

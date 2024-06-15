@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -36,7 +35,7 @@ internal static partial class OpenAIRestExtensions
             new
             {
                 role = AuthorRole.User.Label,
-                file_ids = fileIds?.ToArray() ?? Array.Empty<string>(),
+                file_ids = fileIds?.ToArray() ?? [],
                 content
             };
 
@@ -72,16 +71,21 @@ internal static partial class OpenAIRestExtensions
     /// </summary>
     /// <param name="context">A context for accessing OpenAI REST endpoint</param>
     /// <param name="threadId">The thread identifier</param>
+    /// <param name="lastId">The identifier of the last message retrieved</param>
+    /// <param name="count">The maximum number of messages requested (up to 100 / default: 25)</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A message list definition</returns>
     public static Task<ThreadMessageListModel> GetMessagesAsync(
         this OpenAIRestContext context,
         string threadId,
+        string? lastId = null,
+        int? count = null,
         CancellationToken cancellationToken = default)
     {
         return
             context.ExecuteGetAsync<ThreadMessageListModel>(
                 context.GetMessagesUrl(threadId),
+                $"limit={count ?? 25}&after={lastId ?? string.Empty}",
                 cancellationToken);
     }
 

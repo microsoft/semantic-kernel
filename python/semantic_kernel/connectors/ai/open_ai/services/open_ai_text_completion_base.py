@@ -1,22 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Union
+from collections.abc import AsyncGenerator
+from typing import TYPE_CHECKING, Any
 
 from openai import AsyncStream
 from openai.types import Completion, CompletionChoice
 from openai.types.chat.chat_completion import Choice as ChatCompletionChoice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
-from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIHandler,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents import StreamingTextContent, TextContent
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidResponseError
 
 if TYPE_CHECKING:
@@ -32,19 +32,19 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         """Create a request settings object."""
         return OpenAITextPromptExecutionSettings
 
-    async def complete(
+    async def get_text_contents(
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
-    ) -> List["TextContent"]:
+    ) -> list["TextContent"]:
         """Executes a completion request and returns the result.
 
-        Arguments:
-            prompt {str} -- The prompt to use for the completion request.
-            settings {OpenAITextPromptExecutionSettings} -- The settings to use for the completion request.
+        Args:
+            prompt (str): The prompt to use for the completion request.
+            settings (OpenAITextPromptExecutionSettings): The settings to use for the completion request.
 
         Returns:
-            List["TextContent"] -- The completion result(s).
+            List["TextContent"]: The completion result(s).
         """
         if isinstance(settings, OpenAITextPromptExecutionSettings):
             settings.prompt = prompt
@@ -59,8 +59,8 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     def _create_text_content(
         self,
         response: Completion,
-        choice: Union[CompletionChoice, ChatCompletionChoice],
-        response_metadata: Dict[str, Any],
+        choice: CompletionChoice | ChatCompletionChoice,
+        response_metadata: dict[str, Any],
     ) -> "TextContent":
         """Create a text content object from a choice."""
         choice_metadata = self._get_metadata_from_text_choice(choice)
@@ -73,21 +73,21 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             metadata=choice_metadata,
         )
 
-    async def complete_stream(
+    async def get_streaming_text_contents(
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
-    ) -> AsyncIterable[List["StreamingTextContent"]]:
-        """
-        Executes a completion request and streams the result.
+    ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
+        """Executes a completion request and streams the result.
+
         Supports both chat completion and text completion.
 
-        Arguments:
-            prompt {str} -- The prompt to use for the completion request.
-            settings {OpenAITextPromptExecutionSettings} -- The settings to use for the completion request.
+        Args:
+            prompt (str): The prompt to use for the completion request.
+            settings (OpenAITextPromptExecutionSettings): The settings to use for the completion request.
 
         Yields:
-            List["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.
+            List["StreamingTextContent"]: The result stream made up of StreamingTextContent objects.
         """
         if "prompt" in settings.model_fields:
             settings.prompt = prompt
@@ -109,7 +109,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             yield [self._create_streaming_text_content(chunk, choice, chunk_metadata) for choice in chunk.choices]
 
     def _create_streaming_text_content(
-        self, chunk: Completion, choice: Union[CompletionChoice, ChatCompletionChunk], response_metadata: Dict[str, Any]
+        self, chunk: Completion, choice: CompletionChoice | ChatCompletionChunk, response_metadata: dict[str, Any]
     ) -> "StreamingTextContent":
         """Create a streaming text content object from a choice."""
         choice_metadata = self._get_metadata_from_text_choice(choice)
@@ -123,7 +123,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             text=text,
         )
 
-    def _get_metadata_from_text_response(self, response: Completion) -> Dict[str, Any]:
+    def _get_metadata_from_text_response(self, response: Completion) -> dict[str, Any]:
         """Get metadata from a completion response."""
         return {
             "id": response.id,
@@ -132,7 +132,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             "usage": response.usage,
         }
 
-    def _get_metadata_from_streaming_text_response(self, response: Completion) -> Dict[str, Any]:
+    def _get_metadata_from_streaming_text_response(self, response: Completion) -> dict[str, Any]:
         """Get metadata from a streaming completion response."""
         return {
             "id": response.id,
@@ -140,7 +140,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             "system_fingerprint": response.system_fingerprint,
         }
 
-    def _get_metadata_from_text_choice(self, choice: CompletionChoice) -> Dict[str, Any]:
+    def _get_metadata_from_text_choice(self, choice: CompletionChoice) -> dict[str, Any]:
         """Get metadata from a completion choice."""
         return {
             "logprobs": getattr(choice, "logprobs", None),
