@@ -25,11 +25,13 @@ public static class OnnxKernelBuilderExtensions
     /// <returns>The updated kernel builder.</returns>
     public static IKernelBuilder AddOnnxRuntimeGenAIChatCompletion(
         this IKernelBuilder builder,
+        string modelId,
         string modelPath,
         string? serviceId = null)
     {
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new OnnxRuntimeGenAIChatCompletionService(
+                modelId,
                 modelPath: modelPath,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 

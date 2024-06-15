@@ -25,11 +25,13 @@ public static class OnnxServiceCollectionExtensions
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddOnnxRuntimeGenAIChatCompletion(
         this IServiceCollection services,
+        string modelId,
         string modelPath,
         string? serviceId = null)
     {
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new OnnxRuntimeGenAIChatCompletionService(
+                modelId,
                 modelPath,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 

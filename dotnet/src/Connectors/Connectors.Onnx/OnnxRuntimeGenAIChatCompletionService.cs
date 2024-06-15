@@ -21,6 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.Onnx;
 /// </summary>
 public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionService, IDisposable
 {
+    private readonly string _modelId;
     private readonly Model _model;
     private readonly Tokenizer _tokenizer;
 
@@ -32,13 +33,18 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     /// <param name="modelPath">The generative AI ONNX model path for the chat completion service.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OnnxRuntimeGenAIChatCompletionService(
+        string modelId,
         string modelPath,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(modelPath);
+
+        this._modelId = modelId;
         this._model = new Model(modelPath);
         this._tokenizer = new Tokenizer(this._model);
 
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, this._tokenizer);
+        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, this._modelId);
     }
 
     /// <inheritdoc />
@@ -58,6 +64,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         {
             new(
                 role: AuthorRole.Assistant,
+                modelId: this._modelId,
                 content: result.ToString())
         };
     }
@@ -67,7 +74,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     {
         await foreach (var content in this.RunInferenceAsync(chatHistory, executionSettings, cancellationToken).ConfigureAwait(false))
         {
-            yield return new StreamingChatMessageContent(AuthorRole.Assistant, content);
+            yield return new StreamingChatMessageContent(AuthorRole.Assistant, content, modelId: this._modelId);
         }
     }
 
@@ -115,19 +122,58 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
     private void UpdateGeneratorParamsFromPromptExecutionSettings(GeneratorParams generatorParams, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
     {
-        generatorParams.SetSearchOption("top_p", onnxRuntimeGenAIPromptExecutionSettings.TopP);
-        generatorParams.SetSearchOption("top_k", onnxRuntimeGenAIPromptExecutionSettings.TopK);
-        generatorParams.SetSearchOption("temperature", onnxRuntimeGenAIPromptExecutionSettings.Temperature);
-        generatorParams.SetSearchOption("repetition_penalty", onnxRuntimeGenAIPromptExecutionSettings.RepetitionPenalty);
-        generatorParams.SetSearchOption("past_present_share_buffer", onnxRuntimeGenAIPromptExecutionSettings.PastPresentShareBuffer);
-        generatorParams.SetSearchOption("num_return_sequences", onnxRuntimeGenAIPromptExecutionSettings.NumReturnSequences);
-        generatorParams.SetSearchOption("no_repeat_ngram_size", onnxRuntimeGenAIPromptExecutionSettings.NoRepeatNgramSize);
-        generatorParams.SetSearchOption("min_length", onnxRuntimeGenAIPromptExecutionSettings.MinLength);
-        generatorParams.SetSearchOption("max_length", onnxRuntimeGenAIPromptExecutionSettings.MaxLength);
-        generatorParams.SetSearchOption("length_penalty", onnxRuntimeGenAIPromptExecutionSettings.LengthPenalty);
-        generatorParams.SetSearchOption("early_stopping", onnxRuntimeGenAIPromptExecutionSettings.EarlyStopping);
-        generatorParams.SetSearchOption("do_sample", onnxRuntimeGenAIPromptExecutionSettings.DoSample);
-        generatorParams.SetSearchOption("diversity_penalty", onnxRuntimeGenAIPromptExecutionSettings.DiversityPenalty);
+        if(onnxRuntimeGenAIPromptExecutionSettings.TopP.HasValue)
+        {
+            generatorParams.SetSearchOption("top_p", onnxRuntimeGenAIPromptExecutionSettings.TopP.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.TopK.HasValue)
+        {
+            generatorParams.SetSearchOption("top_k", onnxRuntimeGenAIPromptExecutionSettings.TopK.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.Temperature.HasValue)
+        {
+            generatorParams.SetSearchOption("temperature", onnxRuntimeGenAIPromptExecutionSettings.Temperature.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.RepetitionPenalty.HasValue)
+        {
+            generatorParams.SetSearchOption("repetition_penalty", onnxRuntimeGenAIPromptExecutionSettings.RepetitionPenalty.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.PastPresentShareBuffer.HasValue)
+        {
+            generatorParams.SetSearchOption("past_present_share_buffer", onnxRuntimeGenAIPromptExecutionSettings.PastPresentShareBuffer.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.NumReturnSequences.HasValue)
+        {
+            generatorParams.SetSearchOption("num_return_sequences", onnxRuntimeGenAIPromptExecutionSettings.NumReturnSequences.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.NoRepeatNgramSize.HasValue)
+        {
+            generatorParams.SetSearchOption("no_repeat_ngram_size", onnxRuntimeGenAIPromptExecutionSettings.NoRepeatNgramSize.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.MinLength.HasValue)
+        {
+            generatorParams.SetSearchOption("min_length", onnxRuntimeGenAIPromptExecutionSettings.MinLength.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.MaxLength.HasValue)
+        {
+            generatorParams.SetSearchOption("max_length", onnxRuntimeGenAIPromptExecutionSettings.MaxLength.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.LengthPenalty.HasValue)
+        {
+            generatorParams.SetSearchOption("length_penalty", onnxRuntimeGenAIPromptExecutionSettings.LengthPenalty.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.EarlyStopping.HasValue)
+        {
+            generatorParams.SetSearchOption("early_stopping", onnxRuntimeGenAIPromptExecutionSettings.EarlyStopping.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.DoSample.HasValue)
+        {
+            generatorParams.SetSearchOption("do_sample", onnxRuntimeGenAIPromptExecutionSettings.DoSample.Value);
+        }
+        if (onnxRuntimeGenAIPromptExecutionSettings.DiversityPenalty.HasValue)
+        {
+            generatorParams.SetSearchOption("diversity_penalty", onnxRuntimeGenAIPromptExecutionSettings.DiversityPenalty.Value);
+        }
     }
 
     /// <inheritdoc/>
