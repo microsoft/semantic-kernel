@@ -48,7 +48,7 @@ public class AgentGroupChatTests
         AgentGroupChat chat = new(agent1, agent2);
         Assert.Equal(2, chat.Agents.Count);
 
-        chat.AddAgent(agent3);
+        chat.Add(agent3);
         Assert.Equal(3, chat.Agents.Count);
 
         var messages = await chat.InvokeAsync(agent4, isJoining: false).ToArrayAsync();
