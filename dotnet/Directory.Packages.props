@@ -125,11 +125,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-<<<<<<< main
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.12.3]" />
-=======
     <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.12.0]" />
->>>>>>> origin/main-auto-tune
     <PackageReference Include="Roslynator.Formatting.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
