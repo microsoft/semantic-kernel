@@ -97,5 +97,7 @@
     "python/tests"
   ],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "azureFunctions.deploySubpath": "dotnet/samples/Demos/CreateChatGptPlugin/MathPlugin/azure-function/bin/Release/net8.0/publish",
+  "azureFunctions.projectLanguage": "C#"
 }
