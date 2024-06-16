@@ -137,7 +137,7 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 
 ### Asynchronous programming
 
-It's important to note that most of this library is written with asynchronous in mind. The
+It's important to note that most of this library is written with asynchronous programming in mind. The
 developer should always assume everything is asynchronous. One can use the function signature
 with either `async def` or `def` to understand if something is asynchronous or not.
 
