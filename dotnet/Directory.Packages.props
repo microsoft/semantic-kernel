@@ -5,16 +5,6 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-<<<<<<< main
-    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
-    <PackageVersion Include="Azure.Identity" Version="1.11.3" />
-    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.2.0" />
-    <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
-    <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.5" />
-    <PackageVersion Include="Markdig" Version="0.37.0" />
-    <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
-    <PackageVersion Include="JsonSchema.Net.Generation" Version="4.3.0.2" />
-=======
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
     <PackageVersion Include="Azure.AI.OpenAI.Assistants" Version="1.0.0-beta.4" />
@@ -26,7 +16,6 @@
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
->>>>>>> origin/main-auto-tune
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.2" />
@@ -37,13 +26,10 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.3.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
-<<<<<<< main
-=======
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.61.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.0" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
->>>>>>> origin/main-auto-tune
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.0" />
@@ -65,11 +51,7 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
-<<<<<<< main
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.2.0" />
-=======
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.5.0" />
->>>>>>> origin/main-auto-tune
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
@@ -80,19 +62,6 @@
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="System.Threading.Channels" Version="8.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
-<<<<<<< main
-    <PackageVersion Include="xunit" Version="2.8.1" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7" />
-    <PackageVersion Include="xretry" Version="1.9.0" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.1" />
-    <!-- Plugins -->
-
-    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.4" />
-
-    <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.2" />
-    <PackageVersion Include="DuckDB.NET.Data" Version="1.0.0" />
-=======
     <PackageVersion Include="Verify.Xunit" Version="25.0.1" />
     <PackageVersion Include="xunit" Version="2.8.1" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
@@ -104,7 +73,6 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.6" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.0" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.10.3" />
->>>>>>> origin/main-auto-tune
     <PackageVersion Include="MongoDB.Driver" Version="2.25.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
@@ -112,29 +80,18 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.14" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
-<<<<<<< main
-    <PackageVersion Include="Grpc.Net.Client" Version="2.63.0" />
-    <PackageVersion Include="protobuf-net" Version="3.2.30" />
-    <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.1.6" />
-=======
     <PackageVersion Include="Grpc.Net.Client" Version="2.62.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="15.1.4" />
     <PackageVersion Include="Fluid.Core" Version="2.10.0" />
->>>>>>> origin/main-auto-tune
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.41.0-preview.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
-<<<<<<< main
-    <PackageVersion Include="Milvus.Client" Version="2.2.2-preview.6" />
-=======
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
     <PackageVersion Include="Testcontainers.Milvus" Version="3.8.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.0" />
->>>>>>> origin/main-auto-tune
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
@@ -143,14 +100,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-<<<<<<< main
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-=======
->>>>>>> origin/main-auto-tune
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.10.48" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
       <PrivateAssets>all</PrivateAssets>
@@ -171,11 +120,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-<<<<<<< main
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.12.4]" />
-=======
     <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.12.0]" />
->>>>>>> origin/main-auto-tune
     <PackageReference Include="Roslynator.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
