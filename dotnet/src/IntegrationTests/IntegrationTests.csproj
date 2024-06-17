@@ -35,6 +35,7 @@
     <None Remove="skills\FunSkill\Joke\skprompt.txt" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Azure.AI.OpenAI" VersionOverride="2.0-beta.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
