@@ -287,10 +287,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     # region content creation
 
     def _create_chat_message_content(
-        self,
-        response: ChatCompletion,
-        choice: Choice,
-        response_metadata: dict[str, Any],
+        self, response: ChatCompletion, choice: Choice, response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
         """Create a chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
@@ -379,9 +376,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             return []
         return [
             FunctionCallContent(
-                id="legacy_function_call",
-                name=content.function_call.name,
-                arguments=content.function_call.arguments,
+                id="legacy_function_call", name=content.function_call.name, arguments=content.function_call.arguments
             )
         ]
 
@@ -514,8 +509,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             return invocation_context
 
         frc = FunctionResultContent.from_function_call_content_and_result(
-            function_call_content=function_call,
-            result=invocation_context.function_result,
+            function_call_content=function_call, result=invocation_context.function_result
         )
         chat_history.add_message(message=frc.to_chat_message_content())
         return None

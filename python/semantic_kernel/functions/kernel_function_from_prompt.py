@@ -187,25 +187,20 @@ through prompt_template_config or in the prompt_template."
                 raise FunctionExecutionException(f"No completions returned while invoking function {self.name}")
 
             context.result = self._create_function_result(
-                completions=chat_message_contents,
-                chat_history=chat_history,
-                arguments=context.arguments,
+                completions=chat_message_contents, chat_history=chat_history, arguments=context.arguments
             )
             return
 
         if isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
             try:
                 texts = await prompt_render_result.ai_service.get_text_contents(
-                    unescape(prompt_render_result.rendered_prompt),
-                    prompt_render_result.execution_settings,
+                    unescape(prompt_render_result.rendered_prompt), prompt_render_result.execution_settings
                 )
             except Exception as exc:
                 raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
 
             context.result = self._create_function_result(
-                completions=texts,
-                arguments=context.arguments,
-                prompt=prompt_render_result.rendered_prompt,
+                completions=texts, arguments=context.arguments, prompt=prompt_render_result.rendered_prompt
             )
             return
 
@@ -231,8 +226,7 @@ through prompt_template_config or in the prompt_template."
             )
         elif isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
             value = prompt_render_result.ai_service.get_streaming_text_contents(
-                prompt=prompt_render_result.rendered_prompt,
-                settings=prompt_render_result.execution_settings,
+                prompt=prompt_render_result.rendered_prompt, settings=prompt_render_result.execution_settings
             )
         else:
             raise FunctionExecutionException(
@@ -294,12 +288,7 @@ through prompt_template_config or in the prompt_template."
     def update_arguments_with_defaults(self, arguments: KernelArguments) -> None:
         """Update any missing values with their defaults."""
         for parameter in self.prompt_template.prompt_template_config.input_variables:
-            if parameter.name not in arguments and parameter.default not in {
-                None,
-                "",
-                False,
-                0,
-            }:
+            if parameter.name not in arguments and parameter.default not in {None, "", False, 0}:
                 arguments[parameter.name] = parameter.default
 
     @classmethod

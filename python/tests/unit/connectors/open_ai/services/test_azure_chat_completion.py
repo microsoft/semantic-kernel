@@ -56,37 +56,25 @@ def test_azure_chat_completion_init_base_url(azure_openai_unit_test_env) -> None
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True)
-def test_azure_chat_completion_init_with_empty_deployment_name(
-    azure_openai_unit_test_env,
-) -> None:
+def test_azure_chat_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureChatCompletion()
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
-def test_azure_chat_completion_init_with_empty_api_key(
-    azure_openai_unit_test_env,
-) -> None:
+def test_azure_chat_completion_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureChatCompletion()
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
-def test_azure_chat_completion_init_with_empty_endpoint_and_base_url(
-    azure_openai_unit_test_env,
-) -> None:
+def test_azure_chat_completion_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureChatCompletion()
 
 
-@pytest.mark.parametrize(
-    "override_env_param_dict",
-    [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}],
-    indirect=True,
-)
-def test_azure_chat_completion_init_with_invalid_endpoint(
-    azure_openai_unit_test_env,
-) -> None:
+@pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
+def test_azure_chat_completion_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureChatCompletion()
 
@@ -101,9 +89,7 @@ async def test_azure_chat_completion_call_with_parameters(
 
     azure_chat_completion = AzureChatCompletion()
     await azure_chat_completion.get_chat_message_contents(
-        chat_history=chat_history,
-        settings=complete_prompt_execution_settings,
-        kernel=kernel,
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
     )
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
@@ -127,9 +113,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
     azure_chat_completion = AzureChatCompletion()
 
     await azure_chat_completion.get_chat_message_contents(
-        chat_history=chat_history,
-        settings=complete_prompt_execution_settings,
-        kernel=kernel,
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
     )
 
     mock_create.assert_awaited_once_with(
@@ -222,9 +206,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
     azure_chat_completion = AzureChatCompletion()
 
     await azure_chat_completion.get_chat_message_contents(
-        chat_history=messages_in,
-        settings=complete_prompt_execution_settings,
-        kernel=kernel,
+        chat_history=messages_in, settings=complete_prompt_execution_settings, kernel=kernel
     )
 
     mock_create.assert_awaited_once_with(
@@ -424,9 +406,7 @@ async def test_azure_chat_completion_bad_request_non_content_filter(
 
     test_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     mock_create.side_effect = openai.BadRequestError(
-        "The request was bad.",
-        response=Response(400, request=Request("POST", test_endpoint)),
-        body={},
+        "The request was bad.", response=Response(400, request=Request("POST", test_endpoint)), body={}
     )
 
     azure_chat_completion = AzureChatCompletion()
@@ -450,9 +430,7 @@ async def test_azure_chat_completion_no_kernel_provided_throws_error(
 
     test_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     mock_create.side_effect = openai.BadRequestError(
-        "The request was bad.",
-        response=Response(400, request=Request("POST", test_endpoint)),
-        body={},
+        "The request was bad.", response=Response(400, request=Request("POST", test_endpoint)), body={}
     )
 
     azure_chat_completion = AzureChatCompletion()
@@ -477,9 +455,7 @@ async def test_azure_chat_completion_auto_invoke_false_no_kernel_provided_throws
 
     test_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     mock_create.side_effect = openai.BadRequestError(
-        "The request was bad.",
-        response=Response(400, request=Request("POST", test_endpoint)),
-        body={},
+        "The request was bad.", response=Response(400, request=Request("POST", test_endpoint)), body={}
     )
 
     azure_chat_completion = AzureChatCompletion()
