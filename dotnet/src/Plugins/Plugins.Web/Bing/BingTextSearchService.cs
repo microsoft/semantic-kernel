@@ -46,83 +46,61 @@ public sealed class BingTextSearchService : ITextSearchService<string>, ITextSea
     }
 
     /// <inheritdoc/>
-    Task<KernelSearchResults<string>> ITextSearchService<string>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    async Task<KernelSearchResults<string>> ITextSearchService<string>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
+        BingSearchResponse<BingWebPage>? webPages = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
 
-    /// <inheritdoc/>
-    Task<KernelSearchResults<TextSearchResult>> ITextSearchService<TextSearchResult>.SearchAsync(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    Task<KernelSearchResults<BingWebPage>> ITextSearchService<BingWebPage>.SearchAsync(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) where T : class
-    {
-        searchSettings ??= new SearchExecutionSettings();
-        var count = searchSettings.Count;
-        var offset = searchSettings.Offset;
-        using HttpResponseMessage response = await this.SendGetRequestAsync(query, count, offset, cancellationToken).ConfigureAwait(false);
-
-        this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
-
-        string json = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-
-        // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Response content received: {Data}", json);
-
-        BingSearchResponse<T>? searchResponse = null;
-        if (typeof(T) == typeof(string))
+        BingSearchResponse<string>? searchResponse = null;
+        if (webPages is not null && webPages.WebPages is not null)
         {
-            var webPages = JsonSerializer.Deserialize<BingSearchResponse<BingWebPage>>(json);
-            if (webPages is not null && webPages.WebPages is not null)
+            searchResponse = new BingSearchResponse<string>()
             {
-                searchResponse = new BingSearchResponse<T>()
+                Type = webPages.Type,
+                QueryContext = webPages.QueryContext,
+                WebPages = new BingWebPages<string>()
                 {
-                    Type = webPages.Type,
-                    QueryContext = webPages.QueryContext,
-                    WebPages = new BingWebPages<T>()
-                    {
-                        Id = webPages.WebPages.Id,
-                        SomeResultsRemoved = webPages.WebPages.SomeResultsRemoved,
-                        TotalEstimatedMatches = webPages.WebPages.TotalEstimatedMatches,
-                        Value = webPages?.WebPages?.Value?.Select(x => x.Snippet).ToList() as List<T> ?? [],
-                    },
-                };
-            }
-        }
-        else if (typeof(T) == typeof(TextSearchResult))
-        {
-            var webPages = JsonSerializer.Deserialize<BingSearchResponse<BingWebPage>>(json);
-            if (webPages is not null && webPages.WebPages is not null)
-            {
-                searchResponse = new BingSearchResponse<T>()
-                {
-                    Type = webPages.Type,
-                    QueryContext = webPages.QueryContext,
-                    WebPages = new BingWebPages<T>()
-                    {
-                        Id = webPages.WebPages.Id,
-                        SomeResultsRemoved = webPages.WebPages.SomeResultsRemoved,
-                        TotalEstimatedMatches = webPages.WebPages.TotalEstimatedMatches,
-                        Value = webPages?.WebPages?.Value?.Select(x => new TextSearchResult(x.Name, x.Snippet, x.Url, x)).ToList() as List<T> ?? [],
-                    },
-                };
-            }
-        }
-        else
-        {
-            searchResponse = JsonSerializer.Deserialize<BingSearchResponse<T>>(json);
+                    Id = webPages.WebPages.Id,
+                    SomeResultsRemoved = webPages.WebPages.SomeResultsRemoved,
+                    TotalEstimatedMatches = webPages.WebPages.TotalEstimatedMatches,
+                    Value = webPages?.WebPages?.Value?.Select(x => x.Snippet).ToList() as List<string> ?? [],
+                },
+            };
         }
 
-        return new KernelSearchResults<T>(searchResponse, this.GetResultsAsync(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<string>(searchResponse, this.GetResultsAsync(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
+    }
+
+    /// <inheritdoc/>
+    async Task<KernelSearchResults<TextSearchResult>> ITextSearchService<TextSearchResult>.SearchAsync(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken)
+    {
+        BingSearchResponse<BingWebPage>? webPages = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
+
+        BingSearchResponse<TextSearchResult>? searchResponse = null;
+        if (webPages is not null && webPages.WebPages is not null)
+        {
+            searchResponse = new BingSearchResponse<TextSearchResult>()
+            {
+                Type = webPages.Type,
+                QueryContext = webPages.QueryContext,
+                WebPages = new BingWebPages<TextSearchResult>()
+                {
+                    Id = webPages.WebPages.Id,
+                    SomeResultsRemoved = webPages.WebPages.SomeResultsRemoved,
+                    TotalEstimatedMatches = webPages.WebPages.TotalEstimatedMatches,
+                    Value = webPages?.WebPages?.Value?.Select(x => new TextSearchResult(x.Name, x.Snippet, x.Url, x)).ToList() as List<TextSearchResult> ?? [],
+                },
+            };
+        }
+
+        return new KernelSearchResults<TextSearchResult>(searchResponse, this.GetResultsAsync(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
+    }
+
+    /// <inheritdoc/>
+    async Task<KernelSearchResults<BingWebPage>> ITextSearchService<BingWebPage>.SearchAsync(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken)
+    {
+        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
+
+        return new KernelSearchResults<BingWebPage>(searchResponse, this.GetResultsAsync(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
     }
 
     #region private
@@ -140,7 +118,7 @@ public sealed class BingTextSearchService : ITextSearchService<string>, ITextSea
     /// <param name="query">What to search for</param>
     /// <param name="searchSettings">Option search execution settings</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    private async Task<BingSearchResponse<BingWebPage>?> BingSearchAsync(string query, SearchExecutionSettings? searchSettings = null, CancellationToken cancellationToken = default)
+    private async Task<BingSearchResponse<BingWebPage>?> ExecuteSearchAsync(string query, SearchExecutionSettings? searchSettings = null, CancellationToken cancellationToken = default)
     {
         searchSettings ??= new SearchExecutionSettings();
         var count = searchSettings.Count;

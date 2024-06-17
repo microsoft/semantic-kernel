@@ -59,14 +59,19 @@ public sealed class GoogleTextSearchService : ITextSearchService<string>, ITextS
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) where T : class
+    async Task<KernelSearchResults<string>> ITextSearchService<string>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        searchSettings ??= new SearchExecutionSettings();
-        var count = searchSettings.Count;
-        var offset = searchSettings.Offset;
-        var searchResponse = await this.ExecuteSearchAsync(query, count, offset, cancellationToken).ConfigureAwait(false);
+        var searchResponse = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
 
-        return new KernelSearchResults<T>(searchResponse, this.GetResultsAsync<T>(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<string>(searchResponse, this.GetResultsAsync<string>(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
+    }
+
+    /// <inheritdoc/>
+    async Task<KernelSearchResults<TextSearchResult>> ITextSearchService<TextSearchResult>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        var searchResponse = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
+
+        return new KernelSearchResults<TextSearchResult>(searchResponse, this.GetResultsAsync<TextSearchResult>(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
@@ -77,6 +82,8 @@ public sealed class GoogleTextSearchService : ITextSearchService<string>, ITextS
 
     #region private
 
+    private const int MaxCount = 10;
+
     private readonly ILogger _logger;
     private readonly CustomSearchAPIService _search;
     private readonly string? _searchEngineId;
@@ -86,21 +93,24 @@ public sealed class GoogleTextSearchService : ITextSearchService<string>, ITextS
     /// Execute a Google search
     /// </summary>
     /// <param name="query">The query string.</param>
-    /// <param name="count">The number of results to return.</param>
-    /// <param name="offset">The index of the first result to return.</param>
+    /// <param name="searchSettings">Option search execution settings</param>
     /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    private async Task<global::Google.Apis.CustomSearchAPI.v1.Data.Search> ExecuteSearchAsync(string query, int count, int offset, CancellationToken cancellationToken)
+    private async Task<global::Google.Apis.CustomSearchAPI.v1.Data.Search> ExecuteSearchAsync(string query, SearchExecutionSettings? searchSettings = null, CancellationToken cancellationToken = default)
     {
-        if (count is <= 0 or > 10)
+        searchSettings ??= new SearchExecutionSettings();
+        var count = searchSettings.Count;
+        var offset = searchSettings.Offset;
+
+        if (count is <= 0 or > MaxCount)
         {
-            throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be must be greater than 0 and less than or equals 10.");
+            throw new ArgumentOutOfRangeException(nameof(searchSettings), count, $"{nameof(searchSettings)}.Count value must be must be greater than 0 and less than or equals 10.");
         }
 
         if (offset < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(offset));
+            throw new ArgumentOutOfRangeException(nameof(searchSettings), offset, $"{nameof(searchSettings)}.Offset value must be must be greater than 0.");
         }
 
         var search = this._search.Cse.List();
