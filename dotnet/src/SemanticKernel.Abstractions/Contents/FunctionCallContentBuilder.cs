@@ -130,6 +130,9 @@ public sealed class FunctionCallContentBuilder
     {
         if (update is null)
         {
+            throw new ArgumentNullException(nameof(update));
+        }
+        {
             // Nothing to track.
             return;
         }
