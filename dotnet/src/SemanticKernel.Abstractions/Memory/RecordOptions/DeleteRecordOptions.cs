@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// Optional options when calling <see cref="IMemoryRecordService{TKey, TDataModel}.DeleteAsync"/>.
+/// Optional options when calling <see cref="IVectorRecordStore{TKey, TDataModel}.DeleteAsync"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
 public class DeleteRecordOptions

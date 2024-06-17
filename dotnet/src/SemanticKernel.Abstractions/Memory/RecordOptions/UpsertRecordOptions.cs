@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// Optional options when calling <see cref="IMemoryRecordService{TKey, TDataModel}.UpsertAsync"/>.
+/// Optional options when calling <see cref="IVectorRecordStore{TKey, TDataModel}.UpsertAsync"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
 public class UpsertRecordOptions

@@ -20,7 +20,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 /// <summary>
 /// Helper class for setting up and tearing down Azure AI Search indexes for testing purposes.
 /// </summary>
-public class AzureAISearchMemoryFixture : IAsyncLifetime
+public class AzureAISearchVectorStoreFixture : IAsyncLifetime
 {
     /// <summary>
     /// Test index name which consists out of "hotels-" and the machine name with any non-alphanumeric characters removed.
@@ -36,31 +36,31 @@ public class AzureAISearchMemoryFixture : IAsyncLifetime
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<AzureAISearchMemoryRecordServiceTests>()
+        .AddUserSecrets<AzureAISearchVectorRecordStoreTests>()
         .Build();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureAISearchMemoryFixture"/> class.
+    /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreFixture"/> class.
     /// </summary>
-    public AzureAISearchMemoryFixture()
+    public AzureAISearchVectorStoreFixture()
     {
         var config = this._configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
         Assert.NotNull(config);
         this.Config = config;
         this.SearchIndexClient = new SearchIndexClient(new Uri(config.ServiceUrl), new AzureKeyCredential(config.ApiKey));
-        this.MemoryRecordDefinition = new MemoryRecordDefinition
+        this.VectorStoreRecordDefinition = new VectorStoreRecordDefinition
         {
-            Properties = new List<MemoryRecordProperty>
+            Properties = new List<VectorStoreRecordProperty>
             {
-                new MemoryRecordKeyProperty("HotelId"),
-                new MemoryRecordDataProperty("HotelName"),
-                new MemoryRecordDataProperty("Description"),
-                new MemoryRecordVectorProperty("DescriptionEmbedding"),
-                new MemoryRecordDataProperty("Tags"),
-                new MemoryRecordDataProperty("ParkingIncluded"),
-                new MemoryRecordDataProperty("LastRenovationDate"),
-                new MemoryRecordDataProperty("Rating"),
-                new MemoryRecordDataProperty("Address")
+                new VectorStoreRecordKeyProperty("HotelId"),
+                new VectorStoreRecordDataProperty("HotelName"),
+                new VectorStoreRecordDataProperty("Description"),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding"),
+                new VectorStoreRecordDataProperty("Tags"),
+                new VectorStoreRecordDataProperty("ParkingIncluded"),
+                new VectorStoreRecordDataProperty("LastRenovationDate"),
+                new VectorStoreRecordDataProperty("Rating"),
+                new VectorStoreRecordDataProperty("Address")
             }
         };
     }
@@ -76,9 +76,9 @@ public class AzureAISearchMemoryFixture : IAsyncLifetime
     public string TestIndexName { get => this._testIndexName; }
 
     /// <summary>
-    /// Gets the manually created memory record definition for our test model.
+    /// Gets the manually created vector store record definition for our test model.
     /// </summary>
-    public MemoryRecordDefinition MemoryRecordDefinition { get; private set; }
+    public VectorStoreRecordDefinition VectorStoreRecordDefinition { get; private set; }
 
     /// <summary>
     /// Gets the configuration for the Azure AI Search service.
@@ -91,9 +91,9 @@ public class AzureAISearchMemoryFixture : IAsyncLifetime
     /// <returns>An async task.</returns>
     public async Task InitializeAsync()
     {
-        await AzureAISearchMemoryFixture.DeleteIndexIfExistsAsync(this._testIndexName, this.SearchIndexClient);
-        await AzureAISearchMemoryFixture.CreateIndexAsync(this._testIndexName, this.SearchIndexClient);
-        AzureAISearchMemoryFixture.UploadDocuments(this.SearchIndexClient.GetSearchClient(this._testIndexName));
+        await AzureAISearchVectorStoreFixture.DeleteIndexIfExistsAsync(this._testIndexName, this.SearchIndexClient);
+        await AzureAISearchVectorStoreFixture.CreateIndexAsync(this._testIndexName, this.SearchIndexClient);
+        AzureAISearchVectorStoreFixture.UploadDocuments(this.SearchIndexClient.GetSearchClient(this._testIndexName));
     }
 
     /// <summary>
@@ -102,7 +102,7 @@ public class AzureAISearchMemoryFixture : IAsyncLifetime
     /// <returns>An async task.</returns>
     public async Task DisposeAsync()
     {
-        await AzureAISearchMemoryFixture.DeleteIndexIfExistsAsync(this._testIndexName, this.SearchIndexClient);
+        await AzureAISearchVectorStoreFixture.DeleteIndexIfExistsAsync(this._testIndexName, this.SearchIndexClient);
     }
 
     /// <summary>
@@ -228,40 +228,40 @@ public class AzureAISearchMemoryFixture : IAsyncLifetime
     public class Hotel
     {
         [SimpleField(IsKey = true, IsFilterable = true)]
-        [MemoryRecordKey]
+        [VectorStoreRecordKey]
         public string HotelId { get; set; }
 
         [SearchableField(IsSortable = true)]
-        [MemoryRecordData]
+        [VectorStoreRecordData]
         public string HotelName { get; set; }
 
         [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.EnLucene)]
-        [MemoryRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding")]
+        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding")]
         public string Description { get; set; }
 
-        [MemoryRecordVector]
+        [VectorStoreRecordVector]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 
         [SearchableField(IsFilterable = true, IsFacetable = true)]
-        [MemoryRecordData]
+        [VectorStoreRecordData]
 #pragma warning disable CA1819 // Properties should not return arrays
         public string[] Tags { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
         [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-        [MemoryRecordData]
+        [VectorStoreRecordData]
         public bool? ParkingIncluded { get; set; }
 
         [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-        [MemoryRecordData]
+        [VectorStoreRecordData]
         public DateTimeOffset? LastRenovationDate { get; set; }
 
         [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-        [MemoryRecordData]
+        [VectorStoreRecordData]
         public double? Rating { get; set; }
 
         [SearchableField]
-        [MemoryRecordData]
+        [VectorStoreRecordData]
         public Address Address { get; set; }
     }
 
