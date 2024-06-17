@@ -75,6 +75,8 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         // Verify custom mapper.
         if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper && this._options.JsonObjectCustomMapper is null)
         {
+            throw new InvalidOperationException($"The {nameof(AzureAISearchMemoryRecordServiceOptions<TDataModel>.JsonObjectCustomMapper)} option needs to be set if a {nameof(AzureAISearchMemoryRecordServiceOptions<TDataModel>.MapperType)} of {nameof(AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper)} has been chosen.");
+        }
             throw new ArgumentException($"The {nameof(AzureAISearchMemoryRecordServiceOptions<TDataModel>.JsonObjectCustomMapper)} option needs to be set if a {nameof(AzureAISearchMemoryRecordServiceOptions<TDataModel>.MapperType)} of {nameof(AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper)} has been chosen.", nameof(options));
         }
 
