@@ -13,7 +13,15 @@ else:
     from typing import Self  # pragma: no cover
 
 from pydantic import Field, ValidationError, field_validator, model_validator
-from pydantic_core import Url
+from pydantic_core import Url, PydanticCustomError
+
+class CustomUrl(Url):
+    @classmethod
+    def validate(cls, value):
+        try:
+            return super().validate(value)
+        except PydanticCustomError:
+            raise ValueError("Invalid URL provided. Please check the format and try again.")
 
 from semantic_kernel.exceptions import ContentInitializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
