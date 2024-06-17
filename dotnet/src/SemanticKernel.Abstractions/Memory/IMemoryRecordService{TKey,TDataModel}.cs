@@ -24,8 +24,14 @@ public interface IMemoryRecordService<TKey, TDataModel>
     /// <param name="options">Optional options for retrieving the record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The memory record if found, otherwise null.</returns>
-    /// <exception cref="MemoryServiceCommandExecutionException">Throw when the command fails to execute for any reason.</exception>
-    /// <exception cref="MemoryDataModelMappingException">Throw when mapping between the storage model and data model fails.</exception>
+    /// <exception cref="MemoryServiceCommandExecutionException">
+    /// Thrown when the command fails to execute. This can occur due to issues such as network failures,
+    /// service unavailability, or invalid command parameters.
+    /// </exception>
+    /// <exception cref="MemoryDataModelMappingException">
+    /// Thrown when mapping between the storage model and data model fails. This can happen if the data
+    /// model structure is incompatible with the storage model or if there are data conversion errors.
+    /// </exception>
     Task<TDataModel> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
