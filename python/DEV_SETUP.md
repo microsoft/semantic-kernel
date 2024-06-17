@@ -144,7 +144,10 @@ command from the command palette. Make sure the virtual env (venv) created by
 `poetry` is selected.
 The python you're looking for should be under `~/.cache/pypoetry/virtualenvs/semantic-kernel-.../bin/python`.
 
-If prompted, install `ruff` and `black` (these should have been installed as part of `poetry install`).
+If prompted, install `ruff`. (It should have been installed as part of `poetry install`).
+
+You also need to install the `ruff` extension in VSCode so that auto-formatting uses the `ruff` formatter on save.
+Read more about the extension here: https://github.com/astral-sh/ruff-vscode
 
 ## Tests
 
