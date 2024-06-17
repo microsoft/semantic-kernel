@@ -23,7 +23,12 @@ public sealed class FunctionCallContentBuilder
     /// Extracts function call updates from the content and track them for later building.
     /// </summary>
     /// <param name="content">The content to extract function call updates from.</param>
-    public void Append(StreamingChatMessageContent content)
+public void Append(StreamingChatMessageContent content)
+{
+    if (content == null)
+    {
+        throw new ArgumentNullException(nameof(content));
+    }
     {
         var streamingFunctionCallUpdates = content.Items.OfType<StreamingFunctionCallUpdateContent>();
 
