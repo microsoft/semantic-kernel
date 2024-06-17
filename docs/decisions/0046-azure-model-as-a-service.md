@@ -8,7 +8,7 @@ consulted: {}
 informed: {}
 ---
 
-# Support for Model-as-a-Service in SK
+# Support for Azure Model-as-a-Service in SK
 
 ## Context and Problem Statement
 
@@ -39,6 +39,6 @@ TODO: Should we add support for text completion in SK by skipping the client SDK
 
 ### Support for model-specific parameters
 
-Models can possess supplementary parameters that are not part of the default API. The service API and the client SDK enable the provision of model-specific parameters. Users can provide model-specific settings along with other settings, such as `temperature` and `top_p`, among others.
+Models can possess supplementary parameters that are not part of the default API. The service API and the client SDK enable the provision of model-specific parameters. Users can provide model-specific settings via a dedicated argument along with other settings, such as `temperature` and `top_p`, among others.
 
 In the context of SK, execution parameters are categorized under `PromptExecutionSettings`, which is inherited by all connector-specific setting classes. The settings of the new connector will contain a member of type `dictionary`, which will group together the model-specific parameters.
