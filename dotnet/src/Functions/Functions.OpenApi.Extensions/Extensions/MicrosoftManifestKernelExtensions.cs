@@ -78,8 +78,9 @@ public static class MicrosoftManifestKernelExtensions
             cancellationToken).ConfigureAwait(false);
         JsonDocument jsonDocument = JsonDocument.Parse(microsoftManifestFileJsonContents);
 
-        var results = PluginManifestDocument.Load(jsonDocument.RootElement, new ReaderOptions {
-            ValidationRules = new () // Disable validation rules
+        var results = PluginManifestDocument.Load(jsonDocument.RootElement, new ReaderOptions
+        {
+            ValidationRules = new() // Disable validation rules
         });
 
         if (!results.IsValid)
@@ -98,10 +99,10 @@ public static class MicrosoftManifestKernelExtensions
         var functions = new List<KernelFunction>();
         foreach (var runtime in openAPIRuntimes)
         {
-            var manifestFunctions = document.Functions.Where(f => runtime.RunForFunctions.Contains(f.Name)).ToList();
+            var manifestFunctions = document?.Functions?.Where(f => runtime.RunForFunctions.Contains(f.Name)).ToList();
             var openApiRuntime = runtime as OpenApiRuntime;
-            var apiDescriptionUrl = openApiRuntime?.Spec?.Url;
-            if (string.IsNullOrWhiteSpace(apiDescriptionUrl))
+            var apiDescriptionUrl = openApiRuntime?.Spec?.Url ?? string.Empty;
+            if (apiDescriptionUrl.Length == 0)
             {
                 throw new InvalidOperationException("OpenAPI spec URL is missing in the manifest.");
             }
@@ -157,7 +158,7 @@ public static class MicrosoftManifestKernelExtensions
                             pluginName, operation.Id, ex.Message);
                     }
                 }
-            }    
+            }
         }
         return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
     }

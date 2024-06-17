@@ -79,7 +79,7 @@
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.14" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.14" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
-    <PackageVersion Include="Microsoft.Plugins.Manifest" Version="0.0.6-preview" />
+    <PackageVersion Include="Microsoft.Plugins.Manifest" Version="0.0.9-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.63.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
