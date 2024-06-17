@@ -118,7 +118,13 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 if (activeFunctionSteps.Length > 0)
                 {
                     // Emit function-call content
-                    yield return GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
+{
+    var functionCallContent = GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
+    await foreach (var content in functionCallContent)
+    {
+        yield return content;
+    }
+}
 
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
