@@ -6,16 +6,16 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// A description of the properties of a record stored in a memory store, plus how the properties are used.
+/// A description of the properties of a record stored in a vector store, plus how the properties are used.
 /// </summary>
 [Experimental("SKEXP0001")]
-public sealed class MemoryRecordDefinition
+public sealed class VectorStoreRecordDefinition
 {
     /// <summary>Empty static list for initialization purposes.</summary>
-    private static readonly List<MemoryRecordProperty> s_emptyFields = new();
+    private static readonly List<VectorStoreRecordProperty> s_emptyFields = new();
 
     /// <summary>
     /// The list of properties that are stored in the record.
     /// </summary>
-    public IReadOnlyList<MemoryRecordProperty> Properties { get; init; } = s_emptyFields;
+    public IReadOnlyList<VectorStoreRecordProperty> Properties { get; init; } = s_emptyFields;
 }
