@@ -92,8 +92,8 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         }
 
         // Validate property types and store for later use.
-        MemoryServiceModelPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
-        MemoryServiceModelPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
+        MemoryServiceModelPropertyReader.VerifyPropertyTypes([modelProperties.keyProperty], s_supportedKeyTypes, "Key");
+        MemoryServiceModelPropertyReader.VerifyPropertyTypes(modelProperties.vectorProperties, s_supportedVectorTypes, "Vector");
         this._keyPropertyName = properties.keyProperty.Name;
 
         // Build the list of property names from the current model that are either key or data fields.
