@@ -1,5 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+
+def test_empty_input():
+    result = your_function("")
+    assert result == expected_output, "The function should handle empty input gracefully"
+
 import os
 from functools import partial, reduce
 from typing import Any
