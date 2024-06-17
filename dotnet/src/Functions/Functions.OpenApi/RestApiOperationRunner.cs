@@ -142,7 +142,7 @@ internal sealed class RestApiOperationRunner
 
         var operationPayload = this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(options.kernel, options.kernelFunction, url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
+        return this.SendAsync(url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), options, cancellationToken);
     }
 
     #region private
@@ -156,20 +156,26 @@ internal sealed class RestApiOperationRunner
     /// <param name="payload">HTTP request payload.</param>
     /// <param name="requestContent">HTTP request content.</param>
     /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
+    /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
     private async Task<RestApiOperationResponse> SendAsync(
-        Kernel? kernel,
-        KernelFunction? function,
         Uri url,
         HttpMethod method,
         IDictionary<string, string>? headers = null,
         object? payload = null,
         HttpContent? requestContent = null,
         IDictionary<string, KernelJsonSchema?>? expectedSchemas = null,
+        RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(method, url);
+
+#if NET5_0_OR_GREATER
+        requestMessage.Options.Set(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
+#else
+        requestMessage.Properties.Add(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
+#endif
 
         await this._authCallback(requestMessage, cancellationToken).ConfigureAwait(false);
 

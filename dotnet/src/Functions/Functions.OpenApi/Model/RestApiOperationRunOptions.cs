@@ -22,10 +22,15 @@ internal sealed class RestApiOperationRunOptions
     /// <summary>
     /// The Kernel instance used for the operation run.
     /// </summary>
-    public Kernel? kernel { get; set; }
+    public Kernel? Kernel { get; set; }
 
     /// <summary>
     /// The Kernel function whose invocation triggered the operation run.
     /// </summary>
-    public KernelFunction? kernelFunction { get; set; }
+    public KernelFunction? KernelFunction { get; set; }
+
+    /// <summary>
+    /// The Kernel arguments whose associated with the operation run.
+    /// </summary>
+    public KernelArguments? KernelArguments { get; set; }
 }
