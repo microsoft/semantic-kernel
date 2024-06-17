@@ -7,11 +7,9 @@ from azure.ai.inference.aio import ChatCompletionsClient
 from azure.ai.inference.models import ModelInfo, ModelType, UserMessage
 from azure.core.credentials import AzureKeyCredential
 
-from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
-    AzureAIInferenceChatPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
+from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceChatCompletion,
+    AzureAIInferenceChatPromptExecutionSettings,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError

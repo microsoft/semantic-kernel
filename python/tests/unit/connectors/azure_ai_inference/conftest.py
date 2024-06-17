@@ -7,10 +7,8 @@ from azure.ai.inference.aio import ChatCompletionsClient, EmbeddingsClient
 from azure.ai.inference.models import ModelInfo, ModelType
 from azure.core.credentials import AzureKeyCredential
 
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
+from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceChatCompletion,
-)
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_text_embedding import (
     AzureAIInferenceTextEmbedding,
 )
 

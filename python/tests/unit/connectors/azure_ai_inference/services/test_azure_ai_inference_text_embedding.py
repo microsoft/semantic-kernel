@@ -7,10 +7,8 @@ from azure.ai.inference.aio import EmbeddingsClient
 from azure.ai.inference.models import ModelInfo, ModelType
 from azure.core.credentials import AzureKeyCredential
 
-from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceEmbeddingPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_text_embedding import (
     AzureAIInferenceTextEmbedding,
 )
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError

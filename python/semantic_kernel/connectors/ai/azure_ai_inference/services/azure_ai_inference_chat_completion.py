@@ -21,22 +21,20 @@ from azure.ai.inference.models import (
 from azure.core.credentials import AzureKeyCredential
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceChatPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import (
     AzureAIInferenceSettings,
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.streaming_chat_message_content import (
     StreamingChatMessageContent,
 )
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 MessageConverter: dict[AuthorRole, Any] = {
