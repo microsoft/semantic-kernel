@@ -407,6 +407,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
             foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
             {
                 // Adjusting similarity score to normalize it between 0 and 1
+                // Adjusting similarity score to normalize it between 0 and 1
                 var relevanceScore = (memoryRecord.SimilarityScore + 1) / 2;
                 if (relevanceScore >= minRelevanceScore)
                 {
