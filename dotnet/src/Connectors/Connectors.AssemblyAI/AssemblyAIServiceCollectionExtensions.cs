@@ -28,7 +28,11 @@ public static class AssemblyAIServiceCollectionExtensions
         string? serviceId = null
     )
     {
-        Verify.NotNull(services);
+Verify.NotNull(services);
+if (string.IsNullOrWhiteSpace(serviceId))
+{
+    throw new ArgumentException("Service ID cannot be null or whitespace.", nameof(serviceId));
+}
         services.AddKeyedSingleton<IAudioToTextService>(serviceId, (serviceProvider, _)
             => new AssemblyAIAudioToTextService(
                 apiKey,
