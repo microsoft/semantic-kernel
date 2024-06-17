@@ -46,8 +46,7 @@ jobs:
         if: steps.filter.outputs.dotnet != 'true'
         run: echo "NOT dotnet file"
   dotnet-build-and-test:
-    needs: paths-filter
-    if: needs.paths-filter.outputs.dotnetChanges == 'true'
+    if: always()
     strategy:
       fail-fast: false
       matrix:
