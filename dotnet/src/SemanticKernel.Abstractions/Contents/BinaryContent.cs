@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0001")]
 public class BinaryContent : KernelContent
 {
-    private string? _dataUri;
+    private string? _dataUriString;
     private ReadOnlyMemory<byte>? _data;
     private Uri? _referencedUri;
 
