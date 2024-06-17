@@ -134,7 +134,6 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             var chatHistory = context.ChatHistory;
-
             var functionCalls = FunctionCallContent.GetFunctionCalls(chatHistory.Last()).ToArray();
 
             if (functionCalls is { Length: > 0 })
