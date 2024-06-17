@@ -24,9 +24,7 @@ The Azure team will be providing a new client library, namely `Azure.AI.Inferenc
 
 The initial release of the client SDK will only support chat completion and text/image embedding generation, with image generation to be added later.
 
-Plans to support for text completion are currently unclear, and it is highly unlikely that the SDK will ever include support for text completion.
-
-TODO: Should we add support for text completion in SK by skipping the client SDK and talk directly to the REST API? This is not a great option. Given that text completion is one of the foundation AI services SK provides, we should get more inputs.
+Plans to support for text completion are currently unclear, and it is highly unlikely that the SDK will ever include support for text completion. As a result, the new AI connector will **NOT** support text completions in the initial version until we get more customer signals or the client SDK adds support.
 
 ## AI Connector
 
