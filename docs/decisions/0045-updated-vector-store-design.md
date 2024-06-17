@@ -93,24 +93,24 @@ The separation between collection/index management and record management.
 title: SK Collection/Index and record management
 ---
 classDiagram
-    note for IMemoryRecordService "Can manage records for any scenario"
-    note for IMemoryCollectionCreateService "Can create collections and\nindexes"
-    note for IMemoryCollectionUpdateService "Can retrieve/delete any collections and\nindexes"
+    note for IVectorRecordStore "Can manage records for any scenario"
+    note for IVectorCollectionCreate "Can create collections and\nindexes"
+    note for IVectorCollectionNonSchema "Can retrieve/delete any collections and\nindexes"
 
     namespace SKAbstractions{
-        class IMemoryCollectionCreateService{
+        class IVectorCollectionCreate{
             <<interface>>
             +CreateCollection
         }
 
-        class IMemoryCollectionUpdateService{
+        class IVectorCollectionNonSchema{
             <<interface>>
             +GetCollectionNames
             +CollectionExists
             +DeleteCollection
         }
 
-        class IMemoryRecordService~TModel~{
+        class IVectorRecordStore~TModel~{
             <<interface>>
             +Upsert(TModel record) string
             +UpserBatch(TModel record) string
@@ -122,34 +122,34 @@ classDiagram
     }
 
     namespace AzureAIMemory{
-        class AzureAISearchMemoryCollectionCreateService{
+        class AzureAISearchVectorCollectionCreate{
         }
 
-        class AzureAISearchMemoryCollectionUpdateService{
+        class AzureAISearchVectorCollectionNonSchema{
         }
 
-        class AzureAISearchMemoryRecordService{
+        class AzureAISearchVectorRecordStore{
         }
     }
 
     namespace RedisMemory{
-        class RedisMemoryCollectionCreateService{
+        class RedisVectorCollectionCreate{
         }
 
-        class RedisMemoryCollectionUpdateService{
+        class RedisVectorCollectionNonSchema{
         }
 
-        class RedisMemoryRecordService{
+        class RedisVectorRecordStore{
         }
     }
 
-    IMemoryCollectionCreateService <|-- AzureAISearchMemoryCollectionCreateService
-    IMemoryCollectionUpdateService <|-- AzureAISearchMemoryCollectionUpdateService
-    IMemoryRecordService <|-- AzureAISearchMemoryRecordService
+    IVectorCollectionCreate <|-- AzureAISearchVectorCollectionCreate
+    IVectorCollectionNonSchema <|-- AzureAISearchVectorCollectionNonSchema
+    IVectorRecordStore <|-- AzureAISearchVectorRecordStore
 
-    IMemoryCollectionCreateService <|-- RedisMemoryCollectionCreateService
-    IMemoryCollectionUpdateService <|-- RedisMemoryCollectionUpdateService
-    IMemoryRecordService <|-- RedisMemoryRecordService
+    IVectorCollectionCreate <|-- RedisVectorCollectionCreate
+    IVectorCollectionNonSchema <|-- RedisVectorCollectionNonSchema
+    IVectorRecordStore <|-- RedisVectorRecordStore
 ```
 
 How to use your own schema with core sk functionality.
@@ -159,26 +159,26 @@ How to use your own schema with core sk functionality.
 title: Chat History Break Glass
 ---
 classDiagram
-    note for IMemoryRecordService "Can manage records\nfor any scenario"
-    note for IMemoryCollectionCreateService "Can create collections\nan dindexes"
-    note for IMemoryCollectionUpdateService "Can retrieve/delete any\ncollections and indexes"
-    note for CustomerHistoryMemoryCollectionCreateService "Creates history collections and indices\nusing Customer requirements"
-    note for CustomerHistoryMemoryRecordService "Decorator class for IMemoryRecordService that maps\nbetween the customer model to our model"
+    note for IVectorRecordStore "Can manage records\nfor any scenario"
+    note for IVectorCollectionCreate "Can create collections\nan dindexes"
+    note for IVectorCollectionNonSchema "Can retrieve/delete any\ncollections and indexes"
+    note for CustomerHistoryVectorCollectionCreate "Creates history collections and indices\nusing Customer requirements"
+    note for CustomerHistoryVectorRecordStore "Decorator class for IVectorRecordStore that maps\nbetween the customer model to our model"
 
     namespace SKAbstractions{
-        class IMemoryCollectionCreateService{
+        class IVectorCollectionCreate{
             <<interface>>
             +CreateCollection
         }
 
-        class IMemoryCollectionUpdateService{
+        class IVectorCollectionNonSchema{
             <<interface>>
             +GetCollectionNames
             +CollectionExists
             +DeleteCollection
         }
 
-        class IMemoryRecordService~TModel~{
+        class IVectorRecordStore~TModel~{
             <<interface>>
             +Upsert(TModel record) string
             +Get(string key) TModel
@@ -203,12 +203,12 @@ classDiagram
             +Dictionary~string, string~ properties
         }
 
-        class CustomerHistoryMemoryCollectionCreateService{
+        class CustomerHistoryVectorCollectionCreate{
             +CreateCollection
         }
 
-        class CustomerHistoryMemoryRecordService{
-            -IMemoryRecordService~CustomerHistoryModel~ _store
+        class CustomerHistoryVectorRecordStore{
+            -IVectorRecordStore~CustomerHistoryModel~ _store
             +Upsert(ChatHistoryModel record) string
             +Get(string key) ChatHistoryModel
             +Delete(string key) string
@@ -217,7 +217,7 @@ classDiagram
 
     namespace SKCore{
         class SemanticTextMemory{
-            -IMemoryRecordService~ChatHistoryModel~ _MemoryRecordService
+            -IVectorRecordStore~ChatHistoryModel~ _VectorRecordStore
             -IMemoryCollectionService _collectionsService
             -ITextEmbeddingGenerationService _embeddingGenerationService
         }
@@ -233,16 +233,16 @@ classDiagram
         }
     }
 
-    IMemoryCollectionCreateService <|-- CustomerHistoryMemoryCollectionCreateService
+    IVectorCollectionCreate <|-- CustomerHistoryVectorCollectionCreate
 
-    IMemoryRecordService <|-- CustomerHistoryMemoryRecordService
-    IMemoryRecordService <.. CustomerHistoryMemoryRecordService
-    CustomerHistoryModel <.. CustomerHistoryMemoryRecordService
-    ChatHistoryModel <.. CustomerHistoryMemoryRecordService
+    IVectorRecordStore <|-- CustomerHistoryVectorRecordStore
+    IVectorRecordStore <.. CustomerHistoryVectorRecordStore
+    CustomerHistoryModel <.. CustomerHistoryVectorRecordStore
+    ChatHistoryModel <.. CustomerHistoryVectorRecordStore
 
     ChatHistoryModel <.. SemanticTextMemory
-    IMemoryRecordService <.. SemanticTextMemory
-    IMemoryCollectionCreateService <.. SemanticTextMemory
+    IVectorRecordStore <.. SemanticTextMemory
+    IVectorCollectionCreate <.. SemanticTextMemory
 
     ISemanticTextMemory <.. ChatHistoryPlugin
 ```
@@ -310,7 +310,7 @@ Footnotes:
 
 Mapping between data models and the storage models can also require custom logic depending on the type of data model and storage model involved.
 
-I'm therefore proposing that we allow mappers to be injectable for each `MemoryRecordService` instance. The interfaces for these would vary depending
+I'm therefore proposing that we allow mappers to be injectable for each `VectorRecordStore` instance. The interfaces for these would vary depending
 on the storage models used by each vector store and any unique capabilities that each vector store may have, e.g. qdrant can operate in `single` or
 `multiple named vector` modes, which means the mapper needs to know whether to set a single vector or fill a vector map.
 
@@ -334,45 +334,45 @@ should be filterable. Requiring users to switch to new attributes later will be 
 Here is what the attributes would look like, plus a sample use case.
 
 ```cs
-sealed class MemoryRecordKeyAttribute : Attribute
+sealed class VectorStoreRecordKeyAttribute : Attribute
 {
 }
-sealed class MemoryRecordDataAttribute : Attribute
+sealed class VectorStoreRecordDataAttribute : Attribute
 {
     public bool HasEmbedding { get; set; }
     public string EmbeddingPropertyName { get; set; }
 }
-sealed class MemoryRecordVectorAttribute : Attribute
+sealed class VectorStoreRecordVectorAttribute : Attribute
 {
 }
 
 public record HotelInfo(
-    [property: MemoryRecordKey, JsonPropertyName("hotel-id")] string HotelId,
-    [property: MemoryRecordData, JsonPropertyName("hotel-name")] string HotelName,
-    [property: MemoryRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbeddings"), JsonPropertyName("description")] string Description,
-    [property: MemoryRecordVector, JsonPropertyName("description-embeddings")] ReadOnlyMemory<float>? DescriptionEmbeddings);
+    [property: VectorStoreRecordKey, JsonPropertyName("hotel-id")] string HotelId,
+    [property: VectorStoreRecordData, JsonPropertyName("hotel-name")] string HotelName,
+    [property: VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbeddings"), JsonPropertyName("description")] string Description,
+    [property: VectorStoreRecordVector, JsonPropertyName("description-embeddings")] ReadOnlyMemory<float>? DescriptionEmbeddings);
 ```
 
 Here is what the configuration objects would look like.
 
 ```cs
-abstract class MemoryRecordProperty(string propertyName);
+abstract class VectorStoreRecordProperty(string propertyName);
 
-sealed class MemoryRecordKeyProperty(string propertyName): Field(propertyName)
+sealed class VectorStoreRecordKeyProperty(string propertyName): Field(propertyName)
 {
 }
-sealed class MemoryRecordDataProperty(string propertyName): Field(propertyName)
+sealed class VectorStoreRecordDataProperty(string propertyName): Field(propertyName)
 {
     bool HasEmbedding;
     string EmbeddingPropertyName;
 }
-sealed class MemoryRecordVectorProperty(string propertyName): Field(propertyName)
+sealed class VectorStoreRecordVectorProperty(string propertyName): Field(propertyName)
 {
 }
 
-sealed class MemoryRecordDefinition
+sealed class VectorStoreRecordDefinition
 {
-    IReadOnlyList<MemoryRecordProperty> Properties;
+    IReadOnlyList<VectorStoreRecordProperty> Properties;
 }
 ```
 
@@ -390,7 +390,7 @@ consistency and scalability.
 |Criteria|Current SK Implementation|Proposed SK Implementation|Spring AI|LlamaIndex|Langchain|
 |-|-|-|-|-|-|
 |Support for Custom Schemas|N|Y|N|N|N|
-|Naming of store|MemoryStore|MemoryRecordService, MemoryCollectionCreateService, MemoryCollectionUpdateService|VectorStore|VectorStore|VectorStore|
+|Naming of store|MemoryStore|VectorRecordStore, VectorCollectionCreate, VectorCollectionNonSchema, VectorCollectionStore, VectorStore|VectorStore|VectorStore|VectorStore|
 |MultiVector support|N|Y|N|N|N|
 |Support Multiple Collections via SDK params|Y|Y|N (via app config)|Y|Y|
 
@@ -423,39 +423,39 @@ From GitHub Issue:
 #### Option 1 - Combined collection and record management
 
 ```cs
-interface IMemoryRecordService<TDataModel>
+interface IVectorRecordStore<TRecord>
 {
     Task CreateCollectionAsync(CollectionCreateConfig collectionConfig, CancellationToken cancellationToken = default);
     IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
     Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default);
     Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
 
-    Task UpsertAsync(TDataModel data, CancellationToken cancellationToken = default);
-    IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TDataModel> dataSet, CancellationToken cancellationToken = default);
-    Task<TDataModel> GetAsync(string key, bool withEmbedding = false, CancellationToken cancellationToken = default);
-    IAsyncEnumerable<TDataModel> GetBatchAsync(IEnumerable<string> keys, bool withVectors = false, CancellationToken cancellationToken = default);
+    Task UpsertAsync(TRecord data, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TRecord> dataSet, CancellationToken cancellationToken = default);
+    Task<TRecord> GetAsync(string key, bool withEmbedding = false, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, bool withVectors = false, CancellationToken cancellationToken = default);
     Task DeleteAsync(string key, CancellationToken cancellationToken = default);
     Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default);
 }
 
-class AzureAISearchMemoryRecordService<TDataModel>(
+class AzureAISearchVectorRecordStore<TRecord>(
     Azure.Search.Documents.Indexes.SearchIndexClient client,
-    Schema schema): IMemoryRecordService<TDataModel>;
+    Schema schema): IVectorRecordStore<TRecord>;
 
-class WeaviateMemoryRecordService<TDataModel>(
+class WeaviateVectorRecordStore<TRecord>(
     WeaviateClient client,
-    Schema schema): IMemoryRecordService<TDataModel>;
+    Schema schema): IVectorRecordStore<TRecord>;
 
-class RedisMemoryRecordService<TDataModel>(
+class RedisVectorRecordStore<TRecord>(
     StackExchange.Redis.IDatabase database,
-    Schema schema): IMemoryRecordService<TDataModel>;
+    Schema schema): IVectorRecordStore<TRecord>;
 ```
 
 #### Option 2 - Separated collection and record management with opinionated create implementations
 
 ```cs
 
-interface IMemoryCollectionService
+interface IVectorCollectionStore
 {
     virtual Task CreateChatHistoryCollectionAsync(string name, CancellationToken cancellationToken = default);
     virtual Task CreateSemanticCacheCollectionAsync(string name, CancellationToken cancellationToken = default);
@@ -465,24 +465,24 @@ interface IMemoryCollectionService
     Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
 }
 
-class AzureAISearchMemoryCollectionService: IMemoryCollectionService;
-class RedisMemoryCollectionService: IMemoryCollectionService;
-class WeaviateMemoryCollectionService: IMemoryCollectionService;
+class AzureAISearchVectorCollectionStore: IVectorCollectionStore;
+class RedisVectorCollectionStore: IVectorCollectionStore;
+class WeaviateVectorCollectionStore: IVectorCollectionStore;
 
 // Customers can inherit from our implementations and replace just the creation scenarios to match their schemas.
-class CustomerCollectionsService: AzureAISearchMemoryCollectionService, IMemoryCollectionService;
+class CustomerCollectionStore: AzureAISearchVectorCollectionStore, IVectorCollectionStore;
 
 // We can also create implementations that create indices based on an MLIndex specification.
-class MLIndexAzureAISearchMemoryCollectionService(MLIndex mlIndexSpec): AzureAISearchMemoryCollectionService, IMemoryCollectionService;
+class MLIndexAzureAISearchVectorCollectionStore(MLIndex mlIndexSpec): AzureAISearchVectorCollectionStore, IVectorCollectionStore;
 
-interface IMemoryRecordService<TDataModel>
+interface IVectorRecordStore<TRecord>
 {
-    Task<TDataModel?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
     Task DeleteAsync(string key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
-    Task<string> UpsertAsync(TDataModel record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task<string> UpsertAsync(TRecord record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
 }
 
-class AzureAISearchMemoryRecordService<TDataModel>(): IMemoryRecordService<TDataModel>;
+class AzureAISearchVectorRecordStore<TRecord>(): IVectorRecordStore<TRecord>;
 ```
 
 #### Option 3 - Separated collection and record management with collection create separate from other operations.
@@ -491,31 +491,31 @@ Vector store same as option 2 so not repeated for brevity.
 
 ```cs
 
-interface IMemoryCollectionCreateService
+interface IVectorCollectionCreate
 {
     virtual Task CreateCollectionAsync(string name, CancellationToken cancellationToken = default);
 }
 
 // Implement a generic version of create that takes a configuration that should work for 80% of cases.
-class AzureAISearchConfiguredCollectionCreateService(CollectionCreateConfig collectionConfig): IMemoryCollectionCreateService;
+class AzureAISearchConfiguredVectorCollectionCreate(CollectionCreateConfig collectionConfig): IVectorCollectionCreate;
 
 // Allow custom implementations of create for break glass scenarios for outside the 80% case.
-class AzureAISearchChatHistoryCollectionCreateService: IMemoryCollectionCreateService;
-class AzureAISearchSemanticCacheCollectionCreateService: IMemoryCollectionCreateService;
+class AzureAISearchChatHistoryVectorCollectionCreate: IVectorCollectionCreate;
+class AzureAISearchSemanticCacheVectorCollectionCreate: IVectorCollectionCreate;
 
 // Customers can create their own creation scenarios to match their schemas, but can continue to use our get, does exist and delete class.
-class CustomerChatHistoryCollectionCreateService: IMemoryCollectionCreateService;
+class CustomerChatHistoryVectorCollectionCreate: IVectorCollectionCreate;
 
-interface IMemoryCollectionUpdateService
+interface IVectorCollectionNonSchema
 {
     IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
     Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default);
     Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
 }
 
-class AzureAISearchMemoryCollectionUpdateService: IMemoryCollectionUpdateService;
-class RedisMemoryCollectionUpdateService: IMemoryCollectionUpdateService;
-class WeaviateMemoryCollectionUpdateService: IMemoryCollectionUpdateService;
+class AzureAISearchVectorCollectionNonSchema: IVectorCollectionNonSchema;
+class RedisVectorCollectionNonSchema: IVectorCollectionNonSchema;
+class WeaviateVectorCollectionNonSchema: IVectorCollectionNonSchema;
 
 ```
 
@@ -525,41 +525,41 @@ Variation on option 3.
 
 ```cs
 
-interface IMemoryCollectionCreateService
+interface IVectorCollectionCreate
 {
     virtual Task CreateCollectionAsync(string name, CancellationToken cancellationToken = default);
 }
 
-interface IMemoryCollectionUpdateService
+interface IVectorCollectionNonSchema
 {
     IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
     Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default);
     Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
 }
 
-// DB Specific Update implementations
-class AzureAISearchMemoryCollectionUpdateService: IMemoryCollectionUpdateService;
-class RedisMemoryCollectionUpdateService: IMemoryCollectionUpdateService;
+// DB Specific NonSchema implementations
+class AzureAISearchVectorCollectionNonSchema: IVectorCollectionNonSchema;
+class RedisVectorCollectionNonSchema: IVectorCollectionNonSchema;
 
-// Combined Create + Update Interface
-interface IMemoryCollectionService: IMemoryCollectionCreateService, IMemoryCollectionUpdateService {}
+// Combined Create + NonSchema Interface
+interface IVectorCollectionStore: IVectorCollectionCreate, IVectorCollectionNonSchema {}
 
-// Base abstract class that forwards non-create operations to provided service.
-abstract class MemoryCollectionService(IMemoryCollectionUpdateService collectionsUpdateService): IMemoryCollectionService
+// Base abstract class that forwards non-create operations to provided implementation.
+abstract class VectorCollectionStore(IVectorCollectionNonSchema collectionNonSchema): IVectorCollectionStore
 {
     public abstract Task CreateCollectionAsync(string name, CancellationToken cancellationToken = default);
-    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) { return collectionsUpdateService.ListCollectionNamesAsync(cancellationToken); }
-    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) { return collectionsUpdateService.CollectionExistsAsync(name, cancellationToken); }
-    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) { return collectionsUpdateService.DeleteCollectionAsync(name, cancellationToken); }
+    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) { return collectionNonSchema.ListCollectionNamesAsync(cancellationToken); }
+    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) { return collectionNonSchema.CollectionExistsAsync(name, cancellationToken); }
+    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) { return collectionNonSchema.DeleteCollectionAsync(name, cancellationToken); }
 }
 
-// Collections service implementations, that inherit from base class, and just adds the different creation implementations.
-class AzureAISearchChatHistoryMemoryService(AzureAISearchMemoryCollectionUpdateService updateService): MemoryCollectionService(updateService);
-class AzureAISearchSemanticCacheMemoryService(AzureAISearchMemoryCollectionUpdateService updateService): MemoryCollectionService(updateService);
-class AzureAISearchMLIndexMemoryService(AzureAISearchMemoryCollectionUpdateService updateService): MemoryCollectionService(updateService);
+// Collections store implementations, that inherit from base class, and just adds the different creation implementations.
+class AzureAISearchChatHistoryVectorCollectionStore(AzureAISearchVectorCollectionNonSchema nonSchema): VectorCollectionStore(nonSchema);
+class AzureAISearchSemanticCacheVectorCollectionStore(AzureAISearchVectorCollectionNonSchema nonSchema): VectorCollectionStore(nonSchema);
+class AzureAISearchMLIndexVectorCollectionStore(AzureAISearchVectorCollectionNonSchema nonSchema): VectorCollectionStore(nonSchema);
 
-// Customer collections service implementation, that uses the base Azure AI Search implementation for get, doesExist and delete, but adds it's own creation.
-class ContosoProductsMemoryCollectionService(AzureAISearchMemoryCollectionUpdateService updateService): MemoryCollectionService(updateService);
+// Customer collections store implementation, that uses the base Azure AI Search implementation for get, doesExist and delete, but adds its own creation.
+class ContosoProductsVectorCollectionStore(AzureAISearchVectorCollectionNonSchema nonSchema): VectorCollectionStore(nonSchema);
 
 ```
 
@@ -569,12 +569,12 @@ Same as option 3 / 4, plus:
 
 ```cs
 
-interface IMemoryService : IMemoryCollectionCreateService, IMemoryCollectionService, IMemoryRecordService
+interface IVectorStore : IVectorCollectionStore, IVectorRecordStore
 {    
 }
 
 // Create a static factory that produces one of these, so only the interface is public, not the class.
-internal class CombinedMemoryService<TDataModel>(IMemoryCollectionCreateService creation, IMemoryCollectionService collections, IMemoryRecordService<TDataModel> records): IMemoryService
+internal class VectorStore<TRecord>(IVectorCollectionCreate create, IVectorCollectionNonSchema nonSchema, IVectorRecordStore<TRecord> records): IVectorStore
 {
 }
 
@@ -602,19 +602,19 @@ Chosen option: 4 + 5.
 - Collection create, configuration and supported options vary considerably across different schemas and database types.
 - Collection list, exists and delete is the same across different schemas, but varies by database type.
 - Vector storage, even with custom schemas can be supported using a single implementation per database type.
-- We will need to support multiple collection create service implementations per store type, a single collection update service implementation per store type, and a single vector store implementation per store type.
+- We will need to support multiple collection create implementations per store type, a single collection nonschema implementation per store type, and a single vector store implementation per store type.
 - At the same time we can layer interfaces on top that allow easy combined access to collection and record management.
 
 
 ###  Question 2: Collection name and key value normalization in store, decorator or via injection.
 
-#### Option 1 - Normalization in main record service
+#### Option 1 - Normalization in main record store
 
 - Pros: Simple
-- Cons: The normalization needs to vary separately from the record service, so this will not work
+- Cons: The normalization needs to vary separately from the record store, so this will not work
 
 ```cs
-    public class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecordService<TDataModel>
+    public class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore<TRecord>
     {
         ...
 
@@ -633,28 +633,28 @@ Chosen option: 4 + 5.
 
 #### Option 2 - Normalization in decorator
 
-- Pros: Allows normalization to vary separately from the record service.
+- Pros: Allows normalization to vary separately from the record store.
 - Pros: No code executed when no normalization required.
 - Pros: Easy to package matching encoders/decoders together.
 - Pros: Easier to obsolete encoding/normalization as a concept.
-- Cons: Not a major con, but need to implement the full MemoryRecordService interface, instead of e.g. just providing the two translation functions, if we go with option 3.
+- Cons: Not a major con, but need to implement the full VectorRecordStore interface, instead of e.g. just providing the two translation functions, if we go with option 3.
 - Cons: Hard to have a generic implementation that can work with any model, without either changing the data in the provided object on upsert or doing cloning in an expensive way.
 
 ```cs
-    new KeyNormalizingAISearchMemoryRecordService<MyModel>(
+    new KeyNormalizingAISearchVectorRecordStore<MyModel>(
         "keyField",
-         new AzureAISearchMemoryRecordService<MyModel>(...));
+         new AzureAISearchVectorRecordStore<MyModel>(...));
 ```
 
-#### Option 3 - Normalization via optional function parameters to record service constructor
+#### Option 3 - Normalization via optional function parameters to record store constructor
 
-- Pros: Allows normalization to vary separately from the record service.
-- Pros: No need to implement the full MemoryRecordService interface.
+- Pros: Allows normalization to vary separately from the record store.
+- Pros: No need to implement the full VectorRecordStore interface.
 - Pros: Can modify values on serialization without changing the incoming record, if supported by DB SDK.
 - Cons: Harder to package matching encoders/decoders together.
 
 ```cs
-public class AzureAISearchMemoryRecordService<TDataModel>(StoreOptions options);
+public class AzureAISearchVectorRecordStore<TRecord>(StoreOptions options);
 
 public class StoreOptions
 {
@@ -686,27 +686,27 @@ provide their own encoding / decoding behavior.
 #### Option 1 - Collection name as method param
 
 ```cs
-public class MyMemoryStore()
+public class MyVectorRecordStore()
 {
-    public async Task<TDataModel?> GetAsync(string collectionName, string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    public async Task<TRecord?> GetAsync(string collectionName, string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 }
 ```
 
 #### Option 2 - Collection name via constructor
 
 ```cs
-public class MyMemoryStore(string defaultCollectionName)
+public class MyVectorRecordStore(string defaultCollectionName)
 {
-    public async Task<TDataModel?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 }
 ```
 
 #### Option 3 - Collection name via either
 
 ```cs
-public class MyMemoryStore(string defaultCollectionName)
+public class MyVectorRecordStore(string defaultCollectionName)
 {
-    public async Task<TDataModel?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 }
 
 public class GetRecordOptions
@@ -724,7 +724,7 @@ Chosen option 3, to allow developers more choice.
 #### Option 1 - Take a string and convert to a type that was specified on the constructor
 
 ```cs
-public async Task<TDataModel?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
     var convertedKey = this.keyType switch
     {
@@ -742,7 +742,7 @@ public async Task<TDataModel?> GetAsync(string key, GetRecordOptions? options = 
 #### Option 2 - Take an object and cast to a type that was specified on the constructor.
 
 ```cs
-public async Task<TDataModel?> GetAsync(object key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+public async Task<TRecord?> GetAsync(object key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
     var convertedKey = this.keyType switch
     {
@@ -766,7 +766,7 @@ public async Task<TDataModel?> GetAsync(object key, GetRecordOptions? options = 
 #### Option 3 - Multiple overloads where we convert where possible, throw when not possible.
 
 ```cs
-public async Task<TDataModel?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
     var convertedKey = this.keyType switch
     {
@@ -775,7 +775,7 @@ public async Task<TDataModel?> GetAsync(string key, GetRecordOptions? options = 
         KeyType.GUID => Guid.Parse(key)
     }
 }
-public async Task<TDataModel?> GetAsync(int key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+public async Task<TRecord?> GetAsync(int key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
     var convertedKey = this.keyType switch
     {
@@ -784,7 +784,7 @@ public async Task<TDataModel?> GetAsync(int key, GetRecordOptions? options = def
         KeyType.GUID => throw new InvalidOperationException($"The provided key must be convertible to a GUID.")
     }
 }
-public async Task<TDataModel?> GetAsync(GUID key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+public async Task<TRecord?> GetAsync(GUID key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
 {
     var convertedKey = this.keyType switch
     {
@@ -801,16 +801,16 @@ public async Task<TDataModel?> GetAsync(GUID key, GetRecordOptions? options = de
 #### Option 4 - Add key type as generic to interface
 
 ```cs
-interface IMemoryRecordService<TDataModel, TKeyType>
+interface IVectorRecordStore<TRecord, TKey>
 {
-    Task<TDataModel?> GetAsync(TKeyType key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 }
 
-class AzureAISearchMemoryRecordService<TDataModel, TKeyType>: IMemoryRecordService<TDataModel, TKeyType>
+class AzureAISearchVectorRecordStore<TRecord, TKey>: IVectorRecordStore<TRecord, TKey>
 {
-    public AzureAISearchMemoryRecordService()
+    public AzureAISearchVectorRecordStore()
     {
-        // Check if TKeyType matches the type of the field marked as a key on TDataModel and throw if they don't match.
+        // Check if TKey matches the type of the field marked as a key on TRecord and throw if they don't match.
         // Also check if keytype is one of the allowed types for Azure AI Search and throw if it isn't.
     }
 }
@@ -830,26 +830,32 @@ each implementation to hardcode allowed key types if the vector db only supports
 #### Option 1 - VectorDB
 
 ```cs
-IVectorDBRecordService
-IVectorDBCollectionUpdateService
-IVectorDBCollectionCreateService
+interface IVectorDBRecordService {}
+interface IVectorDBCollectionUpdateService {}
+interface IVectorDBCollectionCreateService {}
 ```
 
 #### Option 2 - Memory
 
 ```cs
-IMemoryRecordService
-IMemoryCollectionUpdateService
-IMemoryCollectionCreateService
+interface IMemoryRecordService {}
+interface IMemoryCollectionUpdateService {}
+interface IMemoryCollectionCreateService {}
+```
+
+### Option 3 - VectorStore
+
+```cs
+interface IVectorRecordStore {}
+interface IVectorCollectionNonSchema {}
+interface IVectorCollectionCreate {}
+interface IVectorCollectionStore {}: IVectorCollectionCreate, IVectorCollectionNonSchema
+interface IVectorStore {}: IVectorCollectionStore, IVectorRecordStore
 ```
 
 #### Decision Outcome
 
-Chosen option 2. Memory constrains the scope of these classes to be for memory storage and retrieval in the context of an AI system. Since almost all
-databases are currently adding vector support, including relational, it's important to clarify the purpose of these abstractions compared to others.
-Here, the purpose is not to provide generic database access to all databases that support vectors, but rather for memory storage and retrieval. The
-concern with using a term such as VectorDB is that it opens up the scope of the feature set to include anything that stores a vector, without
-constraining it to any specific purpose.
+Chosen option 3. The word memory is broad enough to encompass any data, so using it seems arbitrary. All competitors are using the term vector store, so using something similar is good for recognition.
 
 ## Usage Examples
 
@@ -858,7 +864,7 @@ Common Code across all examples
 ```cs
 class CacheEntryModel(string prompt, string result, ReadOnlyMemory<float> promptEmbedding);
 
-class SemanticTextMemory<TDataType>(IMemoryRecordService<TDataType> recordService, IMemoryCollectionService collectionService, ITextEmbeddingGenerationService embeddingGenerator): ISemanticTextMemory;
+class SemanticTextMemory<TDataType>(IVectorRecordStore<TDataType> recordStore, IVectorCollectionStore collectionStore, ITextEmbeddingGenerationService embeddingGenerator): ISemanticTextMemory;
 
 class CacheSetFunctionFilter(ISemanticTextMemory<CacheEntryModel> memory); // Saves results to cache.
 class CacheGetPromptFilter(ISemanticTextMemory<CacheEntryModel> memory);   // Check cache for entries.
@@ -880,24 +886,24 @@ builder
     .AddNamedAzureAISearchCollectionCreate(name: "CacheCreate", azureAISearchEndpoint, apiKey, createConfiguration)         // Config
     .AddNamedAzureAISearchCollectionCreate(name: "CacheCreate", sp => new CacheCreate(...));                                // Custom implementation
     // Create combined collection management that references the previously registered create instance.
-    .AddNamedAzureAISearchCollectionService(name: "Cache", azureAISearchEndpoint, apiKey, createName: "CacheCreate")
+    .AddNamedAzureAISearchCollectionStore(name: "Cache", azureAISearchEndpoint, apiKey, createName: "CacheCreate")
 
-    // Variant 2: Register collection service in one line with config or custom create implementation.
-    .AddNamedAzureAISearchCollectionService(name: "Cache", azureAISearchEndpoint, apiKey, createConfiguration)              // Config
-    .AddNamedAzureAISearchCollectionService(name: "Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...))       // Custom implementation
+    // Variant 2: Register collection store in one line with config or custom create implementation.
+    .AddNamedAzureAISearchCollectionStore(name: "Cache", azureAISearchEndpoint, apiKey, createConfiguration)              // Config
+    .AddNamedAzureAISearchCollectionStore(name: "Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...))       // Custom implementation
 
     // Record Registration with variants 1 and 2:
-    // Add record services.
-    .AddAzureAISearchRecordService<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey)
+    // Add record stores.
+    .AddAzureAISearchRecordStore<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey)
 
-    // Variant 3: Register collection and record service in one line with config or custom create implementation.
+    // Variant 3: Register collection and record store in one line with config or custom create implementation.
     // Does all of the preious variants in one line.
-    .AddAzureAISearchStorageServices<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey, createConfiguration)         // Config
-    .AddAzureAISearchStorageServices<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...))  // Custom implementation
+    .AddAzureAISearchVectorStore<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey, createConfiguration)         // Config
+    .AddAzureAISearchVectorStore<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...))  // Custom implementation
 
-    // Add semantic text memory referencing collection and record services.
+    // Add semantic text memory referencing collection and record stores.
     // This would register ISemanticTextMemory<CacheEntryModel> in the services container.
-    .AddSemanticTextMemory<CacheEntryModel>(collectionServiceName: "Cache", recordServiceName: "Cache");
+    .AddSemanticTextMemory<CacheEntryModel>(collectionStoreName: "Cache", recordServiceName: "Cache");
 
 // Add filter to retrieve items from cache and one to add items to cache.
 // Since these filters depend on ISemanticTextMemory<CacheEntryModel> and that is already registered, it should get matched automatically.
@@ -907,9 +913,9 @@ builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>
 var kernel =
     .Build();
 
-var memoryFactory = kernel.Services.GetRequiredService<IMemoryFactory>();
-var cacheCollectionService = memoryFactory.CreateCollectionService(name: "Cache");
-var cacheRecordService = memoryFactory.CreateRecordService<CacheEntryModel>(name: "Cache");
+var vectorStoreFactory = kernel.Services.GetRequiredService<IVectorStoreFactory>();
+var cacheCollectionStore = vectorStoreFactory.CreateCollectionStore(name: "Cache");
+var cacheRecordStore = vectorStoreFactory.CreateRecordStore<CacheEntryModel>(name: "Cache");
 ```
 
 ### DI Framework: Registration based on consumer type.
@@ -922,7 +928,7 @@ builder
     .AddAzureOpenAITextEmbeddingGeneration(textEmbeddingDeploymentName, azureAIEndpoint, apiKey)
     
     // Collection and record registration with config or custom create implementation.
-    // This will register both IMemoryCollectionService and IMemoryRecordService<CacheEntryModel> and tie it to usage with SemanticTextMemory<CacheEntryModel>.
+    // This will register both IVectorCollectionStore and IVectorRecordStore<CacheEntryModel> and tie it to usage with SemanticTextMemory<CacheEntryModel>.
     .AddAzureAISearchStorage<SemanticTextMemory<CacheEntryModel>>(azureAISearchEndpoint, apiKey, createConfiguration)           // Config
     .AddAzureAISearchStorage<SemanticTextMemory<CacheEntryModel>>(azureAISearchEndpoint, apiKey, sp => new CacheCreate(...));   // Custom implementation
 
@@ -942,14 +948,14 @@ builder
     .AddAzureOpenAITextEmbeddingGeneration(textEmbeddingDeploymentName, azureAIEndpoint, apiKey)
 
     // Collection and record registration with config or custom create implementation.
-    .AddAzureAISearchStorageKeyedTransient<CacheEntryModel>("Cache", azureAISearchEndpoint, apiKey, createConfiguration)
-    .AddAzureAISearchStorageKeyedTransient<CacheEntryModel>("Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...));
+    .AddAzureAISearchVectorStoreKeyedTransient<CacheEntryModel>("Cache", azureAISearchEndpoint, apiKey, createConfiguration)
+    .AddAzureAISearchVectorStoreKeyedTransient<CacheEntryModel>("Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...));
 
 // Add Semantic Cache Memory for the cache entry model.
 builder.Services.AddTransient<ISemanticTextMemory<CacheEntryModel>>(sp => {
     return new SemanticTextMemory<CacheEntryModel>(
-        sp.GetKeyedService<IMemoryRecordService<CacheEntryModel>>("Cache"),
-        sp.GetKeyedService<IMemoryCollectionService>("Cache"),
+        sp.GetKeyedService<IVectorRecordStore<CacheEntryModel>>("Cache"),
+        sp.GetKeyedService<IVectorCollectionStore>("Cache"),
         sp.GetRequiredService<ITextEmbeddingGenerationService>());
 });
 
@@ -963,9 +969,9 @@ builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>
 
 ### Record Management
 
-1. Release RecordService public interface and implementations for Azure AI Search, Qdrant and Redis.
-2. Add support for registering record services with SK container to allow automatic dependency injection.
-3. Add RecordService implementations for remaining stores.
+1. Release VectorRecordStore public interface and implementations for Azure AI Search, Qdrant and Redis.
+2. Add support for registering record stores with SK container to allow automatic dependency injection.
+3. Add VectorRecordStore implementations for remaining stores.
 
 ### Collection Management
 
