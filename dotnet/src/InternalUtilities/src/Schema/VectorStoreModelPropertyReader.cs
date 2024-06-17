@@ -36,7 +36,9 @@ internal static class MemoryServiceModelPropertyReader
     /// <param name="supportsMultipleVectors">A value indicating whether multiple vector properties are supported instead of just one.</param>
     /// <returns>A tuple containing the key property, data properties, and vector properties.</returns>
     public static (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) FindProperties(Type type, bool supportsMultipleVectors)
-    {
+    /// <summary>
+    /// Verifies that the types of the provided properties are within the supported types.
+    /// </summary>
         // First check the cache.
         if (s_propertiesCache.TryGetValue(type, out var cachedProperties))
         {
