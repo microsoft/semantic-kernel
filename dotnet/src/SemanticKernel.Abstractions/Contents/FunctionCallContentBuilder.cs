@@ -97,7 +97,7 @@ public void Append(StreamingChatMessageContent content)
         }
 
         var argumentsString = functionArgumentsBuilder.ToString();
-        if (string.IsNullOrEmpty(argumentsString))
+        if (string.IsNullOrWhiteSpace(argumentsString))
         {
             return (null, null);
         }
