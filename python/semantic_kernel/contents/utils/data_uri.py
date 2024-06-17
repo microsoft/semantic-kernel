@@ -30,7 +30,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
     parameters: dict[str, str] = Field(default_factory=dict)
     data_format: str | None = None
 
-    def update_data(self, value: str | bytes):
+    def update_data(self, value: str | bytes) -> None:
         """Update the data, using either a string or bytes."""
         if isinstance(value, str):
             self.data_str = value
