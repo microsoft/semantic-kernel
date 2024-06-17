@@ -29,7 +29,14 @@ internal static class DataUriParser
     /// </summary>
     /// <param name="value">Value to test</param>
     /// <returns>Boolean value, true if the string is base64, otherwise false</returns>
-    private static bool IsBase64String(string? value)
+private static bool IsBase64String(string? value)
+{
+    if (string.IsNullOrEmpty(value))
+        return false;
+
+    Span<byte> buffer = new Span<byte>(new byte[value.Length]);
+    return Convert.TryFromBase64String(value, buffer, out _);
+}
     {
         // The quickest test. If the value is null or is equal to 0 it is not base64
         // Base64 string's length is always divisible by four, i.e. 8, 16, 20 etc. 
