@@ -16,7 +16,14 @@ public class AudioContent : KernelContent
     /// <summary>
     /// URI of audio file.
     /// </summary>
-    public Uri? Uri { get; set; }
+    private readonly Uri? _uri;
+
+    public Uri? Uri => _uri;
+
+    public AudioContent(Uri? uri)
+    {
+        _uri = uri;
+    }
 
     /// <summary>
     /// The audio data.
