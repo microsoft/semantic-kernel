@@ -231,7 +231,9 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        // In some cases we're expected to generate the key to use. Do so if one isn't provided.
+        // In some cases we're expected to generate the key to use. 
+        // This typically happens when the record is new and hasn't been assigned a key yet.
+        // Generating a new key ensures that each record can be uniquely identified in the database.
         if (string.IsNullOrEmpty(record.Key))
         {
             record.Key = Guid.NewGuid().ToString();
