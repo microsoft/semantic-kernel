@@ -127,7 +127,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     /// This example demonstrates manual function calling with a streaming chat API.
     /// </summary>
     [Fact]
-    public async Task RunStreamingChatAPIWithManualFunctionCallingAsync()
+    public async Task RunStreamingChatWithManualFunctionCallingAsync()
     {
         Console.WriteLine("Manual function calling with a streaming prompt.");
 
