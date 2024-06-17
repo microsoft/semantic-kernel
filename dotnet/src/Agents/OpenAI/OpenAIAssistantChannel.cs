@@ -262,7 +262,12 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             return await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        // Local function to capture kernel function state for further processing (participates in method closure).
+        private IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
+        {
+            // Implementation here
+        }
+
+        return await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
         IEnumerable<FunctionCallContent> ParseFunctionStep(OpenAIAssistantAgent agent, RunStep step)
         {
             if (step.Status == RunStepStatus.InProgress && step.StepDetails is RunStepToolCallDetails callDetails)
