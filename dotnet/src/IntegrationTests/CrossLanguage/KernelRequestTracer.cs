@@ -16,7 +16,12 @@ namespace SemanticKernel.IntegrationTests.CrossLanguage;
 /// </summary>
 internal sealed class KernelRequestTracer : IDisposable
 {
-    private const string DummyResponse = @"{
+private const string DummyResponseFilePath = "path/to/dummyResponse.json";
+
+private string LoadDummyResponse()
+{
+    return File.ReadAllText(DummyResponseFilePath);
+}
     ""id"": ""chatcmpl-abc123"",
     ""object"": ""chat.completion"",
     ""created"": 1677858242,
