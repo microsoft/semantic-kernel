@@ -30,35 +30,23 @@ public static class OpenAIServiceCollectionExtensions
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
-    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="options">Options for the OpenAI text embeddings service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
-    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
-        string modelId,
-        string apiKey,
-        string? orgId = null,
-        string? serviceId = null,
-        HttpClient? httpClient = null,
-        int? dimensions = null)
+        OpenAIClientTextEmbeddingGenerationOptions options,
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNullOrWhiteSpace(apiKey);
+        Verify.NotNullOrWhiteSpace(options.ModelId);
+        Verify.NotNullOrWhiteSpace(options.ApiKey);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(options.ServiceId, (serviceProvider, _) =>
             new OpenAITextEmbeddingGenerationService(
-                modelId,
-                apiKey,
-                orgId,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
-                dimensions));
+                options,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
 
         return builder;
     }
