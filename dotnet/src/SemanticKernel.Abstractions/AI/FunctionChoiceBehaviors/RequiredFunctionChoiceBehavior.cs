@@ -18,9 +18,9 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     private readonly IEnumerable<KernelFunction>? _functions;
 
     /// <summary>
-    /// Indicates whether the functions should be automatically invoked by the AI service/connector.
+    /// The behavior options.
     /// </summary>
-    private readonly bool _autoInvoke = true;
+    private readonly FunctionChoiceBehaviorOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
@@ -28,19 +28,20 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     [JsonConstructor]
     public RequiredFunctionChoiceBehavior()
     {
+        this._options = new FunctionChoiceBehaviorOptions();
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
     /// </summary>
-    /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
     /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
+    /// <param name="options">The behavior options.</param>""
     /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.</param>
-    public RequiredFunctionChoiceBehavior(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
+    public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, FunctionChoiceBehaviorOptions? options = null)
     {
-        this._autoInvoke = autoInvoke;
         this._functions = functions;
         this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
+        this._options = options ?? new FunctionChoiceBehaviorOptions();
     }
 
     /// <summary>
@@ -58,7 +59,7 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         // and then fail to do so, so we fail before we get to that point. This is an error
         // on the consumers behalf: if they specify auto-invocation with any functions, they must
         // specify the kernel and the kernel must contain those functions.
-        if (this._autoInvoke && context.Kernel is null)
+        if (this._options.AutoInvoke && context.Kernel is null)
         {
             throw new KernelException("Auto-invocation for Required choice behavior is not supported when no kernel is provided.");
         }
@@ -83,7 +84,7 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
                 }
 
                 // If auto-invocation is requested and no function is found in the kernel, fail early.
-                if (this._autoInvoke)
+                if (this._options.AutoInvoke)
                 {
                     throw new KernelException($"The specified function {functionFQN} is not available in the kernel.");
                 }
@@ -111,11 +112,10 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             }
         }
 
-        return new FunctionChoiceBehaviorConfiguration()
+        return new FunctionChoiceBehaviorConfiguration(this._options)
         {
             Choice = FunctionChoice.Required,
             Functions = availableFunctions,
-            AutoInvoke = this._autoInvoke,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };
     }

@@ -99,13 +99,13 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: true);
+        var choiceBehavior = FunctionChoiceBehavior.Auto(options: new() { AutoInvoke = true });
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
-        Assert.True(config.AutoInvoke);
+        Assert.True(config.Options.AutoInvoke);
     }
 
     [Fact]
@@ -116,13 +116,13 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false);
+        var choiceBehavior = FunctionChoiceBehavior.Auto(options: new() { AutoInvoke = false });
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
-        Assert.False(config.AutoInvoke);
+        Assert.False(config.Options.AutoInvoke);
     }
 
     [Fact]
@@ -176,13 +176,13 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true);
+        var choiceBehavior = FunctionChoiceBehavior.Required(options: new() { AutoInvoke = true });
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
-        Assert.True(config.AutoInvoke);
+        Assert.True(config.Options.AutoInvoke);
     }
 
     [Fact]
@@ -193,13 +193,13 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: false);
+        var choiceBehavior = FunctionChoiceBehavior.Required(options: new() { AutoInvoke = false });
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
-        Assert.False(config.AutoInvoke);
+        Assert.False(config.Options.AutoInvoke);
     }
 
     [Fact]

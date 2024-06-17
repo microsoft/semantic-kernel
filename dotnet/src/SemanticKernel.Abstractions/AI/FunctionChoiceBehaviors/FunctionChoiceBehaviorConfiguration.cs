@@ -13,9 +13,11 @@ public sealed class FunctionChoiceBehaviorConfiguration
 {
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionChoiceBehaviorConfiguration"/> class.
+    /// <param name="options">The options for the behavior.</param>"
     /// </summary>
-    internal FunctionChoiceBehaviorConfiguration()
+    internal FunctionChoiceBehaviorConfiguration(FunctionChoiceBehaviorOptions options)
     {
+        this.Options = options;
     }
 
     /// <summary>
@@ -29,9 +31,9 @@ public sealed class FunctionChoiceBehaviorConfiguration
     public IReadOnlyList<KernelFunction>? Functions { get; internal set; }
 
     /// <summary>
-    /// Indicates whether the functions should be automatically invoked by the AI service/connector.
+    /// The behavior options.
     /// </summary>
-    public bool AutoInvoke { get; internal set; } = true;
+    public FunctionChoiceBehaviorOptions Options { get; }
 
     /// <summary>
     /// Specifies whether validation against a specified list of functions is required before allowing the model to request a function from the kernel.

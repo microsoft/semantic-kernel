@@ -22,22 +22,30 @@ internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     private readonly IEnumerable<KernelFunction>? _functions;
 
     /// <summary>
+    /// The behavior options.
+    /// </summary>
+    private readonly FunctionChoiceBehaviorOptions _options;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="NoneFunctionChoiceBehavior"/> class.
     /// </summary>
     [JsonConstructor]
     public NoneFunctionChoiceBehavior()
     {
+        this._options = new FunctionChoiceBehaviorOptions();
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NoneFunctionChoiceBehavior"/> class.
     /// </summary>
     /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
+    /// <param name="options">The behavior options.</param>
     /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.</param>
-    public NoneFunctionChoiceBehavior(IEnumerable<KernelFunction> functions)
+    public NoneFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions, FunctionChoiceBehaviorOptions? options = null)
     {
         this._functions = functions;
-        this.Functions = functions.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
+        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
+        this._options = options ?? new FunctionChoiceBehaviorOptions();
     }
 
     /// <summary>
@@ -89,7 +97,7 @@ internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
             }
         }
 
-        return new FunctionChoiceBehaviorConfiguration()
+        return new FunctionChoiceBehaviorConfiguration(this._options)
         {
             Choice = FunctionChoice.None,
             Functions = availableFunctions,

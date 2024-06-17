@@ -45,7 +45,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         });
 
         // Act
-        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(true, [plugin.ElementAt(1)]) };
+        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required([plugin.ElementAt(1)], autoInvoke: true) };
 
         var result = await this._kernel.InvokePromptAsync("How many days until Christmas?", new(settings));
 
@@ -110,7 +110,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         });
 
         // Act
-        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(false, [plugin.ElementAt(1)]) };
+        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required([plugin.ElementAt(1)], autoInvoke: false) };
 
         var result = await this._kernel.InvokePromptAsync("How many days until Christmas?", new(settings));
 
@@ -146,7 +146,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
             await next(context);
         });
 
-        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(true, [plugin.ElementAt(1)]) };
+        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required([plugin.ElementAt(1)], autoInvoke: true) };
 
         string result = "";
 
@@ -223,7 +223,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         var functionsForManualInvocation = new List<string>();
 
-        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(false, [plugin.ElementAt(1)]) };
+        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required([plugin.ElementAt(1)], autoInvoke: false) };
 
         // Act
         await foreach (var content in this._kernel.InvokePromptStreamingAsync<OpenAIStreamingChatMessageContent>("How many days until Christmas?", new(settings)))
@@ -256,7 +256,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         });
 
         // Act
-        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(false, [plugin.ElementAt(1)]) };
+        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required([plugin.ElementAt(1)], autoInvoke: false) };
 
         var result = await this._kernel.InvokePromptAsync("How many days until Christmas?", new(settings));
 
@@ -293,7 +293,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         var functionsForManualInvocation = new List<string>();
 
-        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required(false, [plugin.ElementAt(1)]) };
+        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Required([plugin.ElementAt(1)], autoInvoke: false) };
 
         // Act
         await foreach (var content in this._kernel.InvokePromptStreamingAsync<OpenAIStreamingChatMessageContent>("How many days until Christmas?", new(settings)))

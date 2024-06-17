@@ -1600,7 +1600,7 @@ internal abstract class ClientCore
         (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts) result = new()
         {
             AllowAnyRequestedKernelFunction = config.AllowAnyRequestedKernelFunction,
-            MaximumAutoInvokeAttempts = config.AutoInvoke ? MaximumAutoInvokeAttempts : 0,
+            MaximumAutoInvokeAttempts = config.Options.AutoInvoke ? MaximumAutoInvokeAttempts : 0,
         };
 
         if (config.Choice == FunctionChoice.Required && requestIndex >= MaximumUseAttempts)

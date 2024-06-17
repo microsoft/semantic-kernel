@@ -92,7 +92,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
 
         // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)], autoInvoke: false);
+        var choiceBehavior = new AutoFunctionChoiceBehavior([plugin.ElementAt(0), plugin.ElementAt(1)], new FunctionChoiceBehaviorOptions() { AutoInvoke = false });
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -113,7 +113,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false);
+        var choiceBehavior = new AutoFunctionChoiceBehavior(options: new() { AutoInvoke = false });
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -141,7 +141,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
 
         // Assert
         Assert.NotNull(config);
-        Assert.True(config.AutoInvoke);
+        Assert.True(config.Options.AutoInvoke);
     }
 
     [Fact]
@@ -152,13 +152,13 @@ public sealed class AutoFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false);
+        var choiceBehavior = new AutoFunctionChoiceBehavior(options: new() { AutoInvoke = false });
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
-        Assert.False(config.AutoInvoke);
+        Assert.False(config.Options.AutoInvoke);
     }
 
     [Fact]
@@ -221,7 +221,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
-        var choiceBehavior = new AutoFunctionChoiceBehavior(autoInvoke: false)
+        var choiceBehavior = new AutoFunctionChoiceBehavior(options: new() { AutoInvoke = false })
         {
             Functions = ["MyPlugin.NonKernelFunction"]
         };

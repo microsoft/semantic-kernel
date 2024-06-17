@@ -92,7 +92,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(false, [plugin.ElementAt(0), plugin.ElementAt(1)]);
+        var choiceBehavior = new RequiredFunctionChoiceBehavior([plugin.ElementAt(0), plugin.ElementAt(1)], new() { AutoInvoke = false });
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -113,7 +113,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(false);
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(options: new() { AutoInvoke = false });
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -141,7 +141,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
 
         // Assert
         Assert.NotNull(config);
-        Assert.True(config.AutoInvoke);
+        Assert.True(config.Options.AutoInvoke);
     }
 
     [Fact]
@@ -152,13 +152,13 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(false);
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(options: new() { AutoInvoke = false });
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
-        Assert.False(config.AutoInvoke);
+        Assert.False(config.Options.AutoInvoke);
     }
 
     [Fact]
@@ -203,7 +203,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Arrange
         var plugin = GetTestPlugin();
 
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(true, [plugin.ElementAt(0)]);
+        var choiceBehavior = new RequiredFunctionChoiceBehavior([plugin.ElementAt(0)], options: new() { AutoInvoke = true });
 
         // Act
         var exception = Assert.Throws<KernelException>(() =>
@@ -221,7 +221,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(false)
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(options: new() { AutoInvoke = false })
         {
             Functions = ["MyPlugin.NonKernelFunction"]
         };
