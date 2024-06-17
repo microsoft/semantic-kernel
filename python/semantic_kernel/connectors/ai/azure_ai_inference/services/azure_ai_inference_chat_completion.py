@@ -25,14 +25,10 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceChatPromptExecutionSettings,
     AzureAIInferenceSettings,
 )
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import (
-    StreamingChatMessageContent,
-)
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
@@ -75,9 +71,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise ServiceInitializationError(
-                f"Failed to validate Azure AI Inference settings: {e}"
-            ) from e
+            raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
 
         client, model_info = self._create_client(azure_ai_inference_settings)
 
@@ -112,10 +106,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         )
         response_metadata = self._get_metadata_from_response(response)
 
-        return [
-            self._create_chat_message_content(response, choice, response_metadata)
-            for choice in response.choices
-        ]
+        return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
     async def get_streaming_chat_message_contents(
         self,
@@ -145,10 +136,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
                 continue
             chunk_metadata = self._get_metadata_from_response(chunk)
             yield [
-                self._create_streaming_chat_message_content(
-                    chunk, choice, chunk_metadata
-                )
-                for choice in chunk.choices
+                self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
 
     def _create_client(
@@ -160,9 +148,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         """
         chat_completions_client_sync = load_client_sync(
             endpoint=azure_ai_inference_settings.endpoint,
-            credential=AzureKeyCredential(
-                azure_ai_inference_settings.api_key.get_secret_value()
-            ),
+            credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
         )
 
         model_info = chat_completions_client_sync.get_model_info()
@@ -175,16 +161,12 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         return (
             ChatCompletionsClientAsync(
                 endpoint=azure_ai_inference_settings.endpoint,
-                credential=AzureKeyCredential(
-                    azure_ai_inference_settings.api_key.get_secret_value()
-                ),
+                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
             ),
             model_info,
         )
 
-    def _get_metadata_from_response(
-        self, response: ChatCompletions | AsyncStreamingChatCompletions
-    ) -> dict[str, Any]:
+    def _get_metadata_from_response(self, response: ChatCompletions | AsyncStreamingChatCompletions) -> dict[str, Any]:
         """Get metadata from the response.
 
         Args:
@@ -246,9 +228,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
             metadata=metadata,
         )
 
-    def _format_chat_history(
-        self, chat_history: ChatHistory
-    ) -> list[ChatRequestMessage]:
+    def _format_chat_history(self, chat_history: ChatHistory) -> list[ChatRequestMessage]:
         """Format the chat history to the expected objects for the client.
 
         Args:
@@ -258,10 +238,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
             A list of formatted chat history.
         """
         self._prepare_chat_history_for_request(chat_history)
-        return [
-            MessageConverter[message.role](content=message.content)
-            for message in chat_history.messages
-        ]
+        return [MessageConverter[message.role](content=message.content) for message in chat_history.messages]
 
     def get_prompt_execution_settings_class(
         self,

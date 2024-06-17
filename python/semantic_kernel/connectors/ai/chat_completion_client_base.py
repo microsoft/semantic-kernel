@@ -7,14 +7,10 @@ from typing import TYPE_CHECKING, Any
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import (
-        PromptExecutionSettings,
-    )
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
-    from semantic_kernel.contents.streaming_chat_message_content import (
-        StreamingChatMessageContent,
-    )
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
@@ -80,7 +76,4 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             List[Dict[str, Optional[str]]]: The prepared chat history.
         """
-        return [
-            message.to_dict(role_key=role_key, content_key=content_key)
-            for message in chat_history.messages
-        ]
+        return [message.to_dict(role_key=role_key, content_key=content_key) for message in chat_history.messages]

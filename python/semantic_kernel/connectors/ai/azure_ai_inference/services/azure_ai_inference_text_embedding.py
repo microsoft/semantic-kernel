@@ -4,11 +4,7 @@ from typing import Any
 
 from azure.ai.inference import load_client as load_client_sync
 from azure.ai.inference.aio import EmbeddingsClient as EmbeddingsClientAsync
-from azure.ai.inference.models import (
-    EmbeddingsResult,
-    ModelInfo,
-    ModelType,
-)
+from azure.ai.inference.models import EmbeddingsResult, ModelInfo, ModelType
 from azure.core.credentials import AzureKeyCredential
 from numpy import array, ndarray
 from pydantic import ValidationError
@@ -16,12 +12,8 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceEmbeddingPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import (
-    AzureAIInferenceSettings,
-)
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
+from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
@@ -55,9 +47,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase):
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise ServiceInitializationError(
-                f"Failed to validate Azure AI Inference settings: {e}"
-            ) from e
+            raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
 
         client, model_info = self._create_client(azure_ai_inference_settings)
 
@@ -71,9 +61,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase):
 
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         """Generate embeddings from the Azure AI Inference service."""
-        settings: AzureAIInferenceEmbeddingPromptExecutionSettings = kwargs.get(
-            "settings", None
-        )
+        settings: AzureAIInferenceEmbeddingPromptExecutionSettings = kwargs.get("settings", None)
         response: EmbeddingsResult = await self.client.embed(
             input=texts,
             model_extras=settings.extra_parameters if settings else None,
@@ -94,9 +82,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase):
         """
         embedding_client_sync = load_client_sync(
             endpoint=azure_ai_inference_settings.endpoint,
-            credential=AzureKeyCredential(
-                azure_ai_inference_settings.api_key.get_secret_value()
-            ),
+            credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
         )
 
         model_info = embedding_client_sync.get_model_info()
@@ -109,9 +95,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase):
         return (
             EmbeddingsClientAsync(
                 endpoint=azure_ai_inference_settings.endpoint,
-                credential=AzureKeyCredential(
-                    azure_ai_inference_settings.api_key.get_secret_value()
-                ),
+                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
             ),
             model_info,
         )

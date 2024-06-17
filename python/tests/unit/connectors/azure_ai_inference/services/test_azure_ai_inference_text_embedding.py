@@ -22,9 +22,7 @@ def test_azure_ai_inference_text_embedding_init(
     """Test initialization of AzureAIInferenceChatCompletion"""
     mock_client = EmbeddingsClient(
         endpoint=azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_ENDPOINT"],
-        credential=AzureKeyCredential(
-            azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_API_KEY"]
-        ),
+        credential=AzureKeyCredential(azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_API_KEY"]),
     )
     mock_model_info = ModelInfo(
         model_name="test_model_id",
@@ -39,9 +37,7 @@ def test_azure_ai_inference_text_embedding_init(
     assert isinstance(azure_ai_inference.client, EmbeddingsClient)
 
 
-@pytest.mark.parametrize(
-    "exclude_list", [["AZURE_AI_INFERENCE_API_KEY"]], indirect=True
-)
+@pytest.mark.parametrize("exclude_list", [["AZURE_AI_INFERENCE_API_KEY"]], indirect=True)
 def test_azure_ai_inference_text_embedding_init_with_empty_api_key(
     azure_ai_inference_unit_test_env,
 ) -> None:
@@ -50,9 +46,7 @@ def test_azure_ai_inference_text_embedding_init_with_empty_api_key(
         AzureAIInferenceTextEmbedding()
 
 
-@pytest.mark.parametrize(
-    "exclude_list", [["AZURE_AI_INFERENCE_ENDPOINT"]], indirect=True
-)
+@pytest.mark.parametrize("exclude_list", [["AZURE_AI_INFERENCE_ENDPOINT"]], indirect=True)
 def test_azure_ai_inference_text_embedding_init_with_empty_endpoint_and_base_url(
     azure_ai_inference_unit_test_env,
 ) -> None:
@@ -128,9 +122,7 @@ async def test_azure_ai_inference_text_embedding_with_extra_parameters(
     """Test text embedding generation of AzureAIInferenceTextEmbedding with extra parameters"""
     texts = ["hello", "world"]
     extra_parameters = {"test_key": "test_value"}
-    settings = AzureAIInferenceEmbeddingPromptExecutionSettings(
-        extra_parameters=extra_parameters
-    )
+    settings = AzureAIInferenceEmbeddingPromptExecutionSettings(extra_parameters=extra_parameters)
     await azure_ai_inference_service.generate_embeddings(texts, settings=settings)
 
     mock_embed.assert_awaited_once_with(

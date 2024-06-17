@@ -23,9 +23,7 @@ def test_azure_ai_inference_chat_completion_init(
     """Test initialization of AzureAIInferenceChatCompletion"""
     mock_client = ChatCompletionsClient(
         endpoint=azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_ENDPOINT"],
-        credential=AzureKeyCredential(
-            azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_API_KEY"]
-        ),
+        credential=AzureKeyCredential(azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_API_KEY"]),
     )
     mock_model_info = ModelInfo(
         model_name="test_model_id",
@@ -40,9 +38,7 @@ def test_azure_ai_inference_chat_completion_init(
     assert isinstance(azure_ai_inference.client, ChatCompletionsClient)
 
 
-@pytest.mark.parametrize(
-    "exclude_list", [["AZURE_AI_INFERENCE_API_KEY"]], indirect=True
-)
+@pytest.mark.parametrize("exclude_list", [["AZURE_AI_INFERENCE_API_KEY"]], indirect=True)
 def test_azure_ai_inference_chat_completion_init_with_empty_api_key(
     azure_ai_inference_unit_test_env,
 ) -> None:
@@ -51,9 +47,7 @@ def test_azure_ai_inference_chat_completion_init_with_empty_api_key(
         AzureAIInferenceChatCompletion()
 
 
-@pytest.mark.parametrize(
-    "exclude_list", [["AZURE_AI_INFERENCE_ENDPOINT"]], indirect=True
-)
+@pytest.mark.parametrize("exclude_list", [["AZURE_AI_INFERENCE_ENDPOINT"]], indirect=True)
 def test_azure_ai_inference_chat_completion_init_with_empty_endpoint_and_base_url(
     azure_ai_inference_unit_test_env,
 ) -> None:
@@ -146,9 +140,7 @@ async def test_azure_ai_inference_chat_completion_with_extra_parameters(
     chat_history.add_user_message(user_message_content)
     extra_parameters = {"test_key": "test_value"}
 
-    settings = AzureAIInferenceChatPromptExecutionSettings(
-        extra_parameters=extra_parameters
-    )
+    settings = AzureAIInferenceChatPromptExecutionSettings(extra_parameters=extra_parameters)
 
     await azure_ai_inference_service.get_chat_message_contents(chat_history, settings)
 

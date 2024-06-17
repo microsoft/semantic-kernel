@@ -2,9 +2,7 @@
 
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import (
-    PromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
@@ -21,9 +19,7 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
     extra_parameters: dict[str, str] | None = None
 
 
-class AzureAIInferenceChatPromptExecutionSettings(
-    AzureAIInferencePromptExecutionSettings
-):
+class AzureAIInferenceChatPromptExecutionSettings(AzureAIInferencePromptExecutionSettings):
     """Azure AI Inference Chat Prompt Execution Settings."""
 
 

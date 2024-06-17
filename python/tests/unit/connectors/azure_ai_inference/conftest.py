@@ -14,9 +14,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
 
 
 @pytest.fixture()
-def azure_ai_inference_unit_test_env(
-    monkeypatch, exclude_list, override_env_param_dict
-):
+def azure_ai_inference_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     """Fixture to set environment variables for Azure AI Inference Unit Tests."""
     if exclude_list is None:
         exclude_list = []
@@ -53,25 +51,15 @@ def azure_ai_inference_service(azure_ai_inference_unit_test_env, request):
     credential = AzureKeyCredential(api_key)
 
     if request.param == AzureAIInferenceChatCompletion.__name__:
-        with patch.object(
-            AzureAIInferenceChatCompletion, "_create_client"
-        ) as mock_create_client:
-            mock_client = ChatCompletionsClient(
-                endpoint=endpoint, credential=credential
-            )
-            mock_model_info = ModelInfo(
-                model_name="test_model_id", model_type=ModelType.CHAT
-            )
+        with patch.object(AzureAIInferenceChatCompletion, "_create_client") as mock_create_client:
+            mock_client = ChatCompletionsClient(endpoint=endpoint, credential=credential)
+            mock_model_info = ModelInfo(model_name="test_model_id", model_type=ModelType.CHAT)
             mock_create_client.return_value = (mock_client, mock_model_info)
             return AzureAIInferenceChatCompletion(api_key=api_key, endpoint=endpoint)
     if request.param == AzureAIInferenceTextEmbedding.__name__:
-        with patch.object(
-            AzureAIInferenceTextEmbedding, "_create_client"
-        ) as mock_create_client:
+        with patch.object(AzureAIInferenceTextEmbedding, "_create_client") as mock_create_client:
             mock_client = EmbeddingsClient(endpoint=endpoint, credential=credential)
-            mock_model_info = ModelInfo(
-                model_name="test_model_id", model_type=ModelType.EMBEDDINGS
-            )
+            mock_model_info = ModelInfo(model_name="test_model_id", model_type=ModelType.EMBEDDINGS)
             mock_create_client.return_value = (mock_client, mock_model_info)
             return AzureAIInferenceTextEmbedding(api_key=api_key, endpoint=endpoint)
 
