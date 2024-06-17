@@ -6,10 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// Attribute to mark a property on a vector model class as the vector.
+/// Attribute to mark a property on a record class as the key under which data is stored in a vector store.
 /// </summary>
 [Experimental("SKEXP0001")]
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public sealed class MemoryRecordVectorAttribute : Attribute
+public sealed class VectorStoreRecordKeyAttribute : Attribute
 {
 }
