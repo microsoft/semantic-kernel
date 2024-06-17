@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Agents;
+
 /// <summary>
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
@@ -33,7 +34,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgentAsync()
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =
@@ -55,7 +56,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
                     ModelId = this.Model,
                 });
 
-        // Create a nexus for agent interaction.
+        // Create a chat for agent interaction.
         var chat =
             new AgentGroupChat(agentWriter, agentReviewer)
             {
@@ -77,7 +78,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
 
         // Invoke chat and display messages.
         string input = "concept: maps made out of egg cartons.";
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+        chat.Add(new ChatMessageContent(AuthorRole.User, input));
         Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
         await foreach (var content in chat.InvokeAsync())

@@ -75,7 +75,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
 
         // Invoke chat and display messages.
         string input = "concept: maps made out of egg cartons.";
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+        chat.Add(new ChatMessageContent(AuthorRole.User, input));
         Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
         await foreach (var content in chat.InvokeAsync())

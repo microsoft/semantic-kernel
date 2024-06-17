@@ -21,7 +21,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
     private const string AgentInstructions = "Create charts as requested without explanation.";
 
     [Fact]
-    public async Task RunAsync()
+    public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -64,7 +64,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
@@ -77,7 +77,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
 
                 foreach (var fileReference in message.Items.OfType<FileReferenceContent>())
                 {
-                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: #{fileReference.FileId}");
+                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: @{fileReference.FileId}");
                 }
             }
         }
