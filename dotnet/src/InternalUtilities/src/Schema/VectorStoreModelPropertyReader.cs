@@ -29,6 +29,12 @@ internal static class MemoryServiceModelPropertyReader
     /// <param name="type">The data model to find the properties on.</param>
     /// <param name="supportsMultipleVectors">A value indicating whether multiple vector properties are supported instead of just one.</param>
     /// <returns>The categorized properties.</returns>
+    /// <summary>
+    /// Finds and categorizes properties of the specified data model type.
+    /// </summary>
+    /// <param name="type">The data model to find the properties on.</param>
+    /// <param name="supportsMultipleVectors">A value indicating whether multiple vector properties are supported instead of just one.</param>
+    /// <returns>A tuple containing the key property, data properties, and vector properties.</returns>
     public static (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) FindProperties(Type type, bool supportsMultipleVectors)
     {
         // First check the cache.
