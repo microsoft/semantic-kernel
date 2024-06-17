@@ -99,7 +99,9 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
 ) -> None:
     """Test text embedding generation of AzureAIInferenceTextEmbedding with standard settings"""
     texts = ["hello", "world"]
-    settings = AzureAIInferenceEmbeddingPromptExecutionSettings()
+    settings = AzureAIInferenceEmbeddingPromptExecutionSettings(
+        dimensions=1024, encoding_format="float", input_type="text"
+    )
     await azure_ai_inference_service.generate_embeddings(texts, settings=settings)
 
     mock_embed.assert_awaited_once_with(

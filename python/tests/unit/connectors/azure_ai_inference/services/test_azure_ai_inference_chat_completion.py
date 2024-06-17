@@ -104,7 +104,15 @@ async def test_azure_ai_inference_chat_completion_with_standard_parameters(
     user_message_content: str = "Hello"
     chat_history.add_user_message(user_message_content)
 
-    settings = AzureAIInferenceChatPromptExecutionSettings()
+    settings = AzureAIInferenceChatPromptExecutionSettings(
+        frequency_penalty=0.5,
+        max_tokens=100,
+        presence_penalty=0.5,
+        seed=123,
+        stop="stop",
+        temperature=0.5,
+        top_p=0.5,
+    )
 
     await azure_ai_inference_service.get_chat_message_contents(chat_history, settings)
 
@@ -114,6 +122,8 @@ async def test_azure_ai_inference_chat_completion_with_standard_parameters(
         frequency_penalty=settings.frequency_penalty,
         max_tokens=settings.max_tokens,
         presence_penalty=settings.presence_penalty,
+        seed=settings.seed,
+        stop=settings.stop,
         temperature=settings.temperature,
         top_p=settings.top_p,
     )
