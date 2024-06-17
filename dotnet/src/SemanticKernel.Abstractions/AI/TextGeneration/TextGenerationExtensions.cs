@@ -55,7 +55,7 @@ public static class TextGenerationExtensions
             var chatMessages = await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
             return chatMessages
                 .Select(chatMessage => new TextContent(chatMessage.Content, chatMessage.ModelId, chatMessage.InnerContent, chatMessage.Encoding, chatMessage.Metadata))
-                .ToList();
+                .ToArray();
         }
 
         // When using against text generations, the prompt will be used as is.
