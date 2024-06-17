@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -16,6 +17,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Contains helpers for reading vector store model properties and their attributes.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class VectorStoreRecordPropertyReader
 {
     /// <summary>Cache of property enumerations so that we don't incur reflection costs with each invocation.</summary>
