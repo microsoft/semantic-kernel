@@ -283,7 +283,7 @@ through prompt_template_config or in the prompt_template."
             )
 
             value: AsyncGenerator = (
-                await prompt_render_result.ai_service.get_streaming_chat_message_contents(
+                prompt_render_result.ai_service.get_streaming_chat_message_contents(
                     chat_history=chat_history,
                     settings=prompt_render_result.execution_settings,
                     **kwargs,

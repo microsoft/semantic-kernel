@@ -39,7 +39,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         pass
 
     @abstractmethod
-    async def get_streaming_chat_message_contents(
+    def get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",

@@ -133,7 +133,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         Returns:
             A list of chat message contents.
         """
-        response: AsyncStreamingChatCompletions = self.client.complete(
+        response: AsyncStreamingChatCompletions = await self.client.complete(
             stream=True,
             messages=self._format_chat_history(chat_history),
             model_extras=settings.extra_parameters,
