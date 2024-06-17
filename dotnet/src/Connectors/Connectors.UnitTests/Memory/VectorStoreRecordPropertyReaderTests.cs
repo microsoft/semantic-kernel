@@ -161,13 +161,14 @@ public class VectorStoreRecordPropertyReaderTests
         Assert.Equal("Data properties must be one of the supported types: System.Int32, System.Single. Type of Data is System.String.", ex.Message);
     }
 
-    private class NoKeyModel
+#pragma warning disable CA1812 // Invalid unused classes error, since I am using these for testing purposes above.
+    private sealed class NoKeyModel
     {
     }
 
     private readonly VectorStoreRecordDefinition _noKeyDefinition = new();
 
-    private class NoVectorModel
+    private sealed class NoVectorModel
     {
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
@@ -181,7 +182,7 @@ public class VectorStoreRecordPropertyReaderTests
         ]
     };
 
-    private class MultiKeysModel
+    private sealed class MultiKeysModel
     {
         [VectorStoreRecordKey]
         public string Key1 { get; set; } = string.Empty;
@@ -199,7 +200,7 @@ public class VectorStoreRecordPropertyReaderTests
         ]
     };
 
-    private class SinglePropsModel
+    private sealed class SinglePropsModel
     {
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
@@ -223,7 +224,7 @@ public class VectorStoreRecordPropertyReaderTests
         ]
     };
 
-    private class MultiPropsModel
+    private sealed class MultiPropsModel
     {
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
@@ -254,4 +255,5 @@ public class VectorStoreRecordPropertyReaderTests
             new VectorStoreRecordVectorProperty("Vector2")
         ]
     };
+#pragma warning restore CA1812 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }
