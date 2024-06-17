@@ -8,15 +8,18 @@ namespace Filtering;
 
 public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(output)
 {
+    /// <summary>
+    /// Shows how to use <see cref="IAutoFunctionInvocationFilter"/> in non-streaming scenario.
+    /// </summary>
     [Fact]
-    public async Task AutoFunctionInvocationFilterAsync()
+    public async Task AutoFunctionInvocationFilterNonStreamingAsync()
     {
         var builder = Kernel.CreateBuilder();
 
         builder.AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey);
 
         // This filter outputs information about auto function invocation and returns overridden result.
-        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationFilterExample(this.Output));
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationNonStreamingFilter(this.Output));
 
         var kernel = builder.Build();
 
@@ -40,11 +43,56 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
         // Result from auto function invocation filter.
     }
 
-    /// <summary>Shows syntax for auto function invocation filter.</summary>
-    private sealed class AutoFunctionInvocationFilterExample(ITestOutputHelper output) : IAutoFunctionInvocationFilter
+    /// <summary>
+    /// Shows how to use <see cref="IAutoFunctionInvocationFilter"/> in streaming scenario.
+    /// </summary>
+    [Fact]
+    public async Task AutoFunctionInvocationFilterStreamingAsync()
     {
-        private readonly ITestOutputHelper _output = output;
+        var builder = Kernel.CreateBuilder();
 
+        builder.AddOpenAIChatCompletion("gpt-3.5-turbo-1106", TestConfiguration.OpenAI.ApiKey);
+
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationStreamingFilter(this.Output));
+
+        var kernel = builder.Build();
+
+        kernel.ImportPluginFromFunctions("HelperFunctions",
+        [
+            kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
+            kernel.CreateFunctionFromMethod((string cityName) =>
+                cityName switch
+                {
+                    "Boston" => "61 and rainy",
+                    "London" => "55 and cloudy",
+                    "Miami" => "80 and sunny",
+                    "Paris" => "60 and rainy",
+                    "Tokyo" => "50 and sunny",
+                    "Sydney" => "75 and sunny",
+                    "Tel Aviv" => "80 and sunny",
+                    _ => "31 and snowing",
+                }, "GetWeatherForCity", "Gets the current weather for the specified city"),
+        ]);
+
+        var executionSettings = new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        };
+
+        await foreach (var chunk in kernel.InvokePromptStreamingAsync("Check current UTC time and return current weather in Boston city.", new(executionSettings)))
+        {
+            Console.WriteLine(chunk.ToString());
+        }
+
+        // Output:
+        // Request #0. Function call: HelperFunctions.GetCurrentUtcTime.
+        // Request #0. Function call: HelperFunctions.GetWeatherForCity.
+        // The current UTC time is {time of execution}, and the current weather in Boston is 61°F and rainy.
+    }
+
+    /// <summary>Shows syntax for auto function invocation filter.</summary>
+    private sealed class AutoFunctionInvocationNonStreamingFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
+    {
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             // Example: get function information
@@ -57,13 +105,13 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
             var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last());
 
             // Example: get request sequence index
-            this._output.WriteLine($"Request sequence index: {context.RequestSequenceIndex}");
+            output.WriteLine($"Request sequence index: {context.RequestSequenceIndex}");
 
             // Example: get function sequence index
-            this._output.WriteLine($"Function sequence index: {context.FunctionSequenceIndex}");
+            output.WriteLine($"Function sequence index: {context.FunctionSequenceIndex}");
 
             // Example: get total number of functions which will be called
-            this._output.WriteLine($"Total number of functions: {context.FunctionCount}");
+            output.WriteLine($"Total number of functions: {context.FunctionCount}");
 
             // Calling next filter in pipeline or function itself.
             // By skipping this call, next filters and function won't be invoked, and function call loop will proceed to the next function.
@@ -77,6 +125,27 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
 
             // Example: Terminate function invocation
             context.Terminate = true;
+        }
+    }
+
+    /// <summary>Shows syntax for auto function invocation filter for streaming scenario.</summary>
+    private sealed class AutoFunctionInvocationStreamingFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
+    {
+        public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
+        {
+            var chatHistory = context.ChatHistory;
+
+            var functionCalls = FunctionCallContent.GetFunctionCalls(chatHistory.Last()).ToArray();
+
+            if (functionCalls is { Length: > 0 })
+            {
+                foreach (var functionCall in functionCalls)
+                {
+                    output.WriteLine($"Request #{context.RequestSequenceIndex}. Function call: {functionCall.PluginName}.{functionCall.FunctionName}.");
+                }
+            }
+
+            await next(context);
         }
     }
 }
