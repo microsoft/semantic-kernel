@@ -179,7 +179,7 @@ public sealed class RedisVectorRecordStoreTests(ITestOutputHelper output, RedisV
         var sut = new RedisVectorRecordStore<Hotel>(fixture.Database, options);
 
         // Act & Assert.
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetBatchAsync(["BaseSet-1", "nonexistant", "BaseSet-2"], new GetRecordOptions { IncludeVectors = true }).ToListAsync());
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetBatchAsync(["BaseSet-1", "nonexistent", "BaseSet-2"], new GetRecordOptions { IncludeVectors = true }).ToListAsync());
     }
 
     [Theory]

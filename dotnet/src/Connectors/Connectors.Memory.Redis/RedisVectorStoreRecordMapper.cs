@@ -30,7 +30,7 @@ internal sealed class RedisVectorStoreRecordMapper<TConsumerDataModel> : IVector
     public (string Key, JsonNode Node) MapFromDataToStorageModel(TConsumerDataModel dataModel)
     {
         // Convert the provided record into a JsonNode object and try to get the key field for it.
-        // Since we aleady checked that the key field is a string in the constructor, and that it exists on the model,
+        // Since we already checked that the key field is a string in the constructor, and that it exists on the model,
         // the only edge case we have to be concerned about is if the key field is null.
         var jsonNode = JsonSerializer.SerializeToNode(dataModel);
         if (jsonNode!.AsObject().TryGetPropertyValue(this._keyFieldJsonPropertyName, out var keyField) && keyField is JsonValue jsonValue)
