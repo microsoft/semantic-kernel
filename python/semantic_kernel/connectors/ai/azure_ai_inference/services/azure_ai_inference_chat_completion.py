@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 from collections.abc import AsyncGenerator
 from typing import Any
 
-from azure.ai.inference.aio import ChatCompletionsClient, load_client
+from azure.ai.inference import load_client as load_client_sync
+from azure.ai.inference.aio import ChatCompletionsClient as ChatCompletionsClientAsync
 from azure.ai.inference.models import (
     AssistantMessage,
     AsyncStreamingChatCompletions,
@@ -50,7 +50,7 @@ MessageConverter: dict[AuthorRole, Any] = {
 class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
     """Azure AI Inference Chat Completion Service."""
 
-    client: ChatCompletionsClient
+    client: ChatCompletionsClientAsync
 
     def __init__(
         self,
@@ -82,11 +82,6 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
             ) from e
 
         client, model_info = self._create_client(azure_ai_inference_settings)
-        if model_info.model_type not in (ModelType.CHAT, "completion"):
-            raise ServiceInitializationError(
-                f"Endpoint {azure_ai_inference_settings.endpoint} does not support chat completion. "
-                f"The provided endpoint is for a {model_info.model_type} model."
-            )
 
         super().__init__(
             ai_model_id=model_info.model_name,
@@ -160,29 +155,34 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
 
     def _create_client(
         self, azure_ai_inference_settings: AzureAIInferenceSettings
-    ) -> tuple[ChatCompletionsClient, ModelInfo]:
-        loop = asyncio.get_event_loop()
+    ) -> tuple[ChatCompletionsClientAsync, ModelInfo]:
+        """Create the Azure AI Inference client.
 
-        # Create the client
-        task = loop.create_task(
-            load_client(
+        Client is created synchronously to check the model type before creating the async client.
+        """
+        chat_completions_client_sync = load_client_sync(
+            endpoint=azure_ai_inference_settings.endpoint,
+            credential=AzureKeyCredential(
+                azure_ai_inference_settings.api_key.get_secret_value()
+            ),
+        )
+
+        model_info = chat_completions_client_sync.get_model_info()
+        if model_info.model_type not in (ModelType.CHAT, "completion"):
+            raise ServiceInitializationError(
+                f"Endpoint {azure_ai_inference_settings.endpoint} does not support chat completion."
+                f" The provided endpoint is for a {model_info.model_type} model."
+            )
+
+        return (
+            ChatCompletionsClientAsync(
                 endpoint=azure_ai_inference_settings.endpoint,
                 credential=AzureKeyCredential(
                     azure_ai_inference_settings.api_key.get_secret_value()
                 ),
-            )
+            ),
+            model_info,
         )
-        loop.run_until_complete(task)
-        client = task.result()
-
-        # Get the model info
-        task = loop.create_task(client.get_model_info())
-        loop.run_until_complete(task)
-        model_info = task.result()
-
-        loop.close()
-
-        return (client, model_info)
 
     def _get_metadata_from_response(
         self, response: ChatCompletions | AsyncStreamingChatCompletions
@@ -264,3 +264,9 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
             MessageConverter[message.role](content=message.content)
             for message in chat_history.messages
         ]
+
+    def get_prompt_execution_settings_class(
+        self,
+    ) -> AzureAIInferenceChatPromptExecutionSettings:
+        """Get the request settings class."""
+        return AzureAIInferenceChatPromptExecutionSettings

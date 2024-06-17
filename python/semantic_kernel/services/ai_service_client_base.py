@@ -5,7 +5,9 @@ from typing import Annotated
 
 from pydantic import Field, StringConstraints
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
@@ -29,16 +31,28 @@ class AIServiceClientBase(KernelBaseModel, ABC):
             self.service_id = self.ai_model_id
 
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        """Get the request settings class."""
+        """Get the request settings class.
+
+        Overwrite this in subclass to return the proper prompt execution type the
+        service is expecting.
+        """
         return PromptExecutionSettings  # pragma: no cover
 
-    def instantiate_prompt_execution_settings(self, **kwargs) -> "PromptExecutionSettings":
+    def instantiate_prompt_execution_settings(
+        self, **kwargs
+    ) -> "PromptExecutionSettings":
         """Create a request settings object.
 
         All arguments are passed to the constructor of the request settings object.
         """
         return self.get_prompt_execution_settings_class()(**kwargs)
 
-    def get_prompt_execution_settings_from_settings(self, settings: PromptExecutionSettings) -> PromptExecutionSettings:
+    def get_prompt_execution_settings_from_settings(
+        self, settings: PromptExecutionSettings
+    ) -> PromptExecutionSettings:
         """Get the request settings from a settings object."""
-        return self.get_prompt_execution_settings_class().from_prompt_execution_settings(settings)
+        prompt_execution_settings_type = self.get_prompt_execution_settings_class()
+        if isinstance(settings, prompt_execution_settings_type):
+            return settings
+
+        return prompt_execution_settings_type.from_prompt_execution_settings(settings)

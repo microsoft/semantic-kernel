@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 from typing import Any
 
-from azure.ai.inference.aio import EmbeddingsClient, load_client
+from azure.ai.inference import load_client as load_client_sync
+from azure.ai.inference.aio import EmbeddingsClient as EmbeddingsClientAsync
 from azure.ai.inference.models import (
     EmbeddingsResult,
     ModelInfo,
@@ -28,7 +28,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase):
     """Azure AI Inference Text Embedding Service."""
 
-    client: EmbeddingsClient
+    client: EmbeddingsClientAsync
 
     def __init__(
         self,
@@ -60,11 +60,6 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase):
             ) from e
 
         client, model_info = self._create_client(azure_ai_inference_settings)
-        if model_info.model_type not in (ModelType.EMBEDDINGS, "embedding"):
-            raise ServiceInitializationError(
-                f"Endpoint {azure_ai_inference_settings.endpoint} does not support text embedding. "
-                f"The provided endpoint is for a {model_info.model_type} model."
-            )
 
         super().__init__(
             ai_model_id=model_info.model_name,
@@ -92,26 +87,31 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase):
 
     def _create_client(
         self, azure_ai_inference_settings: AzureAIInferenceSettings
-    ) -> tuple[EmbeddingsClient, ModelInfo]:
-        loop = asyncio.get_event_loop()
+    ) -> tuple[EmbeddingsClientAsync, ModelInfo]:
+        """Create the Azure AI Inference client.
 
-        # Create the client
-        task = loop.create_task(
-            load_client(
+        Client is created synchronously to check the model type before creating the async client.
+        """
+        embedding_client_sync = load_client_sync(
+            endpoint=azure_ai_inference_settings.endpoint,
+            credential=AzureKeyCredential(
+                azure_ai_inference_settings.api_key.get_secret_value()
+            ),
+        )
+
+        model_info = embedding_client_sync.get_model_info()
+        if model_info.model_type not in (ModelType.EMBEDDINGS, "embedding"):
+            raise ServiceInitializationError(
+                f"Endpoint {azure_ai_inference_settings.endpoint} does not support text embedding generation. "
+                f"The provided endpoint is for a {model_info.model_type} model."
+            )
+
+        return (
+            EmbeddingsClientAsync(
                 endpoint=azure_ai_inference_settings.endpoint,
                 credential=AzureKeyCredential(
                     azure_ai_inference_settings.api_key.get_secret_value()
                 ),
-            )
+            ),
+            model_info,
         )
-        loop.run_until_complete(task)
-        client = task.result()
-
-        # Get the model info
-        task = loop.create_task(client.get_model_info())
-        loop.run_until_complete(task)
-        model_info = task.result()
-
-        loop.close()
-
-        return (client, model_info)
