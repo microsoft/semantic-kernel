@@ -51,7 +51,7 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
 
         Assert.Null(content.Uri);
         Assert.NotNull(content.Data);
-        Assert.Equal(new ReadOnlyMemory<byte>([0x01, 0x02, 0x03, 0x04]), content.Data!.Value);
+        Assert.Equal(new byte[] { 0x01, 0x02, 0x03, 0x04 }, content.Data!.Value.ToArray());
         Assert.Equal("application/octet-stream", content.MimeType);
         Assert.True(content.CanRead);
 
