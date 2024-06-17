@@ -64,7 +64,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         return self
 
     @field_validator("parameters", mode="before")
-    def _validate_parameters(cls, value: list[str] | dict[str, str] | None = None) -> dict[str, str]:
+    def _parse_parameters(cls, value: list[str] | dict[str, str] | None = None) -> dict[str, str]:
         if not value:
             return {}
         if isinstance(value, dict):
