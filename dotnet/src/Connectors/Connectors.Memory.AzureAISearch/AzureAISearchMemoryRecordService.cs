@@ -298,6 +298,9 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         var collectionName = operationCollectionName ?? this._options.DefaultCollectionName;
         if (collectionName is null)
         {
+            throw new InvalidOperationException("Collection name cannot be null.");
+        }
+        {
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
             throw new ArgumentException("Collection name must be provided in the operation options, since no default was provided at construction time.", "options");
 #pragma warning restore CA2208 // Instantiate argument exceptions correctly
