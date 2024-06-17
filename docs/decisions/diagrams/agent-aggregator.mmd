@@ -3,20 +3,26 @@ classDiagram
     Agent
     AgentChannel
 
+    AggregatorAgent --> AggregatorMode
+    class AggregatorMode {
+        <<Enum>>
+        Flat
+        Nested
+    }
+    
     Agent <|-- AggregatorAgent
     AggregatorAgent --> AggregatorChannel
     class AggregatorAgent {
         <<Final>>
-        -AgentChat _chat
-        #IEnumerable~String GetChannelKeys()
-        #Task~AgentChannel~ CreateChannelAsync()
+        +AggregatorMode Mode
+        #IEnumerable~String~ GetChannelKeys()
+        #Task~AgentChannel~ CreateChannelAsync(ILogger logger)
     }
     
     AgentChannel <|-- AggregatorChannel
     class AggregatorChannel {
         <<Final>>
-        -AgentChat _chat
-        ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent)
+        ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(AggregatorAgent agent)
         ~#IAsyncEnumerable~ChatMessageContent~ GetHistoryAsync()
-        ~#Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history)
+        ~#Task ReceiveAsync(IReadOnlyList~ChatMessageContent~ history)
     }

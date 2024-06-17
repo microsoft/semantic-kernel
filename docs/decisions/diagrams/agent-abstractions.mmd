@@ -4,10 +4,17 @@ classDiagram
     class Agent {
         <<Abstract>>        
         +String Id
-        +String? Name
         +String? Description
-        ~#IEnumerable~String GetChannelKeys()*
-        ~#Task~AgentChannel~ CreateChannelAsync()*
+        +String? Name
+        ~#IEnumerable~String~ GetChannelKeys()*
+        ~#Task~AgentChannel~ CreateChannelAsync(ILogger logger)*
+    }
+
+    class AgentChannel {
+        <<Abstract>>
+        ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent)*
+        ~#IAsyncEnumerable~ChatMessageContent~ GetHistoryAsync()*
+        ~#Task ReceiveAsync(IReadOnlyList~ChatMessageContent~ history)*
     }
 
     Agent <|-- KernelAgent
@@ -19,24 +26,16 @@ classDiagram
 
     class IChatHistoryHandler {
         <<Interface>>
-        +IAsyncEnumerable<ChatMessageContent> InvokeAsync(IReadOnlyList~ChatMessageContent history)*
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAsync(IReadOnlyList~ChatMessageContent~ history, ILogger logger)*
     }
 
     KernelAgent <|-- ChatHistoryKernelAgent
     IChatHistoryHandler <|-- ChatHistoryKernelAgent
     ChatHistoryKernelAgent --> ChatHistoryChannel
     class ChatHistoryKernelAgent {
-        <<Abstract>>
-        ~#IEnumerable~String GetChannelKeys()
-        ~#Task~AgentChannel~ CreateChannelAsync()
-        +IAsyncEnumerable<ChatMessageContent> InvokeAsync(IReadOnlyList~ChatMessageContent history)*
-    }
-
-    class AgentChannel {
-        <<Abstract>>
-        ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent, ChatMessageContent? input = null)*
-        ~#IAsyncEnumerable<ChatMessageContent> GetHistoryAsync()*
-        ~#Task ReceiveAsync(IEnumerable<ChatMessageContent> history)*
+        #IEnumerable~String GetChannelKeys()
+        #Task~AgentChannel~ CreateChannelAsync(ILogger logger)
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAsync(IReadOnlyList~ChatMessageContent~ history, ILogger logger)*
     }
 
     AgentChannel <|-- ChatHistoryChannel
@@ -45,16 +44,21 @@ classDiagram
         -ChatHistory _history
         ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent)
         ~#IAsyncEnumerable~ChatMessageContent~ GetHistoryAsync()
-        ~#Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history)
+        ~#Task ReceiveAsync(IReadOnlyList~ChatMessageContent~ history)
     }
 
     AgentChat o-- AgentChannel
     class AgentChat {
         <<Abstract>>
-        -Dictionary~Type, AgentChannel~ _agentChannels
-        ~ChatHistory History
-        +IAsyncEnumerable~ChatMessageContent~ GetHistoryAsync(Agent? agent = null)
-        #IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(Agent agent, ChatMessageContent? input = null)
-        -Task~AgentChannel~ GetChannelAsync(Agent agent)
+        #ChatHistory History
+        +bool IsActive
+        +ILoggerFactory LoggerFactory;
+        #ILogger Logger;
+        +void AddChatMessage(ChatMessageContent message)
+        +void AddChatMessages(IReadOnlyList~ChatMessageContent~ messages)
+        +IAsyncEnumerable~ChatMessageContent~ GetChatMessagesAsync()
+        +IAsyncEnumerable~ChatMessageContent~ GetChatMessagesAsync(Agent? agent)
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync()*
+        #IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(Agent agent)
     }
 

@@ -12,5 +12,5 @@ classDiagram
     class ChatCompletionAgent {
         <<Final>>
         +PromptExecutionSettings? ExecutionSettings
-        +IAsyncEnumerable<ChatMessageContent> InvokeAsync(IReadOnlyList~ChatMessageContent history)
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAsync(IReadOnlyList~ChatMessageContent~ history, ILogger logger)
     }

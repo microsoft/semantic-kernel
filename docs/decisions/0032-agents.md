@@ -1,10 +1,10 @@
 ---
 # These are optional elements. Feel free to remove any of them.
 status: experimental
-contact: crickman, SergeyMenshykh
+contact: crickman
 date: 2024-01-24
 deciders: markwallace-microsoft, matthewbolanos
-consulted: rogerbarreto, dmytrostruk, alliscode
+consulted: rogerbarreto, dmytrostruk, alliscode, SergeyMenshykh
 informed:
 ---
 
@@ -61,14 +61,13 @@ Agents participate in a conversation, often in response to user or environmental
 
 In addition to `Agent`, two fundamental concepts are identified from this pattern:
 
-- Nexus: ("Conversation" from diagram) - Vehicle and context for a sequence of agent interactions.
+- Conversation - Context for sequence of agent interactions.
 - Channel: ("Communication Path" from diagram) - The protocol with which the agent interacts with the nexus.
 
 > Agents of different modalities must be free to satisfy the requirements presented by their modality.  Formalizing the `Channel` concept provides natural vehicle for this to occur.
 
 These concepts come together to suggest the following generalization:
 
-<!-- %%% NEXUS -->
 <img src="./diagrams/agent-pattern.png" alt="Agent Pattern Diagram" width="212" />
 
 After iterating with the team over these concepts, this generalization translates into the following high-level definitions:
@@ -87,7 +86,7 @@ AgentGroupChat|AgentChat|Chat|Utility|Strategy based chat
 
 ## **Design - Abstractions**
 
-Here the detailed class definitions from the  high-level pattern from the previous section.
+Here the detailed class definitions from the  high-level pattern from the previous section are enumerated.
 
 Also shown are entities defined as part of the _ChatHistory_ optimization: `IChatHistoryHandler`, `ChatHistoryKernelAgent`, and `ChatHistoryChannel`.
 These _ChatHistory_ entities eliminates the requirement for _Agents_ that act on a locally managed `ChatHistory` instance (as opposed to agents managed via remotely hosted frameworks) to implement their own `AgentChannel`.
@@ -97,12 +96,12 @@ These _ChatHistory_ entities eliminates the requirement for _Agents_ that act on
 Class Name|Parent Class|Role|Modality|Note
 -|-|-|-|-
 Agent|-|Agent|Abstraction|Root agent abstraction
-KernelAgent|Agent|Agent|Abstraction|Includes `Kernel` services and plug-ins
-ChatHistoryKernelAgent|KernelAgent|Agent|Abstraction|%%%
-AgentChannel|-|Channel|Abstraction|Conduit for an agent's participation in a chat.
-ChatHistoryChannel|AgentChannel|Channel|Abstraction|%%%
-AgentChat|-|Chat|Abstraction|Provides core capabilities for agent interactions.
-AgentGroupChat|AgentChat|Chat|Utility|Strategy based chat
+AgentChannel|-|Channel|Abstraction|Conduit for an agent's participation in an `AgentChat`.
+KernelAgent|Agent|Agent|Abstraction|Defines `Kernel` services and plug-ins
+ChatHistoryChannel|AgentChannel|Channel|Abstraction|Conduit for agent participation in a chat based on local chat-history.
+IChatHistoryHandler|-|Agent|Abstraction|Defines a common part for agents that utilize `ChatHistoryChannel`.
+ChatHistoryKernelAgent|KernelAgent|Agent|Abstraction|Common definition for any `KernelAgent` that utilizes a `ChatHistoryChannel`.
+AgentChat|-|Chat|Abstraction|Provides core capabilities for an multi-turn agent conversation.
 ---
 
 
@@ -119,7 +118,7 @@ For example, a connector that does not support function-calling will likewise no
 
 Class Name|Parent Class|Role|Modality|Note
 -|-|-|-|-
-ChatCompletionAgent|ChatHistoryKernelAgent|Agent|SemanticKernel|Fundamental _Agent_ component.
+ChatCompletionAgent|ChatHistoryKernelAgent|Agent|SemanticKernel|Concrete _Agent_ based on a local chat-history.
 ---
 
 
@@ -132,9 +131,9 @@ ChatCompletionAgent|ChatHistoryKernelAgent|Agent|SemanticKernel|Fundamental _Age
 Class Name|Parent Class|Role|Modality|Note
 -|-|-|-|-
 AgentGroupChat|AgentChat|Chat|Utility|Strategy based chat
-AgentGroupChatSettings|-|Config|Utility|%%%
-SelectionStrategy|-|Config|Utility|%%%
-TerminationStrategy|-|Config|Utility|%%%
+AgentGroupChatSettings|-|Config|Utility|Defines strategies that affect behavior of `AgentGroupChat`.
+SelectionStrategy|-|Config|Utility|Determines the order for `Agent` instances to participate in `AgentGroupChat`.
+TerminationStrategy|-|Config|Utility|Determines when the `AgentGroupChat` conversation is allowed to terminate (no need to select another `Agent`).
 ---
 
 
@@ -143,13 +142,13 @@ TerminationStrategy|-|Config|Utility|%%%
 The next concrete agent is `OpenAIAssistantAgent`.
 This agent is based on the _OpenAI Assistant API_ and implements its own channel as chat history is managed remotely.
 
-<!-- %%% STATIC METHODS -->
 <img src="./diagrams/agent-assistant.png" alt=" OpenAI Assistant Agent Diagram" width="640" />
 
 Class Name|Parent Class|Role|Modality|Note
 -|-|-|-|-
 OpenAIAssistantAgent|KernelAgent|Agent|OpenAI Assistant|A functional agent based on _OpenAI Assistant API_
 OpenAIAssistantChannel|AgentChannel|Channel|OpenAI Assistant|Channel associated with `OpenAIAssistantAgent`
+OpenAIAssistantDefinition|-|Config|OpenAI Assistant|Definition of an _Open AI Assistant_ provided when enumerating over hosted agent definitions.
 ---
 
 ### **OpenAI Assistant API Reference**
@@ -170,6 +169,7 @@ Class Name|Parent Class|Role|Modality|Note
 -|-|-|-|-
 AggregatorAgent|Agent|Agent|Utility|Adapts an `AgentChat` as an `Agent`
 AggregatorChannel|AgentChannel|Channel|Utility|`AgentChannel` used by `AggregatorAgent`.
+AggregatorMode|-|Config|Utility|Defines the aggregation mode for `AggregatorAgent`.
 ---
 
 
@@ -208,6 +208,12 @@ Since every Assistant action is a call to a REST endpoint, `OpenAIAssistantAgent
 
 **Create:**
 ```c#
+// Start with the Kernel
+IKernelBuilder builder = Kernel.CreateBuilder();
+
+// Include desired plugins / functions    
+builder.Plugins.Add(...);
+
 // Create config and definition
 OpenAIAssistantConfiguration config = new("apikey", "endpoint");
 OpenAIAssistantDefinition definition = new()
@@ -218,7 +224,11 @@ OpenAIAssistantDefinition definition = new()
 };
 
 // Create the agent
-OpenAIAssistantAgent agent =  OpenAIAssistantAgent.CreateAsync(config, definition);
+OpenAIAssistantAgent agent =  
+    OpenAIAssistantAgent.CreateAsync(
+        builder.Build(),
+        config,
+        definition);
 ```
 
 **Retrieval:**
@@ -236,7 +246,7 @@ OpenAIAssistantAgent agent =  OpenAIAssistantAgent.RetrieveAsync(config, "agent-
 OpenAIAssistantConfiguration config = new("apikey", "endpoint");
 
 // Create the agent based on an existing definition
-IAsyncEnumerable<OpenAIAssistantDefinition> definitions = OpenAIAssistantAgent.ListAsync(config;
+IAsyncEnumerable<OpenAIAssistantDefinition> definitions = OpenAIAssistantAgent.ListDefinitionsAsync(config;
 ```
 
 **3. Agent Chat: Explicit**
@@ -254,7 +264,7 @@ AgentGroupChat chat = new();
 // Provide input for chat
 ChatMessageContent input = new (AuthorRole.User, "input");
 await WriteMessageAsync(input);
-chat.AddMessage(new ChatMessageContent(AuthorRole.User, input));
+chat.AddChatMessage(input);
 
 // First invoke one agent, then the other, display each response.
 await WriteMessagesAsync(chat.InvokeAsync(agent1));
@@ -291,7 +301,7 @@ AgentGroupChat chat =
 // Provide input for chat
 ChatMessageContent input = new (AuthorRole.User, "input");
 await WriteMessageAsync(input);
-chat.AddMessage(new ChatMessageContent(AuthorRole.User, input));
+chat.AddChatMessage(input);
 
 // Agent may be added to an existing chat
 chat.AddAgent(agent3);
@@ -299,82 +309,4 @@ chat.AddAgent(agent3);
 // Execute the chat until termination
 await WriteMessagesAsync(chat.InvokeAsync());
 ```
-
-
-## **Builder Patterns**
-
-
-
-```
-END
-```
-
-
----
-# REVIEW:
-
-## Agent Customization & Filters
-To cover complex agent collaboration scenarios, it might be necessary to modify agents' input and/or output messages as they travel to and from Agents. This may be useful for various scenarios, such as converting agents' message content from one format/type to another. There could be situations when messages should not be propagated to Agents or not added to the collaboration chat. For example, in the scenario above where the PM, designer, and engineer collaborate on a new experience for the TODO app, the PM's behavior could be extended to generate a chat exit signal based on whether the function used by the agent indicates that the new 'Add item' user experience is good enough as POC:
-
-```c#
-class AgentCollaborationChat(Agent admin, Agent[] participants)
-{
-    async Task<AgentMessage[]> StartConversationAsync(AgentMessage[] messages)
-    {
-        ...
-        while (chatExitCondition)
-        {
-            ...
-            var result = await nextAgent.InvokeAsync(chat);
-            ...
-            chatExitCondition == string.Contains(result.Content, "exit_chat") // The chat can be parameterized with agent condition or callback.
-        }
-        ...
-    }
-}
-
-Agent projectManager = new ChatCompletionAgent(name: "Mike", instructions: "You're a PM working on the new TODO app ....", ...);
-projectManager.Plugins.AddFromType<UIUsabilityAssessor>()
-projectManager = projectManager.PostProcess((reply) => {
-    if(reply.IsFunctionCall)
-    {
-        if(reply.FunctionName == "EvaluateUsability")
-        {
-            if(reply.FunctionResult.IsCoreFunctionalityAccessible)
-            {
-                return new [] { new AgentMessage(role: "system", content: "exit_chat") };
-            }
-
-            return new [] { new AgentMessage(role: "system", content: "Peter/designer please improve the design so that core functionality is accessible.") };
-        }
-    }
-    return reply;
-});
-
-Agent designer = new ChatCompletionAgent(name: "Peter", instructions: "You're a UI/UX designer ....", ...);
-
-Agent engineer = new OpenAIAssistant(name: "Roy", instructions: "You are an engineer with front-end skills ...");
-
-AgentCollaborationChat chat = new(admin: projectManager, participants: new {designer, engineer});
-
-var result = await chat.StartConversationAsync(new[] { new AgentMessage(role: "user", content: "collaborate on a new user experience for the 'Add item' feature.") });
-```
-Some scenarios can be implemented without filters by just plugins. However, this may require extra hops to LLMs and prompt tuning to have those scenarios working.
-
-Filter examples:
-- PostProcess: Accepts an agent and a delegate capable of modifying or replacing messages returned by the agent. It calls the agent and then calls the delegate with the agent's response messages. Finally, it returns the modified messages to the caller.
-- PreProcess: Accepts an agent and a delegate capable of modifying or replacing messages to be passed to the agent. It calls the callback to handle the messages and pass the modified messages to the agent. Returns the agent result to the caller.
-
-Each of the filter can be implemented as a decorator pattern that will allow to build agents pipelines/chains: 
-```c#
-var agent = new ChatCompletionAgent(...)
-    .PostProcess((m) => { Console.WriteLine($"Agent response: {m.Content}"); return m; })
-    .PreProcess(m => { Console.WriteLine($"User input: {m.Content}"); return m; });
-
-await agent.InvokeAsync(...);
-
-```
-
-SK, today, already has the concept of filters for [prompts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Filters/Prompt/IPromptFilter.cs) and [functions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Filters/Function/IFunctionFilter.cs). Ideally, the same approach should be taken for Agent filters.
-
 
