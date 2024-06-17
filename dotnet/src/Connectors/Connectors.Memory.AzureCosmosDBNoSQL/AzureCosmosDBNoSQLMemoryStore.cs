@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// </summary>
 public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 {
-    private const string EmbeddingPath = "/embedding";
+    private const string DefaultEmbeddingPath = "/embedding";
 
     private readonly CosmosClient _cosmosClient;
     private readonly VectorEmbeddingPolicy _vectorEmbeddingPolicy;
