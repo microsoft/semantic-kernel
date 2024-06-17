@@ -35,7 +35,7 @@ public static class VertexAIServiceCollectionExtensions
     public static IServiceCollection AddVertexAIGeminiChatCompletion(
         this IServiceCollection services,
         string modelId,
-        Func<Task<string>> bearerTokenProvider,
+        Func<ValueTask<string>> bearerTokenProvider,
         string location,
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
@@ -116,7 +116,7 @@ public static class VertexAIServiceCollectionExtensions
     public static IServiceCollection AddVertexAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
-        Func<Task<string>> bearerTokenProvider,
+        Func<ValueTask<string>> bearerTokenProvider,
         string location,
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
