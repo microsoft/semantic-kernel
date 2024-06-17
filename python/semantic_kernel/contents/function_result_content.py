@@ -43,7 +43,13 @@ class FunctionResultContent(KernelContent):
         __str__: Returns the text of the response.
     """
 
-    content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(FUNCTION_RESULT_CONTENT_TAG, init=False)  # type: ignore
+from pydantic import Field, validator
+
+@validator('content_type', pre=True, always=True)
+def set_content_type(cls, v):
+    return FUNCTION_RESULT_CONTENT_TAG
+
+content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(init=False)
     tag: ClassVar[str] = FUNCTION_RESULT_CONTENT_TAG
     id: str
     name: str | None = None
