@@ -31,6 +31,10 @@ public static class AssemblyAIKernelBuilderExtensions
     )
     {
         Verify.NotNull(builder);
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            throw new ArgumentException("API key cannot be null or whitespace.", nameof(apiKey));
+        }
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, (_, _)
             => new AssemblyAIAudioToTextService(
