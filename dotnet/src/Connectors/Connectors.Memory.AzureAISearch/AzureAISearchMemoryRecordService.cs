@@ -25,8 +25,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     where TDataModel : class
 {
     /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes =
-    [
+    private static readonly HashSet<Type> SupportedKeyTypes =
         typeof(string)
     ];
 
