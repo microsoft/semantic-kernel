@@ -67,6 +67,8 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
             // to prevent unintentional file uploads by injection attack
             if (content.Uri.IsFile)
             {
+                throw new ArgumentException("File URI is not allowed due to security concerns. Use `AudioContent.Stream` or `AudioContent.File` to transcribe a local file instead.");
+            {
                 throw new ArgumentException("File URI is not allowed. Use `AudioContent.Stream` or `AudioContent.File` to transcribe a local file instead.");
             }
 
