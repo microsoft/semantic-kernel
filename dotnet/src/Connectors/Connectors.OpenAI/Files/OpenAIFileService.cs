@@ -114,7 +114,10 @@ public sealed class OpenAIFileService
         Verify.NotNull(id, nameof(id));
         var (stream, mimetype) = await this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken).ConfigureAwait(false);
 
-        using (stream)
+        var (stream, mimetype) = await this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken).ConfigureAwait(false);
+
+        await using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
         {
             using var memoryStream = new MemoryStream();
 #if NETSTANDARD2_0
