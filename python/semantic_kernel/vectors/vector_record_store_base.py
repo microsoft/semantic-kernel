@@ -5,12 +5,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
+from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.vectors.protocols.data_model_serde_protocol import DataModelSerdeProtocol
 
 TModel = TypeVar("TModel", bound=object)
 TKey = TypeVar("TKey")
 
 
+@experimental_class
 class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
     def __init__(
         self,
@@ -51,6 +53,8 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
     async def close(self):
         """Close the connection."""
         pass
+
+    # region Abstract methods
 
     @abstractmethod
     async def upsert(
@@ -136,6 +140,49 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
 
         """
 
+    # endregion
+    # region Overloadable Methods
+
+    def _validate_data_model(self, item_type: type[TModel]):
+        """Internal function that should be overloaded by child classes to validate datatypes, etc.
+
+        This should take the VectorStoreRecordDefinition from the item_type and validate it against the store.
+
+        Checks should include, allowed naming of parameters, allowed data types, allowed vector dimensions.
+        """
+        return
+
+    def _serialize_data_model_to_store_model(self, record: TModel) -> dict[str, Any]:
+        """Internal function that should be overloaded by child classes to serialize the data model to the store model.
+
+        The actual translation to and from is done in two stages,
+        here and in the serialize method of the datamodel (supplied by the user).
+        Checks on names and data types are ideally done when creating the store model,
+        by the validate_data_model function.
+
+        The way the developer wants to represent their data should be done inside the serialize method.
+
+        This function can only add casting the dict to a specific format for that datasource,
+        it should not alter the dict itself.
+        It might include translating a flat dict, into a nested structure for
+        metadata vs vector vs data vs key, or something similar, but nothing more.
+        """
+        if isinstance(record, DataModelSerdeProtocol):
+            return record.serialize()
+        raise ValueError("Item type must implement the DataModelSerdeProtocol")
+
+    def _deserialize_store_model_to_data_model(self, record: dict[str, Any]) -> TModel:
+        """Internal function that should be overloaded by child classes to deserialize the store model to the data model.
+
+        Similar to the serialize counterpart this process is done in two steps, first here a
+        specific data type or structure from a service is translated to dict, then in the deserialize method of the datamodel (supplied by the user) the dict is translated to the data model itself.
+
+        """  # noqa: E501
+        if isinstance(self._item_type, DataModelSerdeProtocol):
+            return self._item_type.deserialize(record)
+        raise ValueError("Item type must implement the DataModelSerdeProtocol")
+
+    # endregion
     # region Internal Functions
 
     def _get_collection_name(self, collection_name: str | None = None):
@@ -147,21 +194,5 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
         if not collection_name:
             raise MemoryConnectorException("Error: collection_name not set.")
         return collection_name
-
-    def _validate_data_model(self, item_type: type[TModel]):
-        """Internal function that should be overloaded by child classes to validate datatypes, etc."""
-        return
-
-    def _serialize_data_model_to_store_model(self, record: TModel) -> dict[str, Any]:
-        """Internal function that should be overloaded by child classes to serialize the data model to the store model."""  # noqa: E501
-        if isinstance(record, DataModelSerdeProtocol):
-            return record.serialize()
-        raise ValueError("Item type must implement the DataModelSerdeProtocol")
-
-    def _deserialize_store_model_to_data_model(self, record: dict[str, Any]) -> TModel:
-        """Internal function that should be overloaded by child classes to deserialize the store model to the data model."""  # noqa: E501
-        if isinstance(self._item_type, DataModelSerdeProtocol):
-            return self._item_type.deserialize(record)
-        raise ValueError("Item type must implement the DataModelSerdeProtocol")
 
     # endregion
