@@ -58,49 +58,12 @@ internal sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <inheritdoc/>
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
     {
-        List<KernelFunction>? availableFunctions = null;
-
-        // Handle functions provided via the 'Functions' property as function fully qualified names.
-        if (this.Functions is { } functionFQNs && functionFQNs.Any())
-        {
-            availableFunctions = [];
-
-            foreach (var functionFQN in functionFQNs)
-            {
-                var nameParts = FunctionName.Parse(functionFQN, FunctionNameSeparator);
-
-                // Check if the function is available in the kernel.
-                if (context.Kernel!.Plugins.TryGetFunction(nameParts.PluginName, nameParts.Name, out var function))
-                {
-                    availableFunctions.Add(function);
-                    continue;
-                }
-
-                // Check if a function instance that was not imported into the kernel was provided through the constructor.
-                function = this._functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
-                if (function is not null)
-                {
-                    availableFunctions.Add(function);
-                    continue;
-                }
-
-                throw new KernelException($"The specified function {functionFQN} was not found.");
-            }
-        }
-        // Provide all functions from the kernel.
-        else if (context.Kernel is not null)
-        {
-            foreach (var plugin in context.Kernel.Plugins)
-            {
-                availableFunctions ??= [];
-                availableFunctions.AddRange(plugin);
-            }
-        }
+        (IReadOnlyList<KernelFunction>? functions, _) = base.GetFunctions(this.Functions, this._functions, context.Kernel, autoInvoke: false);
 
         return new FunctionChoiceBehaviorConfiguration(this._options)
         {
             Choice = FunctionChoice.None,
-            Functions = availableFunctions,
+            Functions = functions,
         };
     }
 }

@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -116,4 +117,73 @@ public abstract class FunctionChoiceBehavior
     /// <param name="context">The function choice caller context.</param>
     /// <returns>The configuration.</returns>
     public abstract FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context);
+
+    /// <summary>
+    /// Returns the functions that the model can choose from.
+    /// </summary>
+    /// <param name="functionFQNs">Functions provided as fully qualified names.</param>
+    /// <param name="functions">Functions provided as instances of <see cref="KernelFunction"/>.</param>
+    /// <param name="kernel">/// The <see cref="Kernel"/> to be used for function calling.</param>
+    /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
+    /// <returns>The functions that the model can choose from and a flag indicating whether any requested kernel function is allowed to be called.</returns>
+    private protected (IReadOnlyList<KernelFunction>? Functions, bool AllowAnyRequestedKernelFunction) GetFunctions(IList<string>? functionFQNs, IEnumerable<KernelFunction>? functions, Kernel? kernel, bool autoInvoke)
+    {
+        // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
+        // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
+        // and then fail to do so, so we fail before we get to that point. This is an error
+        // on the consumers behalf: if they specify auto-invocation with any functions, they must
+        // specify the kernel and the kernel must contain those functions.
+        if (autoInvoke && kernel is null)
+        {
+            throw new KernelException("Auto-invocation is not supported when no kernel is provided.");
+        }
+
+        List<KernelFunction>? availableFunctions = null;
+        bool allowAnyRequestedKernelFunction = false;
+
+        if (functionFQNs is { Count: > 0 })
+        {
+            availableFunctions = new List<KernelFunction>(functionFQNs.Count);
+
+            foreach (var functionFQN in functionFQNs)
+            {
+                var nameParts = FunctionName.Parse(functionFQN, FunctionNameSeparator);
+
+                // Look up the function in the kernel.
+                if (kernel is not null && kernel.Plugins.TryGetFunction(nameParts.PluginName, nameParts.Name, out var function))
+                {
+                    availableFunctions.Add(function);
+                    continue;
+                }
+
+                // If auto-invocation is requested and no function is found in the kernel, fail early.
+                if (autoInvoke)
+                {
+                    throw new KernelException($"The specified function {functionFQN} is not available in the kernel.");
+                }
+
+                // Look up the function in the list of functions provided as instances of KernelFunction.
+                function = functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
+                if (function is not null)
+                {
+                    availableFunctions.Add(function);
+                    continue;
+                }
+
+                throw new KernelException($"The specified function {functionFQN} was not found.");
+            }
+        }
+        // Provide all functions from the kernel.
+        else if (kernel is not null)
+        {
+            allowAnyRequestedKernelFunction = true;
+
+            foreach (var plugin in kernel.Plugins)
+            {
+                (availableFunctions ??= new List<KernelFunction>(kernel.Plugins.Count)).AddRange(plugin);
+            }
+        }
+
+        return new(availableFunctions, allowAnyRequestedKernelFunction);
+    }
 }

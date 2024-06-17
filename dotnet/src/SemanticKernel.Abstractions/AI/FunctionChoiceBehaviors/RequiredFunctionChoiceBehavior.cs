@@ -54,68 +54,12 @@ internal sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
     {
-        // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
-        // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
-        // and then fail to do so, so we fail before we get to that point. This is an error
-        // on the consumers behalf: if they specify auto-invocation with any functions, they must
-        // specify the kernel and the kernel must contain those functions.
-        if (this._options.AutoInvoke && context.Kernel is null)
-        {
-            throw new KernelException("Auto-invocation for Required choice behavior is not supported when no kernel is provided.");
-        }
-
-        List<KernelFunction>? availableFunctions = null;
-        bool allowAnyRequestedKernelFunction = false;
-
-        // Handle functions provided via the 'Functions' property as function fully qualified names.
-        if (this.Functions is { } functionFQNs && functionFQNs.Any())
-        {
-            availableFunctions = [];
-
-            foreach (var functionFQN in functionFQNs)
-            {
-                var nameParts = FunctionName.Parse(functionFQN, FunctionNameSeparator);
-
-                // Check if the function is available in the kernel. If it is, then connectors can find it for auto-invocation later.
-                if (context.Kernel!.Plugins.TryGetFunction(nameParts.PluginName, nameParts.Name, out var function))
-                {
-                    availableFunctions.Add(function);
-                    continue;
-                }
-
-                // If auto-invocation is requested and no function is found in the kernel, fail early.
-                if (this._options.AutoInvoke)
-                {
-                    throw new KernelException($"The specified function {functionFQN} is not available in the kernel.");
-                }
-
-                // Check if the function instance was provided via the constructor for manual-invocation.
-                function = this._functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
-                if (function is not null)
-                {
-                    availableFunctions.Add(function);
-                    continue;
-                }
-
-                throw new KernelException($"The specified function {functionFQN} was not found.");
-            }
-        }
-        // Provide all functions from the kernel.
-        else if (context.Kernel is not null)
-        {
-            allowAnyRequestedKernelFunction = true;
-
-            foreach (var plugin in context.Kernel.Plugins)
-            {
-                availableFunctions ??= [];
-                availableFunctions.AddRange(plugin);
-            }
-        }
+        (IReadOnlyList<KernelFunction>? functions, bool allowAnyRequestedKernelFunction) = base.GetFunctions(this.Functions, this._functions, context.Kernel, this._options.AutoInvoke);
 
         return new FunctionChoiceBehaviorConfiguration(this._options)
         {
             Choice = FunctionChoice.Required,
-            Functions = availableFunctions,
+            Functions = functions,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };
     }

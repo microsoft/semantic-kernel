@@ -194,7 +194,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
             choiceBehavior.GetConfiguration(new() { Kernel = null });
         });
 
-        Assert.Equal("Auto-invocation for Auto choice behavior is not supported when no kernel is provided.", exception.Message);
+        Assert.Equal("Auto-invocation is not supported when no kernel is provided.", exception.Message);
     }
 
     [Fact]
