@@ -3,12 +3,13 @@
 
 import pytest
 
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import ContentInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -117,6 +118,26 @@ def test_add_message(chat_history: ChatHistory):
     assert chat_history.messages[-1].metadata == {"test": "test"}
 
 
+def test_add_message_with_image(chat_history: ChatHistory):
+    content = "Test message"
+    role = AuthorRole.USER
+    encoding = "utf-8"
+    chat_history.add_message(
+        ChatMessageContent(
+            role=role,
+            items=[
+                TextContent(text=content),
+                ImageContent(uri="https://test/"),
+            ],
+            encoding=encoding,
+        )
+    )
+    assert chat_history.messages[-1].content == content
+    assert chat_history.messages[-1].role == role
+    assert chat_history.messages[-1].encoding == encoding
+    assert str(chat_history.messages[-1].items[1].uri) == "https://test/"
+
+
 def test_add_message_invalid_message(chat_history: ChatHistory):
     content = "Test message"
     with pytest.raises(ContentInitializationError):
@@ -222,13 +243,24 @@ def test_dump():
 def test_serialize():
     system_msg = "a test system prompt"
     chat_history = ChatHistory(
-        messages=[ChatMessageContent(role=AuthorRole.USER, content="Message")], system_message=system_msg
+        messages=[
+            ChatMessageContent(
+                role=AuthorRole.USER,
+                items=[
+                    TextContent(text="Message"),
+                    ImageContent(uri="http://test.com/image.jpg"),
+                    ImageContent(data_uri="data:image/jpeg;base64,dGVzdF9kYXRh"),
+                ],
+            )
+        ],
+        system_message=system_msg,
     )
+
     json_str = chat_history.serialize()
     assert json_str is not None
     assert (
         json_str
-        == '{\n  "messages": [\n    {\n      "metadata": {},\n      "role": "system",\n      "items": [\n        {\n          "metadata": {},\n          "text": "a test system prompt"\n        }\n      ]\n    },\n    {\n      "metadata": {},\n      "role": "user",\n      "items": [\n        {\n          "metadata": {},\n          "text": "Message"\n        }\n      ]\n    }\n  ]\n}'  # noqa: E501
+        == '{\n  "messages": [\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "system",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "a test system prompt"\n        }\n      ]\n    },\n    {\n      "metadata": {},\n      "content_type": "message",\n      "role": "user",\n      "items": [\n        {\n          "metadata": {},\n          "content_type": "text",\n          "text": "Message"\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "uri": "http://test.com/image.jpg",\n          "data_uri": ""\n        },\n        {\n          "metadata": {},\n          "content_type": "image",\n          "data_uri": "data:image/jpeg;base64,dGVzdF9kYXRh"\n        }\n      ]\n    }\n  ]\n}'  # noqa: E501
     )
 
 
