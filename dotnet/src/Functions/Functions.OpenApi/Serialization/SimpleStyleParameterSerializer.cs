@@ -23,7 +23,8 @@ internal static class SimpleStyleParameterSerializer
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
 
-        if (parameter.Style != RestApiOperationParameterStyle.Simple)
+        var style = parameter.Style ?? RestApiOperationParameterStyle.Simple;
+        if (style != RestApiOperationParameterStyle.Simple)
         {
             throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
@@ -34,7 +35,13 @@ internal static class SimpleStyleParameterSerializer
             return SerializeArrayParameter(parameter, argument);
         }
 
-        // Handling parameters of primitive and removing extra quotes added by the JsonValue for string values.
+        // Handling parameters where the underlying value is already a string.
+        if (argument is JsonValue jsonValue && jsonValue.TryGetValue(out string? value))
+        {
+            return value;
+        }
+
+        // Handling parameters of any arbitrary type by using JSON format without enclosing quotes.
         return argument.ToString().Trim('"');
     }
 
