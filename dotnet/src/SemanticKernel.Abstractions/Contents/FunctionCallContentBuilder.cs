@@ -80,7 +80,7 @@ public void Append(StreamingChatMessageContent content)
             }
         }
 
-        return functionCalls ?? [];
+        return functionCalls ?? Array.Empty<FunctionCallContent>();
     }
 
     /// <summary>
