@@ -24,6 +24,7 @@ public sealed class AzureAISearchMemoryRecordServiceTests(ITestOutputHelper outp
     // If null, all tests will be enabled
     private const string SkipReason = null; //"Requires Azure AI Search Service instance up and running";
 
+    // Skipping the test because it requires an Azure AI Search Service instance to be running.
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
