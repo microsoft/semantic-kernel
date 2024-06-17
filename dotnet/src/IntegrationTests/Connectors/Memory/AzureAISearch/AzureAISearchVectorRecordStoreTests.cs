@@ -285,7 +285,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         }
     };
 
-    private class FailingMapper : IVectorStoreRecordMapper<Hotel, JsonObject>
+    private sealed class FailingMapper : IVectorStoreRecordMapper<Hotel, JsonObject>
     {
         public JsonObject MapFromDataToStorageModel(Hotel dataModel)
         {
