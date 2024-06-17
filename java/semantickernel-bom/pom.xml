@@ -5,7 +5,15 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
+<<<<<<< main
+<<<<<<< HEAD
+    <version>0.2.10-alpha-SNAPSHOT</version>
+=======
+    <version>0.2.9-alpha-SNAPSHOT</version>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+=======
     <version>1.1.5-SNAPSHOT</version>
+>>>>>>> origin/main-auto-tune
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>
@@ -55,17 +63,33 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
+<<<<<<< main
+<<<<<<< HEAD
+                <artifactId>semantickernel-connectors-memory-jdbc</artifactId>
+=======
                 <artifactId>semantickernel-plugin-core</artifactId>
+>>>>>>> origin/main-auto-tune
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
+<<<<<<< main
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+                <artifactId>semantickernel-connectors-memory-sqlite</artifactId>
+=======
                 <artifactId>aiservices-azureopenai</artifactId>
+>>>>>>> origin/main-auto-tune
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
+<<<<<<< main
+<<<<<<< HEAD
+                <artifactId>semantickernel-connectors-memory-postgresql</artifactId>
+=======
                 <artifactId>aiservices-huggingface</artifactId>
+>>>>>>> origin/main-auto-tune
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -78,10 +102,27 @@
                 <artifactId>semantickernel-aiservices-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
+<<<<<<< main
+=======
+                <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-ai-openai</artifactId>
+<<<<<<< HEAD
+                <version>1.0.0-beta.5</version>
+=======
+                <version>1.0.0-beta.2</version>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+=======
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
                 <version>1.0.0-beta.8</version>
+>>>>>>> origin/main-auto-tune
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
@@ -106,6 +147,35 @@
                 <scope>runtime</scope>
             </dependency>
             <dependency>
+<<<<<<< main
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-core</artifactId>
+                <version>3.5.8</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-core-http-netty</artifactId>
+<<<<<<< HEAD
+                <version>1.13.8</version>
+=======
+                <version>1.13.2</version>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-search-documents</artifactId>
+<<<<<<< HEAD
+                <version>11.6.0-beta.9</version>
+=======
+                <version>11.6.0-beta.6</version>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+=======
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${com.fasterxml.jackson.core.version}</version>
@@ -115,6 +185,7 @@
                 <groupId>com.github.jknack</groupId>
                 <artifactId>handlebars</artifactId>
                 <version>4.3.1</version>
+>>>>>>> origin/main-auto-tune
             </dependency>
             <dependency>
                 <groupId>jakarta.inject</groupId>
@@ -139,6 +210,10 @@
                 <version>1.0-2</version>
                 <scope>provided</scope>
             </dependency>
+<<<<<<< main
+<<<<<<< HEAD
+=======
+>>>>>>> origin/main-auto-tune
 
 
             <dependency>
@@ -147,10 +222,19 @@
                 <version>4.8.3</version>
             </dependency>
             <dependency>
+<<<<<<< main
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.6.1</version>
+            </dependency>
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+=======
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
                 <version>1.11.0</version>
             </dependency>
+>>>>>>> origin/main-auto-tune
         </dependencies>
     </dependencyManagement>
 
@@ -161,7 +245,14 @@
             <distributionManagement>
                 <repository>
                     <id>${releaseRepoId}</id>
+<<<<<<< main
+<<<<<<< HEAD
                     <!--suppress UnresolvedMavenProperty -->
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+=======
+                    <!--suppress UnresolvedMavenProperty -->
+>>>>>>> origin/main-auto-tune
                     <url>${releaseRepoUrl}</url>
                     <name>${releaseRepoName}</name>
                 </repository>
@@ -188,6 +279,14 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
+<<<<<<< main
+<<<<<<< HEAD
+        <tag>java-0.2.9-alpha</tag>
+=======
+        <tag>java-0.2.8-alpha</tag>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+=======
         <tag>HEAD</tag>
+>>>>>>> origin/main-auto-tune
     </scm>
 </project>

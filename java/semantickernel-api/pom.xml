@@ -6,7 +6,15 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
+<<<<<<< main
+<<<<<<< HEAD
+        <version>0.2.10-alpha-SNAPSHOT</version>
+=======
+        <version>0.2.9-alpha-SNAPSHOT</version>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+=======
         <version>1.1.5-SNAPSHOT</version>
+>>>>>>> origin/main-auto-tune
         <relativePath>../pom.xml</relativePath>
     </parent>
 

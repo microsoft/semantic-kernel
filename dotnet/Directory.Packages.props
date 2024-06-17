@@ -18,7 +18,7 @@
     <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
-    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.5" />
+    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.2" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
@@ -34,7 +34,7 @@
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.0" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.2" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.3" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
     <!-- Tokenizers -->
@@ -58,7 +58,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
     <!-- Test -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="System.Threading.Channels" Version="8.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
@@ -115,7 +115,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.Analyzers" Version="[4.11.0]" />
+    <PackageVersion Include="Roslynator.Analyzers" Version="[4.12.4]" />
     <PackageReference Include="Roslynator.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
