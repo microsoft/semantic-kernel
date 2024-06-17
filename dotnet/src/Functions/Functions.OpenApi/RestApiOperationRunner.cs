@@ -142,7 +142,7 @@ internal sealed class RestApiOperationRunner
 
         var operationPayload = this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
+        return this.SendAsync(options.kernel, options.kernelFunction, url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
     }
 
     #region private
@@ -159,6 +159,8 @@ internal sealed class RestApiOperationRunner
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
     private async Task<RestApiOperationResponse> SendAsync(
+        Kernel? kernel,
+        KernelFunction? function,
         Uri url,
         HttpMethod method,
         IDictionary<string, string>? headers = null,

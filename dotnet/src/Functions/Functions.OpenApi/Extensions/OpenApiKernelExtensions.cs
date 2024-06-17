@@ -231,6 +231,7 @@ public static partial class OpenApiKernelExtensions
         var runner = new RestApiOperationRunner(
             httpClient,
             executionParameters?.AuthCallback,
+            executionParameters?.RequestMessageCallback,
             executionParameters?.UserAgent,
             executionParameters?.EnableDynamicPayload ?? true,
             executionParameters?.EnablePayloadNamespacing ?? false);
@@ -280,7 +281,7 @@ public static partial class OpenApiKernelExtensions
 
         var logger = loggerFactory?.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
 
-        async Task<RestApiOperationResponse> ExecuteAsync(KernelArguments variables, CancellationToken cancellationToken)
+        async Task<RestApiOperationResponse> ExecuteAsync(Kernel kernel, KernelFunction function, KernelArguments variables, CancellationToken cancellationToken)
         {
             try
             {
@@ -314,6 +315,8 @@ public static partial class OpenApiKernelExtensions
 
                 var options = new RestApiOperationRunOptions
                 {
+                    kernel = kernel,
+                    kernelFunction = function,
                     ServerUrlOverride = executionParameters?.ServerUrlOverride,
                     ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
                 };

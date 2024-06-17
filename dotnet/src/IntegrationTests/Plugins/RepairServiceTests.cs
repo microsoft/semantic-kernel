@@ -11,7 +11,7 @@ namespace SemanticKernel.IntegrationTests.Plugins;
 
 public class RepairServiceTests
 {
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact] // (Skip = "This test is for manual verification.")
     public async Task ValidateInvokingRepairServicePluginAsync()
     {
         // Arrange

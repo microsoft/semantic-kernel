@@ -141,6 +141,7 @@ public static class ApiManifestKernelExtensions
             var runner = new RestApiOperationRunner(
                 operationRunnerHttpClient,
                 openApiFunctionExecutionParameters?.AuthCallback,
+                openApiFunctionExecutionParameters?.RequestMessageCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);

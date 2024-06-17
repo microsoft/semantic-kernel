@@ -39,6 +39,8 @@ public sealed class Kernel
     private NonNullCollection<IPromptRenderFilter>? _promptRenderFilters;
     /// <summary>The collection of automatic function invocation filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IAutoFunctionInvocationFilter>? _autoFunctionInvocationFilters;
+    /// <summary>.</summary>
+    private NonNullCollection<IFunctionRequestMessageFilter>? _functionRequestMessageFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -117,6 +119,7 @@ public sealed class Kernel
             _functionInvocationFilters = this._functionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IFunctionInvocationFilter>(this._functionInvocationFilters) : null,
             _promptRenderFilters = this._promptRenderFilters is { Count: > 0 } ? new NonNullCollection<IPromptRenderFilter>(this._promptRenderFilters) : null,
             _autoFunctionInvocationFilters = this._autoFunctionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IAutoFunctionInvocationFilter>(this._autoFunctionInvocationFilters) : null,
+            _functionRequestMessageFilters = this._functionRequestMessageFilters is { Count: > 0 } ? new NonNullCollection<IFunctionRequestMessageFilter>(this._functionRequestMessageFilters) : null,
             _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
             _culture = this._culture,
         };
@@ -155,6 +158,15 @@ public sealed class Kernel
         this._autoFunctionInvocationFilters ??
         Interlocked.CompareExchange(ref this._autoFunctionInvocationFilters, [], null) ??
         this._autoFunctionInvocationFilters;
+
+    /// <summary>
+    /// Gets the collection of HTTP request message filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public IList<IFunctionRequestMessageFilter> FunctionRequestMessageFilters =>
+        this._functionRequestMessageFilters ??
+        Interlocked.CompareExchange(ref this._functionRequestMessageFilters, [], null) ??
+        this._functionRequestMessageFilters;
 
     /// <summary>
     /// Gets the service provider used to query for services available through the kernel.

@@ -18,4 +18,14 @@ internal sealed class RestApiOperationRunOptions
     /// The URL of REST API host.
     /// </summary>
     public Uri? ApiHostUrl { get; set; }
+
+    /// <summary>
+    /// The Kernel instance used for the operation run.
+    /// </summary>
+    public Kernel? kernel { get; set; }
+
+    /// <summary>
+    /// The Kernel function whose invocation triggered the operation run.
+    /// </summary>
+    public KernelFunction? kernelFunction { get; set; }
 }
