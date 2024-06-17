@@ -90,7 +90,8 @@ public abstract class BaseTest
     /// This method can be substituted by Console.WriteLine when used in Console apps.
     /// </summary>
     /// <param name="message">The message</param>
-    public void WriteLine(string? message)
+public void WriteLine(string? message = null)
+    => this.Output.WriteLine(message ?? string.Empty);
         => this.Output.WriteLine(message ?? string.Empty);
 
     /// <summary>
