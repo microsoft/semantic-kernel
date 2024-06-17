@@ -26,6 +26,7 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// The binary content.
     /// </summary>
+    // The 'Content' property is deprecated in favor of 'Data' to provide a more descriptive name.
     [JsonIgnore, Obsolete("Use Data instead")]
     public ReadOnlyMemory<byte>? Content => this.Data;
 
