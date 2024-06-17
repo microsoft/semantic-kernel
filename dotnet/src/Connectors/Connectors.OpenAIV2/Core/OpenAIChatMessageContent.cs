@@ -89,7 +89,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// A list of the tools called by the model.
     /// </summary>
-    public IReadOnlyList<ChatToolCall> ToolCalls { get; }
+    public IReadOnlyList<ChatToolCall>? ToolCalls { get; }
 
     /// <summary>
     /// Retrieve the resulting function from the chat result.
@@ -97,22 +97,20 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <returns>The <see cref="OpenAIFunctionToolCall"/>, or null if no function was returned by the model.</returns>
     public IReadOnlyList<OpenAIFunctionToolCall> GetOpenAIFunctionToolCalls()
     {
-        List<OpenAIFunctionToolCall>? functionToolCallList = null;
+        List<OpenAIFunctionToolCall>? functionToolCallList = [];
 
-        foreach (var toolCall in this.ToolCalls)
+        if (this.ToolCalls is not null)
         {
-            if (toolCall is ChatToolCall functionToolCall)
+            foreach (var toolCall in this.ToolCalls)
             {
-                (functionToolCallList ??= []).Add(new OpenAIFunctionToolCall(functionToolCall));
+                if (toolCall is ChatToolCall functionToolCall)
+                {
+                    functionToolCallList.Add(new OpenAIFunctionToolCall(functionToolCall));
+                }
             }
         }
 
-        if (functionToolCallList is not null)
-        {
-            return functionToolCallList;
-        }
-
-        return [];
+        return functionToolCallList;
     }
 
     private static IReadOnlyDictionary<string, object?>? CreateMetadataDictionary(
