@@ -5,16 +5,16 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// A description of a property for storage in a memory store.
+/// A description of a property on a record for storage in a vector store.
 /// </summary>
 [Experimental("SKEXP0001")]
-public abstract class MemoryRecordProperty
+public abstract class VectorStoreRecordProperty
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="MemoryRecordProperty"/> class.
+    /// Initializes a new instance of the <see cref="VectorStoreRecordProperty"/> class.
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
-    private protected MemoryRecordProperty(string propertyName)
+    private protected VectorStoreRecordProperty(string propertyName)
     {
         this.PropertyName = propertyName;
     }

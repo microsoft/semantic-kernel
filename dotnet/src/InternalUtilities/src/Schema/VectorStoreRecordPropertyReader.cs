@@ -14,15 +14,18 @@ using Microsoft.SemanticKernel.Memory;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Contains helpers for reading memory service model properties and their attributes.
+/// Contains helpers for reading vector store model properties and their attributes.
 /// </summary>
-internal static class MemoryServiceModelPropertyReader
+internal static class VectorStoreRecordPropertyReader
 {
     /// <summary>Cache of property enumerations so that we don't incur reflection costs with each invocation.</summary>
-    private static readonly Dictionary<Type, (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties)> s_propertiesCache = new();
+    private static readonly Dictionary<Type, (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties)> s_singleVectorPropertiesCache = new();
+
+    /// <summary>Cache of property enumerations so that we don't incur reflection costs with each invocation.</summary>
+    private static readonly Dictionary<Type, (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties)> s_multipleVectorsPropertiesCache = new();
 
     /// <summary>
-    /// Find the properties with <see cref="MemoryRecordKeyAttribute"/>, <see cref="MemoryRecordDataAttribute"/> and <see cref="MemoryRecordVectorAttribute"/> attributes
+    /// Find the properties with <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/> attributes
     /// and verify that they exist and that we have the expected numbers of each type.
     /// Return those properties in separate categories.
     /// </summary>
@@ -31,8 +34,10 @@ internal static class MemoryServiceModelPropertyReader
     /// <returns>The categorized properties.</returns>
     public static (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) FindProperties(Type type, bool supportsMultipleVectors)
     {
+        var cache = supportsMultipleVectors ? s_multipleVectorsPropertiesCache : s_singleVectorPropertiesCache;
+
         // First check the cache.
-        if (s_propertiesCache.TryGetValue(type, out var cachedProperties))
+        if (cache.TryGetValue(type, out var cachedProperties))
         {
             return cachedProperties;
         }
@@ -45,7 +50,7 @@ internal static class MemoryServiceModelPropertyReader
         foreach (var property in type.GetProperties())
         {
             // Get Key property.
-            if (property.GetCustomAttribute<MemoryRecordKeyAttribute>() is not null)
+            if (property.GetCustomAttribute<VectorStoreRecordKeyAttribute>() is not null)
             {
                 if (keyProperty is not null)
                 {
@@ -56,13 +61,13 @@ internal static class MemoryServiceModelPropertyReader
             }
 
             // Get data properties.
-            if (property.GetCustomAttribute<MemoryRecordDataAttribute>() is not null)
+            if (property.GetCustomAttribute<VectorStoreRecordDataAttribute>() is not null)
             {
                 dataProperties.Add(property);
             }
 
             // Get Vector properties.
-            if (property.GetCustomAttribute<MemoryRecordVectorAttribute>() is not null)
+            if (property.GetCustomAttribute<VectorStoreRecordVectorAttribute>() is not null)
             {
                 // Add all vector properties if we support multiple vectors.
                 if (supportsMultipleVectors)
@@ -95,35 +100,35 @@ internal static class MemoryServiceModelPropertyReader
         }
 
         // Update the cache.
-        s_propertiesCache[type] = (keyProperty, dataProperties, vectorProperties);
+        cache[type] = (keyProperty, dataProperties, vectorProperties);
 
         return (keyProperty, dataProperties, vectorProperties);
     }
 
     /// <summary>
-    /// Find the properties listed in the <paramref name="memoryRecordDefinition"/> on the <paramref name="type"/> and verify
+    /// Find the properties listed in the <paramref name="vectorStoreRecordDefinition"/> on the <paramref name="type"/> and verify
     /// that they exist and that we have the expected numbers of each type.
     /// Return those properties in separate categories.
     /// </summary>
     /// <param name="type">The data model to find the properties on.</param>
-    /// <param name="memoryRecordDefinition">The property configuration.</param>
+    /// <param name="vectorStoreRecordDefinition">The property configuration.</param>
     /// <param name="supportsMultipleVectors">A value indicating whether multiple vector properties are supported instead of just one.</param>
     /// <returns>The categorized properties.</returns>
-    public static (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) FindProperties(Type type, MemoryRecordDefinition memoryRecordDefinition, bool supportsMultipleVectors)
+    public static (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) FindProperties(Type type, VectorStoreRecordDefinition vectorStoreRecordDefinition, bool supportsMultipleVectors)
     {
         PropertyInfo? keyProperty = null;
         List<PropertyInfo> dataProperties = new();
         List<PropertyInfo> vectorProperties = new();
         bool singleVectorPropertyFound = false;
 
-        foreach (MemoryRecordProperty property in memoryRecordDefinition.Properties)
+        foreach (VectorStoreRecordProperty property in vectorStoreRecordDefinition.Properties)
         {
             // Key.
-            if (property is MemoryRecordKeyProperty keyPropertyInfo)
+            if (property is VectorStoreRecordKeyProperty keyPropertyInfo)
             {
                 if (keyProperty is not null)
                 {
-                    throw new ArgumentException($"Multiple key properties specified for type {type.FullName}.");
+                    throw new ArgumentException($"Multiple key properties configured for type {type.FullName}.");
                 }
 
                 keyProperty = type.GetProperty(keyPropertyInfo.PropertyName);
@@ -133,7 +138,7 @@ internal static class MemoryServiceModelPropertyReader
                 }
             }
             // Data.
-            else if (property is MemoryRecordDataProperty dataPropertyInfo)
+            else if (property is VectorStoreRecordDataProperty dataPropertyInfo)
             {
                 var dataProperty = type.GetProperty(dataPropertyInfo.PropertyName);
                 if (dataProperty == null)
@@ -144,7 +149,7 @@ internal static class MemoryServiceModelPropertyReader
                 dataProperties.Add(dataProperty);
             }
             // Vector.
-            else if (property is MemoryRecordVectorProperty vectorPropertyInfo)
+            else if (property is VectorStoreRecordVectorProperty vectorPropertyInfo)
             {
                 var vectorProperty = type.GetProperty(vectorPropertyInfo.PropertyName);
                 if (vectorProperty == null)
@@ -170,8 +175,14 @@ internal static class MemoryServiceModelPropertyReader
             }
             else
             {
-                throw new ArgumentException($"Unknown property type '{property.GetType().FullName}' in memory record definition.");
+                throw new ArgumentException($"Unknown property type '{property.GetType().FullName}' in vector store record definition.");
             }
+        }
+
+        // Check that we have a key property.
+        if (keyProperty is null)
+        {
+            throw new ArgumentException($"No key property configured for type {type.FullName}.");
         }
 
         // Check that we have one vector property if we don't have named vectors.

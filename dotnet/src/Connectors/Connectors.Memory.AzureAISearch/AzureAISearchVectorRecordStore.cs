@@ -18,11 +18,11 @@ using Microsoft.SemanticKernel.Memory;
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
-/// Service for storing and retrieving memory records, that uses Azure AI Search as the underlying storage.
+/// Service for storing and retrieving records, that uses Azure AI Search as the underlying storage.
 /// </summary>
-/// <typeparam name="TDataModel">The data model to use for adding, updating and retrieving data from storage.</typeparam>
-public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecordService<string, TDataModel>
-    where TDataModel : class
+/// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
+public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore<string, TRecord>
+    where TRecord : class
 {
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =
@@ -52,47 +52,47 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     private readonly ConcurrentDictionary<string, SearchClient> _searchClientsByIndex = new();
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly AzureAISearchMemoryRecordServiceOptions<TDataModel> _options;
+    private readonly AzureAISearchVectorRecordStoreOptions<TRecord> _options;
 
     /// <summary>The names of all non vector fields on the current model.</summary>
     private readonly List<string> _nonVectorPropertyNames;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureAISearchMemoryRecordService{TDataModel}"/> class.
+    /// Initializes a new instance of the <see cref="AzureAISearchVectorRecordStore{TRecord}"/> class.
     /// </summary>
     /// <param name="searchIndexClient">Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="searchIndexClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when options are misconfigured.</exception>
-    public AzureAISearchMemoryRecordService(SearchIndexClient searchIndexClient, AzureAISearchMemoryRecordServiceOptions<TDataModel>? options = default)
+    public AzureAISearchVectorRecordStore(SearchIndexClient searchIndexClient, AzureAISearchVectorRecordStoreOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(searchIndexClient);
 
         // Assign.
         this._searchIndexClient = searchIndexClient;
-        this._options = options ?? new AzureAISearchMemoryRecordServiceOptions<TDataModel>();
+        this._options = options ?? new AzureAISearchVectorRecordStoreOptions<TRecord>();
 
         // Verify custom mapper.
-        if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper && this._options.JsonObjectCustomMapper is null)
+        if (this._options.MapperType == AzureAISearchRecordMapperType.JsonObjectCustomMapper && this._options.JsonObjectCustomMapper is null)
         {
-            throw new ArgumentException($"The {nameof(AzureAISearchMemoryRecordServiceOptions<TDataModel>.JsonObjectCustomMapper)} option needs to be set if a {nameof(AzureAISearchMemoryRecordServiceOptions<TDataModel>.MapperType)} of {nameof(AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper)} has been chosen.", nameof(options));
+            throw new ArgumentException($"The {nameof(AzureAISearchVectorRecordStoreOptions<TRecord>.JsonObjectCustomMapper)} option needs to be set if a {nameof(AzureAISearchVectorRecordStoreOptions<TRecord>.MapperType)} of {nameof(AzureAISearchRecordMapperType.JsonObjectCustomMapper)} has been chosen.", nameof(options));
         }
 
         // Enumerate public properties using configuration or attributes.
         (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
-        if (this._options.MemoryRecordDefinition is not null)
+        if (this._options.VectorStoreRecordDefinition is not null)
         {
-            properties = MemoryServiceModelPropertyReader.FindProperties(typeof(TDataModel), this._options.MemoryRecordDefinition, supportsMultipleVectors: true);
+            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), this._options.VectorStoreRecordDefinition, supportsMultipleVectors: true);
         }
         else
         {
-            properties = MemoryServiceModelPropertyReader.FindProperties(typeof(TDataModel), supportsMultipleVectors: true);
+            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), supportsMultipleVectors: true);
         }
 
         // Validate property types and store for later use.
-        MemoryServiceModelPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
-        MemoryServiceModelPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
         this._keyPropertyName = properties.keyProperty.Name;
 
         // Build the list of property names from the current model that are either key or data fields.
@@ -100,7 +100,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <inheritdoc />
-    public Task<TDataModel> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public Task<TRecord> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -114,7 +114,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TDataModel> GetBatchAsync(IEnumerable<string> keys, Memory.GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -162,7 +162,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <inheritdoc />
-    public async Task<string> UpsertAsync(TDataModel record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public async Task<string> UpsertAsync(TRecord record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -177,7 +177,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TDataModel> records, UpsertRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -203,7 +203,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     /// <param name="innerOptions">The azure ai search sdk options for getting a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The retrieved document, mapped to the consumer data model.</returns>
-    private async Task<TDataModel> GetDocumentAndMapToDataModelAsync(
+    private async Task<TRecord> GetDocumentAndMapToDataModelAsync(
         SearchClient searchClient,
         string collectionName,
         string key,
@@ -211,7 +211,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         CancellationToken cancellationToken)
     {
         // Use the user provided mapper.
-        if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper)
+        if (this._options.MapperType == AzureAISearchRecordMapperType.JsonObjectCustomMapper)
         {
             var jsonObject = await RunOperationAsync(
                 () => searchClient.GetDocumentAsync<JsonObject>(key, innerOptions, cancellationToken),
@@ -226,7 +226,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
 
         // Use the built in Azure AI Search mapper.
         return await RunOperationAsync(
-            () => searchClient.GetDocumentAsync<TDataModel>(key, innerOptions, cancellationToken),
+            () => searchClient.GetDocumentAsync<TRecord>(key, innerOptions, cancellationToken),
             collectionName,
             "GetDocument").ConfigureAwait(false);
     }
@@ -243,12 +243,12 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     private Task<Response<IndexDocumentsResult>> MapToStorageModelAndUploadDocumentAsync(
         SearchClient searchClient,
         string collectionName,
-        IEnumerable<TDataModel> records,
+        IEnumerable<TRecord> records,
         IndexDocumentsOptions innerOptions,
         CancellationToken cancellationToken)
     {
         // Use the user provided mapper.
-        if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomMapper)
+        if (this._options.MapperType == AzureAISearchRecordMapperType.JsonObjectCustomMapper)
         {
             var jsonObjects = RunModelConversion(
                 () => records.Select(this._options.JsonObjectCustomMapper!.MapFromDataToStorageModel),
@@ -263,7 +263,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
 
         // Use the built in Azure AI Search mapper.
         return RunOperationAsync(
-            () => searchClient.UploadDocumentsAsync<TDataModel>(records, innerOptions, cancellationToken),
+            () => searchClient.UploadDocumentsAsync<TRecord>(records, innerOptions, cancellationToken),
             collectionName,
             "UploadDocuments");
     }
@@ -337,7 +337,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         }
         catch (AggregateException ex) when (ex.InnerException is RequestFailedException innerEx)
         {
-            var wrapperException = new MemoryServiceCommandExecutionException("Call to memory service failed.", ex);
+            var wrapperException = new VectorStoreOperationException("Call to vector store failed.", ex);
 
             // Using Open Telemetry standard for naming of these entries.
             // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
@@ -349,7 +349,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         }
         catch (RequestFailedException ex)
         {
-            var wrapperException = new MemoryServiceCommandExecutionException("Call to memory service failed.", ex);
+            var wrapperException = new VectorStoreOperationException("Call to vector store failed.", ex);
 
             // Using Open Telemetry standard for naming of these entries.
             // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
@@ -362,7 +362,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <summary>
-    /// Run the given model conversion and wrap any exceptions with <see cref="MemoryDataModelMappingException"/>.
+    /// Run the given model conversion and wrap any exceptions with <see cref="VectorStoreRecordMappingException"/>.
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
     /// <param name="operation">The operation to run.</param>
@@ -377,7 +377,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         }
         catch (Exception ex)
         {
-            var wrapperException = new MemoryDataModelMappingException("Failed to convert memory data model.", ex);
+            var wrapperException = new VectorStoreRecordMappingException("Failed to convert vector store record.", ex);
 
             // Using Open Telemetry standard for naming of these entries.
             // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
