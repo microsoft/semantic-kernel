@@ -584,7 +584,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
     }
 
-    [Fact(Skip = "The test is temporarily disabled until a more stable solution is found.")]
+    [Fact(Skip = "The test is temporarily disabled until a more stable solution is found. See issue #12345 for details.")]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanPassFunctionExceptionToConnectorForStreamingAsync()
     {
         // Arrange
