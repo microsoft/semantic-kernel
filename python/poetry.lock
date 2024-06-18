@@ -6889,8 +6889,8 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-itertools", "pytest (>=6,!=8.1.*)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [extras]
-all = ["azure-core", "azure-cosmos", "azure-identity", "azure-search-documents", "chromadb", "google-generativeai", "grpcio-status", "ipykernel", "milvus", "pinecone-client", "psycopg", "pyarrow", "pymilvus", "qdrant-client", "redis", "sentence-transformers", "torch", "transformers", "usearch", "weaviate-client"]
-azure = ["azure-core", "azure-cosmos", "azure-identity", "azure-search-documents"]
+all = ["azure-ai-inference", "azure-core", "azure-cosmos", "azure-identity", "azure-search-documents", "chromadb", "google-generativeai", "grpcio-status", "ipykernel", "milvus", "pinecone-client", "psycopg", "pyarrow", "pymilvus", "qdrant-client", "redis", "sentence-transformers", "torch", "transformers", "usearch", "weaviate-client"]
+azure = ["azure-ai-inference", "azure-core", "azure-cosmos", "azure-identity", "azure-search-documents"]
 chromadb = ["chromadb"]
 google = ["google-generativeai", "grpcio-status"]
 hugging-face = ["sentence-transformers", "torch", "transformers"]
@@ -6906,4 +6906,4 @@ weaviate = ["weaviate-client"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "1e2b674351b808d0e0e59134194d12c010d4909a91714ff6ada8d3f965282217"
+content-hash = "1f7da20d986a695f80ec43e38934d0d0231ca8c61ae637e35f252558526423d9"
