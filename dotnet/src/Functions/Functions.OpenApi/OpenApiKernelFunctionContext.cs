@@ -13,9 +13,9 @@ public sealed class OpenApiKernelFunctionContext
     /// Key to access the <see cref="OpenApiKernelFunctionContext"/> in the <see cref="HttpRequestMessage"/>.
     /// </summary>
 #if NET5_0_OR_GREATER
-    public static readonly HttpRequestOptionsKey<OpenApiKernelFunctionContext> KernelFunctionContextKey = new("KernelFunctionContextKey");
+    public static readonly HttpRequestOptionsKey<OpenApiKernelFunctionContext> KernelFunctionContextKey = new("KernelFunctionContext");
 #else
-    public static readonly string KernelFunctionContextKey = "KernelFunctionContextKey";
+    public static readonly string KernelFunctionContextKey = "KernelFunctionContext";
 #endif
 
     /// <summary>
