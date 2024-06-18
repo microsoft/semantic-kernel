@@ -102,14 +102,16 @@ public static class MicrosoftManifestKernelExtensions
             var manifestFunctions = document?.Functions?.Where(f => runtime.RunForFunctions.Contains(f.Name)).ToList();
             if (manifestFunctions is null || manifestFunctions.Count == 0)
             {
-                throw new InvalidOperationException("No functions found in the manifest.");
+                logger.LogWarning("No functions found in the runtime object.");
+                continue;
             }
 
             var openApiRuntime = runtime as OpenApiRuntime;
             var apiDescriptionUrl = openApiRuntime?.Spec?.Url ?? string.Empty;
             if (apiDescriptionUrl.Length == 0)
             {
-                throw new InvalidOperationException("OpenAPI spec URL is missing in the manifest.");
+                logger.LogWarning("No API description URL found in the runtime object.");
+                continue;
             }
 
             var openApiDocumentString = await DocumentLoader.LoadDocumentFromUriAsync(new Uri(apiDescriptionUrl),
@@ -132,7 +134,8 @@ public static class MicrosoftManifestKernelExtensions
             var serverUrl = filteredOpenApiDocument.Servers.FirstOrDefault()?.Url;
             if (serverUrl is null)
             {
-                throw new InvalidOperationException("No server URL found in the OpenAPI document.");
+                logger.LogWarning("No server URL found in the OpenAPI document.");
+                continue;
             }
 
             var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.ContainsKey(apiDescriptionUrl) == true
