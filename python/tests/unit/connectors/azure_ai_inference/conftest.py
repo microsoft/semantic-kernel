@@ -39,6 +39,25 @@ def azure_ai_inference_unit_test_env(monkeypatch, exclude_list, override_env_par
 
 
 @pytest.fixture(scope="function")
+def azure_ai_inference_client(azure_ai_inference_unit_test_env, request):
+    """Fixture to create Azure AI Inference client for unit tests."""
+    endpoint = azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_ENDPOINT"]
+    api_key = azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_API_KEY"]
+    credential = AzureKeyCredential(api_key)
+
+    if request.param == AzureAIInferenceChatCompletion.__name__:
+        return ChatCompletionsClient(endpoint=endpoint, credential=credential), ModelInfo(
+            model_name="test_model_id", model_type=ModelType.CHAT, model_provider_name="test_provider"
+        )
+    if request.param == AzureAIInferenceTextEmbedding.__name__:
+        return EmbeddingsClient(endpoint=endpoint, credential=credential), ModelInfo(
+            model_name="test_model_id", model_type=ModelType.EMBEDDINGS, model_provider_name="test_provider"
+        )
+
+    raise ValueError(f"Service {request.param} not supported.")
+
+
+@pytest.fixture(scope="function")
 def azure_ai_inference_service(azure_ai_inference_unit_test_env, request):
     """Fixture to create Azure AI Inference service for unit tests.
 

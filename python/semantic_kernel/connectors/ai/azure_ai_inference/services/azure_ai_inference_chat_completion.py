@@ -53,6 +53,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         service_id: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        client: ChatCompletionsClientAsync | None = None,
+        model_info: ModelInfo | None = None,
     ) -> None:
         """Initialize the Azure AI Inference Chat Completion service.
 
@@ -62,23 +64,26 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
             service_id: Service ID for the chat completion service. (Optional)
             env_file_path: The path to the environment file. (Optional)
             env_file_encoding: The encoding of the environment file. (Optional)
+            client: The Azure AI Inference client to use. (Optional)
+            model_info: The model info of the provided client. (Optional, required if client is provided)
         """
-        try:
-            azure_ai_inference_settings = AzureAIInferenceSettings.create(
-                api_key=api_key,
-                endpoint=endpoint,
-                env_file_path=env_file_path,
-                env_file_encoding=env_file_encoding,
-            )
-        except ValidationError as e:
-            raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
-
-        client, model_info = self._create_client(azure_ai_inference_settings)
+        if client is not None:
+            if model_info is None:
+                raise ServiceInitializationError("Model info is required when providing a client.")
+        else:
+            try:
+                azure_ai_inference_settings = AzureAIInferenceSettings.create(
+                    api_key=api_key,
+                    endpoint=endpoint,
+                    env_file_path=env_file_path,
+                    env_file_encoding=env_file_encoding,
+                )
+                client, model_info = self._create_client(azure_ai_inference_settings)
+            except ValidationError as e:
+                raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
 
         super().__init__(
             ai_model_id=model_info.model_name,
-            endpoint=azure_ai_inference_settings.endpoint,
-            api_key=azure_ai_inference_settings.api_key,
             service_id=service_id or model_info.model_name,
             client=client,
         )

@@ -38,6 +38,23 @@ def test_azure_ai_inference_chat_completion_init(
     assert isinstance(azure_ai_inference.client, ChatCompletionsClient)
 
 
+@pytest.mark.parametrize(
+    "azure_ai_inference_client",
+    [AzureAIInferenceChatCompletion.__name__],
+    indirect=True,
+)
+def test_azure_ai_inference_chat_completion_init_with_custom_client(
+    azure_ai_inference_client,
+) -> None:
+    """Test initialization of AzureAIInferenceChatCompletion with custom client"""
+    client, model_info = azure_ai_inference_client
+    azure_ai_inference = AzureAIInferenceChatCompletion(client=client, model_info=model_info)
+
+    assert azure_ai_inference.ai_model_id == model_info.model_name
+    assert azure_ai_inference.service_id == model_info.model_name
+    assert azure_ai_inference.client == client
+
+
 @pytest.mark.parametrize("exclude_list", [["AZURE_AI_INFERENCE_API_KEY"]], indirect=True)
 def test_azure_ai_inference_chat_completion_init_with_empty_api_key(
     azure_ai_inference_unit_test_env,
