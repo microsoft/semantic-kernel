@@ -25,7 +25,7 @@ public sealed class VertexAITextEmbeddingGenerationServiceTests
     {
         // Arrange & Act
         string model = "fake-model";
-        var service = new VertexAITextEmbeddingGenerationService(model, () => Task.FromResult("key"), "location", "project");
+        var service = new VertexAITextEmbeddingGenerationService(model, () => ValueTask.FromResult("key"), "location", "project");
 
         // Assert
         Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);
