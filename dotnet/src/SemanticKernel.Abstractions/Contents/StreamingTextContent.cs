@@ -15,7 +15,7 @@ public class StreamingTextContent : StreamingKernelContent
     /// <summary>
     /// Text associated to the update
     /// </summary>
-    public string? Text { get; }
+    public string? Text { get; set; }
 
     /// <summary>
     /// The encoding of the text content.

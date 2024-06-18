@@ -97,7 +97,7 @@ async def example2(kernel: Kernel, service_id: str):
 async def main():
     kernel = Kernel()
 
-    model = "gpt-3.5-turbo-1106"
+    model = "gpt-3.5-turbo"
     service_id = model
 
     kernel.add_service(

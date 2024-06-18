@@ -3,33 +3,45 @@
 import logging
 from enum import Enum
 from html import unescape
-from typing import Any, Union, overload
+from typing import Any, ClassVar, Literal, Union, overload
 from xml.etree.ElementTree import Element  # nosec
 
 from defusedxml import ElementTree
 from pydantic import Field
 
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.const import (
     CHAT_MESSAGE_CONTENT_TAG,
+    DISCRIMINATOR_FIELD,
     FUNCTION_CALL_CONTENT_TAG,
     FUNCTION_RESULT_CONTENT_TAG,
+    IMAGE_CONTENT_TAG,
     TEXT_CONTENT_TAG,
+    ContentTypes,
 )
-from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 TAG_CONTENT_MAP = {
     TEXT_CONTENT_TAG: TextContent,
     FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
     FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
+    IMAGE_CONTENT_TAG: ImageContent,
 }
 
-ITEM_TYPES = Union[TextContent, StreamingTextContent, FunctionResultContent, FunctionCallContent]
+ITEM_TYPES = Union[
+    ImageContent,
+    TextContent,
+    StreamingTextContent,
+    FunctionResultContent,
+    FunctionCallContent,
+]
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +66,11 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
+    content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
+    tag: ClassVar[str] = CHAT_MESSAGE_CONTENT_TAG
     role: AuthorRole
     name: str | None = None
-    items: list[ITEM_TYPES] = Field(default_factory=list)
+    items: list[ITEM_TYPES] = Field(default_factory=list, discriminator=DISCRIMINATOR_FIELD)
     encoding: str | None = None
     finish_reason: FinishReason | None = None
 
@@ -104,8 +118,9 @@ class ChatMessageContent(KernelContent):
         """Create a ChatMessageContent instance.
 
         Args:
-            role: ChatRole - The role of the chat message.
-            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent] - The content.
+            role: AuthorRole - The role of the chat message.
+            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent, ImageContent]
+                 - The content.
             content: str - The text of the response.
             inner_content: Optional[Any] - The inner content of the response,
                 this should hold all the information from the response so even
@@ -193,7 +208,7 @@ class ChatMessageContent(KernelContent):
         Returns:
             Element - The XML Element representing the ChatMessageContent.
         """
-        root = Element(CHAT_MESSAGE_CONTENT_TAG)
+        root = Element(self.tag)
         for field in self.model_fields_set:
             if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id"]:
                 continue
@@ -215,6 +230,8 @@ class ChatMessageContent(KernelContent):
         Returns:
             ChatMessageContent - The new instance of ChatMessageContent or a subclass.
         """
+        if element.tag != cls.tag:
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")
         kwargs: dict[str, Any] = {key: value for key, value in element.items()}
         items: list[KernelContent] = []
         if element.text:
@@ -274,7 +291,7 @@ class ChatMessageContent(KernelContent):
         """Parse the items of the ChatMessageContent.
 
         Returns:
-            str | dict - The parsed items.
+            str | list of dicts - The parsed items.
         """
         if len(self.items) == 1 and isinstance(self.items[0], TextContent):
             return self.items[0].text
