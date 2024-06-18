@@ -54,9 +54,10 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase):
                     env_file_path=env_file_path,
                     env_file_encoding=env_file_encoding,
                 )
-                client, model_info = self._create_client(azure_ai_inference_settings)
             except ValidationError as e:
                 raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
+
+            client, model_info = self._create_client(azure_ai_inference_settings)
 
         super().__init__(
             ai_model_id=model_info.model_name,

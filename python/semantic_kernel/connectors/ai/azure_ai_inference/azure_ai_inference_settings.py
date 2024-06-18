@@ -18,7 +18,7 @@ class AzureAIInferenceSettings(KernelBaseSettings):
     are ignored; however, validation will fail alerting that the
     settings are missing.
 
-    Optional settings for prefix 'AZURE_AI_INFERENCE_' are:
+    Required settings for prefix 'AZURE_AI_INFERENCE_' are:
     - endpoint: HttpsUrl - The endpoint of the Azure AI Inference service deployment.
                 This value can be found in the Keys & Endpoint section when examining
                 your resource from the Azure portal.

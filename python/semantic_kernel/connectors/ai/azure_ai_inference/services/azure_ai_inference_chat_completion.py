@@ -33,7 +33,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
-MessageConverter: dict[AuthorRole, Any] = {
+_MESSAGE_CONVERTER: dict[AuthorRole, Any] = {
     AuthorRole.SYSTEM: SystemMessage,
     AuthorRole.USER: UserMessage,
     AuthorRole.ASSISTANT: AssistantMessage,
@@ -78,9 +78,10 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
                     env_file_path=env_file_path,
                     env_file_encoding=env_file_encoding,
                 )
-                client, model_info = self._create_client(azure_ai_inference_settings)
             except ValidationError as e:
                 raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
+
+            client, model_info = self._create_client(azure_ai_inference_settings)
 
         super().__init__(
             ai_model_id=model_info.model_name,
@@ -243,7 +244,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
             A list of formatted chat history.
         """
         self._prepare_chat_history_for_request(chat_history)
-        return [MessageConverter[message.role](content=message.content) for message in chat_history.messages]
+        return [_MESSAGE_CONVERTER[message.role](content=message.content) for message in chat_history.messages]
 
     def get_prompt_execution_settings_class(
         self,
