@@ -39,6 +39,7 @@ from samples.concepts.prompt_templates.load_yaml_prompt import main as load_yaml
 from samples.concepts.prompt_templates.template_language import main as template_language
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
 from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
+from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
 from tests.samples.test_samples_utils import retry
 
 concepts = [
@@ -79,6 +80,7 @@ concepts = [
     param(rag_with_text_memory_plugin, [], id="rag_with_text_memory_plugin"),
     param(bing_search_plugin, [], id="bing_search_plugin"),
     param(azure_chat_image_input, [], id="azure_chat_image_input"),
+    param(custom_service_selector, [], id="custom_service_selector"),
 ]
 
 
