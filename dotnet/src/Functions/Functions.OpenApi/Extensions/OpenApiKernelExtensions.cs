@@ -367,7 +367,7 @@ public static partial class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Converts operation id to valid KernelFunction name.
+    /// Converts operation id to valid <see cref="KernelFunction"/> name.
     /// A function name can contain only ASCII letters, digits, and underscores.
     /// </summary>
     /// <param name="operationId">The operation id.</param>
