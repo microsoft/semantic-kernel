@@ -36,7 +36,7 @@ This optional `env_file_path` parameter will allow pydantic settings to use the 
 
 If using the second method, we suggest adding a copy of the `.env` file under these folders:
 
-- [python/tests](tests)
+- [./tests](./tests)
 - [./samples/getting_started](./samples/getting_started).
 
 ## System setup
@@ -139,19 +139,24 @@ poetry run pre-commit install
 
 ## VSCode Setup
 
+Open the [workspace](https://code.visualstudio.com/docs/editor/workspaces) in VSCode.
+> The Python workspace is the `./python` folder if you are at the root of the repository.
+
 Open any of the `.py` files in the project and run the `Python: Select Interpreter`
 command from the command palette. Make sure the virtual env (venv) created by
 `poetry` is selected.
 The python you're looking for should be under `~/.cache/pypoetry/virtualenvs/semantic-kernel-.../bin/python`.
 
-If prompted, install `ruff` and `black` (these should have been installed as part of `poetry install`).
+If prompted, install `ruff`. (It should have been installed as part of `poetry install`).
+
+You also need to install the `ruff` extension in VSCode so that auto-formatting uses the `ruff` formatter on save.
+Read more about the extension here: https://github.com/astral-sh/ruff-vscode
 
 ## Tests
 
 You can run the unit tests under the [tests/unit](tests/unit/) folder.
 
 ```bash
-    cd python
     poetry install
     poetry run pytest tests/unit
 ```
@@ -162,7 +167,6 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 You can run the integration tests under the [tests/integration](tests/integration/) folder.
 
 ```bash
-    cd python
     poetry install
     poetry run pytest tests/integration
 ```
@@ -170,7 +174,6 @@ You can run the integration tests under the [tests/integration](tests/integratio
 You can also run all the tests together under the [tests](tests/) folder.
 
 ```bash
-    cd python
     poetry install
     poetry run pytest tests
 ```
@@ -327,7 +330,6 @@ Ideally you should run these checks before committing any changes, use `poetry r
 We try to maintain a high code coverage for the project. To run the code coverage on the unit tests, you can use the following command:
 
 ```bash
-    cd python
     poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
 ```
 or use the following task (using `Ctrl+Shift+P`):
