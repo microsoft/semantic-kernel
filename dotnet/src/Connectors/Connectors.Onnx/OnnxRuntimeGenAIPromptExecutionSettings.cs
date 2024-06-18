@@ -58,11 +58,11 @@ public sealed class OnnxRuntimeGenAIPromptExecutionSettings : PromptExecutionSet
     [JsonPropertyName("no_repeat_ngram_size")]
     public int? NoRepeatNgramSize { get; set; }
 
-    [JsonPropertyName("min_length")]
-    public int? MinLength { get; set; }
+    [JsonPropertyName("min_tokens")]
+    public int? MinTokens { get; set; }
 
-    [JsonPropertyName("max_length")]
-    public int? MaxLength { get; set; }
+    [JsonPropertyName("max_tokens")]
+    public int? MaxTokens { get; set; }
 
     [JsonPropertyName("length_penalty")]
     public float? LengthPenalty { get; set; }

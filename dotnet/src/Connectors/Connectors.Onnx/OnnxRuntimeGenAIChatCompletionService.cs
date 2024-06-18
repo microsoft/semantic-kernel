@@ -150,13 +150,13 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         {
             generatorParams.SetSearchOption("no_repeat_ngram_size", onnxRuntimeGenAIPromptExecutionSettings.NoRepeatNgramSize.Value);
         }
-        if (onnxRuntimeGenAIPromptExecutionSettings.MinLength.HasValue)
+        if (onnxRuntimeGenAIPromptExecutionSettings.MinTokens.HasValue)
         {
-            generatorParams.SetSearchOption("min_length", onnxRuntimeGenAIPromptExecutionSettings.MinLength.Value);
+            generatorParams.SetSearchOption("min_length", onnxRuntimeGenAIPromptExecutionSettings.MinTokens.Value);
         }
-        if (onnxRuntimeGenAIPromptExecutionSettings.MaxLength.HasValue)
+        if (onnxRuntimeGenAIPromptExecutionSettings.MaxTokens.HasValue)
         {
-            generatorParams.SetSearchOption("max_length", onnxRuntimeGenAIPromptExecutionSettings.MaxLength.Value);
+            generatorParams.SetSearchOption("max_length", onnxRuntimeGenAIPromptExecutionSettings.MaxTokens.Value);
         }
         if (onnxRuntimeGenAIPromptExecutionSettings.LengthPenalty.HasValue)
         {
