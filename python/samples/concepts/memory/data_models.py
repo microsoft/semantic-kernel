@@ -5,13 +5,13 @@ from uuid import UUID, uuid4
 
 from pydantic import Field
 
-from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.vectors.data_models.data_model_decorator import datamodel
-from semantic_kernel.vectors.data_models.vector_record_fields import (
+from semantic_kernel.data.data_models.data_model_decorator import datamodel
+from semantic_kernel.data.data_models.vector_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 @datamodel
@@ -24,23 +24,6 @@ class DataModelDataclass:
         "content1"
     )
 
-    def serialize(self) -> dict[str, Any]:
-        return {
-            "vector": self.vector,
-            "other": self.other,
-            "key": self.key,
-            "content": self.content,
-        }
-
-    @classmethod
-    def deserialize(cls, obj: dict[str, Any]) -> "DataModelDataclass":
-        return cls(
-            vector=obj["vector"],
-            other=obj["other"],
-            key=obj["key"],
-            content=obj["content"],
-        )
-
 
 @datamodel
 class DataModelPydantic(KernelBaseModel):
@@ -51,13 +34,6 @@ class DataModelPydantic(KernelBaseModel):
         "content1"
     )
 
-    def serialize(self) -> dict[str, Any]:
-        return self.model_dump()
-
-    @classmethod
-    def deserialize(cls, obj: dict[str, Any]) -> "DataModelDataclass":
-        return cls.model_validate(obj)
-
 
 @datamodel
 class DataModelPydanticComplex(KernelBaseModel):
@@ -67,13 +43,6 @@ class DataModelPydanticComplex(KernelBaseModel):
     content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
         "content1"
     )
-
-    def serialize(self) -> dict[str, Any]:
-        return self.model_dump()
-
-    @classmethod
-    def deserialize(cls, obj: dict[str, Any]) -> "DataModelDataclass":
-        return cls.model_validate(obj)
 
 
 @datamodel

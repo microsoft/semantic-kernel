@@ -3,18 +3,18 @@
 
 import os
 from dataclasses import dataclass, field
-from typing import Annotated, Any
+from typing import Annotated
 from uuid import UUID, uuid4
 
-from numpy import array, ndarray
+from numpy import ndarray
 
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
-from semantic_kernel.connectors.vectors.azure_ai_search.azure_ai_search_vector_record_store import (
+from semantic_kernel.connectors.data.azure_ai_search.azure_ai_search_vector_record_store import (
     AzureAISearchVectorRecordStore,
 )
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.vectors.data_models.data_model_decorator import datamodel
-from semantic_kernel.vectors.data_models.vector_record_fields import (
+from semantic_kernel.data.data_models.data_model_decorator import datamodel
+from semantic_kernel.data.data_models.vector_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
@@ -33,21 +33,6 @@ class MyDataModel:
     content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
         "content1"
     )
-
-    def serialize(self) -> dict[str, Any]:
-        return {
-            "vector": self.vector.tolist(),
-            "id": str(self.id),
-            "content": self.content,
-        }
-
-    @classmethod
-    def deserialize(cls, obj: dict[str, Any]):
-        return cls(
-            vector=array(obj["vector"]),
-            id=UUID(obj["id"]),
-            content=obj["content"],
-        )
 
 
 async def main():

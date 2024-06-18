@@ -4,13 +4,17 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
+from semantic_kernel.data.protocols.data_model_serde_protocols import (
+    DataModelFunctionSerdeProtocol,
+    DataModelPydanticSerde,
+    DataModelToDictFromDictProtocol,
+)
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     DataModelDeserializationException,
     DataModelSerializationException,
     MemoryConnectorException,
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.vectors.protocols.data_model_serde_protocol import DataModelSerdeProtocol
 
 TModel = TypeVar("TModel", bound=object)
 TKey = TypeVar("TKey")
@@ -171,11 +175,22 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
         It might include translating a flat dict, into a nested structure for
         metadata vs vector vs data vs key, or something similar, but nothing more.
         """
-        if isinstance(record, DataModelSerdeProtocol):
+        if isinstance(record, DataModelFunctionSerdeProtocol):
             try:
                 return record.serialize()
             except Exception as exc:
                 raise DataModelSerializationException(f"Error serializing record: {exc}") from exc
+        if isinstance(record, DataModelPydanticSerde):
+            try:
+                return record.model_dump()
+            except Exception as exc:
+                raise DataModelSerializationException(f"Error serializing record: {exc}") from exc
+        if isinstance(record, DataModelToDictFromDictProtocol):
+            try:
+                return record.to_dict()
+            except Exception as exc:
+                raise DataModelSerializationException(f"Error serializing record: {exc}") from exc
+
         store_model = {}
         for field in getattr(self._item_type, "__kernel_data_model_fields__"):
             try:
@@ -191,11 +206,22 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
         specific data type or structure from a service is translated to dict, then in the deserialize method of the datamodel (supplied by the user) the dict is translated to the data model itself.
 
         """  # noqa: E501
-        if isinstance(self._item_type, DataModelSerdeProtocol):
+        if isinstance(self._item_type, DataModelFunctionSerdeProtocol):
             try:
                 return self._item_type.deserialize(record)
             except Exception as exc:
                 raise DataModelDeserializationException(f"Error deserializing record: {exc}") from exc
+        if isinstance(self._item_type, DataModelPydanticSerde):
+            try:
+                return self._item_type.model_validate(record)
+            except Exception as exc:
+                raise DataModelDeserializationException(f"Error deserializing record: {exc}") from exc
+        if isinstance(self._item_type, DataModelToDictFromDictProtocol):
+            try:
+                return self._item_type.from_dict(record)
+            except Exception as exc:
+                raise DataModelDeserializationException(f"Error deserializing record: {exc}") from exc
+
         if isinstance(record, dict):
             data_model = self._item_type()
             for field in getattr(self._item_type, "__kernel_data_model_fields__"):
