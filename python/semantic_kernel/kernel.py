@@ -11,6 +11,10 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+from semantic_kernel.data.data_models.vector_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordVectorField,
+)
 from semantic_kernel.exceptions import (
     FunctionCallInvalidArgumentsException,
     FunctionExecutionException,
@@ -39,10 +43,6 @@ from semantic_kernel.reliability.kernel_reliability_extension import KernelRelia
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
 from semantic_kernel.utils.naming import generate_random_ascii_name
-from semantic_kernel.vectors.data_models.vector_record_fields import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordVectorField,
-)
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (

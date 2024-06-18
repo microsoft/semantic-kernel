@@ -6,7 +6,7 @@ from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.indexes.aio import SearchIndexClient
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
-from semantic_kernel.connectors.vectors.azure_ai_search.azure_ai_search_settings import AzureAISearchSettings
+from semantic_kernel.connectors.data.azure_ai_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.exceptions import ServiceInitializationError
 
 if TYPE_CHECKING:

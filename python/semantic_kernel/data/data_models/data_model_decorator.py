@@ -4,9 +4,8 @@ import logging
 from inspect import signature
 from typing import Any
 
+from semantic_kernel.data.data_models.vector_record_fields import VectorStoreRecordDefinition, VectorStoreRecordField
 from semantic_kernel.exceptions.memory_connector_exceptions import DataModelException
-from semantic_kernel.vectors.data_models.vector_record_fields import VectorStoreRecordDefinition, VectorStoreRecordField
-from semantic_kernel.vectors.protocols.data_model_serde_protocol import DataModelSerdeProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +38,6 @@ def datamodel(
     def wrap(cls: Any):
         # get fields and annotations
         cls_sig = signature(cls)
-        if not isinstance(cls, DataModelSerdeProtocol):
-            raise DataModelException("Data model must implement self.serialize and cls.deserialize methods.")
-
         fields = []
         for field in cls_sig.parameters.values():
             annotation = field.annotation

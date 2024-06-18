@@ -15,10 +15,10 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 
-from semantic_kernel.connectors.vectors.azure_ai_search.utils import get_search_index_async_client
+from semantic_kernel.connectors.data.azure_ai_search.utils import get_search_index_async_client
+from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
 from semantic_kernel.exceptions import MemoryConnectorInitializationError, MemoryConnectorResourceNotFound
 from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.vectors.vector_record_store_base import VectorRecordStoreBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[DataModelT, str]):
             env_file_encoding (str | None): The encoding of the environment settings file
 
         """
-        from semantic_kernel.connectors.vectors.azure_ai_search.azure_ai_search_settings import (
+        from semantic_kernel.connectors.data.azure_ai_search.azure_ai_search_settings import (
             AzureAISearchSettings,
         )
 
@@ -129,8 +129,6 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[DataModelT, str]):
             return self._deserialize_store_model_to_data_model(search_result)
         except ResourceNotFoundError as exc:
             raise MemoryConnectorResourceNotFound("Memory record not found") from exc
-        finally:
-            await search_client.close()
 
     @override
     async def get_batch(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> list[DataModelT]:
@@ -147,6 +145,3 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[DataModelT, str]):
 
         await search_client.delete_documents(documents=docs_to_delete)
         await search_client.close()
-
-    def _get_collection_name(self, collection_name: str | None = None):
-        return super()._get_collection_name(collection_name).lower()
