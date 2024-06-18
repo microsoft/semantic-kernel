@@ -12,6 +12,14 @@ class DataModelException(MemoryConnectorException):
     pass
 
 
+class DataModelSerializationException(DataModelException):
+    pass
+
+
+class DataModelDeserializationException(DataModelException):
+    pass
+
+
 class MemoryConnectorInitializationError(MemoryConnectorException):
     pass
 
@@ -21,7 +29,9 @@ class MemoryConnectorResourceNotFound(MemoryConnectorException):
 
 
 __all__ = [
+    "DataModelDeserializationException",
     "DataModelException",
+    "DataModelSerializationException",
     "MemoryConnectorException",
     "MemoryConnectorInitializationError",
     "MemoryConnectorResourceNotFound",

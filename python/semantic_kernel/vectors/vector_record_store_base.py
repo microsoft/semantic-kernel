@@ -4,7 +4,11 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
+from semantic_kernel.exceptions.memory_connector_exceptions import (
+    DataModelDeserializationException,
+    DataModelSerializationException,
+    MemoryConnectorException,
+)
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.vectors.protocols.data_model_serde_protocol import DataModelSerdeProtocol
 
@@ -168,10 +172,19 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
         metadata vs vector vs data vs key, or something similar, but nothing more.
         """
         if isinstance(record, DataModelSerdeProtocol):
-            return record.serialize()
-        raise ValueError("Item type must implement the DataModelSerdeProtocol")
+            try:
+                return record.serialize()
+            except Exception as exc:
+                raise DataModelSerializationException(f"Error serializing record: {exc}") from exc
+        store_model = {}
+        for field in getattr(self._item_type, "__kernel_data_model_fields__"):
+            try:
+                store_model[field.name] = getattr(record, field.name)
+            except AttributeError:
+                raise DataModelSerializationException(f"Error serializing record: {field.name}")
+        return store_model
 
-    def _deserialize_store_model_to_data_model(self, record: dict[str, Any]) -> TModel:
+    def _deserialize_store_model_to_data_model(self, record: Any | dict[str, Any]) -> TModel:
         """Internal function that should be overloaded by child classes to deserialize the store model to the data model.
 
         Similar to the serialize counterpart this process is done in two steps, first here a
@@ -179,8 +192,18 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
 
         """  # noqa: E501
         if isinstance(self._item_type, DataModelSerdeProtocol):
-            return self._item_type.deserialize(record)
-        raise ValueError("Item type must implement the DataModelSerdeProtocol")
+            try:
+                return self._item_type.deserialize(record)
+            except Exception as exc:
+                raise DataModelDeserializationException(f"Error deserializing record: {exc}") from exc
+        if isinstance(record, dict):
+            data_model = self._item_type()
+            for field in getattr(self._item_type, "__kernel_data_model_fields__"):
+                setattr(data_model, field.name, record.get(field.name))
+            return data_model
+        raise DataModelDeserializationException(
+            "No way found to deserialize the record, please add a serialize method or override this function."
+        )
 
     # endregion
     # region Internal Functions
