@@ -32,9 +32,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="TextToAudio\" />
-    <Folder Include="TextToImage\" />
-  </ItemGroup>
 </Project>
