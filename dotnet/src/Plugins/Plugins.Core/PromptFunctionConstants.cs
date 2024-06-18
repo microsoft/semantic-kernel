@@ -19,9 +19,13 @@ BEGIN SUMMARY:
 
     internal const string GetConversationActionItemsDefinition =
         """
-        You are an action item extractor. You will be given chat history and need to make note of action items mentioned in the chat.
+        You are an action item extractor. You will be given chat history or content and need to make note of action items mentioned.
         Extract action items from the content if there are any. If there are no action, return nothing. If a single field is missing, use an empty string.
         Return the action items in json.
+
+        Guidelines:
+        Action items are specific tasks or requests that someone needs to complete.
+        Routine statements or general comments about habits or preferences should not be considered action items.
 
         Possible statuses for action items are: Open, Closed, In Progress.
 
@@ -40,6 +44,23 @@ BEGIN SUMMARY:
                     "status": "Open",
                     "notes": ""
                 }
+            ]
+        }
+
+        EXAMPLE INPUT WITH IMPLIED ACTION ITEMS:
+
+        I need a list of vegan breakfast recipes. Can you get that for me?
+
+        EXAMPLE OUTPUT:
+        {
+            "actionItems": [
+              {
+                  "owner": "",
+                  "actionItem": "Give a list of breakfast recipes that are vegan friendly",
+                  "dueDate": "",
+                  "status": "Open",
+                  "notes": ""
+              }
             ]
         }
 

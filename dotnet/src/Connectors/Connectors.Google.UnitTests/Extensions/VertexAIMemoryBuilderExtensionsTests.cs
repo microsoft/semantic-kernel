@@ -39,7 +39,7 @@ public sealed class VertexAIMemoryBuilderExtensionsTests
 
         // Act
         var memory = builder
-            .WithVertexAITextEmbeddingGeneration("fake-model", () => Task.FromResult("fake-bearer-key"), "fake-location", "fake-project")
+            .WithVertexAITextEmbeddingGeneration("fake-model", () => ValueTask.FromResult("fake-bearer-key"), "fake-location", "fake-project")
             .WithMemoryStore(this._mockMemoryStore.Object)
             .Build();
 
