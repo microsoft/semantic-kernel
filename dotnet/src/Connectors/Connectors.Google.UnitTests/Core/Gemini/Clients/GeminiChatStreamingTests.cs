@@ -368,7 +368,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
             return new GeminiChatCompletionClient(
                 httpClient: httpClient ?? this._httpClient,
                 modelId: modelId,
-                bearerTokenProvider: () => Task.FromResult(bearerKey),
+                bearerTokenProvider: () => new ValueTask<string>(bearerKey),
                 apiVersion: VertexAIVersion.V1,
                 location: "fake-location",
                 projectId: "fake-project-id");
