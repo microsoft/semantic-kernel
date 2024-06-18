@@ -26,7 +26,7 @@ class AzureAIInferenceChatPromptExecutionSettings(AzureAIInferencePromptExecutio
 class AzureAIInferenceEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     """Azure AI Inference Embedding Prompt Execution Settings."""
 
-    dimensions: int | None = Field(1024, gt=0)
+    dimensions: int | None = Field(None, gt=0)
     # Known values for `encoding_format` are
     # "base64", "binary", "float", "int8", "ubinary", and "uint8".
     encoding_format: str | None = None
