@@ -32,4 +32,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Core\Options\" />
+  </ItemGroup>
 </Project>

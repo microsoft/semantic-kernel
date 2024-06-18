@@ -101,22 +101,6 @@ public sealed class OpenAIFileService
     }
 
     /// <summary>
-    /// Retrieve the file content from a previously uploaded file.
-    /// </summary>
-    /// <param name="id">The uploaded file identifier.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The file content as <see cref="BinaryContent"/></returns>
-    /// <remarks>
-    /// Files uploaded with <see cref="OpenAIFilePurpose.Assistants"/> do not support content retrieval.
-    /// </remarks>
-    public BinaryContent GetFileContent(string id, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(id, nameof(id));
-
-        return new BinaryContent(() => this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken));
-    }
-
-    /// <summary>
     /// Retrieve metadata for a previously uploaded file.
     /// </summary>
     /// <param name="id">The uploaded file identifier.</param>
@@ -156,8 +140,8 @@ public sealed class OpenAIFileService
 
         using var formData = new MultipartFormDataContent();
         using var contentPurpose = new StringContent(this.ConvertPurpose(settings.Purpose));
-        using var contentStream = await fileContent.GetStreamAsync().ConfigureAwait(false);
-        using var contentFile = new StreamContent(contentStream);
+        using HttpContent contentFile = new ByteArrayContent(fileContent.Data?.ToArray() ?? []);
+
         formData.Add(contentPurpose, "purpose");
         formData.Add(contentFile, "file", settings.FileName);
 

@@ -45,7 +45,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
                     }
                     else
                     {
-                        this.Items.Add(new ImageContent(item.ImageBytes) { MimeType = item.ImageBytesMediaType, ModelId = this.ModelId });
+                        this.Items.Add(new ImageContent(item.ImageBytes, item.ImageBytesMediaType) { ModelId = this.ModelId });
                     }
                     break;
                 }

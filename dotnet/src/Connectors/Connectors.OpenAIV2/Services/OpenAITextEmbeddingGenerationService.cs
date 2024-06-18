@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -26,12 +25,14 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector
     /// </summary>
-    /// <param name="options">Options for the Chat Completion Service.</param>
+    /// <param name="options">Options for the Text Embedding Service.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     public OpenAITextEmbeddingGenerationService(
         OpenAIClientTextEmbeddingGenerationOptions options,
         HttpClient? httpClient = null)
     {
+        Verify.NotNull(options.ModelId);
+
         this._core = new(
             modelId: options.ModelId,
             apiKey: options.ApiKey,
@@ -47,11 +48,14 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector
     /// </summary>
+    /// <param name="options">Options for the Text Embedding Service.</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     public OpenAITextEmbeddingGenerationService(
         OpenAITextEmbeddingGenerationOptions options,
         OpenAIClient openAIClient)
     {
+        Verify.NotNull(options.ModelId);
+
         this._core = new(options.ModelId, openAIClient, options.LoggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, options.ModelId);
 

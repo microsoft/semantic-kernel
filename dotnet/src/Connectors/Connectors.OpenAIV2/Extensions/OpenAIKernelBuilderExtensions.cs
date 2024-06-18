@@ -12,8 +12,9 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Sponsor class for OpenAI text embedding kernel builder extensions.
 /// </summary>
-public static class TextEmbeddingKernelBuilderExtensions
+public static class OpenAIKernelBuilderExtensions
 {
+    #region Text Embedding
     /// <summary>
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
@@ -62,4 +63,5 @@ public static class TextEmbeddingKernelBuilderExtensions
 
         return builder;
     }
+    #endregion
 }
