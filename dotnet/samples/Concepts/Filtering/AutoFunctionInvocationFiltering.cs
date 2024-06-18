@@ -9,17 +9,17 @@ namespace Filtering;
 public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Shows how to use <see cref="IAutoFunctionInvocationFilter"/> in non-streaming scenario.
+    /// Shows how to use <see cref="IAutoFunctionInvocationFilter"/>.
     /// </summary>
     [Fact]
-    public async Task AutoFunctionInvocationFilterNonStreamingAsync()
+    public async Task AutoFunctionInvocationFilterAsync()
     {
         var builder = Kernel.CreateBuilder();
 
         builder.AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey);
 
         // This filter outputs information about auto function invocation and returns overridden result.
-        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationNonStreamingFilter(this.Output));
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationFilter(this.Output));
 
         var kernel = builder.Build();
 
@@ -44,16 +44,16 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
     }
 
     /// <summary>
-    /// Shows how to use <see cref="IAutoFunctionInvocationFilter"/> in streaming scenario.
+    /// Shows how to get list of function calls by using <see cref="IAutoFunctionInvocationFilter"/>.
     /// </summary>
     [Fact]
-    public async Task AutoFunctionInvocationFilterStreamingAsync()
+    public async Task GetFunctionCallsWithFilterAsync()
     {
         var builder = Kernel.CreateBuilder();
 
         builder.AddOpenAIChatCompletion("gpt-3.5-turbo-1106", TestConfiguration.OpenAI.ApiKey);
 
-        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationStreamingFilter(this.Output));
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new FunctionCallsFilter(this.Output));
 
         var kernel = builder.Build();
 
@@ -90,8 +90,8 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
         // The current UTC time is {time of execution}, and the current weather in Boston is 61°F and rainy.
     }
 
-    /// <summary>Shows syntax for auto function invocation filter.</summary>
-    private sealed class AutoFunctionInvocationNonStreamingFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
+    /// <summary>Shows available syntax for auto function invocation filter.</summary>
+    private sealed class AutoFunctionInvocationFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
     {
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
@@ -103,6 +103,23 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
 
             // Example: get information about all functions which will be invoked
             var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last());
+
+            // In function calling functionality there are two loops.
+            // Outer loop is "request" loop - it performs multiple requests to LLM until user ask will be satisfied.
+            // Inner loop is "function" loop - it handles LLM response with multiple function calls.
+
+            // Workflow example:
+            // 1. Request to LLM #1 -> Response with 3 functions to call.
+            //      1.1. Function #1 called.
+            //      1.2. Function #2 called.
+            //      1.3. Function #3 called.
+            // 2. Request to LLM #2 -> Response with 2 functions to call.
+            //      2.1. Function #1 called.
+            //      2.2. Function #2 called.
+
+            // context.RequestSequenceIndex - it's a sequence number of outer/request loop operation.
+            // context.FunctionSequenceIndex - it's a sequence number of inner/function loop operation.
+            // context.FunctionCount - number of functions which will be called per request (based on example above: 3 for first request, 2 for second request).
 
             // Example: get request sequence index
             output.WriteLine($"Request sequence index: {context.RequestSequenceIndex}");
@@ -128,8 +145,8 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
         }
     }
 
-    /// <summary>Shows syntax for auto function invocation filter for streaming scenario.</summary>
-    private sealed class AutoFunctionInvocationStreamingFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
+    /// <summary>Shows how to get list of all function calls per request.</summary>
+    private sealed class FunctionCallsFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
     {
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
