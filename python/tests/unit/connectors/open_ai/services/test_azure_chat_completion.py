@@ -12,7 +12,6 @@ from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompl
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
     ContentFilterAIException,
     ContentFilterResultSeverity,
@@ -22,6 +21,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
+from semantic_kernel.const import USER_AGENT
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
@@ -450,9 +450,7 @@ async def test_azure_chat_completion_auto_invoke_false_no_kernel_provided_throws
     prompt = "some prompt that would trigger the content filtering"
     chat_history.add_user_message(prompt)
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
-        function_call_behavior=FunctionCallBehavior.EnableFunctions(
-            auto_invoke=False, filters={}
-        )
+        function_call_behavior=FunctionCallBehavior.EnableFunctions(auto_invoke=False, filters={})
     )
 
     test_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")

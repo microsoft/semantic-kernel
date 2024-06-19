@@ -43,7 +43,8 @@ def test_azure_text_completion_init_with_custom_header(azure_openai_unit_test_en
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
-def test_azure_text_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
+def test_azure_text_completion_init_with_empty_deployment_name(monkeypatch, azure_openai_unit_test_env) -> None:
+    monkeypatch.delenv("AZURE_OPENAI_TEXT_DEPLOYMENT_NAME", raising=False)
     with pytest.raises(ServiceInitializationError):
         AzureTextCompletion()
 

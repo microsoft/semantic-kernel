@@ -2,12 +2,12 @@
 
 import importlib
 
-from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.telemetry import (
     HTTP_USER_AGENT,
     TELEMETRY_DISABLED_ENV_VAR,
     prepend_semantic_kernel_to_user_agent,
 )
+from semantic_kernel.const import USER_AGENT
 
 
 def test_append_to_existing_user_agent(monkeypatch):

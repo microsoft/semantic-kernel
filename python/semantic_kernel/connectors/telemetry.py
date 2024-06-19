@@ -4,7 +4,7 @@ import os
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
-from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
+from semantic_kernel.const import USER_AGENT
 
 TELEMETRY_DISABLED_ENV_VAR = "AZURE_TELEMETRY_DISABLED"
 
