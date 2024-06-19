@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,6 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic.Core;
 
@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic.Core;
 internal sealed class SqlServerClient
 {
     private readonly SqlServerConfig _configuration;
-    private SqlConnection _connection;
+    private readonly SqlConnection _connection;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerClient"/> class with the specified connection string and schema.

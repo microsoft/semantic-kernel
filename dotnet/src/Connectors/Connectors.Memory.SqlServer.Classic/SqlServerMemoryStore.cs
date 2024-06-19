@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Data.SqlClient;
-using Microsoft.SemanticKernel.Connectors.SqlServer.Classic.Core;
-using Microsoft.SemanticKernel.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +7,9 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
+using Microsoft.SemanticKernel.Connectors.SqlServer.Classic.Core;
+using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic;
 
@@ -32,7 +32,6 @@ public class SqlServerMemoryStore : IMemoryStore, IDisposable
     public SqlServerMemoryStore(string connectionString, SqlServerConfig? config = default)
         : this(new SqlServerClient(new SqlConnection(connectionString), config ?? new()))
     {
-
     }
 
     /// <summary>
