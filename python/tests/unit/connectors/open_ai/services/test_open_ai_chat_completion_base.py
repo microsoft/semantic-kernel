@@ -192,7 +192,7 @@ async def test_process_tool_calls_with_continuation_on_malformed_arguments():
             FunctionCallBehavior.AutoInvokeKernelFunctions(),
         )
 
-    logger_mock.exception.assert_any_call(
+    logger_mock.info.assert_any_call(
         "Received invalid arguments for function test_function: Malformed arguments. Trying tool call again."
     )
 
