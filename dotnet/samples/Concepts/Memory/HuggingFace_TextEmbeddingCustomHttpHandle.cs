@@ -6,21 +6,20 @@ using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using System.Text.Json;
 
+#pragma warning disable CS6802 //Disable Dereference of a possibly null warning
+
 namespace Memory;
 
 /// <summary>
 /// This sample provides an example of <see cref="HttpClientHandler"/> that will help you implement specific tasks.
-///
-/// In general, an embedding model will return results as a 1 * n matrix for input type [string]. However, it is possible for the model to have different matrix dimensionality. For example,
-/// 
-/// the <a href="https://huggingface.co/cointegrated/LaBSE-en-ru">cointegrated/LaBSE-en-ru</a> model returns results as a 1 * 1 * 4 * 768 matrix, which differs from what <see cref="SemanticTextMemory"/> expects from <see cref="EmbeddingGenerationExtensions"/>. 
+/// Generally, an embedding model will return results as a 1 * n matrix for input type [string]. However, the model can have different matrix dimensionality. For example,
+/// the <a href="https://huggingface.co/cointegrated/LaBSE-en-ru">cointegrated/LaBSE-en-ru</a> model returns results as a 1 * 1 * 4 * 768 matrix, which differs from what <see cref="SemanticTextMemory"/> expects from <see cref="EmbeddingGenerationExtensions"/>.
 /// To address this, a custom <see cref="HttpClientHandler"/> is created to modify the response before sending it back.
 /// </summary>
 
-
-public class MemoryHuggingFaceEmbedding_CustomHttpResponse(ITestOutputHelper output) : BaseTest(output)
+public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output) : BaseTest(output)
 {
-    public async Task RunInferenceApiEmbeddingCustomHttpResponseAsync()
+    public async Task RunInferenceApiEmbeddingCustomHttpHandlerAsync()
     {
         Console.WriteLine("\n======= Hugging Face Inference API - Embedding Example ========\n");
 
