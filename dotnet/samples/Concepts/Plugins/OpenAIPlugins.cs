@@ -8,10 +8,13 @@ namespace Plugins;
 public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Generic template on how to call OpenAI plugins
+    /// This sample shows how to invoke an OpenAI plugin.
     /// </summary>
+    /// <remarks>
+    /// You must provide the plugin name and a URI to the Open API manifest before running this sample.
+    /// </remarks>
     [Fact(Skip = "Run it only after filling the template below")]
-    public async Task RunOpenAIPluginAsync()
+    public async Task InvokeOpenAIPluginAsync()
     {
         Kernel kernel = new();
 
@@ -32,8 +35,11 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine($"Function execution result: {result?.Content}");
     }
 
+    /// <summary>
+    /// This sample shows how to invoke the Klarna Get Products function as an OpenAPI plugin.
+    /// </summary>
     [Fact]
-    public async Task CallKlarnaAsync()
+    public async Task InvokeKlarnaGetProductsAsOpenAPIPluginAsync()
     {
         Kernel kernel = new();
 
@@ -53,5 +59,64 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
         Console.WriteLine($"Function execution result: {result?.Content}");
+    }
+
+    /// <summary>
+    /// This sample shows how to use a delegating handler when invoking an OpenAPI function.
+    /// </summary>
+    /// <remarks>
+    /// An instances of <see cref="OpenApiKernelFunctionContext"/> will be set in the `HttpRequestMessage.Options` (for .NET 5.0 or higher) or
+    /// in the `HttpRequestMessage.Properties` dictionary (for .NET Standard) with the key `KernelFunctionContextKey`.
+    /// The <see cref="OpenApiKernelFunctionContext"/> contains the <see cref="Kernel"/>, <see cref="KernelFunction"/> and <see cref="KernelArguments"/>.
+    /// </remarks>
+    [Fact]
+    public async Task UseDelegatingHandlerWhenInvokingAnOpenAPIFunctionAsync()
+    {
+        using var httpHandler = new HttpClientHandler();
+        using var customHandler = new CustomHandler(httpHandler);
+        using HttpClient httpClient = new(customHandler);
+
+        Kernel kernel = new();
+
+        var plugin = await kernel.ImportPluginFromOpenAIAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters(httpClient));
+
+        var arguments = new KernelArguments
+        {
+            ["q"] = "Laptop",      // Category or product that needs to be searched for.
+            ["size"] = "3",        // Number of products to return
+            ["budget"] = "200",    // Maximum price of the matching product in local currency
+            ["countryCode"] = "US" // ISO 3166 country code with 2 characters based on the user location.
+        };
+        // Currently, only US, GB, DE, SE and DK are supported.
+
+        var functionResult = await kernel.InvokeAsync(plugin["productsUsingGET"], arguments);
+
+        var result = functionResult.GetValue<RestApiOperationResponse>();
+
+        Console.WriteLine($"Function execution result: {result?.Content}");
+    }
+
+    /// <summary>
+    /// Custom delegating handler to modify the <see cref="HttpRequestMessage"/> before sending it.
+    /// </summary>
+    private sealed class CustomHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+#if NET5_0_OR_GREATER
+            request.Options.TryGetValue(OpenApiKernelFunctionContext.KernelFunctionContextKey, out var functionContext);
+#else
+            request.Properties.TryGetValue(OpenApiKernelFunctionContext.KernelFunctionContextKey, out var functionContext);
+#endif
+            // Function context is only set when the Plugin is invoked via the Kernel
+            if (functionContext is not null)
+            {
+                // Modify the HttpRequestMessage
+                request.Headers.Add("Kernel-Function-Name", functionContext?.Function?.Name);
+            }
+
+            // Call the next handler in the pipeline
+            return await base.SendAsync(request, cancellationToken);
+        }
     }
 }
