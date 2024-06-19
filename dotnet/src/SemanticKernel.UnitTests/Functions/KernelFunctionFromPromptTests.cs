@@ -654,6 +654,34 @@ public class KernelFunctionFromPromptTests
         Assert.Equal("Test prompt as user message", messageContent.Content);
     }
 
+    [Theory]
+    [InlineData("semantic-kernel", "This is my prompt {{$input}}")]
+    [InlineData("handlebars", "This is my prompt {{input}}")]
+    public async Task ItUsesPromptWithEchoPromptTemplateFactoryAsync(string templateFormat, string template)
+    {
+        // Arrange
+        var mockTextGeneration = new Mock<ITextGenerationService>();
+        var fakeTextContent = new TextContent(template);
+
+        mockTextGeneration.Setup(c => c.GetTextContentsAsync(It.Is<string>(p => p.Equals(template, StringComparison.Ordinal)), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("x", mockTextGeneration.Object);
+        Kernel kernel = builder.Build();
+
+        var promptConfig = new PromptTemplateConfig(template) { TemplateFormat = templateFormat };
+        var func = kernel.CreateFunctionFromPrompt(promptConfig, promptTemplateFactory: new EchoPromptTemplateFactory());
+        var args = new KernelArguments();
+        args["input"] = "Some Input";
+
+        // Act
+        var result = await kernel.InvokeAsync(func, args);
+
+        // Assert
+        mockTextGeneration.Verify(a => a.GetTextContentsAsync(template, It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        Assert.Equal(template, result.GetValue<string>());
+    }
+
     [Fact]
     public async Task InvokePromptAsyncWithTextGenerationReturnsSingleResultAsync()
     {
