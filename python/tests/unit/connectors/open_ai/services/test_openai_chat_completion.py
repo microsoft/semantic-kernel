@@ -46,7 +46,9 @@ def test_open_ai_chat_completion_init_with_default_header(openai_unit_test_env) 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
 def test_open_ai_chat_completion_init_with_empty_model_id(openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
-        OpenAIChatCompletion()
+        OpenAIChatCompletion(
+            env_file_path="test.env",
+        )
 
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
@@ -56,6 +58,7 @@ def test_open_ai_chat_completion_init_with_empty_api_key(openai_unit_test_env) -
     with pytest.raises(ServiceInitializationError):
         OpenAIChatCompletion(
             ai_model_id=ai_model_id,
+            env_file_path="test.env",
         )
 
 
