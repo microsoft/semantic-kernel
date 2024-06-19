@@ -28,6 +28,7 @@ ans = "ans"               # Short for answers
 arange = "arange"         # Method in Python numpy package
 prompty = "prompty"       # prompty is a format name.
 ist = "ist"               # German language
+dall = "dall"             # OpenAI model name
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
