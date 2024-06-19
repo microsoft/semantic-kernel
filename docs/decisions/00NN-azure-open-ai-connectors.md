@@ -80,8 +80,8 @@ builder.AddAzureOpenAIChatCompletion(new
 ## Considered Options
 
 - Option 1 - Slow transition.
-- Option 2 - Independency day.
-- Option 3 - Update OpenAI with Azure as is.
+- Option 2 - Independent Connectors from Start
+- Option 3 - Update OpenAI with Azure as is
 
 ## Option 1 - Slow Transition
 
