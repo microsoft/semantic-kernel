@@ -3228,13 +3228,13 @@ datalib = ["numpy (>=1)", "pandas (>=1.2.3)", "pandas-stubs (>=1.1.0.11)"]
 
 [[package]]
 name = "openapi-core"
-version = "0.19.1"
+version = "0.19.2"
 description = "client-side and server-side support for the OpenAPI Specification v3"
 optional = false
 python-versions = "<4.0.0,>=3.8.0"
 files = [
-    {file = "openapi_core-0.19.1-py3-none-any.whl", hash = "sha256:a1eeb93d2a7e41a8c34ccebd55b180d1f73c5dddffbad657315746e955283cfc"},
-    {file = "openapi_core-0.19.1.tar.gz", hash = "sha256:3facc2c87b7e9fb9909ae72bfb0b7cad20954e23fb4ef04dc5559197dee87597"},
+    {file = "openapi_core-0.19.2-py3-none-any.whl", hash = "sha256:b05f81031cc5b14f3a90b02f955d2ec756ccd5fba4f4e80bc4362520dac679a4"},
+    {file = "openapi_core-0.19.2.tar.gz", hash = "sha256:db4e13dd3162d861d9485ae804f350586d9fd1d72808cdb264d6993d9b5ede3f"},
 ]
 
 [package.dependencies]
