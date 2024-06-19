@@ -293,8 +293,7 @@ internal sealed class HuggingFaceClient
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
-        
-        // Attempt to deserialize as TextEmbeddingResponseType1
+
         var response = DeserializeResponse<TextEmbeddingResponse>(body);
         return response.ToList();
     }
