@@ -55,8 +55,10 @@ public class ChatMessageContentTests
         Assert.Contains(sut.Items, item => item is TextContent textContent && textContent.Text == "fake-content");
     }
 
-    [Fact]
-    public void ContentPropertySetterShouldUpdateContentOfFirstTextContentItem()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("fake-content-1-update")]
+    public void ContentPropertySetterShouldUpdateContentOfFirstTextContentItem(string? content)
     {
         // Arrange
         var items = new ChatMessageContentItemCollection
@@ -68,10 +70,23 @@ public class ChatMessageContentTests
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items)
         {
-            Content = "fake-content-1-update"
+            Content = content
         };
 
-        Assert.Equal("fake-content-1-update", ((TextContent)sut.Items[1]).Text);
+        Assert.Equal(content, ((TextContent)sut.Items[1]).Text);
+    }
+
+    [Fact]
+    public void ContentPropertySetterShouldNotAddTextContentToItemsCollection()
+    {
+        // Arrange
+        var sut = new ChatMessageContent(AuthorRole.User, content: null)
+        {
+            Content = null
+        };
+
+        // Assert
+        Assert.Empty(sut.Items);
     }
 
     [Fact]
