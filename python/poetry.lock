@@ -3850,17 +3850,18 @@ xmp = ["defusedxml"]
 
 [[package]]
 name = "pinecone-client"
-version = "4.1.0"
+version = "4.1.1"
 description = "Pinecone client and SDK"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "pinecone_client-4.1.0-py3-none-any.whl", hash = "sha256:9cb9a66cab86b29d526cc99fe6ab151f577967a447c81448057dcd8682646a55"},
-    {file = "pinecone_client-4.1.0.tar.gz", hash = "sha256:42062a628e7a941d0bc24bb8afb026f3ad4d264cf06d6a627a3de583214ae3de"},
+    {file = "pinecone_client-4.1.1-py3-none-any.whl", hash = "sha256:e74ea91a0129a80f301662e286b1883f2eb896683ff7d2cdb03ea06346844d0d"},
+    {file = "pinecone_client-4.1.1.tar.gz", hash = "sha256:b2e78c29de50c180dbfe75e15f08c87ec1a3a4f1bc6b2be1f0ccaee1ab4434fa"},
 ]
 
 [package.dependencies]
 certifi = ">=2019.11.17"
+pinecone-plugin-interface = ">=0.0.7,<0.0.8"
 tqdm = ">=4.64.1"
 typing-extensions = ">=3.7.4"
 urllib3 = [
@@ -3870,6 +3871,17 @@ urllib3 = [
 
 [package.extras]
 grpc = ["googleapis-common-protos (>=1.53.0)", "grpcio (>=1.44.0)", "grpcio (>=1.59.0)", "lz4 (>=3.1.3)", "protobuf (>=4.25,<5.0)", "protoc-gen-openapiv2 (>=0.0.1,<0.0.2)"]
+
+[[package]]
+name = "pinecone-plugin-interface"
+version = "0.0.7"
+description = "Plugin interface for the Pinecone python client"
+optional = false
+python-versions = "<4.0,>=3.8"
+files = [
+    {file = "pinecone_plugin_interface-0.0.7-py3-none-any.whl", hash = "sha256:875857ad9c9fc8bbc074dbe780d187a2afd21f5bfe0f3b08601924a61ef1bba8"},
+    {file = "pinecone_plugin_interface-0.0.7.tar.gz", hash = "sha256:b8e6675e41847333aa13923cc44daa3f85676d7157324682dc1640588a982846"},
+]
 
 [[package]]
 name = "platformdirs"
