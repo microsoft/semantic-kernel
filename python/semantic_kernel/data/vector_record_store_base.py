@@ -2,6 +2,7 @@
 
 
 from abc import ABC, abstractmethod
+from inspect import signature
 from typing import Any, Generic, TypeVar
 
 from semantic_kernel.data.protocols.data_model_serde_protocols import (
@@ -14,6 +15,7 @@ from semantic_kernel.exceptions.memory_connector_exceptions import (
     DataModelSerializationException,
     MemoryConnectorException,
 )
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 TModel = TypeVar("TModel", bound=object)
@@ -26,6 +28,7 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
         self,
         item_type: type[TModel],
         collection_name: str | None = None,
+        kernel: Kernel | None = None,
     ):
         """Create a VectorStoreBase instance.
 
@@ -33,6 +36,7 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
             item_type (type[TModel]): The data model type.
             key_type (type[TKey], optional): The key type. Defaults to None.
             collection_name (str, optional): The collection name. Defaults to None.
+            kernel (Kernel, optional): The kernel, used if embeddings need to be created.
 
         Raises:
             ValueError: If the item type is not a data model.
@@ -42,6 +46,7 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
         self.collection_name = collection_name
         if not hasattr(item_type, "__kernel_data_model__"):
             raise ValueError(f"Item type {item_type} must be a data model, use the @datamodel decorator")
+        self._validate_data_model(item_type)
         self._item_type: type[TModel] = item_type
         model_fields = getattr(item_type, "__kernel_data_model_fields__")
         if not model_fields:
@@ -49,6 +54,7 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
         self._key_field = model_fields.key_field.name
         if not self._key_field:
             raise ValueError(f"Item type {item_type} must have the key field defined.")
+        self._kernel = kernel
 
     async def __aenter__(self):
         """Enter the context manager."""
@@ -66,8 +72,12 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
 
     @abstractmethod
     async def upsert(
-        self, record: TModel, collection_name: str | None = None, generate_vectors: bool = True, **kwargs: Any
-    ) -> TKey:
+        self,
+        record: TModel,
+        collection_name: str | None = None,
+        generate_vectors: bool = True,
+        **kwargs: Any,
+    ) -> TKey | None:
         """Upsert a record.
 
         Args:
@@ -151,6 +161,16 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
     # endregion
     # region Overloadable Methods
 
+    @property
+    def supported_key_types(self) -> list[type] | None:
+        """Supply the types that keys are allowed to have. None means any."""
+        return None
+
+    @property
+    def supported_vector_types(self) -> list[type] | None:
+        """Supply the types that vectors are allowed to have. None means any."""
+        return None
+
     def _validate_data_model(self, item_type: type[TModel]):
         """Internal function that should be overloaded by child classes to validate datatypes, etc.
 
@@ -158,6 +178,11 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
 
         Checks should include, allowed naming of parameters, allowed data types, allowed vector dimensions.
         """
+        model_fields = getattr(item_type, "__kernel_data_model_fields__")
+        model_sig = signature(item_type)
+        key_type = model_sig.parameters[model_fields.key_field_name].annotation.__args__[0]
+        if self.supported_key_types and key_type not in self.supported_key_types:
+            raise ValueError(f"Key field must be one of {self.supported_key_types}")
         return
 
     def _serialize_data_model_to_store_model(self, record: TModel) -> dict[str, Any]:
@@ -192,11 +217,11 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
                 raise DataModelSerializationException(f"Error serializing record: {exc}") from exc
 
         store_model = {}
-        for field in getattr(self._item_type, "__kernel_data_model_fields__"):
+        for field_name in getattr(self._item_type, "__kernel_data_model_fields__").field_names:
             try:
-                store_model[field.name] = getattr(record, field.name)
+                store_model[field_name] = getattr(record, field_name)
             except AttributeError:
-                raise DataModelSerializationException(f"Error serializing record: {field.name}")
+                raise DataModelSerializationException(f"Error serializing record: {field_name}")
         return store_model
 
     def _deserialize_store_model_to_data_model(self, record: Any | dict[str, Any]) -> TModel:
@@ -223,10 +248,10 @@ class VectorRecordStoreBase(ABC, Generic[TModel, TKey]):
                 raise DataModelDeserializationException(f"Error deserializing record: {exc}") from exc
 
         if isinstance(record, dict):
-            data_model = self._item_type()
-            for field in getattr(self._item_type, "__kernel_data_model_fields__"):
-                setattr(data_model, field.name, record.get(field.name))
-            return data_model
+            data_model_dict = {}
+            for field_name in getattr(self._item_type, "__kernel_data_model_fields__").fields:
+                data_model_dict[field_name] = record.get(field_name)
+            return self._item_type(**data_model_dict)
         raise DataModelDeserializationException(
             "No way found to deserialize the record, please add a serialize method or override this function."
         )

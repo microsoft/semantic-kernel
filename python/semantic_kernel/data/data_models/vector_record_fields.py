@@ -18,8 +18,6 @@ class VectorStoreRecordField(ABC):
 class VectorStoreRecordKeyField(VectorStoreRecordField):
     """Memory record key field."""
 
-    name: str = "key"
-
 
 @dataclass
 class VectorStoreRecordDataField(VectorStoreRecordField):
@@ -41,29 +39,20 @@ class VectorStoreRecordVectorField(VectorStoreRecordField):
 class VectorStoreRecordDefinition:
     """Memory record definition."""
 
-    fields: list[VectorStoreRecordField]
-
-    def get_field_by_name(self, name: str) -> VectorStoreRecordField:
-        """Get the field by name."""
-        for fld in self.fields:
-            if fld.name == name:
-                return fld
-        raise ValueError(f"Field with name '{name}' not found.")
+    key_field_name: str = field(init=False)
+    fields: dict[str, VectorStoreRecordField]
 
     @cached_property
     def field_names(self) -> list[str]:
         """Get the names of the fields."""
-        return [fld.name for fld in self.fields if fld.name is not None]
+        return list(self.fields.keys())
 
-    @cached_property
+    @property
     def key_field(self) -> "VectorStoreRecordKeyField":
         """Get the key field."""
-        for fld in self.fields:
-            if isinstance(fld, VectorStoreRecordKeyField):
-                return fld
-        raise ValueError("Memory record definition must have a key field.")
+        return self.fields[self.key_field_name]  # type: ignore
 
-    def validate_fields(self):
+    def __post_init__(self):
         """Validate the fields.
 
         Raises:
@@ -72,15 +61,14 @@ class VectorStoreRecordDefinition:
             DataModelException: If there is no key field.
 
         """
-        key_found = False
-        for fld in self.fields:
-            if fld.name is None:
+        for name, value in self.fields.items():
+            if name is None:
                 raise DataModelException("Fields must have a name.")
-            if isinstance(fld, VectorStoreRecordDataField) and fld.embedding_property_name not in self.field_names:
+            if isinstance(value, VectorStoreRecordDataField) and value.embedding_property_name not in self.field_names:
                 raise DataModelException(
-                    "Data field with embedding property name must have a corresponding vector field."
+                    "Data field with embedding property name must refer to a existing vector field."
                 )
-            if isinstance(fld, VectorStoreRecordKeyField):
-                key_found = True
-        if not key_found:
+            if isinstance(value, VectorStoreRecordKeyField):
+                self.key_field_name = name
+        if not self.key_field_name:
             raise DataModelException("Memory record definition must have a key field.")
