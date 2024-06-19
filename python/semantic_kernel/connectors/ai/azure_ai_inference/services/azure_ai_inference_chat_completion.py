@@ -1,34 +1,40 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from collections.abc import AsyncGenerator
 from typing import Any
 
-from azure.ai.inference import load_client as load_client_sync
-from azure.ai.inference.aio import ChatCompletionsClient as ChatCompletionsClientAsync
+from azure.ai.inference.aio import ChatCompletionsClient
 from azure.ai.inference.models import (
     AssistantMessage,
     AsyncStreamingChatCompletions,
     ChatChoice,
     ChatCompletions,
     ChatRequestMessage,
+    ImageContentItem,
+    ImageDetailLevel,
+    ImageUrl,
     ModelInfo,
-    ModelType,
     StreamingChatChoiceUpdate,
     SystemMessage,
+    TextContentItem,
     ToolMessage,
     UserMessage,
 )
-from azure.core.credentials import AzureKeyCredential
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceChatPromptExecutionSettings,
     AzureAIInferenceSettings,
 )
+from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
@@ -40,11 +46,13 @@ _MESSAGE_CONVERTER: dict[AuthorRole, Any] = {
     AuthorRole.TOOL: ToolMessage,
 }
 
+logger: logging.Logger = logging.getLogger(__name__)
 
-class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
+
+class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceBase):
     """Azure AI Inference Chat Completion Service."""
 
-    client: ChatCompletionsClientAsync
+    client: ChatCompletionsClient
 
     def __init__(
         self,
@@ -53,24 +61,30 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         service_id: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        client: ChatCompletionsClientAsync | None = None,
+        client: ChatCompletionsClient | None = None,
         model_info: ModelInfo | None = None,
     ) -> None:
         """Initialize the Azure AI Inference Chat Completion service.
 
+        If no arguments are provided, the service will attempt to load the settings from the environment.
+        The following environment variables are used:
+        - AZURE_AI_INFERENCE_API_KEY
+        - AZURE_AI_INFERENCE_ENDPOINT
+
         Args:
-            api_key: The API key for the Azure AI Inference service deployment.
-            endpoint: The endpoint of the Azure AI Inference service deployment.
-            service_id: Service ID for the chat completion service. (Optional)
-            env_file_path: The path to the environment file. (Optional)
-            env_file_encoding: The encoding of the environment file. (Optional)
-            client: The Azure AI Inference client to use. (Optional)
-            model_info: The model info of the provided client. (Optional, required if client is provided)
+            api_key (str | None): The API key for the Azure AI Inference service deployment. (Optional)
+            endpoint (str | None): The endpoint of the Azure AI Inference service deployment. (Optional)
+            service_id (str | None): Service ID for the chat completion service. (Optional)
+            env_file_path (str | None): The path to the environment file. (Optional)
+            env_file_encoding (str | None): The encoding of the environment file. (Optional)
+            client (ChatCompletionsClient | None): The Azure AI Inference client to use. (Optional)
+            model_info (ModelInfo | None): The model info of the provided client. (Optional, required if client is
+                provided)
+
+        Raises:
+            ServiceInitializationError: If an error occurs during initialization.
         """
-        if client is not None:
-            if model_info is None:
-                raise ServiceInitializationError("Model info is required when providing a client.")
-        else:
+        if not client:
             try:
                 azure_ai_inference_settings = AzureAIInferenceSettings.create(
                     api_key=api_key,
@@ -81,7 +95,9 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
             except ValidationError as e:
                 raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
 
-            client, model_info = self._create_client(azure_ai_inference_settings)
+            client, model_info = self._create_client(azure_ai_inference_settings, ChatCompletionsClient)
+        elif not model_info:
+            raise ServiceInitializationError("Model info is required when providing a client.")
 
         super().__init__(
             ai_model_id=model_info.model_name,
@@ -145,33 +161,6 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
                 self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
 
-    def _create_client(
-        self, azure_ai_inference_settings: AzureAIInferenceSettings
-    ) -> tuple[ChatCompletionsClientAsync, ModelInfo]:
-        """Create the Azure AI Inference client.
-
-        Client is created synchronously to check the model type before creating the async client.
-        """
-        chat_completions_client_sync = load_client_sync(
-            endpoint=azure_ai_inference_settings.endpoint,
-            credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
-        )
-
-        model_info = chat_completions_client_sync.get_model_info()
-        if model_info.model_type not in (ModelType.CHAT, "completion"):
-            raise ServiceInitializationError(
-                f"Endpoint {azure_ai_inference_settings.endpoint} does not support chat completion."
-                f" The provided endpoint is for a {model_info.model_type} model."
-            )
-
-        return (
-            ChatCompletionsClientAsync(
-                endpoint=azure_ai_inference_settings.endpoint,
-                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
-            ),
-            model_info,
-        )
-
     def _get_metadata_from_response(self, response: ChatCompletions | AsyncStreamingChatCompletions) -> dict[str, Any]:
         """Get metadata from the response.
 
@@ -201,8 +190,20 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         Returns:
             A chat message content object.
         """
+        items = []
+        if choice.message.tool_calls:
+            for tool_call in choice.message.tool_calls:
+                items.append(
+                    FunctionCallContent(
+                        id=tool_call.id,
+                        name=tool_call.function.name,
+                        arguments=tool_call.function.arguments,
+                    )
+                )
+
         return ChatMessageContent(
             role=AuthorRole(choice.message.role),
+            items=items,
             content=choice.message.content,
             inner_content=response,
             finish_reason=FinishReason(choice.finish_reason),
@@ -225,8 +226,21 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         Returns:
             A streaming chat message content object.
         """
+        items = []
+        if choice.message.tool_calls:
+            for tool_call in choice.message.tool_calls:
+                items.append(
+                    FunctionCallContent(
+                        id=tool_call.id,
+                        index=choice.index,
+                        name=tool_call.function.name,
+                        arguments=tool_call.function.arguments,
+                    )
+                )
+
         return StreamingChatMessageContent(
             role=AuthorRole(choice.delta.role),
+            items=items,
             content=choice.delta.content,
             choice_index=choice.index,
             inner_content=chunk,
@@ -243,8 +257,32 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         Returns:
             A list of formatted chat history.
         """
-        self._prepare_chat_history_for_request(chat_history)
-        return [_MESSAGE_CONVERTER[message.role](content=message.content) for message in chat_history.messages]
+        chat_request_messages: list[ChatRequestMessage] = []
+
+        for message in chat_history.messages:
+            if message.role == AuthorRole.USER and any(isinstance(item, ImageContent) for item in message.items):
+                # If it's a user message and there are any image items in the message, we need to create a list of
+                # content items, otherwise we need to just pass in the content as a string or it will error.
+                contentItems = []
+                for item in message.items:
+                    if isinstance(item, TextContent):
+                        contentItems.append(TextContentItem(text=item.text))
+                    elif isinstance(item, ImageContent):
+                        contentItems.append(
+                            ImageContentItem(
+                                image_url=ImageUrl(url=item.data_uri or item.uri, detail=ImageDetailLevel.Auto)
+                            )
+                        )
+                    else:
+                        logger.warning(
+                            "Unsupported item type in User message while formatting chat history for Azure AI"
+                            f" Inference: {type(item)}"
+                        )
+                chat_request_messages.append(_MESSAGE_CONVERTER[message.role](content=contentItems))
+            else:
+                chat_request_messages.append(_MESSAGE_CONVERTER[message.role](content=message.content))
+
+        return chat_request_messages
 
     def get_prompt_execution_settings_class(
         self,
