@@ -41,13 +41,12 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIChatCompletionService(
         OpenAIChatCompletionConfig config,
-        OpenAIClient openAIClient,
-        ILoggerFactory? loggerFactory = null)
+        OpenAIClient openAIClient)
     {
         this._core = new(
             config,
             openAIClient,
-            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+            config.LoggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, config.ModelId);
     }

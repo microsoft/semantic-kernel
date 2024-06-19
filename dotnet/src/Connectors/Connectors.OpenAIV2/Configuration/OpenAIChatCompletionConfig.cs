@@ -13,5 +13,5 @@ public class OpenAIChatCompletionConfig : BaseServiceConfig
     /// <summary>
     /// The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.
     /// </summary>
-    public ILoggerFactory? LoggerFactory { get; init; }
+    public ILoggerFactory? LoggerFactory { get; internal set; }
 }

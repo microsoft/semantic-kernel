@@ -60,6 +60,28 @@ public sealed class OpenAIFileService
     }
 
     /// <summary>
+    /// Create an instance of the OpenAI chat completion connector
+    /// </summary>
+    /// <param name="apiKey">OpenAI API Key</param>
+    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public OpenAIFileService(
+        string apiKey,
+        string? organization = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(apiKey, nameof(apiKey));
+
+        this._apiKey = apiKey;
+        this._logger = loggerFactory?.CreateLogger(typeof(OpenAIFileService)) ?? NullLogger.Instance;
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        this._serviceUri = new Uri(this._httpClient.BaseAddress ?? new Uri(OpenAIApiEndpoint), OpenAIApiRouteFiles);
+        this._organization = organization;
+    }
+
+    /// <summary>
     /// Remove a previously uploaded file.
     /// </summary>
     /// <param name="id">The uploaded file identifier.</param>
