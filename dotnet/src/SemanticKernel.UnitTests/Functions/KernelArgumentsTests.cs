@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -60,6 +62,43 @@ public class KernelArgumentsTests
         var argument = Assert.Single(sut);
         Assert.Equal("fake-key", argument.Key);
         Assert.Equal("fake-value", argument.Value);
+    }
+
+    [Fact]
+    public void ItCanBeCreatedWithMultipleExecutionSettingsAndArguments()
+    {
+        // Arrange
+        var executionSettings1 = new PromptExecutionSettings();
+        var executionSettings2 = new PromptExecutionSettings() { ServiceId = "service-2" };
+        var executionSettings3 = new PromptExecutionSettings() { ServiceId = "service-3" };
+
+        // Act
+        KernelArguments sut = new([executionSettings1, executionSettings2, executionSettings3]) { { "fake-key", "fake-value" } };
+
+        // Assert
+        Assert.Same(executionSettings1, sut.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId]);
+        Assert.Same(executionSettings2, sut.ExecutionSettings?["service-2"]);
+        Assert.Same(executionSettings3, sut.ExecutionSettings?["service-3"]);
+
+        var argument = Assert.Single(sut);
+        Assert.Equal("fake-key", argument.Key);
+        Assert.Equal("fake-value", argument.Value);
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("default", null)]
+    [InlineData(null, "default")]
+    [InlineData("service1", null, "service1")]
+    [InlineData(null, "service2", "service2")]
+    [InlineData("service1", "service2", "service3", null, "service1")]
+    public void ItCannotBeCreatedWithMultipleExecutionSettingsWithClashingServiceIdOrWithoutServiceIdSet(params string?[] serviceIds)
+    {
+        // Arrange
+        var executionSettingsList = serviceIds?.Select(serviceId => new PromptExecutionSettings() { ServiceId = serviceId }).ToList();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => new KernelArguments(executionSettingsList) { { "fake-key", "fake-value" } });
     }
 
     [Fact]
