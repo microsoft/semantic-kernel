@@ -129,7 +129,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
-    [Obsolete("Use the configuration paramether overload of this method instead.")]
+    //[Obsolete("Use the configuration paramether overload of this method instead.")]
     public static IServiceCollection AddOpenAIChatCompletion(
         this IServiceCollection services,
         string modelId,
@@ -160,35 +160,6 @@ public static class OpenAIServiceCollectionExtensions
 
     #region Images
 
-    /// <summary>
-    /// Add the OpenAI Dall-E text to image service to the list
-    /// </summary>
-    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="httpClient">The HttpClient to use with this service.</param>
-    /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0010")]
-    public static IKernelBuilder AddOpenAITextToImage(
-        this IKernelBuilder builder,
-        string apiKey,
-        string? orgId = null,
-        string? serviceId = null,
-        HttpClient? httpClient = null)
-    {
-        Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(apiKey);
-
-        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
-            new OpenAITextToImageService(
-                apiKey,
-                orgId,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()));
-
-        return builder;
-    }
 
     /// <summary>
     /// Add the OpenAI Dall-E text to image service to the list
