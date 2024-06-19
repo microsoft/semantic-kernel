@@ -57,8 +57,8 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
                 if (newExecutionSettings.ContainsKey(targetServiceId))
                 {
                     var exceptionMessage = (targetServiceId == PromptExecutionSettings.DefaultServiceId)
-                        ? $"Default service id '{PromptExecutionSettings.DefaultServiceId}' must not be duplicated."
-                        : $"Service id '{settings.ServiceId}' must not be duplicated and should match the key '{targetServiceId}'.";
+                        ? $"Multiple prompt execution settings with the default service id '{PromptExecutionSettings.DefaultServiceId}' or no service id have been provided. Specify a single default prompt execution settings and provide a unique service id for all other instances."
+                        : $"Multiple prompt execution settings with the service id '{targetServiceId}' have been provided. Provide a unique service id for all instances.";
 
                     throw new ArgumentException(exceptionMessage, nameof(executionSettings));
                 }

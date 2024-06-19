@@ -25,7 +25,7 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
     }
 
     /// <summary>
-    /// Invoke the prompt function to run for a specific service id.
+    /// Shows how to invoke a prompt and specify the service id of the preferred AI service. When the prompt is executed the AI Service with the matching service id will be selected.
     /// </summary>
     /// <param name="serviceId">Service Id</param>
     [Theory]
@@ -41,7 +41,7 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
     }
 
     /// <summary>
-    /// Invoke the prompt function to run for a specific model id.
+    /// Shows how to invoke a prompt and specify the model id of the preferred AI service. When the prompt is executed the AI Service with the matching model id will be selected.
     /// </summary>
     [Fact]
     private async Task InvokePromptByModelIdAsync()
@@ -56,8 +56,8 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
     }
 
     /// <summary>
-    /// Invoke the prompt function to preferably run for a list specific service ids where the
-    /// first service id that is found respecting the order of the options provided will be used.
+    /// Shows how to invoke a prompt and specify the service ids of the preferred AI services.
+    /// When the prompt is executed the AI Service will be selected based on the order of the provided service ids.
     /// </summary>
     [Fact]
     public async Task InvokePromptFunctionWithFirstMatchingServiceIdAsync()
@@ -72,8 +72,8 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
     }
 
     /// <summary>
-    /// Invoke the prompt function to preferably run for a list of specific model ids where the
-    /// first model id that is found respecting the order of the options provided will be used.
+    /// Shows how to invoke a prompt and specify the model ids of the preferred AI services.
+    /// When the prompt is executed the AI Service will be selected based on the order of the provided model ids.
     /// </summary>
     [Fact]
     public async Task InvokePromptFunctionWithFirstMatchingModelIdAsync()
@@ -88,7 +88,8 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
     }
 
     /// <summary>
-    /// Create a function with a predefined configuration and invoke at later moment.
+    /// Shows how to create a KernelFunction from a prompt and specify the service ids of the preferred AI services.
+    /// When the function is invoked the AI Service will be selected based on the order of the provided service ids.
     /// </summary>
     [Fact]
     public async Task InvokePreconfiguredFunctionWithFirstMatchingServiceIdAsync()
@@ -104,8 +105,8 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
     }
 
     /// <summary>
-    /// Create a function with a predefined configuration to preferably run for a list specific model ids where the
-    /// first model id that is found respecting the order of the options provided will be used.
+    /// Shows how to create a KernelFunction from a prompt and specify the model ids of the preferred AI services.
+    /// When the function is invoked the AI Service will be selected based on the order of the provided model ids.
     /// </summary>
     [Fact]
     public async Task InvokePreconfiguredFunctionWithFirstMatchingModelIdAsync()
@@ -122,7 +123,7 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
     }
 
     /// <summary>
-    /// Create a function with a predefined configuration to run for a specific model id.
+    /// Shows how to invoke a KernelFunction and specify the model id of the AI Service the function will use.
     /// </summary>
     [Fact]
     public async Task InvokePreconfiguredFunctionByModelIdAsync()
@@ -138,7 +139,7 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
     }
 
     /// <summary>
-    /// Create a function with a predefined configuration to run for a specific service id.
+    /// Shows how to invoke a KernelFunction and specify the service id of the AI Service the function will use.
     /// </summary>
     /// <param name="serviceId">Service Id</param>
     [Theory]
@@ -152,5 +153,33 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
         var result = await kernel.InvokeAsync(function, new(new PromptExecutionSettings { ServiceId = serviceId }));
 
         Console.WriteLine(result.GetValue<string>());
+    }
+
+    /// <summary>
+    /// Shows when specifying a non-existant ServiceId the kernel throws an exception.
+    /// </summary>
+    /// <param name="serviceId">Service Id</param>
+    [Theory]
+    [InlineData("NotFound")]
+    public async Task InvokePromptByNonExistingServiceIdThowsExceptionAsync(string serviceId)
+    {
+        var kernel = BuildKernel();
+        Console.WriteLine($"======== Service Id: {serviceId} ========");
+
+        await Assert.ThrowsAsync<KernelException>(async () => await kernel.InvokePromptAsync(ChatPrompt, new(new PromptExecutionSettings { ServiceId = serviceId })));
+    }
+
+    /// <summary>
+    /// Shows how in the execution settings when no model id is found it falls back to the default service.
+    /// </summary>
+    /// <param name="modelId">Model Id</param>
+    [Theory]
+    [InlineData("NotFound")]
+    public async Task InvokePromptByNonExistingModelIdUsesDefaultServiceAsync(string modelId)
+    {
+        var kernel = BuildKernel();
+        Console.WriteLine($"======== Model Id: {modelId} ========");
+
+        await kernel.InvokePromptAsync(ChatPrompt, new(new PromptExecutionSettings { ModelId = modelId }));
     }
 }
