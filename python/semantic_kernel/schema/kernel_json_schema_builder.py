@@ -70,8 +70,8 @@ class KernelJsonSchemaBuilder:
 
         for field_name, field_type in hints.items():
             field_description = None
-            if hasattr(model, "__fields__") and field_name in model.__fields__:
-                field_info = model.__fields__[field_name]
+            if hasattr(model, "model_fields") and field_name in model.model_fields:
+                field_info = model.model_fields[field_name]
                 if isinstance(field_info.metadata, dict):
                     field_description = field_info.metadata.get("description")
                 elif isinstance(field_info.metadata, list) and field_info.metadata:
@@ -148,9 +148,7 @@ class KernelJsonSchemaBuilder:
             _, value_type = args
             additional_properties = cls.build(value_type)
             if additional_properties == {"type": "object"}:
-                additional_properties["properties"] = (
-                    {}
-                )  # Account for differences in Python 3.10 dict
+                additional_properties["properties"] = {}  # Account for differences in Python 3.10 dict
             schema = {"type": "object", "additionalProperties": additional_properties}
             if description:
                 schema["description"] = description

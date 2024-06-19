@@ -125,7 +125,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     public GeminiChatCompletionClient(
         HttpClient httpClient,
         string modelId,
-        Func<Task<string>> bearerTokenProvider,
+        Func<ValueTask<string>> bearerTokenProvider,
         string location,
         string projectId,
         VertexAIVersion apiVersion,

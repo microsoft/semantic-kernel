@@ -70,7 +70,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data")), new OpenAIAudioToTextExecutionSettings("file.mp3"));
+        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), new OpenAIAudioToTextExecutionSettings("file.mp3"));
 
         // Assert
         Assert.NotNull(result);

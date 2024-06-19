@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.DEBUG)
 kernel = sk.Kernel()
 
 # Create the data source settings
-azure_ai_search_settings = AzureAISearchSettings()
+azure_ai_search_settings = AzureAISearchSettings.create()
 az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings.model_dump())
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_body=extra, tool_choice="auto")
@@ -103,7 +103,7 @@ async def chat() -> bool:
     arguments["chat_history"] = history
     arguments["user_input"] = user_input
     answer = await kernel.invoke(
-        functions=chat_function,
+        function=chat_function,
         arguments=arguments,
     )
     print(f"Mosscap:> {answer}")

@@ -13,7 +13,7 @@ public abstract class StreamingKernelContent
     /// <summary>
     /// In a scenario of multiple choices per request, this represents zero-based index of the choice in the streaming sequence
     /// </summary>
-    public int ChoiceIndex { get; }
+    public int ChoiceIndex { get; set; }
 
     /// <summary>
     /// The inner content representation. Use this to bypass the current abstraction.
@@ -22,17 +22,17 @@ public abstract class StreamingKernelContent
     /// The usage of this property is considered "unsafe". Use it only if strictly necessary.
     /// </remarks>
     [JsonIgnore]
-    public object? InnerContent { get; }
+    public object? InnerContent { get; set; }
 
     /// <summary>
     /// The model ID used to generate the content.
     /// </summary>
-    public string? ModelId { get; }
+    public string? ModelId { get; set; }
 
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    public IReadOnlyDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
 
     /// <summary>
     /// Abstract string representation of the chunk in a way it could compose/append with previous chunks.
@@ -51,6 +51,13 @@ public abstract class StreamingKernelContent
     /// </remarks>
     /// <returns>Byte array representation of the chunk</returns>
     public abstract byte[] ToByteArray();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StreamingKernelContent"/> class.
+    /// </summary>
+    protected StreamingKernelContent()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingKernelContent"/> class.

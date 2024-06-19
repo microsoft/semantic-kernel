@@ -76,9 +76,7 @@ public abstract class BaseTest
     /// </summary>
     /// <param name="target">Target object to write</param>
     public void WriteLine(object? target = null)
-    {
-        this.Output.WriteLine(target ?? string.Empty);
-    }
+        => this.Output.WriteLine(target ?? string.Empty);
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.
@@ -89,13 +87,18 @@ public abstract class BaseTest
         => this.Output.WriteLine(format ?? string.Empty, args);
 
     /// <summary>
+    /// This method can be substituted by Console.WriteLine when used in Console apps.
+    /// </summary>
+    /// <param name="message">The message</param>
+    public void WriteLine(string? message)
+        => this.Output.WriteLine(message ?? string.Empty);
+
+    /// <summary>
     /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
     /// </summary>
     /// <param name="target">Target object to write</param>
     public void Write(object? target = null)
-    {
-        this.Output.WriteLine(target ?? string.Empty);
-    }
+        => this.Output.WriteLine(target ?? string.Empty);
 
     protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
