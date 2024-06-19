@@ -34,7 +34,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
-        OpenAIClientTextEmbeddingGenerationOptions options)
+        OpenAIClientTextEmbeddingGenerationConfig options)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(options.ModelId);
@@ -55,7 +55,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(this IServiceCollection services,
-        OpenAITextEmbeddingGenerationOptions options,
+        OpenAITextEmbeddingGenerationConfig options,
         OpenAIClient? openAIClient = null)
     {
         Verify.NotNull(services);

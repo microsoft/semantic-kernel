@@ -31,36 +31,30 @@ internal sealed class OpenAIClientCore : ClientCore
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIClientCore"/> class.
     /// </summary>
-    /// <param name="modelId">Model name.</param>
-    /// <param name="apiKey">OpenAI API Key.</param>
-    /// <param name="endpoint">OpenAI compatible API endpoint.</param>
-    /// <param name="organization">OpenAI Organization Id (usually optional).</param>
+    /// <param name="config">Client configuration</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
     internal OpenAIClientCore(
-        string modelId,
-        string? apiKey = null,
-        Uri? endpoint = null,
-        string? organization = null,
+        OpenAIClientAudioToTextServiceConfig config,
         HttpClient? httpClient = null,
         ILogger? logger = null) : base(logger)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(config.ModelId);
 
-        this.ModelName = modelId;
+        this.ModelName = config.ModelId;
 
         var options = GetOpenAIClientOptions(httpClient);
 
-        if (!string.IsNullOrWhiteSpace(organization))
+        if (!string.IsNullOrWhiteSpace(config.OrganizationId))
         {
-            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organization!), PipelinePosition.PerCall);
+            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", config.OrganizationId!), PipelinePosition.PerCall);
         }
 
         // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
-        var providedEndpoint = endpoint ?? httpClient?.BaseAddress;
+        var providedEndpoint = config.Endpoint ?? httpClient?.BaseAddress;
         if (providedEndpoint is null)
         {
-            Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
+            Verify.NotNullOrWhiteSpace(config.ApiKey); // For Public OpenAI Endpoint a key must be provided.
             this.Endpoint = new Uri(DefaultPublicEndpoint);
         }
         else
@@ -69,7 +63,7 @@ internal sealed class OpenAIClientCore : ClientCore
             this.Endpoint = providedEndpoint;
         }
 
-        this.Client = new OpenAIClient(apiKey ?? string.Empty, options);
+        this.Client = new OpenAIClient(config.ApiKey ?? string.Empty, options);
     }
 
     /// <summary>
@@ -77,18 +71,18 @@ internal sealed class OpenAIClientCore : ClientCore
     /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="config">Client configuration</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal OpenAIClientCore(
-        string modelId,
+        OpenAIAudioToTextServiceConfig config,
         OpenAIClient openAIClient,
         ILogger? logger = null) : base(logger)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(config.ModelId);
         Verify.NotNull(openAIClient);
 
-        this.ModelName = modelId;
+        this.ModelName = config.ModelId;
         this.Client = openAIClient;
     }
 

@@ -25,7 +25,7 @@ public static class OpenAIKernelBuilderExtensions
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
-        OpenAITextEmbeddingGenerationOptions options,
+        OpenAITextEmbeddingGenerationConfig options,
         OpenAIClient? openAIClient = null)
     {
         Verify.NotNull(builder);
@@ -49,7 +49,7 @@ public static class OpenAIKernelBuilderExtensions
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
-        OpenAIClientTextEmbeddingGenerationOptions options,
+        OpenAIClientTextEmbeddingGenerationConfig options,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);

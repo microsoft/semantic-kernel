@@ -28,7 +28,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <param name="options">Options for the Text Embedding Service.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     public OpenAITextEmbeddingGenerationService(
-        OpenAIClientTextEmbeddingGenerationOptions options,
+        OpenAIClientTextEmbeddingGenerationConfig options,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(options.ModelId);
@@ -51,7 +51,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <param name="options">Options for the Text Embedding Service.</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     public OpenAITextEmbeddingGenerationService(
-        OpenAITextEmbeddingGenerationOptions options,
+        OpenAITextEmbeddingGenerationConfig options,
         OpenAIClient openAIClient)
     {
         Verify.NotNull(options.ModelId);

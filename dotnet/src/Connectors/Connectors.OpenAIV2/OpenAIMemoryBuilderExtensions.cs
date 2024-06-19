@@ -23,7 +23,7 @@ public static class OpenAIMemoryBuilderExtensions
     [Experimental("SKEXP0010")]
     public static MemoryBuilder WithOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
-        OpenAIClientTextEmbeddingGenerationOptions options,
+        OpenAIClientTextEmbeddingGenerationConfig options,
         HttpClient? httpClient = null)
     {
         return builder.WithTextEmbeddingGeneration((loggerFactory, builderHttpClient) =>
