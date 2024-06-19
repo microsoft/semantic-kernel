@@ -49,9 +49,9 @@ public class ClassicSqlServerMemoryStoreTests : IAsyncLifetime
         await this.InitializeDatabaseAsync();
     }
 
-    public async Task DisposeAsync()
+    public Task DisposeAsync()
     {
-        this.CleanupDatabaseAsync();
+        return this.CleanupDatabaseAsync();
     }
 
     [Fact(Skip = SkipReason)]
@@ -75,7 +75,7 @@ public class ClassicSqlServerMemoryStoreTests : IAsyncLifetime
 
         // Assert
         Assert.NotEmpty(collections);
-        Assert.True(collections.Contains(collection));
+        Assert.Contains(collection, collections);
     }
 
     [Fact(Skip = SkipReason)]
