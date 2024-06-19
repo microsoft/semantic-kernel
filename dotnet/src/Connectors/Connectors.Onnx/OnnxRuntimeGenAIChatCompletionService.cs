@@ -122,7 +122,14 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
     private void UpdateGeneratorParamsFromPromptExecutionSettings(GeneratorParams generatorParams, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
     {
+
+/* Unmerged change from project 'Connectors.Onnx(netstandard2.1)'
+Before:
         if(onnxRuntimeGenAIPromptExecutionSettings.TopP.HasValue)
+After:
+        if (onnxRuntimeGenAIPromptExecutionSettings.TopP.HasValue)
+*/
+        if (onnxRuntimeGenAIPromptExecutionSettings.TopP.HasValue)
         {
             generatorParams.SetSearchOption("top_p", onnxRuntimeGenAIPromptExecutionSettings.TopP.Value);
         }
