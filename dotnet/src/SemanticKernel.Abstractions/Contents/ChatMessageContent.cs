@@ -41,18 +41,12 @@ public class ChatMessageContent : KernelContent
         }
         set
         {
-            if (value is null)
-            {
-                return;
-            }
-
             var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
             if (textContent is not null)
             {
                 textContent.Text = value;
-                textContent.Encoding = this.Encoding;
             }
-            else
+            else if (value is not null)
             {
                 this.Items.Add(new TextContent(
                     text: value,

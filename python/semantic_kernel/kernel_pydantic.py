@@ -49,6 +49,8 @@ class KernelBaseSettings(BaseSettings):
         cls.model_config["env_prefix"] = cls.env_prefix
         if data.get("env_file_path"):
             cls.model_config["env_file"] = data["env_file_path"]
+        else:
+            cls.model_config["env_file"] = ".env"
         cls.model_config["env_file_encoding"] = data.get("env_file_encoding", "utf-8")
         data = {k: v for k, v in data.items() if v is not None}
         return cls(**data)
