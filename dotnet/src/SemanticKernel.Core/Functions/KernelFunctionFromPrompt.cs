@@ -123,38 +123,29 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        var promptRenderingResult = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable CS0612 // Events are deprecated
-        if (result.RenderedEventArgs?.Cancel is true)
+        if (promptRenderingResult.RenderedEventArgs?.Cancel is true)
         {
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation after prompt rendering.");
         }
 #pragma warning restore CS0612 // Events are deprecated
 
         // Return function result if it was set in prompt filter.
-        if (result.FunctionResult is not null)
+        if (promptRenderingResult.FunctionResult is not null)
         {
-            result.FunctionResult.RenderedPrompt = result.RenderedPrompt;
-            return result.FunctionResult;
+            promptRenderingResult.FunctionResult.RenderedPrompt = promptRenderingResult.RenderedPrompt;
+            return promptRenderingResult.FunctionResult;
         }
 
-        if (result.AIService is IChatCompletionService chatCompletion)
+        return promptRenderingResult.AIService switch
         {
-            var chatContent = await chatCompletion.GetChatMessageContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
-            this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
-            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata) { RenderedPrompt = result.RenderedPrompt };
-        }
-
-        if (result.AIService is ITextGenerationService textGeneration)
-        {
-            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
-            this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
-            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata) { RenderedPrompt = result.RenderedPrompt };
-        }
-
-        // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
-        throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
+            IChatCompletionService chatCompletion => await this.GetChatCompletionResultAsync(chatCompletion, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
+            ITextGenerationService textGeneration => await this.GetTextGenerationResultAsync(textGeneration, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
+            // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
+            _ => throw new NotSupportedException($"The AI service {promptRenderingResult.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}")
+        };
     }
 
     /// <inheritdoc/>
@@ -447,6 +438,68 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             logger.LogWarning("Unable to get token details from model result.");
         }
+    }
+
+    private async Task<FunctionResult> GetChatCompletionResultAsync(
+        IChatCompletionService chatCompletion,
+        Kernel kernel,
+        PromptRenderingResult promptRenderingResult,
+        CancellationToken cancellationToken)
+    {
+        var chatContents = await chatCompletion.GetChatMessageContentsAsync(
+            promptRenderingResult.RenderedPrompt,
+            promptRenderingResult.ExecutionSettings,
+            kernel,
+            cancellationToken).ConfigureAwait(false);
+
+        if (chatContents is { Count: 0 })
+        {
+            return new FunctionResult(this, culture: kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+        }
+
+        // Usage details are global and duplicated for each chat message content, use first one to get usage information
+        var chatContent = chatContents[0];
+        this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
+
+        // If collection has one element, return single result
+        if (chatContents.Count == 1)
+        {
+            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+        }
+
+        // Otherwise, return multiple results
+        return new FunctionResult(this, chatContents, kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+    }
+
+    private async Task<FunctionResult> GetTextGenerationResultAsync(
+        ITextGenerationService textGeneration,
+        Kernel kernel,
+        PromptRenderingResult promptRenderingResult,
+        CancellationToken cancellationToken)
+    {
+        var textContents = await textGeneration.GetTextContentsWithDefaultParserAsync(
+            promptRenderingResult.RenderedPrompt,
+            promptRenderingResult.ExecutionSettings,
+            kernel,
+            cancellationToken).ConfigureAwait(false);
+
+        if (textContents is { Count: 0 })
+        {
+            return new FunctionResult(this, culture: kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+        }
+
+        // Usage details are global and duplicated for each text content, use first one to get usage information
+        var textContent = textContents[0];
+        this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
+
+        // If collection has one element, return single result
+        if (textContents.Count == 1)
+        {
+            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+        }
+
+        // Otherwise, return multiple results
+        return new FunctionResult(this, textContents, kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
     }
 
     #endregion

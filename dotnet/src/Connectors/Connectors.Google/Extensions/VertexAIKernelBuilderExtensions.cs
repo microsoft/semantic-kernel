@@ -37,7 +37,7 @@ public static class VertexAIKernelBuilderExtensions
     public static IKernelBuilder AddVertexAIGeminiChatCompletion(
         this IKernelBuilder builder,
         string modelId,
-        Func<Task<string>> bearerTokenProvider,
+        Func<ValueTask<string>> bearerTokenProvider,
         string location,
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,
@@ -122,7 +122,7 @@ public static class VertexAIKernelBuilderExtensions
     public static IKernelBuilder AddVertexAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
-        Func<Task<string>> bearerTokenProvider,
+        Func<ValueTask<string>> bearerTokenProvider,
         string location,
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,

@@ -25,11 +25,11 @@ public class KernelFunctionExtensionsTests
         KernelFunction f1 = plugin[nameof(TestPlugin.TestFunction1)];
         KernelFunction f2 = plugin[nameof(TestPlugin.TestFunction2)];
 
-        FunctionToolDefinition definition1 = f1.ToToolDefinition("testplugin", '-');
+        FunctionToolDefinition definition1 = f1.ToToolDefinition("testplugin", "-");
         Assert.StartsWith($"testplugin-{nameof(TestPlugin.TestFunction1)}", definition1.Name, StringComparison.Ordinal);
         Assert.Equal("test description", definition1.Description);
 
-        FunctionToolDefinition definition2 = f2.ToToolDefinition("testplugin", '-');
+        FunctionToolDefinition definition2 = f2.ToToolDefinition("testplugin", "-");
         Assert.StartsWith($"testplugin-{nameof(TestPlugin.TestFunction2)}", definition2.Name, StringComparison.Ordinal);
         Assert.Equal("test description", definition2.Description);
     }
