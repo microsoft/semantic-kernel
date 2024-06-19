@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -293,20 +293,12 @@ internal sealed class HuggingFaceClient
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
-        try
-        {
-            // Attempt to deserialize as TextEmbeddingResponseType1
-            var response = DeserializeResponse<TextEmbeddingResponse>(body);
-            return response.ToList();
-        }
-        catch (KernelException ex)
-        {
-            // Eit
-            throw ex;
-        }
-
+        
+        // Attempt to deserialize as TextEmbeddingResponseType1
+        var response = DeserializeResponse<TextEmbeddingResponse>(body);
+        return response.ToList();
     }
-
+    
     private Uri GetEmbeddingGenerationEndpoint(string modelId)
         => new($"{this.Endpoint}{this.Separator}pipeline/feature-extraction/{modelId}");
 
