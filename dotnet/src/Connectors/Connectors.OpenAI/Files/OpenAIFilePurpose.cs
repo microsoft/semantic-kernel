@@ -29,7 +29,7 @@ public readonly struct OpenAIFilePurpose : IEquatable<OpenAIFilePurpose>
     /// <summary>
     /// File produced as result of a file included as a batch request.
     /// </summary>
-    public static OpenAIFilePurpose BatchOuput { get; } = new("batch_output");
+    public static OpenAIFilePurpose BatchOutput { get; } = new("batch_output");
 
     /// <summary>
     /// File to be used as input to fine-tune a model.
