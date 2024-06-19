@@ -37,24 +37,58 @@ internal sealed class OpenAIClientCore : ClientCore
     internal OpenAIClientCore(
         OpenAIClientAudioToTextServiceConfig config,
         HttpClient? httpClient = null,
-        ILogger? logger = null) : base(logger)
+        ILogger? logger = null)
+        : this(config.ModelId, config.OrganizationId, config.Endpoint, config.ApiKey, httpClient, logger)
     {
-        Verify.NotNullOrWhiteSpace(config.ModelId);
+    }
 
-        this.ModelName = config.ModelId;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIClientCore"/> class.
+    /// </summary>
+    /// <param name="config">Client configuration</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
+    internal OpenAIClientCore(
+        OpenAIClientChatCompletionConfig config,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
+        : this(config.ModelId, config.OrganizationId, config.Endpoint, config.ApiKey, httpClient, logger)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIClientCore"/> class.
+    /// </summary>
+    /// <param name="config">Client configuration</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
+    internal OpenAIClientCore(
+        OpenAIClientTextEmbeddingGenerationConfig config,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
+        : this(config.ModelId, config.OrganizationId, config.Endpoint, config.ApiKey, httpClient, logger)
+    {
+    }
+
+    private OpenAIClientCore(string? modelId, string? organizationId, Uri? endpoint, string? apiKey, HttpClient? httpClient, ILogger? logger = null) : base(logger)
+    {
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        this.ModelName = modelId;
 
         var options = GetOpenAIClientOptions(httpClient);
 
-        if (!string.IsNullOrWhiteSpace(config.OrganizationId))
+        if (!string.IsNullOrWhiteSpace(organizationId))
         {
-            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", config.OrganizationId!), PipelinePosition.PerCall);
+            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organizationId!), PipelinePosition.PerCall);
         }
 
         // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
-        var providedEndpoint = config.Endpoint ?? httpClient?.BaseAddress;
+        var providedEndpoint = endpoint ?? httpClient?.BaseAddress;
         if (providedEndpoint is null)
         {
-            Verify.NotNullOrWhiteSpace(config.ApiKey); // For Public OpenAI Endpoint a key must be provided.
+            Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
             this.Endpoint = new Uri(DefaultPublicEndpoint);
         }
         else
@@ -63,7 +97,7 @@ internal sealed class OpenAIClientCore : ClientCore
             this.Endpoint = providedEndpoint;
         }
 
-        this.Client = new OpenAIClient(config.ApiKey ?? string.Empty, options);
+        this.Client = new OpenAIClient(apiKey ?? string.Empty, options);
     }
 
     /// <summary>
@@ -75,7 +109,7 @@ internal sealed class OpenAIClientCore : ClientCore
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal OpenAIClientCore(
-        OpenAIAudioToTextServiceConfig config,
+        BaseServiceConfig config,
         OpenAIClient openAIClient,
         ILogger? logger = null) : base(logger)
     {

@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +24,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService
     /// <param name="config">Service configuration</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     public OpenAIChatCompletionService(
-        OpenAIClientChatCompletionnConfig config,
+        OpenAIClientChatCompletionConfig config,
         HttpClient? httpClient = null)
     {
         this._core = new(config, httpClient);
@@ -38,20 +36,20 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
     /// </summary>
-    /// <param name="modelId">Model name</param>
+    /// <param name="config">Service configuration</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIChatCompletionService(
-        string modelId,
+        OpenAIChatCompletionConfig config,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(
-            modelId,
+            config,
             openAIClient,
             loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, config.ModelId);
     }
 
     /// <inheritdoc/>

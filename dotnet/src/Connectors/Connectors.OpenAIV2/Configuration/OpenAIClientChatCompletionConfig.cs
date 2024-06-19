@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI client specialized chat completion options.
 /// </summary>
-public class OpenAIClientTextEmbeddingGenerationConfig : OpenAITextEmbeddingGenerationConfig
+/// <param name="modelId">Model name.</param>
+public class OpenAIClientChatCompletionConfig : OpenAIChatCompletionConfig
 {
     /// <summary>
     /// OpenAI Organization Id (usually optional).

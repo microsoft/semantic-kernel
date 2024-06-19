@@ -21,6 +21,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Core\Options\**" />
+    <EmbeddedResource Remove="Core\Options\**" />
+    <None Remove="Core\Options\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.UnitTests" />
   </ItemGroup>
 
@@ -31,9 +37,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Core\Options\" />
   </ItemGroup>
 </Project>

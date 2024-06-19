@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// OpenAI specialized chat completion options.
+/// OpenAI specialized audio to text configuration
 /// </summary>
-public class OpenAIChatCompletionConfig : BaseServiceConfig
+public class OpenAITextToAudioServiceConfig : BaseServiceConfig
 {
     /// <summary>
     /// The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.

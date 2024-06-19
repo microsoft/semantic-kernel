@@ -33,22 +33,19 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
     /// <summary>
     /// Creates an instance of the <see cref="OpenAITextToAudioService"/> with API key auth.
     /// </summary>
-    /// <param name="modelId">Model name</param>
-    /// <param name="apiKey">OpenAI API Key</param>
-    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
+    /// <param name="config">Service configuration</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAITextToAudioService(
-        string modelId,
-        string apiKey,
-        string? organization = null,
-        HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        OpenAIClientTextToAudioConfig config,
+        HttpClient? httpClient = null)
     {
-        this._client = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
+        Verify.NotNull(config.ModelId);
+        Verify.NotNull(config.ApiKey);
 
-        this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
-        this._client.AddAttribute(OrganizationKey, organization);
+        this._client = new(config.ModelId!, config.ApiKey!, config.OrganizationId, httpClient, config.LoggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
+
+        this._client.AddAttribute(AIServiceExtensions.ModelIdKey, config.ModelId);
+        this._client.AddAttribute(OrganizationKey, config.OrganizationId);
     }
 
     /// <inheritdoc/>

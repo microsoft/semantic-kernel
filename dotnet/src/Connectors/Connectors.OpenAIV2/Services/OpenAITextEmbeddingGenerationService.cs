@@ -34,9 +34,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         Verify.NotNull(options.ModelId);
 
         this._core = new(
-            modelId: options.ModelId,
-            apiKey: options.ApiKey,
-            organization: options.OrganizationId,
+            options,
             httpClient: httpClient,
             logger: options.LoggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
 
@@ -56,7 +54,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     {
         Verify.NotNull(options.ModelId);
 
-        this._core = new(options.ModelId, openAIClient, options.LoggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+        this._core = new(options, openAIClient, options.LoggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, options.ModelId);
 
         this._dimensions = options.Dimensions;

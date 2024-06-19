@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// OpenAI client specialized chat completion options.
+/// OpenAI specialized client audio to text configuration
 /// </summary>
-public class OpenAIClientTextEmbeddingGenerationConfig : OpenAITextEmbeddingGenerationConfig
+public class OpenAIClientTextToAudioConfig : OpenAITextToAudioServiceConfig
 {
     /// <summary>
     /// OpenAI Organization Id (usually optional).
