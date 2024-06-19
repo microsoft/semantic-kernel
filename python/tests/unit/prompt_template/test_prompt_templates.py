@@ -6,6 +6,7 @@ import json
 from pytest import raises
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -256,3 +257,8 @@ def test_from_json_validate_fail():
                 }
             )
         )
+
+
+def test_multiple_param_in_prompt():
+    func = KernelFunctionFromPrompt("test", prompt="{{$param}}{{$param}}")
+    assert len(func.parameters) == 1
