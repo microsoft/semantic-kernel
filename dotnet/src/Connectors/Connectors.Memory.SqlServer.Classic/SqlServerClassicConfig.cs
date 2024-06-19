@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic;
 /// <summary>
 /// Configuration for the SQL Server memory store.
 /// </summary>
-public class SqlServerConfig
+public class SqlServerClassicConfig
 {
     /// <summary>
     /// The default SQL Server memories table name.

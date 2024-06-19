@@ -39,7 +39,7 @@ public class ClassicSqlServerMemoryStoreTests : IAsyncLifetime
         }
 
         this._connectionString = connectionString;
-        this._config = new SqlServerConfig
+        this._config = new SqlServerClassicConfig
         {
             Schema = "sk_it",
             CollectionTableNamePrefix = "SKMemories",
@@ -620,7 +620,7 @@ public class ClassicSqlServerMemoryStoreTests : IAsyncLifetime
     #region private ================================================================================
 
     private string _connectionString = null!;
-    private SqlServerConfig _config = null!;
+    private SqlServerClassicConfig _config = null!;
 
     private SqlServerMemoryStore CreateMemoryStore()
     {

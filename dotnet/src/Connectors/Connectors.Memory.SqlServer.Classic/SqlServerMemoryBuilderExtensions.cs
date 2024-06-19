@@ -16,10 +16,10 @@ public static class SqlServerMemoryBuilderExtensions
     /// <param name="connectionString">Database connection string.</param>
     /// <param name="config">Configuration for the SQL Server connector.</param>
     /// <returns>Updated Memory builder including SQL Server memory connector.</returns>
-    public static MemoryBuilder WithSqlServerMemoryStore(
+    public static MemoryBuilder WithSqlServerClassicMemoryStore(
         this MemoryBuilder builder,
         string connectionString,
-        SqlServerConfig? config)
+        SqlServerClassicConfig? config)
     {
         return builder.WithMemoryStore<SqlServerMemoryStore>(_ => new SqlServerMemoryStore(connectionString, config));
     }

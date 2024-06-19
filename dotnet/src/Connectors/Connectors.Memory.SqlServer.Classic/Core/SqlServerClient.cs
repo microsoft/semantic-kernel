@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic.Core;
                                                    Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
 internal sealed class SqlServerClient
 {
-    private readonly SqlServerConfig _configuration;
+    private readonly SqlServerClassicConfig _configuration;
     private readonly SqlConnection _connection;
 
     /// <summary>
@@ -28,7 +28,7 @@ internal sealed class SqlServerClient
     /// </summary>
     /// <param name="connection">The connection to the SQL Server database.</param>
     /// <param name="configuration">The configuration to use for the SQL Server database.</param>
-    public SqlServerClient(SqlConnection connection, SqlServerConfig configuration)
+    public SqlServerClient(SqlConnection connection, SqlServerClassicConfig configuration)
     {
         this._configuration = configuration;
 

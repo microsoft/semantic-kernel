@@ -29,18 +29,9 @@ public class SqlServerMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="connectionString">The connection string.</param>
     /// <param name="config">The SQL memoryDB configuration.</param>
-    public SqlServerMemoryStore(string connectionString, SqlServerConfig? config = default)
-        : this(new SqlServerClient(new SqlConnection(connectionString), config ?? new()))
+    public SqlServerMemoryStore(string connectionString, SqlServerClassicConfig? config = default)
     {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SqlServerMemoryStore"/> class.
-    /// </summary>
-    /// <param name="dbClient">The SQL db client.</param>
-    internal SqlServerMemoryStore(SqlServerClient dbClient)
-    {
-        this._dbClient = dbClient;
+        this._dbClient = new SqlServerClient(new SqlConnection(connectionString), config ?? new());
     }
 
     /// <inheritdoc/>
