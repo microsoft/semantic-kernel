@@ -46,7 +46,7 @@ chat_function = kernel.add_function(
 )
 
 plugin_path = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
     "resources",
 )
 chat_plugin = kernel.add_plugin(plugin_name="function_choice_yaml", parent_directory=plugin_path)

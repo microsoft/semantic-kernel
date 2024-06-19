@@ -14,16 +14,15 @@ from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import (
-    EnabledFunctions,
     FunctionChoiceBehavior,
-    RequiredFunction,
+    FunctionChoiceType,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
-from semantic_kernel.connectors.ai.open_ai.services.utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.utils import update_settings_from_function_call_configuration
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -90,9 +89,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         arguments = kwargs.get("arguments", None)
         if settings.function_choice_behavior is not None:
             if kernel is None:
-                raise ServiceInvalidExecutionSettingsError(
-                    "The kernel is required for OpenAI tool calls."
-                )
+                raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
             if arguments is None and settings.function_choice_behavior.auto_invoke_kernel_functions:
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel arguments are required for auto invoking OpenAI tool calls."
@@ -111,7 +108,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             return await self._send_chat_request(settings)
 
         # loop for auto-invoke function calls
-        for request_index in range(settings.function_choice_behavior.max_auto_invoke_attempts):
+        for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(settings)
             # there is only one chat message, this was checked earlier
             chat_history.add_message(message=completions[0])
@@ -171,9 +168,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         arguments = kwargs.get("arguments", None)
         if settings.function_choice_behavior is not None:
             if kernel is None:
-                raise ServiceInvalidExecutionSettingsError(
-                    "The kernel is required for OpenAI tool calls."
-                )
+                raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
             if arguments is None and settings.function_choice_behavior.auto_invoke_kernel_functions:
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel arguments are required for auto invoking OpenAI tool calls."
@@ -188,9 +183,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
 
         request_attempts = (
-            settings.function_choice_behavior.max_auto_invoke_attempts 
-            if (settings.function_choice_behavior and 
-                settings.function_choice_behavior.auto_invoke_kernel_functions) 
+            settings.function_choice_behavior.maximum_auto_invoke_attempts
+            if (settings.function_choice_behavior and settings.function_choice_behavior.auto_invoke_kernel_functions)
             else 1
         )
         # hold the messages, if there are more than one response, it will not be used, so we flatten
@@ -208,8 +202,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             if (
                 settings.function_choice_behavior is None
                 or (
-                    settings.function_choice_behavior and 
-                    not settings.function_choice_behavior.auto_invoke_kernel_functions
+                    settings.function_choice_behavior
+                    and not settings.function_choice_behavior.auto_invoke_kernel_functions
                 )
                 or not function_call_returned
             ):
@@ -437,9 +431,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             if parsed_args:
                 args_cloned.update(parsed_args)
         except (FunctionCallInvalidArgumentsException, TypeError) as exc:
-            logger.info(
-                f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again."
-            )
+            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
                 result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
@@ -451,23 +443,29 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         try:
             if function_call.name is None:
                 raise ValueError("The function name is required.")
-            if (
-                isinstance(function_choice_behavior, RequiredFunction)
-                and function_call.name != function_choice_behavior.function_fully_qualified_name
-            ):
-                raise ValueError(
-                    f"Only function: {function_choice_behavior.function_fully_qualified_name} "
-                    f"is allowed, {function_call.name} is not allowed."
-                )
-            if isinstance(function_choice_behavior, EnabledFunctions):
-                enabled_functions = [
-                    func.fully_qualified_name
-                    for func in kernel.get_list_of_function_metadata(function_choice_behavior.filters)
-                ]
-                if function_call.name not in enabled_functions:
-                    raise ValueError(
-                        f"Only functions: {enabled_functions} are allowed, {function_call.name} is not allowed."
-                    )
+            if isinstance(function_choice_behavior, FunctionChoiceBehavior):
+                if function_choice_behavior.type == FunctionChoiceType.REQUIRED:
+                    required_functions = function_choice_behavior.function_fully_qualified_names or []
+                    if function_call.name not in required_functions:
+                        raise ValueError(
+                            f"Only functions: {required_functions} are allowed, {function_call.name} is not allowed."
+                        )
+                elif function_choice_behavior.type == FunctionChoiceType.NONE:
+                    # Logic for NoneInvoke if needed
+                    pass
+                elif function_choice_behavior.type == FunctionChoiceType.AUTO:
+                    # Logic for Auto if needed
+                    pass
+                elif function_choice_behavior.filters:
+                    enabled_functions = [
+                        func.fully_qualified_name
+                        for func in kernel.get_list_of_function_metadata(function_choice_behavior.filters)
+                    ]
+                    if function_call.name not in enabled_functions:
+                        raise ValueError(
+                            f"Only functions: {enabled_functions} are allowed, {function_call.name} is not allowed."
+                        )
+
             function_to_call = kernel.get_function(function_call.plugin_name, function_call.function_name)
         except Exception as exc:
             logger.exception(f"Could not find function {function_call.name}: {exc}.")

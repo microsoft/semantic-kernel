@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from collections.abc import Callable
+from enum import Enum
 from typing import TYPE_CHECKING, Literal
 
 from pydantic.dataclasses import dataclass
@@ -16,62 +18,50 @@ if TYPE_CHECKING:
 
 DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS = 5
 
+logger = logging.getLogger(__name__)
+
+
+class FunctionChoiceType(Enum):
+    AUTO = "auto"
+    NONE = "none"
+    REQUIRED = "required"
+
+
+def _check_missing_functions(function_names: list[str], kernel_function_metadata: set) -> None:
+    try:
+        qualified_names = {metadata.fully_qualified_name for metadata in kernel_function_metadata}
+        missing_functions = [name for name in function_names if name not in qualified_names]
+    except Exception:
+        logger.exception("Error checking for missing functions.")
+        return
+
+    if missing_functions:
+        raise ServiceInvalidExecutionSettingsError(
+            f"Unable to find the required function(s) `{', '.join(missing_functions)}` "
+            f"in the list of available kernel functions: {', '.join(qualified_names)}."
+        )
+
 
 @dataclass
-class FunctionChoiceConfiguration:
-    """Class that holds the configured functions for function calling."""
-
+class FunctionCallChoiceConfiguration:
     available_functions: list["KernelFunctionMetadata"] | None = None
     required_functions: list["KernelFunctionMetadata"] | None = None
 
 
 class FunctionChoiceBehavior(KernelBaseModel):
-    """Class that controls function calling behavior.
-
-    This class should be used instead of its predecessor, FunctionCallBehavior.
-
-    Args:
-        enable_kernel_functions (bool): Enable kernel functions.
-        max_auto_invoke_attempts (int): The maximum number of auto invoke attempts.
-
-    Attributes:
-        config_function_qualified_names (list[str] | None): The short names of the functions
-            to use specified in the config. For example, ["plugin1.function1", "plugin2.function2"]
-        enable_kernel_functions (bool): Enable kernel functions.
-        max_auto_invoke_attempts (int): The maximum number of auto invoke attempts.
-
-    Properties:
-        auto_invoke_kernel_functions: Check if the kernel functions should be auto-invoked.
-            Determined as max_auto_invoke_attempts > 0.
-
-    Methods:
-        configure: Configures the settings for the function call behavior,
-            the default version in this class, does nothing, use subclasses for different behaviors.
-
-    Class methods:
-        Auto: Returns KernelFunctions class with auto_invoke enabled, all functions.
-        NoInvoke: Returns KernelFunctions class with auto_invoke disabled, all functions.
-        EnableFunctions: Set the enable kernel functions flag, filtered functions, auto_invoke optional.
-        RequiredFunction: Set the required function flag, auto_invoke optional.
-
-    """
-
     config_function_qualified_names: list[str] | None = None
     enable_kernel_functions: bool = True
-    max_auto_invoke_attempts: int = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS
+    maximum_auto_invoke_attempts: int = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS
+    filters: (
+        dict[Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]]
+        | None
+    ) = None
+    function_fully_qualified_names: list[str] | None = None
+    type: FunctionChoiceType | None = None
 
     @classmethod
-    def from_function_call_behavior(cls, behavior: "FunctionCallBehavior"):
-        """Convert FunctionCallBehavior to FunctionChoiceBehavior.
-
-        This method is used while FunctionCallBehavior is still supported.
-
-        Args:
-            behavior (FunctionCallBehavior): The function call behavior to convert.
-
-        Returns:
-            FunctionChoiceBehavior: The converted function choice behavior.
-        """
+    def from_function_call_behavior(cls, behavior: "FunctionCallBehavior") -> "FunctionChoiceBehavior":
+        """Create a FunctionChoiceBehavior from a FunctionCallBehavior."""
         from semantic_kernel.connectors.ai.function_call_behavior import (
             EnabledFunctions,
             KernelFunctions,
@@ -80,12 +70,11 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
         if isinstance(behavior, KernelFunctions):
             return cls.Auto()
-        if isinstance(behavior, EnabledFunctions):
-            return cls.EnableFunctions(auto_invoke=behavior.auto_invoke_kernel_functions, filters=behavior.filters)
-        if isinstance(behavior, RequiredFunction):
-            return cls.RequiredFunction(
+        if isinstance(behavior, (EnabledFunctions, RequiredFunction)):
+            return cls.Required(
                 auto_invoke=behavior.auto_invoke_kernel_functions,
-                function_fully_qualified_name=behavior.function_fully_qualified_name,
+                filters=behavior.filters,
+                function_fully_qualified_names=behavior.function_fully_qualified_names,
             )
         return cls(
             enable_kernel_functions=behavior.enable_kernel_functions,
@@ -94,17 +83,12 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
     @property
     def auto_invoke_kernel_functions(self):
-        """Check if the kernel functions should be auto-invoked."""
-        return self.max_auto_invoke_attempts > 0
+        """Whether to auto-invoke kernel functions."""
+        return self.maximum_auto_invoke_attempts > 0
 
     @auto_invoke_kernel_functions.setter
     def auto_invoke_kernel_functions(self, value: bool):
-        """Set the auto_invoke_kernel_functions flag."""
-        if not value:
-            self.max_auto_invoke_attempts = 0
-        else:
-            if self.max_auto_invoke_attempts == 0:
-                self.max_auto_invoke_attempts = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS
+        self.maximum_auto_invoke_attempts = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if value else 0
 
     def configure(
         self,
@@ -112,63 +96,61 @@ class FunctionChoiceBehavior(KernelBaseModel):
         update_settings_callback: Callable[..., None],
         settings: "PromptExecutionSettings",
     ) -> None:
-        """Configures the settings for the function call behavior.
+        """Configure the function choice behavior."""
+        full_kernel_function_metadata = set(kernel.get_full_list_of_function_metadata())
 
-        Using the base FunctionChoiceBehavior means that you manually have to set tool_choice and tools.
+        config = None
+        if self.config_function_qualified_names:
+            valid_fqns = [name.replace(".", "-") for name in self.config_function_qualified_names]
+            _check_missing_functions(valid_fqns, full_kernel_function_metadata)
+            config = FunctionCallChoiceConfiguration(
+                required_functions=kernel.get_list_of_function_metadata({"included_functions": valid_fqns})
+            )
+        elif self.type == FunctionChoiceType.AUTO:
+            config = FunctionCallChoiceConfiguration(available_functions=kernel.get_full_list_of_function_metadata())
+        elif self.type == FunctionChoiceType.REQUIRED:
+            if self.function_fully_qualified_names:
+                valid_fqns = [name.replace(".", "-") for name in self.config_function_qualified_names]
+                _check_missing_functions(valid_fqns, full_kernel_function_metadata)
+                config = FunctionCallChoiceConfiguration(
+                    required_functions=kernel.get_list_of_function_metadata({"included_functions": valid_fqns})
+                )
+            elif self.filters:
+                config = FunctionCallChoiceConfiguration(
+                    available_functions=kernel.get_list_of_function_metadata(self.filters)
+                )
 
-        For different behaviors, use the subclasses of FunctionChoiceBehavior:
-            Auto (all functions in the Kernel)
-            NoInvoke (all functions in the Kernel, but not invoked)
-            EnabledFunctions (filtered set of functions from the Kernel)
-            RequiredFunction (a single function)
-
-        By default, the update_settings_callback is called with FunctionCallConfiguration,
-        which contains a list of available functions or a list of required functions, it also
-        takes the PromptExecutionSettings object.
-
-        It should update the prompt execution settings with the available functions or required functions.
-
-        Alternatively you can override this class and add your own logic in the configure method.
-        """
-        return
-
-    @classmethod
-    def Auto(cls) -> "KernelFunctions":
-        """Returns KernelFunctions class with auto_invoke enabled."""
-        return KernelFunctions(max_auto_invoke_attempts=DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS)
-
-    @classmethod
-    def NoInvoke(cls) -> "KernelFunctions":
-        """Returns KernelFunctions class with auto_invoke disabled.
-
-        Function calls are enabled in this case, just not invoked.
-        """
-        return KernelFunctions(max_auto_invoke_attempts=0)
+        if config:
+            update_settings_callback(config, settings, self.type)
+        else:
+            logger.warning("No functions were configured for the required functions behavior.")
 
     @classmethod
-    def EnableFunctions(
+    def Auto(cls) -> "FunctionChoiceBehavior":
+        """Create a FunctionChoiceBehavior with all available plugins/functions from the kernel."""
+        return cls(type=FunctionChoiceType.AUTO, max_auto_invoke_attempts=DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS)
+
+    @classmethod
+    def NoneInvoke(cls) -> "FunctionChoiceBehavior":
+        """Create a FunctionChoiceBehavior with no auto-invocation of functions."""
+        return cls(type=FunctionChoiceType.NONE, max_auto_invoke_attempts=0)
+
+    @classmethod
+    def Required(
         cls,
         auto_invoke: bool = False,
         *,
         filters: dict[
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
-        ],
-    ) -> "EnableFunctions":
-        """Set the enable kernel functions flag."""
-        return EnabledFunctions(
-            filters=filters, max_auto_invoke_attempts=DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if auto_invoke else 0
-        )
-
-    @classmethod
-    def RequiredFunction(
-        cls,
-        auto_invoke: bool = False,
-        *,
-        function_fully_qualified_name: str,
-    ) -> "RequiredFunction":
-        """Set the required function flag."""
-        return RequiredFunction(
-            function_fully_qualified_name=function_fully_qualified_name,
+        ]
+        | None = None,
+        function_fully_qualified_names: list[str] | None = None,
+    ) -> "FunctionChoiceBehavior":
+        """Create a FunctionChoiceBehavior with required functions."""
+        return cls(
+            type=FunctionChoiceType.REQUIRED,
+            filters=filters,
+            function_fully_qualified_names=function_fully_qualified_names,
             max_auto_invoke_attempts=1 if auto_invoke else 0,
         )
 
@@ -176,88 +158,10 @@ class FunctionChoiceBehavior(KernelBaseModel):
     def from_dict(cls, data: dict) -> "FunctionChoiceBehavior":
         """Create a FunctionChoiceBehavior from a dictionary."""
         type_map = {
-            "auto": KernelFunctions,
-            "no_invoke": KernelFunctions,
-            "enable_functions": EnabledFunctions,
-            "required": RequiredFunction,
+            "auto": FunctionChoiceType.AUTO,
+            "none": FunctionChoiceType.NONE,
+            "required": FunctionChoiceType.REQUIRED,
         }
         behavior_type = data.pop("type", "auto")
         function_qualified_names = data.pop("functions", [])
-        if function_qualified_names:
-            function_qualified_names = [func.replace(".", "-") for func in function_qualified_names]
-        if behavior_type == "enable_functions" and function_qualified_names:
-            data["filters"] = {"included_functions": function_qualified_names}
-        return type_map[behavior_type](function_qualified_names=function_qualified_names, **data)
-
-
-class KernelFunctions(FunctionChoiceBehavior):
-    """Function call behavior for making all kernel functions available for tool calls."""
-
-    def configure(
-        self,
-        kernel: "Kernel",
-        update_settings_callback: Callable[..., None],
-        settings: "PromptExecutionSettings",
-    ) -> None:
-        """Set the options for the tool call behavior in the settings."""
-        if self.enable_kernel_functions:
-            update_settings_callback(
-                FunctionChoiceConfiguration(available_functions=kernel.get_full_list_of_function_metadata()), settings
-            )
-
-
-class EnabledFunctions(FunctionChoiceBehavior):
-    """Function call behavior for making a filtered set of functions available for tool calls."""
-
-    filters: (
-        dict[Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]]
-        | None
-    ) = None
-
-    def configure(
-        self,
-        kernel: "Kernel",
-        update_settings_callback: Callable[..., None],
-        settings: "PromptExecutionSettings",
-    ) -> None:
-        """Set the options for the function choice behavior in the settings."""
-        if self.enable_kernel_functions:
-            update_settings_callback(
-                FunctionChoiceConfiguration(available_functions=kernel.get_list_of_function_metadata(self.filters)),
-                settings,
-            )
-
-
-class RequiredFunction(FunctionChoiceBehavior):
-    """Function call behavior for making a single function available for tool calls."""
-
-    function_fully_qualified_name: str
-
-    def configure(
-        self,
-        kernel: "Kernel",
-        update_settings_callback: Callable[..., None],
-        settings: "PromptExecutionSettings",
-    ) -> None:
-        """Set the options for the tool call behavior in the settings."""
-        if not self.enable_kernel_functions:
-            return
-        if (
-            self.config_function_qualified_names
-            and self.function_fully_qualified_name not in self.config_function_qualified_names
-        ):
-            raise ServiceInvalidExecutionSettingsError(
-                f"Unable to find the required function `{self.function_fully_qualified_name}` "
-                f"in the list of available kernel functions: {','.join(self.config_function_qualified_names)}."
-            )
-        # since using this always calls this single function, we do not want to allow repeated calls
-        if self.max_auto_invoke_attempts > 1:
-            self.max_auto_invoke_attempts = 1
-        update_settings_callback(
-            FunctionChoiceConfiguration(
-                required_functions=kernel.get_list_of_function_metadata(
-                    {"included_functions": [self.function_fully_qualified_name]}
-                )
-            ),
-            settings,
-        )
+        return cls(type=type_map[behavior_type], config_function_qualified_names=function_qualified_names, **data)
