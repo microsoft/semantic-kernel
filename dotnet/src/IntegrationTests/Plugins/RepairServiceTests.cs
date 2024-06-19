@@ -12,7 +12,7 @@ namespace SemanticKernel.IntegrationTests.Plugins;
 
 public class RepairServiceTests
 {
-    [Fact] // (Skip = "This test is for manual verification.")
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateInvokingRepairServicePluginAsync()
     {
         // Arrange
@@ -181,7 +181,7 @@ public class RepairServiceTests
         public string? Image { get; set; }
     }
 
-    public sealed class CustomHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
+    private sealed class CustomHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
