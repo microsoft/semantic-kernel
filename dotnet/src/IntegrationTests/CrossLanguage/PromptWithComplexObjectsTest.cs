@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
 using System.IO;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.CrossLanguage;

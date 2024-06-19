@@ -143,7 +143,7 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
         var client = new VertexAIEmbeddingClient(
             httpClient: this._httpClient,
             modelId: modelId,
-            bearerTokenProvider: () => Task.FromResult(bearerKey ?? "fake-key"),
+            bearerTokenProvider: () => ValueTask.FromResult(bearerKey ?? "fake-key"),
             apiVersion: VertexAIVersion.V1,
             location: "us-central1",
             projectId: "fake-project-id");
