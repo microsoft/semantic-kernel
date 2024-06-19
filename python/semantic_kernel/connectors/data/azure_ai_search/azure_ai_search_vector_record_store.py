@@ -118,7 +118,7 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[DataModelT, str]):
         if generate_embeddings and self._kernel:
             records = await self._kernel.add_vector_to_records(records, **kwargs)
 
-        docs: dict[str, Any] = [self._serialize_data_model_to_store_model(record) for record in records]
+        docs: list[dict[str, Any]] = [self._serialize_data_model_to_store_model(record) for record in records]
         async with self._search_index_client.get_search_client(
             self._get_collection_name(collection_name)
         ) as search_client:
