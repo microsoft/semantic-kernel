@@ -156,12 +156,12 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
     }
 
     /// <summary>
-    /// Shows when specifying a non-existant ServiceId the kernel throws an exception.
+    /// Shows when specifying a non-existent ServiceId the kernel throws an exception.
     /// </summary>
     /// <param name="serviceId">Service Id</param>
     [Theory]
     [InlineData("NotFound")]
-    public async Task InvokePromptByNonExistingServiceIdThowsExceptionAsync(string serviceId)
+    public async Task InvokePromptByNonExistingServiceIdThrowsExceptionAsync(string serviceId)
     {
         var kernel = BuildKernel();
         Console.WriteLine($"======== Service Id: {serviceId} ========");
