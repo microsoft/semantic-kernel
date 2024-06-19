@@ -51,7 +51,31 @@ The new OpenAI SDK introduce some limitations that need to be considered and pon
 
 ## Improvements
 
-This also represents an opportunity to improve the current OpenAI connector by introducing the `Options` pattern to allow more flexibility and control over the services and their configurations.
+This also represents an opportunity to improve the current OpenAI connector by introducing the `Configuration` pattern to allow more flexibility and control over the services and their configurations.
+
+```csharp
+// Before
+builder.AddAzureOpenAIChatCompletion(deploymentName, endpoint, apiKey, httpClient);
+// After
+builder.AddAzureOpenAIChatCompletion(new
+{
+    DeploymentName = modelId;
+    Endpoint = endpoint;
+    ApiKey = apiKey;
+});
+```
+
+```csharp
+// Before
+builder.AddAzureOpenAIChatCompletion(deploymentName, openAIClient, serviceId, modelId)
+// After
+builder.AddAzureOpenAIChatCompletion(new
+{
+    DeploymentName = deploymentName;
+    ServiceId = serviceId;
+    ModelId = modelId;
+}, openAIClient);
+```
 
 ## Considered Options
 
