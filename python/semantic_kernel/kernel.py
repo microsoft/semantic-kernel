@@ -448,7 +448,7 @@ class Kernel(
         embeddings_to_make: dict[str, Any] = {}
         for record in records:
             model = getattr(record, "__kernel_data_model_fields__")
-            for field in model.fields:
+            for field in model.fields.values():
                 if (
                     not isinstance(field, VectorStoreRecordDataField)
                     or not field.has_embedding
@@ -456,45 +456,42 @@ class Kernel(
                 ):
                     continue
                 embedding_field_name = field.embedding_property_name
-                embedding_field = model.get_field_by_name(embedding_field_name)
+                embedding_field = model.fields.get(embedding_field_name)
                 assert isinstance(embedding_field, VectorStoreRecordVectorField)  # nosec
                 if not embedding_field.local_embedding and getattr(record, embedding_field_name):
                     continue
                 setting = embedding_field.embedding_settings
                 if embedding_field_name not in embeddings_to_make:
-                    embeddings_to_make[embedding_field_name] = [(record, setting, field.name)]
+                    embeddings_to_make[embedding_field_name] = [(record, field.name, setting)]
                 else:
-                    embeddings_to_make[embedding_field_name].append((record, setting, field.name))
+                    embeddings_to_make[embedding_field_name].append((record, field.name, setting))
 
         for embedding_field_name, inputs in embeddings_to_make.items():
-            await self.create_embedding(embedding_field_name, inputs, **kwargs)
+            vectors = await self.create_embedding(inputs, **kwargs)
+            for input, vector in zip(inputs, vectors):
+                setattr(input[0], embedding_field_name, vector)
         return records
 
     async def create_embedding(
         self,
-        embedding_field_name: str,
-        inputs: list[tuple[TDataModel, dict[str, "PromptExecutionSettings"], str]],
+        inputs: list[tuple[TDataModel, str, dict[str, "PromptExecutionSettings"]]],
         **kwargs: Any,
-    ) -> list[TDataModel]:
+    ) -> list[Any]:
         """Create an embedding from the content."""
-        records: list[TDataModel] = []
         contents: list[Any] = []
         # since the same model is used with the same field, there is only a single settings record.
-        settings: dict[str, "PromptExecutionSettings"] = inputs[0][1]
-        for record, _, field_name in inputs:
-            records.append(record)
+        execution_settings: dict[str, "PromptExecutionSettings"] = inputs[0][2]
+        for record, field_name, _ in inputs:
             contents.append(getattr(record, field_name))
         vectors = None
-        service = None
-        for service_id, setting in settings.items():
-            service = self.get_service(service_id, type=EmbeddingGeneratorBase)
+        service: EmbeddingGeneratorBase | None = None
+        for service_id, settings in execution_settings.items():
+            service = self.get_service(service_id, type=EmbeddingGeneratorBase)  # type: ignore
             if service:
-                vectors = await service.generate_embeddings(texts=contents, **setting)  # type: ignore
+                vectors = await service.generate_raw_embeddings(texts=contents, settings=settings, **kwargs)  # type: ignore
                 break
         if not service:
             raise KernelServiceNotFoundError("No service found to generate embeddings.")
         if vectors is None:
             raise KernelInvokeException("No vectors were generated.")
-        for record, vector in zip(records, vectors):
-            setattr(record, embedding_field_name, vector)
-        return records
+        return vectors

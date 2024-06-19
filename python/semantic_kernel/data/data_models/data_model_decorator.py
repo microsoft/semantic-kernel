@@ -38,7 +38,7 @@ def datamodel(
     def wrap(cls: Any):
         # get fields and annotations
         cls_sig = signature(cls)
-        fields = []
+        fields = {}
         for field in cls_sig.parameters.values():
             annotation = field.annotation
             if getattr(annotation, "_name", "") == "Optional":
@@ -60,11 +60,10 @@ def datamodel(
                 continue
             if field_type.name is None or field_type.name != field.name:
                 field_type.name = field.name
-            fields.append(field_type)
+            fields[field_type.name] = field_type
         if not fields and len(cls_sig.parameters.values()) > 0:
             raise DataModelException("There must be at least one field with a VectorStoreRecordField annotation.")
         model = VectorStoreRecordDefinition(fields=fields)
-        model.validate_fields()
 
         setattr(cls, "__kernel_data_model__", True)
         setattr(cls, "__kernel_data_model_fields__", model)
