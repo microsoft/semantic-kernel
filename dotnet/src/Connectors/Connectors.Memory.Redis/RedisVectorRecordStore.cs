@@ -138,10 +138,17 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
                     .JSON()
                     .GetAsync(maybePrefixedKey, this._dataPropertyNames)).ConfigureAwait(false);
 
-        // Check if the key was found before trying to serialize the result.
-        if (redisResult.IsNull)
+        // Check if the key was found before trying to parse the result.
+        if (redisResult.IsNull || redisResult is null)
         {
             throw new VectorStoreOperationException($"Could not find document with key '{key}'");
+        }
+
+        // Check if the value contained any json text before trying to parse the result.
+        var redisResultString = redisResult.ToString();
+        if (redisResultString is null)
+        {
+            throw new VectorStoreRecordMappingException($"Document with key '{key}' does not contain any json.");
         }
 
         // Convert to the caller's data model.
@@ -150,7 +157,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             "GET",
             () =>
             {
-                var node = JsonSerializer.Deserialize<JsonNode>(redisResult.ToString())!;
+                var node = JsonSerializer.Deserialize<JsonNode>(redisResultString)!;
                 return this._mapper.MapFromStorageToDataModel((key, node));
             });
     }
@@ -180,10 +187,17 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             var key = keysList[i];
             var redisResult = redisResults[i];
 
-            // Check if the key was found before trying to serialize the result.
-            if (redisResult.IsNull)
+            // Check if the key was found before trying to parse the result.
+            if (redisResult.IsNull || redisResult is null)
             {
                 throw new VectorStoreOperationException($"Could not find document with key '{key}'");
+            }
+
+            // Check if the value contained any json text before trying to parse the result.
+            var redisResultString = redisResult.ToString();
+            if (redisResultString is null)
+            {
+                throw new VectorStoreRecordMappingException($"Document with key '{key}' does not contain any json.");
             }
 
             // Convert to the caller's data model.
@@ -192,7 +206,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
                 "MGET",
                 () =>
                 {
-                    var node = JsonSerializer.Deserialize<JsonNode>(redisResult.ToString())!;
+                    var node = JsonSerializer.Deserialize<JsonNode>(redisResultString)!;
                     return this._mapper.MapFromStorageToDataModel((key, node));
                 });
         }

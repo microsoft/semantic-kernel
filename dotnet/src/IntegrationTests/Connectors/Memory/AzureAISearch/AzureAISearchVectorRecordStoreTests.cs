@@ -2,15 +2,15 @@
 
 using System;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Azure.Search.Documents.Indexes;
 using Azure;
+using Azure.Search.Documents.Indexes;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 using Xunit.Abstractions;
 using static SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch.AzureAISearchVectorStoreFixture;
-using System.Text.Json.Nodes;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 
