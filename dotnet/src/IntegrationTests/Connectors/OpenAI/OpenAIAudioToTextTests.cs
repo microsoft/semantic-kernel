@@ -36,7 +36,7 @@ public sealed class OpenAIAudioToTextTests()
 
         var service = kernel.GetRequiredService<IAudioToTextService>();
 
-        await using Stream audio = File.OpenRead($"./TestData/{Filename}");
+        using Stream audio = File.OpenRead($"./TestData/{Filename}");
         var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act
@@ -64,7 +64,7 @@ public sealed class OpenAIAudioToTextTests()
 
         var service = kernel.GetRequiredService<IAudioToTextService>();
 
-        await using Stream audio = File.OpenRead($"./TestData/{Filename}");
+        using Stream audio = File.OpenRead($"./TestData/{Filename}");
         var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if NET // TODO: Tests fail with "Unable to load DLL 'duckdb': The specified module could not be found." on .NET Framework
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -38,7 +39,7 @@ public class DuckDBMemoryStoreTests
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
-            records = records.Append(testRecord);
+            records = records.Concat([testRecord]);
         }
 
         for (int i = numRecords / 2; i < numRecords; i++)
@@ -48,7 +49,7 @@ public class DuckDBMemoryStoreTests
                 sourceName: "sourceName" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 2, 3 });
-            records = records.Append(testRecord);
+            records = records.Concat([testRecord]);
         }
 
         return records;
@@ -650,3 +651,4 @@ public class DuckDBMemoryStoreTests
         await db.DeleteCollectionAsync(collection);
     }
 }
+#endif

@@ -2,7 +2,6 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -119,7 +118,7 @@ public sealed class OpenAIChatMessageContentTests
         public int Count => dictionary.Count;
         public bool ContainsKey(TKey key) => dictionary.ContainsKey(key);
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => dictionary.GetEnumerator();
-        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value) => dictionary.TryGetValue(key, out value);
+        public bool TryGetValue(TKey key, out TValue value) => dictionary.TryGetValue(key, out value!);
         IEnumerator IEnumerable.GetEnumerator() => dictionary.GetEnumerator();
     }
 }

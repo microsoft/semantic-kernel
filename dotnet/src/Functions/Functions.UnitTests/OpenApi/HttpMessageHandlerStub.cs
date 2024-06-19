@@ -4,12 +4,13 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi;
+
+#pragma warning disable CA1812, CA2016
 
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {
@@ -29,7 +30,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
     {
         this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
         };
     }
 
@@ -45,7 +46,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
     {
         this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
         };
     }
 
@@ -54,7 +55,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         this.Method = request.Method;
         this.RequestUri = request.RequestUri;
         this.RequestHeaders = request.Headers;
-        this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync();
         this.ContentHeaders = request.Content?.Headers;
 
         return await Task.FromResult(this.ResponseToReturn);

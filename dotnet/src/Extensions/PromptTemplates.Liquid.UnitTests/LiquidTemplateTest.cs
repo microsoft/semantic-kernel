@@ -719,7 +719,7 @@ public class LiquidTemplateTest
     {
         var chatObject = chatHistory.Select(chat => new { Role = chat.Role.ToString(), Content = chat.Content });
 
-        return JsonSerializer.Serialize(chatObject, this._jsonSerializerOptions).Replace(Environment.NewLine, "\n", StringComparison.InvariantCulture);
+        return JsonSerializer.Serialize(chatObject, this._jsonSerializerOptions).Replace(Environment.NewLine, "\n");
     }
     #endregion Private
 }

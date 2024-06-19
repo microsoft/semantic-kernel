@@ -60,6 +60,6 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
             throw new ArgumentNullException($"{settingValue} string is not configured");
         }
 
-        return settingValue;
+        return settingValue!;
     }
 }

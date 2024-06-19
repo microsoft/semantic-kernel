@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if NET // TODO https://github.com/microsoft/OpenAPI.NET/issues/1635: Enable for .NET Framework when issues is addressed
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -462,3 +463,4 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         this._openApiDocument.Dispose();
     }
 }
+#endif

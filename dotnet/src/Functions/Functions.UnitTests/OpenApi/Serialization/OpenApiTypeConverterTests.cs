@@ -2,9 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using Microsoft.VisualBasic;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
@@ -108,7 +108,7 @@ public class OpenApiTypeConverterTests
 
         Assert.Equal("[1,2,3]", OpenApiTypeConverter.Convert("id", "array", new List<int> { 1, 2, 3 }).ToJsonString());
 
-        Assert.Equal("[1,2,3]", OpenApiTypeConverter.Convert("id", "array", new Collection() { 1, 2, 3 }).ToJsonString());
+        Assert.Equal("[1,2,3]", OpenApiTypeConverter.Convert("id", "array", new Collection<int>() { 1, 2, 3 }).ToJsonString());
 
         Assert.Equal("[1,2,3]", OpenApiTypeConverter.Convert("id", "array", "[1, 2, 3]").ToJsonString());
     }

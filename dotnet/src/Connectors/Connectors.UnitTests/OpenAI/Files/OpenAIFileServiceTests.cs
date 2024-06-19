@@ -227,8 +227,8 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         var settings = new OpenAIFileUploadExecutionSettings("test.txt", OpenAIFilePurpose.Assistants);
 
-        await using var stream = new MemoryStream();
-        await using (var writer = new StreamWriter(stream, leaveOpen: true))
+        using var stream = new MemoryStream();
+        using (var writer = new StreamWriter(stream, Encoding.UTF8, 0x1000, leaveOpen: true))
         {
             await writer.WriteLineAsync("test");
             await writer.FlushAsync();

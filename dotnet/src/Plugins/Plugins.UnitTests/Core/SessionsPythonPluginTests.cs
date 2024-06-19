@@ -207,8 +207,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
     public async Task ItShouldUploadFileAsync()
     {
         // Arrange
-        var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
-        var requestPayload = await File.ReadAllBytesAsync(FileTestDataFilePath);
+        var responseContent = File.ReadAllText(UpdaloadFileTestDataFilePath);
+        var requestPayload = File.ReadAllBytes(FileTestDataFilePath);
 
         var expectedResponse = new SessionsRemoteFileMetadata("test.txt", 680)
         {
@@ -236,7 +236,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
     public async Task ItShouldDownloadFileWithoutSavingInDiskAsync()
     {
         // Arrange
-        var responseContent = await File.ReadAllBytesAsync(FileTestDataFilePath);
+        var responseContent = File.ReadAllBytes(FileTestDataFilePath);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new ByteArrayContent(responseContent),
@@ -255,8 +255,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
     public async Task ItShouldDownloadFileSavingInDiskAsync()
     {
         // Arrange
-        var responseContent = await File.ReadAllBytesAsync(FileTestDataFilePath);
-        var downloadDiskPath = FileTestDataFilePath.Replace(".txt", "_download.txt", StringComparison.InvariantCultureIgnoreCase);
+        var responseContent = File.ReadAllBytes(FileTestDataFilePath);
+        var downloadDiskPath = FileTestDataFilePath.Replace(".txt", "_download.txt");
         if (File.Exists(downloadDiskPath))
         {
             File.Delete(downloadDiskPath);
@@ -275,7 +275,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         // Assert
         Assert.Equal(responseContent, result);
         Assert.True(File.Exists(downloadDiskPath));
-        Assert.Equal(responseContent, await File.ReadAllBytesAsync(downloadDiskPath));
+        Assert.Equal(responseContent, File.ReadAllBytes(downloadDiskPath));
     }
 
     public void Dispose()

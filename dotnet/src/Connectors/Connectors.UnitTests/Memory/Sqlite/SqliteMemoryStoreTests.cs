@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if NET // TODO: Tests fail with "Library e_sqlite3 not found" on .NET Framework
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -56,7 +57,7 @@ public sealed class SqliteMemoryStoreTests : IDisposable
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
-            records = records.Append(testRecord);
+            records = records.Concat([testRecord]);
         }
 
         for (int i = numRecords / 2; i < numRecords; i++)
@@ -66,7 +67,7 @@ public sealed class SqliteMemoryStoreTests : IDisposable
                 sourceName: "sourceName" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 2, 3 });
-            records = records.Append(testRecord);
+            records = records.Concat([testRecord]);
         }
 
         return records;
@@ -678,3 +679,4 @@ public sealed class SqliteMemoryStoreTests : IDisposable
         await db.DeleteCollectionAsync(collection);
     }
 }
+#endif

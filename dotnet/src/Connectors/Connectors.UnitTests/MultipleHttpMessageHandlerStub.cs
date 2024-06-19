@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace SemanticKernel.Connectors.UnitTests;
 
+#pragma warning disable CA2016
+
 internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 {
     private int _callIteration = 0;
@@ -44,7 +46,7 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
         this.RequestHeaders.Add(request.Headers);
         this.ContentHeaders.Add(request.Content?.Headers);
 
-        var content = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        var content = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync();
 
         this.RequestContents.Add(content);
 

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -35,7 +34,7 @@ public class VolatileMemoryStoreTests
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
-            records = records.Append(testRecord);
+            records = records.Concat([testRecord]);
         }
 
         for (int i = numRecords / 2; i < numRecords; i++)
@@ -45,7 +44,7 @@ public class VolatileMemoryStoreTests
                 sourceName: "sourceName" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 2, 3 });
-            records = records.Append(testRecord);
+            records = records.Concat([testRecord]);
         }
 
         return records;
@@ -476,7 +475,7 @@ public class VolatileMemoryStoreTests
 
         // Act
         var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
-        IEnumerable<string> topNKeys = topNResults.Select(x => x.Item1.Key).ToImmutableSortedSet();
+        IEnumerable<string> topNKeys = new SortedSet<string>(topNResults.Select(x => x.Item1.Key));
 
         // Assert
         Assert.Equal(topN, topNResults.Length);

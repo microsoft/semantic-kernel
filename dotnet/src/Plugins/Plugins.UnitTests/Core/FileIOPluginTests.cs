@@ -31,7 +31,7 @@ public class FileIOPluginTests
         // Arrange
         var plugin = new FileIOPlugin();
         var path = Path.GetTempFileName();
-        await File.WriteAllTextAsync(path, "hello world");
+        File.WriteAllText(path, "hello world");
 
         // Act
         var result = await plugin.ReadAsync(path);
@@ -69,7 +69,7 @@ public class FileIOPluginTests
         await plugin.WriteAsync(path, "hello world");
 
         // Assert
-        Assert.Equal("hello world", await File.ReadAllTextAsync(path));
+        Assert.Equal("hello world", File.ReadAllText(path));
     }
 
     [Fact]

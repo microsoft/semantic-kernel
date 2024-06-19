@@ -113,7 +113,7 @@ public sealed class AgentHarness(ITestOutputHelper output)
         var agents = await context.ListAssistantModelsAsync().ConfigureAwait(true);
         foreach (var agent in agents)
         {
-            if (!string.IsNullOrWhiteSpace(agent.Name) && names.Contains(agent.Name))
+            if (!string.IsNullOrWhiteSpace(agent.Name) && names.Contains(agent.Name!))
             {
                 this._output.WriteLine($"Removing: {agent.Name} - {agent.Id}");
                 await context.DeleteAssistantModelAsync(agent.Id).ConfigureAwait(true);

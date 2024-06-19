@@ -71,8 +71,8 @@ public sealed class HandlebarsPlannerTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<PlanCreationException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
 
-        Assert.True(exception?.Message?.Contains("CreatePlan failed. See inner exception for details.", StringComparison.InvariantCulture));
-        Assert.True(exception?.InnerException?.Message?.Contains("Could not find the plan in the results", StringComparison.InvariantCulture));
+        Assert.True(exception?.Message?.Contains("CreatePlan failed. See inner exception for details."));
+        Assert.True(exception?.InnerException?.Message?.Contains("Could not find the plan in the results"));
         Assert.Equal(exception?.ModelResults?.Content, invalidPlan);
         Assert.NotNull(exception?.CreatePlanPrompt);
     }
@@ -86,8 +86,7 @@ public sealed class HandlebarsPlannerTests
 
         var promptName = "CreatePlan";
         var actualPartialsNamespace = $"{planner.GetType().Namespace}.{promptName}PromptPartials";
-        var resourceNames = assemply.GetManifestResourceNames()
-            .Where(name => name.Contains($"{promptName}PromptPartials", StringComparison.CurrentCulture));
+        var resourceNames = assemply.GetManifestResourceNames().Where(name => name.Contains($"{promptName}PromptPartials"));
 
         // Act  
         var actualContent = planner.ReadAllPromptPartials(promptName);
@@ -227,7 +226,7 @@ public sealed class HandlebarsPlannerTests
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<PlanCreationException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
-        Assert.True(exception?.InnerException?.Message?.Contains("Identified multiple Handlebars templates in model response", StringComparison.InvariantCulture));
+        Assert.True(exception?.InnerException?.Message?.Contains("Identified multiple Handlebars templates in model response"));
     }
 
     private Kernel CreateKernelWithMockCompletionResult(string testPlanString, KernelPluginCollection? plugins = null)

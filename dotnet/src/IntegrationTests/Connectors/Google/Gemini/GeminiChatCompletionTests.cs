@@ -70,7 +70,7 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
     public async Task ChatGenerationVisionBinaryDataAsync(ServiceType serviceType)
     {
         // Arrange
-        Memory<byte> image = await File.ReadAllBytesAsync("./TestData/test_image_001.jpg");
+        Memory<byte> image = File.ReadAllBytes("./TestData/test_image_001.jpg");
         var chatHistory = new ChatHistory();
         var messageContent = new ChatMessageContent(AuthorRole.User, items:
         [
@@ -96,7 +96,7 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
     public async Task ChatStreamingVisionBinaryDataAsync(ServiceType serviceType)
     {
         // Arrange
-        Memory<byte> image = await File.ReadAllBytesAsync("./TestData/test_image_001.jpg");
+        Memory<byte> image = File.ReadAllBytes("./TestData/test_image_001.jpg");
         var chatHistory = new ChatHistory();
         var messageContent = new ChatMessageContent(AuthorRole.User, items:
         [
@@ -191,9 +191,9 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         // Assert
         var geminiMetadata = response.Metadata as GeminiMetadata;
         Assert.NotNull(geminiMetadata);
-        foreach ((string? key, object? value) in geminiMetadata)
+        foreach (var entry in geminiMetadata)
         {
-            this.Output.WriteLine($"{key}: {JsonSerializer.Serialize(value)}");
+            this.Output.WriteLine($"{entry.Key}: {JsonSerializer.Serialize(entry.Value)}");
         }
 
         Assert.True(geminiMetadata.TotalTokenCount > 0);

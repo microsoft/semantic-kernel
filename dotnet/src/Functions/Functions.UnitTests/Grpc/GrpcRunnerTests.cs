@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if NET // TODO: gRPC unavailable by default on .NET Framework
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -203,3 +204,4 @@ public sealed class GrpcRunnerTests : IDisposable
         }
     }
 }
+#endif
