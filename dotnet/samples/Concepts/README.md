@@ -100,6 +100,10 @@ Down below you can find the code snippets that demonstrate the usage of many Sem
 - [TextMemoryPlugin_GeminiEmbeddingGeneration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/TextMemoryPlugin_GeminiEmbeddingGeneration.cs)
 - [TextMemoryPlugin_MultipleMemoryStore](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs)
 
+## Optimization - Examples of different cost and performance optimization techniques
+
+- [FrugalGPT](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Optimization/FrugalGPT.cs)
+
 ## Planners - Examples on using `Planners`
 
 - [FunctionCallStepwisePlanning](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Planners/FunctionCallStepwisePlanning.cs)
