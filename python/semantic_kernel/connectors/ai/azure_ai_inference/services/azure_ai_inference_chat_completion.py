@@ -38,6 +38,7 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 _MESSAGE_CONVERTER: dict[AuthorRole, Any] = {
     AuthorRole.SYSTEM: SystemMessage,
@@ -49,6 +50,7 @@ _MESSAGE_CONVERTER: dict[AuthorRole, Any] = {
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceBase):
     """Azure AI Inference Chat Completion Service."""
 

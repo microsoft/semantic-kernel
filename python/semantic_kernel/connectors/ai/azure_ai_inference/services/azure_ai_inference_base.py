@@ -13,10 +13,12 @@ from azure.core.credentials import AzureKeyCredential
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 T = TypeVar("T", bound=ChatCompletionsClientAsync | EmbeddingsClientAsync)
 
 
+@experimental_class
 class AzureAIInferenceBase(KernelBaseModel, ABC):
     """Base class for Azure AI Inference services."""
 

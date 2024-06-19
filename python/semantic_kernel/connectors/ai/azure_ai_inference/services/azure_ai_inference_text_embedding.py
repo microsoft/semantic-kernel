@@ -14,8 +14,10 @@ from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_setting
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase):
     """Azure AI Inference Text Embedding Service."""
 
