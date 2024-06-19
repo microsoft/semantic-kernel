@@ -127,7 +127,7 @@ Cons:
 
 ### Dependency Management Strategies
 
-1. Use only one of the connectors in the same project, some modifications will be needed to accomodate `Concepts` and other projects that shares OpenAI and AzureOpenAI examples.
+1. Use only one of the connectors in the same project, some modifications will be needed to accommodate `Concepts` and other projects that shares OpenAI and AzureOpenAI examples.
 2. Hold AzureOpenAI connector implementation until we are ready to break (exclude) all Azure APIs in OpenAI connector.
 3. Deploy a new project with a new namespace for `Azure.AI.OpenAI.Legacy 1.0.0-beta.17` and update our `SemanticKernel.Connectors.OpenAI` to use this new namespace to avoid version clashing on the `Azure.AI.OpenAI` namespace.
 
