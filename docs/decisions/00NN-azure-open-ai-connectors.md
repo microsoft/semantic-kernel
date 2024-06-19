@@ -19,13 +19,13 @@ Additionally, it has become clear that we need to separate the OpenAI connector 
 
 ## Decision Drivers
 
-- Avoiding breaking changes whenever possible.
-- Develop a new dedicated connector for Azure OpenAI, utilizing the underlying Azure SDK.
+- Update our connectors to use latest versions of OpenAI and Azure SDKs.
 - Minimize or eliminate any breaking changes for developers currently using the existing OpenAI connector.
+- Changes made should be be future proof.
 
 ## Versioning
 
-Although current `Azure.AI.OpenAI` and `OpenAI` SDKs have being update on its major versions, that change does not represents a `SemanticKernel` major breaking change, any options below consider that he new updated version of `SemanticKernel.Connectors.OpenAI` will be a minor version bump `1.N+1.0`.
+Although current `Azure.AI.OpenAI` and `OpenAI` SDK packages have its major versions updated (2.0.0), that change does not represent a `SemanticKernel` major breaking change. Any of the alternative options provided below take in consideration the that the new updated version of `SemanticKernel.Connectors.OpenAI` and `SemanticKernel.Connectors.AzureOpenAI` will be a minor version bump `1.N+1.0` for all SemanticKernel packages.
 
 ### Meta Package Strategy
 
