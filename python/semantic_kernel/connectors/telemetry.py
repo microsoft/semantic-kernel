@@ -10,7 +10,7 @@ TELEMETRY_DISABLED_ENV_VAR = "AZURE_TELEMETRY_DISABLED"
 
 IS_TELEMETRY_ENABLED = os.environ.get(TELEMETRY_DISABLED_ENV_VAR, "false").lower() not in ["true", "1"]
 
-HTTP_USER_AGENT = "semantic-kernel"
+HTTP_USER_AGENT = "semantic-kernel-python"
 
 try:
     version_info = version("semantic-kernel")
