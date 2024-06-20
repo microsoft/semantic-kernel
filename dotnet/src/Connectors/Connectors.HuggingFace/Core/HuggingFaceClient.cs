@@ -297,7 +297,7 @@ internal sealed class HuggingFaceClient
         var response = DeserializeResponse<TextEmbeddingResponse>(body);
         return response.ToList();
     }
-    
+
     private Uri GetEmbeddingGenerationEndpoint(string modelId)
         => new($"{this.Endpoint}{this.Separator}pipeline/feature-extraction/{modelId}");
 
