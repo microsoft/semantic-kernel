@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -20,7 +21,15 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
             apiKey: TestConfiguration.AzureOpenAI.ApiKey,
             modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
-        return ChatCompletionAsync(chatCompletionService);
+        return ChatCompletionAsync(chatCompletionService, new AzureOpenAIPromptExecutionSettings()
+        {
+            MaxTokens = 200,
+            FrequencyPenalty = 0,
+            PresencePenalty = 0,
+            Temperature = 1,
+            TopP = 0.5,
+            ResultsPerPrompt = 2,
+        });
     }
 
     [Fact]
@@ -32,12 +41,7 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
-        return ChatCompletionAsync(chatCompletionService);
-    }
-
-    private async Task ChatCompletionAsync(IChatCompletionService chatCompletionService)
-    {
-        var executionSettings = new OpenAIPromptExecutionSettings()
+        return ChatCompletionAsync(chatCompletionService, new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -45,12 +49,15 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
             Temperature = 1,
             TopP = 0.5,
             ResultsPerPrompt = 2,
-        };
+        });
+    }
 
+    private async Task ChatCompletionAsync(IChatCompletionService chatCompletionService, PromptExecutionSettings settings)
+    {
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Write one paragraph about why AI is awesome");
 
-        foreach (var chatMessageChoice in await chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings))
+        foreach (var chatMessageChoice in await chatCompletionService.GetChatMessageContentsAsync(chatHistory, settings))
         {
             Console.Write(chatMessageChoice.Content ?? string.Empty);
             Console.WriteLine("\n-------------\n");
