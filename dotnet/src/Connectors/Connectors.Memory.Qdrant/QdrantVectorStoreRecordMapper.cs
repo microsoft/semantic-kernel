@@ -222,7 +222,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     /// </summary>
     /// <param name="payloadValue">The value to convert to a native type.</param>
     /// <returns>The converted native value.</returns>
-    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is enountered.</exception>
+    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
     private static JsonNode? ConvertFromGrpcFieldValueToJsonNode(Value payloadValue)
     {
         return payloadValue.KindCase switch
@@ -243,7 +243,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     /// </summary>
     /// <param name="sourceValue">The object to convert.</param>
     /// <returns>The converted Qdrant value.</returns>
-    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is enountered.</exception>
+    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
     private static Value ConvertToGrpcFieldValue(object? sourceValue)
     {
         var value = new Value();
