@@ -3,7 +3,7 @@
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using xRetry;
 
 namespace ChatCompletion;
@@ -48,7 +48,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 
         // Chat Completion example
         var chatExtensionsOptions = GetAzureChatExtensionsOptions();
-        var promptExecutionSettings = new OpenAIPromptExecutionSettings { AzureChatExtensionsOptions = chatExtensionsOptions };
+        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings { AzureChatExtensionsOptions = chatExtensionsOptions };
 
         var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -99,7 +99,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
         var chatExtensionsOptions = GetAzureChatExtensionsOptions();
-        var promptExecutionSettings = new OpenAIPromptExecutionSettings { AzureChatExtensionsOptions = chatExtensionsOptions };
+        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings { AzureChatExtensionsOptions = chatExtensionsOptions };
 
         // First question without previous context based on uploaded content.
         var response = await kernel.InvokeAsync(function, new(promptExecutionSettings) { ["input"] = ask });

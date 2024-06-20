@@ -4,12 +4,15 @@ using FunctionInvocationApproval.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace FunctionInvocationApproval;
 
 internal sealed class Program
 {
+    private static bool s_isOpenAI = false;
+
     /// <summary>
     /// This console application shows how to use function invocation filter to invoke function only if such operation was approved.
     /// If function invocation was rejected, the result will contain an information about this, so LLM can react accordingly.
@@ -34,11 +37,9 @@ internal sealed class Program
         var kernel = builder.Build();
 
         // Enable automatic function calling
-        var executionSettings = new OpenAIPromptExecutionSettings
-        {
-            Temperature = 0,
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
-        };
+        PromptExecutionSettings executionSettings = (s_isOpenAI)
+            ? new OpenAIPromptExecutionSettings { Temperature = 0, ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }
+            : new AzureOpenAIPromptExecutionSettings { Temperature = 0, ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Initialize kernel arguments.
         var arguments = new KernelArguments(executionSettings);
@@ -178,6 +179,7 @@ internal sealed class Program
 
         if (openAIOptions is not null && openAIOptions.IsValid)
         {
+            s_isOpenAI = true;
             builder.AddOpenAIChatCompletion(openAIOptions.ChatModelId, openAIOptions.ApiKey);
         }
         else if (azureOpenAIOptions is not null && azureOpenAIOptions.IsValid)

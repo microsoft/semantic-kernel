@@ -6,17 +6,17 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
-using OpenAI.Chat;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
 /// Execution settings for an OpenAI completion request.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
+public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -153,7 +153,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Gets or sets the response format to use for the completion.
     /// </summary>
     /// <remarks>
-    /// Possible values are: "json_object", "text", <see cref="ChatResponseFormat"/> object.
+    /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/> object.
     /// </remarks>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
@@ -207,18 +207,18 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <item>To disable all tool calling, set the property to null (the default).</item>
     /// <item>
     /// To request that the model use a specific function, set the property to an instance returned
-    /// from <see cref="ToolCallBehavior.RequireFunction"/>.
+    /// from <see cref="AzureOpenAIToolCallBehavior.RequireFunction"/>.
     /// </item>
     /// <item>
     /// To allow the model to request one of any number of functions, set the property to an
-    /// instance returned from <see cref="ToolCallBehavior.EnableFunctions"/>, called with
+    /// instance returned from <see cref="AzureOpenAIToolCallBehavior.EnableFunctions"/>, called with
     /// a list of the functions available.
     /// </item>
     /// <item>
     /// To allow the model to request one of any of the functions in the supplied <see cref="Kernel"/>,
-    /// set the property to <see cref="ToolCallBehavior.EnableKernelFunctions"/> if the client should simply
+    /// set the property to <see cref="AzureOpenAIToolCallBehavior.EnableKernelFunctions"/> if the client should simply
     /// send the information about the functions and not handle the response in any special manner, or
-    /// <see cref="ToolCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
+    /// <see cref="AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
     /// invoke the function and send the result back to the service.
     /// </item>
     /// </list>
@@ -229,7 +229,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// the function, and sending back the result. The intermediate messages will be retained in the
     /// <see cref="ChatHistory"/> if an instance was provided.
     /// </remarks>
-    public ToolCallBehavior? ToolCallBehavior
+    public AzureOpenAIToolCallBehavior? ToolCallBehavior
     {
         get => this._toolCallBehavior;
 
@@ -287,6 +287,23 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// An abstraction of additional settings for chat completion, see https://learn.microsoft.com/en-us/dotnet/api/azure.ai.openai.azurechatextensionsoptions.
+    /// This property is compatible only with Azure OpenAI.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonIgnore]
+    public AzureChatExtensionsOptions? AzureChatExtensionsOptions
+    {
+        get => this._azureChatExtensionsOptions;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._azureChatExtensionsOptions = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -311,7 +328,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
-        return new OpenAIPromptExecutionSettings()
+        return new AzureOpenAIPromptExecutionSettings()
         {
             ModelId = this.ModelId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
@@ -330,6 +347,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             ChatSystemPrompt = this.ChatSystemPrompt,
             Logprobs = this.Logprobs,
             TopLogprobs = this.TopLogprobs,
+            AzureChatExtensionsOptions = this.AzureChatExtensionsOptions,
         };
     }
 
@@ -344,30 +362,30 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static OpenAIPromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    public static AzureOpenAIPromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         if (executionSettings is null)
         {
-            return new OpenAIPromptExecutionSettings()
+            return new AzureOpenAIPromptExecutionSettings()
             {
                 MaxTokens = defaultMaxTokens
             };
         }
 
-        if (executionSettings is OpenAIPromptExecutionSettings settings)
+        if (executionSettings is AzureOpenAIPromptExecutionSettings settings)
         {
             return settings;
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
 
-        var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
+        var openAIExecutionSettings = JsonSerializer.Deserialize<AzureOpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
         if (openAIExecutionSettings is not null)
         {
             return openAIExecutionSettings;
         }
 
-        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(executionSettings));
+        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureOpenAIPromptExecutionSettings)}", nameof(executionSettings));
     }
 
     /// <summary>
@@ -376,8 +394,8 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    [Obsolete("This method is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
-    public static OpenAIPromptExecutionSettings FromExecutionSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    [Obsolete("This method is deprecated in favor of AzureOpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
+    public static AzureOpenAIPromptExecutionSettings FromExecutionSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         var settings = FromExecutionSettings(executionSettings, defaultMaxTokens);
 
@@ -403,11 +421,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private long? _seed;
     private object? _responseFormat;
     private IDictionary<int, int>? _tokenSelectionBiases;
-    private ToolCallBehavior? _toolCallBehavior;
+    private AzureOpenAIToolCallBehavior? _toolCallBehavior;
     private string? _user;
     private string? _chatSystemPrompt;
     private bool? _logprobs;
     private int? _topLogprobs;
+    private AzureChatExtensionsOptions? _azureChatExtensionsOptions;
 
     #endregion
 }

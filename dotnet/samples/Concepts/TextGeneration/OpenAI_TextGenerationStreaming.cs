@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 namespace TextGeneration;
 
@@ -18,7 +17,7 @@ namespace TextGeneration;
 public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public Task AzureOpenAITextGenerationStreamAsync()
+    public async Task AzureOpenAITextGenerationStreamAsync()
     {
         Console.WriteLine("======== Azure OpenAI - Text Generation - Raw Streaming ========");
 
@@ -28,22 +27,7 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
             apiKey: TestConfiguration.AzureOpenAI.ApiKey,
             modelId: TestConfiguration.AzureOpenAI.ModelId);
 
-        return this.TextGenerationStreamAsync(textGeneration);
-    }
-
-    [Fact]
-    public Task OpenAITextGenerationStreamAsync()
-    {
-        Console.WriteLine("======== Open AI - Text Generation - Raw Streaming ========");
-
-        var textGeneration = new OpenAITextGenerationService("gpt-3.5-turbo-instruct", TestConfiguration.OpenAI.ApiKey);
-
-        return this.TextGenerationStreamAsync(textGeneration);
-    }
-
-    private async Task TextGenerationStreamAsync(ITextGenerationService textGeneration)
-    {
-        var executionSettings = new OpenAIPromptExecutionSettings()
+        var executionSettings = new AzureOpenAIPromptExecutionSettings()
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,

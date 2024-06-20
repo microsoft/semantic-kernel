@@ -41,7 +41,7 @@ public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseT
         collection.AddSingleton<ILoggerFactory>(new XunitLogger(this.Output));
 
         var kernelBuilder = collection.AddKernel();
-        kernelBuilder.Services.AddOpenAITextGeneration(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
+        kernelBuilder.Services.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
         kernelBuilder.Plugins.AddFromType<TimeInformation>();
 
         return collection.BuildServiceProvider();

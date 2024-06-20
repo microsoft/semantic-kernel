@@ -37,11 +37,7 @@ internal static class KernelBuilderExtensions
             case "OpenAI":
                 if (Env.Var("OpenAI:ModelType") == "text-completion")
                 {
-                    kernelBuilder.Services.AddOpenAITextGeneration(
-                        modelId: Env.Var("OpenAI:TextCompletionModelId")!,
-                        apiKey: Env.Var("OpenAI:ApiKey")!,
-                        orgId: Env.Var("OpenAI:OrgId")
-                    );
+                    throw new NotSupportedException("Text completion is not supported by OpenAI SDK.");
                 }
                 else if (Env.Var("OpenAI:ModelType") == "chat-completion")
                 {

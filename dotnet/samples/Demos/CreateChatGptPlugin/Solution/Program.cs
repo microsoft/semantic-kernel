@@ -2,6 +2,7 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -32,15 +33,14 @@ while (true)
     history.AddUserMessage(Console.ReadLine()!);
 
     // Enable auto function calling
-    OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
-    {
-        ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
-    };
+    PromptExecutionSettings settings = (Env.Var("Global:LlmService") == "OpenAI")
+        ? new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }
+        : new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
     // Get the response from the AI
     var result = chatCompletionService.GetStreamingChatMessageContentsAsync(
         history,
-        executionSettings: openAIPromptExecutionSettings,
+        executionSettings: settings,
         kernel: kernel);
 
     // Stream the results

@@ -11,10 +11,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
@@ -320,10 +320,10 @@ public sealed class Program
                     service = targetService;
                     serviceSettings = targetServiceKey switch
                     {
-                        AzureOpenAIServiceKey => new OpenAIPromptExecutionSettings()
+                        AzureOpenAIServiceKey => new AzureOpenAIPromptExecutionSettings()
                         {
                             Temperature = 0,
-                            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+                            ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions
                         },
                         GoogleAIGeminiServiceKey => new GeminiPromptExecutionSettings()
                         {

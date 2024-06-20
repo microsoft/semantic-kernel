@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Plugins;
 
@@ -104,10 +105,9 @@ while (true)
     chatHistory.AddUserMessage(input);
 
     // Enable auto function calling
-    var executionSettings = new OpenAIPromptExecutionSettings
-    {
-        ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
-    };
+    PromptExecutionSettings executionSettings = (config.IsAzureOpenAIConfigured)
+        ? new AzureOpenAIPromptExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions }
+        : new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
     // Get the result from the AI
     var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);

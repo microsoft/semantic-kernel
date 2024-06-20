@@ -278,7 +278,7 @@ internal abstract class ClientCore
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
-        /// Create the OpenAI SDK <see cref="ChatCompletionOptions"/> instance from all available information.
+        // Create the OpenAI SDK <see cref="ChatCompletionOptions"/> instance from all available information.
         var (chatOptions, chatForRequest) = this.CreateChatCompletionsOptions(chatExecutionSettings, chatProvided, kernel, this.ModelName);
         for (int requestIndex = 1; ; requestIndex++)
         {
@@ -325,7 +325,7 @@ internal abstract class ClientCore
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
             var result = new OpenAIChatMessageContent(responseData);
-            if (result.ToolCalls.Count == 0)
+            if (result.ToolCalls is null || result.ToolCalls.Count == 0)
             {
                 return result;
             }
@@ -561,7 +561,7 @@ internal abstract class ClientCore
                 AsyncResultCollection<StreamingChatCompletionUpdate> response;
                 try
                 {
-                    response = this.Client.GetChatClient(this.ModelName).CompleteChatStreamingAsync(chatForRequest, chatOptions);
+                    response = this.Client.GetChatClient(this.ModelName).CompleteChatStreamingAsync(chatForRequest, chatOptions, cancellationToken);
                 }
                 catch (Exception ex) when (activity is not null)
                 {

@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.OpenAI</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.AzureOpenAI</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010</NoWarn>
+    <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010;CA1065</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
@@ -16,23 +16,16 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - OpenAI connector</Title>
-    <Description>Semantic Kernel connectors for OpenAI. Contains clients for text generation, chat completion, embedding and DALL-E text to image.</Description>
+    <Title>Semantic Kernel - Azure OpenAI connector</Title>
+    <Description>Semantic Kernel connectors for Azure OpenAI. Contains clients for text generation, chat completion, embedding and DALL-E text to image.</Description>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Core\Options\**" />
-    <EmbeddedResource Remove="Core\Options\**" />
-    <None Remove="Core\Options\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenAI" />
-    <PackageReference Include="System.ClientModel" />
+    <PackageReference Include="Azure.AI.OpenAI" />
   </ItemGroup>
 
   <ItemGroup>

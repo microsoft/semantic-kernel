@@ -18,7 +18,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 namespace HomeAutomation;
 
@@ -32,15 +32,15 @@ internal static class Program
         builder.Services.AddHostedService<Worker>();
 
         // Get configuration
-        builder.Services.AddOptions<AzureOpenAI>()
-                        .Bind(builder.Configuration.GetSection(nameof(AzureOpenAI)))
+        builder.Services.AddOptions<AzureOpenAIConfig>()
+                        .Bind(builder.Configuration.GetSection(nameof(AzureOpenAIConfig)))
                         .ValidateDataAnnotations()
                         .ValidateOnStart();
 
         // Chat completion service that kernels will use
         builder.Services.AddSingleton<IChatCompletionService>(sp =>
         {
-            AzureOpenAI options = sp.GetRequiredService<IOptions<AzureOpenAI>>().Value;
+            AzureOpenAIConfig options = sp.GetRequiredService<IOptions<AzureOpenAIConfig>>().Value;
 
             // A custom HttpClient can be provided to this constructor
             return new AzureOpenAIChatCompletionService(options.ChatDeploymentName, options.Endpoint, options.ApiKey);

@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 namespace HomeAutomation;
 
@@ -24,9 +24,9 @@ internal sealed class Worker(
         var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
 
         // Enable auto function calling
-        OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
+        AzureOpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions
         };
 
         Console.WriteLine("Ask questions or give instructions to the copilot such as:\n" +

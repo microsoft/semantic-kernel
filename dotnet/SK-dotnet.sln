@@ -316,6 +316,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.OpenAIV2", "src\Connectors\Connectors.OpenAIV2\Connectors.OpenAIV2.csproj", "{E9AC6282-4D9D-4C90-8332-0CD6D10E29A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI", "src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj", "{0EC7AF28-237D-4E86-8A65-2005E76E905D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -779,6 +781,12 @@ Global
 		{E9AC6282-4D9D-4C90-8332-0CD6D10E29A2}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{E9AC6282-4D9D-4C90-8332-0CD6D10E29A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9AC6282-4D9D-4C90-8332-0CD6D10E29A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EC7AF28-237D-4E86-8A65-2005E76E905D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EC7AF28-237D-4E86-8A65-2005E76E905D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EC7AF28-237D-4E86-8A65-2005E76E905D}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EC7AF28-237D-4E86-8A65-2005E76E905D}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{0EC7AF28-237D-4E86-8A65-2005E76E905D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EC7AF28-237D-4E86-8A65-2005E76E905D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -886,6 +894,7 @@ Global
 		{F312FCE1-12D7-4DEF-BC29-2FF6618509F3} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{B0B3901E-AF56-432B-8FAA-858468E5D0DF} = {24503383-A8C4-4255-9998-28D70FE8E99A}
 		{E9AC6282-4D9D-4C90-8332-0CD6D10E29A2} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
+		{0EC7AF28-237D-4E86-8A65-2005E76E905D} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

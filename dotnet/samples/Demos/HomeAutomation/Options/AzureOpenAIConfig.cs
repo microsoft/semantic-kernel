@@ -7,7 +7,7 @@ namespace HomeAutomation.Options;
 /// <summary>
 /// Azure OpenAI settings.
 /// </summary>
-public sealed class AzureOpenAI
+public sealed class AzureOpenAIConfig
 {
     [Required]
     public string ChatDeploymentName { get; set; } = string.Empty;

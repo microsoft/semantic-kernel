@@ -58,12 +58,5 @@ public class AIServices(ITestOutputHelper output) : BaseTest(output)
                        .AddOpenAIChatCompletion(openAImodelId, openAIapiKey)
                        .Build();
         // </OpenAIKernelCreation>
-
-        // Or a kernel with a legacy OpenAI text completion service
-        // <OpenAITextCompletionKernelCreation>
-        kernel = Kernel.CreateBuilder()
-                       .AddOpenAITextGeneration(openAItextModelId, openAIapiKey)
-                       .Build();
-        // </OpenAITextCompletionKernelCreation>
     }
 }

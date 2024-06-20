@@ -11,6 +11,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 using OpenAI;
 
+using OpenAIOpenAIClient = OpenAI.OpenAIClient;
+
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
@@ -100,7 +102,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIChatCompletionService(
         string modelId,
-        OpenAIClient openAIClient,
+        OpenAIOpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
         this._core = new(
