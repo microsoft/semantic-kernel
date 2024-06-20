@@ -442,13 +442,12 @@ class Kernel(
     ):
         """Gather all fields to embed, batch the embedding generation and store."""
         contents: list[Any] = []
-        list_type = isinstance(inputs, list)
-        dict_like = (getter := getattr(inputs, "get", None)) and callable(getter)
-        list_of_dicts = False
+        dict_like = (getter := getattr(inputs, "get", False)) and callable(getter)
+        list_of_dicts: bool = False
         if container_mode:
             contents = inputs[field_to_embed].tolist()  # type: ignore
-        elif list_type:
-            list_of_dicts = (getter := getattr(inputs[0], "get", None)) and callable(getter)
+        elif isinstance(inputs, list):
+            list_of_dicts = (getter := getattr(inputs[0], "get", False)) and callable(getter)
             for record in inputs:
                 if list_of_dicts:
                     contents.append(record.get(field_to_embed))  # type: ignore
@@ -456,7 +455,7 @@ class Kernel(
                     contents.append(getattr(record, field_to_embed))
         else:
             if dict_like:
-                contents.append(inputs.get(field_to_embed))
+                contents.append(inputs.get(field_to_embed))  # type: ignore
             else:
                 contents.append(getattr(inputs, field_to_embed))
         vectors = None
@@ -471,16 +470,16 @@ class Kernel(
         if vectors is None:
             raise KernelInvokeException("No vectors were generated.")
         if container_mode:
-            inputs[field_to_store] = vectors
+            inputs[field_to_store] = vectors  # type: ignore
             return
-        if list_type:
+        if isinstance(inputs, list):
             for record, vector in zip(inputs, vectors):
                 if list_of_dicts:
-                    record[field_to_store] = vector
+                    record[field_to_store] = vector  # type: ignore
                 else:
                     setattr(record, field_to_store, vector)
             return
         if dict_like:
-            inputs[field_to_store] = vectors[0]
+            inputs[field_to_store] = vectors[0]  # type: ignore
             return
         setattr(inputs, field_to_store, vectors[0])

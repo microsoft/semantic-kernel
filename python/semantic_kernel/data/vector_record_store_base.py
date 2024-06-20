@@ -332,7 +332,7 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
             raise MemoryConnectorException("Error: collection_name not set.")
         return collection_name
 
-    async def _add_vector_to_records(self, records: OneOrMany[TModel], **kwargs) -> list[TModel]:
+    async def _add_vector_to_records(self, records: OneOrMany[TModel], **kwargs) -> OneOrMany[TModel]:
         """Vectorize the vector record."""
         # dict of embedding_field.name and tuple of record, settings, field_name
         embeddings_to_make: list[tuple[str, str, dict[str, PromptExecutionSettings]]] = []
