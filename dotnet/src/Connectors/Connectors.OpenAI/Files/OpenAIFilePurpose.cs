@@ -6,7 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Defines the purpose associated with the uploaded file.
+/// Defines the purpose associated with the uploaded file:
+/// https://platform.openai.com/docs/api-reference/files/object#files/object-purpose
 /// </summary>
 [Experimental("SKEXP0010")]
 public readonly struct OpenAIFilePurpose : IEquatable<OpenAIFilePurpose>
@@ -47,14 +48,14 @@ public readonly struct OpenAIFilePurpose : IEquatable<OpenAIFilePurpose>
     public static OpenAIFilePurpose Vision { get; } = new("vision");
 
     /// <summary>
-    /// Gets the label associated with this OpenAIFilePurpose.
+    /// Gets the label associated with this <see cref="OpenAIFilePurpose"/>.
     /// </summary>
     public string Label { get; }
 
     /// <summary>
-    /// Creates a new OpenAIFilePurpose instance with the provided label.
+    /// Creates a new <see cref="OpenAIFilePurpose"/> instance with the provided label.
     /// </summary>
-    /// <param name="label">The label to associate with this AuthorRole.</param>
+    /// <param name="label">The label to associate with this <see cref="OpenAIFilePurpose"/>.</param>
     public OpenAIFilePurpose(string label)
     {
         Verify.NotNullOrWhiteSpace(label, nameof(label));
@@ -62,28 +63,28 @@ public readonly struct OpenAIFilePurpose : IEquatable<OpenAIFilePurpose>
     }
 
     /// <summary>
-    /// Returns a value indicating whether two AuthorRole instances are equivalent, as determined by a
+    /// Returns a value indicating whether two <see cref="OpenAIFilePurpose"/> instances are equivalent, as determined by a
     /// case-insensitive comparison of their labels.
     /// </summary>
-    /// <param name="left"> the first AuthorRole instance to compare </param>
-    /// <param name="right"> the second AuthorRole instance to compare </param>
+    /// <param name="left"> the first <see cref="OpenAIFilePurpose"/> instance to compare </param>
+    /// <param name="right"> the second <see cref="OpenAIFilePurpose"/> instance to compare </param>
     /// <returns> true if left and right are both null or have equivalent labels; false otherwise </returns>
     public static bool operator ==(OpenAIFilePurpose left, OpenAIFilePurpose right)
         => left.Equals(right);
 
     /// <summary>
-    /// Returns a value indicating whether two AuthorRole instances are not equivalent, as determined by a
+    /// Returns a value indicating whether two <see cref="OpenAIFilePurpose"/> instances are not equivalent, as determined by a
     /// case-insensitive comparison of their labels.
     /// </summary>
-    /// <param name="left"> the first AuthorRole instance to compare </param>
-    /// <param name="right"> the second AuthorRole instance to compare </param>
+    /// <param name="left"> the first <see cref="OpenAIFilePurpose"/> instance to compare </param>
+    /// <param name="right"> the second <see cref="OpenAIFilePurpose"/> instance to compare </param>
     /// <returns> false if left and right are both null or have equivalent labels; true otherwise </returns>
     public static bool operator !=(OpenAIFilePurpose left, OpenAIFilePurpose right)
         => !(left == right);
 
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
-        => obj is OpenAIFilePurpose otherRole && this == otherRole;
+        => obj is OpenAIFilePurpose otherPurpose && this == otherPurpose;
 
     /// <inheritdoc/>
     public bool Equals(OpenAIFilePurpose other)
@@ -94,5 +95,5 @@ public readonly struct OpenAIFilePurpose : IEquatable<OpenAIFilePurpose>
         => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label ?? string.Empty);
 
     /// <inheritdoc/>
-    public override string ToString() => this.Label ?? string.Empty;
+    public override string ToString() => this.Label;
 }
