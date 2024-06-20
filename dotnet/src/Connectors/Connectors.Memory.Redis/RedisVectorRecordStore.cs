@@ -389,7 +389,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
 
             // Using Open Telemetry standard for naming of these entries.
             // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
-            wrapperException.Data.Add("db.system", "AzureAISearch");
+            wrapperException.Data.Add("db.system", "Redis");
             wrapperException.Data.Add("db.collection.name", collectionName);
             wrapperException.Data.Add("db.operation.name", operationName);
 
