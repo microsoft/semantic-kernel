@@ -22,8 +22,9 @@ namespace Microsoft.SemanticKernel.Connectors.Onnx;
 public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionService, IDisposable
 {
     private readonly string _modelId;
-    private readonly Model _model;
-    private readonly Tokenizer _tokenizer;
+    private readonly string _modelPath;
+    private Model _model;
+    private Tokenizer _tokenizer;
 
     private Dictionary<string, object?> AttributesInternal { get; } = new();
 
@@ -41,8 +42,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         Verify.NotNullOrWhiteSpace(modelPath);
 
         this._modelId = modelId;
-        this._model = new Model(modelPath);
-        this._tokenizer = new Tokenizer(this._model);
+        this._modelPath = modelPath;
 
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, this._modelId);
     }
@@ -83,13 +83,13 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings = OnnxRuntimeGenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         var prompt = this.GetPrompt(chatHistory, onnxRuntimeGenAIPromptExecutionSettings);
-        var tokens = this._tokenizer.Encode(prompt);
+        var tokens = this.GetTokenizer().Encode(prompt);
 
-        var generatorParams = new GeneratorParams(this._model);
+        var generatorParams = new GeneratorParams(this.GetModel());
         this.UpdateGeneratorParamsFromPromptExecutionSettings(generatorParams, onnxRuntimeGenAIPromptExecutionSettings);
         generatorParams.SetInputSequences(tokens);
 
-        var generator = new Generator(this._model, generatorParams);
+        var generator = new Generator(this.GetModel(), generatorParams);
 
         while (!generator.IsDone())
         {
@@ -102,10 +102,30 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
                 var outputTokens = generator.GetSequence(0);
                 var newToken = outputTokens.Slice(outputTokens.Length - 1, 1);
-                var output = this._tokenizer.Decode(newToken);
+                var output = this.GetTokenizer().Decode(newToken);
                 return output;
             }, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private Model GetModel()
+    {
+        if (this._model == null)
+        {
+            this._model = new Model(this._modelPath);
+        }
+
+        return this._model;
+    }
+
+    private Tokenizer GetTokenizer()
+    {
+        if (this._tokenizer == null)
+        {
+            this._tokenizer = new Tokenizer(this.GetModel());
+        }
+
+        return this._tokenizer;
     }
 
     private string GetPrompt(ChatHistory chatHistory, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
@@ -122,13 +142,6 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
     private void UpdateGeneratorParamsFromPromptExecutionSettings(GeneratorParams generatorParams, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
     {
-
-/* Unmerged change from project 'Connectors.Onnx(netstandard2.1)'
-Before:
-        if(onnxRuntimeGenAIPromptExecutionSettings.TopP.HasValue)
-After:
-        if (onnxRuntimeGenAIPromptExecutionSettings.TopP.HasValue)
-*/
         if (onnxRuntimeGenAIPromptExecutionSettings.TopP.HasValue)
         {
             generatorParams.SetSearchOption("top_p", onnxRuntimeGenAIPromptExecutionSettings.TopP.Value);
@@ -186,7 +199,13 @@ After:
     /// <inheritdoc/>
     public void Dispose()
     {
-        this._tokenizer.Dispose();
-        this._model.Dispose();
+        if (this._tokenizer != null)
+        {
+            this._tokenizer.Dispose();
+        }
+        if (this._model != null)
+        {
+            this._model.Dispose();
+        }
     }
 }
