@@ -102,8 +102,9 @@ internal sealed class ChatCompletionRequest
     /// </summary>
     /// <param name="chatHistory">Chat history to be used for the request.</param>
     /// <param name="executionSettings">Execution settings to be used for the request.</param>
-    /// <returns>TexGenerationtRequest object.</returns>
-    internal static ChatCompletionRequest FromChatHistoryAndExecutionSettings(ChatHistory chatHistory, HuggingFacePromptExecutionSettings executionSettings)
+    /// <param name="modelId">Model id to use if value in prompt execution settings is not set.</param>
+    /// <returns>TexGenerationRequest object.</returns>
+    internal static ChatCompletionRequest FromChatHistoryAndExecutionSettings(ChatHistory chatHistory, HuggingFacePromptExecutionSettings executionSettings, string modelId)
     {
         return new ChatCompletionRequest
         {
@@ -118,7 +119,7 @@ internal sealed class ChatCompletionRequest
             Temperature = executionSettings.Temperature,
             Stop = executionSettings.Stop,
             MaxTokens = executionSettings.MaxTokens,
-            Model = executionSettings.ModelId ?? TextGenerationInferenceDefaultModel,
+            Model = executionSettings.ModelId ?? modelId ?? TextGenerationInferenceDefaultModel,
             TopP = executionSettings.TopP,
             TopLogProbs = executionSettings.TopLogProbs
         };
