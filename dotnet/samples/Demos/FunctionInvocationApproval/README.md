@@ -1,11 +1,11 @@
 # Function Invocation Approval
 
-This console application shows how to use function invocation filter (`IFunctionInvocationFilter`) to invoke Kernel Function only if such operation was approved.
-If function invocation was rejected, the result will contain an information about this, so LLM can react accordingly.
+This console application shows how to use function invocation filter (`IFunctionInvocationFilter`) to invoke a Kernel Function only if such operation was approved.
+If function invocation was rejected, the result will contain the reason why, so the LLM can respond appropriately.
 
-Application uses a sample plugin that allows to build a software by following development stages: collection of requirements, design, implementation, testing and deployment.
+The application uses a sample plugin which builds software by following these development stages: collection of requirements, design, implementation, testing and deployment.
 
-Each step can be approved or rejected. Based on that, LLM will decide how to proceed.
+Each step can be approved or rejected. Based on that, the LLM will decide how to proceed.
 
 ## Configuring Secrets
 
