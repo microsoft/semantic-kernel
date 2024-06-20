@@ -31,57 +31,29 @@ internal sealed class OpenAIClientCore : ClientCore
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIClientCore"/> class.
     /// </summary>
-    /// <param name="config">Client configuration</param>
+    /// <param name="modelId">Model name.</param>
+    /// <param name="apiKey">OpenAI API Key.</param>
+    /// <param name="endpoint">OpenAI compatible API endpoint.</param>
+    /// <param name="organization">OpenAI Organization Id (usually optional).</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal OpenAIClientCore(
-        OpenAIClientAudioToTextServiceConfig config,
+        string modelId,
+        string? apiKey = null,
+        Uri? endpoint = null,
+        string? organization = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
-        : this(config.ModelId, config.OrganizationId, config.Endpoint, config.ApiKey, httpClient, logger)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIClientCore"/> class.
-    /// </summary>
-    /// <param name="config">Client configuration</param>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
-    internal OpenAIClientCore(
-        OpenAIClientChatCompletionConfig config,
-        HttpClient? httpClient = null,
-        ILogger? logger = null)
-        : this(config.ModelId, config.OrganizationId, config.Endpoint, config.ApiKey, httpClient, logger)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIClientCore"/> class.
-    /// </summary>
-    /// <param name="config">Client configuration</param>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
-    internal OpenAIClientCore(
-        OpenAIClientTextEmbeddingGenerationConfig config,
-        HttpClient? httpClient = null,
-        ILogger? logger = null)
-        : this(config.ModelId, config.OrganizationId, config.Endpoint, config.ApiKey, httpClient, logger)
-    {
-    }
-
-    private OpenAIClientCore(string? modelId, string? organizationId, Uri? endpoint, string? apiKey, HttpClient? httpClient, ILogger? logger = null) : base(logger)
+        ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNullOrWhiteSpace(apiKey);
 
         this.ModelName = modelId;
 
         var options = GetOpenAIClientOptions(httpClient);
 
-        if (!string.IsNullOrWhiteSpace(organizationId))
+        if (!string.IsNullOrWhiteSpace(organization))
         {
-            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organizationId!), PipelinePosition.PerCall);
+            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organization!), PipelinePosition.PerCall);
         }
 
         // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
@@ -105,18 +77,18 @@ internal sealed class OpenAIClientCore : ClientCore
     /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
-    /// <param name="config">Client configuration</param>
+    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal OpenAIClientCore(
-        BaseServiceConfig config,
+        string modelId,
         OpenAIClient openAIClient,
         ILogger? logger = null) : base(logger)
     {
-        Verify.NotNullOrWhiteSpace(config.ModelId);
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        this.ModelName = config.ModelId;
+        this.ModelName = modelId;
         this.Client = openAIClient;
     }
 

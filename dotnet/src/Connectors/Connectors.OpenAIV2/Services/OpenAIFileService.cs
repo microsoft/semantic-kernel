@@ -42,21 +42,28 @@ public sealed class OpenAIFileService
     /// <summary>
     /// Create an instance of the Azure OpenAI chat completion connector
     /// </summary>
-    /// <param name="config">Service configuration</param>
+    /// <param name="endpoint">Azure Endpoint URL</param>
+    /// <param name="apiKey">Azure OpenAI API Key</param>
+    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
+    /// <param name="version">The API version to target.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIFileService(
-        OpenAIClientFileServiceConfig config,
-        HttpClient? httpClient = null)
+        Uri endpoint,
+        string apiKey,
+        string? organization = null,
+        string? version = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNull(config.ApiKey, nameof(config.ApiKey));
-        Verify.NotNull(config.Endpoint, nameof(config.Endpoint));
+        Verify.NotNull(apiKey, nameof(apiKey));
 
-        this._apiKey = config.ApiKey;
-        this._logger = config.LoggerFactory?.CreateLogger(typeof(OpenAIFileService)) ?? NullLogger.Instance;
+        this._apiKey = apiKey;
+        this._logger = loggerFactory?.CreateLogger(typeof(OpenAIFileService)) ?? NullLogger.Instance;
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
-        this._serviceUri = new Uri(this._httpClient.BaseAddress ?? config.Endpoint, AzureOpenAIApiRouteFiles);
-        this._version = config.Version ?? AzureOpenAIDefaultVersion;
-        this._organization = config.OrganizationId;
+        this._serviceUri = new Uri(this._httpClient.BaseAddress ?? endpoint, AzureOpenAIApiRouteFiles);
+        this._version = version ?? AzureOpenAIDefaultVersion;
+        this._organization = organization;
     }
 
     /// <summary>

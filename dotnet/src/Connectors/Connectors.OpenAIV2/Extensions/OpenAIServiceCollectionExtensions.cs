@@ -29,69 +29,92 @@ public static class OpenAIServiceCollectionExtensions
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="options">Options for the OpenAI text embeddings service.</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
-        OpenAIClientTextEmbeddingGenerationConfig options)
+        string modelId,
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null,
+        int? dimensions = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(options.ModelId);
-        Verify.NotNullOrWhiteSpace(options.ApiKey);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(options.ServiceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextEmbeddingGenerationService(
-                options,
-                HttpClientProvider.GetHttpClient(serviceProvider)));
+                modelId,
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions));
     }
 
     /// <summary>
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="options">Options for the OpenAI text embeddings service.</param>
+    /// <param name="modelId">The OpenAI model id.</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(this IServiceCollection services,
-        OpenAITextEmbeddingGenerationConfig options,
-        OpenAIClient? openAIClient = null)
+        string modelId,
+        OpenAIClient? openAIClient = null,
+        string? serviceId = null,
+        int? dimensions = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(options.ModelId);
+        Verify.NotNullOrWhiteSpace(modelId);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(options.ServiceId, (serviceProvider, _) =>
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextEmbeddingGenerationService(
-                options,
-                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>()));
+                modelId,
+                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions));
     }
     #endregion
 
     #region Chat Completion
-
-
     /// <summary>
     /// Adds the OpenAI chat completion service to the list.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="config">OpenAI chat completion configuration</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddOpenAIChatCompletion(
         this IServiceCollection services,
-        OpenAIClientChatCompletionConfig config)
+        string modelId,
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(config.ModelId);
-        Verify.NotNullOrWhiteSpace(config.ApiKey);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-        {
-            config.LoggerFactory ??= serviceProvider.GetService<ILoggerFactory>();
-            return new(config, HttpClientProvider.GetHttpClient(serviceProvider));
-        };
+            new(modelId,
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>());
 
-        services.AddKeyedSingleton<IChatCompletionService>(config.ServiceId, factory);
+        services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
 
         return services;
     }
@@ -100,20 +123,22 @@ public static class OpenAIServiceCollectionExtensions
     /// Adds the OpenAI chat completion service to the list.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="config">OpenAI chat completion configuration</param>
+    /// <param name="modelId">OpenAI model id</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddOpenAIChatCompletion(this IServiceCollection services,
-        OpenAIChatCompletionConfig config,
-        OpenAIClient? openAIClient = null)
+        string modelId,
+        OpenAIClient? openAIClient = null,
+        string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(config.ModelId);
+        Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(config, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>());
+            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
 
-        services.AddKeyedSingleton<IChatCompletionService>(config.ServiceId, factory);
+        services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
 
         return services;
     }
@@ -129,7 +154,6 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
-    //[Obsolete("Use the configuration paramether overload of this method instead.")]
     public static IServiceCollection AddOpenAIChatCompletion(
         this IServiceCollection services,
         string modelId,
@@ -142,15 +166,12 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(new()
-            {
-                ModelId = modelId,
-                Endpoint = endpoint,
-                ApiKey = apiKey,
-                OrganizationId = orgId,
-                LoggerFactory = serviceProvider.GetService<ILoggerFactory>()
-            },
-            HttpClientProvider.GetHttpClient(serviceProvider));
+            new(modelId,
+                endpoint,
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
 
@@ -159,20 +180,20 @@ public static class OpenAIServiceCollectionExtensions
     #endregion
 
     #region Images
-
-
     /// <summary>
     /// Add the OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="modelId">The model to use for image generation.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextToImage(this IServiceCollection services,
         string apiKey,
         string? orgId = null,
+        string? modelId = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -182,6 +203,7 @@ public static class OpenAIServiceCollectionExtensions
             new OpenAITextToImageService(
                 apiKey,
                 orgId,
+                modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }

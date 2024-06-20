@@ -25,39 +25,49 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector
     /// </summary>
-    /// <param name="options">Options for the Text Embedding Service.</param>
+    /// <param name="modelId">Model name</param>
+    /// <param name="apiKey">OpenAI API Key</param>
+    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     public OpenAITextEmbeddingGenerationService(
-        OpenAIClientTextEmbeddingGenerationConfig options,
-        HttpClient? httpClient = null)
+        string modelId,
+        string apiKey,
+        string? organization = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
-        Verify.NotNull(options.ModelId);
-
         this._core = new(
-            options,
+            modelId: modelId,
+            apiKey: apiKey,
+            organization: organization,
             httpClient: httpClient,
-            logger: options.LoggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+            logger: loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, options.ModelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
 
-        this._dimensions = options.Dimensions;
+        this._dimensions = dimensions;
     }
 
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector
     /// </summary>
-    /// <param name="options">Options for the Text Embedding Service.</param>
+    /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     public OpenAITextEmbeddingGenerationService(
-        OpenAITextEmbeddingGenerationConfig options,
-        OpenAIClient openAIClient)
+        string modelId,
+        OpenAIClient openAIClient,
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
-        Verify.NotNull(options.ModelId);
+        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
 
-        this._core = new(options, openAIClient, options.LoggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, options.ModelId);
-
-        this._dimensions = options.Dimensions;
+        this._dimensions = dimensions;
     }
 
     /// <inheritdoc/>

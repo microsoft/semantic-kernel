@@ -25,23 +25,36 @@ public static class OpenAIKernelBuilderExtensions
     /// <summary>
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
-    /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="options">Options for the OpenAI text embeddings service.</param>
-    /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
-        OpenAITextEmbeddingGenerationConfig options,
-        OpenAIClient? openAIClient = null)
+        string modelId,
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(options.ModelId);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(options.ServiceId, (serviceProvider, _) =>
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextEmbeddingGenerationService(
-                options,
-                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>()));
+                modelId,
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions));
 
         return builder;
     }
@@ -49,24 +62,29 @@ public static class OpenAIKernelBuilderExtensions
     /// <summary>
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
-    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="options">Options for the OpenAI text embeddings service.</param>
-    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
-        OpenAIClientTextEmbeddingGenerationConfig options,
-        HttpClient? httpClient = null)
+        string modelId,
+        OpenAIClient? openAIClient = null,
+        string? serviceId = null,
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(options.ModelId);
-        Verify.NotNullOrWhiteSpace(options.ApiKey);
+        Verify.NotNullOrWhiteSpace(modelId);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(options.ServiceId, (serviceProvider, _) =>
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextEmbeddingGenerationService(
-                options,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+                modelId,
+                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions));
 
         return builder;
     }
@@ -78,24 +96,32 @@ public static class OpenAIKernelBuilderExtensions
     /// Adds the OpenAI chat completion service to the list.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="config">OpenAI chat completion configuration</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
-        OpenAIClientChatCompletionConfig config,
+        string modelId,
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(config.ModelId);
-        Verify.NotNullOrWhiteSpace(config.ApiKey);
-        Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-        {
-            config.LoggerFactory ??= serviceProvider.GetService<ILoggerFactory>();
-            return new(config, HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
-        };
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(config.ServiceId, factory);
+        Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
+            new(modelId,
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>());
+
+        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
 
         return builder;
     }
@@ -104,21 +130,23 @@ public static class OpenAIKernelBuilderExtensions
     /// Adds the OpenAI chat completion service to the list.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="config">OpenAI chat completion configuration</param>
+    /// <param name="modelId">OpenAI model id</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
-        OpenAIChatCompletionConfig config,
-        OpenAIClient? openAIClient = null)
+        string modelId,
+        OpenAIClient? openAIClient = null,
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(config.ModelId);
+        Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(config, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>());
+            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
 
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(config.ServiceId, factory);
+        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
 
         return builder;
     }
@@ -135,7 +163,6 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
-    //[Obsolete("Use the configuration paramether overload of this method instead.")]
     public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
         string modelId,
@@ -149,16 +176,12 @@ public static class OpenAIKernelBuilderExtensions
         Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(new()
-            {
-                ModelId = modelId,
-                ServiceId = serviceId,
-                Endpoint = endpoint,
-                ApiKey = apiKey,
-                OrganizationId = orgId,
-                LoggerFactory = serviceProvider.GetService<ILoggerFactory>()
-            },
-            httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
+            new(modelId: modelId,
+                apiKey: apiKey,
+                endpoint: endpoint,
+                organization: orgId,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
 
@@ -167,23 +190,22 @@ public static class OpenAIKernelBuilderExtensions
     #endregion
 
     #region Images
-
-
     /// <summary>
     /// Add the OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="modelId">The model to use for image generation.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
-    //[Obsolete("Use the configuration paramether overload of this method instead.")]
     public static IKernelBuilder AddOpenAITextToImage(
         this IKernelBuilder builder,
         string apiKey,
         string? orgId = null,
+        string? modelId = null,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -191,17 +213,14 @@ public static class OpenAIKernelBuilderExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
-            new OpenAITextToImageService(new()
-            {
-                ApiKey = apiKey,
-                OrganizationId = orgId,
-                ServiceId = serviceId,
-                LoggerFactory = serviceProvider.GetService<ILoggerFactory>()
-            },
-            HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
+            new OpenAITextToImageService(
+                apiKey,
+                orgId,
+                modelId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
     }
-
     #endregion
 }

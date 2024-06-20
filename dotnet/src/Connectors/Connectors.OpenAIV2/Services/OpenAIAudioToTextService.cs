@@ -27,30 +27,43 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
     /// <summary>
     /// Creates an instance of the <see cref="OpenAIAudioToTextService"/> with API key auth.
     /// </summary>
-    /// <param name="config">Service configuration</param>
+    /// <param name="modelId">Model name</param>
+    /// <param name="apiKey">OpenAI API Key</param>
+    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIAudioToTextService(
-        OpenAIClientAudioToTextServiceConfig config,
-        HttpClient? httpClient = null)
+        string modelId,
+        string apiKey,
+        string? organization = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(config, httpClient: httpClient);
+        this._core = new(
+            modelId: modelId,
+            apiKey: apiKey,
+            organization: organization,
+            httpClient: httpClient,
+            logger: loggerFactory?.CreateLogger(typeof(OpenAIAudioToTextService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, config.ModelId);
-        this._core.AddAttribute(OpenAIClientCore.OrganizationKey, config.OrganizationId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
     }
 
     /// <summary>
     /// Creates an instance of the <see cref="OpenAIAudioToTextService"/> using the specified <see cref="OpenAIClient"/>.
     /// </summary>
-    /// <param name="config">Service configuration</param>
+    /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIAudioToTextService(
-        OpenAIAudioToTextServiceConfig config,
-        OpenAIClient openAIClient)
+        string modelId,
+        OpenAIClient openAIClient,
+        ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(config, openAIClient);
+        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAIAudioToTextService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, config.ModelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>

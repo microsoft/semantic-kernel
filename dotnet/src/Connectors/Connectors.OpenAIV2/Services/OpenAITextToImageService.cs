@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -36,20 +37,36 @@ public sealed class OpenAITextToImageService : ITextToImageService
     private readonly string _authorizationHeaderValue;
 
     /// <summary>
+    /// The model to use for image generation.
+    /// </summary>
+    private readonly string? _modelId;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OpenAITextToImageService"/> class.
     /// </summary>
-    /// <param name="config">Service configuration</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="organization">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="modelId">The model to use for image generation.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAITextToImageService(
-        OpenAIClientTextToImageServiceConfig config,
-        HttpClient? httpClient = null)
+        string apiKey,
+        string? organization = null,
+        string? modelId = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(config.ApiKey);
-        this._authorizationHeaderValue = $"Bearer {config.ApiKey}";
-        this._organizationHeaderValue = config.OrganizationId;
+        Verify.NotNullOrWhiteSpace(apiKey);
+        this._authorizationHeaderValue = $"Bearer {apiKey}";
+        this._organizationHeaderValue = organization;
+        this._modelId = modelId;
 
-        this._core = new(httpClient, config.LoggerFactory?.CreateLogger(this.GetType()));
-        this._core.AddAttribute(OpenAIClientCore.OrganizationKey, config.OrganizationId);
+        this._core = new(httpClient, loggerFactory?.CreateLogger(this.GetType()));
+        this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
+        if (modelId is not null)
+        {
+            this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
 
         this._core.RequestCreated += (_, request) =>
         {
