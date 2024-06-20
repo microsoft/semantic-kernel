@@ -12,7 +12,8 @@
 Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.OpenAIV2\Connectors.OpenAIV2.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" PrivateAssets="none" />
-    <ProjectReference Include="..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" PrivateAssets="none" />
   </ItemGroup>
 </Project>

@@ -19,7 +19,6 @@
     <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.OpenAIV2\Connectors.OpenAIV2.csproj" />
     <ProjectReference Include="..\..\..\..\src\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
-    <ProjectReference Include="..\..\..\..\src\SemanticKernel.MetaPackage\SemanticKernel.MetaPackage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
