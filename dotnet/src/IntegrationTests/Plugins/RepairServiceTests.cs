@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -106,6 +107,59 @@ public class RepairServiceTests
         }
     }
 
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task UseDelegatingHandlerAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
+
+        using var httpHandler = new HttpClientHandler();
+        using var customHandler = new CustomHandler(httpHandler);
+        using HttpClient httpClient = new(customHandler);
+
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
+            "RepairService",
+            stream,
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+
+        // List All Repairs
+        var result = await plugin["listRepairs"].InvokeAsync(kernel);
+
+        Assert.NotNull(result);
+        var repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
+        Assert.True(repairs?.Length > 0);
+        var count = repairs?.Length ?? 0;
+
+        // Create Repair - oil change
+        var arguments = new KernelArguments
+        {
+            ["payload"] = """{ "title": "Engine oil change", "description": "Need to drain the old engine oil and replace it with fresh oil.", "assignedTo": "", "date": "", "image": "" }"""
+        };
+        result = await plugin["createRepair"].InvokeAsync(kernel, arguments);
+
+        Assert.NotNull(result);
+        Assert.Equal("New repair created", result.ToString());
+
+        // Create Repair - brake pads change
+        arguments = new KernelArguments
+        {
+            ["payload"] = """{ "title": "Brake pads change", "description": "Need to replace the brake pads on all wheels.", "assignedTo": "", "date": "", "image": "" }"""
+        };
+        result = await plugin["createRepair"].InvokeAsync(kernel, arguments);
+
+        Assert.NotNull(result);
+        Assert.Equal("New repair created", result.ToString());
+
+        // List All Repairs
+        result = await plugin["listRepairs"].InvokeAsync(kernel);
+
+        Assert.NotNull(result);
+        repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
+        Assert.True(repairs?.Length > 0);
+        Assert.Equal(count + 2, repairs?.Length);
+    }
+
     public class Repair
     {
         [JsonPropertyName("id")]
@@ -125,5 +179,23 @@ public class RepairServiceTests
 
         [JsonPropertyName("image")]
         public string? Image { get; set; }
+    }
+
+    private sealed class CustomHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+#if NET5_0_OR_GREATER
+            request.Options.TryGetValue(OpenApiKernelFunctionContext.KernelFunctionContextKey, out var context);
+#else
+            request.Properties.TryGetValue(OpenApiKernelFunctionContext.KernelFunctionContextKey, out var context);
+#endif
+
+            // Modify the HttpRequestMessage
+            request.Headers.Add("Kernel-Function-Name", context?.Function?.Name);
+
+            // Call the next handler in the pipeline
+            return await base.SendAsync(request, cancellationToken);
+        }
     }
 }
