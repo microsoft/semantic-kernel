@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import Literal
+
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -31,10 +33,7 @@ class AzureAIInferenceEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     """Azure AI Inference Embedding Prompt Execution Settings."""
 
     dimensions: int | None = Field(None, gt=0)
-    # Known values for `encoding_format` are
-    # "base64", "binary", "float", "int8", "ubinary", and "uint8".
-    encoding_format: str | None = None
-    # Known values for `input_type` are "text", "query", and "document"
-    input_type: str | None = None
+    encoding_format: Literal["base64", "binary", "float", "int8", "ubinary", "uint8"] | None = None
+    input_type: Literal["text", "query", "document"] | None = None
     # `extra_parameters` is a dictionary to pass additional model-specific parameters to the model.
     extra_parameters: dict[str, str] | None = None

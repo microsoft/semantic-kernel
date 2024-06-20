@@ -31,7 +31,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
         sync_client = load_client_sync(endpoint=settings.endpoint, credential=credential)
 
         model_info = sync_client.get_model_info()
-        if model_info.model_type not in self._get_desired_mode_type(client_type):
+        if not self._is_model_desired_type(client_type, model_info.model_type):
             raise ServiceInitializationError(
                 f"Endpoint {settings.endpoint} does not support the desired client type: {client_type}. "
                 f" The provided endpoint is for a {model_info.model_type} model."
@@ -42,11 +42,11 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
             model_info,
         )
 
-    def _get_desired_mode_type(self, client_type: type) -> tuple[ModelType, str]:
-        """Get the desired model type for the service."""
-        if client_type == ChatCompletionsClientAsync:
-            return ModelType.CHAT, "completion"
-        if client_type == EmbeddingsClientAsync:
-            return ModelType.EMBEDDINGS, "embedding"
+    def _is_model_desired_type(self, desired_type: type, model_type: ModelType | str) -> bool:
+        """Check if the model type is the desired type."""
+        if desired_type == ChatCompletionsClientAsync:
+            return model_type in (ModelType.CHAT, "completion")
+        if desired_type == EmbeddingsClientAsync:
+            return model_type in (ModelType.EMBEDDINGS, "embedding")
 
-        raise ServiceInitializationError(f"Client type {client_type} is not supported.")
+        raise ServiceInitializationError(f"Client type {desired_type} is not supported.")

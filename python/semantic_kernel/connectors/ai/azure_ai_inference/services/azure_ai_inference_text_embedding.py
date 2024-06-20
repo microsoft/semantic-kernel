@@ -86,4 +86,4 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
             kwargs=kwargs,
         )
 
-        return array([item.embedding for item in response.data])
+        return array([array(item.embedding) for item in response.data])
