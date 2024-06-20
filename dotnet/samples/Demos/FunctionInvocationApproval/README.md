@@ -1,18 +1,22 @@
-# "House Automation" example illustrating how to use Semantic Kernel with dependency injection
+# Function Invocation Approval
 
-This example demonstrates a few dependency injection patterns that can be used with Semantic Kernel.
+This console application shows how to use function invocation filter (`IFunctionInvocationFilter`) to invoke Kernel Function only if such operation was approved.
+If function invocation was rejected, the result will contain an information about this, so LLM can react accordingly.
 
+Application uses a sample plugin that allows to build a software by following development stages: collection of requirements, design, implementation, testing and deployment.
+
+Each step can be approved or rejected. Based on that, LLM will decide how to proceed.
 
 ## Configuring Secrets
 
-The example require credentials to access OpenAI or Azure OpenAI.
+The example requires credentials to access OpenAI or Azure OpenAI.
 
 If you have set up those credentials as secrets within Secret Manager or through environment variables for other samples from the solution in which this project is found, they will be re-used.
 
 ### To set your secrets with Secret Manager:
 
 ```
-cd dotnet/samples/Demos/HouseAutomation
+cd dotnet/samples/Demos/FunctionInvocationApproval
 
 dotnet user-secrets init
 
