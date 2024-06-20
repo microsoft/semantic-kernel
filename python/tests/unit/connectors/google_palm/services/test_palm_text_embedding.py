@@ -30,6 +30,7 @@ def test_google_palm_text_embedding_init_with_empty_api_key(google_palm_unit_tes
     with pytest.raises(ServiceInitializationError):
         GooglePalmTextEmbedding(
             ai_model_id=ai_model_id,
+            env_file_path="test.env",
         )
 
 

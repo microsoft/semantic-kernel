@@ -13,6 +13,7 @@ from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
     OpenAIFunctionExecutionParameters,
 )
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -558,7 +559,7 @@ async def test_from_openai_plugin_from_url(mock_parse_openai_manifest, mock_get)
     assert plugin.functions.get("GetSecret") is not None
     assert plugin.functions.get("SetSecret") is not None
 
-    mock_get.assert_awaited_once_with(fake_plugin_url, headers={"User-Agent": "Semantic-Kernel"})
+    mock_get.assert_awaited_once_with(fake_plugin_url, headers={"User-Agent": HTTP_USER_AGENT})
 
 
 @pytest.mark.asyncio

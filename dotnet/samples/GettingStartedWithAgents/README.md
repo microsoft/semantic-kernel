@@ -22,7 +22,7 @@ Example|Description
 [Step1_Agent](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step1_Agent.cs)|How to create and use an agent.
 [Step2_Plugins](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step2_Plugins.cs)|How to associate plug-ins with an agent.
 [Step3_Chat](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step3_Chat.cs)|How to create a conversation between agents.
-[Step4_KernelFunctionStrategies](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Step4_KernelFunctionStrategies/Step1_Agent.cs)|How to utilize a `KernelFunction` as a _chat strategy_.
+[Step4_KernelFunctionStrategies](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step4_KernelFunctionStrategies.cs)|How to utilize a `KernelFunction` as a _chat strategy_.
 [Step5_JsonResult](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step5_JsonResult.cs)|How to have an agent produce JSON.
 [Step6_DependencyInjection](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step6_DependencyInjection.cs)|How to define dependency injection patterns for agents.
 [Step7_OpenAIAssistant](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step7_OpenAIAssistant.cs)|How to create an Open AI Assistant agent.
