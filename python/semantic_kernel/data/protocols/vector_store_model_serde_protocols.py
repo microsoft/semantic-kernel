@@ -6,7 +6,7 @@ TModel = TypeVar("TModel", bound=object)
 
 
 @runtime_checkable
-class DataModelFunctionSerdeProtocol(Protocol):
+class VectorStoreModelFunctionSerdeProtocol(Protocol):
     """Data model serialization and deserialization protocol.
 
     This can optionally be implemented to allow single step SerDe
@@ -24,7 +24,7 @@ class DataModelFunctionSerdeProtocol(Protocol):
 
 
 @runtime_checkable
-class DataModelPydanticSerde(Protocol):
+class VectorStoreModelPydanticProtocol(Protocol):
     """Class used internally to make sure a datamodel has model_dump and model_validate."""
 
     def model_dump(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
@@ -38,7 +38,7 @@ class DataModelPydanticSerde(Protocol):
 
 
 @runtime_checkable
-class DataModelToDictFromDictProtocol(Protocol):
+class VectorStoreModelToDictFromDictProtocol(Protocol):
     """Class used internally to check if a model has to_dict and from_dict methods."""
 
     def to_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:

@@ -11,10 +11,6 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
-from semantic_kernel.data.data_models.vector_record_fields import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordVectorField,
-)
 from semantic_kernel.exceptions import (
     FunctionCallInvalidArgumentsException,
     FunctionExecutionException,
@@ -37,7 +33,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_extension import KernelFunctionExtension
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE
+from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
@@ -435,54 +431,34 @@ class Kernel(
                 context.function_result = FunctionResult(function=context.function.metadata, value=value)
             return
 
-    async def add_vector_to_records(self, records: list[TDataModel], **kwargs) -> list[TDataModel]:
-        """Vectorize the vector record.
-
-        Args:
-            records (list[TDataModel]): The records to vectorize.
-                These should all be the same type, but they can have multiple vectors.
-            kwargs (Any): Additional arguments to pass to the embeddings service.
-
-        """
-        # dict of embedding_field.name and tuple of record, settings, field_name
-        embeddings_to_make: dict[str, Any] = {}
-        for record in records:
-            model = getattr(record, "__kernel_data_model_fields__")
-            for field in model.fields.values():
-                if (
-                    not isinstance(field, VectorStoreRecordDataField)
-                    or not field.has_embedding
-                    or not field.embedding_property_name
-                ):
-                    continue
-                embedding_field_name = field.embedding_property_name
-                embedding_field = model.fields.get(embedding_field_name)
-                assert isinstance(embedding_field, VectorStoreRecordVectorField)  # nosec
-                if not embedding_field.local_embedding and getattr(record, embedding_field_name):
-                    continue
-                setting = embedding_field.embedding_settings
-                if embedding_field_name not in embeddings_to_make:
-                    embeddings_to_make[embedding_field_name] = [(record, field.name, setting)]
-                else:
-                    embeddings_to_make[embedding_field_name].append((record, field.name, setting))
-
-        for embedding_field_name, inputs in embeddings_to_make.items():
-            vectors = await self.create_embedding(inputs, **kwargs)
-            for input, vector in zip(inputs, vectors):
-                setattr(input[0], embedding_field_name, vector)
-        return records
-
-    async def create_embedding(
+    async def add_embedding_to_object(
         self,
-        inputs: list[tuple[TDataModel, str, dict[str, "PromptExecutionSettings"]]],
+        inputs: OneOrMany[TDataModel],
+        field_to_embed: str,
+        field_to_store: str,
+        execution_settings: dict[str, "PromptExecutionSettings"],
+        container_mode: bool = False,
         **kwargs: Any,
-    ) -> list[Any]:
-        """Create an embedding from the content."""
+    ):
+        """Gather all fields to embed, batch the embedding generation and store."""
         contents: list[Any] = []
-        # since the same model is used with the same field, there is only a single settings record.
-        execution_settings: dict[str, "PromptExecutionSettings"] = inputs[0][2]
-        for record, field_name, _ in inputs:
-            contents.append(getattr(record, field_name))
+        list_type = isinstance(inputs, list)
+        dict_like = (getter := getattr(inputs, "get", None)) and callable(getter)
+        list_of_dicts = False
+        if container_mode:
+            contents = inputs[field_to_embed].tolist()  # type: ignore
+        elif list_type:
+            list_of_dicts = (getter := getattr(inputs[0], "get", None)) and callable(getter)
+            for record in inputs:
+                if list_of_dicts:
+                    contents.append(record.get(field_to_embed))  # type: ignore
+                else:
+                    contents.append(getattr(record, field_to_embed))
+        else:
+            if dict_like:
+                contents.append(inputs.get(field_to_embed))
+            else:
+                contents.append(getattr(inputs, field_to_embed))
         vectors = None
         service: EmbeddingGeneratorBase | None = None
         for service_id, settings in execution_settings.items():
@@ -494,4 +470,17 @@ class Kernel(
             raise KernelServiceNotFoundError("No service found to generate embeddings.")
         if vectors is None:
             raise KernelInvokeException("No vectors were generated.")
-        return vectors
+        if container_mode:
+            inputs[field_to_store] = vectors
+            return
+        if list_type:
+            for record, vector in zip(inputs, vectors):
+                if list_of_dicts:
+                    record[field_to_store] = vector
+                else:
+                    setattr(record, field_to_store, vector)
+            return
+        if dict_like:
+            inputs[field_to_store] = vectors[0]
+            return
+        setattr(inputs, field_to_store, vectors[0])
