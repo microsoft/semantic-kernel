@@ -191,6 +191,8 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
 
         // Act
         await sut.DeleteAsync("Remove-1");
+        // Also delete a non-existing key to test that the operation does not fail for these.
+        await sut.DeleteAsync("Remove-2");
 
         // Assert
         await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("Remove-1", new GetRecordOptions { IncludeVectors = true }));
@@ -210,7 +212,8 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-3"));
 
         // Act
-        await sut.DeleteBatchAsync(["RemoveMany-1", "RemoveMany-2", "RemoveMany-3"]);
+        // Also include a non-existing key to test that the operation does not fail for these.
+        await sut.DeleteBatchAsync(["RemoveMany-1", "RemoveMany-2", "RemoveMany-3", "RemoveMany-4"]);
 
         // Assert
         await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
