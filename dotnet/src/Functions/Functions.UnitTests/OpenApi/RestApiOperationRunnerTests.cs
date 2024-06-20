@@ -1151,6 +1151,61 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.RequestPayload).ToJsonString());
     }
 
+    [Fact]
+    public async Task ItShouldSetHttpRequestMessageOptionsAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        List<RestApiOperationPayloadProperty> payloadProperties =
+        [
+            new("name", "string", true, []),
+            new("attributes", "object", false,
+            [
+                new("enabled", "boolean", false, []),
+            ])
+        ];
+
+        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            [],
+            payload
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "name", "fake-name-value" },
+            { "enabled", true }
+        };
+
+        var options = new RestApiOperationRunOptions()
+        {
+            Kernel = new(),
+            KernelFunction = KernelFunctionFactory.CreateFromMethod(() => false),
+            KernelArguments = arguments,
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments, options);
+
+        // Assert
+        var requestMessage = this._httpMessageHandlerStub.RequestMessage;
+        Assert.NotNull(requestMessage);
+        Assert.True(requestMessage.Options.TryGetValue(OpenApiKernelFunctionContext.KernelFunctionContextKey, out var kernelFunctionContext));
+        Assert.NotNull(kernelFunctionContext);
+        Assert.Equal(options.Kernel, kernelFunctionContext.Kernel);
+        Assert.Equal(options.KernelFunction, kernelFunctionContext.Function);
+        Assert.Equal(options.KernelArguments, kernelFunctionContext.Arguments);
+    }
+
     public class SchemaTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
@@ -1233,15 +1288,17 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
     private sealed class HttpMessageHandlerStub : DelegatingHandler
     {
-        public HttpRequestHeaders? RequestHeaders { get; private set; }
+        public HttpRequestHeaders? RequestHeaders => this.RequestMessage?.Headers;
 
-        public HttpContentHeaders? ContentHeaders { get; private set; }
+        public HttpContentHeaders? ContentHeaders => this.RequestMessage?.Content?.Headers;
 
         public byte[]? RequestContent { get; private set; }
 
-        public Uri? RequestUri { get; private set; }
+        public Uri? RequestUri => this.RequestMessage?.RequestUri;
 
-        public HttpMethod? Method { get; private set; }
+        public HttpMethod? Method => this.RequestMessage?.Method;
+
+        public HttpRequestMessage? RequestMessage { get; private set; }
 
         public HttpResponseMessage ResponseToReturn { get; set; }
 
@@ -1255,11 +1312,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            this.Method = request.Method;
-            this.RequestUri = request.RequestUri;
-            this.RequestHeaders = request.Headers;
+            this.RequestMessage = request;
             this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
-            this.ContentHeaders = request.Content?.Headers;
 
             return await Task.FromResult(this.ResponseToReturn);
         }
