@@ -9,7 +9,7 @@ TModel = TypeVar("TModel", bound=object)
 class VectorStoreModelFunctionSerdeProtocol(Protocol):
     """Data model serialization and deserialization protocol.
 
-    This can optionally be implemented to allow single step SerDe
+    This can optionally be implemented to allow single step serialization and deserialization
     for using your data model with a specific datastore.
     """
 
