@@ -1,9 +1,9 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: { proposed }
+status: { accepted }
 contact: { rogerbarreto, taochen }
-date: { 2024-06-12 }
-deciders: {}
+date: { 2024-06-20 }
+deciders: { alliscode, moonbox3, eavanvalkenburg }
 consulted: {}
 informed: {}
 ---
@@ -34,6 +34,8 @@ Plans to support for text completion are currently unclear, and it is highly unl
 - AzureAI
 - AzureAIInference
 - AzureAIModelInference
+
+  Decision: `AzureAIInference`
 
 ### Support for model-specific parameters
 
