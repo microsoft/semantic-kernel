@@ -37,17 +37,7 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
         };
         var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, options);
 
-        var record = new HotelInfo
-        {
-            HotelId = 20,
-            HotelName = "My Hotel 20",
-            HotelCode = 20,
-            HotelRating = 4.3f,
-            ParkingIncluded = true,
-            Tags = { "t1", "t2" },
-            Description = "This is a great hotel.",
-            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
-        };
+        var record = this.CreateTestHotel(20);
 
         // Act.
         var upsertResult = await sut.UpsertAsync(record);
@@ -238,19 +228,38 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
         };
         var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, options);
 
-        var record = new HotelInfo
-        {
-            HotelId = 20,
-            HotelName = "My Hotel 20",
-            HotelCode = 20,
-            ParkingIncluded = true,
-            Description = "This is a great hotel.",
-            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
-        };
-        await sut.UpsertAsync(record);
+        await sut.UpsertAsync(this.CreateTestHotel(20));
 
         // Act.
         await sut.DeleteAsync(20);
+        // Also delete a non-existing key to test that the operation does not fail for these.
+        await sut.DeleteAsync(21);
+
+        // Assert.
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync(20));
+    }
+
+    [Theory]
+    [InlineData(true, "singleVectorHotels", false)]
+    [InlineData(false, "singleVectorHotels", false)]
+    [InlineData(true, "namedVectorsHotels", true)]
+    [InlineData(false, "namedVectorsHotels", true)]
+    public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
+    {
+        // Arrange.
+        var options = new QdrantVectorRecordStoreOptions<HotelInfo>
+        {
+            HasNamedVectors = hasNamedVectors,
+            DefaultCollectionName = collectionName,
+            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+        };
+        var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, options);
+
+        await sut.UpsertAsync(this.CreateTestHotel(20));
+
+        // Act.
+        // Also delete a non-existing key to test that the operation does not fail for these.
+        await sut.DeleteBatchAsync([20, 21]);
 
         // Assert.
         await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync(20));
@@ -265,6 +274,21 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
 
         // Act & Assert
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = true }));
+    }
+
+    private HotelInfo CreateTestHotel(uint hotelId)
+    {
+        return new HotelInfo
+        {
+            HotelId = hotelId,
+            HotelName = $"My Hotel {hotelId}",
+            HotelCode = (int)hotelId,
+            HotelRating = 4.5f,
+            ParkingIncluded = true,
+            Tags = { "t1", "t2" },
+            Description = "This is a great hotel.",
+            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
+        };
     }
 
     private sealed class FailingMapper : IVectorStoreRecordMapper<HotelInfo, PointStruct>
