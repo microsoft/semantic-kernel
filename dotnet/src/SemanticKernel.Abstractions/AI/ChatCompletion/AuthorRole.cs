@@ -80,7 +80,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
 
     /// <inheritdoc/>
     public override int GetHashCode()
-        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label ?? string.Empty);
+        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label);
 
     /// <inheritdoc/>
     public override string ToString() => this.Label;
