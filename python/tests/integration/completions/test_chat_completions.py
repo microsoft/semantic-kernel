@@ -76,7 +76,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
     )
     azure_ai_inference_client = AzureAIInferenceChatCompletion(
         client=ChatCompletionsClient(
-            endpoint=endpoint,
+            endpoint=f'{endpoint.strip("/")}/openai/deployments/{deployment_name}',
             credential=AzureKeyCredential(""),
             headers={"api-key": api_key},
         ),
