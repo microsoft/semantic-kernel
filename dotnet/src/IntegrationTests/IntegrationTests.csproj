@@ -18,6 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Planners\PlanTests.cs" />
+    <Compile Remove="Planners\Stepwise\FunctionCallingStepwisePlannerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="CrossLanguage\Data\LightBulbApi.json" />
@@ -75,8 +76,8 @@
     <ProjectReference Include="..\Connectors\Connectors.Memory.SqlServer\Connectors.Memory.SqlServer.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
     <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
+    <ProjectReference Include="..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
     <ProjectReference Include="..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
-    <ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
@@ -158,5 +159,9 @@
     <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Planners\Stepwise\" />
   </ItemGroup>
 </Project>

@@ -13,7 +13,6 @@ using Microsoft.Extensions.Time.Testing;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using SemanticKernel.IntegrationTests.Planners.Stepwise;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
@@ -740,7 +739,6 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<FunctionCallingStepwisePlannerTests>()
         .Build();
 
     /// <summary>
