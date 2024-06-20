@@ -3,7 +3,8 @@
 from typing import Any
 
 from azure.ai.inference.aio import EmbeddingsClient
-from azure.ai.inference.models import EmbeddingsResult, ModelInfo
+from azure.ai.inference.models import EmbeddingsResult
+from azure.core.credentials import AzureKeyCredential
 from numpy import array, ndarray
 from pydantic import ValidationError
 
@@ -11,27 +12,26 @@ from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_
     AzureAIInferenceEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class
-class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase):
+class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase):
     """Azure AI Inference Text Embedding Service."""
 
     client: EmbeddingsClient
 
     def __init__(
         self,
+        ai_model_id: str,
         api_key: str | None = None,
         endpoint: str | None = None,
         service_id: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         client: EmbeddingsClient | None = None,
-        model_info: ModelInfo | None = None,
     ) -> None:
         """Initialize the Azure AI Inference Text Embedding service.
 
@@ -41,14 +41,13 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
         - AZURE_AI_INFERENCE_ENDPOINT
 
         Args:
+            ai_model_id: (str): A string that is used to identify the model such as the model name. (Required)
             api_key (str | None): The API key for the Azure AI Inference service deployment. (Optional)
             endpoint (str | None): The endpoint of the Azure AI Inference service deployment. (Optional)
             service_id (str | None): Service ID for the chat completion service. (Optional)
             env_file_path (str | None): The path to the environment file. (Optional)
             env_file_encoding (str | None): The encoding of the environment file. (Optional)
             client (EmbeddingsClient | None): The Azure AI Inference client to use. (Optional)
-            model_info (ModelInfo | None): The model info of the provided client. (Optional, required if client is
-                provided)
 
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
@@ -64,13 +63,14 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
             except ValidationError as e:
                 raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
 
-            client, model_info = self._create_client(azure_ai_inference_settings, EmbeddingsClient)
-        elif not model_info:
-            raise ServiceInitializationError("Model info is required when providing a client.")
+            client = EmbeddingsClient(
+                endpoint=azure_ai_inference_settings.endpoint,
+                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
+            )
 
         super().__init__(
-            ai_model_id=model_info.model_name,
-            service_id=service_id or model_info.model_name,
+            ai_model_id=ai_model_id,
+            service_id=service_id or ai_model_id,
             client=client,
         )
 

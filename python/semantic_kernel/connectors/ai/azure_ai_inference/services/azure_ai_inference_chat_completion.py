@@ -14,20 +14,19 @@ from azure.ai.inference.models import (
     ImageContentItem,
     ImageDetailLevel,
     ImageUrl,
-    ModelInfo,
     StreamingChatChoiceUpdate,
     SystemMessage,
     TextContentItem,
     ToolMessage,
     UserMessage,
 )
+from azure.core.credentials import AzureKeyCredential
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceChatPromptExecutionSettings,
     AzureAIInferenceSettings,
 )
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -51,20 +50,20 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceBase):
+class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
     """Azure AI Inference Chat Completion Service."""
 
     client: ChatCompletionsClient
 
     def __init__(
         self,
+        ai_model_id: str,
         api_key: str | None = None,
         endpoint: str | None = None,
         service_id: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         client: ChatCompletionsClient | None = None,
-        model_info: ModelInfo | None = None,
     ) -> None:
         """Initialize the Azure AI Inference Chat Completion service.
 
@@ -74,14 +73,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         - AZURE_AI_INFERENCE_ENDPOINT
 
         Args:
+            ai_model_id: (str): A string that is used to identify the model such as the model name. (Required)
             api_key (str | None): The API key for the Azure AI Inference service deployment. (Optional)
             endpoint (str | None): The endpoint of the Azure AI Inference service deployment. (Optional)
             service_id (str | None): Service ID for the chat completion service. (Optional)
             env_file_path (str | None): The path to the environment file. (Optional)
             env_file_encoding (str | None): The encoding of the environment file. (Optional)
             client (ChatCompletionsClient | None): The Azure AI Inference client to use. (Optional)
-            model_info (ModelInfo | None): The model info of the provided client. (Optional, required if client is
-                provided)
 
         Raises:
             ServiceInitializationError: If an error occurs during initialization.
@@ -97,13 +95,14 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             except ValidationError as e:
                 raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
 
-            client, model_info = self._create_client(azure_ai_inference_settings, ChatCompletionsClient)
-        elif not model_info:
-            raise ServiceInitializationError("Model info is required when providing a client.")
+            client = ChatCompletionsClient(
+                endpoint=azure_ai_inference_settings.endpoint,
+                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
+            )
 
         super().__init__(
-            ai_model_id=model_info.model_name,
-            service_id=service_id or model_info.model_name,
+            ai_model_id=ai_model_id,
+            service_id=service_id or ai_model_id,
             client=client,
         )
 
