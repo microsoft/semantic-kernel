@@ -17,7 +17,7 @@ using StackExchange.Redis;
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
-/// Service for storing and retrieving records, that uses Redis as the underlying storage.
+/// Service for storing and retrieving vector records, that uses Redis as the underlying storage.
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string, TRecord>
@@ -52,9 +52,6 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
 
     /// <summary>An array of the names of all the data properties that are part of the redis payload, i.e. all properties except the key and vector properties.</summary>
     private readonly string[] _dataPropertyNames;
-
-    /// <summary>An array of the names of all the data and vector properties that are part of the redis payload.</summary>
-    private readonly string[] _dataAndVectorPropertyNames;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the redis record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)> _mapper;
@@ -95,10 +92,6 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         this._dataPropertyNames = properties
             .dataProperties
             .Select(VectorStoreRecordPropertyReader.GetSerializedPropertyName)
-            .ToArray();
-
-        this._dataAndVectorPropertyNames = this._dataPropertyNames
-            .Concat(properties.vectorProperties.Select(VectorStoreRecordPropertyReader.GetSerializedPropertyName))
             .ToArray();
 
         // Assign Mapper.
