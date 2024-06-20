@@ -208,7 +208,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             items=items,
             content=choice.message.content,
             inner_content=response,
-            finish_reason=FinishReason(choice.finish_reason),
+            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
             metadata=metadata,
         )
 
@@ -229,8 +229,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             A streaming chat message content object.
         """
         items = []
-        if choice.message.tool_calls:
-            for tool_call in choice.message.tool_calls:
+        if choice.delta.tool_calls:
+            for tool_call in choice.delta.tool_calls:
                 items.append(
                     FunctionCallContent(
                         id=tool_call.id,
@@ -241,12 +241,12 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                 )
 
         return StreamingChatMessageContent(
-            role=AuthorRole(choice.delta.role),
+            role=AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT,
             items=items,
             content=choice.delta.content,
             choice_index=choice.index,
             inner_content=chunk,
-            finish_reason=FinishReason(choice.finish_reason),
+            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
             metadata=metadata,
         )
 
@@ -269,10 +269,10 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                 for item in message.items:
                     if isinstance(item, TextContent):
                         contentItems.append(TextContentItem(text=item.text))
-                    elif isinstance(item, ImageContent):
+                    elif isinstance(item, ImageContent) and (item.data_uri or item.uri):
                         contentItems.append(
                             ImageContentItem(
-                                image_url=ImageUrl(url=item.data_uri or item.uri, detail=ImageDetailLevel.Auto)
+                                image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto)
                             )
                         )
                     else:

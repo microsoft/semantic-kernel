@@ -5,9 +5,18 @@ from functools import partial, reduce
 from typing import Any
 
 import pytest
+from azure.ai.inference.aio import ChatCompletionsClient
+from azure.ai.inference.models import ModelInfo
+from azure.core.credentials import AzureKeyCredential
 from openai import AsyncAzureOpenAI
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
+    AzureAIInferenceChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
+    AzureAIInferenceChatCompletion,
+)
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import (
@@ -65,10 +74,20 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
             default_headers={"Test-User-X-ID": "test"},
         ),
     )
+    azure_ai_inference_client = AzureAIInferenceChatCompletion(
+        client=ChatCompletionsClient(
+            endpoint=endpoint,
+            credential=AzureKeyCredential(""),
+            headers={"api-key": api_key},
+        ),
+        model_info=ModelInfo(model_name=deployment_name),
+    )
+
     return {
         "openai": (OpenAIChatCompletion(), OpenAIChatPromptExecutionSettings),
         "azure": (AzureChatCompletion(), AzureChatPromptExecutionSettings),
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
+        "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
     }
 
 
@@ -280,6 +299,56 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["Hello", "well"],
             id="azure_custom_client",
+        ),
+        pytest.param(
+            "azure_ai_inference",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            id="azure_ai_inference_text_input",
+        ),
+        pytest.param(
+            "azure_ai_inference",
+            {
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent(
+                            uri="https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
+                        ),
+                    ],
+                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+            ],
+            ["house", "germany"],
+            id="azure_ai_inference_image_input_uri",
+        ),
+        pytest.param(
+            "azure_ai_inference",
+            {
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+            ],
+            ["house", "germany"],
+            id="azure_ai_inference_image_input_file",
         ),
     ],
 )
