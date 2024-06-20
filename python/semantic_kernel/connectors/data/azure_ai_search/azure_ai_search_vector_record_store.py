@@ -5,36 +5,35 @@ import logging
 import sys
 from typing import Any, TypeVar
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from pydantic import ValidationError
 
-from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_types import OneOrMany
-
-if sys.version_info >= (3, 12):
-    from typing import override
-else:
-    from typing_extensions import override
-
 from semantic_kernel.connectors.data.azure_ai_search.utils import get_search_index_async_client
+from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
 from semantic_kernel.exceptions import MemoryConnectorInitializationError, MemoryConnectorResourceNotFound
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-DataModelT = TypeVar("DataModelT")
+TModel = TypeVar("TModel")
 
 
 @experimental_class
-class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, DataModelT]):
+class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
     def __init__(
         self,
-        data_model_type: type[DataModelT],
+        data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
         kernel: Kernel | None = None,
@@ -130,7 +129,7 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, DataModelT]):
     @override
     async def upsert_batch(
         self,
-        records: OneOrMany[DataModelT],
+        records: OneOrMany[TModel],
         collection_name: str | None = None,
         generate_embeddings: bool = False,
         **kwargs,
@@ -146,15 +145,13 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, DataModelT]):
         return None
 
     @override
-    async def get(self, key: str, collection_name: str | None = None, **kwargs) -> DataModelT:
+    async def get(self, key: str, collection_name: str | None = None, **kwargs) -> TModel:
         if self._container_mode:
             return await self.get_batch([key], collection_name, **kwargs)
         return (await self.get_batch([key], collection_name, **kwargs))[0]
 
     @override
-    async def get_batch(
-        self, keys: list[str], collection_name: str | None = None, **kwargs: Any
-    ) -> list[DataModelT] | DataModelT:
+    async def get_batch(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> OneOrMany[TModel]:
         try:
             search_result = await asyncio.gather(
                 *[
