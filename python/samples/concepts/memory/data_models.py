@@ -5,8 +5,8 @@ from uuid import UUID, uuid4
 
 from pydantic import Field
 
-from semantic_kernel.data.data_models.data_model_decorator import datamodel
-from semantic_kernel.data.data_models.vector_record_fields import (
+from semantic_kernel.data.models.vector_store_model_decorator import vectorstoremodel
+from semantic_kernel.data.models.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
@@ -14,7 +14,7 @@ from semantic_kernel.data.data_models.vector_record_fields import (
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-@datamodel
+@vectorstoremodel
 @dataclass
 class DataModelDataclass:
     vector: Annotated[list[float], VectorStoreRecordVectorField]
@@ -25,7 +25,7 @@ class DataModelDataclass:
     )
 
 
-@datamodel
+@vectorstoremodel
 class DataModelPydantic(KernelBaseModel):
     vector: Annotated[list[float], VectorStoreRecordVectorField]
     other: str | None
@@ -35,7 +35,7 @@ class DataModelPydantic(KernelBaseModel):
     )
 
 
-@datamodel
+@vectorstoremodel
 class DataModelPydanticComplex(KernelBaseModel):
     vector: Annotated[list[float], VectorStoreRecordVectorField]
     other: str | None
@@ -45,7 +45,7 @@ class DataModelPydanticComplex(KernelBaseModel):
     )
 
 
-@datamodel
+@vectorstoremodel
 class DataModelPython:
     def __init__(
         self,

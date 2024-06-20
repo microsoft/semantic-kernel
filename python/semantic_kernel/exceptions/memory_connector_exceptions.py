@@ -8,15 +8,15 @@ class MemoryConnectorException(KernelException):
     pass
 
 
-class DataModelException(MemoryConnectorException):
+class VectorStoreModelException(MemoryConnectorException):
     pass
 
 
-class DataModelSerializationException(DataModelException):
+class VectorStoreModelSerializationException(VectorStoreModelException):
     pass
 
 
-class DataModelDeserializationException(DataModelException):
+class VectorStoreModelDeserializationException(VectorStoreModelException):
     pass
 
 
@@ -29,10 +29,10 @@ class MemoryConnectorResourceNotFound(MemoryConnectorException):
 
 
 __all__ = [
-    "DataModelDeserializationException",
-    "DataModelException",
-    "DataModelSerializationException",
     "MemoryConnectorException",
     "MemoryConnectorInitializationError",
     "MemoryConnectorResourceNotFound",
+    "VectorStoreModelDeserializationException",
+    "VectorStoreModelException",
+    "VectorStoreModelSerializationException",
 ]

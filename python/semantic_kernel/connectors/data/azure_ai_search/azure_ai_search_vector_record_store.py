@@ -7,10 +7,13 @@ from typing import Any, TypeVar
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
+from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from pydantic import ValidationError
 
+from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.kernel_types import OneOrMany
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -28,12 +31,11 @@ DataModelT = TypeVar("DataModelT")
 
 
 @experimental_class
-class AzureAISearchVectorRecordStore(VectorRecordStoreBase[DataModelT, str]):
-    _search_index_client: SearchIndexClient | None = None
-
+class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, DataModelT]):
     def __init__(
         self,
-        item_type: type[DataModelT],
+        data_model_type: type[DataModelT],
+        data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
         kernel: Kernel | None = None,
         search_endpoint: str | None = None,
@@ -51,7 +53,8 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[DataModelT, str]):
                 await memory.<...>
 
         Args:
-            item_type (type[DataModelT]): The type of the data model.
+            data_model_type (type[DataModelT]): The type of the data model.
+            data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
             collection_name (str): The name of the collection, optional.
             search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
                 (default: {None}).
@@ -81,17 +84,37 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[DataModelT, str]):
         except ValidationError as exc:
             raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
 
-        super().__init__(item_type=item_type, collection_name=azure_ai_search_settings.index_name, kernel=kernel)
+        super().__init__(
+            data_model_type=data_model_type,
+            data_model_definition=data_model_definition,
+            collection_name=azure_ai_search_settings.index_name,
+            kernel=kernel,
+        )
         self._search_index_client = search_index_client or get_search_index_async_client(
             azure_ai_search_settings=azure_ai_search_settings,
             azure_credential=azure_credentials,
             token_credential=token_credentials,
         )
+        if self.collection_name:
+            self._search_clients: dict[str, SearchClient] = {
+                self.collection_name: self._search_index_client.get_search_client(self.collection_name)
+            }
+        else:
+            self._search_clients = {}
 
     async def close(self):
         """Async close connection, invoked by MemoryStoreBase.__aexit__()."""
-        if self._search_index_client is not None:
-            await self._search_index_client.close()
+        for search_client in self._search_clients.values():
+            await search_client.close()
+        await self._search_index_client.close()
+        self._search_clients.clear()
+
+    def _get_search_client(self, collection_name: str | None = None) -> SearchClient:
+        """Create or get a search client for the specified collection."""
+        collection_name = self._get_collection_name(collection_name)
+        if collection_name not in self._search_clients:
+            self._search_clients[collection_name] = self._search_index_client.get_search_client(collection_name)
+        return self._search_clients[collection_name]
 
     @override
     async def upsert(
@@ -102,50 +125,48 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[DataModelT, str]):
         **kwargs: Any,
     ) -> str | None:
         result = await self.upsert_batch([record], collection_name, generate_embeddings, **kwargs)
-
         return result[0] if result else None
 
     @override
     async def upsert_batch(
         self,
-        records: list[object],
+        records: OneOrMany[DataModelT],
         collection_name: str | None = None,
-        generate_embeddings: bool = True,
+        generate_embeddings: bool = False,
         **kwargs,
     ) -> list[str] | None:
-        if not self._search_index_client:
-            raise MemoryConnectorInitializationError("Azure AI Search client is not initialized.")
-        if generate_embeddings and self._kernel:
-            records = await self._kernel.add_vector_to_records(records, **kwargs)
+        if generate_embeddings:
+            await self._add_vector_to_records(records)
 
-        docs: list[dict[str, Any]] = [self._serialize_data_model_to_store_model(record) for record in records]
-        async with self._search_index_client.get_search_client(
-            self._get_collection_name(collection_name)
-        ) as search_client:
-            result = await search_client.merge_or_upload_documents(documents=docs)
-
-            if result[0].succeeded:
-                return [res.key for res in result]
-            return None
+        result = await self._get_search_client(collection_name).merge_or_upload_documents(
+            documents=self._convert_model_to_list_of_dicts(records), **kwargs
+        )
+        if result[0].succeeded:
+            return [res.key for res in result]
+        return None
 
     @override
-    async def get(self, key: str, collection_name: str | None = None, **kwargs) -> object:
-        if not self._search_index_client:
-            raise MemoryConnectorInitializationError("Azure AI Search client is not initialized.")
-        async with self._search_index_client.get_search_client(
-            self._get_collection_name(collection_name)
-        ) as search_client:
-            try:
-                search_result = await search_client.get_document(
-                    key=key, selected_fields=kwargs.get("selected_fields", None)
-                )
-                return self._deserialize_store_model_to_data_model(search_result)
-            except ResourceNotFoundError as exc:
-                raise MemoryConnectorResourceNotFound("Memory record not found") from exc
+    async def get(self, key: str, collection_name: str | None = None, **kwargs) -> DataModelT:
+        if self._container_mode:
+            return await self.get_batch([key], collection_name, **kwargs)
+        return (await self.get_batch([key], collection_name, **kwargs))[0]
 
     @override
-    async def get_batch(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> list[object]:
-        return await asyncio.gather(*[self.get(key=key, collection_name=collection_name, **kwargs) for key in keys])
+    async def get_batch(
+        self, keys: list[str], collection_name: str | None = None, **kwargs: Any
+    ) -> list[DataModelT] | DataModelT:
+        try:
+            search_result = await asyncio.gather(
+                *[
+                    self._get_search_client(collection_name).get_document(
+                        key=key, selected_fields=kwargs.get("selected_fields", None)
+                    )
+                    for key in keys
+                ]
+            )
+        except ResourceNotFoundError as exc:
+            raise MemoryConnectorResourceNotFound("Memory record not found") from exc
+        return self._convert_search_result_to_data_model(search_result)
 
     @override
     async def delete(self, key: str, collection_name: str | None = None, **kwargs: Any) -> None:
@@ -154,10 +175,7 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[DataModelT, str]):
     @override
     async def delete_batch(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> None:
         docs_to_delete = [{self._key_field: key} for key in keys]
-        async with self._search_index_client.get_search_client(
-            self._get_collection_name(collection_name)
-        ) as search_client:
-            await search_client.delete_documents(documents=docs_to_delete)
+        await self._get_search_client(collection_name).delete_documents(documents=docs_to_delete)
 
     @override
     @property

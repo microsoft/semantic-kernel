@@ -1,10 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import os
-from dataclasses import dataclass, field
-from typing import Annotated
 from uuid import uuid4
+
+import pandas as pd
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -14,48 +13,48 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding impor
 from semantic_kernel.connectors.data.azure_ai_search.azure_ai_search_vector_record_store import (
     AzureAISearchVectorRecordStore,
 )
-from semantic_kernel.data.models.vector_store_model_decorator import vectorstoremodel
+from semantic_kernel.data.models.vector_store_model_definition import VectorStoreContainerDefinition
 from semantic_kernel.data.models.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
 
-
-@vectorstoremodel
-@dataclass
-class MyDataModel:
-    vector: Annotated[
-        list[list[float]] | None,
-        VectorStoreRecordVectorField(
+model_fields = VectorStoreContainerDefinition(
+    fields={
+        "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
+        "id": VectorStoreRecordKeyField(),
+        "vector": VectorStoreRecordVectorField(
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)}
         ),
-    ] = None
-    other: str | None = None
-    id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-    content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
-        "content1"
-    )
+    },
+    serialize_function=lambda x: x.to_dict(orient="records"),
+    deserialize_function=lambda x: pd.DataFrame(x),
+)
 
 
 async def main():
     kernel = Kernel()
     kernel.add_service(OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embedding-3-small"))
-    async with AzureAISearchVectorRecordStore[MyDataModel](
-        data_model_type=MyDataModel,
+
+    async with AzureAISearchVectorRecordStore[pd.DataFrame](
+        data_model_type=pd.DataFrame,
+        data_model_definition=model_fields,
         collection_name=os.environ["ALT_SEARCH_INDEX_NAME"],
         search_endpoint=os.environ["ALT_SEARCH_ENDPOINT"],
         api_key=os.environ["ALT_SEARCH_API_KEY"],
         kernel=kernel,
     ) as record_store:
-        record1 = MyDataModel(content="My text")
-        record2 = MyDataModel(content="My other text")
+        records = [
+            {"id": str(uuid4()), "content": "my dict text", "vector": None},
+            {"id": str(uuid4()), "content": "my second text", "vector": None},
+        ]
+        df = pd.DataFrame(records)
+        await record_store.upsert_batch(df, generate_embeddings=True)
 
-        await record_store.upsert(record1)
-        await record_store.upsert(record2)
-
-        result = await record_store.get(record1.id)
-        print(result)
+        result = await record_store.get(records[0]["id"])
+        print(result.shape)
+        print(result.head(5))
 
 
 if __name__ == "__main__":

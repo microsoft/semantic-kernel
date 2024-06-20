@@ -4,18 +4,19 @@ import logging
 from inspect import signature
 from typing import Any
 
-from semantic_kernel.data.data_models.vector_record_fields import VectorStoreRecordDefinition, VectorStoreRecordField
-from semantic_kernel.exceptions.memory_connector_exceptions import DataModelException
+from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.models.vector_store_record_fields import VectorStoreRecordField
+from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
 
 logger = logging.getLogger(__name__)
 
 
-def datamodel(
+def vectorstoremodel(
     cls: Any | None = None,
 ):
-    """Returns the class as a datamodel.
+    """Returns the class as a vector store model.
 
-    This decorator makes a class a data model.
+    This decorator makes a class a vector store model.
     There are three things being checked:
     - The class must implement the serialize and deserialize methods as defined in the DataModelSerdeProtocol.
     - The class must have at least one field with a VectorStoreRecordField annotation.
@@ -62,7 +63,9 @@ def datamodel(
                 field_type.name = field.name
             fields[field_type.name] = field_type
         if not fields and len(cls_sig.parameters.values()) > 0:
-            raise DataModelException("There must be at least one field with a VectorStoreRecordField annotation.")
+            raise VectorStoreModelException(
+                "There must be at least one field with a VectorStoreRecordField annotation."
+            )
         model = VectorStoreRecordDefinition(fields=fields)
 
         setattr(cls, "__kernel_data_model__", True)
