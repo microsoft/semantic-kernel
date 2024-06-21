@@ -10,13 +10,13 @@ from urllib.parse import urlparse, urlunparse
 import httpx
 from openapi_core import Spec
 
-from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation import RestApiOperation
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_expected_response import (
     RestApiOperationExpectedResponse,
 )
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload import RestApiOperationPayload
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_run_options import RestApiOperationRunOptions
+from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -124,8 +124,6 @@ class OpenApiRunner:
         options: RestApiOperationRunOptions | None = None,
     ) -> str:
         """Run the operation."""
-        from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
-
         url = self.build_operation_url(
             operation=operation,
             arguments=arguments,
@@ -143,7 +141,9 @@ class OpenApiRunner:
             headers_update = await self.auth_callback(headers=headers)
             headers.update(headers_update)
 
-        headers[USER_AGENT] = " ".join((HTTP_USER_AGENT, headers.get(USER_AGENT, ""))).rstrip()
+        if APP_INFO:
+            headers.update(APP_INFO)
+            headers = prepend_semantic_kernel_to_user_agent(headers)
 
         if "Content-Type" not in headers:
             headers["Content-Type"] = self._get_first_response_media_type(operation.responses)
