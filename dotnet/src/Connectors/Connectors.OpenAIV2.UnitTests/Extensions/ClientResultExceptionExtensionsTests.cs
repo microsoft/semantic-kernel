@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
-using System.Net.Http;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 

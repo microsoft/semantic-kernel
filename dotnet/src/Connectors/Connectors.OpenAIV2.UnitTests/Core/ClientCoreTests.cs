@@ -107,10 +107,6 @@ public partial class ClientCoreTests
     }
 
     [Fact]
-    // [InlineData(true,
-    // Skip = "Semantic Kernel header is not provided when using specific
-    // OpenAI client because once the client is created we can't add policies using plugic APIs")]
-    [InlineData(false)]
     public async Task ItAddSemanticKernelHeadersOnEachRequestAsync()
     {
         using HttpMessageHandlerStub handler = new();
