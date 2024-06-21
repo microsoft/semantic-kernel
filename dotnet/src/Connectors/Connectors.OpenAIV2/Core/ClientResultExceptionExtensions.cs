@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+/* 
+Phase 01:
+This class is introduced in exchange for the original RequestExceptionExtensions class of Azure.Core to the new ClientException from System.ClientModel,
+Preserved the logic as is.
+*/
+
 using System.ClientModel;
 using System.Net;
 

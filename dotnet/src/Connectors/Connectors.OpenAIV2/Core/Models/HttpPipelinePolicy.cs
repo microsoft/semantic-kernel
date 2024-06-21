@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+/*
+Phase 1
+As SystemClient model does not have any specialization or extension ATM, introduced this class with the adapted to use System.ClientModel abstractions.
+https://github.com/Azure/azure-sdk-for-net/blob/8bd22837639d54acccc820e988747f8d28bbde4a/sdk/core/Azure.Core/src/Pipeline/HttpPipelinePolicy.cs
+*/
+
 using System;
 using System.ClientModel.Primitives;
 using System.Threading.Tasks;

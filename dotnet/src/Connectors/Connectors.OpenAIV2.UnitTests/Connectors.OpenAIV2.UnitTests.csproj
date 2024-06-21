@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Connectors.OpenAI.UnitTests</AssemblyName>
@@ -34,6 +34,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Connectors.OpenAIV2\Connectors.OpenAIV2.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Core\Models\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

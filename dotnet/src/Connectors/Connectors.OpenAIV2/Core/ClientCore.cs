@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+/* 
+Phase 01 : This class was created adapting and merging ClientCore and OpenAIClientCore classes.
+System.ClientModel changes were added and adapted to the code as this package is now used as a dependency over OpenAI package.
+All logic from original ClientCore and OpenAIClientCore were preserved.
+*/
+
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
@@ -24,10 +30,13 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 internal class ClientCore
 {
     /// <summary>
-    /// Model Id or Deployment Name
+    /// Model Id
     /// </summary>
-    internal string ModelName { get; set; } = string.Empty;
+    internal string ModelId { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Non-default endpoint for OpenAI API.
+    /// </summary>
     internal Uri? Endpoint { get; set; } = null;
 
     /// <summary>
@@ -35,17 +44,15 @@ internal class ClientCore
     /// </summary>
     internal ILogger Logger { get; set; }
 
-    private const string DefaultPublicEndpoint = "https://api.openai.com/v1";
-
-    /// <summary>
-    /// Gets the attribute name used to store the organization in the <see cref="IAIService.Attributes"/> dictionary.
-    /// </summary>
-    public static string OrganizationKey => "Organization";
-
     /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
     internal OpenAIClient Client { get; }
+
+    /// <summary>
+    /// Storage for AI service attributes.
+    /// </summary>
+    internal Dictionary<string, object?> Attributes { get; } = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClientCore"/> class.
@@ -67,26 +74,19 @@ internal class ClientCore
         Verify.NotNullOrWhiteSpace(modelId);
 
         this.Logger = logger ?? NullLogger.Instance;
-        this.ModelName = modelId;
+        this.ModelId = modelId;
 
-        var options = GetOpenAIClientOptions(httpClient);
+        // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
+        this.Endpoint = endpoint ?? httpClient?.BaseAddress;
+        if (this.Endpoint is null)
+        {
+            Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
+        }
 
+        var options = GetOpenAIClientOptions(httpClient, this.Endpoint);
         if (!string.IsNullOrWhiteSpace(organization))
         {
             options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organization!), PipelinePosition.PerCall);
-        }
-
-        // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
-        var providedEndpoint = endpoint ?? httpClient?.BaseAddress;
-        if (providedEndpoint is null)
-        {
-            Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
-            this.Endpoint = new Uri(DefaultPublicEndpoint);
-        }
-        else
-        {
-            options.AddPolicy(new CustomHostPipelinePolicy(providedEndpoint), PipelinePosition.PerTry);
-            this.Endpoint = providedEndpoint;
         }
 
         this.Client = new OpenAIClient(apiKey ?? string.Empty, options);
@@ -109,7 +109,7 @@ internal class ClientCore
         Verify.NotNull(openAIClient);
 
         this.Logger = logger ?? NullLogger.Instance;
-        this.ModelName = modelId;
+        this.ModelId = modelId;
         this.Client = openAIClient;
     }
 
@@ -121,14 +121,9 @@ internal class ClientCore
     {
         if (this.Logger.IsEnabled(LogLevel.Information))
         {
-            this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelName);
+            this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelId);
         }
     }
-
-    /// <summary>
-    /// Storage for AI service attributes.
-    /// </summary>
-    internal Dictionary<string, object?> Attributes { get; } = [];
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
@@ -153,7 +148,7 @@ internal class ClientCore
                 Dimensions = dimensions
             };
 
-            ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client.GetEmbeddingClient(this.ModelName).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
+            ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client.GetEmbeddingClient(this.ModelId).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
             var embeddings = response.Value;
 
             if (embeddings.Count != data.Count)
@@ -169,6 +164,12 @@ internal class ClientCore
 
         return result;
     }
+
+    /// <summary>
+    /// Allows adding attributes to the client.
+    /// </summary>
+    /// <param name="key">Attribute key.</param>
+    /// <param name="value">Attribute value.</param>
     internal void AddAttribute(string key, string? value)
     {
         if (!string.IsNullOrEmpty(value))
@@ -179,26 +180,34 @@ internal class ClientCore
 
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="endpoint">Endpoint for the OpenAI API.</param>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    private static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient)
+    private static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient, Uri? endpoint)
     {
-        OpenAIClientOptions options = new()
-        {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent,
-        };
+        // As the options Endpoint is an init property and I can't set it afterwards,
+        // I need an if statement to create the options for a custom endpoint.
+        OpenAIClientOptions options = (endpoint is null)
+            ? new OpenAIClientOptions() { ApplicationId = HttpHeaderConstant.Values.UserAgent }
+            : new OpenAIClientOptions() { ApplicationId = HttpHeaderConstant.Values.UserAgent, Endpoint = endpoint };
 
         options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), PipelinePosition.PerCall);
 
         if (httpClient is not null)
         {
             options.Transport = new HttpClientPipelineTransport(httpClient);
-            options.RetryPolicy = new ClientRetryPolicy(maxRetries: 0); // Disable SDK retry policy if and only if a custom HttpClient is provided.
-            options.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable SDK default timeout
+            options.RetryPolicy = new ClientRetryPolicy(maxRetries: 0); // Disable retry policy if and only if a custom HttpClient is provided.
+            options.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable default timeout
         }
 
         return options;
     }
 
+    /// <summary>
+    /// Invokes the specified request and handles exceptions.
+    /// </summary>
+    /// <typeparam name="T">Type of the response.</typeparam>
+    /// <param name="request">Request to invoke.</param>
+    /// <returns>Returns the response.</returns>
     private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
     {
         try

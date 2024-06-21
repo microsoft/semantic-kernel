@@ -5,7 +5,7 @@ using System.ClientModel.Primitives;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Helper class to inject headers into Azure SDK HTTP pipeline
+/// Helper class to inject headers into System ClientModel Http pipeline
 /// </summary>
 internal sealed class AddHeaderRequestPolicy(string headerName, string headerValue) : HttpPipelineSynchronousPolicy
 {
