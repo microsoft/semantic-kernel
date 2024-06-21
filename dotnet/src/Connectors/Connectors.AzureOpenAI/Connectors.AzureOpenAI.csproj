@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.OpenAI</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.AzureOpenAI</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -16,20 +16,19 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - OpenAI and Azure OpenAI connectors</Title>
-    <Description>Semantic Kernel connectors for OpenAI and Azure OpenAI. Contains clients for text generation, chat completion, embedding and DALL-E text to image.</Description>
+    <Title>Semantic Kernel - Azure OpenAI connectors</Title>
+    <Description>Semantic Kernel connectors for Azure OpenAI. Contains clients for text generation, chat completion, embedding and DALL-E text to image.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernel.Connectors.OpenAI.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.AI.OpenAI" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="OpenAI" />
-    <PackageReference Include="System.ClientModel" />
   </ItemGroup>
 </Project>
