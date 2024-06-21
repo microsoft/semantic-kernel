@@ -33,6 +33,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -191,13 +192,15 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         Returns:
             A chat message content object.
         """
-        items = [
-            TextContent(
-                content=choice.message.content,
-                inner_content=response,
-                metadata=metadata,
+        items = []
+        if choice.message.content:
+            items.append(
+                TextContent(
+                    text=choice.message.content,
+                    inner_content=response,
+                    metadata=metadata,
+                )
             )
-        ]
         if choice.message.tool_calls:
             for tool_call in choice.message.tool_calls:
                 items.append(
@@ -232,13 +235,16 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         Returns:
             A streaming chat message content object.
         """
-        items = [
-            TextContent(
-                content=choice.delta.content,
-                inner_content=chunk,
-                metadata=metadata,
+        items = []
+        if choice.delta.content:
+            items.append(
+                StreamingTextContent(
+                    choice_index=choice.index,
+                    text=choice.delta.content,
+                    inner_content=chunk,
+                    metadata=metadata,
+                )
             )
-        ]
         if choice.delta.tool_calls:
             for tool_call in choice.delta.tool_calls:
                 items.append(

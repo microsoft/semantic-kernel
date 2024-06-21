@@ -6,7 +6,6 @@ from typing import Any
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
-from azure.ai.inference.models import ModelInfo
 from azure.core.credentials import AzureKeyCredential
 from openai import AsyncAzureOpenAI
 
@@ -75,12 +74,12 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         ),
     )
     azure_ai_inference_client = AzureAIInferenceChatCompletion(
+        ai_model_id=deployment_name,
         client=ChatCompletionsClient(
-            endpoint=f'{endpoint.strip("/")}/openai/deployments/{deployment_name}',
+            endpoint=f'{str(endpoint).strip("/")}/openai/deployments/{deployment_name}',
             credential=AzureKeyCredential(""),
             headers={"api-key": api_key},
         ),
-        model_info=ModelInfo(model_name=deployment_name),
     )
 
     return {
