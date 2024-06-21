@@ -335,7 +335,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     /// <summary>
     /// Get a document with the given key, and return null if it is not found.
     /// </summary>
-    /// <typeparam name="T">The type to deserialize the doucment to.</typeparam>
+    /// <typeparam name="T">The type to deserialize the document to.</typeparam>
     /// <param name="searchClient">The search client to use when fetching the document.</param>
     /// <param name="key">The key of the record to get.</param>
     /// <param name="innerOptions">The azure ai search sdk options for getting a document.</param>
