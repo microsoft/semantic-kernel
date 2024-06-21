@@ -68,7 +68,7 @@ public class MockPipelineResponse : PipelineResponse
 
             if (this.ContentStream is not MemoryStream memoryContent)
             {
-                throw new InvalidOperationException($"The response is not buffered.");
+                throw new InvalidOperationException("The response is not buffered.");
             }
 
             if (memoryContent.TryGetBuffer(out ArraySegment<byte> segment))
