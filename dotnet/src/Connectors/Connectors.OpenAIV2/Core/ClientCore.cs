@@ -98,7 +98,7 @@ internal partial class ClientCore
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIClientCore"/> class using the specified OpenAIClient.
+    /// Initializes a new instance of the <see cref="ClientCore"/> class using the specified OpenAIClient.
     /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
@@ -149,7 +149,8 @@ internal partial class ClientCore
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
     private static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient, Uri? endpoint)
     {
-        OpenAIClientOptions options = new() {
+        OpenAIClientOptions options = new()
+        {
             ApplicationId = HttpHeaderConstant.Values.UserAgent,
             Endpoint = endpoint
         };

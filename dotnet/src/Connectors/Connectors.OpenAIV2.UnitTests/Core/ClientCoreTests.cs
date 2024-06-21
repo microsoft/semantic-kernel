@@ -16,7 +16,7 @@ using OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Core;
-public class ClientCoreTests
+public partial class ClientCoreTests
 {
     [Fact]
     public void ItCanBeInstantiatedAndPropertiesSetAsExpected()
@@ -106,19 +106,46 @@ public class ClientCoreTests
         }
     }
 
-    [Theory]
-    [InlineData(true, Skip = "Semantic Kernel header is not provided when using specific OpenAI client")]
+    [Fact]
+    // [InlineData(true,
+    // Skip = "Semantic Kernel header is not provided when using specific
+    // OpenAI client because once the client is created we can't add policies using plugic APIs")]
     [InlineData(false)]
-    public async Task ItAddSemanticKernelHeadersOnEachRequestAsync(bool useOpenAIClient)
+    public async Task ItAddSemanticKernelHeadersOnEachRequestAsync()
     {
         using HttpMessageHandlerStub handler = new();
         using HttpClient client = new(handler);
         handler.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
 
         // Act
-        var clientCore = (!useOpenAIClient)
-            ? new ClientCore(modelId: "model", apiKey: "test", httpClient: client)
-            : new ClientCore(modelId: "model", openAIClient: new OpenAIClient(
+        var clientCore = new ClientCore(modelId: "model", apiKey: "test", httpClient: client);
+
+        var pipelineMessage = clientCore.Client.Pipeline.CreateMessage();
+        pipelineMessage.Request.Method = "POST";
+        pipelineMessage.Request.Uri = new Uri("http://localhost");
+        pipelineMessage.Request.Content = BinaryContent.Create(new BinaryData("test"));
+
+        // Assert
+        await clientCore.Client.Pipeline.SendAsync(pipelineMessage);
+
+        Assert.True(handler.RequestHeaders!.Contains(HttpHeaderConstant.Names.SemanticKernelVersion));
+        Assert.Equal(HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore)), handler.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).FirstOrDefault());
+
+        Assert.True(handler.RequestHeaders.Contains("User-Agent"));
+        Assert.Contains(HttpHeaderConstant.Values.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
+    }
+
+    [Fact]
+    public async Task ItDoNotAddSemanticKernelHeadersWhenOpenAIClientIsProvidedAsync()
+    {
+        using HttpMessageHandlerStub handler = new();
+        using HttpClient client = new(handler);
+        handler.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+
+        // Act
+        var clientCore = new ClientCore(
+            modelId: "model",
+            openAIClient: new OpenAIClient(
                 new ApiKeyCredential("test"),
                 new OpenAIClientOptions()
                 {
@@ -135,10 +162,31 @@ public class ClientCoreTests
         // Assert
         await clientCore.Client.Pipeline.SendAsync(pipelineMessage);
 
-        Assert.True(handler.RequestHeaders!.Contains(HttpHeaderConstant.Names.SemanticKernelVersion));
-        Assert.Equal(HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore)), handler.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).FirstOrDefault());
+        Assert.False(handler.RequestHeaders!.Contains(HttpHeaderConstant.Names.SemanticKernelVersion));
+        Assert.DoesNotContain(HttpHeaderConstant.Values.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
+    }
 
-        Assert.True(handler.RequestHeaders.Contains("User-Agent"));
-        Assert.Contains(HttpHeaderConstant.Values.UserAgent, handler.RequestHeaders.GetValues("User-Agent").FirstOrDefault());
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("value")]
+    public void ItAddAttributesButDoesNothingIfNullOrEmpty(string? value)
+    {
+        // Arrange
+        var clientCore = new ClientCore("model", "apikey");
+        // Act
+
+        clientCore.AddAttribute("key", value);
+
+        // Assert
+        if (string.IsNullOrEmpty(value))
+        {
+            Assert.False(clientCore.Attributes.ContainsKey("key"));
+        }
+        else
+        {
+            Assert.True(clientCore.Attributes.ContainsKey("key"));
+            Assert.Equal(value, clientCore.Attributes["key"]);
+        }
     }
 }
