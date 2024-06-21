@@ -18,7 +18,7 @@ using Microsoft.SemanticKernel.Memory;
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
-/// Service for storing and retrieving records, that uses Azure AI Search as the underlying storage.
+/// Service for storing and retrieving vector records, that uses Azure AI Search as the underlying storage.
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore<string, TRecord>
@@ -140,9 +140,9 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         // Remove record.
         var searchClient = this.GetSearchClient(collectionName);
         return RunOperationAsync(
-            () => searchClient.DeleteDocumentsAsync(this._keyPropertyName, [key], new IndexDocumentsOptions(), cancellationToken),
             collectionName,
-            "DeleteDocuments");
+            "DeleteDocuments",
+            () => searchClient.DeleteDocumentsAsync(this._keyPropertyName, [key], new IndexDocumentsOptions(), cancellationToken));
     }
 
     /// <inheritdoc />
@@ -156,9 +156,9 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         // Remove records.
         var searchClient = this.GetSearchClient(collectionName);
         return RunOperationAsync(
-            () => searchClient.DeleteDocumentsAsync(this._keyPropertyName, keys, new IndexDocumentsOptions(), cancellationToken),
             collectionName,
-            "DeleteDocuments");
+            "DeleteDocuments",
+            () => searchClient.DeleteDocumentsAsync(this._keyPropertyName, keys, new IndexDocumentsOptions(), cancellationToken));
     }
 
     /// <inheritdoc />
@@ -214,21 +214,21 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         if (this._options.MapperType == AzureAISearchRecordMapperType.JsonObjectCustomMapper)
         {
             var jsonObject = await RunOperationAsync(
-                () => searchClient.GetDocumentAsync<JsonObject>(key, innerOptions, cancellationToken),
                 collectionName,
-                "GetDocument").ConfigureAwait(false);
+                "GetDocument",
+                () => searchClient.GetDocumentAsync<JsonObject>(key, innerOptions, cancellationToken)).ConfigureAwait(false);
 
             return RunModelConversion(
-                () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(jsonObject),
                 collectionName,
-                "GetDocument");
+                "GetDocument",
+                () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(jsonObject));
         }
 
         // Use the built in Azure AI Search mapper.
         return await RunOperationAsync(
-            () => searchClient.GetDocumentAsync<TRecord>(key, innerOptions, cancellationToken),
             collectionName,
-            "GetDocument").ConfigureAwait(false);
+            "GetDocument",
+            () => searchClient.GetDocumentAsync<TRecord>(key, innerOptions, cancellationToken)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -251,21 +251,21 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         if (this._options.MapperType == AzureAISearchRecordMapperType.JsonObjectCustomMapper)
         {
             var jsonObjects = RunModelConversion(
-                () => records.Select(this._options.JsonObjectCustomMapper!.MapFromDataToStorageModel),
                 collectionName,
-                "UploadDocuments");
+                "UploadDocuments",
+                () => records.Select(this._options.JsonObjectCustomMapper!.MapFromDataToStorageModel));
 
             return RunOperationAsync(
-                () => searchClient.UploadDocumentsAsync<JsonObject>(jsonObjects, innerOptions, cancellationToken),
                 collectionName,
-                "UploadDocuments");
+                "UploadDocuments",
+                () => searchClient.UploadDocumentsAsync<JsonObject>(jsonObjects, innerOptions, cancellationToken));
         }
 
         // Use the built in Azure AI Search mapper.
         return RunOperationAsync(
-            () => searchClient.UploadDocumentsAsync<TRecord>(records, innerOptions, cancellationToken),
             collectionName,
-            "UploadDocuments");
+            "UploadDocuments",
+            () => searchClient.UploadDocumentsAsync<TRecord>(records, innerOptions, cancellationToken));
     }
 
     /// <summary>
@@ -322,14 +322,14 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     }
 
     /// <summary>
-    /// Run the given operation and wrap any <see cref="RequestFailedException"/> with <see cref="HttpOperationException"/>."/>
+    /// Run the given operation and wrap any <see cref="RequestFailedException"/> with <see cref="VectorStoreOperationException"/>."/>
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
-    /// <param name="operation">The operation to run.</param>
     /// <param name="collectionName">The name of the collection the operation is being run on.</param>
     /// <param name="operationName">The type of database operation being run.</param>
+    /// <param name="operation">The operation to run.</param>
     /// <returns>The result of the operation.</returns>
-    private static async Task<T> RunOperationAsync<T>(Func<Task<T>> operation, string collectionName, string operationName)
+    private static async Task<T> RunOperationAsync<T>(string collectionName, string operationName, Func<Task<T>> operation)
     {
         try
         {
@@ -365,11 +365,11 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     /// Run the given model conversion and wrap any exceptions with <see cref="VectorStoreRecordMappingException"/>.
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
-    /// <param name="operation">The operation to run.</param>
     /// <param name="collectionName">The name of the collection the operation is being run on.</param>
     /// <param name="operationName">The type of database operation being run.</param>
+    /// <param name="operation">The operation to run.</param>
     /// <returns>The result of the operation.</returns>
-    private static T RunModelConversion<T>(Func<T> operation, string collectionName, string operationName)
+    private static T RunModelConversion<T>(string collectionName, string operationName, Func<T> operation)
     {
         try
         {

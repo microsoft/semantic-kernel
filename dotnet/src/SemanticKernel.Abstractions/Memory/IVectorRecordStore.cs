@@ -48,17 +48,19 @@ public interface IVectorRecordStore<TKey, TRecord>
     /// <param name="options">Optional options for removing the record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifier for the record.</returns>
-    /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason.</exception>
+    /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason other than that the record does not exit.</exception>
     Task DeleteAsync(TKey key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes a batch of records from the vector store. Does not guarantee that the collection exists.
     /// Deletes will be made in a single request or in a single parallel batch depending on the available store functionality.
+    /// If a record is not found, it will be ignored and the batch will succeed.
+    /// If any record cannot be deleted for any other reason, the operation will throw. Some records may have already been deleted, while others may not, so the entire operation should be retried.
     /// </summary>
     /// <param name="keys">The unique ids associated with the records to remove.</param>
     /// <param name="options">Optional options for removing the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason.</exception>
+    /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason other than that a record does not exist.</exception>
     Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>

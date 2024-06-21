@@ -2,15 +2,15 @@
 
 using System;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Azure.Search.Documents.Indexes;
 using Azure;
+using Azure.Search.Documents.Indexes;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 using Xunit.Abstractions;
 using static SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch.AzureAISearchVectorStoreFixture;
-using System.Text.Json.Nodes;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 
@@ -38,22 +38,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
 
         // Act
-        var hotel = new Hotel()
-        {
-            HotelId = "Upsert-1",
-            HotelName = "MyHotel1",
-            Description = "My Hotel is great.",
-            DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
-            Tags = new[] { "pool", "air conditioning", "concierge" },
-            ParkingIncluded = true,
-            LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
-            Rating = 3.6,
-            Address = new Address()
-            {
-                City = "New York",
-                Country = "USA"
-            }
-        };
+        var hotel = CreateTestHotel("Upsert-1");
         var upsertResult = await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1");
 
@@ -65,7 +50,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         Assert.Equal(hotel.HotelName, getResult.HotelName);
         Assert.Equal(hotel.Description, getResult.Description);
         Assert.NotNull(getResult.DescriptionEmbedding);
-        Assert.Equal(hotel.DescriptionEmbedding.Value, getResult.DescriptionEmbedding.Value);
+        Assert.Equal(hotel.DescriptionEmbedding?.ToArray(), getResult.DescriptionEmbedding?.ToArray());
         Assert.Equal(hotel.Tags, getResult.Tags);
         Assert.Equal(hotel.ParkingIncluded, getResult.ParkingIncluded);
         Assert.Equal(hotel.LastRenovationDate, getResult.LastRenovationDate);
@@ -206,6 +191,8 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
 
         // Act
         await sut.DeleteAsync("Remove-1");
+        // Also delete a non-existing key to test that the operation does not fail for these.
+        await sut.DeleteAsync("Remove-2");
 
         // Assert
         await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("Remove-1", new GetRecordOptions { IncludeVectors = true }));
@@ -225,7 +212,8 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-3"));
 
         // Act
-        await sut.DeleteBatchAsync(["RemoveMany-1", "RemoveMany-2", "RemoveMany-3"]);
+        // Also include a non-existing key to test that the operation does not fail for these.
+        await sut.DeleteBatchAsync(["RemoveMany-1", "RemoveMany-2", "RemoveMany-3", "RemoveMany-4"]);
 
         // Assert
         await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
@@ -234,7 +222,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItThrowsCommandExecutionExceptionForFailedConnectionAsync()
+    public async Task ItThrowsOperationExceptionForFailedConnectionAsync()
     {
         // Arrange
         var options = new AzureAISearchVectorRecordStoreOptions<Hotel> { DefaultCollectionName = fixture.TestIndexName };
@@ -246,7 +234,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItThrowsCommandExecutionExceptionForFailedAuthenticationAsync()
+    public async Task ItThrowsOperationExceptionForFailedAuthenticationAsync()
     {
         // Arrange
         var options = new AzureAISearchVectorRecordStoreOptions<Hotel> { DefaultCollectionName = fixture.TestIndexName };
@@ -274,7 +262,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         HotelName = $"MyHotel {hotelId}",
         Description = "My Hotel is great.",
         DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
-        Tags = new[] { "pool", "air conditioning", "concierge" },
+        Tags = ["pool", "air conditioning", "concierge"],
         ParkingIncluded = true,
         LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
         Rating = 3.6,
