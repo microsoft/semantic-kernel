@@ -147,7 +147,8 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
 
         // Act
-        var hotels = sut.GetBatchAsync(["BaseSet-1", "BaseSet-2", "BaseSet-3", "BaseSet-4"], new GetRecordOptions { IncludeVectors = true });
+        // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
+        var hotels = sut.GetBatchAsync(["BaseSet-1", "BaseSet-2", "BaseSet-3", "BaseSet-5", "BaseSet-4"], new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -159,20 +160,6 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         {
             output.WriteLine(hotel.ToString());
         }
-    }
-
-    [Fact]
-    public async Task ItThrowsForPartialGetBatchResultAsync()
-    {
-        // Arrange.
-        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
-        {
-            DefaultCollectionName = fixture.TestIndexName
-        };
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
-
-        // Act.
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetBatchAsync(["BaseSet-1", "BaseSet-5", "BaseSet-2"]).ToListAsync());
     }
 
     [Theory(Skip = SkipReason)]
@@ -195,7 +182,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         await sut.DeleteAsync("Remove-2");
 
         // Assert
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("Remove-1", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("Remove-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
@@ -216,9 +203,20 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         await sut.DeleteBatchAsync(["RemoveMany-1", "RemoveMany-2", "RemoveMany-3", "RemoveMany-4"]);
 
         // Assert
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-2", new GetRecordOptions { IncludeVectors = true }));
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("RemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("RemoveMany-2", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
+    {
+        // Arrange
+        var options = new AzureAISearchVectorRecordStoreOptions<Hotel> { DefaultCollectionName = fixture.TestIndexName };
+        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, options);
+
+        // Act & Assert
+        Assert.Null(await sut.GetAsync("BaseSet-5", new GetRecordOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]

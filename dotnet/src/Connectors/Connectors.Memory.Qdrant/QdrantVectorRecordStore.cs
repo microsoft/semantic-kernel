@@ -68,21 +68,21 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     }
 
     /// <inheritdoc />
-    public async Task<TRecord> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
         var retrievedPoints = await this.GetBatchAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
-        return retrievedPoints[0];
+        return retrievedPoints.FirstOrDefault();
     }
 
     /// <inheritdoc />
-    public async Task<TRecord> GetAsync(Guid key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(Guid key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
         var retrievedPoints = await this.GetBatchAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
-        return retrievedPoints[0];
+        return retrievedPoints.FirstOrDefault();
     }
 
     /// <inheritdoc />
@@ -282,12 +282,6 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
             collectionName,
             "Retrieve",
             () => this._qdrantClient.RetrieveAsync(collectionName, pointsIds, true, options?.IncludeVectors ?? false, cancellationToken: cancellationToken)).ConfigureAwait(false);
-
-        // Check that we found the required number of values.
-        if (retrievedPoints.Count != pointsIds.Length)
-        {
-            throw new VectorStoreOperationException("Record not found");
-        }
 
         // Convert the retrieved points to the target data model.
         foreach (var retrievedPoint in retrievedPoints)

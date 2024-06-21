@@ -100,7 +100,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     }
 
     /// <inheritdoc />
-    public Task<TRecord> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -126,7 +126,13 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         var searchClient = this.GetSearchClient(collectionName);
         var tasks = keys.Select(key => this.GetDocumentAndMapToDataModelAsync(searchClient, collectionName, key, innerOptions, cancellationToken));
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-        foreach (var result in results) { yield return result; }
+        foreach (var result in results)
+        {
+            if (result is not null)
+            {
+                yield return result;
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -203,7 +209,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     /// <param name="innerOptions">The azure ai search sdk options for getting a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The retrieved document, mapped to the consumer data model.</returns>
-    private async Task<TRecord> GetDocumentAndMapToDataModelAsync(
+    private async Task<TRecord?> GetDocumentAndMapToDataModelAsync(
         SearchClient searchClient,
         string collectionName,
         string key,
@@ -216,7 +222,12 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
             var jsonObject = await RunOperationAsync(
                 collectionName,
                 "GetDocument",
-                () => searchClient.GetDocumentAsync<JsonObject>(key, innerOptions, cancellationToken)).ConfigureAwait(false);
+                () => GetDocumentWithNotFoundHandlingAsync<JsonObject>(searchClient, key, innerOptions, cancellationToken)).ConfigureAwait(false);
+
+            if (jsonObject is null)
+            {
+                return null;
+            }
 
             return RunModelConversion(
                 collectionName,
@@ -228,7 +239,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         return await RunOperationAsync(
             collectionName,
             "GetDocument",
-            () => searchClient.GetDocumentAsync<TRecord>(key, innerOptions, cancellationToken)).ConfigureAwait(false);
+            () => GetDocumentWithNotFoundHandlingAsync<TRecord>(searchClient, key, innerOptions, cancellationToken)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -319,6 +330,31 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         }
 
         return innerOptions;
+    }
+
+    /// <summary>
+    /// Get a document with the given key, and return null if it is not found.
+    /// </summary>
+    /// <typeparam name="T">The type to deserialize the doucment to.</typeparam>
+    /// <param name="searchClient">The search client to use when fetching the document.</param>
+    /// <param name="key">The key of the record to get.</param>
+    /// <param name="innerOptions">The azure ai search sdk options for getting a document.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The retrieved document, mapped to the consumer data model, or null if not found.</returns>
+    private static async Task<T?> GetDocumentWithNotFoundHandlingAsync<T>(
+        SearchClient searchClient,
+        string key,
+        GetDocumentOptions innerOptions,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await searchClient.GetDocumentAsync<T>(key, innerOptions, cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return default;
+        }
     }
 
     /// <summary>

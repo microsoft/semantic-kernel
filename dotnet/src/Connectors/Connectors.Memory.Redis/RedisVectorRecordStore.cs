@@ -111,7 +111,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     }
 
     /// <inheritdoc />
-    public async Task<TRecord> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -134,7 +134,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         // Check if the key was found before trying to parse the result.
         if (redisResult.IsNull || redisResult is null)
         {
-            throw new VectorStoreOperationException($"Could not find document with key '{key}'");
+            return null;
         }
 
         // Check if the value contained any json text before trying to parse the result.
@@ -183,7 +183,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             // Check if the key was found before trying to parse the result.
             if (redisResult.IsNull || redisResult is null)
             {
-                throw new VectorStoreOperationException($"Could not find document with key '{key}'");
+                continue;
             }
 
             // Check if the value contained any json text before trying to parse the result.

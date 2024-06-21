@@ -90,7 +90,7 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
         await sut.DeleteAsync(Guid.Parse("55555555-5555-5555-5555-555555555555"));
 
         // Assert.
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync(Guid.Parse("55555555-5555-5555-5555-555555555555")));
+        Assert.Null(await sut.GetAsync(Guid.Parse("55555555-5555-5555-5555-555555555555")));
 
         // Output.
         output.WriteLine(upsertResult.ToString("D"));
@@ -187,7 +187,8 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
         var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, options);
 
         // Act
-        var hotels = sut.GetBatchAsync([11, 12], new GetRecordOptions { IncludeVectors = true });
+        // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
+        var hotels = sut.GetBatchAsync([11, 15, 12], new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -199,17 +200,6 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
         {
             output.WriteLine(hotel?.ToString() ?? "Null");
         }
-    }
-
-    [Fact]
-    public async Task ItThrowsForPartialBatchResultAsync()
-    {
-        // Arrange.
-        var options = new QdrantVectorRecordStoreOptions<HotelInfo> { HasNamedVectors = true, DefaultCollectionName = "namedVectorsHotels" };
-        var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, options);
-
-        // Act.
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetBatchAsync([1, 5, 2]).ToListAsync());
     }
 
     [Theory]
@@ -236,7 +226,7 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
         await sut.DeleteAsync(21);
 
         // Assert.
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync(20));
+        Assert.Null(await sut.GetAsync(20));
     }
 
     [Theory]
@@ -262,7 +252,18 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
         await sut.DeleteBatchAsync([20, 21]);
 
         // Assert.
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync(20));
+        Assert.Null(await sut.GetAsync(20));
+    }
+
+    [Fact]
+    public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
+    {
+        // Arrange
+        var options = new QdrantVectorRecordStoreOptions<HotelInfo> { HasNamedVectors = false, DefaultCollectionName = "singleVectorHotels" };
+        var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, options);
+
+        // Act & Assert
+        Assert.Null(await sut.GetAsync(15, new GetRecordOptions { IncludeVectors = true }));
     }
 
     [Fact]
