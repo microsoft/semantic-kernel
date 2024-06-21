@@ -10,7 +10,11 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
-    """Azure AI Inference Prompt Execution Settings."""
+    """Azure AI Inference Prompt Execution Settings.
+
+    Note:
+        `extra_parameters` is a dictionary to pass additional model-specific parameters to the model.
+    """
 
     frequency_penalty: float | None = Field(None, ge=-2, le=2)
     max_tokens: int | None = Field(None, gt=0)
@@ -19,7 +23,6 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
     stop: str | None = None
     temperature: float | None = Field(None, ge=0.0, le=1.0)
     top_p: float | None = Field(None, ge=0.0, le=1.0)
-    # `extra_parameters` is a dictionary to pass additional model-specific parameters to the model.
     extra_parameters: dict[str, str] | None = None
 
 
@@ -30,10 +33,13 @@ class AzureAIInferenceChatPromptExecutionSettings(AzureAIInferencePromptExecutio
 
 @experimental_class
 class AzureAIInferenceEmbeddingPromptExecutionSettings(PromptExecutionSettings):
-    """Azure AI Inference Embedding Prompt Execution Settings."""
+    """Azure AI Inference Embedding Prompt Execution Settings.
+
+    Note:
+        `extra_parameters` is a dictionary to pass additional model-specific parameters to the model.
+    """
 
     dimensions: int | None = Field(None, gt=0)
     encoding_format: Literal["base64", "binary", "float", "int8", "ubinary", "uint8"] | None = None
     input_type: Literal["text", "query", "document"] | None = None
-    # `extra_parameters` is a dictionary to pass additional model-specific parameters to the model.
     extra_parameters: dict[str, str] | None = None

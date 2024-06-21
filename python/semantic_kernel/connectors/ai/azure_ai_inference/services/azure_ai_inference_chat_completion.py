@@ -191,7 +191,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         Returns:
             A chat message content object.
         """
-        items = []
+        items = [
+            TextContent(
+                content=choice.message.content,
+                inner_content=response,
+                metadata=metadata,
+            )
+        ]
         if choice.message.tool_calls:
             for tool_call in choice.message.tool_calls:
                 items.append(
@@ -205,7 +211,6 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         return ChatMessageContent(
             role=AuthorRole(choice.message.role),
             items=items,
-            content=choice.message.content,
             inner_content=response,
             finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
             metadata=metadata,
@@ -227,7 +232,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         Returns:
             A streaming chat message content object.
         """
-        items = []
+        items = [
+            TextContent(
+                content=choice.delta.content,
+                inner_content=chunk,
+                metadata=metadata,
+            )
+        ]
         if choice.delta.tool_calls:
             for tool_call in choice.delta.tool_calls:
                 items.append(
@@ -242,7 +253,6 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         return StreamingChatMessageContent(
             role=AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT,
             items=items,
-            content=choice.delta.content,
             choice_index=choice.index,
             inner_content=chunk,
             finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
@@ -261,27 +271,28 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
         chat_request_messages: list[ChatRequestMessage] = []
 
         for message in chat_history.messages:
-            if message.role == AuthorRole.USER and any(isinstance(item, ImageContent) for item in message.items):
-                # If it's a user message and there are any image items in the message, we need to create a list of
-                # content items, otherwise we need to just pass in the content as a string or it will error.
-                contentItems = []
-                for item in message.items:
-                    if isinstance(item, TextContent):
-                        contentItems.append(TextContentItem(text=item.text))
-                    elif isinstance(item, ImageContent) and (item.data_uri or item.uri):
-                        contentItems.append(
-                            ImageContentItem(
-                                image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto)
-                            )
-                        )
-                    else:
-                        logger.warning(
-                            "Unsupported item type in User message while formatting chat history for Azure AI"
-                            f" Inference: {type(item)}"
-                        )
-                chat_request_messages.append(_MESSAGE_CONVERTER[message.role](content=contentItems))
-            else:
+            if message.role != AuthorRole.USER or not any(isinstance(item, ImageContent) for item in message.items):
                 chat_request_messages.append(_MESSAGE_CONVERTER[message.role](content=message.content))
+                continue
+
+            # If it's a user message and there are any image items in the message, we need to create a list of
+            # content items, otherwise we need to just pass in the content as a string or it will error.
+            contentItems = []
+            for item in message.items:
+                if isinstance(item, TextContent):
+                    contentItems.append(TextContentItem(text=item.text))
+                elif isinstance(item, ImageContent) and (item.data_uri or item.uri):
+                    contentItems.append(
+                        ImageContentItem(
+                            image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto)
+                        )
+                    )
+                else:
+                    logger.warning(
+                        "Unsupported item type in User message while formatting chat history for Azure AI"
+                        f" Inference: {type(item)}"
+                    )
+            chat_request_messages.append(_MESSAGE_CONVERTER[message.role](content=contentItems))
 
         return chat_request_messages
 
