@@ -15,18 +15,18 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Represents a <see cref="HttpPipelinePolicy"/> that doesn't do any asynchronous or synchronously blocking operations.
+/// Represents a <see cref="PipelinePolicy"/> that doesn't do any asynchronous or synchronously blocking operations.
 /// </summary>
-internal class HttpPipelineSynchronousPolicy : HttpPipelinePolicy
+internal class PipelineSynchronousPolicy : PipelinePolicy
 {
     private static readonly Type[] s_onReceivedResponseParameters = new[] { typeof(PipelineMessage) };
 
     private readonly bool _hasOnReceivedResponse = true;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="HttpPipelineSynchronousPolicy"/>
+    /// Initializes a new instance of <see cref="PipelineSynchronousPolicy"/>
     /// </summary>
-    protected HttpPipelineSynchronousPolicy()
+    protected PipelineSynchronousPolicy()
     {
         var onReceivedResponseMethod = this.GetType().GetMethod(nameof(OnReceivedResponse), BindingFlags.Instance | BindingFlags.Public, null, s_onReceivedResponseParameters, null);
         if (onReceivedResponseMethod != null)
@@ -39,7 +39,11 @@ internal class HttpPipelineSynchronousPolicy : HttpPipelinePolicy
     public override void Process(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
     {
         this.OnSendingRequest(message);
-        ProcessNext(message, pipeline, currentIndex);
+        if (pipeline.Count > currentIndex + 1)
+        {
+            // If there are more policies in the pipeline, continue processing
+            ProcessNext(message, pipeline, currentIndex);
+        }
         this.OnReceivedResponse(message);
     }
 
@@ -50,7 +54,11 @@ internal class HttpPipelineSynchronousPolicy : HttpPipelinePolicy
         {
             // If OnReceivedResponse was not overridden we can avoid creating a state machine and return the task directly
             this.OnSendingRequest(message);
-            return ProcessNextAsync(message, pipeline, currentIndex);
+            if (pipeline.Count > currentIndex + 1)
+            {
+                // If there are more policies in the pipeline, continue processing
+                return ProcessNextAsync(message, pipeline, currentIndex);
+            }
         }
 
         return this.InnerProcessAsync(message, pipeline, currentIndex);
@@ -59,7 +67,11 @@ internal class HttpPipelineSynchronousPolicy : HttpPipelinePolicy
     private async ValueTask InnerProcessAsync(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
     {
         this.OnSendingRequest(message);
-        await ProcessNextAsync(message, pipeline, currentIndex).ConfigureAwait(false);
+        if (pipeline.Count > currentIndex + 1)
+        {
+            // If there are more policies in the pipeline, continue processing
+            await ProcessNextAsync(message, pipeline, currentIndex).ConfigureAwait(false);
+        }
         this.OnReceivedResponse(message);
     }
 

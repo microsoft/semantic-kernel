@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Helper class to inject headers into System ClientModel Http pipeline
 /// </summary>
-internal sealed class AddHeaderRequestPolicy(string headerName, string headerValue) : HttpPipelineSynchronousPolicy
+internal sealed class AddHeaderRequestPolicy(string headerName, string headerValue) : PipelineSynchronousPolicy
 {
     private readonly string _headerName = headerName;
     private readonly string _headerValue = headerValue;
