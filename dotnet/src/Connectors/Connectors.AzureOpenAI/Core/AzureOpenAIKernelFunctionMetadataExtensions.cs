@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
-/// Extensions for <see cref="KernelFunctionMetadata"/> specific to the OpenAI connector.
+/// Extensions for <see cref="KernelFunctionMetadata"/> specific to the AzureOpenAI connector.
 /// </summary>
 public static class AzureOpenAIKernelFunctionMetadataExtensions
 {
@@ -14,7 +14,7 @@ public static class AzureOpenAIKernelFunctionMetadataExtensions
     /// </summary>
     /// <param name="metadata">The <see cref="KernelFunctionMetadata"/> object to convert.</param>
     /// <returns>An <see cref="AzureOpenAIFunction"/> object.</returns>
-    public static AzureOpenAIFunction ToOpenAIFunction(this KernelFunctionMetadata metadata)
+    public static AzureOpenAIFunction ToAzureOpenAIFunction(this KernelFunctionMetadata metadata)
     {
         IReadOnlyList<KernelParameterMetadata> metadataParams = metadata.Parameters;
 

@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
-/// Execution settings for an OpenAI completion request.
+/// Execution settings for an AzureOpenAI completion request.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings

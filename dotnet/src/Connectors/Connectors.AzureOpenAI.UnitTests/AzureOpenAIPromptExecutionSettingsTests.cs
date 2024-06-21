@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests;
 
 /// <summary>
-/// Unit tests of OpenAIPromptExecutionSettings
+/// Unit tests of AzureOpenAIPromptExecutionSettingsTests
 /// </summary>
 public class AzureOpenAIPromptExecutionSettingsTests
 {

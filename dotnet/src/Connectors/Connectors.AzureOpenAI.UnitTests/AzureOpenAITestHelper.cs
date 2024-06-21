@@ -5,7 +5,7 @@ using System.IO;
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests;
 
 /// <summary>
-/// Helper for OpenAI test purposes.
+/// Helper for AzureOpenAI test purposes.
 /// </summary>
 internal static class AzureOpenAITestHelper
 {

@@ -392,7 +392,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         }, "GetCurrentWeather");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
-        var openAIFunction = plugin.GetFunctionsMetadata().First().ToOpenAIFunction();
+        var openAIFunction = plugin.GetFunctionsMetadata().First().ToAzureOpenAIFunction();
 
         kernel.Plugins.Add(plugin);
 
@@ -572,7 +572,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         }, "GetCurrentWeather");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
-        var openAIFunction = plugin.GetFunctionsMetadata().First().ToOpenAIFunction();
+        var openAIFunction = plugin.GetFunctionsMetadata().First().ToAzureOpenAIFunction();
 
         kernel.Plugins.Add(plugin);
 

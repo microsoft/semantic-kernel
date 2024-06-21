@@ -48,7 +48,7 @@ public sealed class AzureOpenAIFunctionTests
     public void ItCanConvertToFunctionDefinitionWithNoPluginName()
     {
         // Arrange
-        AzureOpenAIFunction sut = KernelFunctionFactory.CreateFromMethod(() => { }, "myfunc", "This is a description of the function.").Metadata.ToOpenAIFunction();
+        AzureOpenAIFunction sut = KernelFunctionFactory.CreateFromMethod(() => { }, "myfunc", "This is a description of the function.").Metadata.ToAzureOpenAIFunction();
 
         // Act
         FunctionDefinition result = sut.ToFunctionDefinition();
@@ -78,7 +78,7 @@ public sealed class AzureOpenAIFunctionTests
         AzureOpenAIFunction sut = KernelPluginFactory.CreateFromFunctions("myplugin", new[]
         {
             KernelFunctionFactory.CreateFromMethod(() => { }, "myfunc", "This is a description of the function.")
-        }).GetFunctionsMetadata()[0].ToOpenAIFunction();
+        }).GetFunctionsMetadata()[0].ToAzureOpenAIFunction();
 
         // Act
         FunctionDefinition result = sut.ToFunctionDefinition();
@@ -101,7 +101,7 @@ public sealed class AzureOpenAIFunctionTests
                 "My test function")
         });
 
-        AzureOpenAIFunction sut = plugin.GetFunctionsMetadata()[0].ToOpenAIFunction();
+        AzureOpenAIFunction sut = plugin.GetFunctionsMetadata()[0].ToAzureOpenAIFunction();
 
         FunctionDefinition functionDefinition = sut.ToFunctionDefinition();
 
@@ -127,7 +127,7 @@ public sealed class AzureOpenAIFunctionTests
                 "My test function")
         });
 
-        AzureOpenAIFunction sut = plugin.GetFunctionsMetadata()[0].ToOpenAIFunction();
+        AzureOpenAIFunction sut = plugin.GetFunctionsMetadata()[0].ToAzureOpenAIFunction();
 
         FunctionDefinition functionDefinition = sut.ToFunctionDefinition();
 
@@ -143,7 +143,7 @@ public sealed class AzureOpenAIFunctionTests
         // Arrange
         AzureOpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
             () => { },
-            parameters: [new KernelParameterMetadata("param1")]).Metadata.ToOpenAIFunction();
+            parameters: [new KernelParameterMetadata("param1")]).Metadata.ToAzureOpenAIFunction();
 
         // Act
         FunctionDefinition result = f.ToFunctionDefinition();
@@ -163,7 +163,7 @@ public sealed class AzureOpenAIFunctionTests
         // Arrange
         AzureOpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
             () => { },
-            parameters: [new KernelParameterMetadata("param1") { Description = "something neat" }]).Metadata.ToOpenAIFunction();
+            parameters: [new KernelParameterMetadata("param1") { Description = "something neat" }]).Metadata.ToAzureOpenAIFunction();
 
         // Act
         FunctionDefinition result = f.ToFunctionDefinition();

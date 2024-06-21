@@ -12,7 +12,7 @@ namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests;
 /// <summary>
 /// Unit tests for <see cref="AzureToolCallBehavior"/>
 /// </summary>
-public sealed class ToolCallBehaviorTests
+public sealed class AzureToolCallBehaviorTests
 {
     [Fact]
     public void EnableKernelFunctionsReturnsCorrectKernelFunctionsInstance()
@@ -128,7 +128,7 @@ public sealed class ToolCallBehaviorTests
     public void EnabledFunctionsConfigureOptionsWithAutoInvokeAndNullKernelThrowsException()
     {
         // Arrange
-        var functions = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction());
+        var functions = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToAzureOpenAIFunction());
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke: true);
         var chatCompletionsOptions = new ChatCompletionsOptions();
 
@@ -141,7 +141,7 @@ public sealed class ToolCallBehaviorTests
     public void EnabledFunctionsConfigureOptionsWithAutoInvokeAndEmptyKernelThrowsException()
     {
         // Arrange
-        var functions = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction());
+        var functions = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToAzureOpenAIFunction());
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke: true);
         var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
@@ -158,7 +158,7 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var plugin = this.GetTestPlugin();
-        var functions = plugin.GetFunctionsMetadata().Select(function => function.ToOpenAIFunction());
+        var functions = plugin.GetFunctionsMetadata().Select(function => function.ToAzureOpenAIFunction());
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke);
         var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
@@ -178,7 +178,7 @@ public sealed class ToolCallBehaviorTests
     public void RequiredFunctionsConfigureOptionsWithAutoInvokeAndNullKernelThrowsException()
     {
         // Arrange
-        var function = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction()).First();
+        var function = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToAzureOpenAIFunction()).First();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
         var chatCompletionsOptions = new ChatCompletionsOptions();
 
@@ -191,7 +191,7 @@ public sealed class ToolCallBehaviorTests
     public void RequiredFunctionsConfigureOptionsWithAutoInvokeAndEmptyKernelThrowsException()
     {
         // Arrange
-        var function = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction()).First();
+        var function = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToAzureOpenAIFunction()).First();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
         var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
@@ -206,7 +206,7 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var plugin = this.GetTestPlugin();
-        var function = plugin.GetFunctionsMetadata()[0].ToOpenAIFunction();
+        var function = plugin.GetFunctionsMetadata()[0].ToAzureOpenAIFunction();
         var chatCompletionsOptions = new ChatCompletionsOptions();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
         var kernel = new Kernel();

@@ -7,7 +7,7 @@ using Azure.AI.OpenAI;
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
-/// Represents a function parameter that can be passed to an OpenAI function tool call.
+/// Represents a function parameter that can be passed to an AzureOpenAI function tool call.
 /// </summary>
 public sealed class AzureOpenAIFunctionParameter
 {
@@ -37,7 +37,7 @@ public sealed class AzureOpenAIFunctionParameter
 }
 
 /// <summary>
-/// Represents a function return parameter that can be returned by a tool call to OpenAI.
+/// Represents a function return parameter that can be returned by a tool call to AzureOpenAI.
 /// </summary>
 public sealed class AzureOpenAIFunctionReturnParameter
 {
@@ -59,7 +59,7 @@ public sealed class AzureOpenAIFunctionReturnParameter
 }
 
 /// <summary>
-/// Represents a function that can be passed to the OpenAI API
+/// Represents a function that can be passed to the AzureOpenAI API
 /// </summary>
 public sealed class AzureOpenAIFunction
 {

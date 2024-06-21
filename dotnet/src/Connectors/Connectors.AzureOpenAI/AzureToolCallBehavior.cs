@@ -145,7 +145,7 @@ public abstract class AzureToolCallBehavior
                     options.ToolChoice = ChatCompletionsToolChoice.Auto;
                     for (int i = 0; i < functions.Count; i++)
                     {
-                        options.Tools.Add(new ChatCompletionsFunctionToolDefinition(functions[i].ToOpenAIFunction().ToFunctionDefinition()));
+                        options.Tools.Add(new ChatCompletionsFunctionToolDefinition(functions[i].ToAzureOpenAIFunction().ToFunctionDefinition()));
                     }
                 }
             }

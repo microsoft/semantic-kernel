@@ -13,7 +13,7 @@ namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.FunctionCalling;
 public sealed class KernelFunctionMetadataExtensionsTests
 {
     [Fact]
-    public void ItCanConvertToOpenAIFunctionNoParameters()
+    public void ItCanConvertToAzureOpenAIFunctionNoParameters()
     {
         // Arrange
         var sut = new KernelFunctionMetadata("foo")
@@ -28,7 +28,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         };
 
         // Act
-        var result = sut.ToOpenAIFunction();
+        var result = sut.ToAzureOpenAIFunction();
 
         // Assert
         Assert.Equal(sut.Name, result.FunctionName);
@@ -43,7 +43,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
     }
 
     [Fact]
-    public void ItCanConvertToOpenAIFunctionNoPluginName()
+    public void ItCanConvertToAzureOpenAIFunctionNoPluginName()
     {
         // Arrange
         var sut = new KernelFunctionMetadata("foo")
@@ -58,7 +58,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         };
 
         // Act
-        var result = sut.ToOpenAIFunction();
+        var result = sut.ToAzureOpenAIFunction();
 
         // Assert
         Assert.Equal(sut.Name, result.FunctionName);
@@ -75,7 +75,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void ItCanConvertToOpenAIFunctionWithParameter(bool withSchema)
+    public void ItCanConvertToAzureOpenAIFunctionWithParameter(bool withSchema)
     {
         // Arrange
         var param1 = new KernelParameterMetadata("param1")
@@ -100,7 +100,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         };
 
         // Act
-        var result = sut.ToOpenAIFunction();
+        var result = sut.ToAzureOpenAIFunction();
         var outputParam = result.Parameters![0];
 
         // Assert
@@ -117,7 +117,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
     }
 
     [Fact]
-    public void ItCanConvertToOpenAIFunctionWithParameterNoType()
+    public void ItCanConvertToAzureOpenAIFunctionWithParameterNoType()
     {
         // Arrange
         var param1 = new KernelParameterMetadata("param1") { Description = "This is param1" };
@@ -135,7 +135,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         };
 
         // Act
-        var result = sut.ToOpenAIFunction();
+        var result = sut.ToAzureOpenAIFunction();
         var outputParam = result.Parameters![0];
 
         // Assert
@@ -150,7 +150,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
     }
 
     [Fact]
-    public void ItCanConvertToOpenAIFunctionWithNoReturnParameterType()
+    public void ItCanConvertToAzureOpenAIFunctionWithNoReturnParameterType()
     {
         // Arrange
         var param1 = new KernelParameterMetadata("param1")
@@ -167,7 +167,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         };
 
         // Act
-        var result = sut.ToOpenAIFunction();
+        var result = sut.ToAzureOpenAIFunction();
         var outputParam = result.Parameters![0];
 
         // Assert
@@ -179,7 +179,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
     }
 
     [Fact]
-    public void ItCanCreateValidOpenAIFunctionManualForPlugin()
+    public void ItCanCreateValidAzureOpenAIFunctionManualForPlugin()
     {
         // Arrange
         var kernel = new Kernel();
@@ -187,7 +187,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         var functionMetadata = kernel.Plugins["MyPlugin"].First().Metadata;
 
-        var sut = functionMetadata.ToOpenAIFunction();
+        var sut = functionMetadata.ToAzureOpenAIFunction();
 
         // Act
         var result = sut.ToFunctionDefinition();
@@ -201,7 +201,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
     }
 
     [Fact]
-    public void ItCanCreateValidOpenAIFunctionManualForPrompt()
+    public void ItCanCreateValidAzureOpenAIFunctionManualForPrompt()
     {
         // Arrange
         var promptTemplateConfig = new PromptTemplateConfig("Hello AI")
@@ -222,7 +222,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         });
         var function = KernelFunctionFactory.CreateFromPrompt(promptTemplateConfig);
         var functionMetadata = function.Metadata;
-        var sut = functionMetadata.ToOpenAIFunction();
+        var sut = functionMetadata.ToAzureOpenAIFunction();
 
         // Act
         var result = sut.ToFunctionDefinition();
