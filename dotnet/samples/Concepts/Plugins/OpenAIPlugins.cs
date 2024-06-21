@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 namespace Plugins;
 
+[Obsolete("OpenAI plugins are deprecated and will be removed in a future version.")]
 public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
@@ -22,7 +23,7 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
         using HttpClient httpClient = new();
 
         // Import an Open AI plugin via URI
-        var plugin = await kernel.ImportPluginFromOpenAIAsync("<plugin name>", new Uri("<OpenAI-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
+        var plugin = await kernel.ImportPluginFromOpenApiAsync("<plugin name>", new Uri("<OpenAI-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments { ["<parameter-name>"] = "<parameter-value>" };
