@@ -7,8 +7,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
+using Moq;
 using OpenAI;
 using Xunit;
 
@@ -16,13 +19,14 @@ namespace SemanticKernel.Connectors.OpenAI.UnitTests.Core;
 public class ClientCoreTests
 {
     [Fact]
-    public void ItCanBeInstantiated()
+    public void ItCanBeInstantiatedAndPropertiesSetAsExpected()
     {
         // Act
+        var logger = new Mock<ILogger<ClientCoreTests>>().Object;
         var openAIClient = new OpenAIClient(new ApiKeyCredential("key"));
 
         var clientCoreModelConstructor = new ClientCore("model1", "apiKey");
-        var clientCoreOpenAIClientConstructor = new ClientCore("model1", openAIClient);
+        var clientCoreOpenAIClientConstructor = new ClientCore("model1", openAIClient, logger: logger);
 
         // Assert
         Assert.NotNull(clientCoreModelConstructor);
@@ -34,6 +38,8 @@ public class ClientCoreTests
         Assert.NotNull(clientCoreModelConstructor.Client);
         Assert.NotNull(clientCoreOpenAIClientConstructor.Client);
         Assert.Equal(openAIClient, clientCoreOpenAIClientConstructor.Client);
+        Assert.Equal(NullLogger.Instance, clientCoreModelConstructor.Logger);
+        Assert.Equal(logger, clientCoreOpenAIClientConstructor.Logger);
     }
 
     [Theory]
