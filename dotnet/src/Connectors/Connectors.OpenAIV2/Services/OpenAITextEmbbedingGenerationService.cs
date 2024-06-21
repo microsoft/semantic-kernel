@@ -42,7 +42,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         this._core = new(
             modelId: modelId,
             apiKey: apiKey,
-            organization: organization,
+            organizationId: organization,
             httpClient: httpClient,
             logger: loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
 

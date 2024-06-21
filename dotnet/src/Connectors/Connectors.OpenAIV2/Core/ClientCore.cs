@@ -64,14 +64,14 @@ internal partial class ClientCore
     /// <param name="modelId">Model name.</param>
     /// <param name="apiKey">OpenAI API Key.</param>
     /// <param name="endpoint">OpenAI compatible API endpoint.</param>
-    /// <param name="organization">OpenAI Organization Id (usually optional).</param>
+    /// <param name="organizationId">OpenAI Organization Id (usually optional).</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal ClientCore(
         string modelId,
         string? apiKey = null,
         Uri? endpoint = null,
-        string? organization = null,
+        string? organizationId = null,
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
@@ -89,9 +89,9 @@ internal partial class ClientCore
         }
 
         var options = GetOpenAIClientOptions(httpClient, this.Endpoint);
-        if (!string.IsNullOrWhiteSpace(organization))
+        if (!string.IsNullOrWhiteSpace(organizationId))
         {
-            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organization!), PipelinePosition.PerCall);
+            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organizationId!), PipelinePosition.PerCall);
         }
 
         this.Client = new OpenAIClient(apiKey ?? string.Empty, options);
