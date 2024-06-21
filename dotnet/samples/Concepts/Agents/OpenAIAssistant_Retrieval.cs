@@ -19,7 +19,7 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
     protected override bool ForceOpenAI => true;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseRetrievalToolWithOpenAIAssistantAgentAsync()
     {
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
