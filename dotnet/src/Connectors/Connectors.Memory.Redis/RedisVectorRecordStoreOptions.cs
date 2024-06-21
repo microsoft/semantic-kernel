@@ -22,7 +22,7 @@ public sealed class RedisVectorRecordStoreOptions<TRecord>
     /// key names before reading or writing to the redis store. Default is false.
     /// </summary>
     /// <remarks>
-    /// For a record to be indexed by a specific redis index, the key name must be prefixed with the index name.
+    /// For a record to be indexed by a specific redis index, the key name must be prefixed with the matching prefix configured on the redis index.
     /// You can either pass in keys that are already prefixed, or set this option to true to have the collection name prefixed to the key names automatically.
     /// </remarks>
     public bool PrefixCollectionNameToKeyNames { get; init; } = false;
