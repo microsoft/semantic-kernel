@@ -12,12 +12,16 @@ public class PipelineSynchronousPolicyTests
     [Fact]
     public async Task ItProcessAsyncWhenSpecializationHasReceivedResponseOverrideShouldCallIt()
     {
+        // Arrange
         var first = new MyHttpPipelinePolicyWithoutOverride();
         var last = new MyHttpPipelinePolicyWithOverride();
 
         IReadOnlyList<PipelinePolicy> policies = [first, last];
+
+        // Act
         await policies[0].ProcessAsync(ClientPipeline.Create().CreateMessage(), policies, 0);
 
+        // Assert
         Assert.True(first.CalledProcess);
         Assert.True(last.CalledProcess);
         Assert.True(last.CalledOnReceivedResponse);
