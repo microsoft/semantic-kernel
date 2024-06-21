@@ -219,16 +219,21 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
             raise ValueError(f"Key field must be one of {self.supported_key_types}")
         return
 
-    def _convert_model_to_list_of_dicts(self, records: OneOrMany[TModel]) -> list[dict[str, Any]]:
+    def _convert_model_to_dicts(self, records: OneOrMany[TModel]) -> OneOrMany[dict[str, Any]]:
         """Convert the data model a list of dicts.
 
         Can be used as is, or overwritten by a subclass to return proper types.
         """
         if self._container_mode:
             return self._data_model_definition.serialize(records)  # type: ignore
+        num_records = len(records)
         if not isinstance(records, list):
             raise ValueError("Records must be a list, or container_mode must be used.")
-        return [self._serialize_data_model_to_store_model(record) for record in records]
+        return (
+            [self._serialize_data_model_to_store_model(record) for record in records]
+            if num_records > 1
+            else self._serialize_data_model_to_store_model(records[0])
+        )
 
     def _convert_search_result_to_data_model(self, search_result: Any):
         """Convert the data model a list of dicts.

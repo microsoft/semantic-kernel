@@ -55,6 +55,7 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
             data_model_type (type[DataModelT]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
             collection_name (str): The name of the collection, optional.
+            kernel: Kernel to use for embedding generation.
             search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
                 (default: {None}).
             api_key (str | None): Azure Cognitive Search API key (default: {None}).
