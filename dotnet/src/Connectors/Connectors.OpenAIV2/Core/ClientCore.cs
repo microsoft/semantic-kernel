@@ -18,7 +18,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
-using OpenAI.Embeddings;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -27,8 +26,13 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Base class for AI clients that provides common functionality for interacting with OpenAI services.
 /// </summary>
-internal class ClientCore
+internal partial class ClientCore
 {
+    /// <summary>
+    /// Default OpenAI API endpoint.
+    /// </summary>
+    private const string OpenAIV1Endpoint = "https://api.openai.com/v1";
+
     /// <summary>
     /// Model Id
     /// </summary>
@@ -81,6 +85,7 @@ internal class ClientCore
         if (this.Endpoint is null)
         {
             Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
+            this.Endpoint = new Uri(OpenAIV1Endpoint);
         }
 
         var options = GetOpenAIClientOptions(httpClient, this.Endpoint);
@@ -126,46 +131,6 @@ internal class ClientCore
     }
 
     /// <summary>
-    /// Generates an embedding from the given <paramref name="data"/>.
-    /// </summary>
-    /// <param name="data">List of strings to generate embeddings for</param>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>List of embeddings</returns>
-    internal async Task<IList<ReadOnlyMemory<float>>> GetEmbeddingsAsync(
-        IList<string> data,
-        Kernel? kernel,
-        int? dimensions,
-        CancellationToken cancellationToken)
-    {
-        var result = new List<ReadOnlyMemory<float>>(data.Count);
-
-        if (data.Count > 0)
-        {
-            var embeddingsOptions = new EmbeddingGenerationOptions()
-            {
-                Dimensions = dimensions
-            };
-
-            ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client.GetEmbeddingClient(this.ModelId).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
-            var embeddings = response.Value;
-
-            if (embeddings.Count != data.Count)
-            {
-                throw new KernelException($"Expected {data.Count} text embedding(s), but received {embeddings.Count}");
-            }
-
-            for (var i = 0; i < embeddings.Count; i++)
-            {
-                result.Add(embeddings[i].Vector);
-            }
-        }
-
-        return result;
-    }
-
-    /// <summary>
     /// Allows adding attributes to the client.
     /// </summary>
     /// <param name="key">Attribute key.</param>
@@ -184,11 +149,10 @@ internal class ClientCore
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
     private static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient, Uri? endpoint)
     {
-        // As the options Endpoint is an init property and I can't set it afterwards,
-        // I need an if statement to create the options for a custom endpoint.
-        OpenAIClientOptions options = (endpoint is null)
-            ? new OpenAIClientOptions() { ApplicationId = HttpHeaderConstant.Values.UserAgent }
-            : new OpenAIClientOptions() { ApplicationId = HttpHeaderConstant.Values.UserAgent, Endpoint = endpoint };
+        OpenAIClientOptions options = new() {
+            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+            Endpoint = endpoint
+        };
 
         options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), PipelinePosition.PerCall);
 

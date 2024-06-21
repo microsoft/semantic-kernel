@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+/* Phase 1
+Added from OpenAI v1 with adapted logic to the System.ClientModel abstraction
+*/
+
 using System.ClientModel.Primitives;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
