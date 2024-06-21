@@ -18,12 +18,14 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.open_ai import (
-    AzureChatCompletion,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
-    OpenAIChatCompletion,
+)
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents import ChatHistory, ChatMessageContent, TextContent
@@ -353,7 +355,7 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="module")
 async def test_chat_completion(
     kernel: Kernel,
     service: str,
@@ -377,7 +379,7 @@ async def test_chat_completion(
         history.add_message(cmc)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="module")
 async def test_streaming_chat_completion(
     kernel: Kernel,
     service: str,
