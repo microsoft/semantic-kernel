@@ -22,6 +22,7 @@ class PromptExecutionSettings(KernelBaseModel):
     Attributes:
         service_id (str | None): The service ID to use for the request.
         extension_data (Dict[str, Any]): Any additional data to send with the request.
+        function_choice_behavior (FunctionChoiceBehavior | None): The function choice behavior settings.
 
     Methods:
         prepare_settings_dict: Prepares the settings as a dictionary for sending to the AI service.
@@ -41,11 +42,11 @@ class PromptExecutionSettings(KernelBaseModel):
             function_choice_behavior_data = data.get("function_choice_behavior")
             if function_choice_behavior_data and isinstance(function_choice_behavior_data, dict):
                 func_choice_behavior = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
-                if func_choice_behavior.config_function_qualified_names:
+                if func_choice_behavior.function_fully_qualified_names:
                     valid_fqns = [
-                        name.replace(".", "-") for name in func_choice_behavior.config_function_qualified_names
+                        name.replace(".", "-") for name in func_choice_behavior.function_fully_qualified_names
                     ]
-                    func_choice_behavior.config_function_qualified_names = valid_fqns
+                    func_choice_behavior.function_fully_qualified_names = valid_fqns
                 data["function_choice_behavior"] = func_choice_behavior
             return data
         return None

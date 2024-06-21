@@ -6,7 +6,7 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -47,7 +47,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.EnableFunctions(
+    function_choice_behavior=FunctionCallBehavior.EnableFunctions(
         auto_invoke=True, filters={"included_plugins": ["math", "time"]}
     ),
 )

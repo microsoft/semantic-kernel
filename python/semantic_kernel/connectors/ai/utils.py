@@ -22,12 +22,6 @@ def update_settings_from_function_call_configuration(
     type: str,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
-    if function_choice_configuration.required_functions:
-        settings.tool_choice = type
-        settings.tools = [
-            kernel_function_metadata_to_function_call_format(f)
-            for f in function_choice_configuration.required_functions
-        ]
     if function_choice_configuration.available_functions:
         settings.tool_choice = type
         settings.tools = [

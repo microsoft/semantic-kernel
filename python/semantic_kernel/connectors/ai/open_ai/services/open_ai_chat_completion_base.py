@@ -13,6 +13,7 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_choice_behavior import (
     FunctionChoiceBehavior,
     FunctionChoiceType,
@@ -34,6 +35,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import (
     FunctionCallInvalidArgumentsException,
+    FunctionExecutionException,
     ServiceInvalidExecutionSettingsError,
     ServiceInvalidResponseError,
 )
@@ -85,6 +87,15 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             List[ChatMessageContent]: The completion result(s).
         """
+        # For backwards compatability we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
+        # if this method is called with a `FunctionCallBehavior` object as pat of the settings
+        if hasattr(settings, "function_call_behavior") and isinstance(
+            settings.function_call_behavior, FunctionCallBehavior
+        ):
+            settings.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
+                settings.function_call_behavior
+            )
+
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
         if settings.function_choice_behavior is not None:
@@ -131,7 +142,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                         arguments=arguments,
                         function_call_count=fc_count,
                         request_index=request_index,
-                        function_choice_behavior=settings.function_choice_behavior,
+                        function_behavior=settings.function_choice_behavior,
                     )
                     for function_call in function_calls
                 ],
@@ -164,6 +175,15 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             List[StreamingChatMessageContent]: A stream of
                 StreamingChatMessageContent when using Azure.
         """
+        # For backwards compatability we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
+        # if this method is called with a `FunctionCallBehavior` object as pat of the settings
+        if hasattr(settings, "function_call_behavior") and isinstance(
+            settings.function_call_behavior, FunctionCallBehavior
+        ):
+            settings.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
+                settings.function_call_behavior
+            )
+
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
         if settings.function_choice_behavior is not None:
@@ -235,7 +255,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                         arguments=arguments,
                         function_call_count=fc_count,
                         request_index=request_index,
-                        function_choice_behavior=settings.function_choice_behavior,
+                        function_behavior=settings.function_choice_behavior,
                     )
                     for function_call in function_calls
                 ],
@@ -405,10 +425,19 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Update the settings with the chat history."""
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         if settings.function_choice_behavior and kernel:
+            required_function_call_complete = False
+            if (
+                settings.function_choice_behavior.type == FunctionChoiceType.REQUIRED
+                and chat_history.messages[-1].role == AuthorRole.TOOL
+                and any(isinstance(item, FunctionResultContent) for item in chat_history.messages[-1].items)
+            ):
+                required_function_call_complete = True
+
             settings.function_choice_behavior.configure(
                 kernel=kernel,
                 update_settings_callback=update_settings_from_function_call_configuration,
                 settings=settings,
+                required_function_call_complete=required_function_call_complete,
             )
 
     # endregion
@@ -422,7 +451,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         arguments: "KernelArguments",
         function_call_count: int,
         request_index: int,
-        function_choice_behavior: FunctionChoiceBehavior,
+        function_behavior: FunctionChoiceBehavior | FunctionCallBehavior,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the tool calls in the result and update the chat history."""
         args_cloned = copy(arguments)
@@ -439,39 +468,40 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
-        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
         try:
             if function_call.name is None:
-                raise ValueError("The function name is required.")
-            if isinstance(function_choice_behavior, FunctionChoiceBehavior):
-                if function_choice_behavior.type == FunctionChoiceType.REQUIRED:
-                    required_functions = function_choice_behavior.function_fully_qualified_names or []
-                    if function_call.name not in required_functions:
-                        raise ValueError(
-                            f"Only functions: {required_functions} are allowed, {function_call.name} is not allowed."
-                        )
-                elif function_choice_behavior.type == FunctionChoiceType.NONE:
-                    # Logic for NoneInvoke if needed
-                    pass
-                elif function_choice_behavior.type == FunctionChoiceType.AUTO:
-                    # Logic for Auto if needed
-                    pass
-                elif function_choice_behavior.filters:
-                    enabled_functions = [
+                raise FunctionExecutionException("The function name is required.")
+            if isinstance(function_behavior, FunctionCallBehavior):
+                # We need to still support a `FunctionCallBehavior` input so it doesn't break current
+                # customers. Map from `FunctionCallBehavior` -> `FunctionChoiceBehavior`
+                function_behavior = FunctionChoiceBehavior.from_function_call_behavior(function_behavior)
+            if isinstance(function_behavior, FunctionChoiceBehavior):
+                if (
+                    function_behavior.function_fully_qualified_names
+                    and function_call.name not in function_behavior.function_fully_qualified_names
+                ):
+                    raise FunctionExecutionException(
+                        f"Only functions: {function_behavior.function_fully_qualified_names} "
+                        f"are allowed, {function_call.name} is not allowed."
+                    )
+                if function_behavior.filters:
+                    allowed_functions = [
                         func.fully_qualified_name
-                        for func in kernel.get_list_of_function_metadata(function_choice_behavior.filters)
+                        for func in kernel.get_list_of_function_metadata(function_behavior.filters)
                     ]
-                    if function_call.name not in enabled_functions:
-                        raise ValueError(
-                            f"Only functions: {enabled_functions} are allowed, {function_call.name} is not allowed."
+                    if function_call.name not in allowed_functions:
+                        raise FunctionExecutionException(
+                            f"Only functions: {allowed_functions} are allowed, {function_call.name} is not allowed."
                         )
-
-            function_to_call = kernel.get_function(function_call.plugin_name, function_call.function_name)
+                function_to_call = kernel.get_function(function_call.plugin_name, function_call.function_name)
         except Exception as exc:
-            logger.exception(f"Could not find function {function_call.name}: {exc}.")
+            logger.exception(f"The function `{function_call.name}` is not part of the provided functions: {exc}.")
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
-                result="The tool call could not be found, please try again and make sure to validate the name.",
+                result=(
+                    f"The tool call with name `{function_call.name}` is not part of the provided tools, "
+                    "please try again with a supplied tool call name and make sure to validate the name."
+                ),
             )
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
@@ -491,6 +521,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
+
+        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
 
         _rebuild_auto_function_invocation_context()
         invocation_context = AutoFunctionInvocationContext(

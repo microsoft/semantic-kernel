@@ -12,7 +12,7 @@ input_variables:
 execution_settings:
   chat:
     function_choice_behavior:
-      type: required
+      type: auto
       maximum_auto_invoke_attempts: 5
       functions:
         - time.date

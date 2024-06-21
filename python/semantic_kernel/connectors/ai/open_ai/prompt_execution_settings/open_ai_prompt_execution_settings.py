@@ -4,10 +4,10 @@ import logging
 import sys
 from typing import Any, Literal
 
-if sys.version < "3.11":
-    from typing_extensions import Self
+if sys.version_info >= (3, 11):
+    from typing import Self  # pragma: no cover
 else:
-    from typing import Self
+    from typing_extensions import Self  # pragma: no cover
 
 from pydantic import Field, field_validator, model_validator
 
@@ -80,22 +80,29 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
             )
         return v
 
-    @model_validator(mode="after")
-    def validate_function_calling_behaviors(self) -> Self:
+    @model_validator(mode="before")
+    @classmethod
+    def validate_function_calling_behaviors(cls, data) -> Any:
         """Check if function_call_behavior is set and if so, move to use function_choice_behavior instead."""
         # In an attempt to phase out the use of `function_call_behavior` in favor of `function_choice_behavior`,
-        # we are re-writing the `function_call_behavior` to `function_choice_behavior` if the former is set.
-        if self.function_call_behavior is not None:
+        # we are syncing the `function_call_behavior` with `function_choice_behavior` if the former is set.
+        # This allows us to make decisions off of `function_choice_behavior`. Anytime the `function_call_behavior`
+        # is updated, this validation will run to ensure the `function_choice_behavior` stays in sync.
+        if isinstance(data, dict) and "function_call_behavior" in data.get("extension_data", {}):
+            data["function_choice_behavior"] = FunctionChoiceBehavior.from_function_call_behavior(
+                data.get("extension_data").get("function_call_behavior")
+            )
+        return data
+
+    @field_validator("function_call_behavior", mode="after")
+    @classmethod
+    def check_for_function_call_behavior(cls, v) -> Self:
+        """Check if function_choice_behavior is set, if not, set it to default."""
+        if v is not None:
             logger.warning(
-                "The `function_call_behavior` will deprecated in the future. Switching to use the `function_choice_behavior` attribute instead."  # noqa: E501
+                "The `function_call_behavior` parameter is deprecated. Please use the `function_choice_behavior` parameter instead."  # noqa: E501
             )
-            function_call_behavior = self.function_call_behavior.model_copy(deep=True)
-            self.function_call_behavior = None
-            self.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
-                function_call_behavior
-            )
-        
-        return self
+        return v
 
 
 class OpenAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):
