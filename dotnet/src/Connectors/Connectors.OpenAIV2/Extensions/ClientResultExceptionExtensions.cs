@@ -29,7 +29,7 @@ internal static class ClientResultExceptionExtensions
 
         try
         {
-            responseContent = exception.GetRawResponse()?.Content?.ToString();
+            responseContent = exception.GetRawResponse()?.Content.ToString();
         }
 #pragma warning disable CA1031 // Do not catch general exception types
         catch { } // We want to suppress any exceptions that occur while reading the content, ensuring that an HttpOperationException is thrown instead.

@@ -32,22 +32,44 @@ public class ClientResultExceptionExtensionsTests
     public void ItCanProvideResponseContentAndStatusCode()
     {
         // Arrange
-        var pipelineMessage = ClientPipeline.Create().CreateMessage();
+        using var pipelineResponse = new MockPipelineResponse();
 
-        response.Response
+        pipelineResponse.SetContent("content");
+        pipelineResponse.SetStatus(200);
 
-        pipelineMessage.Content = "content";
-        pipelineMessage.StatusCode = 200;
-        var exception = new ClientResultException("message", pipelineMessage);
+        var exception = new ClientResultException("message", pipelineResponse);
 
         // Act
         var httpOperationException = exception.ToHttpOperationException();
 
         // Assert
         Assert.NotNull(httpOperationException);
+        Assert.NotNull(httpOperationException.StatusCode);
         Assert.Equal(exception, httpOperationException.InnerException);
         Assert.Equal(exception.Message, httpOperationException.Message);
-        Assert.Equal(pipelineMessage.Content, httpOperationException.ResponseContent);
-        Assert.Equal(pipelineMessage.StatusCode, httpOperationException.StatusCode);
+        Assert.Equal(pipelineResponse.Content.ToString(), httpOperationException.ResponseContent);
+        Assert.Equal(pipelineResponse.Status, (int)httpOperationException.StatusCode!);
+    }
+
+    [Fact]
+    public void ItProvideStatusForResponsesWithoutContent()
+    {
+        // Arrange
+        using var pipelineResponse = new MockPipelineResponse();
+
+        pipelineResponse.SetStatus(200);
+
+        var exception = new ClientResultException("message", pipelineResponse);
+
+        // Act
+        var httpOperationException = exception.ToHttpOperationException();
+
+        // Assert
+        Assert.NotNull(httpOperationException);
+        Assert.NotNull(httpOperationException.StatusCode);
+        Assert.Empty(httpOperationException.ResponseContent!);
+        Assert.Equal(exception, httpOperationException.InnerException);
+        Assert.Equal(exception.Message, httpOperationException.Message);
+        Assert.Equal(pipelineResponse.Status, (int)httpOperationException.StatusCode!);
     }
 }

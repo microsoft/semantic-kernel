@@ -1,5 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+/* Phase 01
+This class was imported and adapted from the System.ClientModel Unit Tests.
+https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/System.ClientModel/tests/TestFramework/Mocks/MockResponseHeaders.cs
+*/
+
 using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;

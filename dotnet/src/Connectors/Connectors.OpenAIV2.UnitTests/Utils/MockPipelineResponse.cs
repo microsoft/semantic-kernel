@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 /* Phase 01
 This class was imported and adapted from the System.ClientModel Unit Tests.
 https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/System.ClientModel/tests/TestFramework/Mocks/MockPipelineResponse.cs
@@ -74,10 +75,7 @@ public class MockPipelineResponse : PipelineResponse
             {
                 return new BinaryData(segment.AsMemory());
             }
-            else
-            {
-                return new BinaryData(memoryContent.ToArray());
-            }
+            return new BinaryData(memoryContent.ToArray());
         }
     }
 
