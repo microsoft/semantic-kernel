@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernel.Connectors.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureOpenAI.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>
