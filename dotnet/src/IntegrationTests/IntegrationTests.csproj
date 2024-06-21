@@ -122,7 +122,7 @@
     <Content Include="CrossLanguage\Data\SimplePromptTest.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Plugins\OpenApi\instacart-ai-plugin.yaml">
+    <Content Include="Plugins\OpenApi\instacart-service.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Plugins\OpenApi\repair-service.json">

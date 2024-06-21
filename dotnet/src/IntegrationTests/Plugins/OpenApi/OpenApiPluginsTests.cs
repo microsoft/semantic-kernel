@@ -50,7 +50,7 @@ public class PluginTests
     }
 
     [Theory]
-    [InlineData("Plugins/OpenApi/instacart-ai-plugin.yaml",
+    [InlineData("Plugins/OpenApi/instacart-service.yaml",
         "Instacart",
         "create",
         """{"title":"Shopping List", "ingredients": ["Flour"], "question": "what ingredients do I need to make chocolate cookies?", "partner_name": "OpenAI" }"""
@@ -82,7 +82,7 @@ public class PluginTests
     }
 
     [Theory]
-    [InlineData("Plugins/OpenApi/instacart-ai-plugin.yaml",
+    [InlineData("Plugins/OpenApi/instacart-service.yaml",
         "Instacart",
         "create",
         """{"title":"Shopping List", "ingredients": ["Flour"], "question": "what ingredients do I need to make chocolate cookies?", "partner_name": "OpenAI" }"""
@@ -113,7 +113,7 @@ public class PluginTests
     }
 
     [Theory]
-    [InlineData("Plugins/OpenApi/instacart-ai-plugin.yaml", "Instacart", "create")]
+    [InlineData("Plugins/OpenApi/instacart-service.yaml", "Instacart", "create")]
     public async Task QueryInstacartPluginWithDynamicPayloadAsync(
         string pluginFilePath,
         string name,
