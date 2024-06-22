@@ -51,6 +51,33 @@ class FunctionCallChoiceConfiguration:
 
 
 class FunctionChoiceBehavior(KernelBaseModel):
+    """Class that controls function choice behavior.
+
+    Attributes:
+        enable_kernel_functions: Enable kernel functions.
+        max_auto_invoke_attempts: The maximum number of auto invoke attempts.
+        filters: Filters for the function choice behavior.
+        function_fully_qualified_names: The fully qualified names of the functions.
+        type: The type of function choice behavior.
+
+    Properties:
+        auto_invoke_kernel_functions: Check if the kernel functions should be auto-invoked.
+            Determined as max_auto_invoke_attempts > 0.
+
+    Methods:
+        configure: Configures the settings for the function call behavior,
+            the default version in this class, does nothing, use subclasses for different behaviors.
+
+    Class methods:
+        Auto: Returns FunctionChoiceAuto class with auto_invoke enabled, and the desired functions
+            based on either the specified filters or the full qualified names.
+        NoneInvoke: Returns FunctionChoiceNone class with auto_invoke disabled, and the desired functions
+            based on either the specified filters or the full qualified names.
+        Required: Returns FunctionChoiceRequired class with auto_invoke enabled, and the desired functions
+            based on either the specified filters or the full qualified names.
+
+    """
+
     enable_kernel_functions: bool = True
     maximum_auto_invoke_attempts: int = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS
     filters: (
