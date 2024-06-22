@@ -36,7 +36,7 @@ internal sealed class HuggingFaceClient
         string? apiKey = null,
         ILogger? logger = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(modelId);
         Verify.NotNull(httpClient);
 
         endpoint ??= new Uri("https://api-inference.huggingface.co");
@@ -266,7 +266,7 @@ internal sealed class HuggingFaceClient
         }
     }
     private Uri GetTextGenerationEndpoint(string modelId)
-        => new($"{this.Endpoint}{this.Separator}models/{modelId}");
+        => string.IsNullOrEmpty(modelId) ? this.Endpoint : new($"{this.Endpoint}{this.Separator}models/{modelId}");
 
     #endregion
 

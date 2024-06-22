@@ -40,7 +40,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(model);
+        Verify.NotNull(model);
 
         this.Client = new HuggingFaceClient(
             modelId: model,
