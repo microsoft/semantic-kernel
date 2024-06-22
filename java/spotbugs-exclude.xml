@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
 
+<<<<<<< main
   <!-- NullMemory.getInstance() may expose internal representation by returning NullMemory.DEFAULT, but NullMemory has no internal representation. -->
   <Match>
     <Class name="com.microsoft.semantickernel.memory.NullMemory"/>
@@ -119,4 +120,6 @@
 
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+=======
+>>>>>>> origin/main-auto-tune
 </FindBugsFilter>

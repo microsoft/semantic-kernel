@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -163,7 +162,7 @@ public static class GrpcKernelExtensions
 
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
-        var client = HttpClientProvider.GetHttpClient(kernel.Services.GetService<HttpClient>());
+        using var client = HttpClientProvider.GetHttpClient(kernel.Services.GetService<HttpClient>());
 
         var runner = new GrpcOperationRunner(client);
 
@@ -200,8 +199,6 @@ public static class GrpcKernelExtensions
         GrpcOperation operation,
         ILoggerFactory loggerFactory)
     {
-        var operationParameters = operation.GetParameters();
-
         async Task<JsonObject> ExecuteAsync(KernelArguments arguments, CancellationToken cancellationToken)
         {
             try
@@ -217,7 +214,7 @@ public static class GrpcKernelExtensions
 
         return KernelFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
-            parameters: operationParameters.ToList(),
+            parameters: GrpcOperation.CreateParameters(),
             description: operation.Name,
             functionName: operation.Name,
             loggerFactory: loggerFactory);

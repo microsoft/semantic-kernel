@@ -15,7 +15,7 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v7
         name: "Issue/PR: update title"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

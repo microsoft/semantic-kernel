@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -10,7 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.
 /// </summary>
-internal static class RestApiOperationExtensions
+internal static partial class RestApiOperationExtensions
 {
     /// <summary>
     /// Returns list of REST API operation parameters.
@@ -34,7 +33,7 @@ internal static class RestApiOperationExtensions
         var parameters = new List<RestApiOperationParameter>(operation.Parameters);
 
         // Add payload parameters
-        if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)
+        if (operation.Payload is not null)
         {
             parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
         }
@@ -42,7 +41,7 @@ internal static class RestApiOperationExtensions
         // Create a property alternative name without special symbols that are not supported by SK template language.
         foreach (var parameter in parameters)
         {
-            parameter.AlternativeName = s_invalidSymbolsRegex.Replace(parameter.Name, "_");
+            parameter.AlternativeName = InvalidSymbolsRegex().Replace(parameter.Name, "_");
         }
 
         return parameters;
@@ -105,17 +104,17 @@ internal static class RestApiOperationExtensions
             // So, returning artificial 'payload' parameter instead.
             if (operation.Payload.MediaType == MediaTypeTextPlain)
             {
-                return new List<RestApiOperationParameter> { CreatePayloadArtificialParameter(operation) };
+                return [CreatePayloadArtificialParameter(operation)];
             }
 
             return GetParametersFromPayloadMetadata(operation.Payload.Properties, enableNamespacing);
         }
 
         // Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
-        return new List<RestApiOperationParameter> {
+        return [
             CreatePayloadArtificialParameter(operation),
             CreateContentTypeArtificialParameter(operation)
-        };
+        ];
     }
 
     /// <summary>
@@ -208,6 +207,13 @@ internal static class RestApiOperationExtensions
     }
 
     private const string MediaTypeTextPlain = "text/plain";
-    private static readonly Regex s_invalidSymbolsRegex = new("[^0-9A-Za-z_]+");
-    private static readonly string[] s_preferredResponses = new string[] { "200", "201", "202", "203", "204", "205", "206", "207", "208", "226", "2XX", "default" };
+    private static readonly string[] s_preferredResponses = ["200", "201", "202", "203", "204", "205", "206", "207", "208", "226", "2XX", "default"];
+
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]+")]
+    private static partial Regex InvalidSymbolsRegex();
+#else
+    private static Regex InvalidSymbolsRegex() => s_invalidSymbolsRegex;
+    private static readonly Regex s_invalidSymbolsRegex = new("[^0-9A-Za-z_]+", RegexOptions.Compiled);
+#endif
 }

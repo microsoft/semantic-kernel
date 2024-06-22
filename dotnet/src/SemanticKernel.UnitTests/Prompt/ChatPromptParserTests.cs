@@ -91,6 +91,78 @@ public sealed class ChatPromptParserTests
                              && ((ImageContent)c.Items![1]).Uri!.AbsoluteUri == "https://fake-link-to-image/"));
     }
 
+    [Fact]
+    public void ItReturnsChatHistoryWithValidContentItemsIncludeCData()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithCDataSection();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("""
+                              <message role='system'><text>Text content</text></message>
+                              """, c.Content),
+            c => Assert.Equal("""
+                              <text>explain image</text>
+                              <image>https://fake-link-to-image/</image>
+                              """, c.Content));
+    }
+
+    [Fact]
+    public void ItReturnsChatHistoryWithValidContentItemsIncludeCode()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithCodeBlock();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            // The first message entry inside prompt is neither wrapped in CDATA or HtmlEncoded, so the single quotes are not preserved.
+            c => Assert.Equal("""
+                              <code>
+                                  <message role="system">
+                                      <text>Text content</text>
+                                  </message>
+                              </code>
+                              """, c.Content),
+            // Since the second message entry inside prompt is wrapped in CDATA, the single quotes are preserved.
+            c => Assert.Equal("""
+                              <code>
+                                  <message role='system'>
+                                      <text>Text content</text>
+                                  </message>
+                              </code>
+                              """, c.Content),
+             // Since the third message entry inside prompt is HtmlEncoded, the single quotes are preserved.
+             c => Assert.Equal("""
+                              <code>
+                                  <message role='system'>
+                                      <text>Text content</text>
+                                  </message>
+                              </code>
+                              """, c.Content),
+            // In this case, when we trim node.InnerXml only the opening <code> tag is indented. 
+            c => Assert.Equal("""
+                              <code>
+                                  <text>explain image</text>
+                                  <image>
+                                    https://fake-link-to-image/
+                                  </image>
+                                </code>
+                              """, c.Content));
+    }
+
     private static string GetSimpleValidPrompt()
     {
         return
@@ -133,6 +205,70 @@ public sealed class ChatPromptParserTests
             <message role='user'>
                 <text>explain image</text>
                 <image>https://fake-link-to-image/</image>
+            </message>
+
+            """;
+    }
+
+    private static string GetValidPromptWithCDataSection()
+    {
+        return
+            """
+
+            <message role="assistant">
+            <![CDATA[
+            <message role='system'><text>Text content</text></message>
+            ]]>
+            </message>
+
+            <message role='user'>
+            <![CDATA[
+            <text>explain image</text>
+            <image>https://fake-link-to-image/</image>
+            ]]>
+            </message>
+
+            """;
+    }
+
+    private static string GetValidPromptWithCodeBlock()
+    {
+        return
+            """
+
+            <message role="assistant">
+            <code>
+                <message role='system'>
+                    <text>Text content</text>
+                </message>
+            </code>
+            </message>
+
+            <message role="assistant">
+            <![CDATA[
+            <code>
+                <message role='system'>
+                    <text>Text content</text>
+                </message>
+            </code>
+            ]]>
+            </message>
+
+            <message role="assistant">
+            &lt;code&gt;
+                &lt;message role=&#39;system&#39;&gt;
+                    &lt;text&gt;Text content&lt;/text&gt;
+                &lt;/message&gt;
+            &lt;/code&gt;
+            </message>
+
+            <message role='user'>
+              <code>
+                <text>explain image</text>
+                <image>
+                  https://fake-link-to-image/
+                </image>
+              </code>
             </message>
 
             """;
