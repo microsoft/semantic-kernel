@@ -35,7 +35,8 @@ you will return a full answer to me as soon as possible.
 kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-kernel.add_service(OpenAIChatCompletion(service_id="chat"))
+service_id = "chat"
+kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 
 plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
@@ -57,11 +58,11 @@ chat_function = kernel.add_function(
 # Note: the number of responses for auto invoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
 execution_settings = OpenAIChatPromptExecutionSettings(
-    service_id="chat",
+    service_id=service_id,
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["math", "time"]}),
+    function_choice_behavior=FunctionChoiceBehavior.Required(filters={"included_plugins": ["math", "time"]}),
 )
 
 history = ChatHistory()
@@ -137,7 +138,7 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
-    stream = True
+    stream = False
     if stream:
         await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
@@ -152,6 +153,12 @@ async def chat() -> bool:
             return True
 
         print(f"Mosscap:> {result}")
+
+    # The FunctionChoiceBehavior `Required` type has a maximum_auto_invoke_attempts property that is set to 1 by
+    # default. Once the `Required` function call is made, the property is set to 0 to prevent further auto-invocations.
+    # If you want to enable auto-invocation for the same function, you can set the auto_invoke_kernel_functions property
+    if arguments.execution_settings.get(service_id).function_choice_behavior.auto_invoke_kernel_functions is False:
+        arguments.execution_settings.get(service_id).function_choice_behavior.auto_invoke_kernel_functions = True
     return True
 
 

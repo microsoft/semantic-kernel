@@ -22,12 +22,15 @@ logger = logging.getLogger(__name__)
 
 
 class FunctionChoiceType(Enum):
+    """The type of function choice behavior."""
+
     AUTO = "auto"
     NONE = "none"
     REQUIRED = "required"
 
 
 def _check_for_missing_functions(function_names: list[str], kernel_function_metadata: set) -> None:
+    """Check for missing functions in the kernel function metadata."""
     try:
         qualified_names = {metadata.fully_qualified_name for metadata in kernel_function_metadata}
         missing_functions = [name for name in function_names if name not in qualified_names]
@@ -90,6 +93,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
     @auto_invoke_kernel_functions.setter
     def auto_invoke_kernel_functions(self, value: bool):
+        """Set the auto_invoke_kernel_functions property."""
         self.maximum_auto_invoke_attempts = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if value else 0
 
     def _check_and_get_config(
@@ -219,6 +223,8 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
 
 class FunctionChoiceAuto(FunctionChoiceBehavior):
+    """Function choice behavior with type AUTO."""
+
     type: FunctionChoiceType = FunctionChoiceType.AUTO
 
     def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:
@@ -227,6 +233,8 @@ class FunctionChoiceAuto(FunctionChoiceBehavior):
 
 
 class FunctionChoiceNone(FunctionChoiceBehavior):
+    """Function choice behavior with type NONE."""
+
     type: FunctionChoiceType = FunctionChoiceType.NONE
 
     def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:
@@ -235,6 +243,8 @@ class FunctionChoiceNone(FunctionChoiceBehavior):
 
 
 class FunctionChoiceRequired(FunctionChoiceBehavior):
+    """Function choice behavior with type REQUIRED."""
+
     type: FunctionChoiceType = FunctionChoiceType.REQUIRED
 
     def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:

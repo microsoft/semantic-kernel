@@ -6,10 +6,10 @@ from samples.concepts.auto_function_calling.azure_python_code_interpreter_functi
     main as azure_python_code_interpreter_function_calling,
 )
 from samples.concepts.auto_function_calling.chat_gpt_api_function_calling import main as chat_gpt_api_function_calling
-from samples.concepts.auto_function_calling.function_defined_in_json_prompt import (
+from samples.concepts.auto_function_calling.functions_defined_in_json_prompt import (
     main as function_defined_in_json_prompt,
 )
-from samples.concepts.auto_function_calling.function_defined_in_yaml_prompt import (
+from samples.concepts.auto_function_calling.functions_defined_in_yaml_prompt import (
     main as function_defined_in_yaml_prompt,
 )
 from samples.concepts.chat_completion.azure_chat_gpt_api import main as azure_chat_gpt_api
