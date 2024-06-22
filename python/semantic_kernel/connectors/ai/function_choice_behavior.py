@@ -138,7 +138,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
     @classmethod
     def Auto(
         cls,
-        auto_invoke: bool = False,
+        auto_invoke: bool = True,
         *,
         filters: dict[
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
@@ -179,7 +179,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
     @classmethod
     def Required(
         cls,
-        auto_invoke: bool = False,
+        auto_invoke: bool = True,
         *,
         filters: dict[
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]

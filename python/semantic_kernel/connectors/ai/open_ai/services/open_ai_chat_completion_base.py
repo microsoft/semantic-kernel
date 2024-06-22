@@ -142,7 +142,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                         arguments=arguments,
                         function_call_count=fc_count,
                         request_index=request_index,
-                        function_behavior=settings.function_choice_behavior,
+                        function_call_behavior=settings.function_choice_behavior,
                     )
                     for function_call in function_calls
                 ],
@@ -255,7 +255,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                         arguments=arguments,
                         function_call_count=fc_count,
                         request_index=request_index,
-                        function_behavior=settings.function_choice_behavior,
+                        function_call_behavior=settings.function_choice_behavior,
                     )
                     for function_call in function_calls
                 ],
@@ -451,7 +451,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         arguments: "KernelArguments",
         function_call_count: int,
         request_index: int,
-        function_behavior: FunctionChoiceBehavior | FunctionCallBehavior,
+        function_call_behavior: FunctionChoiceBehavior | FunctionCallBehavior,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the tool calls in the result and update the chat history."""
         args_cloned = copy(arguments)
@@ -471,23 +471,23 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         try:
             if function_call.name is None:
                 raise FunctionExecutionException("The function name is required.")
-            if isinstance(function_behavior, FunctionCallBehavior):
+            if isinstance(function_call_behavior, FunctionCallBehavior):
                 # We need to still support a `FunctionCallBehavior` input so it doesn't break current
                 # customers. Map from `FunctionCallBehavior` -> `FunctionChoiceBehavior`
-                function_behavior = FunctionChoiceBehavior.from_function_call_behavior(function_behavior)
-            if isinstance(function_behavior, FunctionChoiceBehavior):
+                function_call_behavior = FunctionChoiceBehavior.from_function_call_behavior(function_call_behavior)
+            if isinstance(function_call_behavior, FunctionChoiceBehavior):
                 if (
-                    function_behavior.function_fully_qualified_names
-                    and function_call.name not in function_behavior.function_fully_qualified_names
+                    function_call_behavior.function_fully_qualified_names
+                    and function_call.name not in function_call_behavior.function_fully_qualified_names
                 ):
                     raise FunctionExecutionException(
-                        f"Only functions: {function_behavior.function_fully_qualified_names} "
+                        f"Only functions: {function_call_behavior.function_fully_qualified_names} "
                         f"are allowed, {function_call.name} is not allowed."
                     )
-                if function_behavior.filters:
+                if function_call_behavior.filters:
                     allowed_functions = [
                         func.fully_qualified_name
-                        for func in kernel.get_list_of_function_metadata(function_behavior.filters)
+                        for func in kernel.get_list_of_function_metadata(function_call_behavior.filters)
                     ]
                     if function_call.name not in allowed_functions:
                         raise FunctionExecutionException(

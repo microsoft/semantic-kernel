@@ -8,7 +8,7 @@ from typing import Any
 
 import yaml
 
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
@@ -152,7 +152,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         chat_history_for_steps = await self._build_chat_history_for_step(
             goal=question, initial_plan=initial_plan, kernel=cloned_kernel, arguments=arguments, service=chat_completion
         )
-        prompt_execution_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
+        prompt_execution_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
             auto_invoke=False, filters={"excluded_plugins": list(self.options.excluded_plugins)}
         )
         for i in range(self.options.max_iterations):
@@ -202,7 +202,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                         arguments=arguments,
                         function_call_count=1,
                         request_index=0,
-                        function_call_behavior=prompt_execution_settings.function_call_behavior,
+                        function_call_behavior=prompt_execution_settings.function_choice_behavior,
                     )
                     if context is not None:
                         # Only add the function result content to the chat history if the context is present

@@ -6,6 +6,12 @@ from samples.concepts.auto_function_calling.azure_python_code_interpreter_functi
     main as azure_python_code_interpreter_function_calling,
 )
 from samples.concepts.auto_function_calling.chat_gpt_api_function_calling import main as chat_gpt_api_function_calling
+from samples.concepts.auto_function_calling.function_defined_in_json_prompt import (
+    main as function_defined_in_json_prompt,
+)
+from samples.concepts.auto_function_calling.function_defined_in_yaml_prompt import (
+    main as function_defined_in_yaml_prompt,
+)
 from samples.concepts.chat_completion.azure_chat_gpt_api import main as azure_chat_gpt_api
 from samples.concepts.chat_completion.azure_chat_image_input import main as azure_chat_image_input
 from samples.concepts.chat_completion.chat_gpt_api import main as chat_gpt_api
@@ -39,7 +45,6 @@ from samples.concepts.prompt_templates.load_yaml_prompt import main as load_yaml
 from samples.concepts.prompt_templates.template_language import main as template_language
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
 from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
-from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
 from tests.samples.test_samples_utils import retry
 
 concepts = [
@@ -48,12 +53,12 @@ concepts = [
         ["print('Hello, World!')", "exit"],
         id="azure_python_code_interpreter_function_calling",
     ),
-    param(chat_gpt_api_function_calling, ["What is 3+3?", "exit"], id="cht_gpt_api_function_calling"),
+    param(chat_gpt_api_function_calling, ["What is 3+3?", "exit"], id="chat_gpt_api_function_calling"),
     param(azure_chat_gpt_api, ["Why is the sky blue?", "exit"], id="azure_chat_gpt_api"),
     param(chat_gpt_api, ["What is life?", "exit"], id="chat_gpt_api"),
     param(chat_streaming, ["Why is the sun hot?", "exit"], id="chat_streaming"),
     param(openai_logit_bias, [], id="openai_logit_bias"),
-    param(auto_function_invoke_filters, ["What is 3+3?", "exit"], id="auo_function_invoke_filters"),
+    param(auto_function_invoke_filters, ["What is 3+3?", "exit"], id="auto_function_invoke_filters"),
     param(function_invocation_filters, ["What is 3+3?", "exit"], id="function_invocation_filters"),
     param(function_invocation_filters_stream, ["What is 3+3?", "exit"], id="function_invocation_filters_stream"),
     param(prompt_filters, ["What is the fastest animal?", "exit"], id="prompt_filters"),
@@ -80,7 +85,8 @@ concepts = [
     param(rag_with_text_memory_plugin, [], id="rag_with_text_memory_plugin"),
     param(bing_search_plugin, [], id="bing_search_plugin"),
     param(azure_chat_image_input, [], id="azure_chat_image_input"),
-    param(custom_service_selector, [], id="custom_service_selector"),
+    param(function_defined_in_json_prompt, ["What is 3+3?", "exit"], id="function_defined_in_json_prompt"),
+    param(function_defined_in_yaml_prompt, ["What is 3+3?", "exit"], id="function_defined_in_yaml_prompt"),
 ]
 
 
