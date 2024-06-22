@@ -100,7 +100,9 @@ async def main():
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
         service_id=service_id
     )
-    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["weather", "time"]})
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
+        auto_invoke=False, filters={"included_plugins": ["weather", "time"]}
+    )
     chat_history.add_user_message(
         "Given the current time of day and weather, what is the likely color of the sky in Boston?"
     )
