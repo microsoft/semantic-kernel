@@ -85,9 +85,8 @@ internal sealed class HuggingFaceMessageApiClient
         var endpoint = this.GetChatGenerationEndpoint();
 
         var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
-        huggingFaceExecutionSettings.ModelId ??= this._clientCore.ModelId;
 
-        var request = this.CreateChatRequest(chatHistory, huggingFaceExecutionSettings);
+        var request = this.CreateChatRequest(chatHistory, huggingFaceExecutionSettings, modelId);
         request.Stream = true;
 
         using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, huggingFaceExecutionSettings);
@@ -149,8 +148,7 @@ internal sealed class HuggingFaceMessageApiClient
         var endpoint = this.GetChatGenerationEndpoint();
 
         var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
-        huggingFaceExecutionSettings.ModelId ??= this._clientCore.ModelId;
-        var request = this.CreateChatRequest(chatHistory, huggingFaceExecutionSettings);
+        var request = this.CreateChatRequest(chatHistory, huggingFaceExecutionSettings, modelId);
 
         using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, huggingFaceExecutionSettings);
         using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
@@ -276,7 +274,8 @@ internal sealed class HuggingFaceMessageApiClient
 
     private ChatCompletionRequest CreateChatRequest(
         ChatHistory chatHistory,
-        HuggingFacePromptExecutionSettings huggingFaceExecutionSettings)
+        HuggingFacePromptExecutionSettings huggingFaceExecutionSettings,
+        string modelId)
     {
         HuggingFaceClient.ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
 
@@ -287,7 +286,7 @@ internal sealed class HuggingFaceMessageApiClient
                 JsonSerializer.Serialize(huggingFaceExecutionSettings));
         }
 
-        var request = ChatCompletionRequest.FromChatHistoryAndExecutionSettings(chatHistory, huggingFaceExecutionSettings);
+        var request = ChatCompletionRequest.FromChatHistoryAndExecutionSettings(chatHistory, huggingFaceExecutionSettings, modelId);
         return request;
     }
 
