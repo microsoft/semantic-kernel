@@ -87,7 +87,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             List[ChatMessageContent]: The completion result(s).
         """
-        # For backwards compatability we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
+        # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
         # if this method is called with a `FunctionCallBehavior` object as pat of the settings
         if hasattr(settings, "function_call_behavior") and isinstance(
             settings.function_call_behavior, FunctionCallBehavior
@@ -175,7 +175,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             List[StreamingChatMessageContent]: A stream of
                 StreamingChatMessageContent when using Azure.
         """
-        # For backwards compatability we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
+        # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
         # if this method is called with a `FunctionCallBehavior` object as part of the settings
         if hasattr(settings, "function_call_behavior") and isinstance(
             settings.function_call_behavior, FunctionCallBehavior
