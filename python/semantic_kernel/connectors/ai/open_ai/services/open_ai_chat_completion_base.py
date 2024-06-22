@@ -176,7 +176,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 StreamingChatMessageContent when using Azure.
         """
         # For backwards compatability we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
-        # if this method is called with a `FunctionCallBehavior` object as pat of the settings
+        # if this method is called with a `FunctionCallBehavior` object as part of the settings
         if hasattr(settings, "function_call_behavior") and isinstance(
             settings.function_call_behavior, FunctionCallBehavior
         ):
@@ -493,7 +493,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                         raise FunctionExecutionException(
                             f"Only functions: {allowed_functions} are allowed, {function_call.name} is not allowed."
                         )
-                function_to_call = kernel.get_function(function_call.plugin_name, function_call.function_name)
+            function_to_call = kernel.get_function(function_call.plugin_name, function_call.function_name)
         except Exception as exc:
             logger.exception(f"The function `{function_call.name}` is not part of the provided functions: {exc}.")
             frc = FunctionResultContent.from_function_call_content_and_result(
