@@ -14,7 +14,7 @@ using OpenAI;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// OpenAI text embedding service.
+/// OpenAI implementation of <see cref="ITextEmbeddingGenerationService"/>
 /// </summary>
 [Experimental("SKEXP0010")]
 public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
@@ -23,7 +23,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     private readonly int? _dimensions;
 
     /// <summary>
-    /// Create an instance of the OpenAI text embedding connector
+    /// Create an instance of <see cref="OpenAITextEmbeddingGenerationService"/>
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>

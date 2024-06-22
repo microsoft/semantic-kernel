@@ -34,19 +34,19 @@ internal partial class ClientCore
     private const string OpenAIV1Endpoint = "https://api.openai.com/v1";
 
     /// <summary>
-    /// Model Id
+    /// Identifier of the default model to use
     /// </summary>
-    internal string ModelId { get; set; } = string.Empty;
+    internal string ModelId { get; init; } = string.Empty;
 
     /// <summary>
     /// Non-default endpoint for OpenAI API.
     /// </summary>
-    internal Uri? Endpoint { get; set; } = null;
+    internal Uri? Endpoint { get; init; }
 
     /// <summary>
     /// Logger instance
     /// </summary>
-    internal ILogger Logger { get; set; }
+    internal ILogger Logger { get; init; }
 
     /// <summary>
     /// OpenAI / Azure OpenAI Client
