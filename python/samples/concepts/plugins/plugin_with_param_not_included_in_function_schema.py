@@ -2,21 +2,35 @@
 
 import asyncio
 import os
-from functools import reduce
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.const import FUNCTION_SCHEMA_INCLUDE
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 if TYPE_CHECKING:
-    from semantic_kernel.functions import KernelFunction
+    pass
+
+
+# The following kernel function in the sample plugin shows how to mark a parameter as not included in the function
+# schema. The annotation's metadata, which comes after the specifie type can be in any order -- a string that holds
+# the description, or the annotation or a key-value pair of `{FUNCTION_SCHEMA_INCLUDE: False}` to exclude the parameter
+# from the function schema.
+class MyPlugin:
+    @kernel_function(name="my_function")
+    def my_function(
+        self,
+        x: int,
+        y: int,
+        kernel: Annotated[Kernel, "The Kernel used as an example", {FUNCTION_SCHEMA_INCLUDE: False}],
+    ):
+        """This is a test function. The only parameters included in the function schema are x and y."""
+        return x + y
 
 
 system_message = """
@@ -41,6 +55,7 @@ plugins_directory = os.path.join(__file__, "../../../../../prompt_template_sampl
 # adding plugins to the kernel
 kernel.add_plugin(MathPlugin(), plugin_name="math")
 kernel.add_plugin(TimePlugin(), plugin_name="time")
+kernel.add_plugin(MyPlugin(), plugin_name="my_plugin")
 
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
@@ -62,7 +77,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["math", "time"]}),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["math", "time", "my_plugin"]}),
 )
 
 history = ChatHistory()
@@ -72,54 +87,6 @@ history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
 arguments = KernelArguments(settings=execution_settings)
-
-
-def print_tool_calls(message: ChatMessageContent) -> None:
-    # A helper method to pretty print the tool calls from the message.
-    # This is only triggered if auto invoke tool calls is disabled.
-    items = message.items
-    formatted_tool_calls = []
-    for i, item in enumerate(items, start=1):
-        if isinstance(item, FunctionCallContent):
-            tool_call_id = item.id
-            function_name = item.name
-            function_arguments = item.arguments
-            formatted_str = (
-                f"tool_call {i} id: {tool_call_id}\n"
-                f"tool_call {i} function name: {function_name}\n"
-                f"tool_call {i} arguments: {function_arguments}"
-            )
-            formatted_tool_calls.append(formatted_str)
-    print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
-
-
-async def handle_streaming(
-    kernel: Kernel,
-    chat_function: "KernelFunction",
-    arguments: KernelArguments,
-) -> None:
-    response = kernel.invoke_stream(
-        chat_function,
-        return_function_results=False,
-        arguments=arguments,
-    )
-
-    print("Mosscap:> ", end="")
-    streamed_chunks: list[StreamingChatMessageContent] = []
-    async for message in response:
-        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and isinstance(
-            message[0], StreamingChatMessageContent
-        ):
-            streamed_chunks.append(message[0])
-        else:
-            print(str(message[0]), end="")
-
-    if streamed_chunks:
-        streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
-        print("Auto tool calls is disabled, printing returned tool calls...")
-        print_tool_calls(streaming_chat_message)
-
-    print("\n")
 
 
 async def chat() -> bool:
@@ -138,21 +105,13 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
-    stream = True
-    if stream:
-        await handle_streaming(kernel, chat_function, arguments=arguments)
-    else:
-        result = await kernel.invoke(chat_function, arguments=arguments)
+    result = await kernel.invoke(chat_function, arguments=arguments)
 
-        # If tools are used, and auto invoke tool calls is False, the response will be of type
-        # ChatMessageContent with information about the tool calls, which need to be sent
-        # back to the model to get the final response.
-        function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
-        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
-            print_tool_calls(result.value[0])
-            return True
+    print(f"Mosscap:> {result}")
 
-        print(f"Mosscap:> {result}")
+    history.add_user_message(str(user_input))
+    history.add_assistant_message(str(result))
+
     return True
 
 

@@ -24,7 +24,7 @@ def kernel_function(
     The name and description can be left empty, and then the function name and docstring will be used.
 
     The parameters are parsed from the function signature, use typing.Annotated to provide a description for the
-    parameter, in python 3.8, use typing_extensions.Annotated.
+    parameter.
 
     To parse the type, first it checks if the parameter is annotated, and get's the description from there.
     After that it checks recursively until it reaches the lowest level, and it combines
@@ -45,6 +45,7 @@ def kernel_function(
             if not supplied, the function docstring will be used, can be None.
 
     """
+
     def decorator(func: Callable[..., object]) -> Callable[..., object]:
         """The actual decorator function."""
         setattr(func, "__kernel_function__", True)
@@ -124,7 +125,11 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
         return ret
     if not isinstance(param, str):
         if hasattr(param, "__metadata__"):
-            ret["description"] = param.__metadata__[0]
+            for metadata_item in param.__metadata__:
+                if isinstance(metadata_item, str):
+                    ret["description"] = metadata_item
+                elif isinstance(metadata_item, dict):
+                    ret.update(metadata_item)
         if hasattr(param, "__origin__"):
             ret.update(_parse_parameter(name, param.__origin__, default))
         if hasattr(param, "__args__"):
@@ -139,9 +144,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
                     arg = arg.__forward_arg__
                 args.append(_parse_parameter(name, arg, default))
             if ret.get("type_") in ["list", "dict"]:
-                ret["type_"] = (
-                    f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
-                )
+                ret["type_"] = f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
             elif len(args) > 1:
                 ret["type_"] = ", ".join([arg["type_"] for arg in args])
             else:
