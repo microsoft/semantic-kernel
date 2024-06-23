@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from typing import Annotated
 
 from semantic_kernel import Kernel

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from semantic_kernel import Kernel
 from semantic_kernel.functions import FunctionResult, KernelArguments
 

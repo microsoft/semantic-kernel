@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 """Run this interactive guided conversation script to test out the teaching scenario!
 The teaching artifact, rules, conversation flow, context, and resource constraint can all be modified to
 fit your needs & try out new scenarios!
@@ -50,7 +52,7 @@ After they write it, you should review it and give them feedback on what they di
 Have them revise their poem based on your feedback and then review it again.
 """
 
-# Context (optional) - This is any additional information or the cirumstances the agent is in that it should be aware of.
+# Context (optional) - This is any additional information or the circumstances the agent is in that it should be aware of.
 # It can also include the high level goal of the conversation if needed.
 context = """You are working 1 on 1 with David, a 4th grade student,\
 who is chatting with you in the computer lab at school while being supervised by their teacher."""

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import logging
 from typing import Annotated, Any, Literal, get_args, get_origin, get_type_hints
 
@@ -126,7 +128,7 @@ class Artifact:
                 In this case, the boolean will be False and the list may contain a message indicating the failure.
 
             - The agent may have successfully updated the artifact or fixed it.
-                In this case, the boolean will be True and the list will contain a message indicating the update and possibily intermediate messages.
+                In this case, the boolean will be True and the list will contain a message indicating the update and possibly intermediate messages.
 
             - The agent may have decided to resume the conversation.
                 In this case, the boolean will be True and the messages may only contain messages indicated previous errors.
@@ -174,7 +176,7 @@ class Artifact:
 
     def get_artifact_for_prompt(self) -> str:
         """Returns a formatted JSON-like representation of the current state of the fields artifact.
-        Any fields that were failed are completely ommitted.
+        Any fields that were failed are completely omitted.
 
         Returns:
             str: The string representation of the artifact.
@@ -410,7 +412,7 @@ Remember that when updating the artifact, the field will be the original field n
     ) -> tuple[bool, Any]:
         """
         Handles the logic for when an error occurs while updating a field.
-        Creates the appriopriate context for the model and calls the LLM to fix the error.
+        Creates the appropriate context for the model and calls the LLM to fix the error.
 
         Args:
             field_name (str): The name of the field to update in the artifact

@@ -1,4 +1,4 @@
-"""Helper functions for plugin execution."""
+# Copyright (c) Microsoft. All rights reserved.
 
 from dataclasses import dataclass
 

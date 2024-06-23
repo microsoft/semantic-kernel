@@ -1,4 +1,4 @@
-"""Main orchestrator"""
+# Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -179,7 +179,7 @@ class GuidedConversation:
             self.current_failed_decision_attempts += 1
 
     async def _generate_plan(self) -> str:
-        """Generate a plan for the current state of the conversation. The idea here is to explictly let the model plan before
+        """Generate a plan for the current state of the conversation. The idea here is to explicitly let the model plan before
         generating any plugin calls. This has been shown to increase reliability.
 
         Returns:

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from dataclasses import dataclass
 from enum import Enum
 import json

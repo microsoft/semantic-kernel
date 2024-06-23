@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from dataclasses import dataclass, field
 import datetime
 from enum import Enum
