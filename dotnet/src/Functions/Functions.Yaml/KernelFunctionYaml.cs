@@ -68,7 +68,8 @@ public static class KernelFunctionYaml
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method function using the specified markdown text.
     /// </summary>
-    /// <param name="text">YAML representation of the <see cref="MethodTemplateConfig"/> to use to create the yaml method function.</param>
+    /// <param name="text">YAML representation of the <see cref="FunctionTemplateConfig"/> to use to create the yaml method function.</param>
+    /// <param name="target">The target plugin that will contain the specified functions from yaml method.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
     public static KernelFunction FromMethodYaml(
@@ -80,7 +81,6 @@ public static class KernelFunctionYaml
 
         var config = KernelFunctionYaml.ToMethodTemplateConfig(text);
 
-        //var target = new ValidatorPlugin();
         MethodInfo method = target.GetType().GetMethod(config.Name!)!;
         var functionName = config.Name;
         var description = config.Description;
@@ -90,21 +90,22 @@ public static class KernelFunctionYaml
         {
             FunctionName = functionName,
             Description = description,
-            Parameters = parameters.Select(p => new KernelParameterMetadata(p.Name) { Description = p.Description, IsRequired = p.IsRequired }).ToList(),
+            Parameters = parameters.Select(p => new KernelParameterMetadata(p.Name) { Description = p.Description, IsRequired = p.IsRequired }).ToList()
+            //TODO: Check how to deal with return variable?
         });
     }
 
     /// <summary>
-    /// Convert the given YAML text to a <see cref="MethodTemplateConfig"/> model.
+    /// Convert the given YAML text to a <see cref="FunctionTemplateConfig"/> model.
     /// </summary>
-    /// <param name="text">YAML representation of the <see cref="MethodTemplateConfig"/> to use to create the prompt function.</param>
-    public static MethodTemplateConfig ToMethodTemplateConfig(string text)
+    /// <param name="text">YAML representation of the <see cref="FunctionTemplateConfig"/> to use to create the prompt function.</param>
+    public static FunctionTemplateConfig ToMethodTemplateConfig(string text)
     {
         var deserializer = new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .WithNodeDeserializer(new MethodExecutionSettingsNodeDeserializer())
+            .WithNodeDeserializer(new FunctionSettingsNodeDeserializer())
             .Build();
 
-        return deserializer.Deserialize<MethodTemplateConfig>(text);
+        return deserializer.Deserialize<FunctionTemplateConfig>(text);
     }
 }

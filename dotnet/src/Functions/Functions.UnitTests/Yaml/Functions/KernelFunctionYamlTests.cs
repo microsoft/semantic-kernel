@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
@@ -210,6 +212,28 @@ public class KernelFunctionYamlTests
         Assert.NotNull(function);
         Assert.Equal("ValidateTaskId", function.Name);
         Assert.Equal("Validate a task id.", function.Description);
+    }
+
+    [Fact]
+    public async Task ItShouldImportPluginFromMethodYamlConfigAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var target = new ValidatorPlugin();
+
+        // Act
+        var functions = new List<KernelFunction>();
+        functions.Add(KernelFunctionYaml.FromMethodYaml(this._yamlFunctionConfig, target));
+        var plugin = kernel.ImportPluginFromFunctions("ValidatorPlugin", functions);
+        var function = plugin["ValidateTaskId"];
+        var result = await kernel.InvokeAsync(function, new() { { "taskId", "1234" } });
+
+        // Assert
+        Assert.NotNull(function);
+        Assert.Equal("Validate a task id.", function.Metadata.Description);
+        Assert.Equal("Kernel instance.", function.Metadata.Parameters[0].Description);
+        Assert.Equal("Task identifier.", function.Metadata.Parameters[1].Description);
+        Assert.Equal("Valid task id", result.GetValue<string>());
     }
 
     /// <summary>
