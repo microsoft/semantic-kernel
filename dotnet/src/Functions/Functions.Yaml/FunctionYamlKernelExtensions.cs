@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class for extensions methods to define functions using method YAML format.
 /// </summary>
-public static class FunctionYamlKernelExtension
+public static class FunctionYamlKernelExtensions
 {
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method function using the specified YAML.

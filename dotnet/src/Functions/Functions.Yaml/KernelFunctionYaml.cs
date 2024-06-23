@@ -99,7 +99,7 @@ public static class KernelFunctionYaml
     /// <summary>
     /// Convert the given YAML text to a <see cref="FunctionTemplateConfig"/> model.
     /// </summary>
-    /// <param name="text">YAML representation of the <see cref="FunctionTemplateConfig"/> to use to create the prompt function.</param>
+    /// <param name="text">YAML representation of the <see cref="FunctionTemplateConfig"/> to use to create the kernel function.</param>
     public static FunctionTemplateConfig ToMethodTemplateConfig(string text)
     {
         var deserializer = new DeserializerBuilder()
