@@ -17,5 +17,28 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | PromptTemplates | Using [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/prompt_template/prompt_template_base.py) with parametrization for `Prompt` rendering  |
 | RAG | Different ways of `RAG` (Retrieval-Augmented Generation) |
 | Search | Using search services information |
+| Service Selector | Shows how to create and use a custom service selector class. |
 | Setup | How to setup environment variables for Semantic Kernel |
 | TextGeneration | Using [`TextGeneration`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/text_completion_client_base.py) capable service with models  |
+
+# Configuring the Kernel
+
+In Semantic Kernel for Python, we leverage Pydantic Settings to manage configurations for AI and Memory Connectors, among other components. Here’s a clear guide on how to configure your settings effectively:
+
+## Steps for Configuration
+
+1. **Reading Environment Variables:**
+   - **Primary Source:** Pydantic first attempts to read the required settings from environment variables.
+   
+2. **Using a .env File:**
+   - **Fallback Source:** If the required environment variables are not set, Pydantic will look for a `.env` file in the current working directory.
+   - **Custom Path (Optional):** You can specify an alternative path for the `.env` file via `env_file_path`. This can be either a relative or an absolute path.
+
+3. **Direct Constructor Input:**
+   - As an alternative to environment variables and `.env` files, you can pass the required settings directly through the constructor of the AI Connector or Memory Connector.
+
+## Best Practices
+
+- **.env File Placement:** We highly recommend placing the `.env` file in the `semantic-kernel/python` root directory. This is a common practice when developing in the Semantic Kernel repository.
+
+By following these guidelines, you can ensure that your settings for various components are configured correctly, enabling seamless functionality and integration of Semantic Kernel in your Python projects.
