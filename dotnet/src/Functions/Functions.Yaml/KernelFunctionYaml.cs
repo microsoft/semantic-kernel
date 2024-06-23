@@ -85,13 +85,14 @@ public static class KernelFunctionYaml
         var functionName = config.Name;
         var description = config.Description;
         var parameters = config.InputVariables;
+        var returnparameter = config.OutputVariable;
 
         return KernelFunctionFactory.CreateFromMethod(method, target, new()
         {
             FunctionName = functionName,
             Description = description,
-            Parameters = parameters.Select(p => new KernelParameterMetadata(p.Name) { Description = p.Description, IsRequired = p.IsRequired }).ToList()
-            //TODO: Check how to deal with return variable?
+            Parameters = parameters.Select(p => new KernelParameterMetadata(p.Name) { Description = p.Description, IsRequired = p.IsRequired }).ToList(),
+            ReturnParameter = new KernelReturnParameterMetadata() { Description = returnparameter == null ? "" : returnparameter.ToString() }
         });
     }
 

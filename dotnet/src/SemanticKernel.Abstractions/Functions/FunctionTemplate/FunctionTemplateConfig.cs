@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -20,10 +19,6 @@ namespace Microsoft.SemanticKernel;
 /// </remarks>
 public sealed class FunctionTemplateConfig
 {
-    /// <summary>The format of the method function configuration template.</summary>
-    private string? _templateFormat;
-    /// <summary>The method function configuration template string.</summary>
-    private string _template = string.Empty;
     /// <summary>Lazily-initialized input variables.</summary>
     private List<InputVariable>? _inputVariables;
 
@@ -32,16 +27,6 @@ public sealed class FunctionTemplateConfig
     /// </summary>
     public FunctionTemplateConfig()
     {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionTemplateConfig"/> class using the specified method function configuration template string.
-    /// </summary>
-    /// <param name="template">The method function configuration template string that defines the function.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="template"/> is null.</exception>
-    public FunctionTemplateConfig(string template)
-    {
-        this.Template = template;
     }
 
     /// <summary>
@@ -111,40 +96,6 @@ public sealed class FunctionTemplateConfig
     /// </summary>
     [JsonPropertyName("description")]
     public string? Description { get; set; }
-
-    /// <summary>
-    /// Gets the identifier of the Semantic Kernel template format.
-    /// </summary>
-    public static string SemanticKernelTemplateFormat => "semantic-kernel";
-
-    /// <summary>
-    /// Gets or sets the format of the method function configuration template.
-    /// </summary>
-    /// <remarks>
-    /// If no template format is specified, a default format of <see cref="SemanticKernelTemplateFormat"/> is used.
-    /// </remarks>
-    [JsonPropertyName("template_format")]
-    [AllowNull]
-    public string TemplateFormat
-    {
-        get => this._templateFormat ?? SemanticKernelTemplateFormat;
-        set => this._templateFormat = value;
-    }
-
-    /// <summary>
-    /// Gets or sets the method function configuration template string that defines the function.
-    /// </summary>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
-    [JsonPropertyName("template")]
-    public string Template
-    {
-        get => this._template;
-        set
-        {
-            Verify.NotNull(value);
-            this._template = value;
-        }
-    }
 
     /// <summary>
     /// Gets or sets the collection of input variables used by the method function configuration template.
