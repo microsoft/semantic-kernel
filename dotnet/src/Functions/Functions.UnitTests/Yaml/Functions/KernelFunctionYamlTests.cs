@@ -196,4 +196,43 @@ public class KernelFunctionYamlTests
             max_token_count:   256
             stop_sequences:    [ "foo", "bar", "baz" ]
         """;
+
+    [Fact]
+    public void ItShouldCreateFunctionFromMethodYaml()
+    {
+        // Arrange
+        var target = new ValidatorPlugin();
+
+        // Act
+        var function = KernelFunctionYaml.FromMethodYaml(this._yamlFunctionConfig, target);
+
+        // Assert
+        Assert.NotNull(function);
+        Assert.Equal("ValidateTaskId", function.Name);
+        Assert.Equal("Validate a task id.", function.Description);
+    }
+
+    /// <summary>
+    /// Plugin example with no KernelFunction or Description attributes.
+    /// </summary>
+    private sealed class ValidatorPlugin
+    {
+        public string ValidateTaskId(Kernel kernel, string taskId)
+        {
+            return taskId.Equals("1234", StringComparison.Ordinal) ? "Valid task id" : "Invalid task id";
+        }
+    }
+
+    private readonly string _yamlFunctionConfig = """
+        name: ValidateTaskId
+        description: Validate a task id.
+        input_variables:
+          - name: kernel
+            description: Kernel instance.
+          - name: taskId
+            description: Task identifier.
+            is_required: true
+        output_variable:
+          description: String indicating whether or not the task id is valid.
+        """;
 }

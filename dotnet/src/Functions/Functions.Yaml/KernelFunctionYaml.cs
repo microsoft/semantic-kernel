@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.Logging;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -61,5 +63,48 @@ public static class KernelFunctionYaml
             .Build();
 
         return deserializer.Deserialize<PromptTemplateConfig>(text);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method function using the specified markdown text.
+    /// </summary>
+    /// <param name="text">YAML representation of the <see cref="MethodTemplateConfig"/> to use to create the yaml method function.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>The created <see cref="KernelFunction"/>.</returns>
+    public static KernelFunction FromMethodYaml(
+        string text,
+        object target,
+        ILoggerFactory? loggerFactory = null)
+    {
+        var kernel = new Kernel();
+
+        var config = KernelFunctionYaml.ToMethodTemplateConfig(text);
+
+        //var target = new ValidatorPlugin();
+        MethodInfo method = target.GetType().GetMethod(config.Name!)!;
+        var functionName = config.Name;
+        var description = config.Description;
+        var parameters = config.InputVariables;
+
+        return KernelFunctionFactory.CreateFromMethod(method, target, new()
+        {
+            FunctionName = functionName,
+            Description = description,
+            Parameters = parameters.Select(p => new KernelParameterMetadata(p.Name) { Description = p.Description, IsRequired = p.IsRequired }).ToList(),
+        });
+    }
+
+    /// <summary>
+    /// Convert the given YAML text to a <see cref="MethodTemplateConfig"/> model.
+    /// </summary>
+    /// <param name="text">YAML representation of the <see cref="MethodTemplateConfig"/> to use to create the prompt function.</param>
+    public static MethodTemplateConfig ToMethodTemplateConfig(string text)
+    {
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(UnderscoredNamingConvention.Instance)
+            .WithNodeDeserializer(new MethodExecutionSettingsNodeDeserializer())
+            .Build();
+
+        return deserializer.Deserialize<MethodTemplateConfig>(text);
     }
 }
