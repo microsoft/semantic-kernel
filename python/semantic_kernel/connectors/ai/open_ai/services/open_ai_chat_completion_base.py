@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import json
 import logging
 from collections.abc import AsyncGenerator
 from copy import copy
@@ -11,6 +12,7 @@ from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
+from opentelemetry import trace
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import (
@@ -44,10 +46,15 @@ from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_c
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.kernel_filters_extension import _rebuild_auto_function_invocation_context
 from semantic_kernel.functions.function_result import FunctionResult
+from semantic_kernel.utils import model_diagnostics
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
+
+
+MODEL_PROVIDER_NAME = 'openai'
+
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -269,9 +276,25 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     async def _send_chat_request(self, settings: OpenAIChatPromptExecutionSettings) -> list["ChatMessageContent"]:
         """Send the chat request."""
+        span = model_diagnostics.start_completion_activity(settings.ai_model_id, MODEL_PROVIDER_NAME,
+                                                           self._settings_messages_to_prompt(settings.messages),
+                                                           settings)
+
         response = await self._send_request(request_settings=settings)
         response_metadata = self._get_metadata_from_chat_response(response)
-        return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
+        
+        chat_message_contents = [self._create_chat_message_content(response, choice, response_metadata)
+                                  for choice in response.choices]
+        
+        if span is not None:
+            finish_reasons: list[str] = []
+            for choice in response.choices:
+                finish_reasons.append(choice.finish_reason)
+            with trace.use_span(span, end_on_exit=True):
+                model_diagnostics.set_completion_response(span, chat_message_contents, finish_reasons, response.id,
+                                                          response.usage.prompt_tokens,
+                                                          response.usage.completion_tokens)
+        return chat_message_contents
 
     async def _send_chat_stream_request(
         self, settings: OpenAIChatPromptExecutionSettings
@@ -291,9 +314,18 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     # endregion
     # region content creation
 
+    def _settings_messages_to_prompt(self, messages: list[dict[str, Any]]) -> str:
+        entries: list[dict[str, str]] = []
+        for message in messages:
+            entries.append({
+                "role": str(message.get("role", "unknown")),
+                "content": str(message.get("content", "unknown"))
+            })
+        return json.dumps(entries)
+
     def _create_chat_message_content(
         self, response: ChatCompletion, choice: Choice, response_metadata: dict[str, Any]
-    ) -> "ChatMessageContent":
+    ) -> ChatMessageContent:
         """Create a chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
         metadata.update(response_metadata)
