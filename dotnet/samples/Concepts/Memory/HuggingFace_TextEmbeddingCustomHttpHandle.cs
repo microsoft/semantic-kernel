@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
-using System.Text.Json;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
@@ -16,15 +15,8 @@ namespace Memory;
 /// the <a href="https://huggingface.co/cointegrated/LaBSE-en-ru">cointegrated/LaBSE-en-ru</a> model returns results as a 1 * 1 * 4 * 768 matrix, which differs from what SemanticTextMemory expects from EmbeddingGenerationExtensions.
 /// To address this, a custom HttpClientHandler is created to modify the response before sending it back.
 /// </summary>
-public class HuggingFace_TextEmbeddingCustomHttpHandler
+public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output) : BaseTest(output)
 {
-    private readonly ITestOutputHelper _output;
-
-    public HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output)
-    {
-        _output = output;
-    }
-
     public async Task RunInferenceApiEmbeddingCustomHttpHandlerAsync()
     {
         Console.WriteLine("\n======= Hugging Face Inference API - Embedding Example ========\n");
@@ -32,8 +24,11 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler
         var hf = new HuggingFaceTextEmbeddingGenerationService(
             "cointegrated/LaBSE-en-ru",
             apiKey: TestConfiguration.HuggingFace.ApiKey,
-            httpClient: new HttpClient(new CustomHttpClientHandler())
-        );
+            httpClient: new HttpClient(new CustomHttpClientHandler()
+            {
+                CheckCertificateRevocationList = true
+            })
+    );
 
         var sqliteMemory = await SqliteMemoryStore.ConnectAsync("./../../../Sqlite.sqlite");
 
@@ -53,12 +48,6 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler
 
 public class CustomHttpClientHandler : HttpClientHandler
 {
-    public CustomHttpClientHandler()
-    {
-        // Set CheckCertificateRevocationList to true
-        CheckCertificateRevocationList = true;
-    }
-
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         // Log the request URI
@@ -72,7 +61,7 @@ public class CustomHttpClientHandler : HttpClientHandler
 
         // You can manipulate the response here
         // For example, add a custom header
-        // response.Headers.Add("X-Custom-Header", "MyCustomValue");
+        // response.Headers.Add("X-Custom-Header", "CustomValue");
 
         // For example, modify the response content
         string originalContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
