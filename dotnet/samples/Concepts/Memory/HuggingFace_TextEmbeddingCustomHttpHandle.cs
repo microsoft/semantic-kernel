@@ -8,42 +8,46 @@ using System.Text.Json;
 
 #pragma warning disable CS6802 //Disable Dereference of a possibly null warning
 
-namespace Memory;
-
-/// <summary>
-/// This sample provides an example of <see cref="HttpClientHandler"/> that will help you implement specific tasks.
-/// Generally, an embedding model will return results as a 1 * n matrix for input type [string]. However, the model can have different matrix dimensionality. For example,
-/// the <a href="https://huggingface.co/cointegrated/LaBSE-en-ru">cointegrated/LaBSE-en-ru</a> model returns results as a 1 * 1 * 4 * 768 matrix, which differs from what <see cref="SemanticTextMemory"/> expects from <see cref="EmbeddingGenerationExtensions"/>.
-/// To address this, a custom <see cref="HttpClientHandler"/> is created to modify the response before sending it back.
-/// </summary>
-
-public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output) : BaseTest(output)
+namespace Memory
 {
-    public async Task RunInferenceApiEmbeddingCustomHttpHandlerAsync()
+    /// <summary>
+    /// This sample provides an example of <see cref="HttpClientHandler"/> that will help you implement specific tasks.
+    /// Generally, an embedding model will return results as a 1 * n matrix for input type [string]. However, the model can have different matrix dimensionality. For example,
+    /// the <a href="https://huggingface.co/cointegrated/LaBSE-en-ru">cointegrated/LaBSE-en-ru</a> model returns results as a 1 * 1 * 4 * 768 matrix, which differs from what <see cref="SemanticTextMemory"/> expects from <see cref="EmbeddingGenerationExtensions"/>.
+    /// To address this, a custom <see cref="HttpClientHandler"/> is created to modify the response before sending it back.
+    /// </summary>
+    public class HuggingFace_TextEmbeddingCustomHttpHandler : BaseTest
     {
-        Console.WriteLine("\n======= Hugging Face Inference API - Embedding Example ========\n");
+        public HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output) : base(output) { }
 
-        var hf = new HuggingFaceTextEmbeddingGenerationService
-        ("cointegrated/LaBSE-en-ru", apiKey: TestConfiguration.HuggingFace.ApiKey, httpClient:new HttpClient(new CustomHttpClientHandler()));
-
-        var sqliteMemory = await SqliteMemoryStore.ConnectAsync("./../../../Sqlite.sqlite");
-
-        var skMemory = new MemoryBuilder()
-            .WithTextEmbeddingGeneration(hf)
-            .WithMemoryStore(sqliteMemory)
-            .Build();
-
-        if (!await sqliteMemory.DoesCollectionExistAsync("Sqlite"))
+        public async Task RunInferenceApiEmbeddingCustomHttpHandlerAsync()
         {
-            await sqliteMemory.CreateCollectionAsync("Sqlite");
+            Console.WriteLine("\n======= Hugging Face Inference API - Embedding Example ========\n");
+
+            var hf = new HuggingFaceTextEmbeddingGenerationService(
+                "cointegrated/LaBSE-en-ru",
+                apiKey: TestConfiguration.HuggingFace.ApiKey,
+                httpClient: new HttpClient(new CustomHttpClientHandler())
+            );
+
+            var sqliteMemory = await SqliteMemoryStore.ConnectAsync("./../../../Sqlite.sqlite");
+
+            var skMemory = new MemoryBuilder()
+                .WithTextEmbeddingGeneration(hf)
+                .WithMemoryStore(sqliteMemory)
+                .Build();
+
+            if (!await sqliteMemory.DoesCollectionExistAsync("Sqlite"))
+            {
+                await sqliteMemory.CreateCollectionAsync("Sqlite");
+            }
+
+            await skMemory.SaveInformationAsync("Test", "THIS IS A SAMPLE", "sample", "TEXT");
         }
-
-        await skMemory.SaveInformationAsync("Test", "THIS IS A SAMPLE", "sample", "TEXT");
     }
-}
 
-public class CustomHttpClientHandler : HttpClientHandler
-{
+    public class CustomHttpClientHandler : HttpClientHandler
+    {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // Log the request URI
@@ -58,7 +62,7 @@ public class CustomHttpClientHandler : HttpClientHandler
             // You can manipulate the response here
             // For example, add a custom header
             // response.Headers.Add("X-Custom-Header", "MyCustomValue");
-            
+
             // For example, modify the response content
             string originalContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             var modifiedContent = JsonSerializer.Deserialize<List<List<List<ReadOnlyMemory<float>>>>>(originalContent);
@@ -68,4 +72,5 @@ public class CustomHttpClientHandler : HttpClientHandler
             // Return the modified response
             return response;
         }
+    }
 }
