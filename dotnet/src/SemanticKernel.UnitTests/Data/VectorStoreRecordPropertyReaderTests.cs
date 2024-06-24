@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Utilities;
+namespace SemanticKernel.UnitTests.Data;
 
 public class VectorStoreRecordPropertyReaderTests
 {
@@ -61,8 +61,8 @@ public class VectorStoreRecordPropertyReaderTests
 
         // Assert.
         var expectedMessage = useConfig ?
-            "Multiple vector properties configured for type SemanticKernel.UnitTests.Utilities.VectorStoreRecordPropertyReaderTests+MultiPropsModel while only one is supported." :
-            "Multiple vector properties found on type SemanticKernel.UnitTests.Utilities.VectorStoreRecordPropertyReaderTests+MultiPropsModel while only one is supported.";
+            "Multiple vector properties configured for type SemanticKernel.UnitTests.Data.VectorStoreRecordPropertyReaderTests+MultiPropsModel while only one is supported." :
+            "Multiple vector properties found on type SemanticKernel.UnitTests.Data.VectorStoreRecordPropertyReaderTests+MultiPropsModel while only one is supported.";
         Assert.Equal(expectedMessage, ex.Message);
     }
 
@@ -78,8 +78,8 @@ public class VectorStoreRecordPropertyReaderTests
 
         // Assert.
         var expectedMessage = useConfig ?
-            "Multiple key properties configured for type SemanticKernel.UnitTests.Utilities.VectorStoreRecordPropertyReaderTests+MultiKeysModel." :
-            "Multiple key properties found on type SemanticKernel.UnitTests.Utilities.VectorStoreRecordPropertyReaderTests+MultiKeysModel.";
+            "Multiple key properties configured for type SemanticKernel.UnitTests.Data.VectorStoreRecordPropertyReaderTests+MultiKeysModel." :
+            "Multiple key properties found on type SemanticKernel.UnitTests.Data.VectorStoreRecordPropertyReaderTests+MultiKeysModel.";
         Assert.Equal(expectedMessage, ex.Message);
     }
 
@@ -95,8 +95,8 @@ public class VectorStoreRecordPropertyReaderTests
 
         // Assert.
         var expectedMessage = useConfig ?
-            "No key property configured for type SemanticKernel.UnitTests.Utilities.VectorStoreRecordPropertyReaderTests+NoKeyModel." :
-            "No key property found on type SemanticKernel.UnitTests.Utilities.VectorStoreRecordPropertyReaderTests+NoKeyModel.";
+            "No key property configured for type SemanticKernel.UnitTests.Data.VectorStoreRecordPropertyReaderTests+NoKeyModel." :
+            "No key property found on type SemanticKernel.UnitTests.Data.VectorStoreRecordPropertyReaderTests+NoKeyModel.";
         Assert.Equal(expectedMessage, ex.Message);
     }
 
@@ -112,8 +112,8 @@ public class VectorStoreRecordPropertyReaderTests
 
         // Assert.
         var expectedMessage = useConfig ?
-            "No vector property configured for type SemanticKernel.UnitTests.Utilities.VectorStoreRecordPropertyReaderTests+NoVectorModel." :
-            "No vector property found on type SemanticKernel.UnitTests.Utilities.VectorStoreRecordPropertyReaderTests+NoVectorModel.";
+            "No vector property configured for type SemanticKernel.UnitTests.Data.VectorStoreRecordPropertyReaderTests+NoVectorModel." :
+            "No vector property found on type SemanticKernel.UnitTests.Data.VectorStoreRecordPropertyReaderTests+NoVectorModel.";
         Assert.Equal(expectedMessage, ex.Message);
     }
 
@@ -136,6 +136,33 @@ public class VectorStoreRecordPropertyReaderTests
         };
 
         Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.FindProperties(typeof(NoKeyModel), definition, false));
+    }
+
+    [Fact]
+    public void CreateVectorStoreRecordDefinitionFromTypeConvertsAllProps()
+    {
+        // Act.
+        var definition = VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(MultiPropsModel), true);
+
+        // Assert.
+        Assert.Equal(5, definition.Properties.Count);
+        Assert.Equal("Key", definition.Properties[0].PropertyName);
+        Assert.Equal("Data1", definition.Properties[1].PropertyName);
+        Assert.Equal("Data2", definition.Properties[2].PropertyName);
+        Assert.Equal("Vector1", definition.Properties[3].PropertyName);
+        Assert.Equal("Vector2", definition.Properties[4].PropertyName);
+
+        Assert.IsType<VectorStoreRecordKeyProperty>(definition.Properties[0]);
+        Assert.IsType<VectorStoreRecordDataProperty>(definition.Properties[1]);
+        Assert.IsType<VectorStoreRecordDataProperty>(definition.Properties[2]);
+        Assert.IsType<VectorStoreRecordVectorProperty>(definition.Properties[3]);
+        Assert.IsType<VectorStoreRecordVectorProperty>(definition.Properties[4]);
+
+        var data1 = (VectorStoreRecordDataProperty)definition.Properties[1];
+        var data2 = (VectorStoreRecordDataProperty)definition.Properties[2];
+
+        Assert.True(data1.HasEmbedding);
+        Assert.False(data2.HasEmbedding);
     }
 
     [Fact]
@@ -229,7 +256,7 @@ public class VectorStoreRecordPropertyReaderTests
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "Vector1")]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]
@@ -249,7 +276,7 @@ public class VectorStoreRecordPropertyReaderTests
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("Data1"),
+            new VectorStoreRecordDataProperty("Data1") { HasEmbedding = true, EmbeddingPropertyName = "Vector1" },
             new VectorStoreRecordDataProperty("Data2"),
             new VectorStoreRecordVectorProperty("Vector1"),
             new VectorStoreRecordVectorProperty("Vector2")
