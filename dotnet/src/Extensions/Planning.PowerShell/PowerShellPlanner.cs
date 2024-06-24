@@ -103,7 +103,13 @@ catch (Exception ex)
     {
         const StringComparison ComparisonType = StringComparison.OrdinalIgnoreCase;
 
-        const string MarkdownScriptPrefix = "```powershell";
+public class PowerShellPlanner
+{
+    private const string MarkdownScriptPrefix = "```powershell";
+    private const string MarkdownScriptEnding = "```";
+
+    {
+        const StringComparison ComparisonType = StringComparison.OrdinalIgnoreCase;
         const string MarkdownScriptEnding = "```";
 
         if (script.StartsWith(MarkdownScriptPrefix, ComparisonType))
