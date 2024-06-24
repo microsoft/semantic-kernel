@@ -163,14 +163,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
-    public async Task AddMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
+    public Task AddMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
     {
-        if (this.IsDeleted)
-        {
-            return;
-        }
+        this.ThrowIfDeleted();
 
-        await this._client.CreateMessageAsync(threadId, message.Role.ToMessageRole(), message.Content, fileIds: null, metadata: null, cancellationToken).ConfigureAwait(false); // %%% STATIC
+        return OpenAIAssistantActions.CreateMessageAsync(this._client, threadId, message, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -194,8 +191,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         string threadId,
         CancellationToken cancellationToken = default)
     {
-        ChatMessageContent[] empty = [];
+        this.ThrowIfDeleted();
 
+        //return OpenAIAssistantActions.InvokeAsync(this._client, threadId, this._config.Polling, cancellationToken);
+
+        ChatMessageContent[] empty = [];
         return empty.ToAsyncEnumerable(); // %%%
     }
 
@@ -318,5 +318,13 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         }
 
         return options;
+    }
+
+    private void ThrowIfDeleted()
+    {
+        if (this.IsDeleted)
+        {
+            throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {this.Id}.");
+        }
     }
 }

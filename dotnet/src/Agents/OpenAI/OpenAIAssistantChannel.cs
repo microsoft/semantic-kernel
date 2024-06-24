@@ -38,23 +38,13 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     private readonly AssistantsClient _client = client;
     private readonly string _threadId = threadId;
     private readonly Dictionary<string, ToolDefinition[]> _agentTools = [];
-    private readonly Dictionary<string, string?> _agentNames = []; // Cache agent names by their identifier for GetHistoryAsync()
 
     /// <inheritdoc/>
     protected override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         foreach (ChatMessageContent message in history)
         {
-            if (string.IsNullOrWhiteSpace(message.Content))
-            {
-                continue;
-            }
-
-            await this._client.CreateMessageAsync(
-                this._threadId,
-                message.Role.ToMessageRole(),
-                message.Content,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+            await OpenAIAssistantActions.CreateMessageAsync(this._client, this._threadId, message, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -72,11 +62,6 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         {
             tools = [.. agent.Tools, .. agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimiter)))];
             this._agentTools.Add(agent.Id, tools);
-        }
-
-        if (!this._agentNames.ContainsKey(agent.Id) && !string.IsNullOrWhiteSpace(agent.Name))
-        {
-            this._agentNames.Add(agent.Id, agent.Name);
         }
 
         this.Logger.LogDebug("[{MethodName}] Creating run for agent/thrad: {AgentId}/{ThreadId}", nameof(InvokeAsync), agent.Id, this._threadId);
@@ -286,54 +271,9 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     }
 
     /// <inheritdoc/>
-    protected override async IAsyncEnumerable<ChatMessageContent> GetHistoryAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+    protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        PageableList<ThreadMessage> messages;
-
-        string? lastId = null;
-        do
-        {
-            messages = await this._client.GetMessagesAsync(this._threadId, limit: 100, ListSortOrder.Descending, after: lastId, null, cancellationToken).ConfigureAwait(false);
-            foreach (ThreadMessage message in messages)
-            {
-                AuthorRole role = new(message.Role.ToString());
-
-                string? assistantName = null;
-                if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
-                    !this._agentNames.TryGetValue(message.AssistantId, out assistantName))
-                {
-                    Assistant assistant = await this._client.GetAssistantAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
-                    if (!string.IsNullOrWhiteSpace(assistant.Name))
-                    {
-                        this._agentNames.Add(assistant.Id, assistant.Name);
-                    }
-                }
-
-                assistantName ??= message.AssistantId;
-
-                foreach (MessageContent item in message.ContentItems)
-                {
-                    ChatMessageContent? content = null;
-
-                    if (item is MessageTextContent contentMessage)
-                    {
-                        content = GenerateTextMessageContent(assistantName, role, contentMessage);
-                    }
-                    else if (item is MessageImageFileContent contentImage)
-                    {
-                        content = GenerateImageFileContent(assistantName, role, contentImage);
-                    }
-
-                    if (content is not null)
-                    {
-                        yield return content;
-                    }
-                }
-
-                lastId = message.Id;
-            }
-        }
-        while (messages.HasMore);
+        return OpenAIAssistantActions.GetMessagesAsync(this._client, this._threadId, cancellationToken);
     }
 
     private static AnnotationContent GenerateAnnotationContent(MessageTextAnnotation annotation)
