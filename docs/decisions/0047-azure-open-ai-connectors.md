@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: accepted
+status: approved
 contact: rogerbarreto
 date: 2024-06-24
 deciders: rogerbarreto, matthewbolanos, markwallace-microsoft, sergeymenshykh
