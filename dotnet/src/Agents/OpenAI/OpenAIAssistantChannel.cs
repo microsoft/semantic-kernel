@@ -456,7 +456,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         {
             FunctionResultContent functionResult = functionResults[index];
 
-            object resultValue = (functionResult.Result as FunctionResult)?.GetValue<object>() ?? string.Empty;
+            object resultValue = functionResult.Result ?? string.Empty;
 
             if (resultValue is not string textResult)
             {
