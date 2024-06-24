@@ -314,6 +314,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimePlugin", "samples\Demos
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosmosDBNoSQL", "src\Connectors\Connectors.Memory.AzureCosmosDBNoSQL\Connectors.Memory.AzureCosmosDBNoSQL.csproj", "{B0B3901E-AF56-432B-8FAA-858468E5D0DF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Redis.UnitTests", "src\Connectors\Connectors.Redis.UnitTests\Connectors.Redis.UnitTests.csproj", "{1D4667B9-9381-4E32-895F-123B94253EE8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant.UnitTests", "src\Connectors\Connectors.Qdrant.UnitTests\Connectors.Qdrant.UnitTests.csproj", "{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -771,6 +775,18 @@ Global
 		{B0B3901E-AF56-432B-8FAA-858468E5D0DF}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{B0B3901E-AF56-432B-8FAA-858468E5D0DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0B3901E-AF56-432B-8FAA-858468E5D0DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D4667B9-9381-4E32-895F-123B94253EE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D4667B9-9381-4E32-895F-123B94253EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D4667B9-9381-4E32-895F-123B94253EE8}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D4667B9-9381-4E32-895F-123B94253EE8}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{1D4667B9-9381-4E32-895F-123B94253EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D4667B9-9381-4E32-895F-123B94253EE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -877,6 +893,8 @@ Global
 		{1D3EEB5B-0E06-4700-80D5-164956E43D0A} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{F312FCE1-12D7-4DEF-BC29-2FF6618509F3} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{B0B3901E-AF56-432B-8FAA-858468E5D0DF} = {24503383-A8C4-4255-9998-28D70FE8E99A}
+		{1D4667B9-9381-4E32-895F-123B94253EE8} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

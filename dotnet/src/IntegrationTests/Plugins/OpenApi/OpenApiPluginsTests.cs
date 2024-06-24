@@ -7,74 +7,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Plugins;
+namespace SemanticKernel.IntegrationTests.Plugins.OpenApi;
 
 public class PluginTests
 {
-    [Theory]
-    [InlineData("https://www.klarna.com/.well-known/ai-plugin.json", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
-    public async Task QueryKlarnaOpenAIPluginAsync(
-    string pluginEndpoint,
-    string name,
-    string functionName,
-    string query,
-    int size,
-    int budget,
-    string countryCode)
-    {
-        // Arrange
-        var kernel = new Kernel();
-        using HttpClient httpClient = new();
-
-        var plugin = await kernel.ImportPluginFromOpenAIAsync(
-            name,
-            new Uri(pluginEndpoint),
-            new OpenAIFunctionExecutionParameters(httpClient));
-
-        var arguments = new KernelArguments
-        {
-            ["q"] = query,
-            ["size"] = size,
-            ["max_price"] = budget,
-            ["countryCode"] = countryCode
-        };
-
-        // Act
-        await plugin[functionName].InvokeAsync(kernel, arguments);
-    }
-
-    [Theory]
-    [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
-    public async Task QueryKlarnaOpenApiPluginAsync(
-        string pluginEndpoint,
-        string name,
-        string functionName,
-        string query,
-        int size,
-        int budget,
-        string countryCode)
-    {
-        // Arrange
-        var kernel = new Kernel();
-        using HttpClient httpClient = new();
-
-        var plugin = await kernel.ImportPluginFromOpenApiAsync(
-            name,
-            new Uri(pluginEndpoint),
-            new OpenApiFunctionExecutionParameters(httpClient));
-
-        var arguments = new KernelArguments
-        {
-            ["q"] = query,
-            ["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            ["max_price"] = budget,
-            ["countryCode"] = countryCode
-        };
-
-        // Act
-        await plugin[functionName].InvokeAsync(kernel, arguments);
-    }
-
     [Theory]
     [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
     public async Task QueryKlarnaOpenApiPluginRunAsync(
@@ -99,7 +35,7 @@ public class PluginTests
         {
             ["q"] = query,
             ["size"] = size,
-            ["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["max_price"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture),
             ["countryCode"] = countryCode
         };
 
@@ -114,38 +50,7 @@ public class PluginTests
     }
 
     [Theory]
-    [InlineData("https://raw.githubusercontent.com/sisbell/chatgpt-plugin-store/main/manifests/instacart.com.json",
-        "Instacart",
-        "create",
-        """{"title":"Shopping List", "ingredients": ["Flour"], "question": "what ingredients do I need to make chocolate cookies?", "partner_name": "OpenAI" }"""
-        )]
-    public async Task QueryInstacartPluginAsync(
-        string pluginEndpoint,
-        string name,
-        string functionName,
-        string payload)
-    {
-        // Arrange
-        var kernel = new Kernel();
-        using HttpClient httpClient = new();
-
-        //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportPluginFromOpenAIAsync(
-            name,
-            new Uri(pluginEndpoint),
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
-
-        var arguments = new KernelArguments
-        {
-            ["payload"] = payload
-        };
-
-        // Act
-        await plugin[functionName].InvokeAsync(kernel, arguments);
-    }
-
-    [Theory]
-    [InlineData("Plugins/instacart-ai-plugin.json",
+    [InlineData("Plugins/OpenApi/instacart-service.yaml",
         "Instacart",
         "create",
         """{"title":"Shopping List", "ingredients": ["Flour"], "question": "what ingredients do I need to make chocolate cookies?", "partner_name": "OpenAI" }"""
@@ -162,10 +67,10 @@ public class PluginTests
         var kernel = new Kernel();
 
         // note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportPluginFromOpenAIAsync(
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
             name,
             stream,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
         var arguments = new KernelArguments
         {
@@ -177,7 +82,7 @@ public class PluginTests
     }
 
     [Theory]
-    [InlineData("Plugins/instacart-ai-plugin.json",
+    [InlineData("Plugins/OpenApi/instacart-service.yaml",
         "Instacart",
         "create",
         """{"title":"Shopping List", "ingredients": ["Flour"], "question": "what ingredients do I need to make chocolate cookies?", "partner_name": "OpenAI" }"""
@@ -193,10 +98,10 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         // note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportPluginFromOpenAIAsync(
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
             name,
             pluginFilePath,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
         var arguments = new KernelArguments
         {
@@ -208,7 +113,7 @@ public class PluginTests
     }
 
     [Theory]
-    [InlineData("Plugins/instacart-ai-plugin.json", "Instacart", "create")]
+    [InlineData("Plugins/OpenApi/instacart-service.yaml", "Instacart", "create")]
     public async Task QueryInstacartPluginWithDynamicPayloadAsync(
         string pluginFilePath,
         string name,
@@ -220,10 +125,10 @@ public class PluginTests
         var kernel = new Kernel();
 
         // note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportPluginFromOpenAIAsync(
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
             name,
             stream,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = true });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = true });
 
         var arguments = new KernelArguments
         {
