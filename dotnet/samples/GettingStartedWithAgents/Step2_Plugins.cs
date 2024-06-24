@@ -17,7 +17,7 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
     private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
-    public async Task UseChatCompletionWithPluginAgent()
+    public async Task UseChatCompletionWithPluginAgentAsync()
     {
         // Define the agent
         ChatCompletionAgent agent =
