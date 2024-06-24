@@ -1,10 +1,10 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 contact: rogerbarreto
-date: 2024-06-19
-deciders: rogerbarreto, matthewbolanos, markwallace-microsoft
-consulted: stephentoub, sergeymenshykh, dmytrostruk
+date: 2024-06-24
+deciders: rogerbarreto, matthewbolanos, markwallace-microsoft, sergeymenshykh
+consulted: stephentoub, dmytrostruk
 ---
 
 # OpenAI and Azure Connectors Naming and Structuring
@@ -79,11 +79,11 @@ builder.AddAzureOpenAIChatCompletion(new
 
 ## Considered Options
 
-- Option 1 - Slow transition.
-- Option 2 - Independent Connectors from Start
-- Option 3 - Update OpenAI with Azure as is
+- Option 1 - Merge New and Legacy (Slow transition for independent connectors).
+- Option 2 - Independent Connectors from Start.
+- Option 3 - Keep OpenAI and Azure in the same connector (As is).
 
-## Option 1 - Slow Transition
+## Option 1 - Merge New and Legacy (Slow transition for independent connectors).
 
 This is the least breaking approach where we keep the current legacy OpenAI and AzureOpenAI APIs temporarily in the connector using last Azure SDK `Azure.AI.OpenAI 1.0.0-beta.17` and add new OpenAI specific APIs using the new `OpenAI 2.0.0-beta.*` SDK package.
 
@@ -154,7 +154,7 @@ Cons:
 - Large breaking changes for developers using the current OpenAI connector for Azure.
 - ⚠️ May have the same problem with the dependency management as in Option 1 when using both connectors in the same project may conflict due to the shared dependency of different OpenAI SDK versions.
 
-## Option 3 - Update OpenAI with Azure as is.
+## Option 3 - Keep OpenAI and Azure in the same connector (As is).
 
 This option is fully focused in the least impact possible, combining both Azure and OpenAI SDK dependencies in one single connector following the same approach as the current connector.
 
@@ -180,7 +180,7 @@ Cons:
 
 #### Chosen option:
 
-TBD
+Option 2 - Independent Connectors from Start.
 
 #### OpenAI SDK limitations:
 
