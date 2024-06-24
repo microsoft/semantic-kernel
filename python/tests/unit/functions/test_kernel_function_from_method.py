@@ -5,7 +5,6 @@ from typing import Annotated, Any
 import pytest
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.const import FUNCTION_SCHEMA_INCLUDE
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -87,33 +86,6 @@ def test_init_native_function_from_kernel_function_decorator():
     assert native_function.parameters[0].default_value == "test_default_value"
     assert native_function.parameters[0].type_ == "str"
     assert native_function.parameters[0].is_required is False
-
-
-@pytest.mark.parametrize(("expected_function_schema_include", "expected_is_required"), [(True, True), (False, False)])
-def test_init_native_function_from_kernel_function_decorator_with_optional_param(
-    expected_function_schema_include, expected_is_required
-):
-    @kernel_function(
-        description="Test description",
-        name="test_function",
-    )
-    def decorated_function(
-        input: Annotated[str, "Test input description", {FUNCTION_SCHEMA_INCLUDE: expected_function_schema_include}],
-    ) -> None:
-        pass
-
-    assert decorated_function.__kernel_function__ is True
-    assert decorated_function.__kernel_function_description__ == "Test description"
-    assert decorated_function.__kernel_function_name__ == "test_function"
-
-    native_function = KernelFunction.from_method(method=decorated_function, plugin_name="MockPlugin")
-
-    assert native_function.method == decorated_function
-    assert native_function.parameters[0].name == "input"
-    assert native_function.parameters[0].description == "Test input description"
-    assert native_function.parameters[0].type_ == "str"
-    assert native_function.parameters[0].is_required is expected_function_schema_include
-    assert native_function.parameters[0].function_schema_include is expected_is_required
 
 
 def test_init_native_function_from_kernel_function_decorator_defaults():

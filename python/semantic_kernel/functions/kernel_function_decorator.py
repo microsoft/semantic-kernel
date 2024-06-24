@@ -125,11 +125,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
         return ret
     if not isinstance(param, str):
         if hasattr(param, "__metadata__"):
-            for metadata_item in param.__metadata__:
-                if isinstance(metadata_item, str):
-                    ret["description"] = metadata_item
-                elif isinstance(metadata_item, dict):
-                    ret.update(metadata_item)
+            ret["description"] = param.__metadata__[0]
         if hasattr(param, "__origin__"):
             ret.update(_parse_parameter(name, param.__origin__, default))
         if hasattr(param, "__args__"):
