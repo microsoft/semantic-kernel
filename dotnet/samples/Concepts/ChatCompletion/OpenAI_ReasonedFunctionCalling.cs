@@ -25,7 +25,7 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         // Invoke chat prompt with auto invocation of functions enabled
         var chatHistory = new ChatHistory
         {
-            new ChatMessageContent(AuthorRole.System, "Always include a description explaining why you want a function to be called when you request a function be called."),
+            new ChatMessageContent(AuthorRole.System, "Always explain why function tool calls are being used."),
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
         var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -57,6 +57,27 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         chatHistory.Add(new ChatMessageContent(AuthorRole.User, "Explain why you called those functions?"));
         var result2 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         Console.WriteLine(result2);
+    }
+
+    /// <summary>
+    /// Decorate each function to be called with an extra parameter which includes the reason this function needs to be called.
+    /// </summary>
+    [Fact]
+    public async Task UseDecoratedFunctionAsync()
+    {
+        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        Kernel kernel = CreateKernelWithPlugin<DecoratedWeatherPlugin>();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Invoke chat prompt with auto invocation of functions enabled
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var result = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
+        chatHistory.Add(result);
+        Console.WriteLine(result);
     }
 
     /// <summary>
@@ -177,6 +198,18 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
         ) => $"12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy\nLocation: {location}";
+    }
+
+    private sealed class DecoratedWeatherPlugin
+    {
+        private readonly WeatherPlugin _weatherPlugin = new();
+
+        [KernelFunction]
+        [Description("Get the current weather in a given location.")]
+        public string GetWeather(
+            [Description("A detailed explanation why this function is being called")] string explanation,
+            [Description("The city and department, e.g. Marseille, 13")] string location
+        ) => this._weatherPlugin.GetWeather(location);
     }
 
     private Kernel CreateKernelWithPlugin<T>()
