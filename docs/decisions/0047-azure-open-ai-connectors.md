@@ -85,7 +85,7 @@ If this happens:
 
 1. Before updating our OpenAI connector package we will get in touch with `Azure.AI.OpenAI` team to align on the ETAs for their update.
 
-2. Investigate if the most recent `OpenAI` package when used with a `Azure.AI.OpenAI` that initially was targetting an older version of `OpenAI` SDK will not cause any breaking changes or conflicts.
+2. Investigate if the most recent `OpenAI` package when used with a `Azure.AI.OpenAI` that initially was targeting an older version of `OpenAI` SDK will not cause any breaking changes or conflicts.
 
 3. If There are conflicts and their ETA is small we may keep the `OpenAI` dependency on our `SemanticKernel.Connectors.OpenAI` similar to Azure's for a short period of time, otherwise we will evaluate moving forward with the `OpenAI` dependency version upgrade.
 
