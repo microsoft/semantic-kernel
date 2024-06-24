@@ -193,10 +193,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         this.ThrowIfDeleted();
 
-        //return OpenAIAssistantActions.InvokeAsync(this._client, threadId, this._config.Polling, cancellationToken);
-
-        ChatMessageContent[] empty = [];
-        return empty.ToAsyncEnumerable(); // %%%
+        return OpenAIAssistantActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -239,6 +236,14 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
         return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
+    }
+
+    internal void ThrowIfDeleted()
+    {
+        if (this.IsDeleted)
+        {
+            throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {this.Id}.");
+        }
     }
 
     /// <summary>
@@ -318,13 +323,5 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         }
 
         return options;
-    }
-
-    private void ThrowIfDeleted()
-    {
-        if (this.IsDeleted)
-        {
-            throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {this.Id}.");
-        }
     }
 }
