@@ -114,6 +114,7 @@ public abstract class BaseTest
             {
                 var content = await request.Content.ReadAsStringAsync(cancellationToken);
                 string formattedContent = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(content), s_jsonSerializerOptions);
+                this._output.WriteLine("=== REQUEST ===");
                 this._output.WriteLine(formattedContent);
                 this._output.WriteLine(string.Empty);
             }
@@ -125,6 +126,7 @@ public abstract class BaseTest
             {
                 // Log the response details
                 var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                this._output.WriteLine("=== RESPONSE ===");
                 this._output.WriteLine(responseContent);
                 this._output.WriteLine(string.Empty);
             }
