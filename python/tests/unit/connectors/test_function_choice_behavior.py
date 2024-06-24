@@ -205,7 +205,7 @@ def test_configure_required_function_max_invoke_updated(update_settings_callback
     fcb.maximum_auto_invoke_attempts = 10
     fcb.configure(mock_kernel, update_settings_callback, None)
     assert update_settings_callback.called
-    assert fcb.maximum_auto_invoke_attempts == 1
+    assert fcb.maximum_auto_invoke_attempts == 10
 
 
 def test_configure_required_function_skip(update_settings_callback, kernel: "Kernel"):

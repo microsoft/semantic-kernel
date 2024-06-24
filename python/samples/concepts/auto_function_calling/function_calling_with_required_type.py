@@ -19,6 +19,19 @@ if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
 
 
+# In this sample, we're working with the `FunctionChoiceBehavior.Required` type for auto function calling.
+# This type mandates that the model calls a specific function or a set of functions to handle the user input.
+# By default, the `maximum_auto_invoke_attempts` is set to 1. This can be adjusted by setting this attribute
+# in the `FunctionChoiceBehavior.Required` class.
+#
+# Note that if the maximum auto invoke attempts exceed the number of functions the model calls, it may repeat calling a
+# function and ultimately return a tool call response. For example, if we specify required plugins as `math-Multiply`
+# and `math-Add`, and set the maximum auto invoke attempts to 5, and query `What is 3+4*5?`, the model will first call
+# the `math-Multiply` function, then the `math-Add` function, satisfying 2 of the 5 max auto invoke attempts.
+# The remaining 3 attempts will continue calling `math-Add` because the execution settings are still configured with a
+# tool_choice `required` and the supplied tools. The final result will be a tool call response.
+
+
 system_message = """
 You are a chat bot. Your name is Mosscap and
 you have one goal: figure out what people need.
@@ -154,12 +167,6 @@ async def chat() -> bool:
             return True
 
         print(f"Mosscap:> {result}")
-
-    # The FunctionChoiceBehavior `Required` type has a maximum_auto_invoke_attempts property that is set to 1 by
-    # default. Once the `Required` function call is made, the property is set to 0 to prevent further auto-invocations.
-    # If you want to enable auto-invocation for the same function, you can set the auto_invoke_kernel_functions property
-    if arguments.execution_settings.get(service_id).function_choice_behavior.auto_invoke_kernel_functions is False:
-        arguments.execution_settings.get(service_id).function_choice_behavior.auto_invoke_kernel_functions = True
     return True
 
 

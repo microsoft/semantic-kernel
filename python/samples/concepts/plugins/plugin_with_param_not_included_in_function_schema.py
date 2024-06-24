@@ -15,7 +15,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 # The following kernel function in the sample plugin shows how to mark a parameter as not included in the function
-# schema. The annotation's metadata, which comes after the specifie type can be in any order -- a string that holds
+# schema. The annotation's metadata, which comes after the specified type can be in any order -- a string that holds
 # the description, or the annotation or a key-value pair of `{FUNCTION_SCHEMA_INCLUDE: False}` to exclude the parameter
 # from the function schema.
 class MyPlugin:

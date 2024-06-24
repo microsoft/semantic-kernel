@@ -16,7 +16,6 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_choice_behavior import (
     FunctionChoiceBehavior,
-    FunctionChoiceType,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -425,19 +424,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Update the settings with the chat history."""
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         if settings.function_choice_behavior and kernel:
-            required_function_call_complete = False
-            if (
-                settings.function_choice_behavior.type == FunctionChoiceType.REQUIRED
-                and chat_history.messages[-1].role == AuthorRole.TOOL
-                and any(isinstance(item, FunctionResultContent) for item in chat_history.messages[-1].items)
-            ):
-                required_function_call_complete = True
-
             settings.function_choice_behavior.configure(
                 kernel=kernel,
                 update_settings_callback=update_settings_from_function_call_configuration,
                 settings=settings,
-                required_function_call_complete=required_function_call_complete,
             )
 
     # endregion

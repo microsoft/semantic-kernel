@@ -147,15 +147,9 @@ class FunctionChoiceBehavior(KernelBaseModel):
         kernel: "Kernel",
         update_settings_callback: Callable[..., None],
         settings: "PromptExecutionSettings",
-        required_function_call_complete: bool = False,
     ) -> None:
         """Configure the function choice behavior."""
         if not self.enable_kernel_functions:
-            return
-
-        if required_function_call_complete:
-            settings.tool_choice = None
-            settings.tools = None
             return
 
         config = self.get_config(kernel)
@@ -165,13 +159,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
     def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:
         """Get the function call choice configuration based on the type."""
-        if self.type == FunctionChoiceType.AUTO or self.type == FunctionChoiceType.NONE:
-            return self._check_and_get_config(kernel, self.function_fully_qualified_names, self.filters)
-        if self.type == FunctionChoiceType.REQUIRED:
-            if self.maximum_auto_invoke_attempts > 1:
-                self.maximum_auto_invoke_attempts = 1
-            return self._check_and_get_config(kernel, self.function_fully_qualified_names, self.filters)
-        return FunctionCallChoiceConfiguration()
+        return self._check_and_get_config(kernel, self.function_fully_qualified_names, self.filters)
 
     @classmethod
     def Auto(

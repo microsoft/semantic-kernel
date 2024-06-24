@@ -32,6 +32,10 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
+# This concept example shows how to handle both streaming and non-streaming responses
+# To toggle the behavior, set the following flag accordingly:
+stream = False
+
 kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
@@ -138,7 +142,6 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
-    stream = True
     if stream:
         await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
