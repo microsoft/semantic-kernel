@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -14,7 +13,6 @@ namespace Microsoft.SemanticKernel;
 [JsonDerivedType(typeof(AutoFunctionChoiceBehavior), typeDiscriminator: "auto")]
 [JsonDerivedType(typeof(RequiredFunctionChoiceBehavior), typeDiscriminator: "required")]
 [JsonDerivedType(typeof(NoneFunctionChoiceBehavior), typeDiscriminator: "none")]
-[Experimental("SKEXP0001")]
 public abstract class FunctionChoiceBehavior
 {
     /// <summary>The separator used to separate plugin name and function name.</summary>

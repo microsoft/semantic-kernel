@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents function choice behavior configuration produced by a <see cref="FunctionChoiceBehavior" />.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class FunctionChoiceBehaviorConfiguration
 {
     /// <summary>
