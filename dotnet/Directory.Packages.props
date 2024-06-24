@@ -62,7 +62,7 @@
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="System.Threading.Channels" Version="8.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
-    <PackageVersion Include="Verify.Xunit" Version="25.0.3" />
+    <PackageVersion Include="Verify.Xunit" Version="25.0.4" />
     <PackageVersion Include="xunit" Version="2.8.1" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.1" />
