@@ -71,8 +71,8 @@
     "**/Thumbs.db": true
   },
   "cSpell.words": [
-    "Partitioner",
-    "SKEXP"
+    "autogen",
+    "Partitioner"
   ],
   "[java]": {
     "editor.formatOnSave": false,
