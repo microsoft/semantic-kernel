@@ -8,7 +8,7 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 def kernel_function_metadata_to_function_call_format(
     metadata: KernelFunctionMetadata,
 ) -> dict[str, Any]:
-    """Convert the kernel function metadata to OpenAI format."""
+    """Convert the kernel function metadata to function calling format."""
     return {
         "type": "function",
         "function": {

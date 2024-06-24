@@ -10,6 +10,7 @@ from pydantic.dataclasses import dataclass
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class, experimental_function
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
@@ -21,6 +22,7 @@ DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS = 5
 logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class FunctionChoiceType(Enum):
     """The type of function choice behavior."""
 
@@ -29,6 +31,7 @@ class FunctionChoiceType(Enum):
     REQUIRED = "required"
 
 
+@experimental_function
 def _check_for_missing_functions(function_names: list[str], kernel_function_metadata: set) -> None:
     """Check for missing functions in the kernel function metadata."""
     try:
@@ -45,11 +48,13 @@ def _check_for_missing_functions(function_names: list[str], kernel_function_meta
         )
 
 
+@experimental_class
 @dataclass
 class FunctionCallChoiceConfiguration:
     available_functions: list["KernelFunctionMetadata"] | None = None
 
 
+@experimental_class
 class FunctionChoiceBehavior(KernelBaseModel):
     """Class that controls function choice behavior.
 
@@ -75,7 +80,6 @@ class FunctionChoiceBehavior(KernelBaseModel):
             based on either the specified filters or the full qualified names.
         Required: Returns FunctionChoiceRequired class with auto_invoke enabled, and the desired functions
             based on either the specified filters or the full qualified names.
-
     """
 
     enable_kernel_functions: bool = True
@@ -160,11 +164,14 @@ class FunctionChoiceBehavior(KernelBaseModel):
             update_settings_callback(config, settings, self.type)
 
     def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:
-        """Get the function call choice configuration.
-
-        This is not implemented in the base class.
-        """
-        pass
+        """Get the function call choice configuration based on the type."""
+        if self.type == FunctionChoiceType.AUTO or self.type == FunctionChoiceType.NONE:
+            return self._check_and_get_config(kernel, self.function_fully_qualified_names, self.filters)
+        if self.type == FunctionChoiceType.REQUIRED:
+            if self.maximum_auto_invoke_attempts > 1:
+                self.maximum_auto_invoke_attempts = 1
+            return self._check_and_get_config(kernel, self.function_fully_qualified_names, self.filters)
+        return FunctionCallChoiceConfiguration()
 
     @classmethod
     def Auto(
@@ -180,7 +187,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
     ) -> "FunctionChoiceBehavior":
         """Creates a FunctionChoiceBehavior with type AUTO."""
         kwargs.setdefault("maximum_auto_invoke_attempts", DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if auto_invoke else 0)
-        return FunctionChoiceAuto(
+        return cls(
             type=FunctionChoiceType.AUTO,
             filters=filters,
             function_fully_qualified_names=function_fully_qualified_names,
@@ -200,7 +207,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
     ) -> "FunctionChoiceBehavior":
         """Creates a FunctionChoiceBehavior with type NONE."""
         kwargs.setdefault("maximum_auto_invoke_attempts", 0)
-        return FunctionChoiceNone(
+        return cls(
             type=FunctionChoiceType.NONE,
             filters=filters,
             function_fully_qualified_names=function_fully_qualified_names,
@@ -221,7 +228,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
     ) -> "FunctionChoiceBehavior":
         """Creates a FunctionChoiceBehavior with type REQUIRED."""
         kwargs.setdefault("maximum_auto_invoke_attempts", 1 if auto_invoke else 0)
-        return FunctionChoiceRequired(
+        return cls(
             type=FunctionChoiceType.REQUIRED,
             filters=filters,
             function_fully_qualified_names=function_fully_qualified_names,
@@ -247,35 +254,3 @@ class FunctionChoiceBehavior(KernelBaseModel):
             function_fully_qualified_names=function_qualified_names,
             **data,
         )
-
-
-class FunctionChoiceAuto(FunctionChoiceBehavior):
-    """Function choice behavior with type AUTO."""
-
-    type: FunctionChoiceType = FunctionChoiceType.AUTO
-
-    def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:
-        """Get the function call choice configuration for type AUTO."""
-        return self._check_and_get_config(kernel, self.function_fully_qualified_names, self.filters)
-
-
-class FunctionChoiceNone(FunctionChoiceBehavior):
-    """Function choice behavior with type NONE."""
-
-    type: FunctionChoiceType = FunctionChoiceType.NONE
-
-    def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:
-        """Get the function call choice configuration for type NONE."""
-        return self._check_and_get_config(kernel, self.function_fully_qualified_names, self.filters)
-
-
-class FunctionChoiceRequired(FunctionChoiceBehavior):
-    """Function choice behavior with type REQUIRED."""
-
-    type: FunctionChoiceType = FunctionChoiceType.REQUIRED
-
-    def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:
-        """Get the function call choice configuration for type REQUIRED."""
-        if self.maximum_auto_invoke_attempts > 1:
-            self.maximum_auto_invoke_attempts = 1
-        return self._check_and_get_config(kernel, self.function_fully_qualified_names, self.filters)

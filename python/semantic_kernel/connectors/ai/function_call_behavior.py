@@ -119,7 +119,8 @@ class FunctionCallBehavior(KernelBaseModel):
         *,
         filters: dict[
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
-        ],
+        ]
+        | None = {},
     ) -> "EnabledFunctions":
         """Set the enable kernel functions flag."""
         return EnabledFunctions(

@@ -1,12 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 from typing import Any
-
-if sys.version_info >= (3, 11):
-    pass  # pragma: no cover
-else:
-    pass  # pragma: no cover
 
 from pydantic import Field, model_validator
 

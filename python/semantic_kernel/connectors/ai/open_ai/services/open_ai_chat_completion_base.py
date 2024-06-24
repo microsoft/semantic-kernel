@@ -475,24 +475,23 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 # We need to still support a `FunctionCallBehavior` input so it doesn't break current
                 # customers. Map from `FunctionCallBehavior` -> `FunctionChoiceBehavior`
                 function_call_behavior = FunctionChoiceBehavior.from_function_call_behavior(function_call_behavior)
-            if isinstance(function_call_behavior, FunctionChoiceBehavior):
-                if (
-                    function_call_behavior.function_fully_qualified_names
-                    and function_call.name not in function_call_behavior.function_fully_qualified_names
-                ):
+            if (
+                function_call_behavior.function_fully_qualified_names
+                and function_call.name not in function_call_behavior.function_fully_qualified_names
+            ):
+                raise FunctionExecutionException(
+                    f"Only functions: {function_call_behavior.function_fully_qualified_names} "
+                    f"are allowed, {function_call.name} is not allowed."
+                )
+            if function_call_behavior.filters:
+                allowed_functions = [
+                    func.fully_qualified_name
+                    for func in kernel.get_list_of_function_metadata(function_call_behavior.filters)
+                ]
+                if function_call.name not in allowed_functions:
                     raise FunctionExecutionException(
-                        f"Only functions: {function_call_behavior.function_fully_qualified_names} "
-                        f"are allowed, {function_call.name} is not allowed."
+                        f"Only functions: {allowed_functions} are allowed, {function_call.name} is not allowed."
                     )
-                if function_call_behavior.filters:
-                    allowed_functions = [
-                        func.fully_qualified_name
-                        for func in kernel.get_list_of_function_metadata(function_call_behavior.filters)
-                    ]
-                    if function_call.name not in allowed_functions:
-                        raise FunctionExecutionException(
-                            f"Only functions: {allowed_functions} are allowed, {function_call.name} is not allowed."
-                        )
             function_to_call = kernel.get_function(function_call.plugin_name, function_call.function_name)
         except Exception as exc:
             logger.exception(f"The function `{function_call.name}` is not part of the provided functions: {exc}.")
