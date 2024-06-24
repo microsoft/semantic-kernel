@@ -185,7 +185,7 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
 
             if (promptExecutionSettings is not null && promptExecutionSettings is OpenAIPromptExecutionSettings openAIPromptExecutionSettings)
             {
-                // Convert selected functions to OpenAI functions
+                // Convert selected functions to OpenAI functions.
                 var openAIFunctions = functions.Select(function => function.Metadata.ToOpenAIFunction());
 
                 // Share only selected functions with AI.
