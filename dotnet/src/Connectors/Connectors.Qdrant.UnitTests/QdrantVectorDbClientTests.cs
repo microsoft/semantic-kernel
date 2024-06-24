@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Qdrant;
+namespace SemanticKernel.Connectors.Qdrant.UnitTests;
 
 public sealed class QdrantVectorDbClientTests : IDisposable
 {
