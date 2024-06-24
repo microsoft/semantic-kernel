@@ -15,7 +15,11 @@ To create a plan, follow these steps:
 [AVAILABLE FUNCTIONS]
 
   EmailConnector.LookupContactEmail:
+<<<<<<< HEAD
     description: looks up a contact and retrieves their email address
+=======
+    description: looks up the a contact and retrieves their email address
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     inputs:
     - input: the name to look up
 

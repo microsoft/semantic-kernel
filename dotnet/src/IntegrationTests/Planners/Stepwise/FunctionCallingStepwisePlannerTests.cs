@@ -25,8 +25,6 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
     public FunctionCallingStepwisePlannerTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<Kernel>(output);
-        this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
@@ -87,10 +85,10 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         kernel.Plugins.Add(
             KernelPluginFactory.CreateFromFunctions(
             "Email",
-            new[] {
+            [
                 KernelFunctionFactory.CreateFromMethod(emailPluginFake.WritePoemAsync),
                 KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
-            }));
+            ]));
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerOptions() { MaxIterations = 5 });
@@ -118,10 +116,10 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         kernel.Plugins.Add(
             KernelPluginFactory.CreateFromFunctions(
             "Email",
-            new[] {
+            [
                 KernelFunctionFactory.CreateFromMethod(emailPluginFake.WriteJokeAsync),
                 KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
-            }));
+            ]));
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerOptions() { MaxIterations = 5 });
@@ -145,7 +143,7 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
             "NewsProvider",
             "Delivers up-to-date news content.",
-            new[] { promptFunction }));
+            [promptFunction]));
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerOptions() { MaxIterations = 2 });
@@ -174,27 +172,11 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         return kernel;
     }
 
-    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
     private readonly XunitLogger<Kernel> _logger;
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~FunctionCallingStepwisePlannerTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-            this._testOutputHelper.Dispose();
-        }
+        this._logger.Dispose();
     }
 }

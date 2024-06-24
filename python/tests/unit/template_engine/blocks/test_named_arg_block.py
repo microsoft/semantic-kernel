@@ -48,10 +48,7 @@ def test_type_property():
     ids=["no_name", "invalid_var", "invalid_val", "empty_val", "empty_var"],
 )
 def test_syntax_error(content):
-    if "$" in content:
-        match = content.replace("$", r"\$")
-    else:
-        match = content
+    match = content.replace("$", "\\$") if "$" in content else content
     with raises(NamedArgBlockSyntaxError, match=rf".*{match}.*"):
         NamedArgBlock(content=content)
 

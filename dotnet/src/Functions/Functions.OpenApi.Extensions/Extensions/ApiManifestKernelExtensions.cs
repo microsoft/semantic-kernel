@@ -28,17 +28,17 @@ public static class ApiManifestKernelExtensions
     /// <param name="kernel">The kernel instance.</param>
     /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="filePath">The file path of the API manifest.</param>
-    /// <param name="executionParameters">Optional execution parameters for the plugin.</param>
+    /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The imported plugin.</returns>
     public static async Task<KernelPlugin> ImportPluginFromApiManifestAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
-        OpenApiFunctionExecutionParameters? executionParameters = null,
+        ApiManifestPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -49,21 +49,21 @@ public static class ApiManifestKernelExtensions
     /// <param name="kernel">The kernel instance.</param>
     /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="filePath">The file path of the API manifest.</param>
-    /// <param name="executionParameters">Optional execution parameters for the API functions.</param>
+    /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
     public static async Task<KernelPlugin> CreatePluginFromApiManifestAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
-        OpenApiFunctionExecutionParameters? executionParameters = null,
+        ApiManifestPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
+        var httpClient = HttpClientProvider.GetHttpClient(pluginParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         if (!File.Exists(filePath))
@@ -87,12 +87,17 @@ public static class ApiManifestKernelExtensions
             var apiDependencyDetails = apiDependency.Value;
 
             var apiDescriptionUrl = apiDependencyDetails.ApiDescriptionUrl;
+            if (apiDescriptionUrl is null)
+            {
+                logger.LogWarning("ApiDescriptionUrl is missing for API dependency: {ApiName}", apiName);
+                continue;
+            }
 
             var openApiDocumentString = await DocumentLoader.LoadDocumentFromUriAsync(new Uri(apiDescriptionUrl),
                 logger,
                 httpClient,
                 authCallback: null,
-                executionParameters?.UserAgent,
+                pluginParameters?.UserAgent,
                 cancellationToken).ConfigureAwait(false);
 
             OpenApiDiagnostic diagnostic = new();
@@ -117,7 +122,7 @@ public static class ApiManifestKernelExtensions
                     continue;
                 }
 
-                requestUrls.Add(UriTemplate, new List<string>() { Method });
+                requestUrls.Add(UriTemplate, [Method]);
             }
 
             var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);
@@ -125,30 +130,45 @@ public static class ApiManifestKernelExtensions
 
             var serverUrl = filteredOpenApiDocument.Servers.FirstOrDefault()?.Url;
 
-            var runner = new RestApiOperationRunner(
-                httpClient,
-                executionParameters?.AuthCallback,
-                executionParameters?.UserAgent,
-                executionParameters?.EnableDynamicPayload ?? true,
-                executionParameters?.EnablePayloadNamespacing ?? false);
+            var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.ContainsKey(apiName) == true
+                ? pluginParameters.FunctionExecutionParameters[apiName]
+                : null;
 
-            foreach (var path in filteredOpenApiDocument.Paths)
+#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+            var operationRunnerHttpClient = HttpClientProvider.GetHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
+#pragma warning restore CA2000
+
+            var runner = new RestApiOperationRunner(
+                operationRunnerHttpClient,
+                openApiFunctionExecutionParameters?.AuthCallback,
+                openApiFunctionExecutionParameters?.UserAgent,
+                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
+                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
+
+            if (serverUrl is not null)
             {
-                var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value);
-                foreach (RestApiOperation operation in operations)
+                foreach (var path in filteredOpenApiDocument.Paths)
                 {
-                    try
+                    var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value, null, logger);
+                    foreach (RestApiOperation operation in operations)
                     {
-                        logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                        functions.Add(OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, executionParameters, new Uri(serverUrl), loggerFactory));
-                    }
-                    catch (Exception ex) when (!ex.IsCriticalException())
-                    {
-                        //Logging the exception and keep registering other Rest functions
-                        logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
-                            pluginName, operation.Id, ex.Message);
+                        try
+                        {
+                            logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
+                            functions.Add(OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(serverUrl), loggerFactory));
+                        }
+                        catch (Exception ex) when (!ex.IsCriticalException())
+                        {
+                            //Logging the exception and keep registering other Rest functions
+                            logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                                pluginName, operation.Id, ex.Message);
+                        }
                     }
                 }
+            }
+            else
+            {
+                logger.LogWarning("Server URI not found. Plugin: {0}", pluginName);
             }
         }
 
