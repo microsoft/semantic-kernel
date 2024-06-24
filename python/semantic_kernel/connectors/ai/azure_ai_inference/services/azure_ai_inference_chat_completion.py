@@ -27,6 +27,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceChatPromptExecutionSettings,
     AzureAIInferenceSettings,
 )
+from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -51,10 +52,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class AzureAIInferenceChatCompletion(ChatCompletionClientBase):
+class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceBase):
     """Azure AI Inference Chat Completion Service."""
-
-    client: ChatCompletionsClient
 
     def __init__(
         self,
