@@ -30,6 +30,7 @@ def test_google_palm_text_completion_init_with_empty_api_key(google_palm_unit_te
     with pytest.raises(ServiceInitializationError):
         GooglePalmTextCompletion(
             ai_model_id=ai_model_id,
+            env_file_path="test.env",
         )
 
 
