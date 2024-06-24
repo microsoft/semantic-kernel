@@ -169,7 +169,7 @@ Pros:
 Cons:
 
 - Large breaking changes for developers using the current OpenAI connector for Azure.
-- [Potential Dependency Conflicts](#potential-dependency-conflicts) may arise if the `Azure.AI.OpenAI` team does not update their package in a timely manner.
+- [Potential Dependency Conflicts](#potential-dependency-conflicts) may arise if the `Azure.AI.OpenAI` team does not update their package.
 
 ## Option 3 - Keep OpenAI and Azure in the same connector (As is).
 
