@@ -82,7 +82,7 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
 
     /// <summary>
     /// Filter which performs vector similarity search on imported functions in <see cref="Kernel"/>
-    /// to select the best one to share with AI.
+    /// to select the best ones to share with AI.
     /// </summary>
     private sealed class PluginSelectionFilter(
         IMemoryStore memoryStore,
@@ -119,8 +119,10 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
 
                     if (updatedExecutionSettings is not null)
                     {
+                        // Update execution settings.
                         context.Arguments.ExecutionSettings = updatedExecutionSettings;
 
+                        // Execute the request.
                         await next(context);
 
                         return;
@@ -177,6 +179,24 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
                 .ToList();
         }
 
+        private static Dictionary<string, PromptExecutionSettings>? GetExecutionSettings(KernelArguments arguments, List<KernelFunction> functions)
+        {
+            var promptExecutionSettings = arguments.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId];
+
+            if (promptExecutionSettings is not null && promptExecutionSettings is OpenAIPromptExecutionSettings openAIPromptExecutionSettings)
+            {
+                // Convert selected functions to OpenAI functions
+                var openAIFunctions = functions.Select(function => function.Metadata.ToOpenAIFunction());
+
+                // Share only selected functions with AI.
+                openAIPromptExecutionSettings.ToolCallBehavior = ToolCallBehavior.EnableFunctions(openAIFunctions, autoInvoke: true);
+
+                return new() { [PromptExecutionSettings.DefaultServiceId] = openAIPromptExecutionSettings };
+            }
+
+            return null;
+        }
+
         private static string GetFunctionKey(string functionName, string? pluginName)
             => !string.IsNullOrWhiteSpace(pluginName) ? $"{pluginName}-{functionName}" : functionName;
 
@@ -188,21 +208,6 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
                 .SelectMany(plugin => plugin)
                 .Select(function => (function, $"Plugin name: {function.PluginName}. Function name: {function.Name}. Description: {function.Description}"))
                 .ToList();
-
-        private static Dictionary<string, PromptExecutionSettings>? GetExecutionSettings(KernelArguments arguments, List<KernelFunction> functions)
-        {
-            var promptExecutionSettings = arguments.ExecutionSettings?[PromptExecutionSettings.DefaultServiceId];
-
-            if (promptExecutionSettings is not null && promptExecutionSettings is OpenAIPromptExecutionSettings openAIPromptExecutionSettings)
-            {
-                var openAIFunctions = functions.Select(function => function.Metadata.ToOpenAIFunction());
-                openAIPromptExecutionSettings.ToolCallBehavior = ToolCallBehavior.EnableFunctions(openAIFunctions, autoInvoke: true);
-
-                return new() { [PromptExecutionSettings.DefaultServiceId] = openAIPromptExecutionSettings };
-            }
-
-            return null;
-        }
     }
 
     #region Sample Plugins
