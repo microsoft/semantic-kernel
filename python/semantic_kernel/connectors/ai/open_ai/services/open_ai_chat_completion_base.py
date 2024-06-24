@@ -287,9 +287,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                                   for choice in response.choices]
         
         if span is not None:
-            finish_reasons: list[str] = []
-            for choice in response.choices:
-                finish_reasons.append(choice.finish_reason)
+            finish_reasons: list[str] = [choice.finish_reason for choice in response.choices]
             with trace.use_span(span, end_on_exit=True):
                 model_diagnostics.set_completion_response(span, chat_message_contents, finish_reasons, response.id,
                                                           response.usage.prompt_tokens,
