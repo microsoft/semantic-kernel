@@ -77,6 +77,18 @@ builder.AddAzureOpenAIChatCompletion(new
 }, openAIClient);
 ```
 
+## Potential Dependency Conflicts
+
+Since `SemanticKernel.Connectors.AzureOpenAI` and `SemanticKernel.Connectors.OpenAI` share same `OpenAI 2.0.0` dependency, if the vestion of `OpenAI 2.0.0` differ on each, that may create conflict when both connector packages are used together in a project.
+
+If this happens:
+
+1. Before updating our OpenAI connector package we will get in touch with `Azure.AI.OpenAI` team to align on the ETAs for their update.
+
+2. Investigate if the most recent `OpenAI` package when used with a `Azure.AI.OpenAI` that initially was targetting an older version of `OpenAI` SDK will not cause any breaking changes or conflicts.
+
+3. If There are conflicts and their ETA is small we may keep the `OpenAI` dependency on our `SemanticKernel.Connectors.OpenAI` similar to Azure's for a short period of time, otherwise we will evaluate moving forward with the `OpenAI` dependency version upgrade.
+
 ## Considered Options
 
 - Option 1 - Merge New and Legacy (Slow transition for independent connectors).
@@ -100,7 +112,7 @@ graph TD
 
 The new `Options` pattern we be used as an improvement as well as a measure to avoid breaking changes with the legacy APIs.
 
-Following this change the the `SemanticKernel.Connectors.OpenAI` a new connector will be created `SemanticKernel.Connectors.AzureOpenAI` for Azure OpenAI services, using the Azure SDK `Azure.AI.OpenAI 2.0.0-beta.*` with all new APIs using the options approach.
+Following this change the `SemanticKernel.Connectors.OpenAI` and a new `SemanticKernel.Connectors.AzureOpenAI` connector will be created for Azure specific services, using the new Azure SDK `Azure.AI.OpenAI 2.0.0-beta.*` with all new APIs using the options approach.
 
 ### Phases of the transition
 
@@ -122,7 +134,7 @@ Pros:
 
 Cons:
 
-- Since `SemanticKernel.Connectors.AzureOpenAI` and `SemanticKernel.Connectors.OpenAI` share a same dependency of different versions, both packages cannot be used in the same project and a strategy will be needed when deploying both connectors:
+- Since `SemanticKernel.Connectors.AzureOpenAI` and `SemanticKernel.Connectors.OpenAI` share a same dependency of different versions, both packages cannot be used in the same project and a strategy will be needed when deploying both connectors.
 - Added dependency for both `Azure OpenAI 1.0-beta17` and `OpenAI 2.0-beta1`.
 
 ### Dependency Management Strategies
@@ -135,11 +147,16 @@ Cons:
 
 This option is focused on creating fully independent connectors for OpenAI and Azure OpenAI services since the start with all breaking changes needed to achieve that.
 
+```mermaid
+graph TD
+    D[SemanticKernel.Connectors.AzureOpenAI] --> E[Azure.AI.OpenAI 2.0.0-beta.*]
+    E --> B[OpenAI 2.0.0-beta.*]
+    A[SemanticKernel.Connectors.OpenAI] --> B[OpenAI 2.0.0-beta.*]
+```
+
 Impact:
 
-- `Azure` extension methods will be removed from `SemanticKernel.Connectors.OpenAI` namespace to avoid clashing with same names introduced in the new `SemanticKernel.Connectors.AzureOpenAI`.
-
-- All azure specific services like `AzureOpenAIChatCompletion`, `AzureOpenAITextGeneration` services will be obsoleted and throw not supported exceptions when used from `SemanticKernel.Connectors.OpenAI` connector.
+- All `Azure` related logic will be removed from `SemanticKernel.Connectors.OpenAI` to avoid any clashes with same names introduced in the new `SemanticKernel.Connectors.AzureOpenAI` as well as sending a congruent message to developers that the OpenAI connector is focused on OpenAI services only moving forward.
 
 ### Impact
 
@@ -152,7 +169,7 @@ Pros:
 Cons:
 
 - Large breaking changes for developers using the current OpenAI connector for Azure.
-- ⚠️ May have the same problem with the dependency management as in Option 1 when using both connectors in the same project may conflict due to the shared dependency of different OpenAI SDK versions.
+- [Potential Dependency Conflicts](#potential-dependency-conflicts) may arise if the `Azure.AI.OpenAI` team does not update their package in a timely manner.
 
 ## Option 3 - Keep OpenAI and Azure in the same connector (As is).
 
@@ -170,19 +187,24 @@ Pros:
 
 - Minimal breaking changes for developers using the current OpenAI connector.
 - The breaking changes will be limited on how we tackle the points mentioned in the [OpenAI SDK limitations](#openai-sdk-limitations) above.
+- Will not have a dependency conflict between `Azure.AI.OpenAI` and `OpenAI` SDKs.
 
 Cons:
 
 - We will be limited on the OpenAI SDK version that is used by the latest `Azure.AI.OpenAI` package, which may not be the latest version available.
-- Developers using direct OpenAI services don't expected having any Azure related dependencies.
+- When using direct Azure or OpenAI specific services developers don't expect to see other provider specific services in their pool of options and dependencies.
 
 ## Decision Outcome
 
-#### Chosen option:
+### Option 2 - Independent Connectors from Start.
 
-Option 2 - Independent Connectors from Start.
+This option is the faster approach on transitioning to a potential 1.0 general availability of `OpenAI` SDK.
+
+This also option provides a clear separation of concerns between OpenAI and Azure OpenAI connectors from the start.
+
+Prevents any confusion sending a clear message on our intentions on splitting `OpenAI` and `AzureOpenAI` components away.
 
 #### OpenAI SDK limitations:
 
-- Multiple results: **Do not remediate**.
-- Text Generation modality is not supported: **Do not remediate**.
+- [Multiple results](#openai-sdk-limitations): **Do not remediate**.
+- [Text Generation modality is not supported](#openai-sdk-limitations): **Do not remediate**.
