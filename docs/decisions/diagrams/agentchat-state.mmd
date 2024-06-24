@@ -1,0 +1,15 @@
+classDiagram
+
+    ChatHistory
+
+    AgentChatState --> ChatHistory
+    AgentChannelState --* AgentChatState
+    class AgentChatState {
+        ChatHistory History
+        IEnumerable~AgentChannelState~ Channels
+    }
+
+    class AgentChannelState {
+        +string ChannelKey
+        +string ChannelState
+    }
