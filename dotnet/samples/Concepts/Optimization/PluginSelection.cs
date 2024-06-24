@@ -60,7 +60,7 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
         var result = await kernel.InvokePromptAsync("{{$Request}}", kernelArguments);
 
         Console.WriteLine(result);
-        Console.WriteLine(result.Metadata?["Usage"]?.AsJson()); // Total tokens: ~250
+        Console.WriteLine(result.Metadata?["Usage"]?.AsJson()); // All functions were shared with AI. Total tokens: ~250
 
         // Define plugin selection filter.
         var filter = new PluginSelectionFilter(
@@ -76,7 +76,7 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
         result = await kernel.InvokePromptAsync("{{$Request}}", kernelArguments);
 
         Console.WriteLine(result);
-        Console.WriteLine(result.Metadata?["Usage"]?.AsJson()); // Total tokens: ~150
+        Console.WriteLine(result.Metadata?["Usage"]?.AsJson()); // Just one function was shared with AI. Total tokens: ~150
     }
 
     /// <summary>
