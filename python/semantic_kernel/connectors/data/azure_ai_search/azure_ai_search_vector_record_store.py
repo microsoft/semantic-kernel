@@ -139,7 +139,7 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
             await self._add_vector_to_records(records)
 
         result = await self._get_search_client(collection_name).merge_or_upload_documents(
-            documents=self._convert_model_to_list_of_dicts(records), **kwargs
+            documents=self.serialize(records), **kwargs
         )
         if result[0].succeeded:
             return [res.key for res in result]
@@ -147,9 +147,10 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
 
     @override
     async def get(self, key: str, collection_name: str | None = None, **kwargs) -> TModel:
+        results = await self.get_batch([key], collection_name, **kwargs)
         if self._container_mode:
-            return await self.get_batch([key], collection_name, **kwargs)
-        return (await self.get_batch([key], collection_name, **kwargs))[0]
+            return results
+        return results[0]
 
     @override
     async def get_batch(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> OneOrMany[TModel]:
@@ -164,7 +165,7 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
             )
         except ResourceNotFoundError as exc:
             raise MemoryConnectorResourceNotFound("Memory record not found") from exc
-        return self._convert_search_result_to_data_model(search_result)
+        return self.deserialize(search_result)
 
     @override
     async def delete(self, key: str, collection_name: str | None = None, **kwargs: Any) -> None:
@@ -179,3 +180,19 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
     @property
     def supported_key_types(self) -> list[type] | None:
         return [str]
+
+    @override
+    def _serialize_dict_to_store_model(self, record: OneOrMany[dict[str, Any]]) -> OneOrMany[Any]:
+        """Serialize a dict of the data to the store model.
+
+        This method should be overridden by the child class to convert the dict to the store model.
+        """
+        return record
+
+    @override
+    def _deserialize_store_model_to_dict(self, record: OneOrMany[Any]) -> OneOrMany[dict[str, Any]]:
+        """Deserialize the store model to a dict.
+
+        This method should be overridden by the child class to convert the store model to a dict.
+        """
+        return record

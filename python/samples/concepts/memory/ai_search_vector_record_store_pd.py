@@ -13,14 +13,15 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding impor
 from semantic_kernel.connectors.data.azure_ai_search.azure_ai_search_vector_record_store import (
     AzureAISearchVectorRecordStore,
 )
-from semantic_kernel.data.models.vector_store_model_definition import VectorStoreContainerDefinition
+from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.models.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
 
-model_fields = VectorStoreContainerDefinition(
+model_fields = VectorStoreRecordDefinition(
+    container_mode=True,
     fields={
         "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
         "id": VectorStoreRecordKeyField(),
@@ -28,8 +29,8 @@ model_fields = VectorStoreContainerDefinition(
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)}
         ),
     },
-    serialize_function=lambda x: x.to_dict(orient="records"),
-    deserialize_function=lambda x: pd.DataFrame(x),
+    to_dict=lambda x: x.to_dict(orient="records"),
+    from_dict=lambda x: pd.DataFrame(x),
 )
 
 
