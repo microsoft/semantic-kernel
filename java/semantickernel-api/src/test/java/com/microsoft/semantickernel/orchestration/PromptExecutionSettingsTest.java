@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PromptExecutionSettingsTest {
 
@@ -132,5 +131,61 @@ public class PromptExecutionSettingsTest {
             .build();
 
         assertEquals(settingsFromBuilder, settingsFromJson);
+    }
+
+    @Test
+    void testJsonResponseFormat() {
+        PromptExecutionSettings settingsFromBuilder = PromptExecutionSettings.builder()
+            .withServiceId("custom-service")
+            .withMaxTokens(512)
+            .withTemperature(0.8)
+            .withTopP(0.5)
+            .withPresencePenalty(0.2)
+            .withFrequencyPenalty(0.3)
+            .withBestOf(3)
+            .withResultsPerPrompt(5)
+            .withResponseFormat(ResponseFormat.JSON_OBJECT)
+            .withModelId("custom-model")
+            .withUser("custom-user")
+            .build();
+
+        assertEquals(ResponseFormat.JSON_OBJECT, settingsFromBuilder.getResponseFormat());
+    }
+
+    @Test
+    void testTextResponseFormat() {
+        PromptExecutionSettings settingsFromBuilder = PromptExecutionSettings.builder()
+            .withServiceId("custom-service")
+            .withMaxTokens(512)
+            .withTemperature(0.8)
+            .withTopP(0.5)
+            .withPresencePenalty(0.2)
+            .withFrequencyPenalty(0.3)
+            .withBestOf(3)
+            .withResultsPerPrompt(5)
+            .withResponseFormat(ResponseFormat.TEXT)
+            .withModelId("custom-model")
+            .withUser("custom-user")
+            .build();
+
+        assertEquals(ResponseFormat.TEXT, settingsFromBuilder.getResponseFormat());
+    }
+
+    @Test
+    void testNullResponseFormat() {
+        PromptExecutionSettings settingsFromBuilder = PromptExecutionSettings.builder()
+            .withServiceId("custom-service")
+            .withMaxTokens(512)
+            .withTemperature(0.8)
+            .withTopP(0.5)
+            .withPresencePenalty(0.2)
+            .withFrequencyPenalty(0.3)
+            .withBestOf(3)
+            .withResultsPerPrompt(5)
+            .withModelId("custom-model")
+            .withUser("custom-user")
+            .build();
+
+        assertNull(settingsFromBuilder.getResponseFormat());
     }
 }

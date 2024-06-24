@@ -550,7 +550,7 @@ public class PromptExecutionSettings {
          */
         public Builder withResponseFormat(ResponseFormat responseFormat) {
             if (responseFormat != null) {
-                settings.put(RESPONSE_FORMAT, responseFormat);
+                settings.put(RESPONSE_FORMAT, responseFormat.toString());
             }
             return this;
         }
