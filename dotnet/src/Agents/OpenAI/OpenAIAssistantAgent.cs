@@ -163,6 +163,17 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
+    public async Task AddMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
+    {
+        if (this.IsDeleted)
+        {
+            return;
+        }
+
+        await this._client.CreateMessageAsync(threadId, message.Role.ToMessageRole(), message.Content, fileIds: null, metadata: null, cancellationToken).ConfigureAwait(false); // %%% STATIC
+    }
+
+    /// <inheritdoc/>
     public async Task DeleteAsync(CancellationToken cancellationToken = default)
     {
         if (this.IsDeleted)
@@ -171,6 +182,21 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         }
 
         this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
+    }
+
+    /// <summary>
+    /// Entry point for calling into an agent from a a <see cref="ChatHistoryChannel"/>. %%%
+    /// </summary>
+    /// <param name="threadId">%%%</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        string threadId,
+        CancellationToken cancellationToken = default)
+    {
+        ChatMessageContent[] empty = [];
+
+        return empty.ToAsyncEnumerable(); // %%%
     }
 
     /// <inheritdoc/>
