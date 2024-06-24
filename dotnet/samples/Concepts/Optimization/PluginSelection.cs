@@ -21,7 +21,7 @@ namespace Optimization;
 public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// This method shows how to select best function to share with AI using vector similarity search.
+    /// This method shows how to select best functions to share with AI using vector similarity search.
     /// </summary>
     [Fact]
     public async Task UsingVectorSearchAsync()
