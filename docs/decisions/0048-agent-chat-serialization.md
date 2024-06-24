@@ -5,16 +5,16 @@ date: 2024-06-24
 deciders: bentho, matthewbolanos
 ---
 
-# Agent-Chat Serialization / Deserialization
+# `AgentChat` Serialization / Deserialization
 
 ## Context and Problem Statement
+Users of the _Agent Framework_ are unable to store and later retrieve conversation state when using an `AgentChat` to coordinate `Agent` interactions.  This limits the ability for an agent conversation to single use as it must be maintained with memory of the process that initiated the conversation.
 
-{Describe the context and problem statement, e.g., in free form using two to three sentences or in the form of an illustrative story.
-You may want to articulate the problem in form of a question and add links to collaboration boards or issue management systems.}
+Formalizing a mechanism that supports serialization and deserialization of any `AgentChat` class provides an avenue to capture and restore state across multiple sessions as well as compute boundaries.
 
 #### Non-Goals
-- Manage agent definitions
-- Manage secrets or api-keys
+- **Manage agent definition:** An `Agent` definition shall not be captured as part of the conversation state.  `Agent` instances will not be produced when deserializing the state of an `AgentChat` class.
+- **Manage secrets or api-keys:** Secrets / api-keys are required when producing an `Agent` instance.  Managing this type of sensitive data is out-of-scope due to security considerations.
 
 ## Cases
 - Same agents present in chat
@@ -29,17 +29,6 @@ You may want to articulate the problem in form of a question and add links to co
 
 ![AgentChat State](diagrams/agentchat-state.png)
 
-```
-internal sealed class AgentChatState
-{
-    public ChatHistory History { get; set; }
-
-    /// <summary>
-    /// %%%
-    /// </summary>
-    public IEnumerable<AgentChannelState> Channels { get; set; } = [];
-}
-```
 
 ## Options
 
