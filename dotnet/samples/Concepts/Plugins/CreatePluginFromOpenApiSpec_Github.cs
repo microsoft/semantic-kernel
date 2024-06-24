@@ -53,7 +53,7 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         WriteStringToStream(schemaStream, schema);
 
         // Import an Open API plugin from a stream.
-        var plugin = await kernel.CreatePluginFromOpenApiAsync("GithubVersionsApi", schemaStream, new OpenAIFunctionExecutionParameters(httpClient));
+        var plugin = await kernel.CreatePluginFromOpenApiAsync("GithubVersionsApi", schemaStream, new OpenApiFunctionExecutionParameters(httpClient));
 
         // Get the function to be invoked and its metadata and extension properties.
         var function = plugin["getVersions"];
