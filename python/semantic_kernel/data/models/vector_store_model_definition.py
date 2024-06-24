@@ -19,6 +19,11 @@ class VectorStoreRecordDefinition:
 
     key_field_name: str = field(init=False)
     fields: dict[str, VectorStoreRecordField]
+    container_mode: bool = False
+    to_dict: Callable[[Any, dict[str, Any]], dict[str, Any]] | None = None
+    from_dict: Callable[[dict[str, Any], dict[str, Any]], Any] | None = None
+    serialize: Callable[[object, dict[str, Any]], list[dict[str, Any]]] | None = None
+    deserialize: Callable[[list[dict[str, Any]], dict[str, Any]], object] | None = None
 
     @cached_property
     def field_names(self) -> list[str]:
@@ -52,19 +57,3 @@ class VectorStoreRecordDefinition:
                 self.key_field_name = name
         if not self.key_field_name:
             raise VectorStoreModelException("Memory record definition must have a key field.")
-
-
-@dataclass
-class VectorStoreContainerDefinition(VectorStoreRecordDefinition):
-    """Memory record container definition."""
-
-    serialize_function: Callable[[object], list[dict[str, Any]]]
-    deserialize_function: Callable[[list[dict[str, Any]]], object]
-
-    def serialize(self, container: Any) -> list[dict[str, Any]]:
-        """Serialize the container using the serialize function."""
-        return self.serialize_function(container)
-
-    def deserialize(self, data: list[dict[str, Any]]) -> object:
-        """Deserialize the container, using the deserialize function."""
-        return self.deserialize_function(data)

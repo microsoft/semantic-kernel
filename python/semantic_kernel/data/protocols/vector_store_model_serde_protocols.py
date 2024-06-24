@@ -13,12 +13,12 @@ class VectorStoreModelFunctionSerdeProtocol(Protocol):
     for using your data model with a specific datastore.
     """
 
-    def serialize(self) -> Any:
+    def serialize(self, **kwargs: Any) -> Any:
         """Serialize the object to the format required by the data store."""
         ...
 
     @classmethod
-    def deserialize(cls: type[TModel], obj: Any) -> TModel:
+    def deserialize(cls: type[TModel], obj: Any, **kwargs: Any) -> TModel:
         """Deserialize the output of the data store to an object."""
         ...
 

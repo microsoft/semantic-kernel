@@ -7,33 +7,28 @@ import sys
 from datetime import datetime
 from typing import Any, TypeVar
 
-from semantic_kernel.data.models.vector_store_record_fields import (
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-)
-from semantic_kernel.kernel_types import OneOrMany
-
 if sys.version_info >= (3, 12):
     from typing import override
 else:
     from typing_extensions import override
 
 import numpy as np
-import redis
 from pydantic import ValidationError
+from redis.asyncio.client import Redis
 
 from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
-from semantic_kernel.connectors.memory.redis.utils import (
-    get_redis_key,
-)
 from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.models.vector_store_record_fields import (
+    VectorStoreRecordKeyField,
+    VectorStoreRecordVectorField,
+)
 from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
 from semantic_kernel.exceptions import (
-    ServiceResourceNotFoundError,
     ServiceResponseException,
 )
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -80,7 +75,8 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
             collection_name=collection_name,
             kernel=kernel,
         )
-        self._database = redis.Redis.from_url(redis_settings.connection_string.get_secret_value())
+        self._database = Redis.from_url(redis_settings.connection_string.get_secret_value())
+        # this will be needed for search operations
         self._ft = self._database.ft
 
         self._query_dialect = query_dialect
@@ -93,7 +89,95 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
     async def close(self):
         """Closes the Redis database connection."""
         logger.info("Closing Redis connection")
-        self._database.close()
+        await self._database.close()
+
+    async def _upsert(
+        self,
+        record: TModel,
+        collection_name: str | None = None,
+        generate_embeddings: bool = True,
+        **kwargs: Any,
+    ) -> list[str] | None:
+        if generate_embeddings:
+            await self._add_vector_to_records(record)
+        upsert_records = self.serialize(record, collection_name)
+        if not isinstance(upsert_records, list):
+            upsert_records = [upsert_records]
+        keys = []
+        for upsert_record in upsert_records:
+            try:
+                await self._database.hset(**upsert_record)
+                keys.append(upsert_record["key"])
+            except Exception as e:
+                raise ServiceResponseException("Could not upsert messages.") from e
+        return keys if keys else None
+
+    @override
+    async def upsert(
+        self,
+        record: TModel,
+        collection_name: str | None = None,
+        generate_embeddings: bool = True,
+        **kwargs: Any,
+    ) -> OneOrMany[str] | None:
+        result = await self._upsert(record, collection_name, generate_embeddings, **kwargs)
+        if result:
+            return result if self._container_mode else result[0]
+        return None
+
+    @override
+    async def upsert_batch(
+        self,
+        records: OneOrMany[TModel],
+        collection_name: str | None = None,
+        generate_embeddings: bool = False,
+        **kwargs,
+    ) -> list[str] | None:
+        return await self._upsert(records, collection_name, generate_embeddings, **kwargs)
+
+    async def _get(self, key: str, collection_name: str | None = None) -> dict[bytes, bytes] | None:
+        r_key = self._get_redis_key(key, collection_name)
+        fields = await self._database.hgetall(r_key)
+        if len(fields) == 0:
+            return None
+        return fields
+
+    @override
+    async def get(self, key: str, collection_name: str | None = None, **kwargs) -> TModel:
+        fields = await self._get(key, collection_name)
+        # Did not find the record
+        if not fields:
+            return None
+        return self.deserialize(fields, collection_name=collection_name)
+
+    @override
+    async def get_batch(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> OneOrMany[TModel]:
+        fields = await asyncio.gather(*[self._get(key, collection_name) for key in keys])
+        # Did not find the record
+        if not fields:
+            return None
+        return self.deserialize(fields, collection_name=collection_name)
+
+    async def remove(self, collection_name: str, key: str) -> None:
+        """Removes a memory record from the data store.
+
+        Does not guarantee that the collection exists.
+        If the key does not exist, do nothing.
+
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            key (str): ID associated with the memory to remove
+        """
+        await self._database.delete(self._get_redis_key(key, collection_name))
+
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
+        """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
+
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            keys (List[str]): IDs associated with the memory records to remove
+        """
+        await self._database.delete(*[self._get_redis_key(key, collection_name) for key in keys])
 
     def _get_redis_key(self, key: str, collection_name: str | None = None) -> str:
         if self._prefix_collection_name_to_key_names and (prefix := self._get_collection_name(collection_name)):
@@ -105,17 +189,16 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
             return key[len(prefix) + 1 :]
         return key
 
-    def _convert_model_to_list_of_dicts(
-        self, records: OneOrMany[TModel], collection_name: str | None = None
-    ) -> OneOrMany[dict[str, Any]]:
-        """Convert the data model a list of dicts.
-
-        Can be used as is, or overwritten by a subclass to return proper types.
-        """
-        dict_records = super()._convert_model_to_list_of_dicts(records)
-        num_results = None if self._container_mode else len(dict_records)
+    @override
+    def _serialize_dict_to_store_model(
+        self,
+        record: list[dict[str, Any]],
+        collection_name: str | None = None,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """Serialize the dict to a Redis store model."""
         results = []
-        for rec in dict_records:
+        for rec in record:
             metadata = {}
             embedding = {}
             for name, field in self._data_model_definition.fields.items():
@@ -137,11 +220,15 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
                 }
             )
 
-        return results if not num_results and num_results > 1 else results[0]
+        return results
 
-    def _convert_search_result_to_data_model(
-        self, search_result: OneOrMany[dict[bytes, bytes]], collection_name: str | None = None
-    ) -> OneOrMany[TModel]:
+    @override
+    def _deserialize_store_model_to_dict(
+        self,
+        search_result: list[dict[bytes, bytes]],
+        collection_name: str | None = None,
+        **kwargs: Any,
+    ) -> list[TModel]:
         """Convert the search result to a data model.
 
         Can be used as is, or overwritten by a subclass to return proper types.
@@ -152,90 +239,9 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
             flattened.extend(json.loads(rec[b"embedding"]))
             flattened["key"] = self._unget_redis_key(json.loads(flattened[b"key"]), collection_name)
             results.append(flattened)
-        return super()._convert_search_result_to_data_model(results)
+        return results
 
     @override
-    async def upsert(
-        self,
-        record: object,
-        collection_name: str | None = None,
-        generate_embeddings: bool = True,
-        **kwargs: Any,
-    ) -> str | None:
-        if generate_embeddings:
-            await self._add_vector_to_records(record)
-        upsert_record = self._convert_model_to_list_of_dicts(record, collection_name)
-        try:
-            self._database.hset(**upsert_record)
-            return upsert_record["key"]
-        except Exception as e:
-            raise ServiceResponseException("Could not upsert messages.") from e
-
-    @override
-    async def upsert_batch(
-        self,
-        records: OneOrMany[TModel],
-        collection_name: str | None = None,
-        generate_embeddings: bool = False,
-        **kwargs,
-    ) -> list[str] | None:
-        if generate_embeddings:
-            await self._add_vector_to_records(records)
-        upsert_records = self._convert_model_to_list_of_dicts(records, collection_name)
-        keys = []
-        for upsert_record in upsert_records:
-            try:
-                self._database.hset(**upsert_record)
-                keys.append(upsert_record["key"])
-            except Exception as e:
-                raise ServiceResponseException("Could not upsert messages.") from e
-        return keys
-
-    async def _get(self, key: str, collection_name: str | None = None) -> dict[bytes, bytes] | None:
-        fields = self._database.hgetall(self._get_redis_key(key, collection_name))
-        if len(fields) == 0:
-            return None
-        return fields
-
-    @override
-    async def get(self, key: str, collection_name: str | None = None, **kwargs) -> TModel:
-        fields = await self._get(key, collection_name)
-        # Did not find the record
-        if not fields:
-            return None
-        return self._convert_search_result_to_data_model(fields, collection_name)
-
-    @override
-    async def get_batch(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> OneOrMany[TModel]:
-        fields = await asyncio.gather(*[self._get(key, collection_name) for key in keys])
-        # Did not find the record
-        if not fields:
-            return None
-        return self._convert_search_result_to_data_model(fields, collection_name)
-
-    async def remove(self, collection_name: str, key: str) -> None:
-        """Removes a memory record from the data store.
-
-        Does not guarantee that the collection exists.
-        If the key does not exist, do nothing.
-
-        Args:
-            collection_name (str): Name for a collection of embeddings
-            key (str): ID associated with the memory to remove
-        """
-        if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
-
-        self._database.delete(get_redis_key(collection_name, key))
-
-    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
-        """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
-
-        Args:
-            collection_name (str): Name for a collection of embeddings
-            keys (List[str]): IDs associated with the memory records to remove
-        """
-        if not await self.does_collection_exist(collection_name):
-            raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
-
-        self._database.delete(*[get_redis_key(collection_name, key) for key in keys])
+    @property
+    def supported_key_types(self) -> list[type] | None:
+        return [str]
