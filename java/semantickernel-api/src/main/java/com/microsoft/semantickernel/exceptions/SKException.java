@@ -51,7 +51,7 @@ public class SKException extends RuntimeException {
      */
     public static SKException build(
         String message,
-        @Nullable Exception e) {
+        @Nullable Throwable e) {
 
         if (e == null) {
             return new SKException(message);

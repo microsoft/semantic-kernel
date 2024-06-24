@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -103,11 +104,24 @@ public class OpenAPIHttpRequestPlugin {
             .send(request)
             .flatMap(response -> {
                 if (response.getStatusCode() >= 400) {
-                    return Mono.error(new RuntimeException(
-                        "Request failed with status code: " + response.getStatusCode()));
+                    return response.getBodyAsString()
+                        .defaultIfEmpty("")
+                        .flatMap(responseBody -> {
+                            if (!responseBody.isEmpty()) {
+                                responseBody += "\nResponse Body:" + responseBody;
+                            }
+                            return Mono.error(new SKException(
+                                "Request failed with status code: " + response.getStatusCode()
+                                    + responseBody));
+                        });
                 } else {
                     return Mono.just(response);
                 }
+            })
+            .onErrorResume(e -> {
+                SKException exception = SKException.build("Request failed", e);
+                exception.setStackTrace(new StackTraceElement[0]);
+                return Mono.error(exception);
             })
             .flatMap(HttpResponse::getBodyAsString)
             .doOnNext(response -> LOGGER.debug("Request response: {}", response));

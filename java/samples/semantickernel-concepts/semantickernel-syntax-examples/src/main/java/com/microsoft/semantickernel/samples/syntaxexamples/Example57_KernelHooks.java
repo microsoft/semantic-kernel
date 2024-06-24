@@ -112,11 +112,12 @@ public class Example57_KernelHooks {
 
         FunctionInvokedHook postExecutionHandler = event -> {
             System.out.println(
-                event.getFunction().getName() + " : Post Execution Handler - Usage: " + ((CompletionsUsage) event
-                    .getResult()
-                    .getMetadata()
-                    .getUsage())
-                    .getTotalTokens());
+                event.getFunction().getName() + " : Post Execution Handler - Usage: "
+                    + ((CompletionsUsage) event
+                        .getResult()
+                        .getMetadata()
+                        .getUsage())
+                        .getTotalTokens());
             return event;
         };
 

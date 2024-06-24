@@ -1,4 +1,3 @@
-
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion;
 
