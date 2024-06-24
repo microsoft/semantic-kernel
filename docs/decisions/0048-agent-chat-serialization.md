@@ -16,25 +16,31 @@ Formalizing a mechanism that supports serialization and deserialization of any `
 - **Manage agent definition:** An `Agent` definition shall not be captured as part of the conversation state.  `Agent` instances will not be produced when deserializing the state of an `AgentChat` class.
 - **Manage secrets or api-keys:** Secrets / api-keys are required when producing an `Agent` instance.  Managing this type of sensitive data is out-of-scope due to security considerations.
 
-## Cases
-- Same agents present in chat
-- Subset of agents present in chat
-- Additional agents present in chat
-- No agents present in chat
-- Chat has history or channels already
-
 ## Analysis
+The relationships between any `AgentChat`, the `Agent` instances participating in the conversation, and the associated `AgentChannel` conduits are illustrated in the following diagram:
 
 ![AgentChat Relationships](diagrams/agentchat-relationships.png)
 
+While an `AgentChat` manages a primary `ChatHistory`, each `AgentChannel` manages how that history is adapted to the specific `Agent` modality.  For instance, an `AgentChanel` for an `Agent` based on the Open AI Assistant API tracks the associated _thread-id_.  Whereas a `ChatCompletionAgent` manages an adpated `ChatHistory` instance of its own.
+
+This implies that logically the `AgentChat` state must retain the primary `ChatHistory` in addition to the appropriate state for each `AgentChannel`:
+
 ![AgentChat State](diagrams/agentchat-state.png)
 
+## Cases
+When restoring an `AgentChat`, the application must also re-create the `Agent` instances participating in the chat (outside of the control of the deserialization process).  This creates the opportunity for the following cases:
+
+- **Equivalent:** All of the agents present in chat
+- **Reduced:** A subset of agents present in chat
+- **Enhanced:** Additional agents present in chat
+- **Empty:** No agents present in chat
+- **Invalid:** Chat has already developed history or channels state.
 
 ## Options
 
-- Direct Serialization: `JsonSerialize.Serialize(chat)`
-- Serializer Raw: `AgentChatSerializer.Serialize(chat);`
-- Serializer Encoded: `AgentChatSerializer.Serialize(chat);`
+### 1. Direct Serialization: `JsonSerialize.Serialize(chat)`
+### 2. Serializer Raw: `AgentChatSerializer.Serialize(chat, Stream);`
+### 3. Serializer Encoded: `AgentChatSerializer.Serialize(chat, Stream);`
 
 ## Outcome
 
