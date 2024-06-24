@@ -5,7 +5,6 @@ from collections.abc import AsyncGenerator
 from threading import Thread
 from typing import TYPE_CHECKING, Any, Literal
 
-import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
@@ -15,6 +14,8 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceResponseException
 
 if TYPE_CHECKING:
+    from transformers import Pipeline
+
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -28,9 +29,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     def __init__(
         self,
         ai_model_id: str,
-        task: str | None = "text2text-generation",
-        device: int | None = -1,
         service_id: str | None = None,
+        task: str | None = "text2text-generation",
+        device: int | str | None = -1,
+        generator: "Pipeline | None" = None,
         model_kwargs: dict[str, Any] | None = None,
         pipeline_kwargs: dict[str, Any] | None = None,
     ) -> None:
@@ -39,10 +41,9 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         Args:
             ai_model_id (str): Hugging Face model card string, see
                 https://huggingface.co/models
-            device (Optional[int]): Device to run the model on, defaults to CPU, 0+ for GPU,
-                                   -- None if using device_map instead. (If both device and device_map
-                                      are specified, device overrides device_map. If unintended,
-                                      it can lead to unexpected behavior.)
+            device (`int` or `str`):
+                Defines the device (*e.g.*, `"cpu"`, `"cuda:1"`, `"mps"`, or a GPU ordinal rank like `1`) on which the
+                pipeline will be allocated.
             service_id (Optional[str]): Service ID for the AI service.
             task (Optional[str]): Model completion task type, options are:
                 - summarization: takes a long text and returns a shorter summary.
@@ -55,21 +56,26 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             pipeline_kwargs (Optional[Dict[str, Any]]): Additional keyword arguments passed along
                 to the specific pipeline init (see the documentation for the corresponding pipeline class
                 for possible values).
+            generator (transformers.Pipeline): A pre-initialized Pipeline object.
+                If provided, other relevant options are ignored.
+                can be created using the `pipeline` function from the transformers library.
+                Task and ai_model_id must still be provided.
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        generator = pipeline(
-            task=task,
-            model=ai_model_id,
-            device=device,
-            model_kwargs=model_kwargs,
-            **pipeline_kwargs or {},
-        )
+        if not generator:
+            generator = pipeline(
+                task=task,
+                model=ai_model_id,
+                model_kwargs=model_kwargs,
+                device=device,
+                **pipeline_kwargs or {},
+            )
         super().__init__(
             service_id=service_id,
             ai_model_id=ai_model_id,
             task=task,
-            device=(f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"),
+            device=device,
             generator=generator,
         )
 

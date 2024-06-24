@@ -76,7 +76,7 @@ google-generativeai = { version = ">=0.1,<0.4" }
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
 azure-core = "^1.28.0"
 azure-cosmos = "^4.7.0"
-transformers = "^4.28.1"
+transformers = "^4.41"
 sentence-transformers = "^2.2.2"
 torch = "^2.2.0"
 
