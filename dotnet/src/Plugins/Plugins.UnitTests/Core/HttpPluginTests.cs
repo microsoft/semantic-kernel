@@ -13,7 +13,7 @@ using Xunit;
 
 namespace SemanticKernel.Plugins.UnitTests.Core;
 
-public class HttpPluginTests : IDisposable
+public sealed class HttpPluginTests : IDisposable
 {
     private readonly string _content = "hello world";
     private readonly string _uriString = "http://www.example.com";
@@ -34,12 +34,8 @@ public class HttpPluginTests : IDisposable
     [Fact]
     public void ItCanBeImported()
     {
-        // Arrange
-        var kernel = KernelBuilder.Create();
-        var plugin = new HttpPlugin();
-
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportFunctions(plugin, "http");
+        Assert.NotNull(KernelPluginFactory.CreateFromType<HttpPlugin>("http"));
     }
 
     [Fact]
@@ -130,15 +126,6 @@ public class HttpPluginTests : IDisposable
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._response.Dispose();
-        }
+        this._response.Dispose();
     }
 }

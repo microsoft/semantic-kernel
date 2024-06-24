@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
 namespace SemanticKernel.IntegrationTests.Fakes;
 
 internal sealed class EmailPluginFake
 {
-    [SKFunction, Description("Given an email address and message body, send an email")]
+    [KernelFunction, Description("Given an email address and message body, send an email")]
     public Task<string> SendEmailAsync(
         [Description("The body of the email message to send.")] string input = "",
         [Description("The email address to send email to.")] string? email_address = "default@email.com")
@@ -18,7 +20,7 @@ internal sealed class EmailPluginFake
         return Task.FromResult($"Sent email to: {email_address}. Body: {input}");
     }
 
-    [SKFunction, Description("Lookup an email address for a person given a name")]
+    [KernelFunction, Description("Lookup an email address for a person given a name")]
     public Task<string> GetEmailAddressAsync(
         ILogger logger,
         [Description("The name of the person to email.")] string? input = null)
@@ -33,7 +35,7 @@ internal sealed class EmailPluginFake
         return Task.FromResult($"{input}@example.com");
     }
 
-    [SKFunction, Description("Write a short poem for an e-mail")]
+    [KernelFunction, Description("Write a short poem for an e-mail")]
     public Task<string> WritePoemAsync(
         [Description("The topic of the poem.")] string input)
     {

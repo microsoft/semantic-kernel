@@ -2,9 +2,9 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Moq;
 using SemanticKernel.UnitTests;
 using Xunit;
 
@@ -23,11 +23,8 @@ public class WaitPluginTests
     [Fact]
     public void ItCanBeImported()
     {
-        // Arrange
-        var kernel = Kernel.Builder.Build();
-
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportFunctions(new WaitPlugin(), "wait");
+        Assert.NotNull(KernelPluginFactory.CreateFromType<WaitPlugin>("wait"));
     }
 
     [Theory]
@@ -43,14 +40,24 @@ public class WaitPluginTests
     public async Task ItWaitSecondsWhenValidParametersSucceedAsync(string textSeconds, int expectedMilliseconds)
     {
         // Arrange
-        var waitProviderMock = new Mock<WaitPlugin.IWaitProvider>();
-        var target = new WaitPlugin(waitProviderMock.Object);
+        var timeProvider = new FakeTimeProvider();
+        var target = new WaitPlugin(timeProvider);
+        var expectedTimeSpan = TimeSpan.FromMilliseconds(expectedMilliseconds);
 
-        // Act
-        var context = await FunctionHelpers.CallViaKernelAsync(target, "Seconds", ("input", textSeconds));
+        // Act and Assert
+        long startingTime = timeProvider.GetTimestamp();
+        Task wait = KernelPluginFactory.CreateFromObject(target)["Seconds"].InvokeAsync(new(), new() { ["seconds"] = textSeconds });
 
-        // Assert
-        waitProviderMock.Verify(w => w.DelayAsync(It.IsIn(expectedMilliseconds)), Times.Once);
+        if (expectedMilliseconds > 0)
+        {
+            timeProvider.Advance(TimeSpan.FromMilliseconds(expectedMilliseconds - 1));
+            Assert.False(wait.IsCompleted);
+        }
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
+        await wait;
+
+        Assert.InRange(timeProvider.GetElapsedTime(startingTime).TotalMilliseconds, expectedMilliseconds, double.MaxValue);
     }
 
     [Theory]
@@ -68,11 +75,10 @@ public class WaitPluginTests
     public async Task ItWaitSecondsWhenInvalidParametersFailsAsync(string textSeconds)
     {
         // Arrange
-        var waitProviderMock = new Mock<WaitPlugin.IWaitProvider>();
-        var target = new WaitPlugin(waitProviderMock.Object);
+        KernelFunction func = KernelPluginFactory.CreateFromType<WaitPlugin>()["Seconds"];
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Seconds", ("input", textSeconds)));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(new(), new() { ["seconds"] = textSeconds }));
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "seconds", textSeconds);

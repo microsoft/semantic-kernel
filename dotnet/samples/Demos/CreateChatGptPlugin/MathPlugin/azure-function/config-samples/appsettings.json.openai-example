@@ -1,0 +1,25 @@
+{
+  "kernel": {
+    "serviceType": "OpenAI",
+    "serviceId": "gpt-3.5-turbo",
+    "deploymentOrModelId": "gpt-3.5-turbo",
+    "orgId": ""
+  },
+  "aiPlugin": {
+    "schemaVersion": "v1",
+    "nameForModel": "MyPlugin",
+    "nameForHuman": "My Plugin",
+    "descriptionForModel": "<Instructions for the model>",
+    "descriptionForHuman": "<Description for users>",
+    "auth": {
+      "type": "none"
+    },
+    "api": {
+      "type": "openapi",
+      "url": "{url}/swagger.json"
+    },
+    "logoUrl": "{url}/logo.png",
+    "contactEmail": "support@example.com",
+    "legalInfoUrl": "http://www.example.com/legal"
+  }
+}

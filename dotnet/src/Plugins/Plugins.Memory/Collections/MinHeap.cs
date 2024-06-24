@@ -3,20 +3,19 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Plugins.Memory.Collections;
+namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Implements the classic 'heap' data structure. By default, the item with the lowest value is at the top of the heap.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-public sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
+internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 {
     private const int DefaultCapacity = 7;
     private const int MinCapacity = 0;
 
-    private static readonly T[] s_emptyBuffer = Array.Empty<T>();
+    private static readonly T[] s_emptyBuffer = [];
 
     private T[] _items;
     private int _count;

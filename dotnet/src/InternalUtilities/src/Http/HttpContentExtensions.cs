@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+
+namespace Microsoft.SemanticKernel.Http;
 
 /// <summary>
 /// Provides extension methods for working with HTTP content in a way that translates HttpRequestExceptions into HttpOperationExceptions.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class HttpContentExtensions
 {
     /// <summary>

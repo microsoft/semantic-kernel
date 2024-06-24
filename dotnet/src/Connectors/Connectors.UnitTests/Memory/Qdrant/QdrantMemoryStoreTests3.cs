@@ -9,13 +9,13 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Qdrant;
+namespace SemanticKernel.Connectors.UnitTests.Qdrant;
 
 /// <summary>
 /// Tests for <see cref="QdrantMemoryStore"/> Search operations.
@@ -250,22 +250,21 @@ public class QdrantMemoryStoreTests3
                     "}]" +
             "}";
 
-        using (var httpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(scoredPointJsonWithIntegerId) })
+        using var httpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(scoredPointJsonWithIntegerId) };
+
+        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        mockHttpMessageHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(httpResponseMessage);
+
+        //Act
+        using var httpClient = new HttpClient(mockHttpMessageHandler.Object);
         {
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(httpResponseMessage);
+            var client = new QdrantVectorDbClient(httpClient, 1536, "https://fake-random-test-host");
+            var result = await client.GetVectorByPayloadIdAsync(payloadId, metadataId);
 
-            //Act
-            using var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-            {
-                var client = new QdrantVectorDbClient(httpClient, 1536, "https://fake-random-test-host");
-                var result = await client.GetVectorByPayloadIdAsync(payloadId, metadataId);
-
-                //Assert
-                Assert.Equal(result!.PointId, expectedId.ToString(CultureInfo.InvariantCulture));
-            }
+            //Assert
+            Assert.Equal(result!.PointId, expectedId.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

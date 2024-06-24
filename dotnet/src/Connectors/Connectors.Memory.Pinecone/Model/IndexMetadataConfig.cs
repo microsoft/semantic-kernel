@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Configuration for the behavior of Pinecone's internal metadata index. By default, all metadata is indexed; when metadata_config is present, only specified metadata fields are indexed.
@@ -66,8 +66,8 @@ public class MetadataIndexConfig
     ///     </item>
     /// </list>
     /// </remarks>
-    public static MetadataIndexConfig Default => new(new List<string>(new List<string>
-    {
+    public static MetadataIndexConfig Default => new(new List<string>(
+    [
         "document_Id",
         "source",
         "source_Id",
@@ -75,5 +75,5 @@ public class MetadataIndexConfig
         "type",
         "tags",
         "created_at"
-    }));
+    ]));
 }

@@ -2,7 +2,7 @@
 
 using System.IO;
 using System.Linq;
-using Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
+using Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
 using SemanticKernel.Functions.UnitTests.Grpc.Protobuf.TestPlugins;
 using Xunit;
 

@@ -15,7 +15,7 @@ public class MemoryRecordTests
     private readonly string _description = "description";
     private readonly string _externalSourceName = "externalSourceName";
     private readonly string _additionalMetadata = "value";
-    private readonly ReadOnlyMemory<float> _embedding = new(new float[] { 1, 2, 3 });
+    private readonly ReadOnlyMemory<float> _embedding = new([1, 2, 3]);
 
     [Fact]
     public void ItCanBeConstructedFromMetadataAndVector()
@@ -83,14 +83,16 @@ public class MemoryRecordTests
     public void ItCanBeCreatedFromSerializedMetadata()
     {
         // Arrange
-        string jsonString = @"{
-            ""is_reference"": false,
-            ""id"": ""Id"",
-            ""text"": ""text"",
-            ""description"": ""description"",
-            ""external_source_name"": ""externalSourceName"",
-            ""additional_metadata"": ""value""
-        }";
+        string jsonString = """
+            {
+                "is_reference": false,
+                "id": "Id",
+                "text": "text",
+                "description": "description",
+                "external_source_name": "externalSourceName",
+                "additional_metadata": "value"
+            }
+            """;
 
         // Act
         var memoryRecord = MemoryRecord.FromJsonMetadata(jsonString, this._embedding);
@@ -109,22 +111,24 @@ public class MemoryRecordTests
     public void ItCanBeDeserializedFromJson()
     {
         // Arrange
-        string jsonString = @"{
-            ""metadata"": {
-                ""is_reference"": false,
-                ""id"": ""Id"",
-                ""text"": ""text"",
-                ""description"": ""description"",
-                ""external_source_name"": ""externalSourceName"",
-                ""additional_metadata"": ""value""
-            },
-            ""embedding"":
-            [
-                1,
-                2,
-                3
-            ]
-        }";
+        string jsonString = """
+            {
+                "metadata": {
+                    "is_reference": false,
+                    "id": "Id",
+                    "text": "text",
+                    "description": "description",
+                    "external_source_name": "externalSourceName",
+                    "additional_metadata": "value"
+                },
+                "embedding":
+                [
+                    1,
+                    2,
+                    3
+                ]
+            }
+            """;
 
         // Act
         var memoryRecord = JsonSerializer.Deserialize<MemoryRecord>(jsonString);
@@ -144,24 +148,26 @@ public class MemoryRecordTests
     public void ItCanBeSerialized()
     {
         // Arrange
-        string jsonString = @"{
-            ""embedding"":
-            [
-                1,
-                2,
-                3
-            ],
-            ""metadata"": {
-                ""is_reference"": false,
-                ""external_source_name"": ""externalSourceName"",
-                ""id"": ""Id"",
-                ""description"": ""description"",
-                ""text"": ""text"",
-                ""additional_metadata"": ""value""
-            },
-            ""key"": ""key"",
-            ""timestamp"": null
-        }";
+        string jsonString = """
+            {
+                "embedding":
+                [
+                    1,
+                    2,
+                    3
+                ],
+                "metadata": {
+                    "is_reference": false,
+                    "external_source_name": "externalSourceName",
+                    "id": "Id",
+                    "description": "description",
+                    "text": "text",
+                    "additional_metadata": "value"
+                },
+                "key": "key",
+                "timestamp": null
+            }
+            """;
         var metadata = new MemoryRecordMetadata(
             isReference: this._isReference,
             id: this._id,
@@ -173,8 +179,10 @@ public class MemoryRecordTests
 
         // Act
         string serializedRecord = JsonSerializer.Serialize(memoryRecord);
-        jsonString = jsonString.Replace("\n", string.Empty, StringComparison.Ordinal);
-        jsonString = jsonString.Replace(" ", string.Empty, StringComparison.Ordinal);
+#pragma warning disable CA1307 // Specify StringComparison for clarity; overload not available on .NET Framework
+        jsonString = jsonString.Replace("\n", string.Empty);
+        jsonString = jsonString.Replace(" ", string.Empty);
+#pragma warning restore CA1307
 
         // Assert
         Assert.Equal(jsonString, serializedRecord);
@@ -184,14 +192,16 @@ public class MemoryRecordTests
     public void ItsMetadataCanBeSerialized()
     {
         // Arrange
-        string jsonString = @"{
-                ""is_reference"": false,
-                ""external_source_name"": ""externalSourceName"",
-                ""id"": ""Id"",
-                ""description"": ""description"",
-                ""text"": ""text"",
-                ""additional_metadata"": ""value""
-            }";
+        string jsonString = """
+            {
+                "is_reference": false,
+                "external_source_name": "externalSourceName",
+                "id": "Id",
+                "description": "description",
+                "text": "text",
+                "additional_metadata": "value"
+            }
+            """;
 
         var metadata = new MemoryRecordMetadata(
             isReference: this._isReference,
@@ -204,8 +214,10 @@ public class MemoryRecordTests
 
         // Act
         string serializedMetadata = memoryRecord.GetSerializedMetadata();
-        jsonString = jsonString.Replace("\n", string.Empty, StringComparison.Ordinal);
-        jsonString = jsonString.Replace(" ", string.Empty, StringComparison.Ordinal);
+#pragma warning disable CA1307 // Specify StringComparison for clarity; overload not available on .NET Framework
+        jsonString = jsonString.Replace("\n", string.Empty);
+        jsonString = jsonString.Replace(" ", string.Empty);
+#pragma warning restore CA1307
 
         // Assert
         Assert.Equal(jsonString, serializedMetadata);

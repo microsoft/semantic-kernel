@@ -6,14 +6,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Pinecone;
+namespace SemanticKernel.Connectors.UnitTests.Pinecone;
 
 public class PineconeMemoryStoreTests
 {
@@ -63,7 +62,7 @@ public class PineconeMemoryStoreTests
             .ReturnsAsync(false);
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+        var exception = await Assert.ThrowsAsync<KernelException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
 
         // Assert
         this._mockPineconeClient
@@ -179,8 +178,7 @@ public class PineconeMemoryStoreTests
             this._description3,
             this._embedding3);
 
-        List<MemoryRecord> records = new()
-            { memoryRecord, memoryRecord2, memoryRecord3 };
+        List<MemoryRecord> records = [memoryRecord, memoryRecord2, memoryRecord3];
 
         this._mockPineconeClient
             .Setup<IAsyncEnumerable<PineconeDocument?>>(x =>
@@ -224,8 +222,8 @@ public class PineconeMemoryStoreTests
         // Arrange
         ReadOnlyMemory<float> embedding = new float[] { 0.1f, 0.2f };
 
-        List<(PineconeDocument, double)> queryResults = new()
-        {
+        List<(PineconeDocument, double)> queryResults =
+        [
             new(new()
             {
                 Id = this._id,
@@ -241,7 +239,7 @@ public class PineconeMemoryStoreTests
                 Metadata = new Dictionary<string, object> { { "document_Id", "value2" } },
                 Values = this._embedding2,
             }, 0.5)
-        };
+        ];
 
         this._mockPineconeClient
             .Setup<IAsyncEnumerable<(PineconeDocument, double)>>(x => x.GetMostRelevantAsync(

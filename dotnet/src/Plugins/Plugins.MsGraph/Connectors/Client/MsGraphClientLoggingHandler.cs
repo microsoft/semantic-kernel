@@ -24,13 +24,13 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     /// </summary>
     private const string ClientRequestIdHeaderName = "client-request-id";
 
-    private readonly List<string> _headerNamesToLog = new()
-    {
+    private readonly List<string> _headerNamesToLog =
+    [
         ClientRequestIdHeaderName,
         "request-id",
         "x-ms-ags-diagnostic",
         "Date"
-    };
+    ];
 
     private readonly ILogger _logger;
 
@@ -54,24 +54,37 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
         request.Headers.Add(ClientRequestIdHeaderName, Guid.NewGuid().ToString());
         this.LogHttpMessage(request.Headers, request.RequestUri, "REQUEST");
         HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        this.LogHttpMessage(response.Headers, response.RequestMessage.RequestUri, "RESPONSE");
+        this.LogHttpMessage(response.Headers, response.RequestMessage?.RequestUri, "RESPONSE");
         return response;
     }
 
     /// <summary>
     /// Log the headers and URI of an HTTP message.
     /// </summary>
-    private void LogHttpMessage(HttpHeaders headers, Uri uri, string prefix)
+    private void LogHttpMessage(HttpHeaders headers, Uri? uri, string prefix)
     {
         if (this._logger.IsEnabled(LogLevel.Debug))
         {
-            StringBuilder message = new();
-            message.AppendLine($"{prefix} {uri}");
+            var message = new StringBuilder().Append(prefix).Append(' ').Append(uri).AppendLine();
             foreach (string headerName in this._headerNamesToLog)
             {
-                if (headers.TryGetValues(headerName, out IEnumerable<string> values))
+                if (headers.TryGetValues(headerName, out IEnumerable<string>? values))
                 {
-                    message.AppendLine($"{headerName}: {string.Join(", ", values)}");
+                    message.Append(headerName).Append(": ");
+
+                    using (IEnumerator<string> e = values.GetEnumerator())
+                    {
+                        if (e.MoveNext())
+                        {
+                            message.Append(e.Current);
+                            while (e.MoveNext())
+                            {
+                                message.Append(", ").Append(e.Current);
+                            }
+                        }
+                    }
+
+                    message.AppendLine();
                 }
             }
 

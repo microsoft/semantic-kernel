@@ -4,17 +4,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Numerics.Tensors;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
-using Microsoft.SemanticKernel.Connectors.Memory.Redis;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
+using NRedisStack;
 using StackExchange.Redis;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Redis;
+namespace SemanticKernel.Connectors.UnitTests.Redis;
 
 /// <summary>
 /// Unit tests of <see cref="RedisMemoryStore"/>.
@@ -27,7 +28,7 @@ public class RedisMemoryStoreTests
     public RedisMemoryStoreTests()
     {
         this._mockDatabase = new Mock<IDatabase>();
-        this._collections = new();
+        this._collections = [];
     }
 
     [Fact]
@@ -93,7 +94,7 @@ public class RedisMemoryStoreTests
 
         // Assert
         var collections2 = store.GetCollectionsAsync();
-        Assert.True(await collections2.CountAsync() == 0);
+        Assert.Equal(0, await collections2.CountAsync());
     }
 
     [Fact]
@@ -677,7 +678,7 @@ public class RedisMemoryStoreTests
         });
         await store.CreateCollectionAsync(collection);
 
-        List<string> keys = new();
+        List<string> keys = [];
 
         // Act
         await foreach (var key in store.UpsertBatchAsync(collection, records))
@@ -744,7 +745,7 @@ public class RedisMemoryStoreTests
         }
 
         // Assert
-        var ex = await Assert.ThrowsAsync<SKException>(async () =>
+        var ex = await Assert.ThrowsAsync<KernelException>(async () =>
         {
             // Act
             await store.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold);
@@ -756,6 +757,12 @@ public class RedisMemoryStoreTests
 
     private void MockCreateIndex(string collection, Action? callback = null)
     {
+        var mockBatch = new Mock<IBatch>();
+
+        this._mockDatabase
+            .Setup(x => x.CreateBatch(It.IsAny<object>()))
+            .Returns(mockBatch.Object);
+
         this._mockDatabase
             .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
                 It.Is<string>(x => x == "FT.CREATE"),
@@ -764,7 +771,7 @@ public class RedisMemoryStoreTests
             .ReturnsAsync(RedisResult.Create("OK", ResultType.SimpleString))
             .Callback(() =>
             {
-                this._collections.TryAdd(collection, new());
+                this._collections.TryAdd(collection, []);
 
                 this._mockDatabase
                     .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
@@ -836,7 +843,7 @@ public class RedisMemoryStoreTests
             )
             .Callback(() =>
             {
-                (this._collections[collection] ??= new()).Add(record);
+                (this._collections[collection] ??= []).Add(record);
 
                 this._mockDatabase
                     .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
@@ -863,11 +870,11 @@ public class RedisMemoryStoreTests
             .ReturnsAsync(true)
             .Callback(() =>
             {
-                (this._collections[collection] ??= new()).RemoveAll(x => x.Key == key);
+                (this._collections[collection] ??= []).RemoveAll(x => x.Key == key);
 
                 this._mockDatabase
                     .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
-                    .ReturnsAsync(Array.Empty<HashEntry>());
+                    .ReturnsAsync([]);
 
                 callback?.Invoke();
             });
@@ -885,13 +892,13 @@ public class RedisMemoryStoreTests
             .ReturnsAsync(redisKeys.Length)
             .Callback(() =>
             {
-                (this._collections[collection] ??= new()).RemoveAll(x => keys.Contains(x.Key));
+                (this._collections[collection] ??= []).RemoveAll(x => keys.Contains(x.Key));
 
                 foreach (var redisKey in redisKeys)
                 {
                     this._mockDatabase
                     .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
-                    .ReturnsAsync(Array.Empty<HashEntry>());
+                    .ReturnsAsync([]);
                 }
 
                 callback?.Invoke();
@@ -900,15 +907,13 @@ public class RedisMemoryStoreTests
 
     private void MockSearch(string collection, ReadOnlyMemory<float> compareEmbedding, int topN, double threshold, bool returnStringVectorScore = false)
     {
-        List<(MemoryRecord Record, double Score)> embeddings = new();
+        List<(MemoryRecord Record, double Score)> embeddings = [];
 
-        List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value) ? value : new();
+        List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value) ? value : [];
 
         foreach (var record in records)
         {
-            double similarity = compareEmbedding
-                .Span
-                .CosineSimilarity(record.Embedding.Span);
+            double similarity = TensorPrimitives.CosineSimilarity(compareEmbedding.Span, record.Embedding.Span);
             if (similarity >= threshold)
             {
                 embeddings.Add(new(record, similarity));
@@ -919,8 +924,10 @@ public class RedisMemoryStoreTests
 
         string redisKey = $"{collection}";
 
-        var redisResults = new List<RedisResult>();
-        redisResults.Add(RedisResult.Create(embeddings.Count));
+        var redisResults = new List<RedisResult>
+        {
+            RedisResult.Create(embeddings.Count)
+        };
 
         foreach (var item in embeddings)
         {

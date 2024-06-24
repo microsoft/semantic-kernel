@@ -52,7 +52,7 @@ feature parity between our currently supported languages.
       <td>
         <img align="left" width=52px height=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" alt="Java logo">
         <div>
-          <a href="https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/README.md">Using Semantic Kernel in Java</a>
+          <a href="https://github.com/microsoft/semantic-kernel/blob/main/java/README.md">Using Semantic Kernel in Java</a>
         </div>
       </td>
     </tr>
@@ -65,7 +65,7 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 ### For C#:
 
 1. Create a new console app.
-2. Add the semantic kernel nuget `Microsoft.SemanticKernel`.
+2. Add the semantic kernel nuget [Microsoft.SemanticKernel](https://www.nuget.org/packages/Microsoft.SemanticKernel/).
 3. Copy the code from [here](dotnet/README.md) into the app `Program.cs` file.
 4. Replace the configuration placeholders for API key and other params with your key and settings.
 5. Run with `F5` or `dotnet run`
@@ -80,8 +80,9 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 
 ### For Java:
 
-1. Clone and checkout the experimental Java branch: `git clone -b experimental-java https://github.com/microsoft/semantic-kernel.git`
-2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md)
+1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
+    1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
+2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/main/java/samples/sample-code/README.md)
 
 ## Learning how to use Semantic Kernel
 
@@ -89,7 +90,7 @@ The fastest way to learn how to use Semantic Kernel is with our C# and Python Ju
 demonstrate how to use Semantic Kernel with code snippets that you can run with a push of a button.
 
 - [Getting Started with C# notebook](dotnet/notebooks/00-getting-started.ipynb)
-- [Getting Started with Python notebook](python/notebooks/00-getting-started.ipynb)
+- [Getting Started with Python notebook](python/samples/getting_started/00-getting-started.ipynb)
 
 Once you've finished the getting started notebooks, you can then check out the main walkthroughs
 on our Learn site. Each sample comes with a completed C# and Python project that you can run locally.
@@ -106,45 +107,6 @@ Finally, refer to our API references for more details on the C# and Python APIs:
 
 - [C# API reference](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel?view=semantic-kernel-dotnet)
 - Python API reference (coming soon)
-
-## Chat Copilot: see what's possible with Semantic Kernel
-
-If you're interested in seeing a full end-to-end example of how to use Semantic Kernel, check out
-our [Chat Copilot](https://github.com/microsoft/chat-copilot) reference application. Chat Copilot
-is a chatbot that demonstrates the power of Semantic Kernel. By combining plugins, planners, and personas,
-we demonstrate how you can build a chatbot that can maintain long-running conversations with users while
-also leveraging plugins to integrate with other services.
-
-![Chat Copilot answering a question](https://learn.microsoft.com/en-us/semantic-kernel/media/chat-copilot-in-action.gif)
-
-You can run the app yourself by downloading it from its [GitHub repo](https://github.com/microsoft/chat-copilot).
-
-## Visual Studio Code extension: design semantic functions with ease
-
-The [Semantic Kernel extension for Visual Studio Code](https://learn.microsoft.com/en-us/semantic-kernel/vs-code-tools/)
-makes it easy to design and test semantic functions. The extension provides an interface for
-designing semantic functions and allows you to test them with a push of a button with your
-existing models and data.
-
-![Semantic Kernel extension for Visual Studio Code](https://learn.microsoft.com/en-us/semantic-kernel/media/vs-code-extension.png)
-
-In the above screenshot, you can see the extension in action:
-
-- Syntax highlighting for semantic functions
-- Code completion for semantic functions
-- LLM model picker
-- Run button to test the semantic function with your input data
-
-## Check out our other repos!
-
-If you like Semantic Kernel, you may also be interested in other repos the Semantic Kernel team supports:
-
-| Repo                                                                              | Description                                                                                   |
-| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [Chat Copilot](https://github.com/microsoft/chat-copilot)                         | A reference application that demonstrates how to build a chatbot with Semantic Kernel.        |
-| [Semantic Kernel Docs](https://github.com/MicrosoftDocs/semantic-kernel-docs)     | The home for Semantic Kernel documentation that appears on the Microsoft learn site.          |
-| [Semantic Kernel Starters](https://github.com/microsoft/semantic-kernel-starters) | Starter projects for Semantic Kernel to make it easier to get started.                        |
-| [Semantic Memory](https://github.com/microsoft/semantic-memory)                   | A service that allows you to create pipelines for ingesting, storing, and querying knowledge. |
 
 ## Join the community
 
@@ -163,6 +125,10 @@ To learn more and get started:
 - Join the [Discord community](https://aka.ms/SKDiscord)
 - Attend [regular office hours and SK community events](COMMUNITY.md)
 - Follow the team on our [blog](https://aka.ms/sk/blog)
+
+## Contributor Wall of Fame
+
+[![semantic-kernel contributors](https://contrib.rocks/image?repo=microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/graphs/contributors)
 
 ## Code of Conduct
 

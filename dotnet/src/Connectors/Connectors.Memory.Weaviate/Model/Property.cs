@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class Property
 {

@@ -5,14 +5,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
+namespace Microsoft.SemanticKernel.Connectors.DuckDB;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a DuckDB database.
@@ -71,7 +69,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken))
+        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken).ConfigureAwait(false))
         {
             yield return collection;
         }
@@ -112,7 +110,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         foreach (var key in keys)
         {
             var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result != null)
+            if (result is not null)
             {
                 yield return result;
             }
@@ -149,14 +147,13 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
             yield break;
         }
 
-        var collectionMemories = new List<MemoryRecord>();
-        List<(MemoryRecord Record, double Score)> embeddings = new();
+        List<(MemoryRecord Record, double Score)> embeddings = [];
 
-        await foreach (var dbEntry in this._dbConnector.GetNearestMatchesAsync(this._dbConnection, collectionName, embedding.ToArray(), limit, minRelevanceScore, cancellationToken))
+        await foreach (var dbEntry in this._dbConnector.GetNearestMatchesAsync(this._dbConnection, collectionName, embedding.ToArray(), limit, minRelevanceScore, cancellationToken).ConfigureAwait(false))
         {
             var entry = MemoryRecord.FromJsonMetadata(
                 json: dbEntry.MetadataString,
-                withEmbeddings ? JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, s_jsonSerializerOptions) : Array.Empty<float>(),
+                withEmbeddings ? dbEntry.Embedding : [],
                 dbEntry.Key,
                 ParseTimestamp(dbEntry.Timestamp));
             embeddings.Add(new(entry, dbEntry.Score));
@@ -184,31 +181,14 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    #region protected ================================================================================
-
-    /// <summary>
-    /// Disposes the resources used by the <see cref="DuckDBMemoryStore"/> instance.
-    /// </summary>
-    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-    private void Dispose(bool disposing)
-    {
         if (!this._disposedValue)
         {
-            if (disposing)
-            {
-                this._dbConnection.Close();
-                this._dbConnection.Dispose();
-            }
+            this._dbConnection.Close();
+            this._dbConnection.Dispose();
 
             this._disposedValue = true;
         }
     }
-
-    #endregion
 
     #region private ================================================================================
 
@@ -220,7 +200,6 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     {
         await memoryStore._dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
         await memoryStore._dbConnector.CreateTableAsync(memoryStore._dbConnection, cancellationToken).ConfigureAwait(false);
-        await memoryStore._dbConnector.CreateFunctionsAsync(memoryStore._dbConnection, cancellationToken).ConfigureAwait(false);
         return memoryStore;
     }
 
@@ -267,7 +246,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         record.Key = record.Metadata.Id;
 
         await this._dbConnector.UpdateOrInsertAsync(conn: connection,
-            collection: collectionName,
+            collectionName: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
             embedding: record.Embedding.ToArray(),
@@ -291,7 +270,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         {
             return MemoryRecord.FromJsonMetadata(
                 json: entry.Value.MetadataString,
-                JsonSerializer.Deserialize<ReadOnlyMemory<float>>(entry.Value.EmbeddingString, s_jsonSerializerOptions),
+                entry.Value.Embedding,
                 entry.Value.Key,
                 ParseTimestamp(entry.Value.Timestamp));
         }
@@ -301,15 +280,6 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
             ReadOnlyMemory<float>.Empty,
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
-    }
-
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var jso = new JsonSerializerOptions();
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
-        return jso;
     }
 
     #endregion
