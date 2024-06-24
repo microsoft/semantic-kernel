@@ -10,6 +10,7 @@ from openai import AsyncAzureOpenAI
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.mistral_ai import MistralAIChatCompletion, MistralAIChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.open_ai import (
     AzureChatCompletion,
     AzureChatPromptExecutionSettings,
@@ -68,6 +69,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
     return {
         "openai": (OpenAIChatCompletion(), OpenAIChatPromptExecutionSettings),
         "azure": (AzureChatCompletion(), AzureChatPromptExecutionSettings),
+        "mistralai": (MistralAIChatCompletion(ai_model_id='open-mistral-7b'), MistralAIChatPromptExecutionSettings),
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
     }
 
@@ -280,6 +282,16 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["Hello", "well"],
             id="azure_custom_client",
+        ),
+         pytest.param(
+            "mistralai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            id="mistral_text_input",
         ),
     ],
 )
