@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Text to image response
 /// </summary>
-internal class TextToImageResponse
+internal sealed class TextToImageResponse
 {
     /// <summary>
     /// OpenAI Image response
@@ -34,7 +34,7 @@ internal class TextToImageResponse
     /// List of possible images
     /// </summary>
     [JsonPropertyName("data")]
-    public IList<Image> Images { get; set; } = new List<Image>();
+    public IList<Image> Images { get; set; } = [];
 
     /// <summary>
     /// Creation time

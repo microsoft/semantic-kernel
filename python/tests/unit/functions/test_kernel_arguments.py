@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
@@ -5,7 +7,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 def test_kernel_arguments():
     kargs = KernelArguments()
     assert kargs is not None
-    assert kargs.execution_settings == {}
+    assert kargs.execution_settings is None
     assert not kargs.keys()
 
 

@@ -13,6 +13,8 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletionWithData;
 
+#pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
+
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAIChatCompletionWithDataService"/>
 /// </summary>
@@ -86,7 +88,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         // Assert
         var actualUri = this._messageHandlerStub.RequestUri?.AbsoluteUri;
 
-        Assert.Contains("2023-06-01-preview", actualUri, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("2024-02-01", actualUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
