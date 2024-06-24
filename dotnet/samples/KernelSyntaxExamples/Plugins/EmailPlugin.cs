@@ -8,14 +8,14 @@ namespace Plugins;
 
 internal sealed class EmailPlugin
 {
-    [SKFunction, Description("Given an e-mail and message body, send an email")]
+    [KernelFunction, Description("Given an e-mail and message body, send an email")]
     public string SendEmail(
         [Description("The body of the email message to send.")] string input,
         [Description("The email address to send email to.")] string email_address) =>
 
         $"Sent email to: {email_address}. Body: {input}";
 
-    [SKFunction, Description("Given a name, find email address")]
+    [KernelFunction, Description("Given a name, find email address")]
     public string GetEmailAddress(
         [Description("The name of the person whose email address needs to be found.")] string input,
         ILogger? logger = null)
@@ -23,6 +23,12 @@ internal sealed class EmailPlugin
         // Sensitive data, logging as trace, disabled by default
         logger?.LogTrace("Returning hard coded email for {0}", input);
 
-        return "johndoe1234@example.com";
+        return input switch
+        {
+            "Jane" => "janedoe4321@example.com",
+            "Paul" => "paulsmith5678@example.com",
+            "Mary" => "maryjones8765@example.com",
+            _ => "johndoe1234@example.com",
+        };
     }
 }

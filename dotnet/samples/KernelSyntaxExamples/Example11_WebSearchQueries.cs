@@ -1,32 +1,42 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
-using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-// ReSharper disable once InconsistentNaming
-public static class Example11_WebSearchQueries
+namespace Examples;
+
+public class Example11_WebSearchQueries : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== WebSearchQueries ========");
+        WriteLine("======== WebSearchQueries ========");
 
-        IKernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
+        Kernel kernel = new();
 
         // Load native plugins
-        var plugin = new SearchUrlPlugin();
-        var bing = kernel.ImportFunctions(plugin, "search");
+        var bing = kernel.ImportPluginFromType<SearchUrlPlugin>("search");
 
         // Run
         var ask = "What's the tallest building in Europe?";
-        var result = await kernel.RunAsync(
-            ask,
-            bing["BingSearchUrl"]
-        );
+        var result = await kernel.InvokeAsync(bing["BingSearchUrl"], new() { ["query"] = ask });
 
-        Console.WriteLine(ask + "\n");
-        Console.WriteLine(result.GetValue<string>());
+        WriteLine(ask + "\n");
+        WriteLine(result.GetValue<string>());
+
+        /* Expected output: 
+        * ======== WebSearchQueries ========
+        * What's the tallest building in Europe?
+        * 
+        * https://www.bing.com/search?q=What%27s%20the%20tallest%20building%20in%20Europe%3F
+        * == DONE ==
+        */
+    }
+
+    public Example11_WebSearchQueries(ITestOutputHelper output) : base(output)
+    {
     }
 }

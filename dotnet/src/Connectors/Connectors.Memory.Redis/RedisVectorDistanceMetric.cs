@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
+namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
 /// Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".

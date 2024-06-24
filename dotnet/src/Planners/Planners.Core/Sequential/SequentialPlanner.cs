@@ -1,23 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Sequential;
-using Microsoft.SemanticKernel.Planning;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
 /// </summary>
-public sealed class SequentialPlanner : ISequentialPlanner
+public sealed class SequentialPlanner
 {
     private const string StopSequence = "<!-- END -->";
     private const string AvailableFunctionsKey = "available_functions";
@@ -25,10 +20,10 @@ public sealed class SequentialPlanner : ISequentialPlanner
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
     /// </summary>
-    /// <param name="kernel">The semantic kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="config">The planner configuration.</param>
     public SequentialPlanner(
-        IKernel kernel,
+        Kernel kernel,
         SequentialPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
@@ -40,14 +35,13 @@ public sealed class SequentialPlanner : ISequentialPlanner
         // Set up prompt template
         string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Sequential.skprompt.txt");
 
-        this._functionFlowFunction = kernel.CreateSemanticFunction(
+        this._functionFlowFunction = kernel.CreateFunctionFromPrompt(
             promptTemplate: promptTemplate,
-            pluginName: RestrictedPluginName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            requestSettings: new AIRequestSettings()
+            executionSettings: new PromptExecutionSettings()
             {
-                ExtensionData = new Dictionary<string, object>()
+                ExtensionData = new()
                 {
                     { "Temperature", 0.0 },
                     { "StopSequences", new[] { StopSequence } },
@@ -56,49 +50,61 @@ public sealed class SequentialPlanner : ISequentialPlanner
             });
 
         this._kernel = kernel;
+        this._logger = kernel.LoggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
-    /// <inheritdoc />
-    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
+    /// <summary>Creates a plan for the specified goal.</summary>
+    /// <param name="goal">The goal for which a plan should be created.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The created plan.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
+    /// <exception cref="KernelException">A plan could not be created.</exception>
+    public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(goal))
-        {
-            throw new SKException("The goal specified is empty");
-        }
+        Verify.NotNullOrWhiteSpace(goal);
 
-        string relevantFunctionsManual = await this._kernel.Functions.GetFunctionsManualAsync(this.Config, goal, null, cancellationToken).ConfigureAwait(false);
+        return PlannerInstrumentation.CreatePlanAsync(
+            createPlanAsync: static (SequentialPlanner planner, string goal, CancellationToken cancellationToken) => planner.CreatePlanCoreAsync(goal, cancellationToken),
+            planToString: static (Plan plan) => plan.ToSafePlanString(),
+            this, goal, this._logger, cancellationToken);
+    }
+
+    private async Task<Plan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken)
+    {
+        string relevantFunctionsManual = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, goal, null, cancellationToken).ConfigureAwait(false);
 
         ContextVariables vars = new(goal)
         {
             [AvailableFunctionsKey] = relevantFunctionsManual
         };
 
-        KernelResult planResult = await this._kernel.RunAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
+        FunctionResult planResult = await this._kernel.InvokeAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
 
         string? planResultString = planResult.GetValue<string>()?.Trim();
 
         if (string.IsNullOrWhiteSpace(planResultString))
         {
-            throw new SKException(
+            throw new KernelException(
                 "Unable to create plan. No response from Function Flow function. " +
                 $"\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
         }
 
-        var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Functions.GetFunctionCallback();
+        var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Plugins.GetFunctionCallback();
 
         Plan plan;
         try
         {
             plan = planResultString!.ToPlanFromXml(goal, getFunctionCallback, this.Config.AllowMissingFunctions);
         }
-        catch (SKException e)
+        catch (KernelException e)
         {
-            throw new SKException($"Unable to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}", e);
+            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}", e);
         }
 
         if (plan.Steps.Count == 0)
         {
-            throw new SKException($"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
+            throw new KernelException($"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
         }
 
         return plan;
@@ -106,12 +112,13 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
     private SequentialPlannerConfig Config { get; }
 
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed
     /// </summary>
-    private readonly ISKFunction _functionFlowFunction;
+    private readonly KernelFunction _functionFlowFunction;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation

@@ -1,92 +1,41 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
-#pragma warning disable RCS1192 // (Unnecessary usage of verbatim string literal)
+namespace Examples;
 
-// ReSharper disable once InconsistentNaming
-public static class Example43_GetModelResult
+public class Example43_GetModelResult : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task GetTokenUsageMetadataAsync()
     {
-        Console.WriteLine("======== Inline Function Definition + Result ========");
+        WriteLine("======== Inline Function Definition + Invocation ========");
 
-        IKernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(
+        // Create kernel
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        // Function defined using few-shot design pattern
+        // Create function
         const string FunctionDefinition = "Hi, give me 5 book suggestions about: {{$input}}";
+        KernelFunction myFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
-        var myFunction = kernel.CreateSemanticFunction(FunctionDefinition);
+        // Invoke function through kernel
+        FunctionResult result = await kernel.InvokeAsync(myFunction, new() { ["input"] = "travel" });
 
-        // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var functionResult = await myFunction.InvokeAsync("Sci-fi",
-            kernel,
-            requestSettings: new OpenAIRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+        // Display results
+        WriteLine(result.GetValue<string>());
+        WriteLine(result.Metadata?["Usage"]?.AsJson());
+        WriteLine();
+    }
 
-        Console.WriteLine(functionResult.GetValue<string>());
-        Console.WriteLine(functionResult.GetModelResults()?.Select(result => result.GetOpenAIChatResult()).AsJson());
-        Console.WriteLine();
-
-        // Using the Kernel RunAsync
-        var kernelResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
-        var modelResults = kernelResult.FunctionResults.SelectMany(l => l.GetModelResults() ?? Enumerable.Empty<ModelResult>());
-
-        Console.WriteLine(kernelResult.GetValue<string>());
-        Console.WriteLine(modelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
-        Console.WriteLine();
-
-        // Using Chat Completion directly
-        var chatCompletion = new OpenAIChatCompletion(
-            modelId: TestConfiguration.OpenAI.ChatModelId,
-            apiKey: TestConfiguration.OpenAI.ApiKey);
-        var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
-
-        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 });
-
-        Console.WriteLine(await completionResults[0].GetCompletionAsync());
-        Console.WriteLine(completionResults[0].ModelResult.GetOpenAIChatResult().Usage.AsJson());
-        Console.WriteLine();
-
-        // Getting the error details
-        kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
-            .Build();
-        var errorFunction = kernel.CreateSemanticFunction(FunctionDefinition);
-
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
-        {
-            await kernel.RunAsync("sorry I forgot your birthday", errorFunction);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(OutputExceptionDetail(ex));
-        }
-#pragma warning restore CA1031 // Do not catch general exception types
-
-        string OutputExceptionDetail(Exception? exception)
-        {
-            return exception switch
-            {
-                HttpOperationException httpException => new { StatusCode = httpException.StatusCode?.ToString(), Message = httpException.Message, Response = httpException.ResponseContent }.AsJson(),
-                { } e => e.Message,
-                _ => string.Empty
-            };
-        }
+    public Example43_GetModelResult(ITestOutputHelper output) : base(output)
+    {
     }
 }

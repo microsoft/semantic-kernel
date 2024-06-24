@@ -2,135 +2,140 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
+
 public class MultipleModelTests
 {
     [Fact]
     public async Task ItUsesServiceIdWhenProvidedAsync()
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
 
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+        var fakeTextContent = new TextContent("llmResult");
+        mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
+        mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, false)
-            .WithAIService("service2", mockTextCompletion2.Object, true)
-            .Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        Kernel kernel = builder.Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service1" });
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service1");
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextGeneration2.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
     [Fact]
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
 
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, false)
-            .WithAIService("service2", mockTextCompletion2.Object, true)
-            .Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        Kernel kernel = builder.Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service3" });
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service3");
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
+        var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
-        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
+        Assert.Equal("Required service of type Microsoft.SemanticKernel.TextGeneration.ITextGenerationService not registered. Expected serviceIds: service3.", exception.Message);
     }
 
     [Theory]
-    [InlineData(new string[] { "service1" }, 1, new int[] { 1, 0, 0 })]
-    [InlineData(new string[] { "service2" }, 2, new int[] { 0, 1, 0 })]
-    [InlineData(new string[] { "service3" }, 0, new int[] { 0, 0, 1 })]
-    [InlineData(new string[] { "service4", "service1" }, 1, new int[] { 1, 0, 0 })]
-    public async Task ItUsesServiceIdByOrderAsync(string[] serviceIds, int defaultServiceIndex, int[] callCount)
+    [InlineData(new string[] { "service1" }, new int[] { 1, 0, 0 })]
+    [InlineData(new string[] { "service4", "service1" }, new int[] { 1, 0, 0 })]
+    public async Task ItUsesServiceIdByOrderAsync(string[] serviceIds, int[] callCount)
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockTextCompletion3 = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
+        var mockTextGeneration3 = new Mock<ITextGenerationService>();
+        var fakeTextContent = new TextContent("llmResult");
 
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion3.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+        mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
+        mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
+        mockTextGeneration3.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, defaultServiceIndex == 0)
-            .WithAIService("service2", mockTextCompletion2.Object, defaultServiceIndex == 1)
-            .WithAIService("service3", mockTextCompletion3.Object, defaultServiceIndex == 2)
-            .Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        builder.Services.AddKeyedSingleton("service3", mockTextGeneration3.Object);
+        Kernel kernel = builder.Build();
 
-        var templateConfig = new PromptTemplateConfig();
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
         foreach (var serviceId in serviceIds)
         {
-            templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = serviceId });
+            promptConfig.AddExecutionSettings(new PromptExecutionSettings(), serviceId);
         }
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service1"), It.IsAny<CancellationToken>()), Times.Exactly(callCount[0]));
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service2"), It.IsAny<CancellationToken>()), Times.Exactly(callCount[1]));
-        mockTextCompletion3.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service3"), It.IsAny<CancellationToken>()), Times.Exactly(callCount[2]));
+        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(callCount[0]));
+        mockTextGeneration2.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(callCount[1]));
+        mockTextGeneration3.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(callCount[2]));
     }
 
     [Fact]
     public async Task ItUsesServiceIdWithJsonPromptTemplateConfigAsync()
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockTextCompletion3 = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
+        var mockTextGeneration3 = new Mock<ITextGenerationService>();
+        var fakeTextContent = new TextContent("llmResult");
 
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion3.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+        mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
+        mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
+        mockTextGeneration3.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
 
-        var kernel = new KernelBuilder()
-            .WithAIService("service1", mockTextCompletion1.Object, true)
-            .WithAIService("service2", mockTextCompletion2.Object, false)
-            .WithAIService("service3", mockTextCompletion3.Object, false)
-            .Build();
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        builder.Services.AddKeyedSingleton("service3", mockTextGeneration3.Object);
+        Kernel kernel = builder.Build();
 
         var json = @"{
-  ""schema"": 1,
+  ""template"": ""template"",
   ""description"": ""Semantic function"",
-  ""models"": [
-    {
-      ""service_id"": ""service2"",
+""input_variables"":
+    [
+        {
+            ""name"": ""input variable name"",
+            ""description"": ""input variable description"",
+            ""default"": ""default value"",
+            ""is_required"": true
+        }
+    ],
+  ""execution_settings"": {
+    ""service2"": {
       ""max_tokens"": 100,
       ""temperature"": 0.2,
       ""top_p"": 0.0,
@@ -140,8 +145,7 @@ public class MultipleModelTests
         ""\n""
       ]
     },
-    {
-      ""service_id"": ""service3"",
+    ""service3"": {
       ""max_tokens"": 100,
       ""temperature"": 0.4,
       ""top_p"": 0.0,
@@ -151,18 +155,18 @@ public class MultipleModelTests
         ""\n""
       ]
     }
-  ]
+  }
 }";
 
-        var templateConfig = PromptTemplateConfig.FromJson(json);
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+        var promptConfig = PromptTemplateConfig.FromJson(json);
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service1"), It.IsAny<CancellationToken>()), Times.Never());
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service2"), It.IsAny<CancellationToken>()), Times.Once());
-        mockTextCompletion3.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service3"), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextGeneration2.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextGeneration3.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 }

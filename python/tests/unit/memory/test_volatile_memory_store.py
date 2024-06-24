@@ -27,9 +27,7 @@ async def test_cosine_similarity_zero_query():
     query_embedding = np.array([0, 0, 0])
     collection_embeddings = np.array([[1, 0, 1], [0, 1, 0]])
     with raises(ValueError):
-        _ = volatile_memory_store.compute_similarity_scores(
-            query_embedding, collection_embeddings
-        )
+        _ = volatile_memory_store.compute_similarity_scores(query_embedding, collection_embeddings)
 
 
 @mark.asyncio
@@ -39,9 +37,7 @@ async def test_cosine_similarity_zero_collection():
     query_embedding = np.array([1, 0, 1])
     collection_embeddings = np.array([[0, 0, 0], [0, 0, 0]])
     with raises(ValueError):
-        _ = volatile_memory_store.compute_similarity_scores(
-            query_embedding, collection_embeddings
-        )
+        _ = volatile_memory_store.compute_similarity_scores(query_embedding, collection_embeddings)
 
 
 @mark.asyncio
@@ -51,7 +47,5 @@ async def test_cosine_similarity_partial_zero_collection():
     query_embedding = np.array([1, 0, 1])
     collection_embeddings = np.array([[1, 0, 1], [0, 0, 0]])
     expected_scores = np.array([1.0, -1.0])
-    scores = volatile_memory_store.compute_similarity_scores(
-        query_embedding, collection_embeddings
-    )
+    scores = volatile_memory_store.compute_similarity_scores(query_embedding, collection_embeddings)
     assert np.allclose(expected_scores, scores)

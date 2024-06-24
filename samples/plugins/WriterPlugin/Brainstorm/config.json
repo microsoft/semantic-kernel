@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "description": "Given a goal or topic description generate a list of ideas",
-  "models": [
-    {
+  "execution_settings": {
+    "default": {
       "max_tokens": 2000,
       "temperature": 0.5,
       "top_p": 1.0,
@@ -10,14 +10,12 @@
       "frequency_penalty": 0.0,
       "stop_sequences": ["##END##"]
     }
-  ],
-  "input": {
-    "parameters": [
-      {
-        "name": "input",
-        "description": "A topic description or goal.",
-        "defaultValue": ""
-      }
-    ]
-  }
+  },
+  "input_variables": [
+    {
+      "name": "input",
+      "description": "A topic description or goal.",
+      "default": ""
+    }
+  ]
 }

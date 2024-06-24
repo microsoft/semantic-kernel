@@ -5,11 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Pinecone Document entity.
@@ -154,20 +152,11 @@ public class PineconeDocument
             .Where(x => !propertiesToSkip.Contains(x.Key))
             .ToDictionary(x => x.Key, x => x.Value);
 
-        return JsonSerializer.Serialize(distinctMetadata, s_jsonSerializerOptions);
+        return JsonSerializer.Serialize(distinctMetadata, JsonOptionsCache.Default);
     }
 
     internal UpdateVectorRequest ToUpdateRequest()
     {
         return UpdateVectorRequest.FromPineconeDocument(this);
-    }
-
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var jso = new JsonSerializerOptions();
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
-        return jso;
     }
 }

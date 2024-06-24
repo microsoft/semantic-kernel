@@ -6,7 +6,7 @@ using System.Text.Json;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
+namespace Microsoft.SemanticKernel.Connectors.Kusto;
 
 /// <summary>
 /// Contains serialization/deserialization logic for memory record properties in Kusto.
@@ -19,7 +19,7 @@ public static class KustoSerializer
     /// <param name="embedding">Instance of an embedding for serialization.</param>
     public static string SerializeEmbedding(ReadOnlyMemory<float> embedding)
     {
-        return JsonSerializer.Serialize(embedding, s_jsonSerializerOptions);
+        return JsonSerializer.Serialize(embedding, JsonOptionsCache.Default);
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public static class KustoSerializer
     {
         return string.IsNullOrEmpty(embedding) ?
             default :
-            JsonSerializer.Deserialize<ReadOnlyMemory<float>>(embedding!, s_jsonSerializerOptions);
+            JsonSerializer.Deserialize<ReadOnlyMemory<float>>(embedding!, JsonOptionsCache.Default);
     }
 
     /// <summary>
@@ -92,15 +92,6 @@ public static class KustoSerializer
     #region private ================================================================================
 
     private const string TimestampFormat = "yyyy-MM-ddTHH:mm:ssZ";
-
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var jso = new JsonSerializerOptions();
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
-        return jso;
-    }
 
     #endregion
 }

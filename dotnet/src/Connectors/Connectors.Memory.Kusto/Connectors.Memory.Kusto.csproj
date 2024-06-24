@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Kusto</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel.Connectors.Memory.Kusto</RootNamespace>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Kusto</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Connectors.Kusto</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-
+    <VersionSuffix>alpha</VersionSuffix>
     <!--NU5104: A stable release of a package should not have a prerelease dependency.-->
     <NoWarn>NU5104</NoWarn>
   </PropertyGroup>
@@ -15,7 +15,7 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <PackageId>Microsoft.SemanticKernel.Connectors.Memory.Kusto</PackageId>
+    <PackageId>Microsoft.SemanticKernel.Connectors.Kusto</PackageId>
     <Title>Semantic Kernel - Azure Data Explorer (Kusto) Semantic Memory</Title>
     <Description>Azure Data Explorer (Kusto) Semantic Memory connector for Semantic Kernel</Description>
   </PropertyGroup>

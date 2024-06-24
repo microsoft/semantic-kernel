@@ -4,11 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 
-namespace Microsoft.SemanticKernel.Planners.Sequential;
+namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Parse sequential plan text into a plan.
@@ -49,8 +46,8 @@ internal static class SequentialPlanParser
     /// <param name="getFunctionCallback">The callback to get a plugin function.</param>
     /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
-    /// <exception cref="SKException">Thrown when the plan xml is invalid.</exception>
-    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getFunctionCallback, bool allowMissingFunctions = false)
+    /// <exception cref="KernelException">Thrown when the plan xml is invalid.</exception>
+    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, KernelFunction?> getFunctionCallback, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
         try
@@ -85,12 +82,12 @@ internal static class SequentialPlanParser
                 }
                 catch (XmlException ex)
                 {
-                    throw new SKException($"Failed to parse plan xml strings: '{xmlString}' or '{planXml}'", ex);
+                    throw new KernelException($"Failed to parse plan xml strings: '{xmlString}' or '{planXml}'", ex);
                 }
             }
             else
             {
-                throw new SKException($"Failed to parse plan xml string: '{xmlString}'", e);
+                throw new KernelException($"Failed to parse plan xml string: '{xmlString}'", e);
             }
         }
 
@@ -125,13 +122,14 @@ internal static class SequentialPlanParser
                         if (pluginFunction is not null)
                         {
                             var planStep = new Plan(pluginFunction);
+                            planStep.PluginName = pluginName;
 
                             var functionVariables = new ContextVariables();
                             var functionOutputs = new List<string>();
                             var functionResults = new List<string>();
 
-                            var view = pluginFunction.Describe();
-                            foreach (var p in view.Parameters)
+                            var metadata = pluginFunction.Metadata;
+                            foreach (var p in metadata.Parameters)
                             {
                                 functionVariables.Set(p.Name, p.DefaultValue);
                             }
@@ -170,11 +168,11 @@ internal static class SequentialPlanParser
                         {
                             if (allowMissingFunctions)
                             {
-                                plan.AddSteps(new Plan(pluginFunctionName));
+                                plan.AddSteps(new Plan(pluginFunctionName) { PluginName = pluginName });
                             }
                             else
                             {
-                                throw new SKException($"Failed to find function '{pluginFunctionName}' in plugin '{pluginName}'.");
+                                throw new KernelException($"Failed to find function '{pluginFunctionName}' in plugin '{pluginName}'.");
                             }
                         }
                     }

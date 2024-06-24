@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
@@ -19,22 +18,6 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 /// </summary>
 public sealed class TaskListPlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Task reminder as DateTimeOffset.
-        /// </summary>
-        public const string Reminder = "reminder";
-
-        /// <summary>
-        /// Whether to include completed tasks.
-        /// </summary>
-        public const string IncludeCompleted = "includeCompleted";
-    }
-
     private readonly ITaskManagementConnector _connector;
     private readonly ILogger _logger;
 
@@ -48,7 +31,7 @@ public sealed class TaskListPlugin
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(TaskListPlugin)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(TaskListPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -72,7 +55,7 @@ public sealed class TaskListPlugin
     /// <summary>
     /// Add a task to a To-Do list with an optional reminder.
     /// </summary>
-    [SKFunction, Description("Add a task to a task list with an optional reminder.")]
+    [KernelFunction, Description("Add a task to a task list with an optional reminder.")]
     public async Task AddTaskAsync(
         [Description("Title of the task.")] string title,
         [Description("Reminder for the task in DateTimeOffset (optional)")] string? reminder = null,
@@ -98,7 +81,7 @@ public sealed class TaskListPlugin
     /// <summary>
     /// Get tasks from the default task list.
     /// </summary>
-    [SKFunction, Description("Get tasks from the default task list.")]
+    [KernelFunction, Description("Get tasks from the default task list.")]
     public async Task<string> GetDefaultTasksAsync(
         [Description("Whether to include completed tasks (optional)")] string includeCompleted = "false",
         CancellationToken cancellationToken = default)

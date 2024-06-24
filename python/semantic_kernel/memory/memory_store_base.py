@@ -13,14 +13,14 @@ class MemoryStoreBase(ABC):
         return self
 
     async def __aexit__(self, *args):
-        await self.close_async()
+        await self.close()
 
-    async def close_async(self):
+    async def close(self):
         """Async close connection, invoked by MemoryStoreBase.__aexit__()"""
         pass
 
     @abstractmethod
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in the data store.
 
         Arguments:
@@ -32,7 +32,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def get_collections_async(
+    async def get_collections(
         self,
     ) -> List[str]:
         """Gets all collection names in the data store.
@@ -43,7 +43,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection from the data store.
 
         Arguments:
@@ -55,7 +55,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """Determines if a collection exists in the data store.
 
         Arguments:
@@ -68,7 +68,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a memory record into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -83,9 +83,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         """Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -100,9 +98,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
-    ) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -116,9 +112,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
-    ) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -132,7 +126,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         """Removes a memory record from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -145,7 +139,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -158,7 +152,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
@@ -182,7 +176,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,

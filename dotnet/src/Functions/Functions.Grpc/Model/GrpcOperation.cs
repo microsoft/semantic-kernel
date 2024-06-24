@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Model;
+namespace Microsoft.SemanticKernel.Plugins.Grpc.Model;
 
 /// <summary>
 /// The gRPC operation.

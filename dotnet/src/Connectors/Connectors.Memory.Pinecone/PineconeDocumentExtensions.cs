@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Extensions for <see cref="PineconeDocument"/> class.

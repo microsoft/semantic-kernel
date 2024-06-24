@@ -8,14 +8,13 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
-using Microsoft.SemanticKernel.Plugins.Memory;
+using Microsoft.SemanticKernel.Connectors.Weaviate;
+using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Weaviate;
+namespace SemanticKernel.Connectors.UnitTests.Weaviate;
 
 public sealed class WeaviateMemoryBuilderExtensionsTests : IDisposable
 {
@@ -35,7 +34,7 @@ public sealed class WeaviateMemoryBuilderExtensionsTests : IDisposable
     public async Task WeaviateMemoryStoreShouldBeProperlyInitializedAsync(string? apiVersion, string expectedAddress)
     {
         // Arrange
-        var embeddingGenerationMock = Mock.Of<ITextEmbeddingGeneration>();
+        var embeddingGenerationMock = Mock.Of<ITextEmbeddingGenerationService>();
 
         var getResponse = new
         {

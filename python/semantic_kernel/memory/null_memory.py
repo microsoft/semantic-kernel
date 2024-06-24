@@ -7,7 +7,7 @@ from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryB
 
 
 class NullMemory(SemanticTextMemoryBase):
-    async def save_information_async(
+    async def save_information(
         self,
         collection: str,
         text: str,
@@ -15,10 +15,10 @@ class NullMemory(SemanticTextMemoryBase):
         description: Optional[str] = None,
         additional_metadata: Optional[str] = None,
     ) -> None:
-        """Nullifies behavior of SemanticTextMemoryBase.save_information_async()"""
+        """Nullifies behavior of SemanticTextMemoryBase.save_information()"""
         return None
 
-    async def save_reference_async(
+    async def save_reference(
         self,
         collection: str,
         text: str,
@@ -27,27 +27,25 @@ class NullMemory(SemanticTextMemoryBase):
         description: Optional[str] = None,
         additional_metadata: Optional[str] = None,
     ) -> None:
-        """Nullifies behavior of SemanticTextMemoryBase.save_reference_async()"""
+        """Nullifies behavior of SemanticTextMemoryBase.save_reference()"""
         return None
 
-    async def get_async(
-        self, collection: str, query: str
-    ) -> Optional[MemoryQueryResult]:
-        """Nullifies behavior of SemanticTextMemoryBase.get_async()"""
+    async def get(self, collection: str, query: str) -> Optional[MemoryQueryResult]:
+        """Nullifies behavior of SemanticTextMemoryBase.get()"""
         return None
 
-    async def search_async(
+    async def search(
         self,
         collection: str,
         query: str,
         limit: int = 1,
         min_relevance_score: float = 0.7,
     ) -> List[MemoryQueryResult]:
-        """Nullifies behavior of SemanticTextMemoryBase.search_async()"""
+        """Nullifies behavior of SemanticTextMemoryBase.search()"""
         return []
 
-    async def get_collections_async(self) -> List[str]:
-        """Nullifies behavior of SemanticTextMemoryBase.get_collections_async()"""
+    async def get_collections(self) -> List[str]:
+        """Nullifies behavior of SemanticTextMemoryBase.get_collections()"""
         return []
 
 

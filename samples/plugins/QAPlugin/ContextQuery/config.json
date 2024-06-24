@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "description": "Ask the AI for answers contextually relevant to you based on your name, address and pertinent information retrieved from your personal secondary memory",
-  "models": [
-    {
+  "execution_settings": {
+    "default": {
       "max_tokens": 256,
       "temperature": 0.0,
       "top_p": 0.0,
@@ -12,5 +12,5 @@
         "[done]"
       ]
     }
-  ]
+  }
 }

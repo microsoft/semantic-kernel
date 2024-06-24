@@ -8,11 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Pinecone Vector database.
@@ -36,7 +34,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         ILoggerFactory? loggerFactory = null)
     {
         this._pineconeClient = pineconeClient;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(PineconeMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -51,7 +49,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         ILoggerFactory? loggerFactory = null)
     {
         this._pineconeClient = new PineconeClient(pineconeEnvironment, apiKey, loggerFactory);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(PineconeMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -65,7 +63,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         if (!await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
-            throw new SKException("Index creation is not supported within memory store. " +
+            throw new KernelException("Index creation is not supported within memory store. " +
                 $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}. " +
                 $"Ensure index state is {IndexState.Ready}.");
         }
@@ -308,7 +306,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
-    /// <exception cref="SKException"></exception>
+    /// <exception cref="KernelException"></exception>
     public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdAsync(string indexName,
         string documentId,
         int limit = 3,
@@ -459,7 +457,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
-    /// <exception cref="SKException"></exception>
+    /// <exception cref="KernelException"></exception>
     public async Task RemoveWithDocumentIdAsync(string indexName, string documentId, string indexNamespace, CancellationToken cancellationToken = default)
     {
         try
@@ -484,7 +482,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
-    /// <exception cref="SKException"></exception>
+    /// <exception cref="KernelException"></exception>
     public async Task RemoveWithDocumentIdBatchAsync(
         string indexName,
         IEnumerable<string> documentIds,

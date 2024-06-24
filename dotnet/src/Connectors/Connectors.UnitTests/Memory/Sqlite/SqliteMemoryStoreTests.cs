@@ -6,11 +6,11 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Sqlite;
+namespace SemanticKernel.Connectors.UnitTests.Sqlite;
 
 /// <summary>
 /// Unit tests of <see cref="SqliteMemoryStore"/>.

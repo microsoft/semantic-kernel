@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
 /// A MongoDB memory entry.

@@ -7,12 +7,10 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Extensions;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -33,12 +31,12 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// The kernel builder
     /// </summary>
-    private readonly KernelBuilder _kernelBuilder;
+    private readonly IKernelBuilder _kernelBuilder;
 
     /// <summary>
     /// The logger
     /// </summary>
-    private readonly ILogger<FlowExecutor> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// The global plugin collection
@@ -58,7 +56,7 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// System kernel for flow execution
     /// </summary>
-    private readonly IKernel _systemKernel;
+    private readonly Kernel _systemKernel;
 
     /// <summary>
     /// Re-Act engine for flow execution
@@ -91,46 +89,78 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// Check repeat step function
     /// </summary>
-    private readonly ISKFunction _checkRepeatStepFunction;
+    private readonly KernelFunction _checkRepeatStepFunction;
 
     /// <summary>
     /// Check start step function
     /// </summary>
-    private readonly ISKFunction _checkStartStepFunction;
+    private readonly KernelFunction _checkStartStepFunction;
 
-    internal FlowExecutor(KernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalPluginCollection, FlowOrchestratorConfig? config = null)
+    /// <summary>
+    /// ExecuteFlow function
+    /// </summary>
+    private readonly KernelFunction _executeFlowFunction;
+
+    /// <summary>
+    /// ExecuteStep function
+    /// </summary>
+    private readonly KernelFunction _executeStepFunction;
+
+    internal FlowExecutor(IKernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalPluginCollection, FlowOrchestratorConfig? config = null)
     {
         this._kernelBuilder = kernelBuilder;
         this._systemKernel = kernelBuilder.Build();
 
-        this._logger = this._systemKernel.LoggerFactory.CreateLogger<FlowExecutor>();
+        this._logger = this._systemKernel.LoggerFactory.CreateLogger(typeof(FlowExecutor)) ?? NullLogger.Instance;
         this._config = config ?? new FlowOrchestratorConfig();
 
         this._flowStatusProvider = statusProvider;
         this._globalPluginCollection = globalPluginCollection;
 
-        var checkRepeatStepPrompt = EmbeddedResource.Read("Plugins.CheckRepeatStep.skprompt.txt")!;
-        var checkRepeatStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckRepeatStep.config.json")!);
-        this._checkRepeatStepFunction = this.ImportSemanticFunction(this._systemKernel, "CheckRepeatStep", checkRepeatStepPrompt, checkRepeatStepConfig);
+        var checkRepeatStepConfig = this.ImportPromptTemplateConfig("CheckRepeatStep");
+        this._checkRepeatStepFunction = KernelFunctionFactory.CreateFromPrompt(checkRepeatStepConfig);
 
-        var checkStartStepPrompt = EmbeddedResource.Read("Plugins.CheckStartStep.skprompt.txt")!;
-        var checkStartStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckStartStep.config.json")!);
-        this._checkStartStepFunction = this.ImportSemanticFunction(this._systemKernel, "CheckStartStep", checkStartStepPrompt, checkStartStepConfig);
+        var checkStartStepConfig = this.ImportPromptTemplateConfig("CheckStartStep");
+        this._checkStartStepFunction = KernelFunctionFactory.CreateFromPrompt(checkStartStepConfig);
 
         this._config.ExcludedPlugins.Add(RestrictedPluginName);
         this._reActEngine = new ReActEngine(this._systemKernel, this._logger, this._config);
+
+        this._executeFlowFunction = KernelFunctionFactory.CreateFromMethod(this.ExecuteFlowAsync, "ExecuteFlow", "Execute a flow");
+        this._executeStepFunction = KernelFunctionFactory.CreateFromMethod(this.ExecuteStepAsync, "ExecuteStep", "Execute a flow step");
     }
 
-    public async Task<ContextVariables> ExecuteAsync(Flow flow, string sessionId, string input, ContextVariables contextVariables)
+    private PromptTemplateConfig ImportPromptTemplateConfig(string functionName)
+    {
+        var config = KernelFunctionYaml.ToPromptTemplateConfig(EmbeddedResource.Read($"Plugins.{functionName}.yaml")!);
+
+        // if AIServiceIds is specified, only include the relevant execution settings
+        if (this._config.AIServiceIds.Count > 0)
+        {
+            var serviceIdsToRemove = config.ExecutionSettings.Keys.Except(this._config.AIServiceIds);
+            foreach (var serviceId in serviceIdsToRemove)
+            {
+                config.ExecutionSettings.Remove(serviceId);
+            }
+        }
+
+        return config;
+    }
+
+    public async Task<FunctionResult> ExecuteFlowAsync(Flow flow, string sessionId, string input, KernelArguments kernelArguments)
     {
         Verify.NotNull(flow, nameof(flow));
 
-        this._logger?.LogInformation("Executing flow {FlowName} with sessionId={SessionId}.", flow.Name, sessionId);
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger.LogInformation("Executing flow {FlowName} with sessionId={SessionId}.", flow.Name, sessionId);
+        }
+
         var sortedSteps = flow.SortSteps();
 
-        var rootContext = contextVariables.Clone();
+        var rootContext = new KernelArguments(kernelArguments);
 
-        // populate persisted state variables
+        // populate persisted state arguments
         ExecutionState executionState = await this._flowStatusProvider.GetExecutionStateAsync(sessionId).ConfigureAwait(false);
         List<string> outputs = new();
 
@@ -141,26 +171,26 @@ internal class FlowExecutor : IFlowExecutor
 
             foreach (var kv in executionState.Variables)
             {
-                rootContext.Set(kv.Key, kv.Value);
+                rootContext[kv.Key] = kv.Value;
             }
 
             this.ValidateStep(step, rootContext);
 
             // init step execution state
             string stepKey = $"{stepIndex}_{step.Goal}";
-            if (!executionState.StepStates.ContainsKey(stepKey))
+            if (!executionState.StepStates.TryGetValue(stepKey, out ExecutionState.StepExecutionState? stepState))
             {
-                executionState.StepStates.Add(stepKey, new ExecutionState.StepExecutionState());
+                stepState = new ExecutionState.StepExecutionState();
+                executionState.StepStates.Add(stepKey, stepState);
             }
 
-            ExecutionState.StepExecutionState stepState = executionState.StepStates[stepKey];
             var stepId = $"{stepKey}_{stepState.ExecutionCount}";
 
             var continueLoop = false;
             var completed = step.Provides.All(_ => executionState.Variables.ContainsKey(_));
             if (!completed)
             {
-                // On the first iteration of an Optional or ZeroOrMore step, we need to check whether the user wants to start the stepstep
+                // On the first iteration of an Optional or ZeroOrMore step, we need to check whether the user wants to start the step
                 if (step.CompletionType is CompletionType.Optional or CompletionType.ZeroOrMore && stepState.Status == ExecutionState.Status.NotStarted)
                 {
                     RepeatOrStartStepResult? startStep = await this.CheckStartStepAsync(rootContext, step, sessionId, stepId, input).ConfigureAwait(false);
@@ -181,7 +211,11 @@ internal class FlowExecutor : IFlowExecutor
                     {
                         stepState.Status = ExecutionState.Status.InProgress;
                         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
-                        this._logger?.LogInformation("Need to start step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+
+                        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                        {
+                            this._logger.LogInformation("Need to start step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                        }
                     }
                     else
                     {
@@ -192,113 +226,129 @@ internal class FlowExecutor : IFlowExecutor
                         }
 
                         await this.CompleteStepAsync(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
-                        this._logger?.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+
+                        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                        {
+                            this._logger.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                        }
+
                         continue;
                     }
                 }
 
                 // execute step
-                this._logger?.LogInformation(
-                    "Executing step {StepIndex} for iteration={Iteration}, goal={StepGoal}, input={Input}.", stepIndex,
-                    stepState.ExecutionCount, step.Goal, input);
+                if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                {
+                    this._logger.LogInformation(
+                        "Executing step {StepIndex} for iteration={Iteration}, goal={StepGoal}, input={Input}.", stepIndex,
+                        stepState.ExecutionCount, step.Goal, input);
+                }
 
-                IKernel stepKernel = this._kernelBuilder.Build();
-                var stepContext = stepKernel.CreateNewContext();
+                Kernel stepKernel = this._kernelBuilder.Build();
+                var stepArguments = new KernelArguments();
                 foreach (var key in step.Requires)
                 {
-                    stepContext.Variables.Set(key, rootContext[key]);
+                    stepArguments[key] = rootContext[key];
                 }
 
                 foreach (var key in step.Passthrough)
                 {
                     if (rootContext.TryGetValue(key, out var val))
                     {
-                        stepContext.Variables.Set(key, val);
+                        stepArguments[key] = val;
                     }
                 }
 
-                ContextVariables? stepResult;
+                FunctionResult? stepResult;
                 if (step is Flow flowStep)
                 {
-                    stepResult = await this.ExecuteAsync(flowStep, $"{sessionId}_{stepId}", input, stepContext.Variables).ConfigureAwait(false);
+                    stepResult = await this.ExecuteFlowAsync(flowStep, $"{sessionId}_{stepId}", input, stepArguments).ConfigureAwait(false);
                 }
                 else
                 {
                     var stepPlugins = step.LoadPlugins(stepKernel, this._globalPluginCollection);
                     foreach (var plugin in stepPlugins)
                     {
-                        stepKernel.ImportFunctions(plugin, plugin.GetType().Name);
+                        stepKernel.ImportPluginFromObject(plugin, plugin.GetType().Name);
                     }
 
-                    stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepContext).ConfigureAwait(false);
+                    stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepArguments).ConfigureAwait(false);
                 }
 
                 if (!string.IsNullOrEmpty(stepResult.ToString()) && (stepResult.IsPromptInput() || stepResult.IsTerminateFlow()))
                 {
-                    try
+                    if (stepResult.ValueType == typeof(List<string>))
                     {
-                        var stepOutputs = JsonSerializer.Deserialize<string[]>(stepResult.ToString());
-                        outputs.AddRange(stepOutputs!);
+                        outputs.AddRange(stepResult.GetValue<List<string>>()!);
                     }
-                    catch (JsonException)
+                    else
                     {
                         outputs.Add(stepResult.ToString());
                     }
                 }
-                else if (stepResult.TryGetValue(Constants.ChatPluginVariables.ExitLoopName, out var exitResponse))
+                else if (stepResult.TryGetExitLoopResponse(out string? exitResponse))
                 {
                     stepState.Status = ExecutionState.Status.Completed;
+
+                    var metadata = stepResult.Metadata!.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                     foreach (var variable in step.Provides)
                     {
-                        if (!stepResult.ContainsKey(variable))
+                        if (!metadata.ContainsKey(variable))
                         {
-                            stepResult[variable] = string.Empty;
+                            metadata[variable] = string.Empty;
                         }
                     }
 
+                    stepResult = new FunctionResult(stepResult.Function, stepResult.GetValue<object>(), metadata: metadata);
+
                     if (!string.IsNullOrWhiteSpace(exitResponse))
                     {
-                        outputs.Add(exitResponse);
+                        outputs.Add(exitResponse!);
                     }
 
-                    this._logger?.LogInformation("Exiting loop for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                    if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                    {
+                        this._logger.LogInformation("Exiting loop for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                    }
                 }
                 else if (stepResult.IsContinueLoop())
                 {
                     continueLoop = true;
-                    this._logger?.LogInformation("Continuing to the next loop iteration for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+
+                    if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                    {
+                        this._logger.LogInformation("Continuing to the next loop iteration for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                    }
                 }
 
-                // check if current execution is complete by checking whether all variables are already provided
+                // check if current execution is complete by checking whether all arguments are already provided
                 completed = true;
                 foreach (var variable in step.Provides)
                 {
-                    if (!stepResult.ContainsKey(variable))
+                    if (!stepResult.Metadata!.ContainsKey(variable))
                     {
                         completed = false;
                     }
                     else
                     {
-                        executionState.Variables[variable] = stepResult[variable];
-                        stepState.AddOrUpdateVariable(stepState.ExecutionCount, variable,
-                            stepResult[variable]);
+                        executionState.Variables[variable] = (string)stepResult.Metadata[variable]!;
+                        stepState.AddOrUpdateVariable(stepState.ExecutionCount, variable, (string)stepResult.Metadata[variable]!);
                     }
                 }
 
                 foreach (var variable in step.Passthrough)
                 {
-                    if (stepResult.ContainsKey(variable))
+                    if (stepResult.Metadata!.TryGetValue(variable, out object? variableValue))
                     {
-                        executionState.Variables[variable] = stepResult[variable];
-                        stepState.AddOrUpdateVariable(stepState.ExecutionCount, variable,
-                            stepResult[variable]);
+                        executionState.Variables[variable] = (string)variableValue!;
+                        stepState.AddOrUpdateVariable(stepState.ExecutionCount, variable, (string)variableValue!);
 
-                        // propagate variables to root context, needed if Flow itself is a step
+                        // propagate arguments to root context, needed if Flow itself is a step
                         this.PropagateVariable(rootContext, stepResult, variable);
                     }
                 }
 
-                // propagate variables to root context, needed if Flow itself is a step
+                // propagate arguments to root context, needed if Flow itself is a step
                 foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
                 {
                     this.PropagateVariable(rootContext, stepResult, variable);
@@ -307,7 +357,10 @@ internal class FlowExecutor : IFlowExecutor
 
             if (completed)
             {
-                this._logger?.LogInformation("Completed step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                {
+                    this._logger.LogInformation("Completed step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                }
 
                 if (step.CompletionType is CompletionType.AtLeastOnce or CompletionType.ZeroOrMore && stepState.Status != ExecutionState.Status.Completed)
                 {
@@ -325,7 +378,12 @@ internal class FlowExecutor : IFlowExecutor
                     {
                         // unconfirmed, prompt user
                         outputs.Add(repeatStep.Prompt!);
-                        this._logger?.LogInformation("Unclear intention, need follow up to check whether to repeat the step");
+
+                        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                        {
+                            this._logger.LogInformation("Unclear intention, need follow up to check whether to repeat the step");
+                        }
+
                         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
                         break;
                     }
@@ -339,13 +397,21 @@ internal class FlowExecutor : IFlowExecutor
 
                         stepState.ExecutionCount++;
                         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
-                        this._logger?.LogInformation("Need repeat step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+
+                        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                        {
+                            this._logger.LogInformation("Need repeat step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                        }
                     }
                     else
                     {
                         // completed
                         await this.CompleteStepAsync(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
-                        this._logger?.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+
+                        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                        {
+                            this._logger.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                        }
                     }
                 }
                 else
@@ -360,25 +426,26 @@ internal class FlowExecutor : IFlowExecutor
             }
         }
 
-        foreach (var output in outputs)
+        if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
         {
-            this._logger?.LogInformation("[Output] {Output}", output);
+            foreach (var output in outputs)
+            {
+                this._logger?.LogInformation("[Output] {Output}", output);
+            }
         }
 
-        rootContext.Update(JsonSerializer.Serialize(outputs));
-
-        return rootContext;
+        return new FunctionResult(this._executeFlowFunction, outputs, metadata: rootContext);
     }
 
-    private void PropagateVariable(ContextVariables rootContext, ContextVariables stepResult, string variableName)
+    private void PropagateVariable(KernelArguments rootContext, FunctionResult stepResult, string variableName)
     {
-        if (stepResult.ContainsKey(variableName))
+        if (stepResult.Metadata!.ContainsKey(variableName))
         {
-            rootContext[variableName] = stepResult[variableName];
+            rootContext[variableName] = stepResult.Metadata[variableName];
         }
     }
 
-    private async Task CompleteStepAsync(ContextVariables context, string sessionId, ExecutionState state, FlowStep step, ExecutionState.StepExecutionState stepState)
+    private async Task CompleteStepAsync(KernelArguments context, string sessionId, ExecutionState state, FlowStep step, ExecutionState.StepExecutionState stepState)
     {
         stepState.Status = ExecutionState.Status.Completed;
         state.CurrentStepIndex++;
@@ -391,7 +458,7 @@ internal class FlowExecutor : IFlowExecutor
             }
             else
             {
-                // kvp.Value may contain empty strings when the loop was exited and the variables the step provides weren't set
+                // kvp.Value may contain empty strings when the loop was exited and the arguments the step provides weren't set
                 state.Variables[kvp.Key] = JsonSerializer.Serialize(kvp.Value.Where(x => !string.IsNullOrWhiteSpace(x)).ToList());
             }
         }
@@ -404,31 +471,35 @@ internal class FlowExecutor : IFlowExecutor
         await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, state).ConfigureAwait(false);
     }
 
-    private void ValidateStep(FlowStep step, ContextVariables context)
+    private void ValidateStep(FlowStep step, KernelArguments context)
     {
-        if (step.Requires.Any(p => !context.ContainsKey(p)))
+        if (step.Requires.Any(p => !context.ContainsName(p)))
         {
-            throw new SKException($"Step {step.Goal} requires variables {string.Join(",", step.Requires.Where(p => !context.ContainsKey(p)))} that are not provided. ");
+            throw new KernelException($"Step {step.Goal} requires arguments {string.Join(",", step.Requires.Where(p => !context.ContainsName(p)))} that are not provided. ");
         }
     }
 
-    private async Task<RepeatOrStartStepResult?> CheckStartStepAsync(ContextVariables context, FlowStep step, string sessionId, string stepId, string input)
+    private async Task<RepeatOrStartStepResult?> CheckStartStepAsync(KernelArguments context, FlowStep step, string sessionId, string stepId, string input)
     {
-        context = context.Clone();
-        context.Set("goal", step.Goal);
-        context.Set("message", step.StartingMessage);
+        context = new KernelArguments(context)
+        {
+            ["goal"] = step.Goal,
+            ["message"] = step.StartingMessage
+        };
         return await this.CheckRepeatOrStartStepAsync(context, this._checkStartStepFunction, sessionId, $"{stepId}_CheckStartStep", input).ConfigureAwait(false);
     }
 
-    private async Task<RepeatOrStartStepResult?> CheckRepeatStepAsync(ContextVariables context, FlowStep step, string sessionId, string nextStepId, string input)
+    private async Task<RepeatOrStartStepResult?> CheckRepeatStepAsync(KernelArguments context, FlowStep step, string sessionId, string nextStepId, string input)
     {
-        context = context.Clone();
-        context.Set("goal", step.Goal);
-        context.Set("transitionMessage", step.TransitionMessage);
+        context = new KernelArguments(context)
+        {
+            ["goal"] = step.Goal,
+            ["transitionMessage"] = step.TransitionMessage
+        };
         return await this.CheckRepeatOrStartStepAsync(context, this._checkRepeatStepFunction, sessionId, $"{nextStepId}_CheckRepeatStep", input).ConfigureAwait(false);
     }
 
-    private async Task<RepeatOrStartStepResult?> CheckRepeatOrStartStepAsync(ContextVariables context, ISKFunction function, string sessionId, string checkRepeatOrStartStepId, string input)
+    private async Task<RepeatOrStartStepResult?> CheckRepeatOrStartStepAsync(KernelArguments context, KernelFunction function, string sessionId, string checkRepeatOrStartStepId, string input)
     {
         var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, checkRepeatOrStartStepId).ConfigureAwait(false);
         if (chatHistory != null)
@@ -441,13 +512,21 @@ internal class FlowExecutor : IFlowExecutor
         }
 
         var scratchPad = this.CreateRepeatOrStartStepScratchPad(chatHistory);
-        context.Set("agentScratchPad", scratchPad);
-        this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
+        context["agentScratchPad"] = scratchPad;
 
-        var llmResponse = await this._systemKernel.RunAsync(context, function).ConfigureAwait(false);
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
+        }
+
+        var llmResponse = await this._systemKernel.InvokeAsync(function, context).ConfigureAwait(false);
 
         string llmResponseText = llmResponse.GetValue<string>()?.Trim() ?? string.Empty;
-        this._logger?.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
+
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
+        }
 
         Match finalAnswerMatch = s_finalAnswerRegex.Match(llmResponseText);
         if (finalAnswerMatch.Success)
@@ -478,8 +557,8 @@ internal class FlowExecutor : IFlowExecutor
             return new RepeatOrStartStepResult(null, prompt);
         }
 
-        this._logger?.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
-        chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER]");
+        this._logger.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
+        chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER].");
         await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).ConfigureAwait(false);
         return null;
     }
@@ -502,13 +581,13 @@ internal class FlowExecutor : IFlowExecutor
                 scratchPadLines.Add("[THOUGHT]");
             }
 
-            scratchPadLines.Add(message.Content);
+            scratchPadLines.Add(message.Content!);
         }
 
         return string.Join("\n", scratchPadLines).Trim();
     }
 
-    private async Task<ContextVariables> ExecuteStepAsync(FlowStep step, string sessionId, string stepId, string input, IKernel kernel, SKContext context)
+    private async Task<FunctionResult> ExecuteStepAsync(FlowStep step, string sessionId, string stepId, string input, Kernel kernel, KernelArguments arguments)
     {
         var stepsTaken = await this._flowStatusProvider.GetReActStepsAsync(sessionId, stepId).ConfigureAwait(false);
         var lastStep = stepsTaken.LastOrDefault();
@@ -521,15 +600,15 @@ internal class FlowExecutor : IFlowExecutor
         var question = step.Goal;
         foreach (var variable in step.Requires)
         {
-            if (!variable.StartsWith("_", StringComparison.InvariantCulture) && context.Variables[variable].Length <= this._config.MaxVariableLength)
+            if (!variable.StartsWith("_", StringComparison.InvariantCulture) && ((string)arguments[variable]!).Length <= this._config.MaxVariableLength)
             {
-                question += $"\n - {variable}: {JsonSerializer.Serialize(context.Variables[variable])}";
+                question += $"\n - {variable}: {JsonSerializer.Serialize(arguments[variable])}";
             }
         }
 
         for (int i = stepsTaken.Count; i < this._config.MaxStepIterations; i++)
         {
-            var actionStep = await this._reActEngine.GetNextStepAsync(context, question, stepsTaken).ConfigureAwait(false);
+            var actionStep = await this._reActEngine.GetNextStepAsync(kernel, arguments, question, stepsTaken).ConfigureAwait(false);
 
             if (actionStep is null)
             {
@@ -539,24 +618,35 @@ internal class FlowExecutor : IFlowExecutor
 
             stepsTaken.Add(actionStep);
 
-            this._logger?.LogInformation("Thought: {Thought}", actionStep.Thought);
-            if (!string.IsNullOrEmpty(actionStep.Action!))
+            if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+            {
+                this._logger.LogInformation("Thought: {Thought}", actionStep.Thought);
+            }
+
+            if (!string.IsNullOrEmpty(actionStep.FinalAnswer))
+            {
+                if (step.Provides.Count() == 1)
+                {
+                    arguments[step.Provides.Single()] = actionStep.FinalAnswer;
+                    return new FunctionResult(this._executeStepFunction, actionStep.FinalAnswer, metadata: arguments);
+                }
+            }
+            else if (!string.IsNullOrEmpty(actionStep.Action!))
             {
                 if (actionStep.Action!.Contains(Constants.StopAndPromptFunctionName))
                 {
                     string prompt = actionStep.ActionVariables![Constants.StopAndPromptParameterName];
-                    context.Variables.Update(prompt);
-                    context.TerminateFlow();
+                    arguments.TerminateFlow();
 
-                    return context.Variables;
+                    return new FunctionResult(this._executeStepFunction, prompt, metadata: arguments);
                 }
 
-                var actionContext = kernel.CreateNewContext();
-                foreach (var kvp in context.Variables)
+                var actionContextVariables = new KernelArguments();
+                foreach (var kvp in arguments)
                 {
                     if (step.Requires.Contains(kvp.Key) || step.Passthrough.Contains(kvp.Key))
                     {
-                        actionContext.Variables[kvp.Key] = kvp.Value;
+                        actionContextVariables[kvp.Key] = kvp.Value;
                     }
                 }
 
@@ -571,43 +661,43 @@ internal class FlowExecutor : IFlowExecutor
                     chatHistory.AddUserMessage(input);
                 }
 
+                string? actionResult;
                 try
                 {
                     await Task.Delay(this._config.MinIterationTimeMs).ConfigureAwait(false);
-                    var result = await this._reActEngine.InvokeActionAsync(actionStep, input, chatHistory, kernel, actionContext).ConfigureAwait(false);
+                    actionResult = await this._reActEngine.InvokeActionAsync(actionStep, input, chatHistory, kernel, actionContextVariables).ConfigureAwait(false);
 
-                    if (string.IsNullOrEmpty(result))
+                    if (string.IsNullOrEmpty(actionResult))
                     {
                         actionStep.Observation = "Got no result from action";
                     }
                     else
                     {
-                        actionStep.Observation = $"{AuthorRole.Assistant.Label}: {result}\n";
-                        context.Variables.Update(result);
-                        chatHistory.AddAssistantMessage(result);
+                        actionStep.Observation = $"{AuthorRole.Assistant.Label}: {actionResult}\n";
+                        chatHistory.AddAssistantMessage(actionResult);
                         await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, stepId, chatHistory).ConfigureAwait(false);
 
                         foreach (var passthroughParam in step.Passthrough)
                         {
-                            if (actionContext.Variables.TryGetValue(passthroughParam, out string? paramValue) && !string.IsNullOrEmpty(paramValue))
+                            if (actionContextVariables.TryGetValue(passthroughParam, out object? paramValue) && paramValue is string paramStringValue && !string.IsNullOrEmpty(paramStringValue))
                             {
-                                context.Variables.Set(passthroughParam, actionContext.Variables[passthroughParam]);
+                                arguments[passthroughParam] = actionContextVariables[passthroughParam];
                             }
                         }
 
                         foreach (var providedParam in step.Provides)
                         {
-                            if (actionContext.Variables.TryGetValue(providedParam, out string? paramValue) && !string.IsNullOrEmpty(paramValue))
+                            if (actionContextVariables.TryGetValue(providedParam, out object? paramValue) && paramValue is string paramStringValue && !string.IsNullOrEmpty(paramStringValue))
                             {
-                                context.Variables.Set(providedParam, actionContext.Variables[providedParam]);
+                                arguments[providedParam] = actionContextVariables[providedParam];
                             }
                         }
 
                         foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
                         {
-                            if (actionContext.Variables.TryGetValue(variable, out string? variableValue))
+                            if (actionContextVariables.TryGetValue(variable, out object? variableValue))
                             {
-                                context.Variables.Set(variable, variableValue);
+                                arguments[variable] = variableValue;
                             }
                         }
                     }
@@ -620,7 +710,7 @@ internal class FlowExecutor : IFlowExecutor
 
                     continue;
                 }
-                catch (Exception ex) when (!ex.IsCriticalException())
+                catch (Exception ex) when (!ex.IsNonRetryable())
                 {
                     actionStep.Observation = $"Error invoking action {actionStep.Action} : {ex.Message}";
                     this._logger?.LogWarning(ex, "Error invoking action {Action}", actionStep.Action);
@@ -628,66 +718,54 @@ internal class FlowExecutor : IFlowExecutor
                     continue;
                 }
 
-                this._logger?.LogInformation("Observation: {Observation}", actionStep.Observation);
+                if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
+                {
+                    this._logger.LogInformation("Observation: {Observation}", actionStep.Observation);
+                }
+
                 await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).ConfigureAwait(false);
 
-                if (!string.IsNullOrEmpty(context.Result))
+                if (!string.IsNullOrEmpty(actionResult))
                 {
-                    if (context.Variables.IsTerminateFlow())
+                    if (arguments.IsTerminateFlow())
                     {
                         // Terminate the flow without another round of reasoning, to save the LLM reasoning calls.
                         // This is not suggested unless plugin has performance requirement and has explicitly set the control variable.
-                        return context.Variables;
+                        return new FunctionResult(this._executeStepFunction, actionResult, metadata: arguments);
                     }
 
                     foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
                     {
-                        if (context.Variables.ContainsKey(variable))
+                        if (arguments.ContainsName(variable))
                         {
                             // redirect control to client
-                            return context.Variables;
+                            return new FunctionResult(this._executeStepFunction, actionResult, metadata: arguments);
                         }
                     }
 
-                    if (!step.Provides.Except(context.Variables.Where(v => !string.IsNullOrEmpty(v.Value)).Select(_ => _.Key)).Any())
+                    if (!step.Provides.Except(arguments.Where(v => !string.IsNullOrEmpty((string)v.Value!)).Select(_ => _.Key)).Any())
                     {
                         // step is complete
-                        return context.Variables;
+                        return new FunctionResult(this._executeStepFunction, actionResult, metadata: arguments);
                     }
 
                     // continue to next iteration
                     continue;
                 }
 
-                this._logger?.LogInformation("Action: No result from action");
-            }
-            else if (!string.IsNullOrEmpty(actionStep.FinalAnswer))
-            {
-                if (step.Provides.Count() == 1)
-                {
-                    context.Variables.Set(step.Provides.Single(), actionStep.FinalAnswer);
-                    return context.Variables;
-                }
+                this._logger?.LogWarning("Action: No result from action");
             }
             else
             {
                 actionStep.Observation = "ACTION $JSON_BLOB must be provided as part of thought process.";
-                this._logger?.LogInformation("Action: No action to take");
+                this._logger?.LogWarning("Action: No action to take");
             }
 
             // continue to next iteration
             await Task.Delay(this._config.MinIterationTimeMs).ConfigureAwait(false);
         }
 
-        throw new SKException($"Failed to complete step {stepId} for session {sessionId}.");
-    }
-
-    private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
-    {
-        var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
-        var template = factory.Create(promptTemplate, config);
-
-        return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, config, template);
+        throw new KernelException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 
     private class RepeatOrStartStepResult

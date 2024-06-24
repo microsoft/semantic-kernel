@@ -1,35 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Orchestration;
+using System;
 
-namespace Microsoft.SemanticKernel.Events;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Event arguments available to the Kernel.FunctionInvoking event.
+/// Provides a <see cref="CancelKernelEventArgs"/> used in events just before a function is invoked.
 /// </summary>
-public class FunctionInvokingEventArgs : SKCancelEventArgs
+[Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
+public sealed class FunctionInvokingEventArgs : CancelKernelEventArgs
 {
-    /// <summary>
-    /// Indicates if the function execution should be skipped.
-    /// </summary>
-    public bool IsSkipRequested => this._skipRequested;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingEventArgs"/> class.
     /// </summary>
-    /// <param name="functionView">Function view details</param>
-    /// <param name="context">Context related to the event</param>
-    public FunctionInvokingEventArgs(FunctionView functionView, SKContext context) : base(functionView, context)
+    /// <param name="function">The <see cref="KernelFunction"/> with which this event is associated.</param>
+    /// <param name="arguments">The arguments associated with the operation.</param>
+    public FunctionInvokingEventArgs(KernelFunction function, KernelArguments arguments) :
+        base(function, arguments, metadata: null)
     {
     }
-
-    /// <summary>
-    /// Skip the current function invoking attempt.
-    /// </summary>
-    public void Skip()
-    {
-        this._skipRequested = true;
-    }
-
-    private bool _skipRequested;
 }

@@ -5,7 +5,7 @@ using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace Microsoft.SemanticKernel.Plugins.Document.OpenXml.Extensions;
+namespace Microsoft.SemanticKernel.Plugins.Document.OpenXml;
 
 /// <summary>
 /// Extension methods for DocumentFormat.OpenXml.Packaging.WordprocessingDocument

@@ -52,7 +52,11 @@ public sealed class ExecutionState
         /// <param name="value">The value of variable.</param>
         public void AddOrUpdateVariable(int executionIndex, string key, string value)
         {
-            var output = this.Output.GetOrAdd(key, new List<string>());
+            if (!this.Output.TryGetValue(key, out List<string>? output))
+            {
+                this.Output[key] = output = new();
+            }
+
             if (output!.Count <= executionIndex)
             {
                 output.Add(value);
