@@ -12,20 +12,21 @@ deciders: bentho, matthewbolanos
 {Describe the context and problem statement, e.g., in free form using two to three sentences or in the form of an illustrative story.
 You may want to articulate the problem in form of a question and add links to collaboration boards or issue management systems.}
 
-## Decision Drivers
+## Cases
 
-- {decision driver 1, e.g., a force, facing concern, …}
-- {decision driver 2, e.g., a force, facing concern, …}
-- … <!-- numbers of drivers can vary -->
+- 
+- 
 
-## Considered Options
+## Analysis
 
-- {title of option 1}
-- {title of option 2}
-- {title of option 3}
-- … <!-- numbers of options can vary -->
+![](diagrams/agentchat-state-relationships.png)
 
-## Decision Outcome
+## Options
 
-Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
+- Direct Serialization: `JsonSerialize.Serialize(chat)`
+- Serializer Raw: `AgentChatSerializer.Serialize(chat);`
+- Serializer Encoded: `AgentChatSerializer.Serialize(chat);`
+
+## Outcome
+
+TBD
