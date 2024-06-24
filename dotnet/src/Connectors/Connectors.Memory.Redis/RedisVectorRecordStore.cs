@@ -23,6 +23,9 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string, TRecord>
     where TRecord : class
 {
+    /// <summary>The name of this database for telemetry purposes.</summary>
+    private const string DatabaseName = "Redis";
+
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =
     [
@@ -111,7 +114,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     }
 
     /// <inheritdoc />
-    public async Task<TRecord> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -134,7 +137,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         // Check if the key was found before trying to parse the result.
         if (redisResult.IsNull || redisResult is null)
         {
-            throw new VectorStoreOperationException($"Could not find document with key '{key}'");
+            return null;
         }
 
         // Check if the value contained any json text before trying to parse the result.
@@ -145,7 +148,8 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         }
 
         // Convert to the caller's data model.
-        return RunModelConversion(
+        return VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
             collectionName,
             "GET",
             () =>
@@ -183,7 +187,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             // Check if the key was found before trying to parse the result.
             if (redisResult.IsNull || redisResult is null)
             {
-                throw new VectorStoreOperationException($"Could not find document with key '{key}'");
+                continue;
             }
 
             // Check if the value contained any json text before trying to parse the result.
@@ -194,7 +198,8 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             }
 
             // Convert to the caller's data model.
-            yield return RunModelConversion(
+            yield return VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
                 collectionName,
                 "MGET",
                 () =>
@@ -242,7 +247,8 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
 
         // Map.
-        var redisJsonRecord = RunModelConversion(
+        var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
             collectionName,
             "SET",
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -274,7 +280,8 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         var redisRecords = new List<(string maybePrefixedKey, string originalKey, JsonNode jsonNode)>();
         foreach (var record in records)
         {
-            var redisJsonRecord = RunModelConversion(
+            var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
                 collectionName,
                 "MSET",
                 () => this._mapper.MapFromDataToStorageModel(record));
@@ -354,35 +361,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
 
             // Using Open Telemetry standard for naming of these entries.
             // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
-            wrapperException.Data.Add("db.system", "Redis");
-            wrapperException.Data.Add("db.collection.name", collectionName);
-            wrapperException.Data.Add("db.operation.name", operationName);
-
-            throw wrapperException;
-        }
-    }
-
-    /// <summary>
-    /// Run the given model conversion and wrap any exceptions with <see cref="VectorStoreRecordMappingException"/>.
-    /// </summary>
-    /// <typeparam name="T">The response type of the operation.</typeparam>
-    /// <param name="collectionName">The name of the collection the operation is being run on.</param>
-    /// <param name="operationName">The type of database operation being run.</param>
-    /// <param name="operation">The operation to run.</param>
-    /// <returns>The result of the operation.</returns>
-    private static T RunModelConversion<T>(string collectionName, string operationName, Func<T> operation)
-    {
-        try
-        {
-            return operation.Invoke();
-        }
-        catch (Exception ex)
-        {
-            var wrapperException = new VectorStoreRecordMappingException("Failed to convert vector store record.", ex);
-
-            // Using Open Telemetry standard for naming of these entries.
-            // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
-            wrapperException.Data.Add("db.system", "Redis");
+            wrapperException.Data.Add("db.system", DatabaseName);
             wrapperException.Data.Add("db.collection.name", collectionName);
             wrapperException.Data.Add("db.operation.name", operationName);
 

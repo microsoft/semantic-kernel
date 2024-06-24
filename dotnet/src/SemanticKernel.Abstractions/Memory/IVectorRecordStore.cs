@@ -18,7 +18,7 @@ public interface IVectorRecordStore<TKey, TRecord>
 {
     /// <summary>
     /// Gets a record from the vector store. Does not guarantee that the collection exists.
-    /// Throws if the record is not found.
+    /// Returns null if the record is not found.
     /// </summary>
     /// <param name="key">The unique id associated with the record to get.</param>
     /// <param name="options">Optional options for retrieving the record.</param>
@@ -26,12 +26,13 @@ public interface IVectorRecordStore<TKey, TRecord>
     /// <returns>The record if found, otherwise null.</returns>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">Throw when mapping between the storage model and record data model fails.</exception>
-    Task<TRecord> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a batch of records from the vector store. Does not guarantee that the collection exists.
-    /// Throws if any of the records are not found.
     /// Gets will be made in a single request or in a single parallel batch depending on the available store functionality.
+    /// Only found records will be returned, so the resultset may be smaller than the requested keys.
+    /// Throws for any issues other than records not being found.
     /// </summary>
     /// <param name="keys">The unique ids associated with the record to get.</param>
     /// <param name="options">Optional options for retrieving the records.</param>

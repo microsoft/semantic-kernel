@@ -5,11 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
-using JsonSchemaMapper;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel;
@@ -194,6 +190,44 @@ internal static class VectorStoreRecordPropertyReader
         }
 
         return (keyProperty!, dataProperties, vectorProperties);
+    }
+
+    /// <summary>
+    /// Create a <see cref="VectorStoreRecordDefinition"/> by reading the attributes on the properties of the given type.
+    /// </summary>
+    /// <param name="type">The type to create the definition for.</param>
+    /// <param name="supportsMultipleVectors"><see langword="true"/> if the store supports multiple vectors, <see langword="false"/> otherwise.</param>
+    /// <returns>The <see cref="VectorStoreRecordDefinition"/> based on the given type.</returns>
+    public static VectorStoreRecordDefinition CreateVectorStoreRecordDefinitionFromType(Type type, bool supportsMultipleVectors)
+    {
+        var properties = FindProperties(type, supportsMultipleVectors);
+        var definitionProperties = new List<VectorStoreRecordProperty>();
+
+        definitionProperties.Add(new VectorStoreRecordKeyProperty(properties.keyProperty.Name));
+
+        foreach (var dataProperty in properties.dataProperties)
+        {
+            var dataAttribute = dataProperty.GetCustomAttribute<VectorStoreRecordDataAttribute>();
+            if (dataAttribute is not null)
+            {
+                definitionProperties.Add(new VectorStoreRecordDataProperty(dataProperty.Name)
+                {
+                    HasEmbedding = dataAttribute.HasEmbedding,
+                    EmbeddingPropertyName = dataAttribute.EmbeddingPropertyName,
+                });
+            }
+        }
+
+        foreach (var vectorProperty in properties.vectorProperties)
+        {
+            var vectorAttribute = vectorProperty.GetCustomAttribute<VectorStoreRecordVectorAttribute>();
+            if (vectorAttribute is not null)
+            {
+                definitionProperties.Add(new VectorStoreRecordVectorProperty(vectorProperty.Name));
+            }
+        }
+
+        return new VectorStoreRecordDefinition { Properties = definitionProperties };
     }
 
     /// <summary>

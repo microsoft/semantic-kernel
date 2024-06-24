@@ -146,7 +146,8 @@ public sealed class RedisVectorRecordStoreTests(ITestOutputHelper output, RedisV
         var sut = new RedisVectorRecordStore<Hotel>(fixture.Database, options);
 
         // Act
-        var hotels = sut.GetBatchAsync(["BaseSet-1", "BaseSet-2"], new GetRecordOptions { IncludeVectors = true });
+        // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
+        var hotels = sut.GetBatchAsync(["BaseSet-1", "BaseSet-5", "BaseSet-2"], new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -169,17 +170,6 @@ public sealed class RedisVectorRecordStoreTests(ITestOutputHelper output, RedisV
 
         // Act & Assert.
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-4-Invalid", new GetRecordOptions { IncludeVectors = true }));
-    }
-
-    [Fact]
-    public async Task ItThrowsForPartialGetBatchResultAsync()
-    {
-        // Arrange.
-        var options = new RedisVectorRecordStoreOptions<Hotel> { DefaultCollectionName = "hotels", PrefixCollectionNameToKeyNames = true };
-        var sut = new RedisVectorRecordStore<Hotel>(fixture.Database, options);
-
-        // Act & Assert.
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetBatchAsync(["BaseSet-1", "nonexistent", "BaseSet-2"], new GetRecordOptions { IncludeVectors = true }).ToListAsync());
     }
 
     [Theory]
@@ -213,7 +203,7 @@ public sealed class RedisVectorRecordStoreTests(ITestOutputHelper output, RedisV
         await sut.DeleteAsync("Remove-2");
 
         // Assert.
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("Remove-1"));
+        Assert.Null(await sut.GetAsync("Remove-1"));
     }
 
     [Fact]
@@ -231,9 +221,20 @@ public sealed class RedisVectorRecordStoreTests(ITestOutputHelper output, RedisV
         await sut.DeleteBatchAsync(["RemoveMany-1", "RemoveMany-2", "RemoveMany-3", "RemoveMany-4"]);
 
         // Assert
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-2", new GetRecordOptions { IncludeVectors = true }));
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("RemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("RemoveMany-2", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
+    }
+
+    [Fact]
+    public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
+    {
+        // Arrange
+        var options = new RedisVectorRecordStoreOptions<Hotel> { DefaultCollectionName = "hotels", PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisVectorRecordStore<Hotel>(fixture.Database, options);
+
+        // Act & Assert
+        Assert.Null(await sut.GetAsync("BaseSet-5", new GetRecordOptions { IncludeVectors = true }));
     }
 
     [Fact]
