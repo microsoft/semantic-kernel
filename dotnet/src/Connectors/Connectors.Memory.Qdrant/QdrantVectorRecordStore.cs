@@ -20,6 +20,15 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong, TRecord>, IVectorRecordStore<Guid, TRecord>
     where TRecord : class
 {
+    /// <summary>The name of this database for telemetry purposes.</summary>
+    private const string DatabaseName = "Qdrant";
+
+    /// <summary>The name of the upsert operation for telemetry purposes.</summary>
+    private const string UpsertName = "Upsert";
+
+    /// <summary>The name of the Delete operation for telemetry purposes.</summary>
+    private const string DeleteName = "Delete";
+
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
     private readonly QdrantClient _qdrantClient;
 
@@ -105,7 +114,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
         return RunOperationAsync(
             collectionName,
-            "Delete",
+            DeleteName,
             () => this._qdrantClient.DeleteAsync(
                 collectionName,
                 key,
@@ -121,7 +130,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
         return RunOperationAsync(
             collectionName,
-            "Delete",
+            DeleteName,
             () => this._qdrantClient.DeleteAsync(
                 collectionName,
                 key,
@@ -137,7 +146,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
         return RunOperationAsync(
             collectionName,
-            "Delete",
+            DeleteName,
             () => this._qdrantClient.DeleteAsync(
                 collectionName,
                 keys.ToList(),
@@ -153,7 +162,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
         return RunOperationAsync(
             collectionName,
-            "Delete",
+            DeleteName,
             () => this._qdrantClient.DeleteAsync(
                 collectionName,
                 keys.ToList(),
@@ -170,15 +179,16 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
 
         // Create point from record.
-        var pointStruct = RunModelConversion(
+        var pointStruct = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
             collectionName,
-            "Upsert",
+            UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
 
         // Upsert.
         await RunOperationAsync(
             collectionName,
-            "Upsert",
+            UpsertName,
             () => this._qdrantClient.UpsertAsync(collectionName, [pointStruct], true, cancellationToken: cancellationToken)).ConfigureAwait(false);
         return pointStruct.Id.Num;
     }
@@ -192,15 +202,16 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
 
         // Create point from record.
-        var pointStruct = RunModelConversion(
+        var pointStruct = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
             collectionName,
-            "Upsert",
+            UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
 
         // Upsert.
         await RunOperationAsync(
             collectionName,
-            "Upsert",
+            UpsertName,
             () => this._qdrantClient.UpsertAsync(collectionName, [pointStruct], true, cancellationToken: cancellationToken)).ConfigureAwait(false);
         return Guid.Parse(pointStruct.Id.Uuid);
     }
@@ -214,15 +225,16 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
 
         // Create points from records.
-        var pointStructs = RunModelConversion(
+        var pointStructs = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
             collectionName,
-            "Upsert",
+            UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
 
         // Upsert.
         await RunOperationAsync(
             collectionName,
-            "Upsert",
+            UpsertName,
             () => this._qdrantClient.UpsertAsync(collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         foreach (var pointStruct in pointStructs)
@@ -240,15 +252,16 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
 
         // Create points from records.
-        var pointStructs = RunModelConversion(
+        var pointStructs = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
             collectionName,
-            "Upsert",
+            UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
 
         // Upsert.
         await RunOperationAsync(
             collectionName,
-            "Upsert",
+            UpsertName,
             () => this._qdrantClient.UpsertAsync(collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         foreach (var pointStruct in pointStructs)
@@ -271,6 +284,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         GetRecordOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        const string OperationName = "Retrieve";
         Verify.NotNull(keys);
 
         // Create options.
@@ -280,7 +294,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         // Retrieve data points.
         var retrievedPoints = await RunOperationAsync(
             collectionName,
-            "Retrieve",
+            OperationName,
             () => this._qdrantClient.RetrieveAsync(collectionName, pointsIds, true, options?.IncludeVectors ?? false, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         // Convert the retrieved points to the target data model.
@@ -298,9 +312,10 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
                 pointStruct.Payload.Add(payloadEntry.Key, payloadEntry.Value);
             }
 
-            yield return RunModelConversion(
+            yield return VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
                 collectionName,
-                "Retrieve",
+                OperationName,
                 () => this._mapper.MapFromStorageToDataModel(pointStruct, options));
         }
     }
@@ -344,35 +359,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
 
             // Using Open Telemetry standard for naming of these entries.
             // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
-            wrapperException.Data.Add("db.system", "Qdrant");
-            wrapperException.Data.Add("db.collection.name", collectionName);
-            wrapperException.Data.Add("db.operation.name", operationName);
-
-            throw wrapperException;
-        }
-    }
-
-    /// <summary>
-    /// Run the given model conversion and wrap any exceptions with <see cref="VectorStoreRecordMappingException"/>.
-    /// </summary>
-    /// <typeparam name="T">The response type of the operation.</typeparam>
-    /// <param name="collectionName">The name of the collection the operation is being run on.</param>
-    /// <param name="operationName">The type of database operation being run.</param>
-    /// <param name="operation">The operation to run.</param>
-    /// <returns>The result of the operation.</returns>
-    private static T RunModelConversion<T>(string collectionName, string operationName, Func<T> operation)
-    {
-        try
-        {
-            return operation.Invoke();
-        }
-        catch (Exception ex) when (ex is not VectorStoreRecordMappingException)
-        {
-            var wrapperException = new VectorStoreRecordMappingException("Failed to convert vector store record.", ex);
-
-            // Using Open Telemetry standard for naming of these entries.
-            // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
-            wrapperException.Data.Add("db.system", "Qdrant");
+            wrapperException.Data.Add("db.system", DatabaseName);
             wrapperException.Data.Add("db.collection.name", collectionName);
             wrapperException.Data.Add("db.operation.name", operationName);
 

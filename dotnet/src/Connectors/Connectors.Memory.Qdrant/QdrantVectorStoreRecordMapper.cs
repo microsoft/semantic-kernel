@@ -69,16 +69,17 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
-    /// <summary>Optional configuration options for this class.</summary>
+    /// <summary>Configuration options for this class.</summary>
     private readonly QdrantVectorStoreRecordMapperOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordMapper{TDataModel}"/> class.
     /// </summary>
-    /// <param name="options">Optional options to use when doing the model conversion.</param>
-    public QdrantVectorStoreRecordMapper(QdrantVectorStoreRecordMapperOptions? options)
+    /// <param name="options">Options to use when doing the model conversion.</param>
+    public QdrantVectorStoreRecordMapper(QdrantVectorStoreRecordMapperOptions options)
     {
-        this._options = options ?? new QdrantVectorStoreRecordMapperOptions();
+        Verify.NotNull(options);
+        this._options = options;
 
         // Enumerate public properties using configuration or attributes.
         (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
@@ -155,6 +156,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         }
         else
         {
+            // We already verified in the constructor via FindProperties that there is exactly one vector property when not using named vectors.
             var vectorPropertyInfo = this._vectorPropertiesInfo.First();
             if (vectorPropertyInfo.GetValue(dataModel) is ReadOnlyMemory<float> floatROM)
             {

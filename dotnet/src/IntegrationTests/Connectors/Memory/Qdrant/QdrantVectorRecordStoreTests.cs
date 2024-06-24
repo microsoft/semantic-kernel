@@ -17,7 +17,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant;
 /// Contains tests for the <see cref="QdrantVectorRecordStore{TRecord}"/> class.
 /// </summary>
 /// <param name="output">Used for logging.</param>
-/// <param name="fixture">Redis setup and teardown.</param>
+/// <param name="fixture">Qdrant setup and teardown.</param>
 [Collection("QdrantVectorStoreCollection")]
 public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, QdrantVectorStoreFixture fixture)
 {
