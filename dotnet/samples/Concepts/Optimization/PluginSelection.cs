@@ -66,7 +66,8 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
         var filter = new PluginSelectionFilter(
             kernel.GetRequiredService<IMemoryStore>(),
             kernel.GetRequiredService<ITextEmbeddingGenerationService>(),
-            kernel.GetRequiredService<ILogger>());
+            kernel.GetRequiredService<ILogger>(),
+            numberOfBestFunctions: 1);
 
         // Add filter to kernel.
         kernel.FunctionInvocationFilters.Add(filter);
@@ -86,13 +87,11 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
     private sealed class PluginSelectionFilter(
         IMemoryStore memoryStore,
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        ILogger logger) : IFunctionInvocationFilter
+        ILogger logger,
+        int numberOfBestFunctions) : IFunctionInvocationFilter
     {
         /// <summary>Collection name to use in memory store.</summary>
         private const string CollectionName = "functions";
-
-        /// <summary>Number of best functions to share with AI.</summary>
-        private const int NumberOfBestFunctions = 1;
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -168,7 +167,7 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
 
             // Find best functions to call for original request.
             var memoryRecordKeys = await memoryStore
-                .GetNearestMatchesAsync(CollectionName, requestEmbedding, limit: NumberOfBestFunctions)
+                .GetNearestMatchesAsync(CollectionName, requestEmbedding, limit: numberOfBestFunctions)
                 .Select(l => l.Item1.Key)
                 .ToListAsync();
 
