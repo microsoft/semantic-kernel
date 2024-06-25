@@ -314,6 +314,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimePlugin", "samples\Demos
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosmosDBNoSQL", "src\Connectors\Connectors.Memory.AzureCosmosDBNoSQL\Connectors.Memory.AzureCosmosDBNoSQL.csproj", "{B0B3901E-AF56-432B-8FAA-858468E5D0DF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AIPluginsServer", "AIPluginsServer", "{F2682681-956D-4E4F-9092-C82351B16BD1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIPlugins.AzureFunctions", "..\samples\dotnet\AIPluginsServer\AIPlugins.AzureFunctions\AIPlugins.AzureFunctions.csproj", "{AD3CA6E8-B73C-4B50-A875-D8CE24483895}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1} = {0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIPlugins.AzureFunctions.Extensions", "..\samples\dotnet\AIPluginsServer\AIPlugins.AzureFunctions.Extensions\AIPlugins.AzureFunctions.Extensions.csproj", "{F4FF316F-DD81-405B-8020-7BAF0DFE3269}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIPlugins.AzureFunctions.Generator", "..\samples\dotnet\AIPluginsServer\AIPlugins.AzureFunctions.Generator\AIPlugins.AzureFunctions.Generator.csproj", "{33208A2E-EB4E-4994-A246-D66C7CFE7362}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -770,7 +781,7 @@ Global
 		{B0B3901E-AF56-432B-8FAA-858468E5D0DF}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
 		{B0B3901E-AF56-432B-8FAA-858468E5D0DF}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{B0B3901E-AF56-432B-8FAA-858468E5D0DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B0B3901E-AF56-432B-8FAA-858468E5D0DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0B3901E-AF56-432B-8FAA-858468E5D0DF}.Release|Any CPU.Build.0 = Release|Any C
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
