@@ -25,7 +25,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
-        ILogger logger,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IChatCompletionService chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
@@ -34,7 +33,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         int messageCount = chat.Count;
 
-        logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
+        this.Logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
 
         IReadOnlyList<ChatMessageContent> messages =
             await chatCompletionService.GetChatMessageContentsAsync(
@@ -43,9 +42,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
                 this.Kernel,
                 cancellationToken).ConfigureAwait(false);
 
-        if (logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
+        if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
         {
-            logger.LogInformation("[{MethodName}] Invoked {ServiceType} with message count: {MessageCount}.", nameof(InvokeAsync), chatCompletionService.GetType(), messages.Count);
+            this.Logger.LogInformation("[{MethodName}] Invoked {ServiceType} with message count: {MessageCount}.", nameof(InvokeAsync), chatCompletionService.GetType(), messages.Count);
         }
 
         // Capture mutated messages related function calling / tools
