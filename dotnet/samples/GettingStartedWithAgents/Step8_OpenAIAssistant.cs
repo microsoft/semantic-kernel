@@ -20,11 +20,13 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task UseSingleOpenAIAssistantAgentAsync()
     {
+        OpenAIAssistantConfiguration config = new(this.ApiKey, this.Endpoint);
+
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
+                config,
                 new()
                 {
                     Instructions = HostInstructions,
@@ -37,7 +39,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        string threadId = await OpenAIAssistantAgent.CreateThreadAsync(config);
 
         // Respond to user input
         try
@@ -55,13 +57,16 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            await agent.AddMessageToThreadAsync(threadId, new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in chat.InvokeAsync(agent))
+            await foreach (var content in agent.InvokeAsync(threadId))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                if (content.Role != AuthorRole.Tool)
+                {
+                    Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                }
             }
         }
     }
