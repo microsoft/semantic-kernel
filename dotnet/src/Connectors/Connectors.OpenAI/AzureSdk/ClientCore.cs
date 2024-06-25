@@ -693,15 +693,22 @@ internal abstract class ClientCore
                             OpenAIFunctionToolCall.TrackStreamingToolingUpdate(update.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                         }
 
-                        var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName };
+                        AuthorRole? role = null;
+                        if (streamedRole.HasValue)
+                        {
+                            role = new AuthorRole(streamedRole.Value.ToString());
+                        }
+
+                        OpenAIStreamingChatMessageContent openAIStreamingChatMessageContent = new(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName, Role = role, };
 
                         if (update.ToolCallUpdate is StreamingFunctionToolCallUpdate functionCallUpdate)
                         {
-                            openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
-                                callId: functionCallUpdate.Id,
-                                name: functionCallUpdate.Name,
-                                arguments: functionCallUpdate.ArgumentsUpdate,
-                                functionCallIndex: functionCallUpdate.ToolCallIndex));
+                            openAIStreamingChatMessageContent.Items.Add(
+                                new StreamingFunctionCallUpdateContent(
+                                    callId: functionCallUpdate.Id,
+                                    name: functionCallUpdate.Name,
+                                    arguments: functionCallUpdate.ArgumentsUpdate,
+                                    functionCallIndex: functionCallUpdate.ToolCallIndex));
                         }
 
                         streamedContents?.Add(openAIStreamingChatMessageContent);
