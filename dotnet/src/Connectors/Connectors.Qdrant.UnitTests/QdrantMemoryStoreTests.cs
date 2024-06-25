@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Qdrant;
+namespace SemanticKernel.Connectors.Qdrant.UnitTests;
 
 /// <summary>
 /// Tests for <see cref="QdrantMemoryStore"/> collection and upsert operations.
