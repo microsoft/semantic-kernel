@@ -37,7 +37,7 @@ public class Step7_Logging(ITestOutputHelper output) : BaseTest(output)
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseLoggerFactoryWithAgentGroupChatAsync()
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =
