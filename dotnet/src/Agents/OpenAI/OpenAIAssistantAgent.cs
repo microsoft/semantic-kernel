@@ -250,9 +250,9 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <summary>
-    /// Entry point for calling into an agent from a a <see cref="ChatHistoryChannel"/>. %%%
+    /// Invoke the assistant on the specified thread.
     /// </summary>
-    /// <param name="threadId">%%%</param>
+    /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(

@@ -41,7 +41,14 @@ internal static class OpenAIAssistantActions
             RunStatus.Cancelled,
         ];
 
-    /// <inheritdoc/> // %%%
+    /// <summary>
+    /// Create a message in the specified thread.
+    /// </summary>
+    /// <param name="client">The assistant client</param>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="message">The message to add</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <throws><see cref="KernelException"/> if a system message is present, without taking any other action</throws>
     public static async Task CreateMessageAsync(AssistantsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
     {
         if (!s_messageRoles.Contains(message.Role))
@@ -61,7 +68,13 @@ internal static class OpenAIAssistantActions
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Retrieves the thread messages.
+    /// </summary>
+    /// <param name="client">The assistant client</param>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
     public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(AssistantsClient client, string threadId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Dictionary<string, string?> agentNames = []; // Cache agent names by their identifier
@@ -114,7 +127,16 @@ internal static class OpenAIAssistantActions
         while (messages.HasMore);
     }
 
-    /// <inheritdoc/> // %%%
+    /// <summary>
+    /// Invoke the assistant on the specified thread.
+    /// </summary>
+    /// <param name="agent">The assistant agent to interact with the thread.</param>
+    /// <param name="client">The assistant client</param>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="pollingConfiguration">Config to utilize when polling for run state.</param>
+    /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
     public static async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         OpenAIAssistantAgent agent,
         AssistantsClient client,
