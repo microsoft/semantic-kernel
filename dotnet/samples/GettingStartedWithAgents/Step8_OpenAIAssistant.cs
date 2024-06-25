@@ -51,6 +51,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         }
         finally
         {
+            await OpenAIAssistantAgent.DeleteThreadAsync(config, threadId);
             await agent.DeleteAsync();
         }
 

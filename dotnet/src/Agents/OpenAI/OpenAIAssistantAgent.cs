@@ -186,13 +186,13 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Create a new assistant thread.
     /// </summary>
-    /// <param name="threadId">The thread identifier</param>
     /// <param name="config">Configuration for accessing the Assistants API service, such as the api-key.</param>
+    /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
     public static async Task<bool> DeleteThreadAsync(
-        string threadId,
         OpenAIAssistantConfiguration config,
+        string threadId,
         CancellationToken cancellationToken = default)
     {
         // Validate input
