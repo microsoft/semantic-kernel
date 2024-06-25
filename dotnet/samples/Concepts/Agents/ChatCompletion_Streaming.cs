@@ -43,28 +43,28 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(outpu
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            string? authorName = null;
             StringBuilder builder = new();
-            await foreach (StreamingChatMessageContent message in agent.InvokeStreamingAsync(chat, this.LoggerFactory.CreateLogger<ChatCompletionAgent>())) // %%%
+            await foreach (StreamingChatMessageContent message in agent.InvokeStreamingAsync(chat))
             {
-                if (authorName != message.AuthorName)
+                if (string.IsNullOrEmpty(message.Content))
                 {
-                    if (builder.Length > 0)
-                    {
-                        Console.WriteLine($"\t\t'{builder}'");
-                        builder.Clear();
-                    }
+                    continue;
+                }
 
-                    builder.Append(message.Content);
-
-                    authorName = message.AuthorName;
+                if (builder.Length == 0)
+                {
                     Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}:");
                 }
+
+                Console.WriteLine($"\t Streamed: '{message.Content}'");
+                builder.Append(message.Content);
             }
 
             if (builder.Length > 0)
             {
-                Console.WriteLine($"\t\t'{builder}'");
+                // Display full response and capture in chat history
+                Console.WriteLine($"\t Complete: '{builder}'");
+                chat.Add(new ChatMessageContent(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name });
             }
         }
     }

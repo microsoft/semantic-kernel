@@ -69,7 +69,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// <inheritdoc/>
     public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         IReadOnlyList<ChatMessageContent> history,
-        ILogger logger,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IChatCompletionService chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
@@ -78,7 +77,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         int messageCount = chat.Count;
 
-        logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
+        this.Logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
 
         IAsyncEnumerable<StreamingChatMessageContent> messages =
             chatCompletionService.GetStreamingChatMessageContentsAsync(
@@ -87,9 +86,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
                 this.Kernel,
                 cancellationToken);
 
-        if (logger.IsEnabled(LogLevel.Information))
+        if (this.Logger.IsEnabled(LogLevel.Information))
         {
-            logger.LogInformation("[{MethodName}] Invoked {ServiceType} with streaming messages.", nameof(InvokeAsync), chatCompletionService.GetType());
+            this.Logger.LogInformation("[{MethodName}] Invoked {ServiceType} with streaming messages.", nameof(InvokeAsync), chatCompletionService.GetType());
         }
 
         // Capture mutated messages related function calling / tools

@@ -144,5 +144,16 @@ public class AgentChatTests
 
             yield return new ChatMessageContent(AuthorRole.Assistant, "sup");
         }
+
+        public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+            IReadOnlyList<ChatMessageContent> history,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(0, cancellationToken);
+
+            this.InvokeCount++;
+
+            yield return new StreamingChatMessageContent(AuthorRole.Assistant, "sup");
+        }
     }
 }
