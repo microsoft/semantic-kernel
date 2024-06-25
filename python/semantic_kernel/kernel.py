@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncGenerator, AsyncIterable
+from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
@@ -438,6 +438,7 @@ class Kernel(
         field_to_store: str,
         execution_settings: dict[str, "PromptExecutionSettings"],
         container_mode: bool = False,
+        cast_function: Callable[[list[float]], Any] | None = None,
         **kwargs: Any,
     ):
         """Gather all fields to embed, batch the embedding generation and store."""
@@ -469,6 +470,8 @@ class Kernel(
             raise KernelServiceNotFoundError("No service found to generate embeddings.")
         if vectors is None:
             raise KernelInvokeException("No vectors were generated.")
+        if cast_function:
+            vectors = [cast_function(vector) for vector in vectors]
         if container_mode:
             inputs[field_to_store] = vectors  # type: ignore
             return
