@@ -20,13 +20,10 @@ class MistralAISettings(KernelBaseSettings):
         (Env var MISTRAL_API_KEY)
     - chat_model_id: str | None - The The Mistral AI chat model ID to use see https://docs.mistral.ai/getting-started/models/.
         (Env var MISTRAL_CHAT_MODEL_ID)
-    - embedding_model_id: str | None - The Mistral AI embedding model ID to use, for example, mistral-embed.
-        (Env var MISTRAL_EMBEDDING_MODEL_ID)
     - env_file_path: str | None - if provided, the .env settings are read from this file path location
     """
 
-    env_prefix: ClassVar[str] = "MISTRAL_"
+    env_prefix: ClassVar[str] = "MISTRALAI_"
 
     api_key: SecretStr
     chat_model_id: str | None = None
-    embedding_model_id: str | None = None

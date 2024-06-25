@@ -69,7 +69,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
     return {
         "openai": (OpenAIChatCompletion(), OpenAIChatPromptExecutionSettings),
         "azure": (AzureChatCompletion(), AzureChatPromptExecutionSettings),
-        "mistralai": (MistralAIChatCompletion(ai_model_id='open-mistral-7b'), MistralAIChatPromptExecutionSettings),
+        "mistralai": (MistralAIChatCompletion(), MistralAIChatPromptExecutionSettings),
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
     }
 
