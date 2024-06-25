@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import MistralAIChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
+    MistralAIChatPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-
 
 
 def test_default_mistralai_chat_prompt_execution_settings():
@@ -28,17 +29,16 @@ def test_custom_mistralai_chat_prompt_execution_settings():
 
 def test_mistralai_chat_prompt_execution_settings_from_default_completion_config():
     settings = PromptExecutionSettings(service_id="test_service")
-    chat_settings =  MistralAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
+    chat_settings = MistralAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
     assert chat_settings.service_id == "test_service"
     assert chat_settings.temperature is None
     assert chat_settings.top_p is None
     assert chat_settings.max_tokens is None
 
 
-
 def test_mistral_chat_prompt_execution_settings_from_openai_prompt_execution_settings():
-    chat_settings =  MistralAIChatPromptExecutionSettings(service_id="test_service", temperature=1.0)
-    new_settings =  MistralAIChatPromptExecutionSettings(service_id="test_2", temperature=0.0)
+    chat_settings = MistralAIChatPromptExecutionSettings(service_id="test_service", temperature=1.0)
+    new_settings = MistralAIChatPromptExecutionSettings(service_id="test_2", temperature=0.0)
     chat_settings.update_from_prompt_execution_settings(new_settings)
     assert chat_settings.service_id == "test_2"
     assert chat_settings.temperature == 0.0
@@ -60,7 +60,6 @@ def test_mistral_chat_prompt_execution_settings_from_custom_completion_config():
     assert chat_settings.max_tokens == 128
 
 
-
 def test_openai_chat_prompt_execution_settings_from_custom_completion_config_with_none():
     settings = PromptExecutionSettings(
         service_id="test_service",
@@ -77,7 +76,6 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
     assert chat_settings.max_tokens == 128
     assert chat_settings.tools is None
     assert chat_settings.tool_choice is None
-
 
 
 def test_openai_chat_prompt_execution_settings_from_custom_completion_config_with_functions():
@@ -113,5 +111,3 @@ def test_create_options():
     assert options["temperature"] == 0.5
     assert options["top_p"] == 0.5
     assert options["max_tokens"] == 128
-
-
