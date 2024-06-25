@@ -56,14 +56,14 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(outpu
                     Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}:");
                 }
 
-                Console.WriteLine($"\t Streamed: '{message.Content}'");
+                Console.WriteLine($"\t > streamed: '{message.Content}'");
                 builder.Append(message.Content);
             }
 
             if (builder.Length > 0)
             {
                 // Display full response and capture in chat history
-                Console.WriteLine($"\t Complete: '{builder}'");
+                Console.WriteLine($"\t > complete: '{builder}'");
                 chat.Add(new ChatMessageContent(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name });
             }
         }
