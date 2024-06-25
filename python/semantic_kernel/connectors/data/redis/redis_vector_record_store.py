@@ -49,7 +49,6 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         connection_string: str | None = None,
         prefix_collection_name_to_key_names: bool = False,
         vector_distance_metric: str = "COSINE",
-        vector_type: str = "FLOAT32",
         vector_index_algorithm: str = "HNSW",
         query_dialect: int = 2,
         env_file_path: str | None = None,
@@ -82,8 +81,6 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         self._query_dialect = query_dialect
         self._vector_distance_metric = vector_distance_metric
         self._vector_index_algorithm = vector_index_algorithm
-        self._vector_type_str = vector_type
-        self._vector_type = np.float32 if vector_type == "FLOAT32" else np.float64
         self._prefix_collection_name_to_key_names = prefix_collection_name_to_key_names
 
     async def close(self):
@@ -100,16 +97,16 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
     ) -> list[str] | None:
         if generate_embeddings:
             await self._add_vector_to_records(record)
-        upsert_records = self.serialize(record, collection_name)
+        upsert_records = self.serialize(record, collection_name=collection_name)
         if not isinstance(upsert_records, list):
             upsert_records = [upsert_records]
         keys = []
         for upsert_record in upsert_records:
             try:
                 await self._database.hset(**upsert_record)
-                keys.append(upsert_record["key"])
             except Exception as e:
                 raise ServiceResponseException("Could not upsert messages.") from e
+            keys.append(upsert_record["name"])
         return keys if keys else None
 
     @override
@@ -148,7 +145,7 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         # Did not find the record
         if not fields:
             return None
-        return self.deserialize(fields, collection_name=collection_name)
+        return self.deserialize(fields, keys=[key], collection_name=collection_name)
 
     @override
     async def get_batch(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> OneOrMany[TModel]:
@@ -156,9 +153,9 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         # Did not find the record
         if not fields:
             return None
-        return self.deserialize(fields, collection_name=collection_name)
+        return self.deserialize(fields, keys=keys, collection_name=collection_name)
 
-    async def remove(self, collection_name: str, key: str) -> None:
+    async def delete(self, collection_name: str, key: str) -> None:
         """Removes a memory record from the data store.
 
         Does not guarantee that the collection exists.
@@ -170,7 +167,7 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         """
         await self._database.delete(self._get_redis_key(key, collection_name))
 
-    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
+    async def delete_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Args:
@@ -185,7 +182,11 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         return key
 
     def _unget_redis_key(self, key: str, collection_name: str | None = None) -> str:
-        if self._prefix_collection_name_to_key_names and (prefix := self._get_collection_name(collection_name)):
+        if (
+            self._prefix_collection_name_to_key_names
+            and (prefix := self._get_collection_name(collection_name))
+            and ":" in key
+        ):
             return key[len(prefix) + 1 :]
         return key
 
@@ -199,45 +200,43 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         """Serialize the dict to a Redis store model."""
         results = []
         for rec in record:
+            result = {"mapping": {"timestamp": datetime.now().isoformat()}}
             metadata = {}
-            embedding = {}
             for name, field in self._data_model_definition.fields.items():
                 if isinstance(field, VectorStoreRecordVectorField):
-                    embedding[name] = rec[name]
+                    if isinstance(rec[name], np.ndarray):
+                        result["mapping"][name] = rec[name].tobytes()
+                    else:
+                        result["mapping"][name] = np.array(rec[name]).astype(np.float64).tobytes()
+                    continue
                 if isinstance(field, VectorStoreRecordKeyField):
-                    key = self._get_redis_key(rec[name], collection_name)
-                else:
-                    metadata[name] = rec[field.name]
-            results.append(
-                {
-                    "name": key,
-                    "mapping": {
-                        "key": key,
-                        "timestamp": datetime.now().isoformat(),
-                        "metadata": metadata,
-                        "embedding": embedding,
-                    },
-                }
-            )
-
+                    result["name"] = self._get_redis_key(rec[name], collection_name)
+                    continue
+                metadata[name] = rec[field.name]
+            result["mapping"]["metadata"] = json.dumps(metadata)
+            results.append(result)
         return results
 
     @override
     def _deserialize_store_model_to_dict(
         self,
         search_result: list[dict[bytes, bytes]],
+        keys: list[str],
         collection_name: str | None = None,
         **kwargs: Any,
-    ) -> list[TModel]:
-        """Convert the search result to a data model.
-
-        Can be used as is, or overwritten by a subclass to return proper types.
-        """
+    ) -> list[dict[str, Any]]:
         results = []
-        for rec in search_result:
+        for key, rec in zip(keys, search_result):
             flattened = json.loads(rec[b"metadata"])
-            flattened.extend(json.loads(rec[b"embedding"]))
-            flattened["key"] = self._unget_redis_key(json.loads(flattened[b"key"]), collection_name)
+            for name, field in self._data_model_definition.fields.items():
+                if isinstance(field, VectorStoreRecordKeyField):
+                    flattened[name] = self._unget_redis_key(key, collection_name)
+                if isinstance(field, VectorStoreRecordVectorField):
+                    vector = np.frombuffer(rec[name.encode()], dtype=np.float64).tolist()
+                    if field.cast_function:
+                        flattened[name] = field.cast_function(vector)
+                    else:
+                        flattened[name] = vector
             results.append(flattened)
         return results
 
@@ -245,3 +244,8 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
     @property
     def supported_key_types(self) -> list[type] | None:
         return [str]
+
+    @property
+    def supported_vector_types(self) -> list[type] | None:
+        """Supply the types that vectors are allowed to have. None means any."""
+        return [list[float], np.ndarray]

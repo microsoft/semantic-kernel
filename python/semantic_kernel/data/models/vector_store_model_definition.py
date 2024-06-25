@@ -1,9 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Any
+from typing import Any, Protocol
 
 from semantic_kernel.data.models.vector_store_record_fields import (
     VectorStoreRecordDataField,
@@ -13,6 +12,22 @@ from semantic_kernel.data.models.vector_store_record_fields import (
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
 
 
+class ToDictProtocol(Protocol):
+    def __call__(self, record: Any, **kwargs: Any) -> list[dict[str, Any]]: ...
+
+
+class FromDictProtocol(Protocol):
+    def __call__(self, records: list[dict[str, Any]], **kwargs: Any) -> Any: ...
+
+
+class SerializeProtocol(Protocol):
+    def __call__(self, record: Any, **kwargs: Any) -> Any: ...
+
+
+class DeserializeProtocol(Protocol):
+    def __call__(self, records: Any, **kwargs: Any) -> Any: ...
+
+
 @dataclass
 class VectorStoreRecordDefinition:
     """Memory record definition."""
@@ -20,10 +35,10 @@ class VectorStoreRecordDefinition:
     key_field_name: str = field(init=False)
     fields: dict[str, VectorStoreRecordField]
     container_mode: bool = False
-    to_dict: Callable[[Any, dict[str, Any]], dict[str, Any]] | None = None
-    from_dict: Callable[[dict[str, Any], dict[str, Any]], Any] | None = None
-    serialize: Callable[[object, dict[str, Any]], list[dict[str, Any]]] | None = None
-    deserialize: Callable[[list[dict[str, Any]], dict[str, Any]], object] | None = None
+    to_dict: ToDictProtocol | None = None
+    from_dict: FromDictProtocol | None = None
+    serialize: SerializeProtocol | None = None
+    deserialize: DeserializeProtocol | None = None
 
     @cached_property
     def field_names(self) -> list[str]:

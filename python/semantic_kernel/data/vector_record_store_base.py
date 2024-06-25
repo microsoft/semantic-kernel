@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import types
 from abc import ABC, abstractmethod
-from functools import singledispatch
+from collections.abc import Callable
 from inspect import signature
 from typing import Any, Generic, TypeVar
 
@@ -198,8 +199,7 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
     # endregion
     # region Internal SerDe methods
 
-    @singledispatch
-    def serialize(self, record: OneOrMany[TModel], **kwargs: Any) -> OneOrMany[Any] | None:
+    def serialize(self, records: OneOrMany[TModel], **kwargs: Any) -> OneOrMany[Any] | None:
         """Serialize the data model to the store model.
 
         This method follows the following steps:
@@ -212,36 +212,21 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         before doing the store specific version,
         the user supplied version should have precedence.
         """
-        raise NotImplementedError("This should be used with a list or a single item.")
-
-    @serialize.register
-    def serialize_single(self, record: TModel, **kwargs: Any) -> Any:
-        """Serialize a single instance.
-
-        Args:
-            record (TModel): The record, can also be a container record.
-            **kwargs (Any): Additional arguments.
-        """
-        if serialized := self._serialize_data_model_to_store_model(record):
-            return serialized
-        dict_records = self._serialize_data_model_to_dict(record)
-        return self._serialize_dict_to_store_model(dict_records, **kwargs)
-
-    @serialize.register
-    def serialize_list(self, records: list[TModel], **kwargs: Any) -> list[Any]:
-        """Serialize a list of instances.
-
-        Args:
-            records (list[TModel]): The records, should not be a list of container records.
-            **kwargs (Any): Additional arguments.
-        """
         if serialized := self._serialize_data_model_to_store_model(records):
             return serialized
-        dict_records = [self._serialize_data_model_to_dict(rec) for rec in records]
-        return self._serialize_dict_to_store_model(dict_records, **kwargs)
+        if isinstance(records, list):
+            dict_records = [self._serialize_data_model_to_dict(rec) for rec in records]
+            return self._serialize_dict_to_store_model(dict_records, **kwargs)  # type: ignore
+        dict_records = self._serialize_data_model_to_dict(records)  # type: ignore
+        if isinstance(dict_records, list):
+            # most likely this is a container, so we return all records as a list
+            # can also be a single record, but the to_dict returns a list
+            # hence we will treat it as a container.
+            return self._serialize_dict_to_store_model(dict_records, **kwargs)  # type: ignore
+        # this case is single record in, single record out
+        return self._serialize_dict_to_store_model([dict_records], **kwargs)[0]
 
-    @singledispatch
-    def deserialize(self, record: OneOrMany[Any | dict[str, Any]], **kwargs: Any) -> OneOrMany[TModel] | None:
+    def deserialize(self, records: OneOrMany[Any | dict[str, Any]], **kwargs: Any) -> OneOrMany[TModel] | None:
         """Deserialize the store model to the data model.
 
         This method follows the following steps:
@@ -250,32 +235,15 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         2. Deserialize the store model to a dict, using the store specific method.
         3. Convert the dict to the data model, using the data model specific method.
         """
-        raise NotImplementedError("This should be used with a list or a single item.")
-
-    @deserialize.register
-    def deserialize_list(self, records: list[Any], **kwargs: Any) -> OneOrMany[TModel]:
-        """Deserialize a list of instances.
-
-        Args:
-            records (list[Any]): The records, should not be a list of container records.
-            **kwargs (Any): Additional arguments.
-        """
         if deserialized := self._deserialize_store_model_to_data_model(records, **kwargs):
             return deserialized
-        dict_records = self._deserialize_store_model_to_dict(records, **kwargs)
-        return [self._deserialize_dict_to_data_model(rec, **kwargs) for rec in dict_records]
-
-    @deserialize.register
-    def deserialize_single(self, record: Any, **kwargs: Any) -> TModel:
-        """Deserialize a single instance.
-
-        Args:
-            record (Any): The record, can also be a container record.
-            **kwargs (Any): Additional arguments.
-        """
-        if deserialized := self._deserialize_store_model_to_data_model(record, **kwargs):
-            return deserialized  # type: ignore
-        dict_records = self._deserialize_store_model_to_dict(record, **kwargs)
+        if isinstance(records, list):
+            dict_records = self._deserialize_store_model_to_dict(records, **kwargs)
+            return [self._deserialize_dict_to_data_model(rec, **kwargs) for rec in dict_records]
+        dict_records = self._deserialize_store_model_to_dict([records], **kwargs)
+        if self._container_mode:
+            return self._deserialize_dict_to_data_model(dict_records, **kwargs)
+        # this case is single record in, single record out
         return self._deserialize_dict_to_data_model(dict_records[0])
 
     def _serialize_data_model_to_store_model(self, record: OneOrMany[TModel], **kwargs: Any) -> OneOrMany[Any] | None:
@@ -287,7 +255,10 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         The developer is responsible for correctly serializing for the specific data source.
         """
         if isinstance(record, list):
-            return [self._serialize_data_model_to_store_model(rec, **kwargs) for rec in record]
+            result = [self._serialize_data_model_to_store_model(rec, **kwargs) for rec in record]
+            if not all(result):
+                return None
+            return result
         if self._container_mode and self._data_model_definition.serialize:
             return self._data_model_definition.serialize(record, **kwargs)  # type: ignore
         if isinstance(record, VectorStoreModelFunctionSerdeProtocol):
@@ -301,7 +272,7 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         """Deserialize the store model to the data model.
 
         This works when the data model has supplied a deserialize method, specific to a data source.
-        This is a method called 'deserialize()' on the data model or part of the vector store record definition.
+        This uses a method called 'deserialize()' on the data model or part of the vector store record definition.
 
         The developer is responsible for correctly deserializing for the specific data source.
         """
@@ -311,12 +282,12 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
             try:
                 if isinstance(record, list):
                     return [self._data_model_type.deserialize(rec, **kwargs) for rec in record]
-                return self._data_model_type.deserialize(record)
+                return self._data_model_type.deserialize(record, **kwargs)
             except Exception as exc:
                 raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
         return None
 
-    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> dict[str, Any]:
+    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> dict[str, Any] | list[dict[str, Any]]:
         """This function is used if no serialize method is found on the data model.
 
         This will generally serialize the data model to a dict, should not be overridden by child classes.
@@ -354,7 +325,7 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
                     raise VectorStoreModelSerializationException(f"Error serializing record: {field_name}")
         return store_model
 
-    def _deserialize_dict_to_data_model(self, record: dict[str, Any], **kwargs: Any) -> TModel:
+    def _deserialize_dict_to_data_model(self, record: OneOrMany[dict[str, Any]], **kwargs: Any) -> TModel:
         """This function is used if no deserialize method is found on the data model.
 
         This method is the second step and will deserialize a dict to the data model,
@@ -362,10 +333,18 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
 
         The input of this should come from the _deserialized_store_model_to_dict function.
         """
+        if self._container_mode and self._data_model_definition.from_dict:
+            if not isinstance(record, list):
+                record = [record]
+            return self._data_model_definition.from_dict(record, **kwargs)
+        if isinstance(record, list):
+            if len(record) > 1:
+                raise ValueError(
+                    "Cannot deserialize multiple records to a single record unless you are using a container."
+                )
+            record = record[0]
         if isinstance(self._data_model_type, dict):
             return record
-        if self._container_mode and self._data_model_definition.from_dict:
-            return self._data_model_definition.from_dict(record, **kwargs)
         if isinstance(self._data_model_type, VectorStoreModelPydanticProtocol):
             try:
                 return self._data_model_type.model_validate(record)
@@ -407,6 +386,15 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         key_type = model_sig.parameters[self._key_field].annotation.__args__[0]  # type: ignore
         if self.supported_key_types and key_type not in self.supported_key_types:
             raise ValueError(f"Key field must be one of {self.supported_key_types}")
+        if not self.supported_vector_types:
+            return
+        for field_name, field in self._data_model_definition.fields.items():
+            if isinstance(field, VectorStoreRecordVectorField):
+                field_type = model_sig.parameters[field_name].annotation.__args__[0]
+                if field_type.__class__ is types.UnionType:
+                    field_type = field_type.__args__[0]
+                if field_type not in self.supported_vector_types:
+                    raise ValueError(f"Vector field {field_name} must be one of {self.supported_vector_types}")
         return
 
     @abstractmethod
@@ -441,7 +429,7 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
     async def _add_vector_to_records(self, records: OneOrMany[TModel], **kwargs) -> OneOrMany[TModel]:
         """Vectorize the vector record."""
         # dict of embedding_field.name and tuple of record, settings, field_name
-        embeddings_to_make: list[tuple[str, str, dict[str, PromptExecutionSettings]]] = []
+        embeddings_to_make: list[tuple[str, str, dict[str, PromptExecutionSettings], Callable | None]] = []
 
         for name, field in self._data_model_definition.fields.items():  # type: ignore
             if (
@@ -456,12 +444,21 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
             if not embedding_field.local_embedding:
                 continue
             settings = embedding_field.embedding_settings
-            embeddings_to_make.append((name, embedding_field_name, settings))
+            cast_callable = embedding_field.cast_function
+            embeddings_to_make.append((name, embedding_field_name, settings, cast_callable))
 
-        for field_to_embed, field_to_store, settings in embeddings_to_make:
+        for field_to_embed, field_to_store, settings, cast_callable in embeddings_to_make:
             if not self._kernel:
                 raise MemoryConnectorException("Kernel is required to create embeddings.")
-            await self._kernel.add_embedding_to_object(records, field_to_embed, field_to_store, settings, **kwargs)
+            await self._kernel.add_embedding_to_object(
+                inputs=records,
+                field_to_embed=field_to_embed,
+                field_to_store=field_to_store,
+                execution_settings=settings,
+                container_mode=self._container_mode,
+                cast_function=cast_callable,
+                **kwargs,
+            )
         return records
 
     # endregion
