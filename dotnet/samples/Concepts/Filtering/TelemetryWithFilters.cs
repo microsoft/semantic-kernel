@@ -64,6 +64,7 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
         // Define custom transaction ID to group set of operations related to the request.
         var transactionId = new Guid("2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2");
 
+        // Note: logging scopes are available for out-of-the-box SK telemetry as well.
         using (logger.BeginScope($"Transaction ID: [{transactionId}]"))
         {
             // Invoke prompt with arguments.
