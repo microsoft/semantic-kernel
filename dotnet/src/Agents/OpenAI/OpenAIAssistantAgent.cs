@@ -162,7 +162,55 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             };
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Create a new assistant thread.
+    /// </summary>
+    /// <param name="config">Configuration for accessing the Assistants API service, such as the api-key.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The thread identifier</returns>
+    public static async Task<string> CreateThreadAsync(
+        OpenAIAssistantConfiguration config,
+        CancellationToken cancellationToken = default)
+    {
+        // Validate input
+        Verify.NotNull(config, nameof(config));
+
+        // Create the client
+        AssistantsClient client = CreateClient(config);
+
+        AssistantThread thread = await client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
+
+        return thread.Id;
+    }
+
+    /// <summary>
+    /// Create a new assistant thread.
+    /// </summary>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="config">Configuration for accessing the Assistants API service, such as the api-key.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The thread identifier</returns>
+    public static async Task<bool> DeleteThreadAsync(
+        string threadId,
+        OpenAIAssistantConfiguration config,
+        CancellationToken cancellationToken = default)
+    {
+        // Validate input
+        Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
+        Verify.NotNull(config, nameof(config));
+
+        // Create the client
+        AssistantsClient client = CreateClient(config);
+
+        return await client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Adds a message to the specified thread.
+    /// </summary>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="message">A non-system message with which to append to the conversation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public Task AddMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
@@ -170,15 +218,22 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         return OpenAIAssistantActions.CreateMessageAsync(this._client, threadId, message, cancellationToken);
     }
 
-    /// <inheritdoc/>
-    public async Task DeleteAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Delete the assistant definition.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns>True if assistant definition has been deleted</returns>
+    /// <remarks>
+    /// Assistant based agent will not be useable after deletion.
+    /// </remarks>
+    public async Task<bool> DeleteAsync(CancellationToken cancellationToken = default)
     {
-        if (this.IsDeleted)
+        if (!this.IsDeleted)
         {
-            return;
+            this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
         }
 
-        this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
+        return this.IsDeleted;
     }
 
     /// <summary>
