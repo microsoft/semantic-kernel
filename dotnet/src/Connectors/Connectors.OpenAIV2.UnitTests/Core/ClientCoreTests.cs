@@ -197,7 +197,7 @@ public partial class ClientCoreTests
 
         // Act
         var clientCore = new ClientCore(expectedModelId, "apikey");
-        var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(string.Empty));
+        var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(" "));
 
         // Assert
         Assert.True(clientCore.Attributes.ContainsKey(AIServiceExtensions.ModelIdKey));
@@ -228,7 +228,7 @@ public partial class ClientCoreTests
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new ClientCore(" ", "apikey"));
         Assert.Throws<ArgumentException>(() => new ClientCore("", "apikey"));
-        Assert.Throws<ArgumentException>(() => new ClientCore(null!));
+        Assert.Throws<ArgumentNullException>(() => new ClientCore(null!));
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public partial class ClientCoreTests
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new ClientCore("modelId", " "));
         Assert.Throws<ArgumentException>(() => new ClientCore("modelId", ""));
-        Assert.Throws<ArgumentException>(() => new ClientCore("modelId", apiKey: null!));
+        Assert.Throws<ArgumentNullException>(() => new ClientCore("modelId", apiKey: null!));
     }
 
     [Fact]

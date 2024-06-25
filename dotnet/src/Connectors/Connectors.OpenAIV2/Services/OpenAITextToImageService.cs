@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
 using OpenAI;
 
@@ -70,5 +69,8 @@ public class OpenAITextToImageService : ITextToImageService
 
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string prompt, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GenerateImageAsync(prompt, width, height, cancellationToken);
+    {
+        this._core.LogActionDetails();
+        return this._core.GenerateImageAsync(prompt, width, height, cancellationToken);
+    }
 }

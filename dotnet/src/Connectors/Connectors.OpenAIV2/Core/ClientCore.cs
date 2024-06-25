@@ -105,6 +105,11 @@ internal partial class ClientCore
             Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
             this.Endpoint = new Uri(OpenAIV1Endpoint);
         }
+        else if (string.IsNullOrEmpty(apiKey))
+        {
+            // Avoids an exception from OpenAI Client when a custom endpoint is provided without an API key.
+            apiKey = WhiteSpace;
+        }
 
         this.AddAttribute(AIServiceExtensions.EndpointKey, this.Endpoint.ToString());
 
@@ -116,7 +121,7 @@ internal partial class ClientCore
             this.AddAttribute(ClientCore.OrganizationKey, organizationId);
         }
 
-        this.Client = new OpenAIClient(apiKey ?? WhiteSpace, options);
+        this.Client = new OpenAIClient(apiKey!, options);
     }
 
     /// <summary>
