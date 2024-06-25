@@ -8,39 +8,21 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace ChatCompletion;
 
 /// <summary>
-/// Samples showing how to get the LLM to provide the reason is using function calling.
+/// Samples showing how to get the LLM to provide the reason it is calling a function
+/// when using automatic function calling.
 /// </summary>
 public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Using the system prompt to explain function calls doesn't work work with gpt-4o.
+    /// Shows how to ask the model to explain function calls after execution.
     /// </summary>
-    [Fact]
-    public async Task UseSystemPromptToExplainFunctionCallsAsync()
-    {
-        // Create a kernel with MistralAI chat completion and WeatherPlugin
-        Kernel kernel = CreateKernelWithPlugin<WeatherPlugin>();
-        var service = kernel.GetRequiredService<IChatCompletionService>();
-
-        // Invoke chat prompt with auto invocation of functions enabled
-        var chatHistory = new ChatHistory
-        {
-            new ChatMessageContent(AuthorRole.System, "Always explain why function tool calls are being used."),
-            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
-        };
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        var result = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
-        chatHistory.Add(result);
-        Console.WriteLine(result);
-    }
-
-    /// <summary>
+    /// <remarks>
     /// Asking the model to explain function calls after execution works well but may be too late depending on your use case.
-    /// </summary>
+    /// </remarks>
     [Fact]
     public async Task AskAssistantToExplainFunctionCallsAfterExecutionAsync()
     {
-        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        // Create a kernel with OpenAI chat completion and WeatherPlugin
         Kernel kernel = CreateKernelWithPlugin<WeatherPlugin>();
         var service = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -60,12 +42,13 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
     }
 
     /// <summary>
-    /// Decorate each function to be called with an extra parameter which includes the reason this function needs to be called.
+    /// Shows how to use a function that has ben decorated with an extra parameter which must be set by the model
+    /// with the reason this function needs to be called.
     /// </summary>
     [Fact]
     public async Task UseDecoratedFunctionAsync()
     {
-        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        // Create a kernel with OpenAI chat completion and WeatherPlugin
         Kernel kernel = CreateKernelWithPlugin<DecoratedWeatherPlugin>();
         var service = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -81,13 +64,33 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
     }
 
     /// <summary>
+    /// Shows how to use a function that has ben decorated with an extra parameter which must be set by the model
+    /// with the reason this function needs to be called.
+    /// </summary>
+    [Fact]
+    public async Task UseDecoratedFunctionWithPromptAsync()
+    {
+        // Create a kernel with OpenAI chat completion and WeatherPlugin
+        Kernel kernel = CreateKernelWithPlugin<DecoratedWeatherPlugin>();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Invoke chat prompt with auto invocation of functions enabled
+        string chatPrompt = """
+            <message role="user">What is the weather like in Paris?</message>
+            """;
+        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var result = await kernel.InvokePromptAsync(chatPrompt, new(executionSettings));
+        Console.WriteLine(result);
+    }
+
+    /// <summary>
     /// Asking the model to explain function calls in response to each function call can work but the model may also
     /// get confused and treat the request to explain the function calls as an error response from the function calls.
     /// </summary>
     [Fact]
     public async Task AskAssistantToExplainFunctionCallsBeforeExecutionAsync()
     {
-        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        // Create a kernel with OpenAI chat completion and WeatherPlugin
         Kernel kernel = CreateKernelWithPlugin<WeatherPlugin>();
         kernel.AutoFunctionInvocationFilters.Add(new RespondExplainFunctionInvocationFilter());
         var service = kernel.GetRequiredService<IChatCompletionService>();
@@ -111,7 +114,7 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
     [Fact]
     public async Task QueryAssistantToExplainFunctionCallsBeforeExecutionAsync()
     {
-        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        // Create a kernel with OpenAI chat completion and WeatherPlugin
         Kernel kernel = CreateKernelWithPlugin<WeatherPlugin>();
         kernel.AutoFunctionInvocationFilters.Add(new QueryExplainFunctionInvocationFilter(this.Output));
         var service = kernel.GetRequiredService<IChatCompletionService>();
@@ -129,9 +132,13 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
 
     /// <summary>
     /// This <see cref="IAutoFunctionInvocationFilter"/> will respond to function call requests and ask the model to explain why it is
-    /// calling the function(s). It is only suitable for transient use because it stores information about the functions that have been
+    /// calling the function(s). This filter must be registered transiently because it maintains state for the functions that have been
     /// called for a single chat history.
     /// </summary>
+    /// <remarks>
+    /// This filter implementation is not intended for production use. It is a demonstration of how to use filters to interact with the
+    /// model during automatic function invocation so that the model explains why it is calling a function.
+    /// </remarks>
     private sealed class RespondExplainFunctionInvocationFilter : IAutoFunctionInvocationFilter
     {
         private readonly HashSet<string> _functionNames = [];
@@ -166,6 +173,10 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
     /// This <see cref="IAutoFunctionInvocationFilter"/> uses the currently available <see cref="IChatCompletionService"/> to query the model
     /// to find out what certain functions are being called.
     /// </summary>
+    /// <remarks>
+    /// This filter implementation is not intended for production use. It is a demonstration of how to use filters to interact with the
+    /// model during automatic function invocation so that the model explains why it is calling a function.
+    /// </remarks>
     private sealed class QueryExplainFunctionInvocationFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
     {
         private readonly ITestOutputHelper _output = output;

@@ -113,9 +113,16 @@ public abstract class BaseTest
             if (request.Content is not null)
             {
                 var content = await request.Content.ReadAsStringAsync(cancellationToken);
-                string formattedContent = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(content), s_jsonSerializerOptions);
                 this._output.WriteLine("=== REQUEST ===");
-                this._output.WriteLine(formattedContent);
+                try
+                {
+                    string formattedContent = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(content), s_jsonSerializerOptions);
+                    this._output.WriteLine(formattedContent);
+                }
+                catch (JsonException)
+                {
+                    this._output.WriteLine(content);
+                }
                 this._output.WriteLine(string.Empty);
             }
 
