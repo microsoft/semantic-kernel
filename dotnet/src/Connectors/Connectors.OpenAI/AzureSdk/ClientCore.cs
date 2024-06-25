@@ -699,7 +699,12 @@ internal abstract class ClientCore
                             role = new AuthorRole(streamedRole.Value.ToString());
                         }
 
-                        OpenAIStreamingChatMessageContent openAIStreamingChatMessageContent = new(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName, Role = role, };
+                        OpenAIStreamingChatMessageContent openAIStreamingChatMessageContent =
+                            new(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata)
+                            {
+                                AuthorName = streamedName,
+                                Role = role,
+                            };
 
                         if (update.ToolCallUpdate is StreamingFunctionToolCallUpdate functionCallUpdate)
                         {
