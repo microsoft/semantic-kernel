@@ -8,6 +8,7 @@ import uuid
 from numpy import ndarray
 from qdrant_client import QdrantClient
 from qdrant_client import models as qdrant_models
+from qdrant_client.http.exceptions import UnexpectedResponse
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -78,7 +79,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         try:
             result = await self.get_collection(collection_name=collection_name)
             return result.status == qdrant_models.CollectionStatus.GREEN
-        except ValueError:
+        except UnexpectedResponse:
             return False
 
     @override
