@@ -211,11 +211,24 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="threadId">The thread identifier</param>
     /// <param name="message">A non-system message with which to append to the conversation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public Task AddMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
+    public Task AddThreadMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
         return OpenAIAssistantActions.CreateMessageAsync(this._client, threadId, message, cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets messages for a specified thread.
+    /// </summary>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
+    {
+        this.ThrowIfDeleted();
+
+        return OpenAIAssistantActions.GetMessagesAsync(this._client, threadId, cancellationToken);
     }
 
     /// <summary>
