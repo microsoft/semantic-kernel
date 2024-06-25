@@ -48,9 +48,6 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         kernel: Kernel | None = None,
         connection_string: str | None = None,
         prefix_collection_name_to_key_names: bool = False,
-        vector_distance_metric: str = "COSINE",
-        vector_index_algorithm: str = "HNSW",
-        query_dialect: int = 2,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -75,12 +72,6 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
             kernel=kernel,
         )
         self._database = Redis.from_url(redis_settings.connection_string.get_secret_value())
-        # this will be needed for search operations
-        self._ft = self._database.ft
-
-        self._query_dialect = query_dialect
-        self._vector_distance_metric = vector_distance_metric
-        self._vector_index_algorithm = vector_index_algorithm
         self._prefix_collection_name_to_key_names = prefix_collection_name_to_key_names
 
     async def close(self):
