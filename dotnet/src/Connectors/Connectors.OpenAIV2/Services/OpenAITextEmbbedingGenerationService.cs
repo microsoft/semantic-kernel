@@ -13,6 +13,10 @@ using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
+/* Phase 02
+Adding the non-default endpiont parameter to the constructor.
+*/
+
 /// <summary>
 /// OpenAI implementation of <see cref="ITextEmbeddingGenerationService"/>
 /// </summary>
@@ -28,6 +32,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
+    /// <param name="endpoint">Non-default endpoint for the OpenAI API</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
@@ -35,6 +40,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         string modelId,
         string apiKey,
         string? organization = null,
+        Uri? endpoint = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
@@ -42,11 +48,10 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         this._core = new(
             modelId: modelId,
             apiKey: apiKey,
+            endpoint: endpoint,
             organizationId: organization,
             httpClient: httpClient,
             logger: loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
-
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
 
         this._dimensions = dimensions;
     }
@@ -65,8 +70,6 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         int? dimensions = null)
     {
         this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
-
         this._dimensions = dimensions;
     }
 

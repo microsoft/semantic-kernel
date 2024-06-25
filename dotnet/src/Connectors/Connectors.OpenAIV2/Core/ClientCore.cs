@@ -4,6 +4,11 @@
 Phase 01 : This class was created adapting and merging ClientCore and OpenAIClientCore classes.
 System.ClientModel changes were added and adapted to the code as this package is now used as a dependency over OpenAI package.
 All logic from original ClientCore and OpenAIClientCore were preserved.
+
+Phase 02 :
+- Moved AddAttributes usage to the constructor, avoiding the need verify and adding it in the services.
+- Added ModelId attribute to the OpenAIClient constructor.
+- Added WhiteSpace instead of empty string for ApiKey to avoid exception from OpenAI Client on custom endpoints added an issue in OpenAI SDK repo. https://github.com/openai/openai-dotnet/issues/90
 */
 
 using System;
@@ -17,6 +22,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 using OpenAI;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
@@ -28,6 +34,16 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
+    /// <summary>
+    /// White space constant.
+    /// </summary>
+    private const string WhiteSpace = " ";
+
+    /// <summary>
+    /// Gets the attribute name used to store the organization in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
+    internal const string OrganizationKey = "Organization";
+
     /// <summary>
     /// Default OpenAI API endpoint.
     /// </summary>
@@ -63,15 +79,15 @@ internal partial class ClientCore
     /// </summary>
     /// <param name="modelId">Model name.</param>
     /// <param name="apiKey">OpenAI API Key.</param>
-    /// <param name="endpoint">OpenAI compatible API endpoint.</param>
     /// <param name="organizationId">OpenAI Organization Id (usually optional).</param>
+    /// <param name="endpoint">OpenAI compatible API endpoint.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal ClientCore(
         string modelId,
         string? apiKey = null,
-        Uri? endpoint = null,
         string? organizationId = null,
+        Uri? endpoint = null,
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
@@ -79,6 +95,8 @@ internal partial class ClientCore
 
         this.Logger = logger ?? NullLogger.Instance;
         this.ModelId = modelId;
+
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
 
         // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
         this.Endpoint = endpoint ?? httpClient?.BaseAddress;
@@ -88,13 +106,17 @@ internal partial class ClientCore
             this.Endpoint = new Uri(OpenAIV1Endpoint);
         }
 
+        this.AddAttribute(AIServiceExtensions.EndpointKey, this.Endpoint.ToString());
+
         var options = GetOpenAIClientOptions(httpClient, this.Endpoint);
         if (!string.IsNullOrWhiteSpace(organizationId))
         {
             options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organizationId!), PipelinePosition.PerCall);
+
+            this.AddAttribute(ClientCore.OrganizationKey, organizationId);
         }
 
-        this.Client = new OpenAIClient(apiKey ?? string.Empty, options);
+        this.Client = new OpenAIClient(apiKey ?? WhiteSpace, options);
     }
 
     /// <summary>
@@ -116,6 +138,8 @@ internal partial class ClientCore
         this.Logger = logger ?? NullLogger.Instance;
         this.ModelId = modelId;
         this.Client = openAIClient;
+
+        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>

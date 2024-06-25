@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 using Moq;
 using OpenAI;
 using Xunit;
@@ -23,7 +24,7 @@ public partial class ClientCoreTests
     {
         // Act
         var logger = new Mock<ILogger<ClientCoreTests>>().Object;
-        var openAIClient = new OpenAIClient(new ApiKeyCredential("key"));
+        var openAIClient = new OpenAIClient("key");
 
         var clientCoreModelConstructor = new ClientCore("model1", "apiKey");
         var clientCoreOpenAIClientConstructor = new ClientCore("model1", openAIClient, logger: logger);
@@ -67,6 +68,8 @@ public partial class ClientCoreTests
 
         // Assert
         Assert.Equal(endpoint ?? client?.BaseAddress ?? new Uri("https://api.openai.com/v1"), clientCore.Endpoint);
+        Assert.True(clientCore.Attributes.ContainsKey(AIServiceExtensions.EndpointKey));
+        Assert.Equal(endpoint?.ToString() ?? client?.BaseAddress?.ToString() ?? "https://api.openai.com/v1", clientCore.Attributes[AIServiceExtensions.EndpointKey]);
 
         client?.Dispose();
     }
@@ -142,7 +145,7 @@ public partial class ClientCoreTests
         var clientCore = new ClientCore(
             modelId: "model",
             openAIClient: new OpenAIClient(
-                new ApiKeyCredential("test"),
+                "test",
                 new OpenAIClientOptions()
                 {
                     Transport = new HttpClientPipelineTransport(client),
@@ -184,5 +187,66 @@ public partial class ClientCoreTests
             Assert.True(clientCore.Attributes.ContainsKey("key"));
             Assert.Equal(value, clientCore.Attributes["key"]);
         }
+    }
+
+    [Fact]
+    public void ItAddModelIdAttributeAsExpected()
+    {
+        // Arrange
+        var expectedModelId = "modelId";
+
+        // Act
+        var clientCore = new ClientCore(expectedModelId, "apikey");
+        var clientCoreBreakingGlass = new ClientCore(expectedModelId, new OpenAIClient(string.Empty));
+
+        // Assert
+        Assert.True(clientCore.Attributes.ContainsKey(AIServiceExtensions.ModelIdKey));
+        Assert.True(clientCoreBreakingGlass.Attributes.ContainsKey(AIServiceExtensions.ModelIdKey));
+        Assert.Equal(expectedModelId, clientCore.Attributes[AIServiceExtensions.ModelIdKey]);
+        Assert.Equal(expectedModelId, clientCoreBreakingGlass.Attributes[AIServiceExtensions.ModelIdKey]);
+    }
+
+    [Fact]
+    public void ItAddOrNotOrganizationIdAttributeWhenProvided()
+    {
+        // Arrange
+        var expectedOrganizationId = "organizationId";
+
+        // Act
+        var clientCore = new ClientCore("modelId", "apikey", expectedOrganizationId);
+        var clientCoreWithoutOrgId = new ClientCore("modelId", "apikey");
+
+        // Assert
+        Assert.True(clientCore.Attributes.ContainsKey(ClientCore.OrganizationKey));
+        Assert.Equal(expectedOrganizationId, clientCore.Attributes[ClientCore.OrganizationKey]);
+        Assert.False(clientCoreWithoutOrgId.Attributes.ContainsKey(ClientCore.OrganizationKey));
+    }
+
+    [Fact]
+    public void ItThrowsIfModelIdIsNotProvided()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => new ClientCore(" ", "apikey"));
+        Assert.Throws<ArgumentException>(() => new ClientCore("", "apikey"));
+        Assert.Throws<ArgumentException>(() => new ClientCore(null!));
+    }
+
+    [Fact]
+    public void ItThrowsWhenNotUsingCustomEndpintAndApiKeyIsNotProvided()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => new ClientCore("modelId", " "));
+        Assert.Throws<ArgumentException>(() => new ClientCore("modelId", ""));
+        Assert.Throws<ArgumentException>(() => new ClientCore("modelId", apiKey: null!));
+    }
+
+    [Fact]
+    public void ItDoesNotThrowWhenUsingCustomEndpintAndApiKeyIsNotProvided()
+    {
+        // Act & Assert
+        ClientCore? clientCore = null;
+        clientCore = new ClientCore("modelId", " ", endpoint: new Uri("http://localhost"));
+        clientCore = new ClientCore("modelId", "", endpoint: new Uri("http://localhost"));
+        clientCore = new ClientCore("modelId", apiKey: null!, endpoint: new Uri("http://localhost"));
     }
 }

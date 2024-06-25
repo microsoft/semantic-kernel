@@ -13,8 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using OpenAI.Embeddings;
 
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly
-
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
