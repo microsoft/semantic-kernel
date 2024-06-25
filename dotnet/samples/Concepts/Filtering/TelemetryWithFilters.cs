@@ -149,6 +149,9 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
                 if (logger.IsEnabled(LogLevel.Information))
                 {
                     TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
+
+                    // Capturing the duration in seconds as per OpenTelemetry convention for instrument units:
+                    // More information here: https://opentelemetry.io/docs/specs/semconv/general/metrics/#instrument-units
                     logger.LogInformation("Function completed. Duration: {Duration}s", duration.TotalSeconds);
                 }
             }
