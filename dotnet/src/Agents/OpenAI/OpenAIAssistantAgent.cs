@@ -303,7 +303,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
         this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
-        return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
+        return
+            new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling)
+            {
+                Logger = this.LoggerFactory.CreateLogger<OpenAIAssistantChannel>()
+            };
     }
 
     internal void ThrowIfDeleted()
