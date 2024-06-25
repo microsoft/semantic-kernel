@@ -2,7 +2,7 @@
 
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class GetObjectRequest
 {
@@ -11,6 +11,6 @@ internal sealed class GetObjectRequest
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateGetRequest($"objects/{this.Id}{(this.Additional == null ? string.Empty : $"?include={string.Join(",", this.Additional)}")}");
+        return HttpRequest.CreateGetRequest($"objects/{this.Id}{(this.Additional is null ? string.Empty : $"?include={string.Join(",", this.Additional)}")}");
     }
 }

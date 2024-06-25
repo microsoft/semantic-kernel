@@ -6,64 +6,224 @@ name: Python Integration Tests
 
 on:
   workflow_dispatch:
-  push:
+  pull_request:
     branches: ["main"]
-    paths:
-      - "python/**"
+  merge_group:
+    branches: ["main"]
   schedule:
-    - cron: "0 */12 * * *" # Run every 12 hours: midnight UTC and noon UTC
+    - cron: "0 0 * * *" # Run at midnight UTC daily
 
 permissions:
   contents: read
 
 jobs:
-  python-integration-tests:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      pythonChanges: ${{ steps.filter.outputs.python}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            python:
+              - 'python/**'
+      # run only if 'python' files were changed
+      - name: python tests
+        if: steps.filter.outputs.python == 'true'
+        run: echo "Python file"
+      # run only if not 'python' files were changed
+      - name: not python tests
+        if: steps.filter.outputs.python != 'true'
+        run: echo "NOT python file"
+
+  python-merge-gate:
+    name: Python Pre-Merge Integration Tests
+    needs: paths-filter
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: "poetry"
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
           export HNSWLIB_NO_NATIVE=1
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install poetry pytest
-          cd python && poetry install --with hugging_face --with chromadb --with weaviate
+          cd python && poetry install --with tests
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install poetry pytest
-          cd python && poetry install --with hugging_face --with chromadb --with weaviate
+          cd python
+          poetry install --with tests
       - name: Run Integration Tests
+        id: run_tests
         shell: bash
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
           Python_Integration_Tests: Python_Integration_Tests
-          AzureOpenAI__Label: azure-text-davinci-003
-          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
-          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
-          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
-          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
-          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
-          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
-          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
-          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
-          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+          OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
+          OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
+          OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
+          POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
+          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
+          MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
         run: |
+          if ${{ matrix.os == 'ubuntu-latest' }}; then
+            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          fi
+
           cd python
-          poetry run pytest ./tests/integration
+          poetry run pytest ./tests/integration -v
+
+  python-integration-tests:
+    needs: paths-filter
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "poetry"
+      - name: Install dependencies with hnswlib native disabled
+        if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
+        run: |
+          export HNSWLIB_NO_NATIVE=1
+          python -m pip install --upgrade pip setuptools wheel
+          cd python && poetry install --with tests
+
+      - name: Install dependencies with hnswlib native enabled
+        if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          cd python && poetry install --with tests
+
+      - name: Run Integration Tests
+        id: run_tests
+        shell: bash
+        env: # Set Azure credentials secret as an input
+          HNSWLIB_NO_NATIVE: 1
+          Python_Integration_Tests: Python_Integration_Tests
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+          OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
+          OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
+          OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
+          POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
+          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
+          MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+        run: |
+          if ${{ matrix.os == 'ubuntu-latest' }}; then
+            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          fi
+
+          cd python
+          poetry run pytest ./tests/integration -v
+
+  # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
+  python-integration-tests-check:
+    if: always()
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+    needs: [python-merge-gate, python-integration-tests]
+    steps:
+      - name: Get Date
+        shell: bash
+        run: |
+          echo "date=$(date +'%m/%d/%Y %H:%M:%S')" >> "$GITHUB_ENV"
+
+      - name: Run Type is Daily
+        if: ${{ github.event_name == 'schedule' }}
+        shell: bash
+        run: |
+          echo "run_type=Daily" >> "$GITHUB_ENV"
+
+      - name: Run Type is Manual
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        shell: bash
+        run: |
+          echo "run_type=Manual" >> "$GITHUB_ENV"
+
+      - name: Run Type is ${{ github.event_name }}
+        if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'}}
+        shell: bash
+        run: |
+          echo "run_type=${{ github.event_name }}" >> "$GITHUB_ENV"
+
+      - name: Fail workflow if tests failed
+        id: check_tests_failed
+        if: contains(join(needs.*.result, ','), 'failure')
+        uses: actions/github-script@v7
+        with:
+          script: core.setFailed('Integration Tests Failed!')
+
+      - name: Fail workflow if tests cancelled
+        id: check_tests_cancelled
+        if: contains(join(needs.*.result, ','), 'cancelled')
+        uses: actions/github-script@v7
+        with:
+          script: core.setFailed('Integration Tests Cancelled!')
+
+      - name: Microsoft Teams Notification
+        uses: skitionek/notify-microsoft-teams@master
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
+          dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          overwrite: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
+
+      - name: Microsoft Teams Notification (Dry Run)
+        uses: skitionek/notify-microsoft-teams@master
+        if: github.ref != 'refs/heads/main'
+        with:
+          webhook_url: NONE
+          dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          overwrite: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"

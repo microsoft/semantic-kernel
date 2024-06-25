@@ -5,10 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Pinecone Document entity.
@@ -26,7 +25,8 @@ public class PineconeDocument
     /// Vector dense data. This should be the same length as the dimension of the index being queried.
     /// </summary>
     [JsonPropertyName("values")]
-    public IEnumerable<float> Values { get; set; }
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+    public ReadOnlyMemory<float> Values { get; set; }
 
     /// <summary>
     /// The metadata associated with the document
@@ -91,15 +91,15 @@ public class PineconeDocument
     /// <param name="score"></param>
     [JsonConstructor]
     public PineconeDocument(
-        IEnumerable<float>? values = null,
+        ReadOnlyMemory<float> values = default,
         string? id = default,
         Dictionary<string, object>? metadata = null,
         SparseVectorData? sparseValues = null,
         float? score = null)
     {
         this.Id = id ?? Guid.NewGuid().ToString();
-        this.Values = values ?? Array.Empty<float>();
-        this.Metadata = metadata ?? new Dictionary<string, object>();
+        this.Values = values;
+        this.Metadata = metadata ?? [];
         this.SparseValues = sparseValues;
         this.Score = score;
     }
@@ -109,7 +109,7 @@ public class PineconeDocument
     /// </summary>
     /// <param name="id">The unique ID of a vector.</param>
     /// <param name="values">Vector dense data. This should be the same length as the dimension of the index being queried.</param>
-    public static PineconeDocument Create(string? id = default, IEnumerable<float>? values = default)
+    public static PineconeDocument Create(string? id = default, ReadOnlyMemory<float> values = default)
     {
         return new PineconeDocument(values, id);
     }
@@ -141,7 +141,7 @@ public class PineconeDocument
     {
         // return a dictionary from the metadata without the text, document_Id, and source_Id properties
 
-        if (this.Metadata == null)
+        if (this.Metadata is null)
         {
             return string.Empty;
         }
@@ -152,7 +152,7 @@ public class PineconeDocument
             .Where(x => !propertiesToSkip.Contains(x.Key))
             .ToDictionary(x => x.Key, x => x.Value);
 
-        return JsonSerializer.Serialize(distinctMetadata);
+        return JsonSerializer.Serialize(distinctMetadata, JsonOptionsCache.Default);
     }
 
     internal UpdateVectorRequest ToUpdateRequest()

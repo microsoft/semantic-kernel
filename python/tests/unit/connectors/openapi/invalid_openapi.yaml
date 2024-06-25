@@ -1,0 +1,21 @@
+openapi: 3.0.0
+info:
+  title: Test API
+  version: 1.0.0
+  servers:
+    - url: http://example.com
+paths:
+  /todos:
+    get:
+      summary: Get all todos
+      operationId: getTodos
+      responses:
+        '200':
+          description: OK
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            description: The authorization token

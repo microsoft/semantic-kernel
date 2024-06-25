@@ -12,10 +12,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// A client for the Pinecone API
@@ -27,15 +26,15 @@ public sealed class PineconeClient : IPineconeClient
     /// </summary>
     /// <param name="pineconeEnvironment">The environment for Pinecone.</param>
     /// <param name="apiKey">The API key for accessing Pinecone services.</param>
-    /// <param name="logger">An optional logger instance for logging.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="httpClient">An optional HttpClient instance for making HTTP requests.</param>
-    public PineconeClient(string pineconeEnvironment, string apiKey, ILogger? logger = null, HttpClient? httpClient = null)
+    public PineconeClient(string pineconeEnvironment, string apiKey, ILoggerFactory? loggerFactory = null, HttpClient? httpClient = null)
     {
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
-        this._logger = logger ?? NullLogger<PineconeClient>.Instance;
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._logger = loggerFactory?.CreateLogger(typeof(PineconeClient)) ?? NullLogger.Instance;
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }
 
@@ -47,7 +46,7 @@ public sealed class PineconeClient : IPineconeClient
         bool includeValues = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Searching vectors by id");
+        this._logger.LogDebug("Searching vectors by id");
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
@@ -56,22 +55,21 @@ public sealed class PineconeClient : IPineconeClient
 
         using HttpRequestMessage request = fetchRequest.Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request,
-            cancellationToken).ConfigureAwait(false);
+        string? responseContent = null;
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            (_, responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
-            this._logger.LogError("Error occurred on Get Vectors request: {0}", e.Message);
+            this._logger.LogError(e, "Error occurred on Get Vectors request: {Message}", e.Message);
             yield break;
         }
 
         FetchResponse? data = JsonSerializer.Deserialize<FetchResponse>(responseContent, this._jsonSerializerOptions);
 
-        if (data == null)
+        if (data is null)
         {
             this._logger.LogWarning("Unable to deserialize Get response");
             yield break;
@@ -101,7 +99,7 @@ public sealed class PineconeClient : IPineconeClient
         bool includeMetadata = true,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Querying top {0} nearest vectors", query.TopK);
+        this._logger.LogDebug("Querying top {0} nearest vectors", query.TopK);
 
         using HttpRequestMessage request = QueryRequest.QueryIndex(query)
             .WithMetadata(includeMetadata)
@@ -110,21 +108,21 @@ public sealed class PineconeClient : IPineconeClient
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
+        string? responseContent = null;
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            (_, responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
-            this._logger.LogError("Error occurred on Query Vectors request: {0}", e.Message);
+            this._logger.LogError(e, "Error occurred on Query Vectors request: {Message}", e.Message);
             yield break;
         }
 
         QueryResponse? queryResponse = JsonSerializer.Deserialize<QueryResponse>(responseContent, this._jsonSerializerOptions);
 
-        if (queryResponse == null)
+        if (queryResponse is null)
         {
             this._logger.LogWarning("Unable to deserialize Query response");
             yield break;
@@ -145,7 +143,7 @@ public sealed class PineconeClient : IPineconeClient
     /// <inheritdoc />
     public async IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
         string indexName,
-        IEnumerable<float> vector,
+        ReadOnlyMemory<float> vector,
         double threshold,
         int topK,
         bool includeValues,
@@ -154,9 +152,9 @@ public sealed class PineconeClient : IPineconeClient
         Dictionary<string, object>? filter = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Searching top {0} nearest vectors with threshold {1}", topK, threshold);
+        this._logger.LogDebug("Searching top {0} nearest vectors with threshold {1}", topK, threshold);
 
-        List<(PineconeDocument document, float score)> documents = new();
+        List<(PineconeDocument document, float score)> documents = [];
 
         Query query = Query.Create(topK)
             .WithVector(vector)
@@ -168,9 +166,9 @@ public sealed class PineconeClient : IPineconeClient
             includeValues,
             includeMetadata, cancellationToken);
 
-        await foreach (PineconeDocument? match in matches.WithCancellation(cancellationToken))
+        await foreach (PineconeDocument? match in matches.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            if (match == null)
+            if (match is null)
             {
                 continue;
             }
@@ -187,8 +185,8 @@ public sealed class PineconeClient : IPineconeClient
             yield break;
         }
 
-        // sort documents by score, and order by descending
-        documents = documents.OrderByDescending(x => x.score).ToList();
+        // sort documents descending by score
+        documents.Sort((x, y) => y.score.CompareTo(x.score));
 
         foreach ((PineconeDocument document, float score) in documents)
         {
@@ -203,7 +201,7 @@ public sealed class PineconeClient : IPineconeClient
         string indexNamespace = "",
         CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Upserting vectors");
+        this._logger.LogDebug("Upserting vectors");
 
         int totalUpserted = 0;
         int totalBatches = 0;
@@ -211,27 +209,27 @@ public sealed class PineconeClient : IPineconeClient
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
         IAsyncEnumerable<PineconeDocument> validVectors = PineconeUtils.EnsureValidMetadataAsync(vectors.ToAsyncEnumerable());
 
-        await foreach (UpsertRequest? batch in PineconeUtils.GetUpsertBatchesAsync(validVectors, MaxBatchSize).WithCancellation(cancellationToken))
+        await foreach (UpsertRequest? batch in PineconeUtils.GetUpsertBatchesAsync(validVectors, MaxBatchSize).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             totalBatches++;
 
             using HttpRequestMessage request = batch.ToNamespace(indexNamespace).Build();
 
-            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
+            string? responseContent = null;
 
             try
             {
-                response.EnsureSuccessStatusCode();
+                (_, responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
             }
-            catch (HttpRequestException e)
+            catch (HttpOperationException e)
             {
-                this._logger.LogError("Failed to upsert vectors {0}", e.Message);
+                this._logger.LogError(e, "Failed to upsert vectors {Message}", e.Message);
                 throw;
             }
 
             UpsertResponse? data = JsonSerializer.Deserialize<UpsertResponse>(responseContent, this._jsonSerializerOptions);
 
-            if (data == null)
+            if (data is null)
             {
                 this._logger.LogWarning("Unable to deserialize Upsert response");
                 continue;
@@ -239,10 +237,10 @@ public sealed class PineconeClient : IPineconeClient
 
             totalUpserted += data.UpsertedCount;
 
-            this._logger.LogInformation("Upserted batch {0} with {1} vectors", totalBatches, data.UpsertedCount);
+            this._logger.LogDebug("Upserted batch {0} with {1} vectors", totalBatches, data.UpsertedCount);
         }
 
-        this._logger.LogInformation("Upserted {0} vectors in {1} batches", totalUpserted, totalBatches);
+        this._logger.LogDebug("Upserted {0} vectors in {1} batches", totalUpserted, totalBatches);
 
         return totalUpserted;
     }
@@ -256,11 +254,9 @@ public sealed class PineconeClient : IPineconeClient
         bool deleteAll = false,
         CancellationToken cancellationToken = default)
     {
-        if (ids == null && string.IsNullOrEmpty(indexNamespace) && filter == null && !deleteAll)
+        if (ids is null && string.IsNullOrEmpty(indexNamespace) && filter is null && !deleteAll)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                "Must provide at least one of ids, filter, or deleteAll");
+            throw new ArgumentException("Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();
@@ -273,21 +269,19 @@ public sealed class PineconeClient : IPineconeClient
                 .FromNamespace(indexNamespace)
                 .FilterBy(filter);
 
-        this._logger.LogInformation("Delete operation for Index {0}: {1}", indexName, deleteRequest.ToString());
+        this._logger.LogDebug("Delete operation for Index {0}: {1}", indexName, deleteRequest.ToString());
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
         using HttpRequestMessage request = deleteRequest.Build();
 
-        (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
-
         try
         {
-            response.EnsureSuccessStatusCode();
+            await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
-            this._logger.LogError("Delete operation failed: {0}", e.Message);
+            this._logger.LogError(e, "Delete operation failed: {Message}", e.Message);
             throw;
         }
     }
@@ -295,7 +289,7 @@ public sealed class PineconeClient : IPineconeClient
     /// <inheritdoc />
     public async Task UpdateAsync(string indexName, PineconeDocument document, string indexNamespace = "", CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Updating vector: {0}", document.Id);
+        this._logger.LogDebug("Updating vector: {0}", document.Id);
 
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
 
@@ -304,15 +298,13 @@ public sealed class PineconeClient : IPineconeClient
             .InNamespace(indexNamespace)
             .Build();
 
-        (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
-
         try
         {
-            response.EnsureSuccessStatusCode();
+            await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
-            this._logger.LogWarning("Vector update for Document {0} failed. Message: {1}", document.Id, e.Message);
+            this._logger.LogError(e, "Vector update for Document {Id} failed. {Message}", document.Id, e.Message);
             throw;
         }
     }
@@ -331,21 +323,21 @@ public sealed class PineconeClient : IPineconeClient
             .WithFilter(filter)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
+        string? responseContent = null;
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            (_, responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
-            this._logger.LogDebug("Index not found {0}", e.Message);
+            this._logger.LogError(e, "Index not found {Message}", e.Message);
             throw;
         }
 
         IndexStats? result = JsonSerializer.Deserialize<IndexStats>(responseContent, this._jsonSerializerOptions);
 
-        if (result != null)
+        if (result is not null)
         {
             this._logger.LogDebug("Index stats retrieved");
         }
@@ -366,7 +358,7 @@ public sealed class PineconeClient : IPineconeClient
 
         string[]? indices = JsonSerializer.Deserialize<string[]?>(responseContent, this._jsonSerializerOptions);
 
-        if (indices == null)
+        if (indices is null)
         {
             yield break;
         }
@@ -380,31 +372,29 @@ public sealed class PineconeClient : IPineconeClient
     /// <inheritdoc />
     public async Task CreateIndexAsync(IndexDefinition indexDefinition, CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Creating index {0}", indexDefinition.ToString());
+        this._logger.LogDebug("Creating index {0}", indexDefinition.ToString());
 
         string indexName = indexDefinition.Name;
 
         using HttpRequestMessage request = indexDefinition.Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
-
         try
         {
-            response.EnsureSuccessStatusCode();
+            await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.BadRequest)
+        catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.BadRequest)
         {
-            this._logger.LogError(e, "Bad Request: {0}, {1}", response.StatusCode, responseContent);
+            this._logger.LogError(e, "Bad Request: {StatusCode}, {Response}", e.StatusCode, e.ResponseContent);
             throw;
         }
-        catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.Conflict)
+        catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.Conflict)
         {
-            this._logger.LogError(e, "Index of given name already exists: {0}, {1}", response.StatusCode, responseContent);
+            this._logger.LogError(e, "Index of given name already exists: {StatusCode}, {Response}", e.StatusCode, e.ResponseContent);
             throw;
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
-            this._logger.LogError(e, "Creating index failed: {0}, {1}", e.Message, responseContent);
+            this._logger.LogError(e, "Creating index failed: {Message}, {Response}", e.Message, e.ResponseContent);
             throw;
         }
     }
@@ -412,45 +402,43 @@ public sealed class PineconeClient : IPineconeClient
     /// <inheritdoc />
     public async Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Deleting index {0}", indexName);
+        this._logger.LogDebug("Deleting index {0}", indexName);
 
         using HttpRequestMessage request = DeleteIndexRequest.Create(indexName).Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
-
         try
         {
-            response.EnsureSuccessStatusCode();
+            await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.NotFound)
+        catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.NotFound)
         {
-            this._logger.LogError(e, "Index Not Found: {0}, {1}", response.StatusCode, responseContent);
+            this._logger.LogError(e, "Index Not Found: {StatusCode}, {Response}", e.StatusCode, e.ResponseContent);
             throw;
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
-            this._logger.LogError(e, "Deleting index failed: {0}, {1}", e.Message, responseContent);
+            this._logger.LogError(e, "Deleting index failed: {Message}, {Response}", e.Message, e.ResponseContent);
             throw;
         }
 
-        this._logger.LogInformation("Index: {0} has been successfully deleted.", indexName);
+        this._logger.LogDebug("Index: {0} has been successfully deleted.", indexName);
     }
 
     /// <inheritdoc />
     public async Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Checking for index {0}", indexName);
+        this._logger.LogDebug("Checking for index {0}", indexName);
 
         List<string?>? indexNames = await this.ListIndexesAsync(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        if (indexNames == null || !indexNames.Any(name => name == indexName))
+        if (indexNames is null || !indexNames.Any(name => name == indexName))
         {
             return false;
         }
 
         PineconeIndex? index = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
 
-        return index != null && index.Status.State == IndexState.Ready;
+        return index is not null && index.Status.State == IndexState.Ready;
     }
 
     /// <inheritdoc />
@@ -460,26 +448,26 @@ public sealed class PineconeClient : IPineconeClient
 
         using HttpRequestMessage request = DescribeIndexRequest.Create(indexName).Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
+        string? responseContent = null;
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            (_, responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.BadRequest)
+        catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.BadRequest)
         {
-            this._logger.LogError(e, "Bad Request: {0}, {1}", response.StatusCode, responseContent);
+            this._logger.LogError(e, "Bad Request: {StatusCode}, {Response}", e.StatusCode, e.ResponseContent);
             throw;
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
-            this._logger.LogError(e, "Describe index failed: {0}, {1}", e.Message, responseContent);
+            this._logger.LogError(e, "Describe index failed: {Message}, {Response}", e.Message, e.ResponseContent);
             throw;
         }
 
         PineconeIndex? indexDescription = JsonSerializer.Deserialize<PineconeIndex>(responseContent, this._jsonSerializerOptions);
 
-        if (indexDescription == null)
+        if (indexDescription is null)
         {
             this._logger.LogDebug("Deserialized index description is null");
         }
@@ -498,25 +486,23 @@ public sealed class PineconeClient : IPineconeClient
             .NumberOfReplicas(replicas)
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
-
         try
         {
-            response.EnsureSuccessStatusCode();
+            await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.BadRequest)
+        catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.BadRequest)
         {
-            this._logger.LogError(e, "Request exceeds quota or collection name is invalid. {0}", indexName);
+            this._logger.LogError(e, "Request exceeds quota or collection name is invalid. {Index}", indexName);
             throw;
         }
-        catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.NotFound)
+        catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.NotFound)
         {
-            this._logger.LogError(e, "Index not found. {0}", indexName);
+            this._logger.LogError(e, "Index not found. {Index}", indexName);
             throw;
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
-            this._logger.LogError(e, "Index configuration failed: {0}, {1}", e.Message, responseContent);
+            this._logger.LogError(e, "Index configuration failed: {Message}, {Response}", e.Message, e.ResponseContent);
             throw;
         }
 
@@ -554,43 +540,31 @@ public sealed class PineconeClient : IPineconeClient
         request.Headers.Add(this._authHeader.Key, this._authHeader.Value);
         request.RequestUri = new Uri(baseURL + request.RequestUri);
 
-        using HttpResponseMessage response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-        string logMessage = response.IsSuccessStatusCode ? "Pinecone responded successfully" : "Pinecone responded with error";
-
-        this._logger.LogTrace("{0} - {1}", logMessage, responseContent);
+        string responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         return (response, responseContent);
     }
 
     private async Task<string> GetIndexHostAsync(string indexName, CancellationToken cancellationToken = default)
     {
-        if (this._indexHostMapping.TryGetValue(indexName, out string indexHost))
+        if (this._indexHostMapping.TryGetValue(indexName, out string? indexHost))
         {
             return indexHost;
         }
 
-        this._logger.LogInformation("Getting index host from Pinecone.");
+        this._logger.LogDebug("Getting index host from Pinecone.");
 
-        PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
-
-        if (pineconeIndex == null)
-        {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.IndexNotFound,
-                "Index not found in Pinecone. Create index to perform operations with vectors.");
-        }
+        PineconeIndex pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false) ??
+            throw new KernelException("Index not found in Pinecone. Create index to perform operations with vectors.");
 
         if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.UnknownIndexHost,
-                $"Host of index {indexName} is unknown.");
+            throw new KernelException($"Host of index {indexName} is unknown.");
         }
 
-        this._logger.LogInformation("Found host {0} for index {1}", pineconeIndex.Status.Host, indexName);
+        this._logger.LogDebug("Found host {0} for index {1}", pineconeIndex.Status.Host, indexName);
 
         this._indexHostMapping.TryAdd(indexName, pineconeIndex.Status.Host);
 

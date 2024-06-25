@@ -6,18 +6,17 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Sqlite;
+namespace SemanticKernel.Connectors.UnitTests.Sqlite;
 
 /// <summary>
 /// Unit tests of <see cref="SqliteMemoryStore"/>.
 /// </summary>
 [Collection("Sequential")]
-public class SqliteMemoryStoreTests : IDisposable
+public sealed class SqliteMemoryStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";
     private bool _disposedValue = false;
@@ -29,24 +28,14 @@ public class SqliteMemoryStoreTests : IDisposable
             File.Delete(DatabaseFile);
         }
 
-        using (var stream = File.Create(DatabaseFile)) { }
+        File.Create(DatabaseFile).Dispose();
     }
 
     public void Dispose()
     {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
         if (!this._disposedValue)
         {
-            if (disposing)
-            {
-                File.Delete(DatabaseFile);
-            }
+            File.Delete(DatabaseFile);
 
             this._disposedValue = true;
         }
@@ -66,7 +55,7 @@ public class SqliteMemoryStoreTests : IDisposable
                 id: "test" + i,
                 text: "text" + i,
                 description: "description" + i,
-                embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+                embedding: new float[] { 1, 1, 1 });
             records = records.Append(testRecord);
         }
 
@@ -76,7 +65,7 @@ public class SqliteMemoryStoreTests : IDisposable
                 externalId: "test" + i,
                 sourceName: "sourceName" + i,
                 description: "description" + i,
-                embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+                embedding: new float[] { 1, 2, 3 });
             records = records.Append(testRecord);
         }
 
@@ -161,7 +150,7 @@ public class SqliteMemoryStoreTests : IDisposable
 
         // Assert
         var collections2 = db.GetCollectionsAsync();
-        Assert.True(await collections2.CountAsync() == 0);
+        Assert.Equal(0, await collections2.CountAsync());
     }
 
     [Fact]
@@ -173,7 +162,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test",
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
 
@@ -185,7 +174,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.NotNull(actual);
         Assert.Equal(testRecord.Metadata.Id, key);
         Assert.Equal(testRecord.Metadata.Id, actual.Key);
-        Assert.Equal(testRecord.Embedding.Vector, actual.Embedding.Vector);
+        Assert.True(testRecord.Embedding.Span.SequenceEqual(actual.Embedding.Span));
         Assert.Equal(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
@@ -201,7 +190,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test",
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
         string collection = "test_collection" + this._collectionNum;
@@ -216,8 +205,8 @@ public class SqliteMemoryStoreTests : IDisposable
         // Assert
         Assert.NotNull(actualDefault);
         Assert.NotNull(actualWithEmbedding);
-        Assert.Empty(actualDefault.Embedding.Vector);
-        Assert.NotEmpty(actualWithEmbedding.Embedding.Vector);
+        Assert.True(actualDefault.Embedding.IsEmpty);
+        Assert.False(actualWithEmbedding.Embedding.IsEmpty);
     }
 
     [Fact]
@@ -229,7 +218,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test",
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
         string collection = "test_collection" + this._collectionNum;
@@ -244,7 +233,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.NotNull(actual);
         Assert.Equal(testRecord.Metadata.Id, key);
         Assert.Equal(testRecord.Metadata.Id, actual.Key);
-        Assert.Equal(testRecord.Embedding.Vector, actual.Embedding.Vector);
+        Assert.True(testRecord.Embedding.Span.SequenceEqual(actual.Embedding.Span));
         Assert.Equal(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
@@ -260,7 +249,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test",
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: DateTimeOffset.UtcNow);
         string collection = "test_collection" + this._collectionNum;
@@ -275,7 +264,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.NotNull(actual);
         Assert.Equal(testRecord.Metadata.Id, key);
         Assert.Equal(testRecord.Metadata.Id, actual.Key);
-        Assert.Equal(testRecord.Embedding.Vector, actual.Embedding.Vector);
+        Assert.True(testRecord.Embedding.Span.SequenceEqual(actual.Embedding.Span));
         Assert.Equal(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
@@ -292,12 +281,12 @@ public class SqliteMemoryStoreTests : IDisposable
             id: commonId,
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            embedding: new float[] { 1, 2, 3 });
         MemoryRecord testRecord2 = MemoryRecord.LocalRecord(
             id: commonId,
             text: "text2",
             description: "description2",
-            embedding: new Embedding<float>(new float[] { 1, 2, 4 }));
+            embedding: new float[] { 1, 2, 4 });
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -311,8 +300,8 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.NotNull(actual);
         Assert.Equal(testRecord.Metadata.Id, key);
         Assert.Equal(testRecord2.Metadata.Id, actual.Key);
-        Assert.NotEqual(testRecord.Embedding.Vector, actual.Embedding.Vector);
-        Assert.Equal(testRecord2.Embedding.Vector, actual.Embedding.Vector);
+        Assert.False(testRecord.Embedding.Span.SequenceEqual(actual.Embedding.Span));
+        Assert.True(testRecord2.Embedding.Span.SequenceEqual(actual.Embedding.Span));
         Assert.NotEqual(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord2.Metadata.Description, actual.Metadata.Description);
     }
@@ -326,7 +315,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test",
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            embedding: new float[] { 1, 2, 3 });
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -393,7 +382,7 @@ public class SqliteMemoryStoreTests : IDisposable
     {
         // Arrange
         using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
-        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
+        var compareEmbedding = new float[] { 1, 1, 1 };
         int topN = 4;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -403,7 +392,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+            embedding: new float[] { 1, 1, 1 });
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -411,7 +400,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -1, -1 }));
+            embedding: new ReadOnlyMemory<float>(new float[] { -1, -1, -1 }));
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -419,7 +408,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            embedding: new float[] { 1, 2, 3 });
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -427,7 +416,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -2, -3 }));
+            embedding: new ReadOnlyMemory<float>(new float[] { -1, -2, -3 }));
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -435,7 +424,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, -1, -2 }));
+            embedding: new ReadOnlyMemory<float>(new float[] { 1, -1, -2 }));
         _ = await db.UpsertAsync(collection, testRecord);
 
         // Act
@@ -456,7 +445,7 @@ public class SqliteMemoryStoreTests : IDisposable
     {
         // Arrange
         using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
-        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
+        var compareEmbedding = new float[] { 1, 1, 1 };
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         await db.CreateCollectionAsync(collection);
@@ -465,7 +454,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+            embedding: new float[] { 1, 1, 1 });
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -473,7 +462,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -1, -1 }));
+            embedding: new ReadOnlyMemory<float>(new float[] { -1, -1, -1 }));
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -481,7 +470,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            embedding: new float[] { 1, 2, 3 });
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -489,7 +478,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -2, -3 }));
+            embedding: new ReadOnlyMemory<float>(new float[] { -1, -2, -3 }));
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -497,7 +486,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, -1, -2 }));
+            embedding: new ReadOnlyMemory<float>(new float[] { 1, -1, -2 }));
         _ = await db.UpsertAsync(collection, testRecord);
 
         // Act
@@ -508,8 +497,8 @@ public class SqliteMemoryStoreTests : IDisposable
         // Assert
         Assert.NotNull(topNResultDefault);
         Assert.NotNull(topNResultWithEmbedding);
-        Assert.Empty(topNResultDefault.Value.Item1.Embedding.Vector);
-        Assert.NotEmpty(topNResultWithEmbedding.Value.Item1.Embedding.Vector);
+        Assert.True(topNResultDefault.Value.Item1.Embedding.IsEmpty);
+        Assert.False(topNResultWithEmbedding.Value.Item1.Embedding.IsEmpty);
     }
 
     [Fact]
@@ -517,7 +506,7 @@ public class SqliteMemoryStoreTests : IDisposable
     {
         // Arrange
         using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
-        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
+        var compareEmbedding = new float[] { 1, 1, 1 };
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         await db.CreateCollectionAsync(collection);
@@ -526,7 +515,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+            embedding: new float[] { 1, 1, 1 });
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -534,7 +523,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -1, -1 }));
+            embedding: new ReadOnlyMemory<float>(new float[] { -1, -1, -1 }));
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -542,7 +531,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            embedding: new float[] { 1, 2, 3 });
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -550,7 +539,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -2, -3 }));
+            embedding: new ReadOnlyMemory<float>(new float[] { -1, -2, -3 }));
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -558,7 +547,7 @@ public class SqliteMemoryStoreTests : IDisposable
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, -1, -2 }));
+            embedding: new ReadOnlyMemory<float>(new float[] { 1, -1, -2 }));
         _ = await db.UpsertAsync(collection, testRecord);
 
         // Act
@@ -576,7 +565,7 @@ public class SqliteMemoryStoreTests : IDisposable
     {
         // Arrange
         using SqliteMemoryStore db = await SqliteMemoryStore.ConnectAsync(DatabaseFile);
-        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
+        var compareEmbedding = new float[] { 1, 1, 1 };
         int topN = 4;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -588,7 +577,7 @@ public class SqliteMemoryStoreTests : IDisposable
                 id: "test" + i,
                 text: "text" + i,
                 description: "description" + i,
-                embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+                embedding: new float[] { 1, 1, 1 });
             _ = await db.UpsertAsync(collection, testRecord);
         }
 
@@ -660,7 +649,7 @@ public class SqliteMemoryStoreTests : IDisposable
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
         await db.CreateCollectionAsync(collection);
 
-        List<string> keys = new();
+        List<string> keys = [];
 
         // Act
         await foreach (var key in db.UpsertBatchAsync(collection, records))

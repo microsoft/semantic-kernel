@@ -4,17 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Memory.Collections;
+using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a SQLite database.
@@ -53,7 +52,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken))
+        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken).ConfigureAwait(false))
         {
             yield return collection;
         }
@@ -94,7 +93,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         foreach (var key in keys)
         {
             var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result != null)
+            if (result is not null)
             {
                 yield return result;
             }
@@ -120,7 +119,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -132,33 +131,29 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         }
 
         var collectionMemories = new List<MemoryRecord>();
-        TopNCollection<MemoryRecord> embeddings = new(limit);
+        List<(MemoryRecord Record, double Score)> embeddings = [];
 
-        await foreach (var record in this.GetAllAsync(collectionName, cancellationToken))
+        await foreach (var record in this.GetAllAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
-            if (record != null)
+            if (record is not null)
             {
-                double similarity = embedding
-                    .AsReadOnlySpan()
-                    .CosineSimilarity(record.Embedding.AsReadOnlySpan());
+                double similarity = TensorPrimitives.CosineSimilarity(embedding.Span, record.Embedding.Span);
                 if (similarity >= minRelevanceScore)
                 {
-                    var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, Embedding<float>.Empty, record.Key, record.Timestamp);
+                    var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, ReadOnlyMemory<float>.Empty, record.Key, record.Timestamp);
                     embeddings.Add(new(entry, similarity));
                 }
             }
         }
 
-        embeddings.SortByScore();
-
-        foreach (var item in embeddings)
+        foreach (var item in embeddings.OrderByDescending(l => l.Score).Take(limit))
         {
-            yield return (item.Value, item.Score.Value);
+            yield return (item.Record, item.Score);
         }
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -178,7 +173,10 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     #region protected ================================================================================
-
+    /// <summary>
+    /// Disposes the resources used by the <see cref="SqliteMemoryStore"/> instance.
+    /// </summary>
+    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (!this._disposedValue)
@@ -234,9 +232,9 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         // delete empty entry in the database if it exists (see CreateCollection)
         await this._dbConnector.DeleteEmptyAsync(this._dbConnection, collectionName, cancellationToken).ConfigureAwait(false);
 
-        await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken))
+        await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken).ConfigureAwait(false))
         {
-            Embedding<float>? vector = JsonSerializer.Deserialize<Embedding<float>>(dbEntry.EmbeddingString);
+            ReadOnlyMemory<float> vector = JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, JsonOptionsCache.Default);
 
             var record = MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
 
@@ -254,7 +252,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             collection: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding),
+            embedding: JsonSerializer.Serialize(record.Embedding, JsonOptionsCache.Default),
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -264,7 +262,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             collection: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding),
+            embedding: JsonSerializer.Serialize(record.Embedding, JsonOptionsCache.Default),
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -285,14 +283,14 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         {
             return MemoryRecord.FromJsonMetadata(
                 json: entry.Value.MetadataString,
-                JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString),
+                JsonSerializer.Deserialize<ReadOnlyMemory<float>>(entry.Value.EmbeddingString, JsonOptionsCache.Default),
                 entry.Value.Key,
                 ParseTimestamp(entry.Value.Timestamp));
         }
 
         return MemoryRecord.FromJsonMetadata(
             json: entry.Value.MetadataString,
-            Embedding<float>.Empty,
+            ReadOnlyMemory<float>.Empty,
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
     }

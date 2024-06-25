@@ -27,4 +27,4 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          timeout: 1800
+          timeout: 3600

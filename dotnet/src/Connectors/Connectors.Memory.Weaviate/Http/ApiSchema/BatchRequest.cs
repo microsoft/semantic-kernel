@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class BatchRequest
 {
@@ -15,11 +13,11 @@ internal sealed class BatchRequest
     private BatchRequest(string @class)
     {
         this._class = @class;
-        this.Objects = new();
+        this.Objects = [];
     }
 
     // ReSharper disable once UnusedMember.Global
-    public string[] Fields { get; } = { "ALL" };
+    public string[] Fields { get; } = ["ALL"];
 
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once CollectionNeverQueried.Global
@@ -38,7 +36,7 @@ internal sealed class BatchRequest
         {
             Class = this._class,
             Id = record.Key,
-            Vector = record.Embedding.Vector.ToArray(),
+            Vector = record.Embedding,
             Properties = new()
             {
                 { "sk_timestamp", record.Timestamp! },

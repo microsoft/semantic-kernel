@@ -1,119 +1,39 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel;
 
-#pragma warning disable RCS1194 // Implement exception constructors
-
 /// <summary>
-/// Exception thrown for errors related to kernel logic.
+/// Represents the base exception from which all Semantic Kernel exceptions derive.
 /// </summary>
-public class KernelException : SKException
+/// <remarks>
+/// Instances of this class optionally contain telemetry information in the Exception.Data property using keys that are consistent with the OpenTelemetry standard.
+/// See https://opentelemetry.io/ for more information.
+/// </remarks>
+public class KernelException : Exception
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="KernelException"/> class with a provided error code and message.
+    /// Initializes a new instance of the <see cref="KernelException"/> class.
     /// </summary>
-    /// <param name="errorCode">The error code.</param>
-    /// <param name="message">The exception message.</param>
-    public KernelException(ErrorCodes errorCode, string? message)
-        : this(errorCode, message, innerException: null)
+    public KernelException()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="KernelException"/> class with a provided error code, message, and inner exception.
+    /// Initializes a new instance of the <see cref="KernelException"/> class with a specified error message.
     /// </summary>
-    /// <param name="errorCode">The error code.</param>
-    /// <param name="message">A string that describes the error.</param>
-    /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    public KernelException(ErrorCodes errorCode, string? message = null, Exception? innerException = null)
-        : base(GetDefaultMessage(errorCode, message), innerException)
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    public KernelException(string? message) : base(message)
     {
-        this.ErrorCode = errorCode;
     }
 
     /// <summary>
-    /// Gets the error code for this exception.
+    /// Initializes a new instance of the <see cref="KernelException"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.
     /// </summary>
-    public ErrorCodes ErrorCode { get; }
-
-    /// <summary>Translate the error code into a default message.</summary>
-    /// <param name="errorCode">The error code.</param>
-    /// <param name="defaultMessage">Default error message if nothing available.</param>
-    private static string GetDefaultMessage(ErrorCodes errorCode, string? defaultMessage)
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception, or a null reference if no inner exception is specified.</param>
+    public KernelException(string? message, Exception? innerException) : base(message, innerException)
     {
-        string description = errorCode switch
-        {
-            ErrorCodes.InvalidFunctionDescription => "Invalid function description",
-            ErrorCodes.FunctionOverloadNotSupported => "Function overload not supported",
-            ErrorCodes.FunctionNotAvailable => "Function not available",
-            ErrorCodes.FunctionTypeNotSupported => "Function type not supported",
-            ErrorCodes.InvalidFunctionType => "Invalid function type",
-            ErrorCodes.InvalidServiceConfiguration => "Invalid service configuration",
-            ErrorCodes.ServiceNotFound => "Service not found",
-            ErrorCodes.SkillCollectionNotSet => "Skill collection not set",
-            ErrorCodes.FunctionInvokeError => "Function invoke error",
-            _ => $"Unknown error ({errorCode:G})",
-        };
-
-        return defaultMessage is not null ? $"{description}: {defaultMessage}" : description;
-    }
-
-    /// <summary>
-    /// Semantic kernel error codes.
-    /// </summary>
-    public enum ErrorCodes
-    {
-        /// <summary>
-        /// Unknown error.
-        /// </summary>
-        UnknownError = -1,
-
-        /// <summary>
-        /// Invalid function description.
-        /// </summary>
-        InvalidFunctionDescription,
-
-        /// <summary>
-        /// Function overload not supported.
-        /// </summary>
-        FunctionOverloadNotSupported,
-
-        /// <summary>
-        /// Function not available.
-        /// </summary>
-        FunctionNotAvailable,
-
-        /// <summary>
-        /// Function type not supported.
-        /// </summary>
-        FunctionTypeNotSupported,
-
-        /// <summary>
-        /// Invalid function type.
-        /// </summary>
-        InvalidFunctionType,
-
-        /// <summary>
-        /// Invalid service configuration.
-        /// </summary>
-        InvalidServiceConfiguration,
-
-        /// <summary>
-        /// Service not found.
-        /// </summary>
-        ServiceNotFound,
-
-        /// <summary>
-        /// Skill collection not set.
-        /// </summary>
-        SkillCollectionNotSet,
-
-        /// <summary>
-        /// Represents an error that occurs when invoking a function.
-        /// </summary>
-        FunctionInvokeError,
     }
 }

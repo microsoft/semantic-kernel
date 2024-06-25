@@ -1,17 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+// Used for compatibility with System.Linq.Async Nuget pkg
+namespace System.Linq;
 
-namespace System.Linq; // for compatibility with System.Linq.Async.nupkg
-
+[ExcludeFromCodeCoverage]
 internal static class AsyncEnumerable
 {
     public static IAsyncEnumerable<T> Empty<T>() => EmptyAsyncEnumerable<T>.Instance;
 
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
     public static IEnumerable<T> ToEnumerable<T>(this IAsyncEnumerable<T> source, CancellationToken cancellationToken = default)
     {
         var enumerator = source.GetAsyncEnumerator(cancellationToken);
@@ -27,7 +30,10 @@ internal static class AsyncEnumerable
             enumerator.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
     }
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
+#pragma warning disable IDE1006 // Naming rule violation: Missing suffix: 'Async'
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> source)
     {
         foreach (var item in source)
@@ -35,6 +41,8 @@ internal static class AsyncEnumerable
             yield return item;
         }
     }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning restore IDE1006 // Naming rule violation: Missing suffix: 'Async'
 
     public static async ValueTask<T?> FirstOrDefaultAsync<T>(this IAsyncEnumerable<T> source, CancellationToken cancellationToken = default)
     {
@@ -92,7 +100,39 @@ internal static class AsyncEnumerable
         {
             checked { count++; }
         }
+
         return count;
+    }
+
+    /// <summary>
+    /// Determines whether any element of an async-enumerable sequence satisfies a condition.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <param name="source">An async-enumerable sequence whose elements to apply the predicate to.</param>
+    /// <param name="predicate">A function to test each element for a condition.</param>
+    /// <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+    /// <returns>An async-enumerable sequence containing a single element determining whether any elements in the source sequence pass the test in the specified predicate.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> or <paramref name="predicate"/> is null.</exception>
+    /// <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+    public static ValueTask<bool> AnyAsync<TSource>(this IAsyncEnumerable<TSource> source, Func<TSource, bool> predicate, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(source);
+        Verify.NotNull(predicate);
+
+        return Core(source, predicate, cancellationToken);
+
+        static async ValueTask<bool> Core(IAsyncEnumerable<TSource> source, Func<TSource, bool> predicate, CancellationToken cancellationToken)
+        {
+            await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                if (predicate(item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     private sealed class EmptyAsyncEnumerable<T> : IAsyncEnumerable<T>, IAsyncEnumerator<T>

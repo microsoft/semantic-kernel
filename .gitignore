@@ -409,6 +409,12 @@ FodyWeavers.xsd
 *.key
 *.pem
 
+# JetBrains IntelliJ
+.idea
+*.ipr
+*.iml
+*.iws
+
 .env
 certs/
 launchSettings.json
@@ -416,7 +422,6 @@ config.development.yaml
 *.development.config
 *.development.json
 .DS_Store
-.idea/
 node_modules/
 obj/
 bin/
@@ -471,6 +476,9 @@ java/.mvn/wrapper/maven-wrapper.jar
 # Java settings
 conf.properties
 
+# Intellij configuration
+*.iml
+
 # Playwright
 playwright-report/
 
@@ -478,3 +486,10 @@ playwright-report/
 swa-cli.config.json
 **/copilot-chat-app/webapp/build
 **/copilot-chat-app/webapp/node_modules
+**/copilot-chat-app/webapi/data/eng.traineddata
+
+# Semantic Kernel Tools
+/.semantic-kernel
+
+# python devcontainer
+/python/.devcontainer/*

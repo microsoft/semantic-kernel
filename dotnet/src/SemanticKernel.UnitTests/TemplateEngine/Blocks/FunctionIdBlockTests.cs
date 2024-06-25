@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public class FunctionIdBlockTests
 {
@@ -13,7 +12,7 @@ public class FunctionIdBlockTests
     public void ItHasTheCorrectType()
     {
         // Act
-        var target = new FunctionIdBlock("", NullLogger.Instance);
+        var target = new FunctionIdBlock("");
 
         // Assert
         Assert.Equal(BlockTypes.FunctionId, target.Type);
@@ -23,7 +22,7 @@ public class FunctionIdBlockTests
     public void ItTrimsSpaces()
     {
         // Act + Assert
-        Assert.Equal("aa", new FunctionIdBlock("  aa  ", NullLogger.Instance).Content);
+        Assert.Equal("aa", new FunctionIdBlock("  aa  ").Content);
     }
 
     [Theory]
@@ -85,8 +84,8 @@ public class FunctionIdBlockTests
     {
         // Arrange
         var target1 = new FunctionIdBlock("functionName");
-        var target2 = new FunctionIdBlock("skillName.functionName");
-        Assert.Throws<TemplateException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+        var target2 = new FunctionIdBlock("pluginName.functionName");
+        Assert.Throws<KernelException>(() => new FunctionIdBlock("foo.pluginName.functionName"));
 
         // Act + Assert
         Assert.True(target1.IsValid(out _));

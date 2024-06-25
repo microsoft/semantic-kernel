@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// A record structure used by Qdrant that contains an embedding and metadata.
@@ -22,7 +23,8 @@ public class QdrantVectorRecord
     /// The embedding data.
     /// </summary>
     [JsonPropertyName("embedding")]
-    public IEnumerable<float> Embedding { get; }
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+    public ReadOnlyMemory<float> Embedding { get; }
 
     /// <summary>
     /// The metadata.
@@ -43,7 +45,7 @@ public class QdrantVectorRecord
     /// <param name="embedding"></param>
     /// <param name="payload"></param>
     /// <param name="tags"></param>
-    public QdrantVectorRecord(string pointId, IEnumerable<float> embedding, Dictionary<string, object> payload, List<string>? tags = null)
+    public QdrantVectorRecord(string pointId, ReadOnlyMemory<float> embedding, Dictionary<string, object> payload, List<string>? tags = null)
     {
         this.PointId = pointId;
         this.Embedding = embedding;
@@ -68,15 +70,15 @@ public class QdrantVectorRecord
     /// <param name="json"></param>
     /// <param name="tags"></param>
     /// <returns>Vector record</returns>
-    /// <exception cref="QdrantMemoryException">Qdrant exception</exception>
-    public static QdrantVectorRecord FromJsonMetadata(string pointId, IEnumerable<float> embedding, string json, List<string>? tags = null)
+    /// <exception cref="KernelException">Qdrant exception</exception>
+    public static QdrantVectorRecord FromJsonMetadata(string pointId, ReadOnlyMemory<float> embedding, string json, List<string>? tags = null)
     {
         var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-        if (payload != null)
+        if (payload is not null)
         {
             return new QdrantVectorRecord(pointId, embedding, payload, tags);
         }
 
-        throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.UnableToDeserializeRecordPayload);
+        throw new KernelException("Unable to deserialize record payload");
     }
 }

@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "description": "Generate a list of synopsis for a novel or novella with sub-chapters",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 250,
+      "temperature": 0.0,
+      "top_p": 0.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0
+    }
+  }
+}

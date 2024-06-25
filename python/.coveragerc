@@ -1,0 +1,24 @@
+[run]
+source = semantic_kernel
+omit = 
+    semantic_kernel/connectors/memory/*
+    semantic_kernel/reliability/*
+    semantic_kernel/memory/*
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain about missing debug-only code:
+    def __repr__
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # TYPE_CHECKING and @overload blocks are never executed during pytest run
+    if TYPE_CHECKING:
+    @overload
+    @abstractmethod

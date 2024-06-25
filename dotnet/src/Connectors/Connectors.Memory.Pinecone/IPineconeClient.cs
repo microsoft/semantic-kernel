@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Interface for a Pinecone client
@@ -59,7 +59,7 @@ public interface IPineconeClient
     /// <param name="cancellationToken">Cancellation token.</param>
     IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
         string indexName,
-        IEnumerable<float> vector,
+        ReadOnlyMemory<float> vector,
         double threshold,
         int topK,
         bool includeValues,

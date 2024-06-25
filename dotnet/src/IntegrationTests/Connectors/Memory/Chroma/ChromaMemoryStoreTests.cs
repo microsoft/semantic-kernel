@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Chroma;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.Chroma;
+namespace SemanticKernel.IntegrationTests.Connectors.Chroma;
 
 /// <summary>
 /// Integration tests for <see cref="ChromaMemoryStore"/> class.
@@ -25,8 +25,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     public ChromaMemoryStoreTests()
     {
-        this._httpClient = new();
-        this._httpClient.BaseAddress = new Uri(BaseAddress);
+        this._httpClient = new()
+        {
+            BaseAddress = new Uri(BaseAddress)
+        };
 
         this._chromaMemoryStore = new(this._httpClient);
     }
@@ -56,7 +58,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanHandleDuplicateNameDuringCollectionCreationAsync()
     {
         // Arrange
-        const int expectedCollectionCount = 1;
         var collectionName = this.GetRandomCollectionName();
 
         // Act
@@ -67,7 +68,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var collections = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
         var filteredCollections = collections.Where(collection => collection.Equals(collectionName, StringComparison.Ordinal)).ToList();
 
-        Assert.Equal(expectedCollectionCount, filteredCollections.Count);
+        Assert.Single(filteredCollections);
     }
 
     [Theory(Skip = SkipReason)]
@@ -119,7 +120,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var exception = await Record.ExceptionAsync(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
 
         // Assert
-        Assert.IsType<ChromaMemoryStoreException>(exception);
+        Assert.IsType<KernelException>(exception);
         Assert.Contains(
             $"Cannot delete non-existent collection {collectionName}",
             exception.Message,
@@ -127,7 +128,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItReturnsNullOnNonExistentRecordRetrieval()
+    public async Task ItReturnsNullOnNonExistentRecordRetrievalAsync()
     {
         // Arrange
         var collectionName = this.GetRandomCollectionName();
@@ -251,11 +252,11 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Arrange
         var collectionName = this.GetRandomCollectionName();
 
-        var expectedRecord1 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 10f, 10f, 10f }));
-        var expectedRecord2 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 5f, 5f, 5f }));
-        var expectedRecord3 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 1f, 1f, 1f }));
+        var expectedRecord1 = this.GetRandomMemoryRecord(embedding: new[] { 10f, 10f, 10f });
+        var expectedRecord2 = this.GetRandomMemoryRecord(embedding: new[] { 5f, 5f, 5f });
+        var expectedRecord3 = this.GetRandomMemoryRecord(embedding: new[] { 1f, 1f, 1f });
 
-        var searchEmbedding = new Embedding<float>(new[] { 2f, 2f, 2f });
+        float[] searchEmbedding = [2f, 2f, 2f];
 
         var batch = new List<MemoryRecord> { expectedRecord1, expectedRecord2, expectedRecord3 };
         var keys = batch.Select(l => l.Key);
@@ -282,11 +283,11 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Arrange
         var collectionName = this.GetRandomCollectionName();
 
-        var expectedRecord1 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 10f, 10f, 10f }));
-        var expectedRecord2 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 5f, 5f, 5f }));
-        var expectedRecord3 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 1f, 1f, 1f }));
+        var expectedRecord1 = this.GetRandomMemoryRecord(embedding: new[] { 10f, 10f, 10f });
+        var expectedRecord2 = this.GetRandomMemoryRecord(embedding: new[] { 5f, 5f, 5f });
+        var expectedRecord3 = this.GetRandomMemoryRecord(embedding: new[] { 1f, 1f, 1f });
 
-        var searchEmbedding = new Embedding<float>(new[] { 2f, 2f, 2f });
+        float[] searchEmbedding = [2f, 2f, 2f];
 
         var batch = new List<MemoryRecord> { expectedRecord1, expectedRecord2, expectedRecord3 };
         var keys = batch.Select(l => l.Key);
@@ -315,11 +316,11 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItReturnsNoMatchesFromEmptyCollection()
+    public async Task ItReturnsNoMatchesFromEmptyCollectionAsync()
     {
         // Arrange
         var collectionName = this.GetRandomCollectionName();
-        var searchEmbedding = new Embedding<float>(new[] { 2f, 2f, 2f });
+        float[] searchEmbedding = [2f, 2f, 2f];
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
 
@@ -379,10 +380,31 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this.AssertMemoryRecordEqual(expectedRecord2, actualRecord2);
     }
 
+    [Theory(Skip = SkipReason)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItProcessesBooleanValuesCorrectlyAsync(bool isReference)
+    {
+        // Arrange
+        var collectionName = this.GetRandomCollectionName();
+        var metadata = this.GetRandomMemoryRecordMetadata(isReference: isReference);
+        var expectedRecord = this.GetRandomMemoryRecord(metadata: metadata);
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+
+        // Act
+        var createdRecordKey = await this._chromaMemoryStore.UpsertAsync(collectionName, expectedRecord);
+        var actualRecord = await this._chromaMemoryStore.GetAsync(collectionName, createdRecordKey, true);
+
+        // Assert
+        Assert.NotNull(actualRecord);
+
+        Assert.Equal(expectedRecord.Metadata.IsReference, actualRecord.Metadata.IsReference);
+    }
+
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
+        this._httpClient.Dispose();
     }
 
     #region private ================================================================================
@@ -390,18 +412,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     private readonly HttpClient _httpClient;
     private readonly ChromaMemoryStore _chromaMemoryStore;
 
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._httpClient.Dispose();
-        }
-    }
-
     private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
     {
         Assert.Equal(expectedRecord.Key, actualRecord.Key);
-        Assert.Equal(expectedRecord.Embedding.Vector, actualRecord.Embedding.Vector);
+        Assert.True(expectedRecord.Embedding.Span.SequenceEqual(actualRecord.Embedding.Span));
         Assert.Equal(expectedRecord.Metadata.Id, actualRecord.Metadata.Id);
         Assert.Equal(expectedRecord.Metadata.Text, actualRecord.Metadata.Text);
         Assert.Equal(expectedRecord.Metadata.Description, actualRecord.Metadata.Description);
@@ -415,10 +429,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         return "sk-test-" + Guid.NewGuid();
     }
 
-    private MemoryRecord GetRandomMemoryRecord(string? key = null, Embedding<float>? embedding = null)
+    private MemoryRecord GetRandomMemoryRecord(string? key = null, ReadOnlyMemory<float>? embedding = null)
     {
         var recordKey = key ?? Guid.NewGuid().ToString();
-        var recordEmbedding = embedding ?? new Embedding<float>(new[] { 1f, 3f, 5f });
+        var recordEmbedding = embedding ?? new[] { 1f, 3f, 5f };
 
         return MemoryRecord.LocalRecord(
             id: recordKey,
@@ -427,6 +441,29 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             embedding: recordEmbedding,
             additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
             key: recordKey);
+    }
+
+    private MemoryRecord GetRandomMemoryRecord(MemoryRecordMetadata metadata, ReadOnlyMemory<float>? embedding = null)
+    {
+        var recordEmbedding = embedding ?? new[] { 1f, 3f, 5f };
+
+        return MemoryRecord.FromMetadata(
+            metadata: metadata,
+            embedding: recordEmbedding,
+            key: metadata.Id);
+    }
+
+    private MemoryRecordMetadata GetRandomMemoryRecordMetadata(bool isReference = false, string? key = null)
+    {
+        var recordKey = key ?? Guid.NewGuid().ToString();
+
+        return new MemoryRecordMetadata(
+            isReference: isReference,
+            id: recordKey,
+            text: "text-" + Guid.NewGuid().ToString(),
+            description: "description-" + Guid.NewGuid().ToString(),
+            externalSourceName: "source-name-" + Guid.NewGuid().ToString(),
+            additionalMetadata: "metadata-" + Guid.NewGuid().ToString());
     }
 
     #endregion

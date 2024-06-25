@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// Interface for a Qdrant vector database client.
@@ -68,7 +69,7 @@ public interface IQdrantVectorDbClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public IAsyncEnumerable<(QdrantVectorRecord, double)> FindNearestInCollectionAsync(
         string collectionName,
-        IEnumerable<float> target,
+        ReadOnlyMemory<float> target,
         double threshold,
         int top = 1,
         bool withVectors = false,

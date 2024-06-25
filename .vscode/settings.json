@@ -9,7 +9,7 @@
   "[csharp]": {
     "editor.defaultFormatter": "ms-dotnettools.csharp",
     "editor.codeActionsOnSave": {
-      "source.fixAll": true
+      "source.fixAll": "explicit"
     }
   },
   "editor.bracketPairColorization.enabled": true,
@@ -31,15 +31,15 @@
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true,
-      "source.fixAll": true
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
     }
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true,
-      "source.fixAll": true
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
     }
   },
   "typescript.updateImportsOnFileMove.enabled": "always",
@@ -71,13 +71,15 @@
     "**/Thumbs.db": true
   },
   "cSpell.words": [
-    "Partitioner"
+    "Partitioner",
+    "Prompty",
+    "SKEXP"
   ],
   "[java]": {
     "editor.formatOnSave": false,
     "editor.tabSize": 4,
     "editor.codeActionsOnSave": {
-      "source.fixAll": false
+      "source.fixAll": "never"
     },
   },
   "emeraldwalk.runonsave": {
@@ -90,5 +92,10 @@
   },
   "java.debug.settings.onBuildFailureProceed": true,
   "java.compile.nullAnalysis.mode": "disabled",
-  "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln"
+  "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln",
+  "python.testing.pytestArgs": [
+    "python/tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }

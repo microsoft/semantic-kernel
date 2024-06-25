@@ -1,28 +1,29 @@
-name: Python Lint
+name: Python Code Quality Checks
 on:
   workflow_dispatch:
-  pull_request:
+  pull_request_target:
     branches: [ "main", "feature*" ]
     paths:
       - 'python/**'
 
 jobs:
-  ruff:
+  pre-commit:
+    if: '!cancelled()'
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8"]
+        python-version: ["3.10"]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    continue-on-error: true
     steps:
-      - run: echo "/root/.local/bin" >> $GITHUB_PATH
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
+<<<<<<< main
           cache-dependency-path: "python/pyproject.toml"
       - name: Install SemanticKernel
         run: cd python && poetry install --no-ansi
@@ -37,10 +38,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - run: echo "/root/.local/bin" >> $GITHUB_PATH
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
@@ -49,3 +50,8 @@ jobs:
         run: cd python && poetry install --no-ansi
       - name: Run lint
         run: cd python && poetry run black --check .
+=======
+      - name: Install dependencies
+        run: cd python && poetry install
+      - uses: pre-commit/action@v3.0.1
+>>>>>>> origin/main-auto-tune

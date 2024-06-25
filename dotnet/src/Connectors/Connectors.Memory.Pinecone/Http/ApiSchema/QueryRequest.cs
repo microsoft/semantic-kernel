@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// QueryRequest
@@ -36,7 +36,7 @@ internal sealed class QueryRequest
     /// Vector dense data. This should be the same length as the dimension of the index being queried.
     /// </summary>
     [JsonPropertyName("vector")]
-    public IEnumerable<float>? Vector { get; set; }
+    public ReadOnlyMemory<float> Vector { get; set; }
 
     /// <summary>
     /// The unique ID of a vector
@@ -88,7 +88,7 @@ internal sealed class QueryRequest
 
     public HttpRequestMessage Build()
     {
-        if (this.Filter != null)
+        if (this.Filter is not null)
         {
             this.Filter = PineconeUtils.ConvertFilterToPineconeFilter(this.Filter);
         }
@@ -106,7 +106,7 @@ internal sealed class QueryRequest
     /// Initializes a new instance of the <see cref="QueryRequest" /> class.
     /// </summary>
     [JsonConstructor]
-    private QueryRequest(IEnumerable<float>? values = null)
+    private QueryRequest(ReadOnlyMemory<float> values)
     {
         this.Vector = values;
     }

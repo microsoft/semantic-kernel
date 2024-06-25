@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class UpsertVectorRequest
 {
@@ -50,16 +51,16 @@ internal sealed class UpsertVectorRequest
         public IList<string> Ids { get; set; }
 
         [JsonPropertyName("vectors")]
-        public IList<IEnumerable<float>> Vectors { get; set; }
+        public IList<ReadOnlyMemory<float>> Vectors { get; set; }
 
         [JsonPropertyName("payloads")]
         public IList<Dictionary<string, object>> Payloads { get; set; }
 
         internal BatchRequest()
         {
-            this.Ids = new List<string>();
-            this.Vectors = new List<IEnumerable<float>>();
-            this.Payloads = new List<Dictionary<string, object>>();
+            this.Ids = [];
+            this.Vectors = [];
+            this.Payloads = [];
         }
     }
 
