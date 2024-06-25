@@ -46,7 +46,7 @@ internal sealed class RedisVectorStoreRecordMapper<TConsumerDataModel> : IVector
     }
 
     /// <inheritdoc />
-    public TConsumerDataModel MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, GetRecordOptions? options = null)
+    public TConsumerDataModel MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, StorageToDataModelMapperOptions options)
     {
         JsonObject jsonObject;
 

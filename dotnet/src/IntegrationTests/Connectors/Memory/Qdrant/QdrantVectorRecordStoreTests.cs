@@ -299,7 +299,7 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
             throw new NotImplementedException();
         }
 
-        public HotelInfo MapFromStorageToDataModel(PointStruct storageModel, GetRecordOptions? options = null)
+        public HotelInfo MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
         {
             throw new NotImplementedException();
         }

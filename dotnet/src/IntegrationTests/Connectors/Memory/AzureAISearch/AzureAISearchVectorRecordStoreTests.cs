@@ -278,7 +278,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
             throw new NotImplementedException();
         }
 
-        public Hotel MapFromStorageToDataModel(JsonObject storageModel, GetRecordOptions? options = null)
+        public Hotel MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
         {
             throw new NotImplementedException();
         }
