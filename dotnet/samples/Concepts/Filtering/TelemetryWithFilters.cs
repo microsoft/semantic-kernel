@@ -55,13 +55,48 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
         ]);
 
         // Enable automatic function calling.
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ModelId = "gpt-4"
+        };
 
-        // Invoke prompt with arguments.
-        const string Prompt = "Given the current time of day and weather, what is the likely color of the sky in {{$city}}?";
-        var result = await kernel.InvokePromptAsync(Prompt, new(executionSettings) { ["city"] = "Boston" });
+        // Define custom transaction ID to group set of operations related to the request.
+        var transactionId = new Guid("2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2");
 
-        Console.WriteLine(result);
+        using (logger.BeginScope($"Transaction ID: [{transactionId}]"))
+        {
+            // Invoke prompt with arguments.
+            const string Prompt = "Given the current time of day and weather, what is the likely color of the sky in {{$city}}?";
+            var result = await kernel.InvokePromptAsync(Prompt, new(executionSettings) { ["city"] = "Boston" });
+
+            Console.WriteLine(result);
+        }
+
+        // Output:
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function InvokePromptAsync_Id invoking.
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function arguments: {"city":"Boston"}
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Execution settings: {"default":{"service_id":null,"model_id":"gpt-4"}}
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Rendered prompt: Given the current time of day and weather, what is the likely color of the sky in Boston?
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] ChatHistory: [{"Role":{"Label":"user"},...
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function count: 1
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function call requests: HelperFunctions-GetCurrentUtcTime({})
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function GetCurrentUtcTime invoking.
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function GetCurrentUtcTime succeeded.
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function result: Tue, 25 Jun 2024 15:30:16 GMT
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function completed. Duration: 0.0011554s
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] ChatHistory: [{"Role":{"Label":"user"},...
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function count: 1
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function call requests: HelperFunctions-GetWeatherForCity({"cityName":"Boston"})
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function GetWeatherForCity invoking.
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function arguments: {"cityName":"Boston"}
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function GetWeatherForCity succeeded.
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function result: 61 and rainy
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function completed. Duration: 0.0020878s
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function InvokePromptAsync_Id succeeded.
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function result: The sky in Boston would likely be gray due to the rain and current time of day.
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Usage: {"CompletionTokens":19,"PromptTokens":169,"TotalTokens":188}
+        // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function completed. Duration: 5.397173s
     }
 
     /// <summary>
@@ -78,7 +113,7 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
 
             if (context.Arguments.Count > 0)
             {
-                logger.LogTrace("Function arguments: {Arguments}", context.Arguments);
+                logger.LogTrace("Function arguments: {Arguments}", JsonSerializer.Serialize(context.Arguments));
             }
 
             if (logger.IsEnabled(LogLevel.Information) && context.Arguments.ExecutionSettings is not null)
@@ -86,22 +121,34 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
                 logger.LogInformation("Execution settings: {Settings}", JsonSerializer.Serialize(context.Arguments.ExecutionSettings));
             }
 
-            await next(context);
-
-            TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
-
-            logger.LogInformation("Function {FunctionName} succeeded.", context.Function.Name);
-            logger.LogTrace("Function result: {Result}", context.Result.ToString());
-
-            if (logger.IsEnabled(LogLevel.Information))
+            try
             {
-                logger.LogInformation("Function completed. Duration: {Duration}s", duration.TotalSeconds);
+                await next(context);
 
-                var usage = context.Result.Metadata?["Usage"];
+                logger.LogInformation("Function {FunctionName} succeeded.", context.Function.Name);
+                logger.LogTrace("Function result: {Result}", context.Result.ToString());
 
-                if (usage is not null)
+                if (logger.IsEnabled(LogLevel.Information))
                 {
-                    logger.LogInformation("Usage: {Usage}", JsonSerializer.Serialize(usage));
+                    var usage = context.Result.Metadata?["Usage"];
+
+                    if (usage is not null)
+                    {
+                        logger.LogInformation("Usage: {Usage}", JsonSerializer.Serialize(usage));
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Function failed. Error: {Message}", exception.Message);
+                throw;
+            }
+            finally
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
+                    logger.LogInformation("Function completed. Duration: {Duration}s", duration.TotalSeconds);
                 }
             }
         }
@@ -140,12 +187,15 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
 
             var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last()).ToList();
 
-            functionCalls.ForEach(functionCall
-                => logger.LogTrace(
-                    "Function call requests: {PluginName}-{FunctionName}({Arguments})",
-                    functionCall.PluginName,
-                    functionCall.FunctionName,
-                    functionCall.Arguments));
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                functionCalls.ForEach(functionCall
+                    => logger.LogTrace(
+                        "Function call requests: {PluginName}-{FunctionName}({Arguments})",
+                        functionCall.PluginName,
+                        functionCall.FunctionName,
+                        JsonSerializer.Serialize(functionCall.Arguments)));
+            }
 
             await next(context);
         }
