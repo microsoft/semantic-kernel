@@ -703,12 +703,11 @@ internal abstract class ClientCore
 
                         if (update.ToolCallUpdate is StreamingFunctionToolCallUpdate functionCallUpdate)
                         {
-                            openAIStreamingChatMessageContent.Items.Add(
-                                new StreamingFunctionCallUpdateContent(
-                                    callId: functionCallUpdate.Id,
-                                    name: functionCallUpdate.Name,
-                                    arguments: functionCallUpdate.ArgumentsUpdate,
-                                    functionCallIndex: functionCallUpdate.ToolCallIndex));
+                            openAIStreamingChatMessageContent.Items.Add(new StreamingFunctionCallUpdateContent(
+                                callId: functionCallUpdate.Id,
+                                name: functionCallUpdate.Name,
+                                arguments: functionCallUpdate.ArgumentsUpdate,
+                                functionCallIndex: functionCallUpdate.ToolCallIndex));
                         }
 
                         streamedContents?.Add(openAIStreamingChatMessageContent);
