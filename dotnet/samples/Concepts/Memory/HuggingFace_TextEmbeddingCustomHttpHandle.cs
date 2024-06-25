@@ -46,7 +46,7 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
     }
 }
 
-public class CustomHttpClientHandler : HttpClientHandler
+public sealed class CustomHttpClientHandler : HttpClientHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
