@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Plugins;
+namespace SemanticKernel.IntegrationTests.Plugins.OpenApi;
 
 public class RepairServiceTests
 {
@@ -23,7 +23,7 @@ public class RepairServiceTests
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
             "RepairService",
             stream,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
         var arguments = new KernelArguments
         {
@@ -79,7 +79,7 @@ public class RepairServiceTests
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
             "RepairService",
             stream,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
         var arguments = new KernelArguments
         {
@@ -121,7 +121,7 @@ public class RepairServiceTests
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
             "RepairService",
             stream,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
         // List All Repairs
         var result = await plugin["listRepairs"].InvokeAsync(kernel);

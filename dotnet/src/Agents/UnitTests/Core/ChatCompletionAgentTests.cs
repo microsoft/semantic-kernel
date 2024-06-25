@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -60,7 +59,7 @@ public class ChatCompletionAgentTests
                 ExecutionSettings = new(),
             };
 
-        var result = await agent.InvokeAsync([], NullLogger.Instance).ToArrayAsync();
+        var result = await agent.InvokeAsync([]).ToArrayAsync();
 
         Assert.Single(result);
 
