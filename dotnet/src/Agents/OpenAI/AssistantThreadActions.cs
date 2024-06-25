@@ -14,9 +14,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
+/// Actions associated with an Open Assistant thread.
 /// </summary>
-internal static class OpenAIAssistantActions
+internal static class AssistantThreadActions
 {
     /*AssistantsClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration*/
     private const string FunctionDelimiter = "-";

@@ -20,7 +20,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     {
         foreach (ChatMessageContent message in history)
         {
-            await OpenAIAssistantActions.CreateMessageAsync(this._client, this._threadId, message, cancellationToken).ConfigureAwait(false);
+            await AssistantThreadActions.CreateMessageAsync(this._client, this._threadId, message, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -31,12 +31,12 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     {
         agent.ThrowIfDeleted();
 
-        return OpenAIAssistantActions.InvokeAsync(agent, this._client, this._threadId, pollingConfiguration, this.Logger, cancellationToken);
+        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, pollingConfiguration, this.Logger, cancellationToken);
     }
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        return OpenAIAssistantActions.GetMessagesAsync(this._client, this._threadId, cancellationToken);
+        return AssistantThreadActions.GetMessagesAsync(this._client, this._threadId, cancellationToken);
     }
 }

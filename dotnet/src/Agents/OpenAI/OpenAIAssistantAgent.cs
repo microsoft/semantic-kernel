@@ -215,7 +215,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         this.ThrowIfDeleted();
 
-        return OpenAIAssistantActions.CreateMessageAsync(this._client, threadId, message, cancellationToken);
+        return AssistantThreadActions.CreateMessageAsync(this._client, threadId, message, cancellationToken);
     }
 
     /// <summary>
@@ -228,7 +228,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         this.ThrowIfDeleted();
 
-        return OpenAIAssistantActions.GetMessagesAsync(this._client, threadId, cancellationToken);
+        return AssistantThreadActions.GetMessagesAsync(this._client, threadId, cancellationToken);
     }
 
     /// <summary>
@@ -261,7 +261,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         this.ThrowIfDeleted();
 
-        return OpenAIAssistantActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, cancellationToken);
+        return AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, cancellationToken);
     }
 
     /// <inheritdoc/>
