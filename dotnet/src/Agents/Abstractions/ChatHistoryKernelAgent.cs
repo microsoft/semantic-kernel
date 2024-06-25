@@ -28,4 +28,10 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
         IReadOnlyList<ChatMessageContent> history,
         ILogger logger,
         CancellationToken cancellationToken = default);
+
+    /// <inheritdoc/>
+    public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        IReadOnlyList<ChatMessageContent> history,
+        ILogger logger,
+        CancellationToken cancellationToken = default);
 }
