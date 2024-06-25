@@ -344,6 +344,10 @@ internal abstract class ClientCore
         {
             throw new ArgumentNullException(nameof(content.Data));
         }
+        if (content.Data == null)
+        {
+            throw new ArgumentNullException(nameof(content.Data));
+        }
         var audioData = content.Data.Value;
         if (audioData.IsEmpty)
         {
