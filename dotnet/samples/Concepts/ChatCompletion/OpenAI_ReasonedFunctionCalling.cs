@@ -201,7 +201,6 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
             await next(context);
         }
     }
-
     private sealed class WeatherPlugin
     {
         [KernelFunction]
