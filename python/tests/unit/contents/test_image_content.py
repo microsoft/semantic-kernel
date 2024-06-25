@@ -13,6 +13,12 @@ def test_unsupported_image_format():
     with pytest.raises(SomeExpectedException):
         # Replace with the actual function call that processes the image
         process_image("unsupported_image_format.xyz")
+import pytest
+
+def test_unsupported_image_format():
+    with pytest.raises(SomeExpectedException):
+        # Replace with the actual function call that processes the image
+        process_image("unsupported_image_format.xyz")
 
 import pytest
 
