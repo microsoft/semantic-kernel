@@ -65,7 +65,7 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
             GetFunctionKey,
             CollectionName);
 
-        // Enable automatic function calling.
+        // Enable automatic function calling by default.
         var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Define kernel arguments with specific request.
@@ -92,6 +92,10 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
 
         // Invoke the request with plugin selection filter.
         Console.WriteLine("\nRun with filter:");
+
+        // ToolCallBehavior.AutoInvokeKernelFunctions is used here as well as defined above.
+        // In case there will be related functions found for specific request, the ToolCallBehavior will be updated in filter to
+        // ToolCallBehavior.EnableFunctions(functions, autoInvoke: true) - this will allow to share only related set of functions with AI.
         result = await kernel.InvokePromptAsync("{{$Request}}", kernelArguments);
 
         Console.WriteLine(result);
