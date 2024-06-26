@@ -66,9 +66,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(
-        auto_invoke=False, filters={"included_plugins": ["math", "time"]}
-    ),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["math", "time"]}),
 )
 
 history = ChatHistory()
