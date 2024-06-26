@@ -232,7 +232,7 @@ public partial class ClientCoreTests
     }
 
     [Fact]
-    public void ItThrowsWhenNotUsingCustomEndpintAndApiKeyIsNotProvided()
+    public void ItThrowsWhenNotUsingCustomEndpointAndApiKeyIsNotProvided()
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new ClientCore("modelId", " "));
@@ -241,7 +241,7 @@ public partial class ClientCoreTests
     }
 
     [Fact]
-    public void ItDoesNotThrowWhenUsingCustomEndpintAndApiKeyIsNotProvided()
+    public void ItDoesNotThrowWhenUsingCustomEndpointAndApiKeyIsNotProvided()
     {
         // Act & Assert
         ClientCore? clientCore = null;

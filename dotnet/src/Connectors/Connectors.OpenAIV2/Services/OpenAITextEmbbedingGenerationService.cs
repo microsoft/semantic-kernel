@@ -8,13 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Services;
 using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /* Phase 02
-Adding the non-default endpiont parameter to the constructor.
+Adding the non-default endpoint parameter to the constructor.
 */
 
 /// <summary>
