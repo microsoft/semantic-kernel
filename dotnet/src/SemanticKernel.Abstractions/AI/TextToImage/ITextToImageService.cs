@@ -20,7 +20,7 @@ public interface ITextToImageService : IAIService
     /// <summary>
     /// Generate an image matching the given description
     /// </summary>
-    /// <param name="prompt">Image generation prompt</param>
+    /// <param name="description">Image generation prompt</param>
     /// <param name="width">Image width in pixels</param>
     /// <param name="height">Image height in pixels</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -28,7 +28,7 @@ public interface ITextToImageService : IAIService
     /// <returns>Generated image in base64 format or image URL</returns>
     [Experimental("SKEXP0001")]
     public Task<string> GenerateImageAsync(
-        string prompt,
+        string description,
         int width,
         int height,
         Kernel? kernel = null,

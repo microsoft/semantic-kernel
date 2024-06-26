@@ -68,9 +68,9 @@ public class OpenAITextToImageService : ITextToImageService
     }
 
     /// <inheritdoc/>
-    public Task<string> GenerateImageAsync(string prompt, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         this._core.LogActionDetails();
-        return this._core.GenerateImageAsync(prompt, width, height, cancellationToken);
+        return this._core.GenerateImageAsync(description, width, height, cancellationToken);
     }
 }
