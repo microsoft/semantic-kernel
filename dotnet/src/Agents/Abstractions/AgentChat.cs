@@ -256,10 +256,7 @@ public abstract class AgentChat
             {
                 this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
-                // Creating an agent-typed logger for CreateChannelAsync
-                channel = await agent.CreateChannelAsync(this.LoggerFactory.CreateLogger(agent.GetType()), cancellationToken).ConfigureAwait(false);
-                // Creating an channel-typed logger for the channel
-                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
+                channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
 
                 this._agentChannels.Add(channelKey, channel);
 
