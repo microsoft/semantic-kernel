@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Xunit;
 using System.ClientModel.Primitives;
+using Xunit;
 
 namespace SemanticKernel.UnitTests.Utilities.OpenAI;
 
