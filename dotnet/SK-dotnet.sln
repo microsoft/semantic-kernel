@@ -52,13 +52,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.UnitTests", "src\Connectors\Connectors.UnitTests\Connectors.UnitTests.csproj", "{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant", "src\Connectors\Connectors.Memory.Qdrant\Connectors.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant", "src\Connectors\Connectors.Qdrant\Connectors.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Sqlite", "src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Postgres", "src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj", "{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Redis", "src\Connectors\Connectors.Memory.Redis\Connectors.Redis.csproj", "{3720F5ED-FB4D-485E-8A93-CDE60DEF0805}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Redis", "src\Connectors\Connectors.Redis\Connectors.Redis.csproj", "{3720F5ED-FB4D-485E-8A93-CDE60DEF0805}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Chroma", "src\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj", "{185E0CE8-C2DA-4E4C-A491-E8EB40316315}"
 EndProject
@@ -72,7 +72,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extensions", "extensions", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.UnitTests", "src\Extensions\Extensions.UnitTests\Extensions.UnitTests.csproj", "{F51017A9-15C8-472D-893C-080046D710A6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureAISearch", "src\Connectors\Connectors.Memory.AzureAISearch\Connectors.AzureAISearch.csproj", "{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureAISearch", "src\Connectors\Connectors.AzureAISearch\Connectors.AzureAISearch.csproj", "{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Pinecone", "src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj", "{4D226C2F-AE9F-4EFB-AF2D-45C8FE5CB34E}"
 EndProject
