@@ -21,7 +21,7 @@ public interface IVectorStoreRecordMapper<TRecordDataModel, TStorageModel>
     /// Map from the storage model to the consumer record data model.
     /// </summary>
     /// <param name="storageModel">The storage data model record to map.</param>
-    /// <param name="options">The <see cref="GetRecordOptions"/> of the operation that this mapping is needed for.</param>
+    /// <param name="options">Options to control the mapping behavior.</param>
     /// <returns>The mapped result.</returns>
-    TRecordDataModel MapFromStorageToDataModel(TStorageModel storageModel, GetRecordOptions? options = default);
+    TRecordDataModel MapFromStorageToDataModel(TStorageModel storageModel, StorageToDataModelMapperOptions options);
 }

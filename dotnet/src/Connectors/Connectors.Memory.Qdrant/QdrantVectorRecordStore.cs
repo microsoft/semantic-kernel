@@ -290,12 +290,13 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         // Create options.
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
         var pointsIds = keys.Select(key => keyConverter(key)).ToArray();
+        var includeVectors = options?.IncludeVectors ?? false;
 
         // Retrieve data points.
         var retrievedPoints = await RunOperationAsync(
             collectionName,
             OperationName,
-            () => this._qdrantClient.RetrieveAsync(collectionName, pointsIds, true, options?.IncludeVectors ?? false, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this._qdrantClient.RetrieveAsync(collectionName, pointsIds, true, includeVectors, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         // Convert the retrieved points to the target data model.
         foreach (var retrievedPoint in retrievedPoints)
@@ -316,7 +317,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
                 DatabaseName,
                 collectionName,
                 OperationName,
-                () => this._mapper.MapFromStorageToDataModel(pointStruct, options));
+                () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
         }
     }
 
