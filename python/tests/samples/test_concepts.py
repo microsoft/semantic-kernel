@@ -91,19 +91,19 @@ concepts = [
         ollama_chat_completion,
         ["Why is the sky blue?", "exit"],
         id="ollama_chat_completion",
-        marks=pytest.mark.skip(reason="Need to set up Ollama locally."),
+        marks=pytest.mark.skip(reason="Need to set up Ollama locally. Check out the module for more details."),
     ),
     param(
         lm_studio_chat_completion,
         ["Why is the sky blue?", "exit"],
         id="lm_studio_chat_completion",
-        marks=pytest.mark.skip(reason="Need to set up LM Studio locally."),
+        marks=pytest.mark.skip(reason="Need to set up LM Studio locally. Check out the module for more details."),
     ),
     param(
         lm_studio_text_embedding,
         [],
         id="lm_studio_text_embedding",
-        marks=pytest.mark.skip(reason="Need to set up LM Studio locally."),
+        marks=pytest.mark.skip(reason="Need to set up LM Studio locally. Check out the module for more details."),
     ),
 ]
 

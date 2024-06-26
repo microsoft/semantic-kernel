@@ -12,6 +12,7 @@ from semantic_kernel.kernel import Kernel
 
 # This concept sample shows how to use the OpenAI connector with
 # a local model running in Ollama: https://github.com/ollama/ollama
+# A docker image is also available: https://hub.docker.com/r/ollama/ollama
 # The default model used in this sample is phi3 due to its compact size.
 # At the time of creating this sample, Ollama only provides experimental
 # compatibility with the `chat/completions` endpoint:
