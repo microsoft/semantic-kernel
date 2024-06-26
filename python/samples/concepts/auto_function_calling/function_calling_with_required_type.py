@@ -30,7 +30,8 @@ if TYPE_CHECKING:
 # the `math-Multiply` function, then the `math-Add` function, satisfying 2 of the 5 max auto invoke attempts.
 # The remaining 3 attempts will continue calling `math-Add` because the execution settings are still configured with a
 # tool_choice `required` and the supplied tools. The final result will be a tool call response.
-
+#
+# This behavior is true for both streaming and non-streaming responses.
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -44,6 +45,10 @@ You also excel at joke telling, where your tone is often sarcastic.
 Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
+
+# This concept example shows how to handle both streaming and non-streaming responses
+# To toggle the behavior, set the following flag accordingly:
+stream = True
 
 kernel = Kernel()
 
@@ -76,7 +81,9 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Required(filters={"included_plugins": ["math", "time"]}),
+    function_choice_behavior=FunctionChoiceBehavior.Required(
+        filters={"included_functions": ["time-time", "time-date"]},
+    ),
 )
 
 history = ChatHistory()
@@ -104,7 +111,10 @@ def print_tool_calls(message: ChatMessageContent) -> None:
                 f"tool_call {i} arguments: {function_arguments}"
             )
             formatted_tool_calls.append(formatted_str)
-    print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+    if len(formatted_tool_calls) > 0:
+        print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+    else:
+        print("The model used its own knowledge and didn't return any tool calls.")
 
 
 async def handle_streaming(
@@ -121,16 +131,16 @@ async def handle_streaming(
     print("Mosscap:> ", end="")
     streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
-        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and isinstance(
-            message[0], StreamingChatMessageContent
-        ):
+        if isinstance(message[0], StreamingChatMessageContent):
             streamed_chunks.append(message[0])
         else:
             print(str(message[0]), end="")
 
     if streamed_chunks:
         streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
-        print("Auto tool calls is disabled, printing returned tool calls...")
+        if hasattr(streaming_chat_message, "content"):
+            print(streaming_chat_message.content)
+        print("Printing returned tool calls...")
         print_tool_calls(streaming_chat_message)
 
     print("\n")
@@ -152,7 +162,6 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
-    stream = False
     if stream:
         await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
@@ -175,7 +184,7 @@ async def main() -> None:
     print(
         "Welcome to the chat bot!\
         \n  Type 'exit' to exit.\
-        \n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
+        \n  Try a question to see the function calling in action (i.e. what is the current time?)."
     )
     while chatting:
         chatting = await chat()

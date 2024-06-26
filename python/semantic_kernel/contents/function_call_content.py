@@ -58,8 +58,18 @@ class FunctionCallContent(KernelContent):
             id=self.id or other.id,
             index=self.index or other.index,
             name=self.name or other.name,
-            arguments=(self.arguments or "") + (other.arguments or ""),
+            arguments=self.combine_arguments(self.arguments, other.arguments),
         )
+
+    def combine_arguments(self, arg1: str | None, arg2: str | None) -> str:
+        """Combine two arguments."""
+        if arg1 in ["", "{}", None] and arg2 in ["", "{}", None]:
+            return "{}"
+        if arg1 in ["", "{}", None]:
+            return arg2 or "{}"
+        if arg2 in ["", "{}", None]:
+            return arg1 or "{}"
+        return (arg1 or "") + (arg2 or "")
 
     def parse_arguments(self) -> dict[str, Any] | None:
         """Parse the arguments into a dictionary."""

@@ -34,7 +34,7 @@ you will return a full answer to me as soon as possible.
 
 # This concept example shows how to handle both streaming and non-streaming responses
 # To toggle the behavior, set the following flag accordingly:
-stream = False
+stream = True
 
 kernel = Kernel()
 
@@ -66,7 +66,9 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["math", "time"]}),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(
+        auto_invoke=False, filters={"included_plugins": ["math", "time"]}
+    ),
 )
 
 history = ChatHistory()
@@ -94,7 +96,10 @@ def print_tool_calls(message: ChatMessageContent) -> None:
                 f"tool_call {i} arguments: {function_arguments}"
             )
             formatted_tool_calls.append(formatted_str)
-    print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+    if len(formatted_tool_calls) > 0:
+        print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+    else:
+        print("The model used its own knowledge and didn't return any tool calls.")
 
 
 async def handle_streaming(
@@ -120,6 +125,8 @@ async def handle_streaming(
 
     if streamed_chunks:
         streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
+        if hasattr(streaming_chat_message, "content"):
+            print(streaming_chat_message.content)
         print("Auto tool calls is disabled, printing returned tool calls...")
         print_tool_calls(streaming_chat_message)
 
