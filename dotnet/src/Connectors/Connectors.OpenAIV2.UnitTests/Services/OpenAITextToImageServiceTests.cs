@@ -65,45 +65,13 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     [InlineData(1024, 1024, "dall-e-3")]
     [InlineData(1024, 1792, "dall-e-3")]
     [InlineData(1792, 1024, "dall-e-3")]
+    [InlineData(123, 321, "custom-model-1")]
+    [InlineData(179, 124, "custom-model-2")]
     public async Task GenerateImageWorksCorrectlyAsync(int width, int height, string modelId)
     {
         // Arrange
         var sut = new OpenAITextToImageService(modelId, "api-key", httpClient: this._httpClient);
         Assert.Equal(modelId, sut.Attributes["ModelId"]);
-
-        // Act 
-        var result = await sut.GenerateImageAsync("description", width, height);
-
-        // Assert
-        Assert.Equal("https://image-url/", result);
-    }
-
-    [Theory]
-    [InlineData(123, 456, "dall-e-2")]
-    [InlineData(256, 512, "dall-e-2")]
-    [InlineData(256, 256, "dall-e-3")]
-    [InlineData(512, 512, "dall-e-3")]
-    [InlineData(1024, 1792, "dall-e-2")]
-    [InlineData(1792, 1024, "dall-e-2")]
-    public async Task GenerateImageThrowsWhenSizeIsNotSupportedAsync(int width, int height, string modelId)
-    {
-        // Arrange
-        var sut = new OpenAITextToImageService(modelId, "apiKey");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => sut.GenerateImageAsync("description", width, height));
-    }
-
-    [Theory]
-    [InlineData(123, 456)]
-    [InlineData(256, 512)]
-    [InlineData(6546, 545)]
-    [InlineData(16, 32)]
-    public async Task GenerateImageAllowCustomSizeWhenNonDefaultEndpointIsUsedAsync(int width, int height)
-    {
-        // Arrange
-        var sut = new OpenAITextToImageService("model", endpoint: new Uri("http://localhost"), httpClient: this._httpClient);
-        Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
 
         // Act 
         var result = await sut.GenerateImageAsync("description", width, height);

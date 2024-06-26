@@ -40,8 +40,6 @@ internal partial class ClientCore
 
         var size = new GeneratedImageSize(width, height);
 
-        EnsureSizeIsSupported(size, this.Endpoint!, this.ModelId);
-
         var imageOptions = new ImageGenerationOptions()
         {
             Size = size,
@@ -52,29 +50,5 @@ internal partial class ClientCore
         var generatedImage = response.Value;
 
         return generatedImage.ImageUri?.ToString() ?? throw new KernelException("The generated image is not in url format");
-    }
-
-    /// <summary>
-    /// Ensures by throwing and exception if the requested image size is not supported by the OpenAI image generation models.
-    /// </summary>
-    /// <param name="targetSize">Target size to ensure support</param>
-    /// <param name="endpoint">Current client endpoint</param>
-    /// <param name="modelId">Target model identifier</param>
-    /// <exception cref="ArgumentOutOfRangeException">Size is not supported</exception>
-    private static void EnsureSizeIsSupported(GeneratedImageSize targetSize, Uri endpoint, string modelId)
-    {
-        // Only be restrictive to the image size if the endpoint is the default OpenAI v1 endpoint
-        if (endpoint != new Uri(OpenAIV1Endpoint)) { return; }
-
-        var supported = (targetSize == GeneratedImageSize.W256xH256 && modelId == "dall-e-2")
-        || (targetSize == GeneratedImageSize.W512xH512 && modelId == "dall-e-2")
-        || targetSize == GeneratedImageSize.W1024xH1024
-        || (targetSize == GeneratedImageSize.W1024xH1792 && modelId == "dall-e-3")
-        || (targetSize == GeneratedImageSize.W1792xH1024 && modelId == "dall-e-3");
-
-        if (!supported)
-        {
-            throw new ArgumentOutOfRangeException($"The requested image size {targetSize} is not supported. Supported sizes are: 256x256 (dalle-2 only), 512x512 (dalle-2 only), 1024x1024, 1024x1792 (dalle-3 only), 1792x1024 (dalle-3 only)");
-        }
     }
 }
