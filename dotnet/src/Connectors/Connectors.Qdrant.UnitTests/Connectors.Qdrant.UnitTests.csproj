@@ -31,6 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Connectors.Memory.Qdrant\Connectors.Qdrant.csproj" />
+    <ProjectReference Include="..\Connectors.Qdrant\Connectors.Qdrant.csproj" />
   </ItemGroup>
 </Project>

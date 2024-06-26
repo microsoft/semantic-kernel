@@ -30,7 +30,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Connectors.Memory.AzureAISearch\Connectors.AzureAISearch.csproj" />
+    <ProjectReference Include="..\Connectors.AzureAISearch\Connectors.AzureAISearch.csproj" />
   </ItemGroup>
 
 </Project>

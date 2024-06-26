@@ -31,6 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Connectors.Memory.Redis\Connectors.Redis.csproj" />
+    <ProjectReference Include="..\Connectors.Redis\Connectors.Redis.csproj" />
   </ItemGroup>
 </Project>
