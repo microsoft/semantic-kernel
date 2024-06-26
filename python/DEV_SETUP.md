@@ -157,7 +157,7 @@ Read more about the extension here: https://github.com/astral-sh/ruff-vscode
 You can run the unit tests under the [tests/unit](tests/unit/) folder.
 
 ```bash
-    poetry install
+    poetry install --with unit-tests
     poetry run pytest tests/unit
 ```
 
@@ -167,7 +167,7 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 You can run the integration tests under the [tests/integration](tests/integration/) folder.
 
 ```bash
-    poetry install
+    poetry install --with tests
     poetry run pytest tests/integration
 ```
 
