@@ -323,7 +323,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             metadata=metadata,
             role=AuthorRole(choice.message.role),
             items=items,
-            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
+            finish_reason=(FinishReason(choice.finish_reason) if choice.finish_reason else None),
         )
 
     def _create_streaming_chat_message_content(
@@ -345,8 +345,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT,
-            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
+            role=(AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT),
+            finish_reason=(FinishReason(choice.finish_reason) if choice.finish_reason else None),
             items=items,
         )
 
