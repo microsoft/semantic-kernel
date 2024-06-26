@@ -63,14 +63,14 @@ chat_function = kernel.add_function(
 )
 
 # enabling or disabling function calling is done by setting the function_choice_behavior parameter for the
-# prompt execution settings. When the function_call parameter is set to "auto" the model will decide which
+# prompt execution settings. When the function_call parameter is set to "required" the model will decide which
 # function to use, if any. If you only want to use a specific function, configure the filters dict with either:
 # 'excluded_plugins', 'included_plugins', 'excluded_functions', or 'included_functions'. For example, the
 # format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
 # if the model or api version does not support this you will get an error.
 
-# Note: the number of responses for auto invoking tool calls is limited to 1.
-# If configured to be greater than one, this value will be overridden to 1.
+# Note: by default, the number of responses for auto invoking `required` tool calls is limited to 1.
+# The value may be configured to be more than one depending upon your scenario.
 execution_settings = OpenAIChatPromptExecutionSettings(
     service_id=service_id,
     max_tokens=2000,
