@@ -15,6 +15,10 @@ using OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
+
+/// <summary>
+/// Unit tests for <see cref="OpenAITextEmbeddingGenerationService"/> class.
+/// </summary>
 public class OpenAITextEmbeddingGenerationServiceTests
 {
     [Fact]

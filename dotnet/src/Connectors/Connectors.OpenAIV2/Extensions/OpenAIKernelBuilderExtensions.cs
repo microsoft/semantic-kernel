@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Sponsor extensions class for <see cref="IKernelBuilder"/>.
 /// </summary>
-public static class KernelBuilderExtensions
+public static class OpenAIKernelBuilderExtensions
 {
     #region Text Embedding
     /// <summary>

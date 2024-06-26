@@ -92,6 +92,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\test\AssertExtensions.cs = src\InternalUtilities\test\AssertExtensions.cs
 		src\InternalUtilities\test\HttpMessageHandlerStub.cs = src\InternalUtilities\test\HttpMessageHandlerStub.cs
+		src\Connectors\Connectors.OpenAIV2.UnitTests\Utils\MoqExtensions.cs = src\Connectors\Connectors.OpenAIV2.UnitTests\Utils\MoqExtensions.cs
 		src\InternalUtilities\test\MultipleHttpMessageHandlerStub.cs = src\InternalUtilities\test\MultipleHttpMessageHandlerStub.cs
 		src\InternalUtilities\test\TestInternalUtilities.props = src\InternalUtilities\test\TestInternalUtilities.props
 	EndProjectSection
@@ -324,7 +325,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTestsV2", "src\I
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureOpenAI", "src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj", "{6744272E-8326-48CE-9A3F-6BE227A5E777}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureOpenAI.UnitTests", "src\Connectors\Connectors.AzureOpenAI.UnitTests\Connectors.AzureOpenAI.UnitTests.csproj", "{DB219924-208B-4CDD-8796-EE424689901E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureOpenAI.UnitTests", "src\Connectors\Connectors.AzureOpenAI.UnitTests\Connectors.AzureOpenAI.UnitTests.csproj", "{DB219924-208B-4CDD-8796-EE424689901E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -150,13 +150,13 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(
-        string description,
+        string prompt, // Changing this temporarily to avoid warnings (this class will be removed in the future)
         int width,
         int height,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(description);
+        Verify.NotNull(prompt);
 
         var size = (width, height) switch
         {
@@ -173,7 +173,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
                 new ImageGenerationOptions
                 {
                     DeploymentName = this._deploymentName,
-                    Prompt = description,
+                    Prompt = prompt,
                     Size = size,
                 }, cancellationToken).ConfigureAwait(false);
         }

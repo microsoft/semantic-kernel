@@ -37,7 +37,7 @@ internal partial class ClientCore
     /// <summary>
     /// White space constant.
     /// </summary>
-    private const string WhiteSpace = " ";
+    private const string SingleSpace = " ";
 
     /// <summary>
     /// Gets the attribute name used to store the organization in the <see cref="IAIService.Attributes"/> dictionary.
@@ -108,7 +108,7 @@ internal partial class ClientCore
         else if (string.IsNullOrEmpty(apiKey))
         {
             // Avoids an exception from OpenAI Client when a custom endpoint is provided without an API key.
-            apiKey = WhiteSpace;
+            apiKey = SingleSpace;
         }
 
         this.AddAttribute(AIServiceExtensions.EndpointKey, this.Endpoint.ToString());

@@ -9,10 +9,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using OpenAI;
-using SemanticKernel.Connectors.OpenAI.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.Services;
 
 /// <summary>
 /// Unit tests for <see cref="OpenAITextToImageService"/> class.

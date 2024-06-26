@@ -82,15 +82,17 @@ public sealed class OpenAITextToImageService : ITextToImageService
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
-    public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<string> GenerateImageAsync(
+        string prompt, // Changing this temporarily to avoid warnings (this class will be removed in the future)
+        int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(description);
+        Verify.NotNull(prompt);
         if (width != height || (width != 256 && width != 512 && width != 1024))
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
 
-        return this.GenerateImageAsync(this._modelId, description, width, height, "url", x => x.Url, cancellationToken);
+        return this.GenerateImageAsync(this._modelId, prompt, width, height, "url", x => x.Url, cancellationToken);
     }
 
     private async Task<string> GenerateImageAsync(

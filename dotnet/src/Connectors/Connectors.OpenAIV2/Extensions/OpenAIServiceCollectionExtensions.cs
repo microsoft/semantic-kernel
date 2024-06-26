@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Sponsor extensions class for <see cref="IServiceCollection"/>.
 /// </summary>
-public static class ServiceCollectionExtensions
+public static class OpenAIServiceCollectionExtensions
 {
     #region Text Embedding
     /// <summary>
