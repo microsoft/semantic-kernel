@@ -9,7 +9,6 @@ Phase 02
 - Allow custom size for images when the endpoint is not the default OpenAI v1 endpoint.
 */
 
-using System;
 using System.ClientModel;
 using System.Threading;
 using System.Threading.Tasks;
