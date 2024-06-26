@@ -66,7 +66,7 @@ The relationships between any `AgentChat`, the `Agent` instances participating i
 
 ![AgentChat Relationships](diagrams/agentchat-relationships.png)
 
-While an `AgentChat` manages a primary `ChatHistory`, each `AgentChannel` manages how that history is adapted to the specific `Agent` modality.  For instance, an `AgentChanel` for an `Agent` based on the Open AI Assistant API tracks the associated _thread-id_.  Whereas a `ChatCompletionAgent` manages an adpated `ChatHistory` instance of its own.
+While an `AgentChat` manages a primary `ChatHistory`, each `AgentChannel` manages how that history is adapted to the specific `Agent` modality.  For instance, an `AgentChannel` for an `Agent` based on the Open AI Assistant API tracks the associated _thread-id_.  Whereas a `ChatCompletionAgent` manages an adapted `ChatHistory` instance of its own.
 
 This implies that logically the `AgentChat` state must retain the primary `ChatHistory` in addition to the appropriate state for each `AgentChannel`:
 
@@ -122,7 +122,7 @@ public static class AgentChatSerializer
 - Able to clearly defines the chat-state, separate from the chat _service_ requirements.
 - Support any `AgentChat` and `AgentChannel` subclass.
 - Ability to support post processing when restoring chat (e.g. channel synchronization).
-- Allows any `AgentChat` to be propertly initialized prior to deserialization.
+- Allows any `AgentChat` to be properly initialized prior to deserialization.
 
 **Con:**
 - Require knowledge of a serialization pattern specific to the _Agent Framework_.
