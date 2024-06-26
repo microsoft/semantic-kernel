@@ -6,13 +6,19 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
+using Moq;
 using OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
+
+/// <summary>
+/// Unit tests for <see cref="OpenAITextEmbeddingGenerationService"/> class.
+/// </summary>
 public class OpenAITextEmbeddingGenerationServiceTests
 {
     [Fact]
@@ -43,8 +49,9 @@ public class OpenAITextEmbeddingGenerationServiceTests
     }
 
     [Fact]
-    public async Task IGetEmbeddingsAsyncReturnsEmptyWhenProvidedDataIsWhitespace()
+    public async Task GetEmbeddingsAsyncReturnsEmptyWhenProvidedDataIsWhitespace()
     {
+        // Arrange
         using HttpMessageHandlerStub handler = new()
         {
             ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -54,7 +61,6 @@ public class OpenAITextEmbeddingGenerationServiceTests
         };
         using HttpClient client = new(handler);
 
-        // Arrange
         var sut = new OpenAITextEmbeddingGenerationService("model", "apikey", httpClient: client);
 
         // Act
@@ -68,6 +74,7 @@ public class OpenAITextEmbeddingGenerationServiceTests
     [Fact]
     public async Task ItThrowsIfNumberOfResultsDiffersFromInputsAsync()
     {
+        // Arrange
         using HttpMessageHandlerStub handler = new()
         {
             ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -77,10 +84,38 @@ public class OpenAITextEmbeddingGenerationServiceTests
         };
         using HttpClient client = new(handler);
 
-        // Arrange
         var sut = new OpenAITextEmbeddingGenerationService("model", "apikey", httpClient: client);
 
         // Act & Assert
         await Assert.ThrowsAsync<KernelException>(async () => await sut.GenerateEmbeddingsAsync(["test"], null, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetEmbeddingsDoesLogActionAsync()
+    {
+        // Arrange
+        using HttpMessageHandlerStub handler = new()
+        {
+            ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(File.ReadAllText("./TestData/text-embeddings-response.txt"))
+            }
+        };
+        using HttpClient client = new(handler);
+
+        var modelId = "dall-e-2";
+        var logger = new Mock<ILogger<OpenAITextEmbeddingGenerationService>>();
+        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+
+        var mockLoggerFactory = new Mock<ILoggerFactory>();
+        mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
+
+        var sut = new OpenAITextEmbeddingGenerationService(modelId, "apiKey", httpClient: client, loggerFactory: mockLoggerFactory.Object);
+
+        // Act
+        await sut.GenerateEmbeddingsAsync(["description"]);
+
+        // Assert
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAITextEmbeddingGenerationService.GenerateEmbeddingsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
     }
 }

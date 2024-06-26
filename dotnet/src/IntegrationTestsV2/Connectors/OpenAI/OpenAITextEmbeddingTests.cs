@@ -19,7 +19,7 @@ public sealed class OpenAITextEmbeddingTests
         .AddUserSecrets<OpenAITextEmbeddingTests>()
         .Build();
 
-    [Theory]//(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
+    [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     [InlineData("test sentence")]
     public async Task OpenAITestAsync(string testInputString)
     {
@@ -38,7 +38,7 @@ public sealed class OpenAITextEmbeddingTests
         Assert.Equal(3, batchResult.Count);
     }
 
-    [Theory]//(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
+    [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     [InlineData(null, 3072)]
     [InlineData(1024, 1024)]
     public async Task OpenAIWithDimensionsAsync(int? dimensions, int expectedVectorLength)
