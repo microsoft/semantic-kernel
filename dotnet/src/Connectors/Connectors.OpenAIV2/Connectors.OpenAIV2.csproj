@@ -22,11 +22,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="F:\repo\roger\semantic-kernel\dotnet\src\InternalUtilities\openai\Policies\AddHeaderRequestPolicy.cs" />
-    <Compile Remove="F:\repo\roger\semantic-kernel\dotnet\src\InternalUtilities\openai\Policies\PipelineSynchronousPolicy.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.OpenAI.UnitTests" />
   </ItemGroup>
 
