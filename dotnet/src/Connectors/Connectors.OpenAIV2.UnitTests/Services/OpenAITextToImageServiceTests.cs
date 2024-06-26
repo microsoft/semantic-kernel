@@ -72,7 +72,6 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         var sut = new OpenAITextToImageService(modelId, "api-key", httpClient: this._httpClient);
         Assert.Equal(modelId, sut.Attributes["ModelId"]);
 
-
         // Act 
         var result = await sut.GenerateImageAsync("description", width, height);
 
