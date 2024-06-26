@@ -121,6 +121,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         // Create Options
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
         var maybePrefixedKey = this.PrefixKeyIfNeeded(key, collectionName);
+        var includeVectors = options?.IncludeVectors ?? false;
 
         // Get the redis value.
         var redisResult = await RunOperationAsync(
@@ -155,7 +156,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             () =>
             {
                 var node = JsonSerializer.Deserialize<JsonNode>(redisResultString)!;
-                return this._mapper.MapFromStorageToDataModel((key, node));
+                return this._mapper.MapFromStorageToDataModel((key, node), new() { IncludeVectors = includeVectors });
             });
     }
 
@@ -169,6 +170,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
         var maybePrefixedKeys = keysList.Select(key => this.PrefixKeyIfNeeded(key, collectionName));
         var redisKeys = maybePrefixedKeys.Select(x => new RedisKey(x)).ToArray();
+        var includeVectors = options?.IncludeVectors ?? false;
 
         // Get the list of redis results.
         var redisResults = await RunOperationAsync(
@@ -205,7 +207,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
                 () =>
                 {
                     var node = JsonSerializer.Deserialize<JsonNode>(redisResultString)!;
-                    return this._mapper.MapFromStorageToDataModel((key, node));
+                    return this._mapper.MapFromStorageToDataModel((key, node), new() { IncludeVectors = includeVectors });
                 });
         }
     }
