@@ -13,12 +13,18 @@
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/openai/OpenAIUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - OpenAI and Azure OpenAI connectors</Title>
     <Description>Semantic Kernel connectors for OpenAI and Azure OpenAI. Contains clients for text generation, chat completion, embedding and DALL-E text to image.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="F:\repo\roger\semantic-kernel\dotnet\src\InternalUtilities\openai\Policies\AddHeaderRequestPolicy.cs" />
+    <Compile Remove="F:\repo\roger\semantic-kernel\dotnet\src\InternalUtilities\openai\Policies\PipelineSynchronousPolicy.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.OpenAI.UnitTests" />

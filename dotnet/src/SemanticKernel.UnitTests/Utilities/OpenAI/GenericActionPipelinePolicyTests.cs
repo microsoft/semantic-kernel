@@ -1,39 +1,35 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ClientModel.Primitives;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
+using System.ClientModel.Primitives;
 
-namespace SemanticKernel.Connectors.OpenAI.UnitTests.Core.Models;
+namespace SemanticKernel.UnitTests.Utilities.OpenAI;
 
-public class AddHeaderRequestPolicyTests
+public class GenericActionPipelinePolicyTests
 {
     [Fact]
     public void ItCanBeInstantiated()
     {
-        // Arrange
-        var headerName = "headerName";
-        var headerValue = "headerValue";
-
         // Act
-        var addHeaderRequestPolicy = new AddHeaderRequestPolicy(headerName, headerValue);
+        var addHeaderRequestPolicy = new GenericActionPipelinePolicy((message) => { });
 
         // Assert
         Assert.NotNull(addHeaderRequestPolicy);
     }
 
     [Fact]
-    public void ItOnSendingRequestAddsHeaderToRequest()
+    public void ItProcessAddsHeaderToRequest()
     {
         // Arrange
         var headerName = "headerName";
         var headerValue = "headerValue";
-        var addHeaderRequestPolicy = new AddHeaderRequestPolicy(headerName, headerValue);
+        var sut = new GenericActionPipelinePolicy((message) => { message.Request.Headers.Add(headerName, headerValue); });
+
         var pipeline = ClientPipeline.Create();
         var message = pipeline.CreateMessage();
 
         // Act
-        addHeaderRequestPolicy.OnSendingRequest(message);
+        sut.Process(message, [sut], 0);
 
         // Assert
         message.Request.Headers.TryGetValue(headerName, out var value);

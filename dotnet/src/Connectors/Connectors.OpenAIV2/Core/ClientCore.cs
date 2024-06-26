@@ -116,7 +116,7 @@ internal partial class ClientCore
         var options = GetOpenAIClientOptions(httpClient, this.Endpoint);
         if (!string.IsNullOrWhiteSpace(organizationId))
         {
-            options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organizationId!), PipelinePosition.PerCall);
+            options.AddPolicy(CreateRequestHeaderPolicy("OpenAI-Organization", organizationId!), PipelinePosition.PerCall);
 
             this.AddAttribute(ClientCore.OrganizationKey, organizationId);
         }
@@ -184,7 +184,7 @@ internal partial class ClientCore
             Endpoint = endpoint
         };
 
-        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), PipelinePosition.PerCall);
+        options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), PipelinePosition.PerCall);
 
         if (httpClient is not null)
         {
@@ -212,5 +212,16 @@ internal partial class ClientCore
         {
             throw e.ToHttpOperationException();
         }
+    }
+
+    private static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
+    {
+        return new GenericActionPipelinePolicy((message) =>
+        {
+            if (message?.Request?.Headers?.TryGetValue(headerName, out string? _) == false)
+            {
+                message.Request.Headers.Set(headerName, headerValue);
+            }
+        });
     }
 }
