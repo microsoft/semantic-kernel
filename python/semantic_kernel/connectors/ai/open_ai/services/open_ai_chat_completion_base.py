@@ -90,9 +90,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         arguments = kwargs.get("arguments", None)
         if settings.function_call_behavior is not None:
             if kernel is None:
-                raise ServiceInvalidExecutionSettingsError(
-                    "The kernel is required for OpenAI tool calls."
-                )
+                raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
             if arguments is None and settings.function_call_behavior.auto_invoke_kernel_functions:
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel arguments are required for auto invoking OpenAI tool calls."
@@ -171,9 +169,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         arguments = kwargs.get("arguments", None)
         if settings.function_call_behavior is not None:
             if kernel is None:
-                raise ServiceInvalidExecutionSettingsError(
-                    "The kernel is required for OpenAI tool calls."
-                )
+                raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
             if arguments is None and settings.function_call_behavior.auto_invoke_kernel_functions:
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel arguments are required for auto invoking OpenAI tool calls."
@@ -188,9 +184,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
 
         request_attempts = (
-            settings.function_call_behavior.max_auto_invoke_attempts 
-            if (settings.function_call_behavior and 
-                settings.function_call_behavior.auto_invoke_kernel_functions) 
+            settings.function_call_behavior.max_auto_invoke_attempts
+            if (settings.function_call_behavior and settings.function_call_behavior.auto_invoke_kernel_functions)
             else 1
         )
         # hold the messages, if there are more than one response, it will not be used, so we flatten
@@ -309,7 +304,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             metadata=metadata,
             role=AuthorRole(choice.message.role),
             items=items,
-            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
+            finish_reason=(FinishReason(choice.finish_reason) if choice.finish_reason else None),
         )
 
     def _create_streaming_chat_message_content(
@@ -331,8 +326,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT,
-            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
+            role=(AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT),
+            finish_reason=(FinishReason(choice.finish_reason) if choice.finish_reason else None),
             items=items,
         )
 
@@ -436,9 +431,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             if parsed_args:
                 args_cloned.update(parsed_args)
         except (FunctionCallInvalidArgumentsException, TypeError) as exc:
-            logger.info(
-                f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again."
-            )
+            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
                 result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
