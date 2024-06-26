@@ -170,8 +170,8 @@ through prompt_template_config or in the prompt_template."
 
             # pass the kernel in for auto function calling
             kwargs: dict[str, Any] = {}
-            if hasattr(prompt_render_result.execution_settings, "function_choice_behavior"):
-                kwargs["kernel"] = context.kernel
+            kwargs["kernel"] = context.kernel
+            if hasattr(prompt_render_result.execution_settings, "function_call_behavior"):
                 kwargs["arguments"] = context.arguments
 
             try:
