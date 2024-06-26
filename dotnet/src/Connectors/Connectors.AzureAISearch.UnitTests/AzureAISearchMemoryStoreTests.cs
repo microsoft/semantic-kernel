@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.AzureAISearch;
+namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 
 /// <summary>
 /// Unit tests for <see cref="AzureAISearchMemoryStore"/> class.
