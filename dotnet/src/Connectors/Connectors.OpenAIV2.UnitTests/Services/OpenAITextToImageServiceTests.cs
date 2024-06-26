@@ -89,7 +89,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public async Task GenerateImageThrowsWhenSizeIsNotSupportedAsync(int width, int height, string modelId)
     {
         // Arrange
-        var sut = new OpenAITextToImageService("model", "apiKey");
+        var sut = new OpenAITextToImageService(modelId, "apiKey");
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => sut.GenerateImageAsync("description", width, height));
