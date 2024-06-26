@@ -18,7 +18,7 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
-        service: ['AzureOpenAI']
+        service: ["AzureOpenAI"]
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
@@ -28,6 +28,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
+      - name: Setup Ollama
+        run: |
+          docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+          docker exec -it ollama ollama pull phi3
       - name: Run samples Tests
         id: run_tests
         shell: bash
@@ -52,4 +56,3 @@ jobs:
         run: |
           cd python
           poetry run pytest ./tests/samples -v
-
