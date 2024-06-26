@@ -327,6 +327,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureOpenAI", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureOpenAI.UnitTests", "src\Connectors\Connectors.AzureOpenAI.UnitTests\Connectors.AzureOpenAI.UnitTests.csproj", "{DB219924-208B-4CDD-8796-EE424689901E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "openai", "openai", "{2E79AD99-632F-411F-B3A5-1BAF3F5F89AB}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\openai\OpenAIUtilities.props = src\InternalUtilities\openai\OpenAIUtilities.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Policies", "Policies", "{7308EF7D-5F9A-47B2-A62F-0898603262A8}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\openai\Policies\GeneratedActionPipelinePolicy.cs = src\InternalUtilities\openai\Policies\GeneratedActionPipelinePolicy.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -932,6 +942,8 @@ Global
 		{FDEB4884-89B9-4656-80A0-57C7464490F7} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{6744272E-8326-48CE-9A3F-6BE227A5E777} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{DB219924-208B-4CDD-8796-EE424689901E} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
+		{2E79AD99-632F-411F-B3A5-1BAF3F5F89AB} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
+		{7308EF7D-5F9A-47B2-A62F-0898603262A8} = {2E79AD99-632F-411F-B3A5-1BAF3F5F89AB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
