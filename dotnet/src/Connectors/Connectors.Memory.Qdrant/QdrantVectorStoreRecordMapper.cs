@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -172,7 +173,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     }
 
     /// <inheritdoc />
-    public TRecord MapFromStorageToDataModel(PointStruct storageModel, GetRecordOptions? options = default)
+    public TRecord MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
         // Get the key property name and value.
         var keyPropertyName = VectorStoreRecordPropertyReader.GetSerializedPropertyName(this._keyPropertyInfo);
@@ -284,7 +285,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
             sourceValue is IEnumerable<double> ||
             sourceValue is IEnumerable<bool>)
         {
-            var listValue = sourceValue as IEnumerable<object>;
+            var listValue = sourceValue as IEnumerable;
             value.ListValue = new ListValue();
             foreach (var item in listValue!)
             {

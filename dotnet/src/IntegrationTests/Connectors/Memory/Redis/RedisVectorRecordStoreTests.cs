@@ -280,7 +280,7 @@ public sealed class RedisVectorRecordStoreTests(ITestOutputHelper output, RedisV
             throw new NotImplementedException();
         }
 
-        public Hotel MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, GetRecordOptions? options = null)
+        public Hotel MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, StorageToDataModelMapperOptions options)
         {
             throw new NotImplementedException();
         }

@@ -110,10 +110,11 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         // Create Options.
         var innerOptions = this.ConvertGetDocumentOptions(options);
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
+        var includeVectors = options?.IncludeVectors ?? false;
 
         // Get record.
         var searchClient = this.GetSearchClient(collectionName);
-        return this.GetDocumentAndMapToDataModelAsync(searchClient, collectionName, key, innerOptions, cancellationToken);
+        return this.GetDocumentAndMapToDataModelAsync(searchClient, collectionName, key, includeVectors, innerOptions, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -124,10 +125,11 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         // Create Options
         var innerOptions = this.ConvertGetDocumentOptions(options);
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
+        var includeVectors = options?.IncludeVectors ?? false;
 
         // Get records in parallel.
         var searchClient = this.GetSearchClient(collectionName);
-        var tasks = keys.Select(key => this.GetDocumentAndMapToDataModelAsync(searchClient, collectionName, key, innerOptions, cancellationToken));
+        var tasks = keys.Select(key => this.GetDocumentAndMapToDataModelAsync(searchClient, collectionName, key, includeVectors, innerOptions, cancellationToken));
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
         foreach (var result in results)
         {
@@ -209,6 +211,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     /// <param name="searchClient">The search client to use when fetching the document.</param>
     /// <param name="collectionName">The name of the collection to retrieve the record from.</param>
     /// <param name="key">The key of the record to get.</param>
+    /// <param name="includeVectors">A value indicating whether to include vectors in the result or not.</param>
     /// <param name="innerOptions">The azure ai search sdk options for getting a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The retrieved document, mapped to the consumer data model.</returns>
@@ -216,6 +219,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         SearchClient searchClient,
         string collectionName,
         string key,
+        bool includeVectors,
         GetDocumentOptions innerOptions,
         CancellationToken cancellationToken)
     {
@@ -238,7 +242,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
                 DatabaseName,
                 collectionName,
                 OperationName,
-                () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(jsonObject));
+                () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
         }
 
         // Use the built in Azure AI Search mapper.
