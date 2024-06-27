@@ -300,9 +300,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         ]
 
         if span:
-            finish_reasons: list[str] = []
-            for choice in response.choices:
-                finish_reasons.append(choice.finish_reason)
+            finish_reasons: list[str] = [choice.finish_reason for choice in response.choices]
             with trace.use_span(span, end_on_exit=True):
                 set_completion_response(
                     span,
