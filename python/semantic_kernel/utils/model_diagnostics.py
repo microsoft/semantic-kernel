@@ -145,7 +145,7 @@ def _messages_to_openai_format(chat_history: list[ChatMessageContent]) -> str:
             message_dict["tool_calls"] = _tool_calls_to_openai_format(message.items)
         formatted_messages.append(json.dumps(message_dict))
 
-    return f"[{', \n'.join(formatted_messages)}]"
+    return "[{}]".format(", \n".join(formatted_messages))
 
 
 def _tool_calls_to_openai_format(items: list[ITEM_TYPES]) -> str:
@@ -154,11 +154,8 @@ def _tool_calls_to_openai_format(items: list[ITEM_TYPES]) -> str:
         if isinstance(item, FunctionCallContent):
             tool_call = {
                 "id": item.id,
-                "function": {
-                    "arguments": json.dumps(item.arguments),
-                    "name": item.function_name
-                },
-                "type": "function"
+                "function": {"arguments": json.dumps(item.arguments), "name": item.function_name},
+                "type": "function",
             }
             tool_calls.append(json.dumps(tool_call))
     return f"[{', '.join(tool_calls)}]"

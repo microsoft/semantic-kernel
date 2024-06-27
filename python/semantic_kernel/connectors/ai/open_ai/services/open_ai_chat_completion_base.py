@@ -42,9 +42,6 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.kernel_filters_extension import _rebuild_auto_function_invocation_context
-from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.utils.model_diagnostics import (
     set_completion_error,
     set_completion_response,
@@ -294,7 +291,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         span = start_completion_activity(
             settings.ai_model_id,
             self.MODEL_PROVIDER_NAME,
-            self._settings_messages_to_prompt(settings.messages),
+            self._input_messages_to_prompt(settings.messages),
             settings,
         )
 
@@ -343,13 +340,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     # endregion
     # region content creation
 
-    def _settings_messages_to_prompt(self, messages: list[dict[str, Any]]) -> str:
-        entries: list[dict[str, str]] = []
-        for message in messages:
-            entries.append({
-                "role": str(message.get("role", "unknown")),
-                "content": str(message.get("content", "unknown"))
-            })
+    def _input_messages_to_prompt(self, messages: list[dict[str, Any]]) -> str:
+        """Convert input messages to a prompt string."""
+        entries = [
+            {"role": str(message.get("role", "unknown")), "content": str(message.get("content", "unknown"))}
+            for message in messages
+        ]
+
         return json.dumps(entries)
 
     def _create_chat_message_content(
