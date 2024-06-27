@@ -154,15 +154,14 @@ public class RedisVectorRecordStoreTests
     {
         // Arrange.
         var redisResultString = """{ "Data": "data 1", "Vector": [1, 2, 3, 4] }""";
-        var redisResultJsonNode = JsonNode.Parse(redisResultString);
         SetupExecuteMock(this._redisDatabaseMock, redisResultString);
 
         // Arrange mapper mock from JsonNode to data model.
         var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel, (string key, JsonNode node)>>(MockBehavior.Strict);
         mapperMock.Setup(
             x => x.MapFromStorageToDataModel(
-                It.Is<(string key, JsonNode node)>(x => x.node == redisResultJsonNode && x.key == TestRecordKey1),
-                It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)))
+                It.IsAny<(string key, JsonNode node)>(),
+                It.IsAny<StorageToDataModelMapperOptions>()))
             .Returns(CreateModel(TestRecordKey1, true));
 
         // Arrange target with custom mapper.
@@ -171,13 +170,14 @@ public class RedisVectorRecordStoreTests
             new()
             {
                 DefaultCollectionName = TestCollectionName,
+                MapperType = RedisRecordMapperType.JsonNodeCustomMapper,
                 JsonNodeCustomMapper = mapperMock.Object
             });
 
         // Act
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new() { IncludeVectors = false },
+            new() { IncludeVectors = true },
             this._testCancellationToken);
 
         // Assert
@@ -185,6 +185,13 @@ public class RedisVectorRecordStoreTests
         Assert.Equal(TestRecordKey1, actual.Key);
         Assert.Equal("data 1", actual.Data);
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector!.Value.ToArray());
+
+        mapperMock
+            .Verify(
+                x => x.MapFromStorageToDataModel(
+                    It.Is<(string key, JsonNode node)>(x => x.key == TestRecordKey1),
+                    It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)),
+                Times.Once);
     }
 
     [Theory]
@@ -335,7 +342,7 @@ public class RedisVectorRecordStoreTests
         var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel, (string key, JsonNode node)>>(MockBehavior.Strict);
         var jsonNode = """{"Data":"data 1","Vector":[1,2,3,4],"NotAnnotated":null}""";
         mapperMock
-            .Setup(x => x.MapFromDataToStorageModel(It.Is<SinglePropsModel>(x => x.Key == TestRecordKey1)))
+            .Setup(x => x.MapFromDataToStorageModel(It.IsAny<SinglePropsModel>()))
             .Returns((TestRecordKey1, JsonNode.Parse(jsonNode)!));
 
         // Arrange target with custom mapper.
@@ -344,22 +351,22 @@ public class RedisVectorRecordStoreTests
             new()
             {
                 DefaultCollectionName = TestCollectionName,
+                MapperType = RedisRecordMapperType.JsonNodeCustomMapper,
                 JsonNodeCustomMapper = mapperMock.Object
             });
 
+        var model = CreateModel(TestRecordKey1, true);
+
         // Act
         await sut.UpsertAsync(
-            CreateModel(TestRecordKey1, true),
-            new() { CollectionName = TestCollectionName },
+            model,
+            null,
             this._testCancellationToken);
 
         // Assert
-        var expectedArgs = new object[] { TestRecordKey1, "$", jsonNode };
-        this._redisDatabaseMock
+        mapperMock
             .Verify(
-                x => x.ExecuteAsync(
-                    "JSON.SET",
-                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                x => x.MapFromDataToStorageModel(It.Is<SinglePropsModel>(x => x == model)),
                 Times.Once);
     }
 

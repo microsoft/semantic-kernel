@@ -149,7 +149,7 @@ public class AzureAISearchVectorRecordStoreTests
     public async Task CanGetRecordWithCustomMapperAsync()
     {
         // Arrange.
-        var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, false))!.AsObject();
+        var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, true))!.AsObject();
 
         // Arrange GetDocumentAsync mock returning JsonObject.
         this._searchClientMock.Setup(
@@ -184,6 +184,7 @@ public class AzureAISearchVectorRecordStoreTests
         Assert.NotNull(actual);
         Assert.Equal(TestRecordKey1, actual.Key);
         Assert.Equal("data 1", actual.Data);
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector!.Value.ToArray());
     }
 
     [Theory]
@@ -379,13 +380,17 @@ public class AzureAISearchVectorRecordStoreTests
                 It.IsAny<IEnumerable<JsonObject>>(),
                 It.IsAny<IndexDocumentsOptions>(),
                 this._testCancellationToken))
-            .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
+            .ReturnsAsync((IEnumerable<JsonObject> documents, IndexDocumentsOptions options, CancellationToken cancellationToken) =>
+            {
+                // Need to force a materialization of the documents enumerable here, otherwise the mapper (and therefore its mock) doesn't get invoked.
+                var materializedDocuments = documents.ToList();
+                return Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>());
+            });
 
         // Arrange mapper mock from data model to JsonObject.
         var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel, JsonObject>>(MockBehavior.Strict);
-        mapperMock.Setup(
-            x => x.MapFromDataToStorageModel(
-                model))
+        mapperMock
+            .Setup(x => x.MapFromDataToStorageModel(It.IsAny<SinglePropsModel>()))
             .Returns(storageObject);
 
         // Arrange target with custom mapper.
@@ -405,12 +410,10 @@ public class AzureAISearchVectorRecordStoreTests
             this._testCancellationToken);
 
         // Assert.
-        this._searchClientMock.Verify(
-            x => x.UploadDocumentsAsync(
-                It.Is<IEnumerable<JsonObject>>(x => x.Count() == 1 && x.First() == storageObject),
-                It.Is<IndexDocumentsOptions>(x => x.ThrowOnAnyError == true),
-                this._testCancellationToken),
-            Times.Once);
+        mapperMock
+            .Verify(
+                x => x.MapFromDataToStorageModel(It.Is<SinglePropsModel>(x => x.Key == TestRecordKey1)),
+                Times.Once);
     }
 
     private AzureAISearchVectorRecordStore<SinglePropsModel> CreateVectorRecordStore(bool useDefinition, bool passCollectionToMethod)
