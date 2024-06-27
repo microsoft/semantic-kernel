@@ -16,7 +16,7 @@ public static class FunctionYamlKernelExtensions
     /// </remarks>
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="plugin">The target plugin that will contain the specified functions from yaml method.</param>
+    /// <param name="plugin">The target plugin that contain the specified functions from yaml method.</param>
     /// <param name="text">YAML representation of the <see cref="FunctionTemplateConfig"/> to use to create the yaml method function</param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
     public static KernelFunction CreateFunctionFromMethodYaml(

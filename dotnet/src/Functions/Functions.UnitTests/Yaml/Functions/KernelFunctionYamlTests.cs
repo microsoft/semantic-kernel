@@ -215,6 +215,43 @@ public class KernelFunctionYamlTests
     }
 
     [Fact]
+    public void ItShouldThrowExceptionFromMethodYamlWithNonExistentPlugin()
+    {
+        // Arrange
+        var target = new object();
+
+        // Act
+        // Assert
+        Assert.Throws<ArgumentException>(() => KernelFunctionYaml.FromMethodYaml(this._yamlFunctionConfig, target));
+    }
+
+    [Fact]
+    public void ItShouldCreateFunctionFromMethodWithoutParamsYaml()
+    {
+        // Arrange
+        var target = new ValidatorPlugin();
+
+        // Act
+        var function = KernelFunctionYaml.FromMethodYaml(this._yamlFunctionConfigNoParams, target);
+
+        // Assert
+        Assert.NotNull(function);
+        Assert.Equal("ValidateTaskId", function.Name);
+        Assert.Equal("Validate a task id.", function.Description);
+    }
+
+    [Fact]
+    public void ItShouldThrowExceptionFromMethodYamlWithNoNameParameter()
+    {
+        // Arrange
+        var target = new ValidatorPlugin();
+
+        // Act
+        // Assert
+        Assert.Throws<ArgumentException>(() => KernelFunctionYaml.FromMethodYaml(this._yamlFunctionConfigNoNameDefunc, target));
+    }
+
+    [Fact]
     public async Task ItShouldImportPluginFromMethodYamlConfigAsync()
     {
         // Arrange
@@ -222,9 +259,7 @@ public class KernelFunctionYamlTests
         var target = new ValidatorPlugin();
 
         // Act
-        var functions = new List<KernelFunction>();
-        functions.Add(KernelFunctionYaml.FromMethodYaml(this._yamlFunctionConfig, target));
-        var plugin = kernel.ImportPluginFromFunctions("ValidatorPlugin", functions);
+        var plugin = kernel.ImportPluginFromFunctions("ValidatorPlugin", new List<KernelFunction>() { kernel.CreateFunctionFromMethodYaml(target, this._yamlFunctionConfig) });
         var function = plugin["ValidateTaskId"];
         var result = await kernel.InvokeAsync(function, new() { { "taskId", "1234" } });
 
@@ -249,6 +284,25 @@ public class KernelFunctionYamlTests
 
     private readonly string _yamlFunctionConfig = """
         name: ValidateTaskId
+        description: Validate a task id.
+        input_variables:
+          - name: kernel
+            description: Kernel instance.
+          - name: taskId
+            description: Task identifier.
+            is_required: true
+        output_variable:
+          description: String indicating whether or not the task id is valid.
+        """;
+
+    private readonly string _yamlFunctionConfigNoParams = """
+        name: ValidateTaskId
+        description: Validate a task id.
+        output_variable:
+          description: String indicating whether or not the task id is valid.
+        """;
+
+    private readonly string _yamlFunctionConfigNoNameDefunc = """
         description: Validate a task id.
         input_variables:
           - name: kernel

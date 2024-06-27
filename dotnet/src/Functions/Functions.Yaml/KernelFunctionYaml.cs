@@ -67,11 +67,16 @@ public static class KernelFunctionYaml
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method function using the specified markdown text.
+    /// <remarks>
+    /// The yaml function config must at least have a method 'name' specified, and that the method name must match
+    /// the name of the function inside the plugin. Otherwise an ArgumentException will be thrown.
+    /// </remarks>
     /// </summary>
     /// <param name="text">YAML representation of the <see cref="FunctionTemplateConfig"/> to use to create the yaml method function.</param>
     /// <param name="target">The target plugin that will contain the specified functions from yaml method.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/>.</returns>
+    /// <exception cref="ArgumentException">If function method does not match or does not exist.</exception>
     public static KernelFunction FromMethodYaml(
         string text,
         object target,
@@ -80,20 +85,25 @@ public static class KernelFunctionYaml
         var kernel = new Kernel();
 
         var config = KernelFunctionYaml.ToMethodTemplateConfig(text);
-
-        MethodInfo method = target.GetType().GetMethod(config.Name!)!;
-        var functionName = config.Name;
-        var description = config.Description;
-        var parameters = config.InputVariables;
-        var returnparameter = config.OutputVariable;
-
-        return KernelFunctionFactory.CreateFromMethod(method, target, new()
+        if (config.Name != null)
         {
-            FunctionName = functionName,
-            Description = description,
-            Parameters = parameters.Select(p => new KernelParameterMetadata(p.Name) { Description = p.Description, IsRequired = p.IsRequired }).ToList(),
-            ReturnParameter = new KernelReturnParameterMetadata() { Description = returnparameter == null ? "" : returnparameter.ToString() }
-        });
+            MethodInfo method = target.GetType().GetMethod(config.Name!)!
+                ?? throw new ArgumentException($"Method '{config.Name!}' does not exist in plugin target. ");
+            var functionName = config.Name!;
+            var description = config.Description!;
+            var parameters = config.InputVariables!;
+            var returnparameter = config.OutputVariable!;
+
+            return KernelFunctionFactory.CreateFromMethod(method, target, new()
+            {
+                FunctionName = functionName,
+                Description = description,
+                Parameters = parameters.Select(p => new KernelParameterMetadata(p.Name) { Description = p.Description, IsRequired = p.IsRequired }).ToList(),
+                ReturnParameter = new KernelReturnParameterMetadata() { Description = returnparameter == null ? "" : returnparameter.ToString() }
+            });
+        }
+
+        throw new ArgumentException("Method parameter 'name' cannot be null.");
     }
 
     /// <summary>
