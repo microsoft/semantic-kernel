@@ -24,6 +24,7 @@ using OpenAI;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
+using AzureChatCompletion = OpenAI.Chat.ChatCompletion;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -124,7 +125,7 @@ internal abstract class ClientCore
             unit: "{token}",
             description: "Number of tokens used");
 
-    private static Dictionary<string, object?> GetChatChoiceMetadata(OpenAI.Chat.ChatCompletion completions)
+    private static Dictionary<string, object?> GetChatChoiceMetadata(AzureChatCompletion completions)
     {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         return new Dictionary<string, object?>(12)
@@ -275,7 +276,7 @@ internal abstract class ClientCore
             var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
 
             // Make the request.
-            OpenAI.Chat.ChatCompletion? responseData = null;
+            AzureChatCompletion? responseData = null;
             AzureOpenAIChatMessageContent responseContent;
             using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, chatExecutionSettings))
             {
@@ -1044,7 +1045,7 @@ internal abstract class ClientCore
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
     }
 
-    private static ChatMessage GetRequestMessage(OpenAI.Chat.ChatCompletion completion)
+    private static ChatMessage GetRequestMessage(AzureChatCompletion completion)
     {
         if (completion.Role == ChatMessageRole.System)
         {
@@ -1064,7 +1065,7 @@ internal abstract class ClientCore
         throw new NotSupportedException($"Role {completion.Role} is not supported.");
     }
 
-    private AzureOpenAIChatMessageContent GetChatMessage(OpenAI.Chat.ChatCompletion completion)
+    private AzureOpenAIChatMessageContent GetChatMessage(AzureChatCompletion completion)
     {
         var message = new AzureOpenAIChatMessageContent(completion, this.DeploymentOrModelName, GetChatChoiceMetadata(completion));
 
