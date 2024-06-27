@@ -103,6 +103,7 @@ execution_settings: OpenAIChatPromptExecutionSettings = chat_plugin["ChatBot"].p
 arguments = KernelArguments()
 
 
+# We will hook up a filter to show which function is being called.
 # A filter is a piece of custom code that runs at certain points in the process
 # this sample has a filter that is called during Auto Function Invocation
 # this filter will be called for each function call in the response.
