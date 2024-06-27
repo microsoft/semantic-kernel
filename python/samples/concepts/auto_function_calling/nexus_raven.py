@@ -31,6 +31,13 @@ from semantic_kernel.contents import (
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.functions import KernelArguments, kernel_function
 
+kernel = Kernel()
+
+#########################################################################
+# Step 0: Define a custom AI Service, with Prompt Execution settings. ###
+# This uses huggingface_hub package, so install that if needed.       ###
+#########################################################################
+
 
 class NexusRavenPromptExecutionSettings(PromptExecutionSettings):
     do_sample: bool = True
@@ -237,12 +244,6 @@ class MathPlugin:
                 return input_a / input_b
 
 
-kernel = Kernel()
-kernel.add_service(
-    NexusRavenCompletion(service_id="nexus", ai_model_id="raven", endpoint_url="http://nexusraven.nexusflow.ai")
-)
-kernel.add_service(OpenAIChatCompletion(service_id="openai"))
-
 #############################################################
 # Step 2: Let's define some utils for building the prompt ###
 #############################################################
@@ -269,19 +270,18 @@ def format_functions_for_prompt():
     return formatted_functions
 
 
-function_call_prompt = """{{chat_history}}&lt;human&gt;:
-{{kernel-format_functions_for_prompt}}
-\n\nUser Query: Question: {{user_query}}
-Please pick a function from the above options that best answers the user query and fill in the appropriate arguments.&lt;human_end&gt;"""  # noqa: E501
+#########################################################################
+# Step 3: Let's define the two prompts, one for Nexus, one for OpenAI ###
+# and add everything to the kernel!                                   ###
+#########################################################################
 
-chat_prompt = """You are a chatbot that gets fed questions and answers, you write out the response to the question based on the answer, but you do not supply underlying math formulas nor do you try to do math yourself, just a nice sentence that repeats the question and gives the answer. {{chat_history}}"""  # noqa: E501
-
-kernel.add_plugin(MathPlugin(), "math")
-kernel.add_function("kernel", format_functions_for_prompt)
 kernel.add_function(
     "kernel",
     function_name="function_call",
-    prompt=function_call_prompt,
+    prompt="""{{chat_history}}&lt;human&gt;:
+{{kernel-format_functions_for_prompt}}
+\n\nUser Query: Question: {{user_query}}
+Please pick a function from the above options that best answers the user query and fill in the appropriate arguments.&lt;human_end&gt;""",  # noqa: E501
     template_format="handlebars",
     prompt_execution_settings=NexusRavenPromptExecutionSettings(
         service_id="nexus",
@@ -294,7 +294,7 @@ kernel.add_function(
 kernel.add_function(
     "kernel",
     function_name="chat",
-    prompt=chat_prompt,
+    prompt="""You are a chatbot that gets fed questions and answers, you write out the response to the question based on the answer, but you do not supply underlying math formulas nor do you try to do math yourself, just a nice sentence that repeats the question and gives the answer. {{chat_history}}""",  # noqa: E501
     template_format="handlebars",
     prompt_execution_settings=OpenAIChatPromptExecutionSettings(
         service_id="openai",
@@ -302,10 +302,16 @@ kernel.add_function(
         max_tokens=1000,
     ),
 )
+kernel.add_plugin(MathPlugin(), "math")
+kernel.add_function("kernel", format_functions_for_prompt)
+kernel.add_service(
+    NexusRavenCompletion(service_id="nexus", ai_model_id="raven", endpoint_url="http://nexusraven.nexusflow.ai")
+)
+kernel.add_service(OpenAIChatCompletion(service_id="openai"))
 
-##############################
-# Step 3: Construct Prompt ###
-##############################
+############################################
+# Step 4: The main function and a runner ###
+############################################
 
 
 async def run_question(user_input: str, chat_history: ChatHistory):
@@ -324,10 +330,6 @@ async def run_question(user_input: str, chat_history: ChatHistory):
 
 async def main():
     chat_history = ChatHistory()
-    # user_input = "What is 1+10?"
-    # user_input_example = (
-    #     "I have a cake that is about 3 centimenters high and 200 centimeters in radius. How much cake do I have?"
-    # )
     user_input_example = (
         "my cake is 3 centimers high and 20 centimers in radius, can you subtract 200 from that number?"
     )
