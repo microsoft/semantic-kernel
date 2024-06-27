@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Net.Http;
-using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
@@ -23,7 +23,7 @@ internal sealed class AzureOpenAIClientCore : ClientCore
     /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
-    internal override OpenAIClient Client { get; }
+    internal override AzureOpenAIClient Client { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIClientCore"/> class using API Key authentication.
@@ -49,7 +49,7 @@ internal sealed class AzureOpenAIClientCore : ClientCore
 
         this.DeploymentOrModelName = deploymentName;
         this.Endpoint = new Uri(endpoint);
-        this.Client = new OpenAIClient(this.Endpoint, new AzureKeyCredential(apiKey), options);
+        this.Client = new AzureOpenAIClient(this.Endpoint, new ApiKeyCredential(apiKey), options);
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ internal sealed class AzureOpenAIClientCore : ClientCore
 
         this.DeploymentOrModelName = deploymentName;
         this.Endpoint = new Uri(endpoint);
-        this.Client = new OpenAIClient(this.Endpoint, credential, options);
+        this.Client = new AzureOpenAIClient(this.Endpoint, credential, options);
     }
 
     /// <summary>
@@ -84,11 +84,11 @@ internal sealed class AzureOpenAIClientCore : ClientCore
     /// it's up to the caller to configure the client.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="openAIClient">Custom <see cref="AzureOpenAIClient"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
     internal AzureOpenAIClientCore(
         string deploymentName,
-        OpenAIClient openAIClient,
+        AzureOpenAIClient openAIClient,
         ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(deploymentName);

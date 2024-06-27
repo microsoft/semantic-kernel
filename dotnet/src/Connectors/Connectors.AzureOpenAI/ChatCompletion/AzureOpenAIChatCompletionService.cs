@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
+using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -73,7 +74,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAIChatCompletionService(
         string deploymentName,
-        OpenAIClient openAIClient,
+        AzureOpenAIClient openAIClient,
         string? modelId = null,
         ILoggerFactory? loggerFactory = null)
     {

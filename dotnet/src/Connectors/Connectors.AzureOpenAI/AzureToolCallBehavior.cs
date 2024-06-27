@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
-using Azure.AI.OpenAI;
+using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -118,10 +118,9 @@ public abstract class AzureToolCallBehavior
     /// <value>true if it's ok to invoke any kernel function requested by the model if it's found; false if a request needs to be validated against an allow list.</value>
     internal virtual bool AllowAnyRequestedKernelFunction => false;
 
-    /// <summary>Configures the <paramref name="options"/> with any tools this <see cref="AzureToolCallBehavior"/> provides.</summary>
-    /// <param name="kernel">The <see cref="Kernel"/> used for the operation. This can be queried to determine what tools to provide into the <paramref name="options"/>.</param>
-    /// <param name="options">The destination <see cref="ChatCompletionsOptions"/> to configure.</param>
-    internal abstract void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options);
+    /// <summary>Returns list of available tools and the way model should use them.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> used for the operation. This can be queried to determine what tools to return.</param>
+    internal abstract (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel);
 
     /// <summary>
     /// Represents a <see cref="AzureToolCallBehavior"/> that will provide to the model all available functions from a
@@ -133,8 +132,11 @@ public abstract class AzureToolCallBehavior
 
         public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0})";
 
-        internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
+        internal override (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel)
         {
+            ChatToolChoice? choice = null;
+            List<ChatTool>? tools = null;
+
             // If no kernel is provided, we don't have any tools to provide.
             if (kernel is not null)
             {
@@ -142,13 +144,15 @@ public abstract class AzureToolCallBehavior
                 IList<KernelFunctionMetadata> functions = kernel.Plugins.GetFunctionsMetadata();
                 if (functions.Count > 0)
                 {
-                    options.ToolChoice = ChatCompletionsToolChoice.Auto;
+                    choice = ChatToolChoice.Auto;
                     for (int i = 0; i < functions.Count; i++)
                     {
-                        options.Tools.Add(new ChatCompletionsFunctionToolDefinition(functions[i].ToAzureOpenAIFunction().ToFunctionDefinition()));
+                        (tools ??= []).Add(functions[i].ToAzureOpenAIFunction().ToFunctionDefinition());
                     }
                 }
             }
+
+            return (tools, choice);
         }
 
         internal override bool AllowAnyRequestedKernelFunction => true;
@@ -160,26 +164,29 @@ public abstract class AzureToolCallBehavior
     internal sealed class EnabledFunctions : AzureToolCallBehavior
     {
         private readonly AzureOpenAIFunction[] _openAIFunctions;
-        private readonly ChatCompletionsFunctionToolDefinition[] _functions;
+        private readonly ChatTool[] _functions;
 
         public EnabledFunctions(IEnumerable<AzureOpenAIFunction> functions, bool autoInvoke) : base(autoInvoke)
         {
             this._openAIFunctions = functions.ToArray();
 
-            var defs = new ChatCompletionsFunctionToolDefinition[this._openAIFunctions.Length];
+            var defs = new ChatTool[this._openAIFunctions.Length];
             for (int i = 0; i < defs.Length; i++)
             {
-                defs[i] = new ChatCompletionsFunctionToolDefinition(this._openAIFunctions[i].ToFunctionDefinition());
+                defs[i] = this._openAIFunctions[i].ToFunctionDefinition();
             }
             this._functions = defs;
         }
 
-        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._functions.Select(f => f.Name))}";
+        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._functions.Select(f => f.FunctionName))}";
 
-        internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
+        internal override (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel)
         {
+            ChatToolChoice? choice = null;
+            List<ChatTool>? tools = null;
+
             AzureOpenAIFunction[] openAIFunctions = this._openAIFunctions;
-            ChatCompletionsFunctionToolDefinition[] functions = this._functions;
+            ChatTool[] functions = this._functions;
             Debug.Assert(openAIFunctions.Length == functions.Length);
 
             if (openAIFunctions.Length > 0)
@@ -196,7 +203,7 @@ public abstract class AzureToolCallBehavior
                     throw new KernelException($"Auto-invocation with {nameof(EnabledFunctions)} is not supported when no kernel is provided.");
                 }
 
-                options.ToolChoice = ChatCompletionsToolChoice.Auto;
+                choice = ChatToolChoice.Auto;
                 for (int i = 0; i < openAIFunctions.Length; i++)
                 {
                     // Make sure that if auto-invocation is specified, every enabled function can be found in the kernel.
@@ -211,9 +218,11 @@ public abstract class AzureToolCallBehavior
                     }
 
                     // Add the function.
-                    options.Tools.Add(functions[i]);
+                    (tools ??= []).Add(functions[i]);
                 }
             }
+
+            return (tools, choice);
         }
     }
 
@@ -221,19 +230,19 @@ public abstract class AzureToolCallBehavior
     internal sealed class RequiredFunction : AzureToolCallBehavior
     {
         private readonly AzureOpenAIFunction _function;
-        private readonly ChatCompletionsFunctionToolDefinition _tool;
-        private readonly ChatCompletionsToolChoice _choice;
+        private readonly ChatTool _tool;
+        private readonly ChatToolChoice _choice;
 
         public RequiredFunction(AzureOpenAIFunction function, bool autoInvoke) : base(autoInvoke)
         {
             this._function = function;
-            this._tool = new ChatCompletionsFunctionToolDefinition(function.ToFunctionDefinition());
-            this._choice = new ChatCompletionsToolChoice(this._tool);
+            this._tool = function.ToFunctionDefinition();
+            this._choice = new ChatToolChoice(this._tool);
         }
 
-        public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {this._tool.Name}";
+        public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {this._tool.FunctionName}";
 
-        internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
+        internal override (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel)
         {
             bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
 
@@ -253,8 +262,7 @@ public abstract class AzureToolCallBehavior
                 throw new KernelException($"The specified {nameof(RequiredFunction)} function {this._function.FullyQualifiedName} is not available in the kernel.");
             }
 
-            options.ToolChoice = this._choice;
-            options.Tools.Add(this._tool);
+            return ([this._tool], this._choice);
         }
 
         /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>

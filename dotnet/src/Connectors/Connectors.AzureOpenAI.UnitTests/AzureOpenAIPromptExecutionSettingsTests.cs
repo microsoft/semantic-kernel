@@ -26,12 +26,11 @@ public class AzureOpenAIPromptExecutionSettingsTests
         Assert.Equal(1, executionSettings.TopP);
         Assert.Equal(0, executionSettings.FrequencyPenalty);
         Assert.Equal(0, executionSettings.PresencePenalty);
-        Assert.Equal(1, executionSettings.ResultsPerPrompt);
         Assert.Null(executionSettings.StopSequences);
         Assert.Null(executionSettings.TokenSelectionBiases);
         Assert.Null(executionSettings.TopLogprobs);
         Assert.Null(executionSettings.Logprobs);
-        Assert.Null(executionSettings.AzureChatExtensionsOptions);
+        Assert.Null(executionSettings.AzureChatDataSource);
         Assert.Equal(128, executionSettings.MaxTokens);
     }
 
@@ -45,7 +44,6 @@ public class AzureOpenAIPromptExecutionSettingsTests
             TopP = 0.7,
             FrequencyPenalty = 0.7,
             PresencePenalty = 0.7,
-            ResultsPerPrompt = 2,
             StopSequences = new string[] { "foo", "bar" },
             ChatSystemPrompt = "chat system prompt",
             MaxTokens = 128,
@@ -231,7 +229,6 @@ public class AzureOpenAIPromptExecutionSettingsTests
         // Assert
         Assert.True(executionSettings.IsFrozen);
         Assert.Throws<InvalidOperationException>(() => executionSettings.ModelId = "gpt-4");
-        Assert.Throws<InvalidOperationException>(() => executionSettings.ResultsPerPrompt = 2);
         Assert.Throws<InvalidOperationException>(() => executionSettings.Temperature = 1);
         Assert.Throws<InvalidOperationException>(() => executionSettings.TopP = 1);
         Assert.Throws<NotSupportedException>(() => executionSettings.StopSequences?.Add("STOP"));
@@ -262,7 +259,6 @@ public class AzureOpenAIPromptExecutionSettingsTests
         Assert.Equal(0.7, executionSettings.TopP);
         Assert.Equal(0.7, executionSettings.FrequencyPenalty);
         Assert.Equal(0.7, executionSettings.PresencePenalty);
-        Assert.Equal(2, executionSettings.ResultsPerPrompt);
         Assert.Equal(new string[] { "foo", "bar" }, executionSettings.StopSequences);
         Assert.Equal("chat system prompt", executionSettings.ChatSystemPrompt);
         Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, executionSettings.TokenSelectionBiases);

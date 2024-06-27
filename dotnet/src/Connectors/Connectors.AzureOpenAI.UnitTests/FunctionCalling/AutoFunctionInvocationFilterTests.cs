@@ -312,6 +312,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         var executionSettings = new AzureOpenAIPromptExecutionSettings { ToolCallBehavior = AzureToolCallBehavior.AutoInvokeKernelFunctions };
 
         var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("System message");
 
         // Act
         var result = await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
@@ -582,18 +583,18 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     private static List<HttpResponseMessage> GetFunctionCallingResponses()
     {
         return [
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("filters_multiple_function_calls_test_response.json")) },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("filters_multiple_function_calls_test_response.json")) },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) }
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("filters_multiple_function_calls_test_response.json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("filters_multiple_function_calls_test_response.json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_test_response.json") }
         ];
     }
 
     private static List<HttpResponseMessage> GetFunctionCallingStreamingResponses()
     {
         return [
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("filters_streaming_multiple_function_calls_test_response.txt")) },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("filters_streaming_multiple_function_calls_test_response.txt")) },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")) }
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("filters_streaming_multiple_function_calls_test_response.txt") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("filters_streaming_multiple_function_calls_test_response.txt") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_streaming_test_response.txt") }
         ];
     }
 #pragma warning restore CA2000

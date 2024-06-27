@@ -2,9 +2,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using OpenAI.Chat;
 using static Microsoft.SemanticKernel.Connectors.AzureOpenAI.AzureToolCallBehavior;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests;
@@ -63,13 +63,13 @@ public sealed class AzureToolCallBehaviorTests
     {
         // Arrange
         var kernelFunctions = new KernelFunctions(autoInvoke: false);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
 
         // Act
-        kernelFunctions.ConfigureOptions(null, chatCompletionsOptions);
+        var options = kernelFunctions.ConfigureOptions(null);
 
         // Assert
-        Assert.Empty(chatCompletionsOptions.Tools);
+        Assert.Null(options.Choice);
+        Assert.Null(options.Tools);
     }
 
     [Fact]
@@ -77,15 +77,14 @@ public sealed class AzureToolCallBehaviorTests
     {
         // Arrange
         var kernelFunctions = new KernelFunctions(autoInvoke: false);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act
-        kernelFunctions.ConfigureOptions(kernel, chatCompletionsOptions);
+        var options = kernelFunctions.ConfigureOptions(kernel);
 
         // Assert
-        Assert.Null(chatCompletionsOptions.ToolChoice);
-        Assert.Empty(chatCompletionsOptions.Tools);
+        Assert.Null(options.Choice);
+        Assert.Null(options.Tools);
     }
 
     [Fact]
@@ -93,7 +92,6 @@ public sealed class AzureToolCallBehaviorTests
     {
         // Arrange
         var kernelFunctions = new KernelFunctions(autoInvoke: false);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
 
         var plugin = this.GetTestPlugin();
@@ -101,12 +99,12 @@ public sealed class AzureToolCallBehaviorTests
         kernel.Plugins.Add(plugin);
 
         // Act
-        kernelFunctions.ConfigureOptions(kernel, chatCompletionsOptions);
+        var options = kernelFunctions.ConfigureOptions(kernel);
 
         // Assert
-        Assert.Equal(ChatCompletionsToolChoice.Auto, chatCompletionsOptions.ToolChoice);
+        Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
-        this.AssertTools(chatCompletionsOptions);
+        this.AssertTools(options.Tools);
     }
 
     [Fact]
@@ -114,14 +112,13 @@ public sealed class AzureToolCallBehaviorTests
     {
         // Arrange
         var enabledFunctions = new EnabledFunctions([], autoInvoke: false);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
 
         // Act
-        enabledFunctions.ConfigureOptions(null, chatCompletionsOptions);
+        var options = enabledFunctions.ConfigureOptions(null);
 
         // Assert
-        Assert.Null(chatCompletionsOptions.ToolChoice);
-        Assert.Empty(chatCompletionsOptions.Tools);
+        Assert.Null(options.Choice);
+        Assert.Null(options.Tools);
     }
 
     [Fact]
@@ -130,10 +127,9 @@ public sealed class AzureToolCallBehaviorTests
         // Arrange
         var functions = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToAzureOpenAIFunction());
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke: true);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureOptions(null, chatCompletionsOptions));
+        var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureOptions(null));
         Assert.Equal($"Auto-invocation with {nameof(EnabledFunctions)} is not supported when no kernel is provided.", exception.Message);
     }
 
@@ -143,11 +139,10 @@ public sealed class AzureToolCallBehaviorTests
         // Arrange
         var functions = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToAzureOpenAIFunction());
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke: true);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureOptions(kernel, chatCompletionsOptions));
+        var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureOptions(kernel));
         Assert.Equal($"The specified {nameof(EnabledFunctions)} function MyPlugin-MyFunction is not available in the kernel.", exception.Message);
     }
 
@@ -160,18 +155,17 @@ public sealed class AzureToolCallBehaviorTests
         var plugin = this.GetTestPlugin();
         var functions = plugin.GetFunctionsMetadata().Select(function => function.ToAzureOpenAIFunction());
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
 
         kernel.Plugins.Add(plugin);
 
         // Act
-        enabledFunctions.ConfigureOptions(kernel, chatCompletionsOptions);
+        var options = enabledFunctions.ConfigureOptions(kernel);
 
         // Assert
-        Assert.Equal(ChatCompletionsToolChoice.Auto, chatCompletionsOptions.ToolChoice);
+        Assert.Equal(ChatToolChoice.Auto, options.Choice);
 
-        this.AssertTools(chatCompletionsOptions);
+        this.AssertTools(options.Tools);
     }
 
     [Fact]
@@ -180,10 +174,9 @@ public sealed class AzureToolCallBehaviorTests
         // Arrange
         var function = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToAzureOpenAIFunction()).First();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => requiredFunction.ConfigureOptions(null, chatCompletionsOptions));
+        var exception = Assert.Throws<KernelException>(() => requiredFunction.ConfigureOptions(null));
         Assert.Equal($"Auto-invocation with {nameof(RequiredFunction)} is not supported when no kernel is provided.", exception.Message);
     }
 
@@ -193,11 +186,10 @@ public sealed class AzureToolCallBehaviorTests
         // Arrange
         var function = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToAzureOpenAIFunction()).First();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => requiredFunction.ConfigureOptions(kernel, chatCompletionsOptions));
+        var exception = Assert.Throws<KernelException>(() => requiredFunction.ConfigureOptions(kernel));
         Assert.Equal($"The specified {nameof(RequiredFunction)} function MyPlugin-MyFunction is not available in the kernel.", exception.Message);
     }
 
@@ -207,18 +199,17 @@ public sealed class AzureToolCallBehaviorTests
         // Arrange
         var plugin = this.GetTestPlugin();
         var function = plugin.GetFunctionsMetadata()[0].ToAzureOpenAIFunction();
-        var chatCompletionsOptions = new ChatCompletionsOptions();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
         var kernel = new Kernel();
         kernel.Plugins.Add(plugin);
 
         // Act
-        requiredFunction.ConfigureOptions(kernel, chatCompletionsOptions);
+        var options = requiredFunction.ConfigureOptions(kernel);
 
         // Assert
-        Assert.NotNull(chatCompletionsOptions.ToolChoice);
+        Assert.NotNull(options.Choice);
 
-        this.AssertTools(chatCompletionsOptions);
+        this.AssertTools(options.Tools);
     }
 
     private KernelPlugin GetTestPlugin()
@@ -233,16 +224,15 @@ public sealed class AzureToolCallBehaviorTests
         return KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
     }
 
-    private void AssertTools(ChatCompletionsOptions chatCompletionsOptions)
+    private void AssertTools(IList<ChatTool>? tools)
     {
-        Assert.Single(chatCompletionsOptions.Tools);
-
-        var tool = chatCompletionsOptions.Tools[0] as ChatCompletionsFunctionToolDefinition;
+        Assert.NotNull(tools);
+        var tool = Assert.Single(tools);
 
         Assert.NotNull(tool);
 
-        Assert.Equal("MyPlugin-MyFunction", tool.Name);
-        Assert.Equal("Test Function", tool.Description);
-        Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{\"parameter1\":{\"type\":\"string\"},\"parameter2\":{\"type\":\"string\"}}}", tool.Parameters.ToString());
+        Assert.Equal("MyPlugin-MyFunction", tool.FunctionName);
+        Assert.Equal("Test Function", tool.FunctionDescription);
+        Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{\"parameter1\":{\"type\":\"string\"},\"parameter2\":{\"type\":\"string\"}}}", tool.FunctionParameters.ToString());
     }
 }

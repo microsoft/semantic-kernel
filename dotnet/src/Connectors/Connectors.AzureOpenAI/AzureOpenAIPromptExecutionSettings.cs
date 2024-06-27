@@ -6,9 +6,10 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.AI.OpenAI;
+using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
+using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -117,23 +118,6 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// How many completions to generate for each prompt. Default is 1.
-    /// Note: Because this parameter generates many completions, it can quickly consume your token quota.
-    /// Use carefully and ensure that you have reasonable settings for max_tokens and stop.
-    /// </summary>
-    [JsonPropertyName("results_per_prompt")]
-    public int ResultsPerPrompt
-    {
-        get => this._resultsPerPrompt;
-
-        set
-        {
-            this.ThrowIfFrozen();
-            this._resultsPerPrompt = value;
-        }
-    }
-
-    /// <summary>
     /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
     /// same seed and parameters should return the same result. Determinism is not guaranteed.
     /// </summary>
@@ -153,7 +137,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Gets or sets the response format to use for the completion.
     /// </summary>
     /// <remarks>
-    /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/> object.
+    /// Possible values are: "json_object", "text", <see cref="ChatResponseFormat"/> object.
     /// </remarks>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
@@ -293,14 +277,14 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonIgnore]
-    public AzureChatExtensionsOptions? AzureChatExtensionsOptions
+    public AzureChatDataSource? AzureChatDataSource
     {
-        get => this._azureChatExtensionsOptions;
+        get => this._azureChatDataSource;
 
         set
         {
             this.ThrowIfFrozen();
-            this._azureChatExtensionsOptions = value;
+            this._azureChatDataSource = value;
         }
     }
 
@@ -338,7 +322,6 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
             FrequencyPenalty = this.FrequencyPenalty,
             MaxTokens = this.MaxTokens,
             StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
-            ResultsPerPrompt = this.ResultsPerPrompt,
             Seed = this.Seed,
             ResponseFormat = this.ResponseFormat,
             TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
@@ -347,7 +330,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
             ChatSystemPrompt = this.ChatSystemPrompt,
             Logprobs = this.Logprobs,
             TopLogprobs = this.TopLogprobs,
-            AzureChatExtensionsOptions = this.AzureChatExtensionsOptions,
+            AzureChatDataSource = this.AzureChatDataSource,
         };
     }
 
@@ -417,7 +400,6 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     private double _frequencyPenalty;
     private int? _maxTokens;
     private IList<string>? _stopSequences;
-    private int _resultsPerPrompt = 1;
     private long? _seed;
     private object? _responseFormat;
     private IDictionary<int, int>? _tokenSelectionBiases;
@@ -426,7 +408,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     private string? _chatSystemPrompt;
     private bool? _logprobs;
     private int? _topLogprobs;
-    private AzureChatExtensionsOptions? _azureChatExtensionsOptions;
+    private AzureChatDataSource? _azureChatDataSource;
 
     #endregion
 }

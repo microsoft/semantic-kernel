@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using OpenAI.Chat;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Core;
 
@@ -18,7 +18,7 @@ public sealed class AzureOpenAIPluginCollectionExtensionsTests
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin");
         var plugins = new KernelPluginCollection([plugin]);
 
-        var toolCall = new ChatCompletionsFunctionToolCall("id", "MyPlugin_MyFunction", string.Empty);
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", string.Empty);
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
@@ -37,7 +37,7 @@ public sealed class AzureOpenAIPluginCollectionExtensionsTests
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
 
         var plugins = new KernelPluginCollection([plugin]);
-        var toolCall = new ChatCompletionsFunctionToolCall("id", "MyPlugin-MyFunction", string.Empty);
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", string.Empty);
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
@@ -56,7 +56,7 @@ public sealed class AzureOpenAIPluginCollectionExtensionsTests
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
 
         var plugins = new KernelPluginCollection([plugin]);
-        var toolCall = new ChatCompletionsFunctionToolCall("id", "MyPlugin-MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}");
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}");
 
         // Act
         var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
