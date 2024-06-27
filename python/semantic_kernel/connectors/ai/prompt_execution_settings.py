@@ -41,13 +41,7 @@ class PromptExecutionSettings(KernelBaseModel):
         if data:
             function_choice_behavior_data = data.get("function_choice_behavior")
             if function_choice_behavior_data and isinstance(function_choice_behavior_data, dict):
-                func_choice_behavior = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
-                if func_choice_behavior.function_fully_qualified_names:
-                    valid_fqns = [
-                        name.replace(".", "-") for name in func_choice_behavior.function_fully_qualified_names
-                    ]
-                    func_choice_behavior.function_fully_qualified_names = valid_fqns
-                data["function_choice_behavior"] = func_choice_behavior
+                data["function_choice_behavior"] = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
             return data
         return None
 

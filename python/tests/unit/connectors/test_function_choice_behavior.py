@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import pytest
 
@@ -13,17 +13,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import (
     DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS,
     FunctionChoiceBehavior,
     FunctionChoiceType,
-    _check_for_missing_functions,
 )
-from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-
-kernel_function_metadata_set = {
-    KernelFunctionMetadata(name="func1", plugin_name="plugin1", description="desc1", parameters=[], is_prompt=False),
-    KernelFunctionMetadata(name="func2", plugin_name="plugin2", description="desc2", parameters=[], is_prompt=False),
-}
-
-kernel_function_metadata_list = list(kernel_function_metadata_set)
 
 
 @pytest.fixture
@@ -36,17 +26,6 @@ def update_settings_callback():
     mock = Mock()
     mock.return_value = None
     return mock
-
-
-def test_check_for_missing_functions_no_missing():
-    function_names = ["plugin1-func1", "plugin2-func2"]
-    _check_for_missing_functions(function_names, kernel_function_metadata_set)
-
-
-def test_check_for_missing_functions_missing():
-    function_names = ["func1", "func3"]
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
-        _check_for_missing_functions(function_names, kernel_function_metadata_set)
 
 
 def test_function_choice_behavior_auto():
@@ -62,10 +41,11 @@ def test_function_choice_behavior_none_invoke():
 
 
 def test_function_choice_behavior_required():
-    behavior = FunctionChoiceBehavior.Required(auto_invoke=True, function_fully_qualified_names=["plugin1-func1"])
+    expected_filters = {"included_functions": ["plugin1-func1"]}
+    behavior = FunctionChoiceBehavior.Required(auto_invoke=True, filters=expected_filters)
     assert behavior.type == FunctionChoiceType.REQUIRED
     assert behavior.maximum_auto_invoke_attempts == 1
-    assert behavior.function_fully_qualified_names == ["plugin1-func1"]
+    assert behavior.filters == expected_filters
 
 
 def test_from_function_call_behavior_kernel_functions():
@@ -88,14 +68,44 @@ def test_from_function_call_behavior_enabled_functions():
 def test_auto_function_choice_behavior_from_dict(type: str, max_auto_invoke_attempts: int):
     data = {
         "type": type,
-        "functions": ["plugin1-func1", "plugin2-func2"],
         "filters": {"included_functions": ["plugin1-func1", "plugin2-func2"]},
         "maximum_auto_invoke_attempts": max_auto_invoke_attempts,
     }
     behavior = FunctionChoiceBehavior.from_dict(data)
     assert behavior.type == FunctionChoiceType(type)
-    assert behavior.function_fully_qualified_names == ["plugin1-func1", "plugin2-func2"]
     assert behavior.filters == {"included_functions": ["plugin1-func1", "plugin2-func2"]}
+    assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
+
+
+@pytest.mark.parametrize(("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)])
+def test_auto_function_choice_behavior_from_dict_with_same_filters_and_functions(
+    type: str, max_auto_invoke_attempts: int
+):
+    data = {
+        "type": type,
+        "filters": {"included_functions": ["plugin1-func1", "plugin2-func2"]},
+        "functions": ["plugin1-func1", "plugin2-func2"],
+        "maximum_auto_invoke_attempts": max_auto_invoke_attempts,
+    }
+    behavior = FunctionChoiceBehavior.from_dict(data)
+    assert behavior.type == FunctionChoiceType(type)
+    assert behavior.filters == {"included_functions": ["plugin1-func1", "plugin2-func2"]}
+    assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
+
+
+@pytest.mark.parametrize(("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)])
+def test_auto_function_choice_behavior_from_dict_with_different_filters_and_functions(
+    type: str, max_auto_invoke_attempts: int
+):
+    data = {
+        "type": type,
+        "filters": {"included_functions": ["plugin1-func1", "plugin2-func2"]},
+        "functions": ["plugin3-func3"],
+        "maximum_auto_invoke_attempts": max_auto_invoke_attempts,
+    }
+    behavior = FunctionChoiceBehavior.from_dict(data)
+    assert behavior.type == FunctionChoiceType(type)
+    assert behavior.filters == {"included_functions": ["plugin1-func1", "plugin2-func2", "plugin3-func3"]}
     assert behavior.maximum_auto_invoke_attempts == max_auto_invoke_attempts
 
 
@@ -139,12 +149,11 @@ def test_enable_functions():
 
 
 def test_required_function():
-    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, function_fully_qualified_names=["test"])
+    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, filters={"included_functions": ["test"]})
     assert fcb is not None
     assert fcb.enable_kernel_functions is True
     assert fcb.maximum_auto_invoke_attempts == 1
     assert fcb.auto_invoke_kernel_functions is True
-    assert fcb.function_fully_qualified_names == ["test"]
 
 
 def test_configure_auto_invoke_kernel_functions(update_settings_callback, kernel: "Kernel"):
@@ -187,29 +196,21 @@ def test_configure_enable_functions_skip(update_settings_callback, kernel: "Kern
 
 
 def test_configure_required_function(update_settings_callback, kernel: "Kernel"):
-    mock_kernel = MagicMock()
-    mock_kernel.get_full_list_of_function_metadata.return_value = kernel_function_metadata_list
-    mock_kernel.get_list_of_function_metadata.return_value = kernel_function_metadata_list
-
-    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, function_fully_qualified_names=["plugin1-func1"])
-    fcb.configure(mock_kernel, update_settings_callback, None)
+    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, filters={"included_functions": ["plugin1-func1"]})
+    fcb.configure(kernel, update_settings_callback, None)
     assert update_settings_callback.called
 
 
 def test_configure_required_function_max_invoke_updated(update_settings_callback, kernel: "Kernel"):
-    mock_kernel = MagicMock()
-    mock_kernel.get_full_list_of_function_metadata.return_value = kernel_function_metadata_list
-    mock_kernel.get_list_of_function_metadata.return_value = kernel_function_metadata_list
-
-    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, function_fully_qualified_names=["plugin1-func1"])
+    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, filters={"included_functions": ["plugin1-func1"]})
     fcb.maximum_auto_invoke_attempts = 10
-    fcb.configure(mock_kernel, update_settings_callback, None)
+    fcb.configure(kernel, update_settings_callback, None)
     assert update_settings_callback.called
     assert fcb.maximum_auto_invoke_attempts == 10
 
 
 def test_configure_required_function_skip(update_settings_callback, kernel: "Kernel"):
-    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, function_fully_qualified_names=["test"])
+    fcb = FunctionChoiceBehavior.Required(auto_invoke=True, filters={"included_functions": ["test"]})
     fcb.enable_kernel_functions = False
     fcb.configure(kernel, update_settings_callback, None)
     assert not update_settings_callback.called

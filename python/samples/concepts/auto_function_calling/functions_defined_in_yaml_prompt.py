@@ -13,11 +13,41 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
+from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+    AutoFunctionInvocationContext,
+)
+from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.functions import KernelArguments
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
 
+##################################################################
+# Sample Notes:
+
+# In this sample, we're showing how to configure a yaml config file with `function_choice_behavior` settings.
+# The `function_choice_behavior` settings are used to control the auto function calling behavior of the model.
+# The related config is located in the `resources` folder under the title `function_choice_yaml/ChatBot`.
+
+# The execution settings look like:
+
+# execution_settings:
+#   chat:
+#     function_choice_behavior:
+#       type: auto
+#       maximum_auto_invoke_attempts: 5
+#       functions:
+#         - time.date
+#         - time.time
+#         - math.Add
+
+# This is another way of configuring the function choice behavior for the model like:
+# FunctionChoiceBehvaior.Auto(filters={"included_functions": ["time.date", "time.time", "math.Add"]})
+
+# The `maximum_auto_invoke_attempts` attribute is used to control the number of times the model will attempt to call a
+# function. If wanting to disable auto function calling, set this attribute to 0 or configure the
+# `auto_invoke_kernel_functions` attribute to False.
+##################################################################
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -68,6 +98,24 @@ history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure ou
 execution_settings: OpenAIChatPromptExecutionSettings = chat_plugin["ChatBot"].prompt_execution_settings[service_id]
 
 arguments = KernelArguments()
+
+
+# We will hook up a filter to show which function is being called.
+# A filter is a piece of custom code that runs at certain points in the process
+# this sample has a filter that is called during Auto Function Invocation
+# this filter will be called for each function call in the response.
+# You can name the function itself with arbitrary names, but the signature needs to be:
+# `context, next`
+# You are then free to run code before the call to the next filter or the function itself.
+# if you want to terminate the function calling sequence. set context.terminate to True
+@kernel.filter(FilterTypes.AUTO_FUNCTION_INVOCATION)
+async def auto_function_invocation_filter(context: AutoFunctionInvocationContext, next):
+    """A filter that will be called for each function call in the response."""
+    print("\nAuto function invocation filter")
+    print(f"Function: {context.function.fully_qualified_name}")
+
+    # if we don't call next, it will skip this function, and go to the next one
+    await next(context)
 
 
 def print_tool_calls(message: ChatMessageContent) -> None:

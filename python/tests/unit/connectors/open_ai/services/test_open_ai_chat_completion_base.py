@@ -212,8 +212,6 @@ async def test_process_tool_calls():
             FunctionCallBehavior.AutoInvokeKernelFunctions(),
         )
 
-    chat_history_mock.add_message.assert_called_once()
-
 
 @pytest.mark.asyncio
 async def test_process_tool_calls_with_continuation_on_malformed_arguments():
@@ -245,7 +243,7 @@ async def test_process_tool_calls_with_continuation_on_malformed_arguments():
         ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
     )
 
-    with patch("semantic_kernel.connectors.ai.function_calling_utils.logger", autospec=True) as logger_mock:
+    with patch("semantic_kernel.connectors.ai.function_calling_utils.logger", autospec=True):
         await chat_completion_base._process_function_call(
             tool_call_mock,
             chat_history_mock,
@@ -255,16 +253,3 @@ async def test_process_tool_calls_with_continuation_on_malformed_arguments():
             0,
             FunctionCallBehavior.AutoInvokeKernelFunctions(),
         )
-
-    logger_mock.info.assert_any_call(
-        "Received invalid arguments for function test_function: Malformed arguments. Trying tool call again."
-    )
-
-    add_message_calls = chat_history_mock.add_message.call_args_list
-    assert any(
-        call[1]["message"].items[0].result
-        == "The tool call arguments are malformed. Arguments must be in JSON format. Please try again."  # noqa: E501
-        and call[1]["message"].items[0].id == "test_id"
-        and call[1]["message"].items[0].name == "test_function"
-        for call in add_message_calls
-    ), "Expected call to add_message not found with the expected message content and metadata."

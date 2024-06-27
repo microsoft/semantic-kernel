@@ -1,16 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from collections import OrderedDict
 from collections.abc import Callable
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic.dataclasses import dataclass
+from typing_extensions import deprecated
 
-from semantic_kernel.exceptions.service_exceptions import ServiceInvalidExecutionSettingsError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class, experimental_function
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
@@ -31,27 +33,35 @@ class FunctionChoiceType(Enum):
     REQUIRED = "required"
 
 
-@experimental_function
-def _check_for_missing_functions(function_names: list[str], kernel_function_metadata: set) -> None:
-    """Check for missing functions in the kernel function metadata."""
-    try:
-        qualified_names = {metadata.fully_qualified_name for metadata in kernel_function_metadata}
-        missing_functions = [name for name in function_names if name not in qualified_names]
-    except Exception:
-        logger.exception("Error checking for missing functions.")
-        return
-
-    if missing_functions:
-        raise ServiceInvalidExecutionSettingsError(
-            f"Unable to find the required function(s) `{', '.join(missing_functions)}` "
-            f"in the list of available kernel functions: {', '.join(qualified_names)}."
-        )
-
-
 @experimental_class
 @dataclass
 class FunctionCallChoiceConfiguration:
+    """Configuration for function call choice."""
+
     available_functions: list["KernelFunctionMetadata"] | None = None
+
+
+def _combine_filter_dicts(*dicts: dict[str, list[str]]) -> dict:
+    """Combine multiple filter dictionaries with list values into one dictionary.
+
+    This method is ensuring unique values while preserving order.
+    """
+    combined_filters = {}
+
+    keys = set().union(*(d.keys() for d in dicts))
+
+    for key in keys:
+        combined_functions = OrderedDict()
+        for d in dicts:
+            if key in d:
+                if isinstance(d[key], list):
+                    for item in d[key]:
+                        combined_functions[item] = None
+                else:
+                    raise ServiceInitializationError(f"Values for filter key '{key}' are not lists.")
+        combined_filters[key] = list(combined_functions.keys())
+
+    return combined_filters
 
 
 @experimental_class
@@ -61,8 +71,8 @@ class FunctionChoiceBehavior(KernelBaseModel):
     Attributes:
         enable_kernel_functions: Enable kernel functions.
         max_auto_invoke_attempts: The maximum number of auto invoke attempts.
-        filters: Filters for the function choice behavior.
-        function_fully_qualified_names: The fully qualified names of the functions.
+        filters: Filters for the function choice behavior. Available options are: excluded_plugins,
+            included_plugins, excluded_functions, or included_functions.
         type: The type of function choice behavior.
 
     Properties:
@@ -74,12 +84,15 @@ class FunctionChoiceBehavior(KernelBaseModel):
             the default version in this class, does nothing, use subclasses for different behaviors.
 
     Class methods:
-        Auto: Returns FunctionChoiceAuto class with auto_invoke enabled, and the desired functions
-            based on either the specified filters or the full qualified names.
-        NoneInvoke: Returns FunctionChoiceNone class with auto_invoke disabled, and the desired functions
-            based on either the specified filters or the full qualified names.
-        Required: Returns FunctionChoiceRequired class with auto_invoke enabled, and the desired functions
-            based on either the specified filters or the full qualified names.
+        Auto: Returns FunctionChoiceBehavior class with auto_invoke enabled, and the desired functions
+            based on either the specified filters or the full qualified names. The model will decide which function
+            to use, if any.
+        NoneInvoke: Returns FunctionChoiceBehavior class with auto_invoke disabled, and the desired functions
+            based on either the specified filters or the full qualified names. The model does not invoke any functions,
+            but can rather describe how it would invoke a function to complete a given task/query.
+        Required: Returns FunctionChoiceBehavior class with auto_invoke enabled, and the desired functions
+            based on either the specified filters or the full qualified names. The model is required to use one of the
+            provided functions to complete a given task/query.
     """
 
     enable_kernel_functions: bool = True
@@ -88,10 +101,10 @@ class FunctionChoiceBehavior(KernelBaseModel):
         dict[Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]]
         | None
     ) = None
-    function_fully_qualified_names: list[str] | None = None
     type: FunctionChoiceType | None = None
 
     @classmethod
+    @deprecated("The `FunctionCallBehavior` class is deprecated; use `FunctionChoiceBehavior` instead.")
     def from_function_call_behavior(cls, behavior: "FunctionCallBehavior") -> "FunctionChoiceBehavior":
         """Create a FunctionChoiceBehavior from a FunctionCallBehavior."""
         from semantic_kernel.connectors.ai.function_call_behavior import (
@@ -128,16 +141,9 @@ class FunctionChoiceBehavior(KernelBaseModel):
         self.maximum_auto_invoke_attempts = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if value else 0
 
     def _check_and_get_config(
-        self, kernel: "Kernel", fully_qualified_names: list[str] | None = None, filters: dict[str, Any] | None = {}
+        self, kernel: "Kernel", filters: dict[str, Any] | None = {}
     ) -> FunctionCallChoiceConfiguration:
         """Check for missing functions and get the function call choice configuration."""
-        full_kernel_function_metadata = set(kernel.get_full_list_of_function_metadata())
-
-        if fully_qualified_names:
-            _check_for_missing_functions(fully_qualified_names, full_kernel_function_metadata)
-            return FunctionCallChoiceConfiguration(
-                available_functions=kernel.get_list_of_function_metadata({"included_functions": fully_qualified_names})
-            )
         if filters:
             return FunctionCallChoiceConfiguration(available_functions=kernel.get_list_of_function_metadata(filters))
         return FunctionCallChoiceConfiguration(available_functions=kernel.get_full_list_of_function_metadata())
@@ -159,7 +165,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
     def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:
         """Get the function call choice configuration based on the type."""
-        return self._check_and_get_config(kernel, self.function_fully_qualified_names, self.filters)
+        return self._check_and_get_config(kernel, self.filters)
 
     @classmethod
     def Auto(
@@ -170,15 +176,18 @@ class FunctionChoiceBehavior(KernelBaseModel):
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
         ]
         | None = None,
-        function_fully_qualified_names: list[str] | None = None,
         **kwargs,
     ) -> "FunctionChoiceBehavior":
-        """Creates a FunctionChoiceBehavior with type AUTO."""
+        """Creates a FunctionChoiceBehavior with type AUTO.
+
+        Returns FunctionChoiceBehavior class with auto_invoke enabled, and the desired functions
+        based on either the specified filters or the full qualified names. The model will decide which function
+        to use, if any.
+        """
         kwargs.setdefault("maximum_auto_invoke_attempts", DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if auto_invoke else 0)
         return cls(
             type=FunctionChoiceType.AUTO,
             filters=filters,
-            function_fully_qualified_names=function_fully_qualified_names,
             **kwargs,
         )
 
@@ -190,15 +199,18 @@ class FunctionChoiceBehavior(KernelBaseModel):
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
         ]
         | None = None,
-        function_fully_qualified_names: list[str] | None = None,
         **kwargs,
     ) -> "FunctionChoiceBehavior":
-        """Creates a FunctionChoiceBehavior with type NONE."""
+        """Creates a FunctionChoiceBehavior with type NONE.
+
+        Returns FunctionChoiceBehavior class with auto_invoke disabled, and the desired functions
+        based on either the specified filters or the full qualified names. The model does not invoke any functions,
+        but can rather describe how it would invoke a function to complete a given task/query.
+        """
         kwargs.setdefault("maximum_auto_invoke_attempts", 0)
         return cls(
             type=FunctionChoiceType.NONE,
             filters=filters,
-            function_fully_qualified_names=function_fully_qualified_names,
             **kwargs,
         )
 
@@ -211,15 +223,18 @@ class FunctionChoiceBehavior(KernelBaseModel):
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
         ]
         | None = None,
-        function_fully_qualified_names: list[str] | None = None,
         **kwargs,
     ) -> "FunctionChoiceBehavior":
-        """Creates a FunctionChoiceBehavior with type REQUIRED."""
+        """Creates a FunctionChoiceBehavior with type REQUIRED.
+
+        Returns FunctionChoiceBehavior class with auto_invoke enabled, and the desired functions
+        based on either the specified filters or the full qualified names. The model is required to use one of the
+        provided functions to complete a given task/query.
+        """
         kwargs.setdefault("maximum_auto_invoke_attempts", 1 if auto_invoke else 0)
         return cls(
             type=FunctionChoiceType.REQUIRED,
             filters=filters,
-            function_fully_qualified_names=function_fully_qualified_names,
             **kwargs,
         )
 
@@ -233,12 +248,18 @@ class FunctionChoiceBehavior(KernelBaseModel):
         }
         behavior_type = data.pop("type", "auto")
         auto_invoke = data.pop("auto_invoke", False)
+        functions = data.pop("functions", None)
         filters = data.pop("filters", None)
-        function_qualified_names = data.pop("functions", [])
+
+        if functions:
+            valid_fqns = [name.replace(".", "-") for name in functions]
+            if filters:
+                filters = _combine_filter_dicts(filters, {"included_functions": valid_fqns})
+            else:
+                filters = {"included_functions": valid_fqns}
 
         return type_map[behavior_type](
             auto_invoke=auto_invoke,
             filters=filters,
-            function_fully_qualified_names=function_qualified_names,
             **data,
         )

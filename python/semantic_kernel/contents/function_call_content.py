@@ -32,6 +32,8 @@ class FunctionCallContent(KernelContent):
     name: str | None = None
     arguments: str | None = None
 
+    EMPTY_VALUES: ClassVar[list[str | None]] = ["", "{}", None]
+
     @cached_property
     def function_name(self) -> str:
         """Get the function name."""
@@ -63,11 +65,11 @@ class FunctionCallContent(KernelContent):
 
     def combine_arguments(self, arg1: str | None, arg2: str | None) -> str:
         """Combine two arguments."""
-        if arg1 in ["", "{}", None] and arg2 in ["", "{}", None]:
+        if arg1 in self.EMPTY_VALUES and arg2 in self.EMPTY_VALUES:
             return "{}"
-        if arg1 in ["", "{}", None]:
+        if arg1 in self.EMPTY_VALUES:
             return arg2 or "{}"
-        if arg2 in ["", "{}", None]:
+        if arg2 in self.EMPTY_VALUES:
             return arg1 or "{}"
         return (arg1 or "") + (arg2 or "")
 

@@ -12,7 +12,6 @@ else:
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
@@ -88,6 +87,8 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         # we are syncing the `function_call_behavior` with `function_choice_behavior` if the former is set.
         # This allows us to make decisions off of `function_choice_behavior`. Anytime the `function_call_behavior`
         # is updated, this validation will run to ensure the `function_choice_behavior` stays in sync.
+        from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+
         if isinstance(data, dict) and "function_call_behavior" in data.get("extension_data", {}):
             data["function_choice_behavior"] = FunctionChoiceBehavior.from_function_call_behavior(
                 data.get("extension_data").get("function_call_behavior")

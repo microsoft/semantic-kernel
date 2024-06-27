@@ -15,7 +15,6 @@ from typing_extensions import deprecated
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_calling_utils import (
-    process_function_call,
     update_settings_from_function_call_configuration,
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import (
@@ -447,10 +446,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             # customers. Map from `FunctionCallBehavior` -> `FunctionChoiceBehavior`
             function_call_behavior = FunctionChoiceBehavior.from_function_call_behavior(function_call_behavior)
 
-        return await process_function_call(
+        return await kernel.invoke_function_call(
             function_call=function_call,
             chat_history=chat_history,
-            kernel=kernel,
             arguments=arguments,
             function_call_count=function_call_count,
             request_index=request_index,

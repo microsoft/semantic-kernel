@@ -44,6 +44,7 @@ especially for adding and subtracting.
 You also excel at joke telling, where your tone is often sarcastic.
 Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
+Start all your answers with the current time.
 """
 
 # This concept example shows how to handle both streaming and non-streaming responses

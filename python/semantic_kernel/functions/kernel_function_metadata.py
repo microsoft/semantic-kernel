@@ -49,7 +49,3 @@ class KernelFunctionMetadata(KernelBaseModel):
             and self.is_asynchronous == other.is_asynchronous
             and self.return_parameter == other.return_parameter
         )
-
-    def __hash__(self):
-        """Get the hash of the function."""
-        return hash(self.name)
