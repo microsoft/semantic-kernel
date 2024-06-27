@@ -18,7 +18,7 @@ classDiagram
         +Task~OpenAIAssistantAgent~ RetrieveAsync(Kernel kernel, OpenAIAssistantConfiguration config, string id)$
         +Task DeleteAsync()
         #IEnumerable~String~ GetChannelKeys()
-        #Task~AgentChannel~ CreateChannelAsync(ILogger logger)
+        #Task~AgentChannel~ CreateChannelAsync()
     }
 
     AgentChannel <|-- OpenAIAssistantChannel

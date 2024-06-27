@@ -7,7 +7,7 @@ classDiagram
         +String? Description
         +String? Name
         ~#IEnumerable~String~ GetChannelKeys()*
-        ~#Task~AgentChannel~ CreateChannelAsync(ILogger logger)*
+        ~#Task~AgentChannel~ CreateChannelAsync()*
     }
 
     class AgentChannel {
@@ -26,7 +26,7 @@ classDiagram
 
     class IChatHistoryHandler {
         <<Interface>>
-        +IAsyncEnumerable~ChatMessageContent~ InvokeAsync(IReadOnlyList~ChatMessageContent~ history, ILogger logger)*
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAsync(IReadOnlyList~ChatMessageContent~ history, )*
     }
 
     KernelAgent <|-- ChatHistoryKernelAgent
@@ -34,8 +34,8 @@ classDiagram
     ChatHistoryKernelAgent --> ChatHistoryChannel
     class ChatHistoryKernelAgent {
         #IEnumerable~String GetChannelKeys()
-        #Task~AgentChannel~ CreateChannelAsync(ILogger logger)
-        +IAsyncEnumerable~ChatMessageContent~ InvokeAsync(IReadOnlyList~ChatMessageContent~ history, ILogger logger)*
+        #Task~AgentChannel~ CreateChannelAsync()
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAsync(IReadOnlyList~ChatMessageContent~ history, )*
     }
 
     AgentChannel <|-- ChatHistoryChannel

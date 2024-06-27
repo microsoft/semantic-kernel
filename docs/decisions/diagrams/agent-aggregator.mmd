@@ -16,7 +16,7 @@ classDiagram
         <<Final>>
         +AggregatorMode Mode
         #IEnumerable~String~ GetChannelKeys()
-        #Task~AgentChannel~ CreateChannelAsync(ILogger logger)
+        #Task~AgentChannel~ CreateChannelAsync()
     }
     
     AgentChannel <|-- AggregatorChannel
