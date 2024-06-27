@@ -29,46 +29,7 @@ from semantic_kernel.contents import (
     TextContent,
 )
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.functions import KernelArguments, KernelFunction, kernel_function
-from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE
-from semantic_kernel.services import AIServiceSelector
-from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
-
-
-async def execute_function_call(kernel: Kernel, function_call: FunctionCallContent) -> ChatMessageContent:
-    """Execute a function call."""
-    function = kernel.get_function_from_fully_qualified_function_name(function_call.name)
-    args = function_call.to_kernel_arguments()
-    func_result = await function.invoke(kernel=kernel, arguments=args)
-    return ChatMessageContent(
-        role="tool",
-        name=function_call.id,
-        items=[FunctionResultContent.from_function_call_content_and_result(function_call, func_result)],
-    )
-
-
-class ServiceSelector(AIServiceSelector):
-    def select_ai_service(
-        self,
-        kernel: "Kernel",
-        function: "KernelFunction",
-        arguments: "KernelArguments",
-        type_: type[AI_SERVICE_CLIENT_TYPE] | tuple[type[AI_SERVICE_CLIENT_TYPE], ...] | None = None,
-    ) -> tuple["AIServiceClientBase", "PromptExecutionSettings"]:
-        settings = function.prompt_execution_settings
-        if "chat_history" not in arguments:
-            return super().select_ai_service(kernel, function, arguments, type_=type_)
-        chat_history = arguments["chat_history"]
-        if chat_history.messages:
-            last_message = chat_history.messages[-1]
-            if last_message.role == "tool":
-                service = kernel.get_service("openai", type=type_)
-                if service is not None:
-                    service_settings = service.get_prompt_execution_settings_from_settings(settings["openai"])
-                    return service, service_settings
-        service = kernel.get_service("nexus", type=type_)
-        service_settings = service.get_prompt_execution_settings_from_settings(settings["nexus"])
-        return service, service_settings
+from semantic_kernel.functions import KernelArguments, kernel_function
 
 
 class NexusRavenPromptExecutionSettings(PromptExecutionSettings):
@@ -116,20 +77,19 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         """Creates a chat message content with a function call content within.
 
         Uses the text content and and parses it into a function call content."""
-        kernel = kwargs.get("kernel")
         result = await self.get_text_contents(
             prompt=chat_history.messages[-1].content,
             settings=settings,
         )
-        fcc, frc = await self._execute_function_calls(result[0], kernel)
+        fcc, frc = await self._execute_function_calls(result[0], **kwargs)
         if fcc:
             return [
                 ChatMessageContent(role="assistant", items=[fcc], metadata={"ai_model_id": self.ai_model_id}),
-                ChatMessageContent(role="tool", items=[frc], metadata={"ai_model_id": self.ai_model_id}),
+                ChatMessageContent(role="tool", items=[frc], name="nexus", metadata={"ai_model_id": self.ai_model_id}),
             ]
         return [ChatMessageContent(role="assistant", items=result, metadata={"ai_model_id": self.ai_model_id})]
 
-    async def _execute_function_calls(self, result: TextContent, kernel: Kernel) -> list[ChatMessageContent] | None:
+    async def _execute_function_calls(self, result: TextContent, **kwargs: Any) -> list[ChatMessageContent] | None:
         function_call = result.text.strip().split("\n")[0].strip("Call:").strip()
         if not function_call:
             return None
@@ -166,7 +126,7 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         while any(call["result"] is None for call in call_stack.values()):
             await asyncio.gather(
                 *[
-                    self._execute_function_call(call, kernel)
+                    self._execute_function_call(call, kwargs.get("kernel"))
                     for call in call_stack.values()
                     if not any(isinstance(arg, tuple) for arg in call["args"].values()) and call["result"] is None
                 ]
@@ -184,11 +144,7 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         call_def["fcc"] = FunctionCallContent(
             name=call_def["func"], arguments=json.dumps(call_def["args"]), id=str(call_def["idx"])
         )
-        kernel_function = kernel.get_function_from_fully_qualified_function_name(call_def["fcc"].name)
-        kernel_arguments = call_def["fcc"].to_kernel_arguments()
-        call_def["result"] = FunctionResultContent.from_function_call_content_and_result(
-            call_def["fcc"], await kernel_function.invoke(kernel=kernel, arguments=kernel_arguments)
-        )
+        call_def["result"] = await kernel.invoke_function_call_content(call_def["fcc"])
 
     async def get_text_contents(self, prompt: str, settings: NexusRavenPromptExecutionSettings) -> list[TextContent]:
         result = await self.client.text_generation(prompt, **settings.prepare_settings_dict(), stream=False)
@@ -214,38 +170,71 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 ##########################################################
 
 
-@kernel_function
-def cylinder_volume(
-    radius: Annotated[float, "The radius of the base of the cylinder."],
-    height: Annotated[float, "The height of the cylinder."],
-):
-    """Calculate the volume of a cylinder."""
-    if radius < 0 or height < 0:
-        raise ValueError("Radius and height must be non-negative.")
+class MathPlugin:
+    @kernel_function
+    def cylinder_volume(
+        self,
+        radius: Annotated[float, "The radius of the base of the cylinder."],
+        height: Annotated[float, "The height of the cylinder."],
+    ):
+        """Calculate the volume of a cylinder."""
+        if radius < 0 or height < 0:
+            raise ValueError("Radius and height must be non-negative.")
 
-    return math.pi * (radius**2) * height
+        return math.pi * (radius**2) * height
 
+    @kernel_function
+    def add(
+        self,
+        input: Annotated[float, "the first number to add"],
+        amount: Annotated[float, "the second number to add"],
+    ) -> Annotated[float, "the output is a number"]:
+        """Returns the Addition result of the values provided."""
+        return MathPlugin.calculator(input, amount, "add")
 
-@kernel_function
-def calculator(
-    input_a: Annotated[float, "Required. The first input."],
-    input_b: Annotated[float, "Required. The second input."],
-    operation: Annotated[
-        Literal["add", "subtract", "multiply", "divide"],
-        "The operation, choices include: add to add two numbers, subtract to subtract two numbers, "
-        "multiply to multiply two numbers, and divide to divide them.",
-    ],
-):
-    """Computes a calculation."""
-    match operation:
-        case "add":
-            return input_a + input_b
-        case "subtract":
-            return input_a - input_b
-        case "multiply":
-            return input_a * input_b
-        case "divide":
-            return input_a / input_b
+    @kernel_function
+    def subtract(
+        self,
+        input: Annotated[float, "the first number"],
+        amount: Annotated[float, "the number to subtract"],
+    ) -> float:
+        """Returns the difference of numbers provided."""
+        return MathPlugin.calculator(input, amount, "subtract")
+
+    @kernel_function
+    def multiply(
+        self,
+        input: Annotated[float, "the first number"],
+        amount: Annotated[float, "the number to multiply with"],
+    ) -> float:
+        """Returns the product of numbers provided."""
+        return MathPlugin.calculator(input, amount, "multiply")
+
+    @kernel_function
+    def divide(
+        self,
+        input: Annotated[float, "the first number"],
+        amount: Annotated[float, "the number to divide by"],
+    ) -> float:
+        """Returns the quotient of numbers provided."""
+        return MathPlugin.calculator(input, amount, "divide")
+
+    @staticmethod
+    def calculator(
+        input_a: float,
+        input_b: float,
+        operation: Literal["add", "subtract", "multiply", "divide"],
+    ):
+        """Computes a calculation."""
+        match operation:
+            case "add":
+                return input_a + input_b
+            case "subtract":
+                return input_a - input_b
+            case "multiply":
+                return input_a * input_b
+            case "divide":
+                return input_a / input_b
 
 
 kernel = Kernel()
@@ -284,10 +273,10 @@ function_call_prompt = """{{chat_history}}&lt;human&gt;:
 {{kernel-format_functions_for_prompt}}
 \n\nUser Query: Question: {{user_query}}
 Please pick a function from the above options that best answers the user query and fill in the appropriate arguments.&lt;human_end&gt;"""  # noqa: E501
-chat_prompt = """You are a chatbot that get's fed questions and basic answers, you write out the response to the question based on the answer, but you do not supply underlying math formulas, just a nice sentence that repeats the question and gives the answer. {{chat_history}}"""  # noqa: E501
 
-# kernel.add_plugin(MathPlugin(), "math")
-kernel.add_functions("math", [cylinder_volume, calculator])
+chat_prompt = """You are a chatbot that gets fed questions and answers, you write out the response to the question based on the answer, but you do not supply underlying math formulas nor do you try to do math yourself, just a nice sentence that repeats the question and gives the answer. {{chat_history}}"""  # noqa: E501
+
+kernel.add_plugin(MathPlugin(), "math")
 kernel.add_function("kernel", format_functions_for_prompt)
 kernel.add_function(
     "kernel",
@@ -347,7 +336,8 @@ async def main():
         "This chatbot uses local function calling with Nexus Raven, and OpenAI for the final answer, "
         "it has some math skills so feel free to ask anything about that."
     )
-    print(f"for example: {user_input_example}")
+    print(f'For example: "{user_input_example}".')
+    print("You can type 'exit' to quit the chatbot.")
     while True:
         try:
             user_input = input("What is your question: ")
@@ -360,7 +350,7 @@ async def main():
 
         await run_question(user_input, chat_history)
         print(chat_history.messages[-1].content)
-    print("thanks for chatting with me!")
+    print("Thanks for chatting with me!")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,10 @@ from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
+<< << << < HEAD
 from semantic_kernel.contents.chat_history import ChatHistory
+== == == =
+>> >> >> > 2c21c804f(cleanup)
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
@@ -36,6 +39,7 @@ from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
+from semantic_kernel.utils.naming import generate_random_ascii_name
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (
@@ -128,6 +132,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
         if not function:
             if not function_name or not plugin_name:
                 raise KernelFunctionNotFoundError("No function(s) or function- and plugin-name provided")
@@ -207,9 +213,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
     async def invoke_prompt(
         self,
-        function_name: str,
-        plugin_name: str,
         prompt: str,
+        function_name: str | None = None,
+        plugin_name: str | None = None,
         arguments: KernelArguments | None = None,
         template_format: Literal[
             "semantic-kernel",
@@ -221,9 +227,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """Invoke a function from the provided prompt.
 
         Args:
-            function_name (str): The name of the function
-            plugin_name (str): The name of the plugin
             prompt (str): The prompt to use
+            function_name (str): The name of the function, optional
+            plugin_name (str): The name of the plugin, optional
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
@@ -237,7 +243,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             raise TemplateSyntaxError("The prompt is either null or empty.")
 
         function = KernelFunctionFromPrompt(
-            function_name=function_name,
+            function_name=function_name or generate_random_ascii_name(),
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
@@ -246,9 +252,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
     async def invoke_prompt_stream(
         self,
-        function_name: str,
-        plugin_name: str,
         prompt: str,
+        function_name: str | None = None,
+        plugin_name: str | None = None,
         arguments: KernelArguments | None = None,
         template_format: Literal[
             "semantic-kernel",
@@ -261,9 +267,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """Invoke a function from the provided prompt and stream the results.
 
         Args:
-            function_name (str): The name of the function
-            plugin_name (str): The name of the plugin
             prompt (str): The prompt to use
+            function_name (str): The name of the function, optional
+            plugin_name (str): The name of the plugin, optional
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
             return_function_results (bool): If True, the function results are yielded as a list[FunctionResult]
@@ -280,7 +286,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 
         function = KernelFunctionFromPrompt(
-            function_name=function_name,
+            function_name=function_name or generate_random_ascii_name(),
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
