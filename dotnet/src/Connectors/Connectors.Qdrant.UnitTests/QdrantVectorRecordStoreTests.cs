@@ -716,7 +716,7 @@ public class QdrantVectorRecordStoreTests
             // Loop through each row we have already.
             foreach (var currentCombination in currentCombinations)
             {
-                // Add each of the values from the new options set to the current row to genereate a new row.
+                // Add each of the values from the new options set to the current row to generate a new row.
                 for (var currentColumnRow = 0; currentColumnRow < currentOptionSet.Length; currentColumnRow++)
                 {
                     iterationCombinations.Add(currentCombination.Append(currentOptionSet[currentColumnRow]).ToArray());
