@@ -30,7 +30,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     private const string DeleteName = "Delete";
 
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
-    private readonly QdrantClient _qdrantClient;
+    private readonly MockableQdrantClient _qdrantClient;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly QdrantVectorRecordStoreOptions<TRecord> _options;
@@ -43,9 +43,21 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
     public QdrantVectorRecordStore(QdrantClient qdrantClient, QdrantVectorRecordStoreOptions<TRecord>? options = null)
+        : this(new MockableQdrantClient(qdrantClient), options)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QdrantVectorRecordStore{TRecord}"/> class.
+    /// </summary>
+    /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
+    /// <param name="options">Optional configuration options for this class.</param>
+    /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
+    internal QdrantVectorRecordStore(MockableQdrantClient qdrantClient, QdrantVectorRecordStoreOptions<TRecord>? options = null)
     {
         // Verify.
         Verify.NotNull(qdrantClient);
