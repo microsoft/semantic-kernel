@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ClientModel;
 using System.Net.Http;
 using Azure.AI.OpenAI;
 using Azure.Core;
@@ -49,7 +48,7 @@ internal sealed class AzureOpenAIClientCore : ClientCore
 
         this.DeploymentOrModelName = deploymentName;
         this.Endpoint = new Uri(endpoint);
-        this.Client = new AzureOpenAIClient(this.Endpoint, new ApiKeyCredential(apiKey), options);
+        this.Client = new AzureOpenAIClient(this.Endpoint, apiKey, options);
     }
 
     /// <summary>
