@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+
 import asyncio
 import os
 from functools import reduce
@@ -12,11 +13,41 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
+from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+    AutoFunctionInvocationContext,
+)
+from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.functions import KernelArguments
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
 
+##################################################################
+# Sample Notes:
+
+# In this sample, we're showing how to configure a yaml config file with `function_choice_behavior` settings.
+# The `function_choice_behavior` settings are used to control the auto function calling behavior of the model.
+# The related config is located in the `resources` folder under the title `function_choice_yaml/ChatBot`.
+
+# The execution settings look like:
+
+# execution_settings:
+#   chat:
+#     function_choice_behavior:
+#       type: auto
+#       maximum_auto_invoke_attempts: 5
+#       functions:
+#         - time.date
+#         - time.time
+#         - math.Add
+
+# This is another way of configuring the function choice behavior for the model like:
+# FunctionChoiceBehavior.Auto(filters={"included_functions": ["time.date", "time.time", "math.Add"]})
+
+# The `maximum_auto_invoke_attempts` attribute is used to control the number of times the model will attempt to call a
+# function. If wanting to disable auto function calling, set this attribute to 0 or configure the
+# `auto_invoke_kernel_functions` attribute to False.
+##################################################################
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -31,16 +62,12 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
-# This concept example shows how to handle both streaming and non-streaming responses
-# To toggle the behavior, set the following flag accordingly:
-stream = True
-
 kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-kernel.add_service(OpenAIChatCompletion(service_id="chat"))
+service_id = "chat"
+kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 
-plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
 kernel.add_plugin(MathPlugin(), plugin_name="math")
 kernel.add_plugin(TimePlugin(), plugin_name="time")
@@ -51,38 +78,11 @@ chat_function = kernel.add_function(
     function_name="Chat",
 )
 
-# Enabling or disabling function calling is done by setting the `function_choice_behavior` attribute for the
-# prompt execution settings. When the function_call parameter is set to "auto" the model will decide which
-# function to use, if any.
-#
-# There are two ways to define the `function_choice_behavior` parameter:
-# 1. Using the type string as `"auto"`, `"required"`, or `"none"`. For example:
-#   configure `function_choice_behavior="auto"` parameter directly in the execution settings.
-# 2. Using the FunctionChoiceBehavior class. For example:
-#   `function_choice_behavior=FunctionChoiceBehavior.Auto()`.
-# Both of these configure the `auto` tool_choice and all of the available plugins/functions
-# registered on the kernel. If you want to limit the available plugins/functions, you must
-# configure the `filters` dictionary attribute for each type of function choice behavior.
-# For example:
-#
-# from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-
-# function_choice_behavior = FunctionChoiceBehavior.Auto(
-#     filters={"included_functions": ["time-date", "time-time", "math-Add"]}
-# )
-#
-# The filters attribute allows you to specify either: `included_functions`, `excluded_functions`,
-#  `included_plugins`, or `excluded_plugins`.
-
-# Note: the number of responses for auto invoking tool calls is limited to 1.
-# If configured to be greater than one, this value will be overridden to 1.
-execution_settings = OpenAIChatPromptExecutionSettings(
-    service_id="chat",
-    max_tokens=2000,
-    temperature=0.7,
-    top_p=0.8,
-    function_choice_behavior="auto",
+plugin_path = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+    "resources",
 )
+chat_plugin = kernel.add_plugin(plugin_name="function_choice_yaml", parent_directory=plugin_path)
 
 history = ChatHistory()
 
@@ -90,7 +90,32 @@ history.add_system_message(system_message)
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-arguments = KernelArguments(settings=execution_settings)
+
+# To control auto function calling you can do it two ways:
+# 1. Configure the attribute `auto_invoke_kernel_functions` as False
+# 2. Configure the `maximum_auto_invoke_attempts` as 0.
+# These can be done directly on the FunctionChoiceBehavior.Auto/Required/None object or via the JSON/yaml config.
+execution_settings: OpenAIChatPromptExecutionSettings = chat_plugin["ChatBot"].prompt_execution_settings[service_id]
+
+arguments = KernelArguments()
+
+
+# We will hook up a filter to show which function is being called.
+# A filter is a piece of custom code that runs at certain points in the process
+# this sample has a filter that is called during Auto Function Invocation
+# this filter will be called for each function call in the response.
+# You can name the function itself with arbitrary names, but the signature needs to be:
+# `context, next`
+# You are then free to run code before the call to the next filter or the function itself.
+# if you want to terminate the function calling sequence. set context.terminate to True
+@kernel.filter(FilterTypes.AUTO_FUNCTION_INVOCATION)
+async def auto_function_invocation_filter(context: AutoFunctionInvocationContext, next):
+    """A filter that will be called for each function call in the response."""
+    print("\nAuto function invocation filter")
+    print(f"Function: {context.function.fully_qualified_name}")
+
+    # if we don't call next, it will skip this function, and go to the next one
+    await next(context)
 
 
 def print_tool_calls(message: ChatMessageContent) -> None:
@@ -109,10 +134,7 @@ def print_tool_calls(message: ChatMessageContent) -> None:
                 f"tool_call {i} arguments: {function_arguments}"
             )
             formatted_tool_calls.append(formatted_str)
-    if len(formatted_tool_calls) > 0:
-        print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
-    else:
-        print("The model used its own knowledge and didn't return any tool calls.")
+    print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
 
 
 async def handle_streaming(
@@ -138,8 +160,6 @@ async def handle_streaming(
 
     if streamed_chunks:
         streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
-        if hasattr(streaming_chat_message, "content"):
-            print(streaming_chat_message.content)
         print("Auto tool calls is disabled, printing returned tool calls...")
         print_tool_calls(streaming_chat_message)
 
@@ -162,16 +182,18 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
+    stream = False
     if stream:
-        await handle_streaming(kernel, chat_function, arguments=arguments)
+        pass
+        # await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
-        result = await kernel.invoke(chat_function, arguments=arguments)
+        result = await kernel.invoke(chat_plugin["ChatBot"], arguments=arguments)
 
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
         function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
-        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
+        if len(function_calls) > 0:
             print_tool_calls(result.value[0])
             return True
 

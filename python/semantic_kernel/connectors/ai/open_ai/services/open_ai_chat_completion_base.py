@@ -3,7 +3,6 @@
 import asyncio
 import logging
 from collections.abc import AsyncGenerator
-from copy import copy
 from functools import reduce
 from typing import TYPE_CHECKING, Any
 
@@ -11,39 +10,36 @@ from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
+from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_call_behavior import (
-    EnabledFunctions,
-    FunctionCallBehavior,
-    RequiredFunction,
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    update_settings_from_function_call_configuration,
+)
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
-from semantic_kernel.connectors.ai.open_ai.services.utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import (
-    FunctionCallInvalidArgumentsException,
     ServiceInvalidExecutionSettingsError,
     ServiceInvalidResponseError,
 )
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.kernel_filters_extension import _rebuild_auto_function_invocation_context
-from semantic_kernel.functions.function_result import FunctionResult
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -86,12 +82,21 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             List[ChatMessageContent]: The completion result(s).
         """
+        # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
+        # if this method is called with a `FunctionCallBehavior` object as pat of the settings
+        if hasattr(settings, "function_call_behavior") and isinstance(
+            settings.function_call_behavior, FunctionCallBehavior
+        ):
+            settings.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
+                settings.function_call_behavior
+            )
+
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
-        if settings.function_call_behavior is not None:
+        if settings.function_choice_behavior is not None:
             if kernel is None:
                 raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
-            if arguments is None and settings.function_call_behavior.auto_invoke_kernel_functions:
+            if arguments is None and settings.function_choice_behavior.auto_invoke_kernel_functions:
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel arguments are required for auto invoking OpenAI tool calls."
                 )
@@ -103,13 +108,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         # behavior for non-function calling or for enable, but not auto-invoke.
         self._prepare_settings(settings, chat_history, stream_request=False, kernel=kernel)
-        if settings.function_call_behavior is None or (
-            settings.function_call_behavior and not settings.function_call_behavior.auto_invoke_kernel_functions
+        if settings.function_choice_behavior is None or (
+            settings.function_choice_behavior and not settings.function_choice_behavior.auto_invoke_kernel_functions
         ):
             return await self._send_chat_request(settings)
 
         # loop for auto-invoke function calls
-        for request_index in range(settings.function_call_behavior.max_auto_invoke_attempts):
+        for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(settings)
             # there is only one chat message, this was checked earlier
             chat_history.add_message(message=completions[0])
@@ -132,7 +137,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                         arguments=arguments,
                         function_call_count=fc_count,
                         request_index=request_index,
-                        function_call_behavior=settings.function_call_behavior,
+                        function_call_behavior=settings.function_choice_behavior,
                     )
                     for function_call in function_calls
                 ],
@@ -144,7 +149,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             self._update_settings(settings, chat_history, kernel=kernel)
         else:
             # do a final call, without function calling when the max has been reached.
-            settings.function_call_behavior.auto_invoke_kernel_functions = False
+            settings.function_choice_behavior.auto_invoke_kernel_functions = False
             return await self._send_chat_request(settings)
 
     async def get_streaming_chat_message_contents(
@@ -165,12 +170,21 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             List[StreamingChatMessageContent]: A stream of
                 StreamingChatMessageContent when using Azure.
         """
+        # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
+        # if this method is called with a `FunctionCallBehavior` object as part of the settings
+        if hasattr(settings, "function_call_behavior") and isinstance(
+            settings.function_call_behavior, FunctionCallBehavior
+        ):
+            settings.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
+                settings.function_call_behavior
+            )
+
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
-        if settings.function_call_behavior is not None:
+        if settings.function_choice_behavior is not None:
             if kernel is None:
                 raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
-            if arguments is None and settings.function_call_behavior.auto_invoke_kernel_functions:
+            if arguments is None and settings.function_choice_behavior.auto_invoke_kernel_functions:
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel arguments are required for auto invoking OpenAI tool calls."
                 )
@@ -184,8 +198,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
 
         request_attempts = (
-            settings.function_call_behavior.max_auto_invoke_attempts
-            if (settings.function_call_behavior and settings.function_call_behavior.auto_invoke_kernel_functions)
+            settings.function_choice_behavior.maximum_auto_invoke_attempts
+            if (settings.function_choice_behavior and settings.function_choice_behavior.auto_invoke_kernel_functions)
             else 1
         )
         # hold the messages, if there are more than one response, it will not be used, so we flatten
@@ -201,9 +215,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 yield messages
 
             if (
-                settings.function_call_behavior is None
+                settings.function_choice_behavior is None
                 or (
-                    settings.function_call_behavior and not settings.function_call_behavior.auto_invoke_kernel_functions
+                    settings.function_choice_behavior
+                    and not settings.function_choice_behavior.auto_invoke_kernel_functions
                 )
                 or not function_call_returned
             ):
@@ -235,7 +250,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                         arguments=arguments,
                         function_call_count=fc_count,
                         request_index=request_index,
-                        function_call_behavior=settings.function_call_behavior,
+                        function_call_behavior=settings.function_choice_behavior,
                     )
                     for function_call in function_calls
                 ],
@@ -404,8 +419,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     ) -> None:
         """Update the settings with the chat history."""
         settings.messages = self._prepare_chat_history_for_request(chat_history)
-        if settings.function_call_behavior and kernel:
-            settings.function_call_behavior.configure(
+        if settings.function_choice_behavior and kernel:
+            settings.function_choice_behavior.configure(
                 kernel=kernel,
                 update_settings_callback=update_settings_from_function_call_configuration,
                 settings=settings,
@@ -414,6 +429,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     # endregion
     # region function calling
 
+    @deprecated("Use `invoke_function_call` from the kernel instead with `FunctionChoiceBehavior`.")
     async def _process_function_call(
         self,
         function_call: FunctionCallContent,
@@ -422,112 +438,21 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         arguments: "KernelArguments",
         function_call_count: int,
         request_index: int,
-        function_call_behavior: FunctionCallBehavior,
+        function_call_behavior: FunctionChoiceBehavior | FunctionCallBehavior,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the tool calls in the result and update the chat history."""
-        args_cloned = copy(arguments)
-        try:
-            parsed_args = function_call.parse_arguments()
-            if parsed_args:
-                args_cloned.update(parsed_args)
-        except (FunctionCallInvalidArgumentsException, TypeError) as exc:
-            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
-            frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=function_call,
-                result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
-            )
-            chat_history.add_message(message=frc.to_chat_message_content())
-            return None
+        if isinstance(function_call_behavior, FunctionCallBehavior):
+            # We need to still support a `FunctionCallBehavior` input so it doesn't break current
+            # customers. Map from `FunctionCallBehavior` -> `FunctionChoiceBehavior`
+            function_call_behavior = FunctionChoiceBehavior.from_function_call_behavior(function_call_behavior)
 
-        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
-        try:
-            if function_call.name is None:
-                raise ValueError("The function name is required.")
-            if (
-                isinstance(function_call_behavior, RequiredFunction)
-                and function_call.name != function_call_behavior.function_fully_qualified_name
-            ):
-                raise ValueError(
-                    f"Only function: {function_call_behavior.function_fully_qualified_name} "
-                    f"is allowed, {function_call.name} is not allowed."
-                )
-            if isinstance(function_call_behavior, EnabledFunctions):
-                enabled_functions = [
-                    func.fully_qualified_name
-                    for func in kernel.get_list_of_function_metadata(function_call_behavior.filters)
-                ]
-                if function_call.name not in enabled_functions:
-                    raise ValueError(
-                        f"Only functions: {enabled_functions} are allowed, {function_call.name} is not allowed."
-                    )
-            function_to_call = kernel.get_function(function_call.plugin_name, function_call.function_name)
-        except Exception as exc:
-            logger.exception(f"Could not find function {function_call.name}: {exc}.")
-            frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=function_call,
-                result="The tool call could not be found, please try again and make sure to validate the name.",
-            )
-            chat_history.add_message(message=frc.to_chat_message_content())
-            return None
-
-        num_required_func_params = len([param for param in function_to_call.parameters if param.is_required])
-        if len(parsed_args) < num_required_func_params:
-            msg = (
-                f"There are `{num_required_func_params}` tool call arguments required and "
-                f"only `{len(parsed_args)}` received. The required arguments are: "
-                f"{[param.name for param in function_to_call.parameters if param.is_required]}. "
-                "Please provide the required arguments and try again."
-            )
-            logger.info(msg)
-            frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=function_call,
-                result=msg,
-            )
-            chat_history.add_message(message=frc.to_chat_message_content())
-            return None
-
-        _rebuild_auto_function_invocation_context()
-        invocation_context = AutoFunctionInvocationContext(
-            function=function_to_call,
-            kernel=kernel,
-            arguments=args_cloned,
+        return await kernel.invoke_function_call(
+            function_call=function_call,
             chat_history=chat_history,
-            function_result=FunctionResult(function=function_to_call.metadata, value=None),
-            function_count=function_call_count,
-            request_sequence_index=request_index,
+            arguments=arguments,
+            function_call_count=function_call_count,
+            request_index=request_index,
+            function_behavior=function_call_behavior,
         )
-        if function_call.index is not None:
-            invocation_context.function_sequence_index = function_call.index
 
-        stack = kernel.construct_call_stack(
-            filter_type=FilterTypes.AUTO_FUNCTION_INVOCATION,
-            inner_function=self._inner_auto_function_invoke_handler,
-        )
-        await stack(invocation_context)
-
-        if invocation_context.terminate:
-            return invocation_context
-
-        frc = FunctionResultContent.from_function_call_content_and_result(
-            function_call_content=function_call, result=invocation_context.function_result
-        )
-        chat_history.add_message(message=frc.to_chat_message_content())
-        return None
-
-    async def _inner_auto_function_invoke_handler(self, context: AutoFunctionInvocationContext):
-        """Inner auto function invocation handler."""
-        try:
-            result = await context.function.invoke(context.kernel, context.arguments)
-            if result:
-                context.function_result = result
-        except Exception as exc:
-            logger.exception(f"Error invoking function {context.function.fully_qualified_name}: {exc}.")
-            value = f"An error occurred while invoking the function {context.function.fully_qualified_name}: {exc}"
-            if context.function_result is not None:
-                context.function_result.value = value
-            else:
-                context.function_result = FunctionResult(function=context.function.metadata, value=value)
-            return
-
-
-# endregion
+    # endregion
