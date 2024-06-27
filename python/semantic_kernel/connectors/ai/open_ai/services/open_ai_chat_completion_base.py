@@ -429,7 +429,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     # endregion
     # region function calling
 
-    @deprecated("Use `process_function_call` from `function_calling_utils` instead.")
+    @deprecated("Use `invoke_function_call` from the kernel instead with `FunctionChoiceBehavior`.")
     async def _process_function_call(
         self,
         function_call: FunctionCallContent,

@@ -315,14 +315,14 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         function_call: FunctionCallContent,
         chat_history: ChatHistory,
         arguments: "KernelArguments",
-        function_call_count: int,
-        request_index: int,
-        function_behavior: "FunctionChoiceBehavior",
+        function_call_count: int | None = None,
+        request_index: int | None = None,
+        function_behavior: "FunctionChoiceBehavior" = None,  # type: ignore
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
         args_cloned = copy(arguments)
         try:
-            parsed_args = function_call.parse_arguments()
+            parsed_args = function_call.to_kernel_arguments()
             if parsed_args:
                 args_cloned.update(parsed_args)
         except (FunctionCallInvalidArgumentsException, TypeError) as exc:
@@ -337,7 +337,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         try:
             if function_call.name is None:
                 raise FunctionExecutionException("The function name is required.")
-            if function_behavior.filters:
+            if function_behavior is not None and function_behavior.filters:
                 allowed_functions = [
                     func.fully_qualified_name for func in self.get_list_of_function_metadata(function_behavior.filters)
                 ]

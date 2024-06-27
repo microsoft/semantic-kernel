@@ -9,7 +9,7 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
     OpenAIFunctionExecutionParameters,
@@ -201,21 +201,20 @@ async def test_invoke_function_call(kernel: Kernel):
             arguments,
             1,
             0,
-            FunctionCallBehavior.AutoInvokeKernelFunctions(),
+            FunctionChoiceBehavior.Auto(),
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.asyncio
 async def test_invoke_function_call_with_continuation_on_malformed_arguments(kernel: Kernel):
     tool_call_mock = MagicMock(spec=FunctionCallContent)
-    tool_call_mock.parse_arguments.side_effect = FunctionCallInvalidArgumentsException("Malformed arguments")
+    tool_call_mock.to_kernel_arguments.side_effect = FunctionCallInvalidArgumentsException("Malformed arguments")
     tool_call_mock.name = "test_function"
     tool_call_mock.arguments = {"arg_name": "arg_value"}
     tool_call_mock.ai_model_id = None
     tool_call_mock.metadata = {}
     tool_call_mock.index = 0
-    tool_call_mock.parse_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.to_kernel_arguments.return_value = {"arg_name": "arg_value"}
     tool_call_mock.id = "test_id"
     result_mock = MagicMock(spec=ChatMessageContent)
     result_mock.items = [tool_call_mock]
@@ -236,7 +235,7 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(ker
             arguments,
             1,
             0,
-            FunctionCallBehavior.AutoInvokeKernelFunctions(),
+            FunctionChoiceBehavior.Auto(),
         )
 
     logger_mock.info.assert_any_call(
