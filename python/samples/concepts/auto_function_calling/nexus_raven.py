@@ -88,11 +88,13 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             prompt=chat_history.messages[-1].content,
             settings=settings,
         )
-        fcc, frc = await self._execute_function_calls(result[0], **kwargs)
-        if fcc:
+        function_call, function_result = await self._execute_function_calls(result[0], **kwargs)
+        if function_call:
             return [
-                ChatMessageContent(role="assistant", items=[fcc], metadata={"ai_model_id": self.ai_model_id}),
-                ChatMessageContent(role="tool", items=[frc], name="nexus", metadata={"ai_model_id": self.ai_model_id}),
+                ChatMessageContent(role="assistant", items=[function_call], metadata={"ai_model_id": self.ai_model_id}),
+                ChatMessageContent(
+                    role="tool", items=[function_result], name="nexus", metadata={"ai_model_id": self.ai_model_id}
+                ),
             ]
         return [ChatMessageContent(role="assistant", items=result, metadata={"ai_model_id": self.ai_model_id})]
 
