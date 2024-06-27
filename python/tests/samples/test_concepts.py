@@ -37,9 +37,6 @@ from samples.concepts.plugins.openai_function_calling_with_custom_plugin import 
 )
 from samples.concepts.plugins.openai_plugin_azure_key_vault import main as openai_plugin_azure_key_vault
 from samples.concepts.plugins.openai_plugin_klarna import main as openai_plugin_klarna
-from samples.concepts.plugins.plugin_with_param_not_included_in_function_schema import (
-    main as plugin_with_param_not_included_in_function_schema,
-)
 from samples.concepts.plugins.plugins_from_dir import main as plugins_from_dir
 from samples.concepts.prompt_templates.azure_chat_gpt_api_handlebars import main as azure_chat_gpt_api_handlebars
 from samples.concepts.prompt_templates.azure_chat_gpt_api_jinja2 import main as azure_chat_gpt_api_jinja2
@@ -92,11 +89,6 @@ concepts = [
     param(custom_service_selector, [], id="custom_service_selector"),
     param(function_defined_in_json_prompt, ["What is 3+3?", "exit"], id="function_defined_in_json_prompt"),
     param(function_defined_in_yaml_prompt, ["What is 3+3?", "exit"], id="function_defined_in_yaml_prompt"),
-    param(
-        plugin_with_param_not_included_in_function_schema,
-        ["What is the result of x=1 and y=2?", "exit"],
-        id="plugin_with_param_not_included_in_function_schema",
-    ),
 ]
 
 
