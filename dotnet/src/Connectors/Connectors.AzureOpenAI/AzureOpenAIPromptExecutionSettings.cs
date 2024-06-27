@@ -191,18 +191,18 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <item>To disable all tool calling, set the property to null (the default).</item>
     /// <item>
     /// To request that the model use a specific function, set the property to an instance returned
-    /// from <see cref="AzureToolCallBehavior.RequireFunction"/>.
+    /// from <see cref="AzureOpenAIToolCallBehavior.RequireFunction"/>.
     /// </item>
     /// <item>
     /// To allow the model to request one of any number of functions, set the property to an
-    /// instance returned from <see cref="AzureToolCallBehavior.EnableFunctions"/>, called with
+    /// instance returned from <see cref="AzureOpenAIToolCallBehavior.EnableFunctions"/>, called with
     /// a list of the functions available.
     /// </item>
     /// <item>
     /// To allow the model to request one of any of the functions in the supplied <see cref="Kernel"/>,
-    /// set the property to <see cref="AzureToolCallBehavior.EnableKernelFunctions"/> if the client should simply
+    /// set the property to <see cref="AzureOpenAIToolCallBehavior.EnableKernelFunctions"/> if the client should simply
     /// send the information about the functions and not handle the response in any special manner, or
-    /// <see cref="AzureToolCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
+    /// <see cref="AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
     /// invoke the function and send the result back to the service.
     /// </item>
     /// </list>
@@ -213,7 +213,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// the function, and sending back the result. The intermediate messages will be retained in the
     /// <see cref="ChatHistory"/> if an instance was provided.
     /// </remarks>
-    public AzureToolCallBehavior? ToolCallBehavior
+    public AzureOpenAIToolCallBehavior? ToolCallBehavior
     {
         get => this._toolCallBehavior;
 
@@ -403,7 +403,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     private long? _seed;
     private object? _responseFormat;
     private IDictionary<int, int>? _tokenSelectionBiases;
-    private AzureToolCallBehavior? _toolCallBehavior;
+    private AzureOpenAIToolCallBehavior? _toolCallBehavior;
     private string? _user;
     private string? _chatSystemPrompt;
     private bool? _logprobs;

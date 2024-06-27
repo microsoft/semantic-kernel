@@ -13,7 +13,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -870,7 +869,7 @@ internal abstract class ClientCore
 
         if (!string.IsNullOrWhiteSpace(executionSettings.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
         {
-            messages.AddRange(GetRequestMessages(new ChatMessageContent(AuthorRole.System, executionSettings!.ChatSystemPrompt), executionSettings.ToolCallBehavior));
+            messages.Add(new SystemChatMessage(executionSettings.ChatSystemPrompt));
         }
 
         foreach (var message in chatHistory)
@@ -901,7 +900,7 @@ internal abstract class ClientCore
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
-    private static List<ChatMessage> GetRequestMessages(ChatMessageContent message, AzureToolCallBehavior? toolCallBehavior)
+    private static List<ChatMessage> GetRequestMessages(ChatMessageContent message, AzureOpenAIToolCallBehavior? toolCallBehavior)
     {
         if (message.Role == AuthorRole.System)
         {
@@ -1088,9 +1087,9 @@ internal abstract class ClientCore
         return message;
     }
 
-    private IEnumerable<FunctionCallContent> GetFunctionCallContents(IEnumerable<ChatToolCall> toolCalls)
+    private List<FunctionCallContent> GetFunctionCallContents(IEnumerable<ChatToolCall> toolCalls)
     {
-        List<FunctionCallContent>? result = null;
+        List<FunctionCallContent> result = [];
 
         foreach (var toolCall in toolCalls)
         {
@@ -1135,12 +1134,11 @@ internal abstract class ClientCore
                     Exception = exception
                 };
 
-                result ??= [];
                 result.Add(functionCallContent);
             }
         }
 
-        return result ?? Enumerable.Empty<FunctionCallContent>();
+        return result;
     }
 
     private static void AddResponseMessage(List<ChatMessage> chatMessages, ChatHistory chat, string? result, string? errorMessage, ChatToolCall toolCall, ILogger logger)
@@ -1184,7 +1182,7 @@ internal abstract class ClientCore
         {
             return await request.Invoke().ConfigureAwait(false);
         }
-        catch (RequestFailedException e)
+        catch (ClientResultException e)
         {
             throw e.ToHttpOperationException();
         }
@@ -1196,7 +1194,7 @@ internal abstract class ClientCore
         {
             return request.Invoke();
         }
-        catch (RequestFailedException e)
+        catch (ClientResultException e)
         {
             throw e.ToHttpOperationException();
         }
@@ -1232,7 +1230,7 @@ internal abstract class ClientCore
     /// <param name="functionResult">The result of the function call.</param>
     /// <param name="toolCallBehavior">The ToolCallBehavior object containing optional settings like JsonSerializerOptions.TypeInfoResolver.</param>
     /// <returns>A string representation of the function result.</returns>
-    private static string? ProcessFunctionResult(object functionResult, AzureToolCallBehavior? toolCallBehavior)
+    private static string? ProcessFunctionResult(object functionResult, AzureOpenAIToolCallBehavior? toolCallBehavior)
     {
         if (functionResult is string stringResult)
         {

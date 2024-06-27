@@ -2,7 +2,6 @@
 
 using System.IO;
 using System.Net.Http;
-using System.Text;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests;
 
@@ -26,6 +25,6 @@ internal static class AzureOpenAITestHelper
     /// <param name="fileName">Name of the file with test response.</param>
     internal static StreamContent GetTestResponseAsStream(string fileName)
     {
-        return new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(AzureOpenAITestHelper.GetTestResponse(fileName))));
+        return new StreamContent(File.OpenRead($"./TestData/{fileName}"));
     }
 }

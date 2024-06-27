@@ -11,7 +11,7 @@ using OpenAI.Chat;
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>Represents a behavior for Azure OpenAI tool calls.</summary>
-public abstract class AzureToolCallBehavior
+public abstract class AzureOpenAIToolCallBehavior
 {
     // NOTE: Right now, the only tools that are available are for function calling. In the future,
     // this class can be extended to support additional kinds of tools, including composite ones:
@@ -45,7 +45,7 @@ public abstract class AzureToolCallBehavior
     /// <remarks>
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static AzureToolCallBehavior EnableKernelFunctions { get; } = new KernelFunctions(autoInvoke: false);
+    public static AzureOpenAIToolCallBehavior EnableKernelFunctions { get; } = new KernelFunctions(autoInvoke: false);
 
     /// <summary>
     /// Gets an instance that will both provide all of the <see cref="Kernel"/>'s plugins' function information
@@ -56,16 +56,16 @@ public abstract class AzureToolCallBehavior
     /// handling invoking any requested functions and supplying the results back to the model.
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static AzureToolCallBehavior AutoInvokeKernelFunctions { get; } = new KernelFunctions(autoInvoke: true);
+    public static AzureOpenAIToolCallBehavior AutoInvokeKernelFunctions { get; } = new KernelFunctions(autoInvoke: true);
 
     /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
     /// <param name="functions">The functions that should be made available to the model.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
     /// <returns>
-    /// The <see cref="AzureToolCallBehavior"/> that may be set into <see cref="AzureOpenAIPromptExecutionSettings.ToolCallBehavior"/>
+    /// The <see cref="AzureOpenAIToolCallBehavior"/> that may be set into <see cref="AzureOpenAIPromptExecutionSettings.ToolCallBehavior"/>
     /// to indicate that the specified functions should be made available to the model.
     /// </returns>
-    public static AzureToolCallBehavior EnableFunctions(IEnumerable<AzureOpenAIFunction> functions, bool autoInvoke = false)
+    public static AzureOpenAIToolCallBehavior EnableFunctions(IEnumerable<AzureOpenAIFunction> functions, bool autoInvoke = false)
     {
         Verify.NotNull(functions);
         return new EnabledFunctions(functions, autoInvoke);
@@ -75,17 +75,17 @@ public abstract class AzureToolCallBehavior
     /// <param name="function">The function the model should request to use.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
     /// <returns>
-    /// The <see cref="AzureToolCallBehavior"/> that may be set into <see cref="AzureOpenAIPromptExecutionSettings.ToolCallBehavior"/>
+    /// The <see cref="AzureOpenAIToolCallBehavior"/> that may be set into <see cref="AzureOpenAIPromptExecutionSettings.ToolCallBehavior"/>
     /// to indicate that the specified function should be requested by the model.
     /// </returns>
-    public static AzureToolCallBehavior RequireFunction(AzureOpenAIFunction function, bool autoInvoke = false)
+    public static AzureOpenAIToolCallBehavior RequireFunction(AzureOpenAIFunction function, bool autoInvoke = false)
     {
         Verify.NotNull(function);
         return new RequiredFunction(function, autoInvoke);
     }
 
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
-    private AzureToolCallBehavior(bool autoInvoke)
+    private AzureOpenAIToolCallBehavior(bool autoInvoke)
     {
         this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
     }
@@ -123,10 +123,10 @@ public abstract class AzureToolCallBehavior
     internal abstract (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel);
 
     /// <summary>
-    /// Represents a <see cref="AzureToolCallBehavior"/> that will provide to the model all available functions from a
+    /// Represents a <see cref="AzureOpenAIToolCallBehavior"/> that will provide to the model all available functions from a
     /// <see cref="Kernel"/> provided by the client. Setting this will have no effect if no <see cref="Kernel"/> is provided.
     /// </summary>
-    internal sealed class KernelFunctions : AzureToolCallBehavior
+    internal sealed class KernelFunctions : AzureOpenAIToolCallBehavior
     {
         internal KernelFunctions(bool autoInvoke) : base(autoInvoke) { }
 
@@ -145,9 +145,10 @@ public abstract class AzureToolCallBehavior
                 if (functions.Count > 0)
                 {
                     choice = ChatToolChoice.Auto;
+                    tools = [];
                     for (int i = 0; i < functions.Count; i++)
                     {
-                        (tools ??= []).Add(functions[i].ToAzureOpenAIFunction().ToFunctionDefinition());
+                        tools.Add(functions[i].ToAzureOpenAIFunction().ToFunctionDefinition());
                     }
                 }
             }
@@ -159,9 +160,9 @@ public abstract class AzureToolCallBehavior
     }
 
     /// <summary>
-    /// Represents a <see cref="AzureToolCallBehavior"/> that provides a specified list of functions to the model.
+    /// Represents a <see cref="AzureOpenAIToolCallBehavior"/> that provides a specified list of functions to the model.
     /// </summary>
-    internal sealed class EnabledFunctions : AzureToolCallBehavior
+    internal sealed class EnabledFunctions : AzureOpenAIToolCallBehavior
     {
         private readonly AzureOpenAIFunction[] _openAIFunctions;
         private readonly ChatTool[] _functions;
@@ -204,6 +205,7 @@ public abstract class AzureToolCallBehavior
                 }
 
                 choice = ChatToolChoice.Auto;
+                tools = [];
                 for (int i = 0; i < openAIFunctions.Length; i++)
                 {
                     // Make sure that if auto-invocation is specified, every enabled function can be found in the kernel.
@@ -218,7 +220,7 @@ public abstract class AzureToolCallBehavior
                     }
 
                     // Add the function.
-                    (tools ??= []).Add(functions[i]);
+                    tools.Add(functions[i]);
                 }
             }
 
@@ -226,8 +228,8 @@ public abstract class AzureToolCallBehavior
         }
     }
 
-    /// <summary>Represents a <see cref="AzureToolCallBehavior"/> that requests the model use a specific function.</summary>
-    internal sealed class RequiredFunction : AzureToolCallBehavior
+    /// <summary>Represents a <see cref="AzureOpenAIToolCallBehavior"/> that requests the model use a specific function.</summary>
+    internal sealed class RequiredFunction : AzureOpenAIToolCallBehavior
     {
         private readonly AzureOpenAIFunction _function;
         private readonly ChatTool _tool;

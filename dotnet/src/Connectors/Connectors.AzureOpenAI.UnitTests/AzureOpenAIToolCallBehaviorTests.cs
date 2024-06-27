@@ -5,20 +5,20 @@ using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using OpenAI.Chat;
-using static Microsoft.SemanticKernel.Connectors.AzureOpenAI.AzureToolCallBehavior;
+using static Microsoft.SemanticKernel.Connectors.AzureOpenAI.AzureOpenAIToolCallBehavior;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="AzureToolCallBehavior"/>
+/// Unit tests for <see cref="AzureOpenAIToolCallBehavior"/>
 /// </summary>
-public sealed class AzureToolCallBehaviorTests
+public sealed class AzureOpenAIToolCallBehaviorTests
 {
     [Fact]
     public void EnableKernelFunctionsReturnsCorrectKernelFunctionsInstance()
     {
         // Arrange & Act
-        var behavior = AzureToolCallBehavior.EnableKernelFunctions;
+        var behavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions;
 
         // Assert
         Assert.IsType<KernelFunctions>(behavior);
@@ -30,7 +30,7 @@ public sealed class AzureToolCallBehaviorTests
     {
         // Arrange & Act
         const int DefaultMaximumAutoInvokeAttempts = 128;
-        var behavior = AzureToolCallBehavior.AutoInvokeKernelFunctions;
+        var behavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions;
 
         // Assert
         Assert.IsType<KernelFunctions>(behavior);
@@ -42,7 +42,7 @@ public sealed class AzureToolCallBehaviorTests
     {
         // Arrange & Act
         List<AzureOpenAIFunction> functions = [new("Plugin", "Function", "description", [], null)];
-        var behavior = AzureToolCallBehavior.EnableFunctions(functions);
+        var behavior = AzureOpenAIToolCallBehavior.EnableFunctions(functions);
 
         // Assert
         Assert.IsType<EnabledFunctions>(behavior);
@@ -52,7 +52,7 @@ public sealed class AzureToolCallBehaviorTests
     public void RequireFunctionReturnsRequiredFunctionInstance()
     {
         // Arrange & Act
-        var behavior = AzureToolCallBehavior.RequireFunction(new("Plugin", "Function", "description", [], null));
+        var behavior = AzureOpenAIToolCallBehavior.RequireFunction(new("Plugin", "Function", "description", [], null));
 
         // Assert
         Assert.IsType<RequiredFunction>(behavior);

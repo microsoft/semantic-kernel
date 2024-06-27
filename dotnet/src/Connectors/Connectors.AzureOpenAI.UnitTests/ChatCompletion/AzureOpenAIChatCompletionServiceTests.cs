@@ -237,7 +237,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
     [Theory]
     [MemberData(nameof(ToolCallBehaviors))]
-    public async Task GetChatMessageContentsWorksCorrectlyAsync(AzureToolCallBehavior behavior)
+    public async Task GetChatMessageContentsWorksCorrectlyAsync(AzureOpenAIToolCallBehavior behavior)
     {
         // Arrange
         var kernel = Kernel.CreateBuilder().Build();
@@ -288,7 +288,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]));
 
         var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureToolCallBehavior.AutoInvokeKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_multiple_function_calls_test_response.json")) };
         using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
@@ -324,7 +324,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]));
 
         var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureToolCallBehavior.AutoInvokeKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         var responses = new List<HttpResponseMessage>();
 
@@ -361,7 +361,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         kernel.Plugins.Add(plugin);
 
         var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureToolCallBehavior.RequireFunction(openAIFunction, autoInvoke: true) };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.RequireFunction(openAIFunction, autoInvoke: true) };
 
         using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_single_function_call_test_response.json")) };
         using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
@@ -458,7 +458,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]));
 
         var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureToolCallBehavior.AutoInvokeKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_streaming_multiple_function_calls_test_response.txt") };
         using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_streaming_test_response.txt") };
@@ -502,7 +502,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]));
 
         var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureToolCallBehavior.AutoInvokeKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         var responses = new List<HttpResponseMessage>();
 
@@ -541,7 +541,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         kernel.Plugins.Add(plugin);
 
         var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureToolCallBehavior.RequireFunction(openAIFunction, autoInvoke: true) };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.RequireFunction(openAIFunction, autoInvoke: true) };
 
         using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_streaming_single_function_call_test_response.txt") };
         using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = AzureOpenAITestHelper.GetTestResponseAsStream("chat_completion_streaming_test_response.txt") };
@@ -700,7 +700,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Fake prompt");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         // Act
         var result = await sut.GetChatMessageContentAsync(chatHistory, settings);
@@ -770,7 +770,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             new ChatMessageContent(AuthorRole.Assistant, items)
         ];
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         // Act
         await sut.GetChatMessageContentAsync(chatHistory, settings);
@@ -829,7 +829,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             ])
         };
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         // Act
         await sut.GetChatMessageContentAsync(chatHistory, settings);
@@ -874,7 +874,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             ])
         };
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         // Act
         await sut.GetChatMessageContentAsync(chatHistory, settings);
@@ -905,10 +905,10 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         this._messageHandlerStub.Dispose();
     }
 
-    public static TheoryData<AzureToolCallBehavior> ToolCallBehaviors => new()
+    public static TheoryData<AzureOpenAIToolCallBehavior> ToolCallBehaviors => new()
     {
-        AzureToolCallBehavior.EnableKernelFunctions,
-        AzureToolCallBehavior.AutoInvokeKernelFunctions
+        AzureOpenAIToolCallBehavior.EnableKernelFunctions,
+        AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions
     };
 
     public static TheoryData<object, string?> ResponseFormats => new()

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Chat;
+using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -25,7 +26,7 @@ public sealed class AzureOpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatMessageContent"/> class.
     /// </summary>
-    internal AzureOpenAIChatMessageContent(OpenAI.Chat.ChatCompletion completion, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
+    internal AzureOpenAIChatMessageContent(OpenAIChatCompletion completion, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(new AuthorRole(completion.Role.ToString()), CreateContentItems(completion.Content), modelId, completion, System.Text.Encoding.UTF8, CreateMetadataDictionary(completion.ToolCalls, metadata))
     {
         this.ToolCalls = completion.ToolCalls;
