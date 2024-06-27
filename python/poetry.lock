@@ -7018,4 +7018,4 @@ weaviate = ["weaviate-client"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "1f7da20d986a695f80ec43e38934d0d0231ca8c61ae637e35f252558526423d9"
+content-hash = "6609884aa96dafcdb5f2c3d4e3b1f22b599eeb8d9afb24f6bf1f19ce9a65f122"
