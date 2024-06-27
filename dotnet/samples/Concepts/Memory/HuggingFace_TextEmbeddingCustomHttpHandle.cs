@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
@@ -28,7 +28,7 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
             {
                 CheckCertificateRevocationList = true
             })
-    );
+        );
 
         var sqliteMemory = await SqliteMemoryStore.ConnectAsync("./../../../Sqlite.sqlite");
 
@@ -44,32 +44,32 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
 
         await skMemory.SaveInformationAsync("Test", "THIS IS A SAMPLE", "sample", "TEXT");
     }
-}
 
-public sealed class CustomHttpClientHandler : HttpClientHandler
-{
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    private sealed class CustomHttpClientHandler : HttpClientHandler
     {
-        // Log the request URI
-        Console.WriteLine($"Request: {request.Method} {request.RequestUri}");
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            // Log the request URI
+            //Console.WriteLine($"Request: {request.Method} {request.RequestUri}");
 
-        // Send the request and get the response
-        HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
+            // Send the request and get the response
+            HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
 
-        // Log the response status code
-        Console.WriteLine($"Response: {(int)response.StatusCode} {response.ReasonPhrase}");
+            // Log the response status code
+            //Console.WriteLine($"Response: {(int)response.StatusCode} {response.ReasonPhrase}");
 
-        // You can manipulate the response here
-        // For example, add a custom header
-        // response.Headers.Add("X-Custom-Header", "CustomValue");
+            // You can manipulate the response here
+            // For example, add a custom header
+            // response.Headers.Add("X-Custom-Header", "CustomValue");
 
-        // For example, modify the response content
-        string originalContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        var modifiedContent = JsonSerializer.Deserialize<List<List<List<ReadOnlyMemory<float>>>>>(originalContent);
-        var modifiedResponse = JsonSerializer.Serialize(modifiedContent[0][0].ToList());
-        response.Content = new StringContent(modifiedResponse);
+            // For example, modify the response content
+            string originalContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var modifiedContent = JsonSerializer.Deserialize<List<List<List<ReadOnlyMemory<float>>>>>(originalContent);
+            var modifiedResponse = JsonSerializer.Serialize(modifiedContent[0][0].ToList());
+            response.Content = new StringContent(modifiedResponse);
 
-        // Return the modified response
-        return response;
+            // Return the modified response
+            return response;
+        }
     }
 }
