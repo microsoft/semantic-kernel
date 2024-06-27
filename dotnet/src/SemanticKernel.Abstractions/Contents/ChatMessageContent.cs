@@ -26,7 +26,6 @@ public class ChatMessageContent : KernelContent
         set => this._authorName = string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
-
     /// <summary>
     /// Role of the author of the message
     /// </summary>

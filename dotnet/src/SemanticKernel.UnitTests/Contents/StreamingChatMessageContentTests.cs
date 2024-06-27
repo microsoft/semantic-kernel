@@ -128,7 +128,7 @@ public class StreamingChatMessageContentTests
     public void ContentPropertySetterShouldConvertEmptyOrWhitespaceAuthorNameToNull(string? authorName)
     {
         // Arrange
-        var message = new ChatMessageContent(AuthorRole.User, content: null)
+        var message = new StreamingChatMessageContent(AuthorRole.User, content: null)
         {
             AuthorName = authorName
         };
