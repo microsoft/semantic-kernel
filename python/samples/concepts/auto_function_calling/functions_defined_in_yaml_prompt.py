@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 #         - math.Add
 
 # This is another way of configuring the function choice behavior for the model like:
-# FunctionChoiceBehvaior.Auto(filters={"included_functions": ["time.date", "time.time", "math.Add"]})
+# FunctionChoiceBehavior.Auto(filters={"included_functions": ["time.date", "time.time", "math.Add"]})
 
 # The `maximum_auto_invoke_attempts` attribute is used to control the number of times the model will attempt to call a
 # function. If wanting to disable auto function calling, set this attribute to 0 or configure the
