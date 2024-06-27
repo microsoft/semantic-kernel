@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -129,7 +129,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         //Assert
 
         Assert.NotNull(embeddings);
-        Assert.Equal(1, embeddings.Count);
+        Assert.Single(embeddings);
         Assert.Equal(1024, embeddings.First().Length);
     }
 
