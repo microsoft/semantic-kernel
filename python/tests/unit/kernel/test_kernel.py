@@ -2,24 +2,34 @@
 
 import os
 from typing import Union
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
     OpenAIFunctionExecutionParameters,
 )
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
-from semantic_kernel.exceptions import KernelFunctionAlreadyExistsError, KernelServiceNotFoundError
+from semantic_kernel.contents import ChatMessageContent
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.exceptions import (
+    FunctionCallInvalidArgumentsException,
+    KernelFunctionAlreadyExistsError,
+    KernelServiceNotFoundError,
+)
 from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.exceptions.template_engine_exceptions import TemplateSyntaxError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -157,6 +167,89 @@ async def test_invoke_prompt_no_prompt_error(kernel: Kernel):
             plugin_name="test_plugin",
             prompt="",
         )
+
+
+@pytest.mark.asyncio
+async def test_invoke_function_call(kernel: Kernel):
+    tool_call_mock = MagicMock(spec=FunctionCallContent)
+    tool_call_mock.split_name_dict.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.to_kernel_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.name = "test_function"
+    tool_call_mock.arguments = {"arg_name": "arg_value"}
+    tool_call_mock.ai_model_id = None
+    tool_call_mock.metadata = {}
+    tool_call_mock.index = 0
+    tool_call_mock.parse_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.id = "test_id"
+    result_mock = MagicMock(spec=ChatMessageContent)
+    result_mock.items = [tool_call_mock]
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    func_mock = AsyncMock(spec=KernelFunction)
+    func_meta = KernelFunctionMetadata(name="test_function", is_prompt=False)
+    func_mock.metadata = func_meta
+    func_mock.name = "test_function"
+    func_result = FunctionResult(value="Function result", function=func_meta)
+    func_mock.invoke = MagicMock(return_value=func_result)
+
+    arguments = KernelArguments()
+
+    with patch("semantic_kernel.kernel.logger", autospec=True):
+        await kernel.invoke_function_call(
+            tool_call_mock,
+            chat_history_mock,
+            arguments,
+            1,
+            0,
+            FunctionChoiceBehavior.Auto(),
+        )
+
+
+@pytest.mark.asyncio
+async def test_invoke_function_call_with_continuation_on_malformed_arguments(kernel: Kernel):
+    tool_call_mock = MagicMock(spec=FunctionCallContent)
+    tool_call_mock.to_kernel_arguments.side_effect = FunctionCallInvalidArgumentsException("Malformed arguments")
+    tool_call_mock.name = "test_function"
+    tool_call_mock.arguments = {"arg_name": "arg_value"}
+    tool_call_mock.ai_model_id = None
+    tool_call_mock.metadata = {}
+    tool_call_mock.index = 0
+    tool_call_mock.to_kernel_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.id = "test_id"
+    result_mock = MagicMock(spec=ChatMessageContent)
+    result_mock.items = [tool_call_mock]
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    func_mock = MagicMock(spec=KernelFunction)
+    func_meta = KernelFunctionMetadata(name="test_function", is_prompt=False)
+    func_mock.metadata = func_meta
+    func_mock.name = "test_function"
+    func_result = FunctionResult(value="Function result", function=func_meta)
+    func_mock.invoke = AsyncMock(return_value=func_result)
+    arguments = KernelArguments()
+
+    with patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock:
+        await kernel.invoke_function_call(
+            tool_call_mock,
+            chat_history_mock,
+            arguments,
+            1,
+            0,
+            FunctionChoiceBehavior.Auto(),
+        )
+
+    logger_mock.info.assert_any_call(
+        "Received invalid arguments for function test_function: Malformed arguments. Trying tool call again."
+    )
+
+    add_message_calls = chat_history_mock.add_message.call_args_list
+    assert any(
+        call[1]["message"].items[0].result
+        == "The tool call arguments are malformed. Arguments must be in JSON format. Please try again."  # noqa: E501
+        and call[1]["message"].items[0].id == "test_id"
+        and call[1]["message"].items[0].name == "test_function"
+        for call in add_message_calls
+    ), "Expected call to add_message not found with the expected message content and metadata."
 
 
 # endregion
