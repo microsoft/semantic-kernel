@@ -2,10 +2,11 @@
 
 import ast
 import asyncio
+import json
 import math
 from collections.abc import AsyncGenerator
 from html import escape
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from huggingface_hub import AsyncInferenceClient
 from pydantic import HttpUrl
@@ -28,7 +29,6 @@ from semantic_kernel.contents import (
     TextContent,
 )
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions import KernelArguments, KernelFunction, kernel_function
 from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE
 from semantic_kernel.services import AIServiceSelector
@@ -121,12 +121,15 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             prompt=chat_history.messages[-1].content,
             settings=settings,
         )
-        fcc = await self._create_function_call_stack(result[0], kernel)
+        fcc, frc = await self._execute_function_calls(result[0], kernel)
         if fcc:
-            return fcc
+            return [
+                ChatMessageContent(role="assistant", items=[fcc], metadata={"ai_model_id": self.ai_model_id}),
+                ChatMessageContent(role="tool", items=[frc], metadata={"ai_model_id": self.ai_model_id}),
+            ]
         return [ChatMessageContent(role="assistant", items=result, metadata={"ai_model_id": self.ai_model_id})]
 
-    async def _create_function_call_stack(self, result: TextContent, kernel: Kernel) -> list[ChatMessageContent] | None:
+    async def _execute_function_calls(self, result: TextContent, kernel: Kernel) -> list[ChatMessageContent] | None:
         function_call = result.text.strip().split("\n")[0].strip("Call:").strip()
         if not function_call:
             return None
@@ -137,7 +140,6 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         call_stack = {}
         queue = []
         current = parsed_fc.body
-        # call_stack.append(parsed_fc)
         queue.append((idx, parsed_fc.body))
         idx += 1
         while queue:
@@ -157,6 +159,7 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                 "func": current.func.id.replace("_", "-", 1),
                 "args": args,
                 "dependent_on": dependent_on,
+                "fcc": None,
                 "result": None,
             }
             call_stack[current_idx] = call
@@ -165,32 +168,27 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                 *[
                     self._execute_function_call(call, kernel)
                     for call in call_stack.values()
-                    if not any(isinstance(arg, tuple) for arg in call["args"].values())
+                    if not any(isinstance(arg, tuple) for arg in call["args"].values()) and call["result"] is None
                 ]
             )
             for call in call_stack.values():
                 if call["result"] is None:
-                    for arg in call["args"].values():
+                    for name, arg in call["args"].items():
                         if isinstance(arg, tuple) and call_stack[arg[0]]["result"] is not None:
-                            arg[0] = str(call_stack[arg[0]]["result"])
-        print(call_stack)
+                            function_result: FunctionResultContent = call_stack[arg[0]]["result"]
+                            call["args"][name] = function_result.result
+        return call_stack[0]["fcc"], call_stack[0]["result"]
 
     async def _execute_function_call(self, call_def: dict[str, Any], kernel: Kernel) -> FunctionResultContent:
         """Execute a function call."""
-        fcc = FunctionCallContent(name=call_def["func"], arguments=call_def["args"], id=call_def["idx"])
-        kernel_function = kernel.get_function_from_fully_qualified_function_name(fcc.name)
-        kernel_arguments = fcc.get_kernel_arguments()
-        call_def["result"] = await kernel_function.invoke(kernel=kernel, arguments=kernel_arguments)
-
-    def _function_call_from_text(self, function_call: str) -> tuple[str, dict[str, str]]:
-        function_name, args = function_call.split("(")
-        function_name = function_name.replace("_", "-", 1)
-        args = args.strip(")").split(",")
-        arguments = {}
-        for arg in args:
-            key, value = arg.split("=", maxsplit=1)
-            arguments[key.strip()] = value.strip()
-        return function_name, arguments
+        call_def["fcc"] = FunctionCallContent(
+            name=call_def["func"], arguments=json.dumps(call_def["args"]), id=str(call_def["idx"])
+        )
+        kernel_function = kernel.get_function_from_fully_qualified_function_name(call_def["fcc"].name)
+        kernel_arguments = call_def["fcc"].to_kernel_arguments()
+        call_def["result"] = FunctionResultContent.from_function_call_content_and_result(
+            call_def["fcc"], await kernel_function.invoke(kernel=kernel, arguments=kernel_arguments)
+        )
 
     async def get_text_contents(self, prompt: str, settings: NexusRavenPromptExecutionSettings) -> list[TextContent]:
         result = await self.client.text_generation(prompt, **settings.prepare_settings_dict(), stream=False)
@@ -228,8 +226,29 @@ def cylinder_volume(
     return math.pi * (radius**2) * height
 
 
+@kernel_function
+def calculator(
+    input_a: Annotated[float, "Required. The first input."],
+    input_b: Annotated[float, "Required. The second input."],
+    operation: Annotated[
+        Literal["add", "subtract", "multiply", "divide"],
+        "The operation, choices include: add to add two numbers, subtract to subtract two numbers, "
+        "multiply to multiply two numbers, and divide to divide them.",
+    ],
+):
+    """Computes a calculation."""
+    match operation:
+        case "add":
+            return input_a + input_b
+        case "subtract":
+            return input_a - input_b
+        case "multiply":
+            return input_a * input_b
+        case "divide":
+            return input_a / input_b
+
+
 kernel = Kernel()
-# ai_service_selector=ServiceSelector())
 kernel.add_service(
     NexusRavenCompletion(service_id="nexus", ai_model_id="raven", endpoint_url="http://nexusraven.nexusflow.ai")
 )
@@ -267,8 +286,8 @@ function_call_prompt = """{{chat_history}}&lt;human&gt;:
 Please pick a function from the above options that best answers the user query and fill in the appropriate arguments.&lt;human_end&gt;"""  # noqa: E501
 chat_prompt = """You are a chatbot that get's fed questions and basic answers, you write out the response to the question based on the answer, but you do not supply underlying math formulas, just a nice sentence that repeats the question and gives the answer. {{chat_history}}"""  # noqa: E501
 
-kernel.add_plugin(MathPlugin(), "math")
-kernel.add_function("math", cylinder_volume)
+# kernel.add_plugin(MathPlugin(), "math")
+kernel.add_functions("math", [cylinder_volume, calculator])
 kernel.add_function("kernel", format_functions_for_prompt)
 kernel.add_function(
     "kernel",
@@ -308,8 +327,8 @@ async def run_question(user_input: str, chat_history: ChatHistory):
     )
     result = await kernel.invoke(plugin_name="kernel", function_name="function_call", arguments=arguments)
     chat_history.add_user_message(user_input)
-    chat_history.add_message(result.value[0])
-    # chat_history.add_message(await execute_function_call(kernel, chat_history.messages[-1].items[0]))
+    for msg in result.value:
+        chat_history.add_message(msg)
     final_result = await kernel.invoke(plugin_name="kernel", function_name="chat", arguments=arguments)
     chat_history.add_message(final_result.value[0])
 
@@ -346,5 +365,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-# 'Call: math_Subtract(input=math_cylinder_volume(radius=20, height=3), amount=200) \nThought:'
