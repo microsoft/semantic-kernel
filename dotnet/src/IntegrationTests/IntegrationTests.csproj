@@ -92,9 +92,6 @@
     <None Update="testsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="testsettings.development.json" Condition="Exists('testsettings.development.json')">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <Content Include="CrossLanguage\Data\LightBulbApi.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
