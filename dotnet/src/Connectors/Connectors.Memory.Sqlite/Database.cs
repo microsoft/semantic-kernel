@@ -171,7 +171,7 @@ internal sealed class Database
     public Task DeleteBatchAsync(SqliteConnection conn, string collectionName, string[] keys, CancellationToken cancellationToken = default)
     {
         using SqliteCommand cmd = conn.CreateCommand();
-        var keyParameters = keys.Select((key, index) => $"@key{index}").ToArray();
+        var keyParameters = keys.Select((key, index) => $"@key{index}");
         var parameters = string.Join(", ", keyParameters);
 
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
