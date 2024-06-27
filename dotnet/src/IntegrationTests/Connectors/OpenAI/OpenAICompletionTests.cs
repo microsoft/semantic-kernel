@@ -128,6 +128,11 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Act
         await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
+            if (content is StreamingChatMessageContent messageContent)
+            {
+                Assert.NotNull(messageContent.Role);
+            }
+
             fullResult.Append(content);
         }
 
@@ -397,6 +402,38 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 
         // Assert
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(actual.Metadata);
+    }
+
+    [Fact]
+    public async Task AzureOpenAIInvokePromptWithMultipleResultsTestAsync()
+    {
+        // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        Kernel target = builder.Build();
+
+        var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
+
+        var executionSettings = new OpenAIPromptExecutionSettings() { MaxTokens = 150, ResultsPerPrompt = 3 };
+
+        // Act
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new(executionSettings));
+
+        // Assert
+        Assert.Null(actual.Metadata);
+
+        var chatMessageContents = actual.GetValue<IReadOnlyList<ChatMessageContent>>();
+
+        Assert.NotNull(chatMessageContents);
+        Assert.Equal(executionSettings.ResultsPerPrompt, chatMessageContents.Count);
+
+        foreach (var chatMessageContent in chatMessageContents)
+        {
+            Assert.NotNull(chatMessageContent.Metadata);
+            Assert.Contains("Pike Place", chatMessageContent.Content, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Fact]
