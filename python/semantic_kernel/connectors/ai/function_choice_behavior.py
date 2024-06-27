@@ -263,3 +263,21 @@ class FunctionChoiceBehavior(KernelBaseModel):
             filters=filters,
             **data,
         )
+
+    @classmethod
+    def from_string(cls, data: str) -> "FunctionChoiceBehavior":
+        """Create a FunctionChoiceBehavior from a string.
+
+        This method converts the provided string to a FunctionChoiceBehavior object
+        for the specified type.
+        """
+        type_value = data.lower()
+        if type_value == "auto":
+            return FunctionChoiceBehavior.Auto()
+        if type_value == "none":
+            return FunctionChoiceBehavior.NoneInvoke()
+        if type_value == "required":
+            return FunctionChoiceBehavior.Required()
+        raise ServiceInitializationError(
+            f"The specified type `{type_value}` is not supported. Allowed types are: `auto`, `none`, `required`."
+        )

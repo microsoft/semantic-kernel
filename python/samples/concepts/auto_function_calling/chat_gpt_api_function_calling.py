@@ -6,7 +6,6 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -52,12 +51,28 @@ chat_function = kernel.add_function(
     function_name="Chat",
 )
 
-# enabling or disabling function calling is done by setting the function_choice_behavior parameter for the
+# Enabling or disabling function calling is done by setting the `function_choice_behavior` attribute for the
 # prompt execution settings. When the function_call parameter is set to "auto" the model will decide which
-# function to use, if any. If you only want to use a specific function, configure the filters dict with either:
-# 'excluded_plugins', 'included_plugins', 'excluded_functions', or 'included_functions'. For example, the
-# format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
-# if the model or api version does not support this you will get an error.
+# function to use, if any.
+#
+# There are two ways to define the `function_choice_behavior` parameter:
+# 1. Using the type string as `"auto"`, `"required"`, or `"none"`. For example:
+#   configure `function_choice_behavior="auto"` parameter directly in the execution settings.
+# 2. Using the FunctionChoiceBehavior class. For example:
+#   `function_choice_behavior=FunctionChoiceBehavior.Auto()`.
+# Both of these configure the `auto` tool_choice and all of the available plugins/functions
+# registered on the kernel. If you want to limit the available plugins/functions, you must
+# configure the `filters` dictionary attribute for each type of function choice behavior.
+# For example:
+#
+# from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+
+# function_choice_behavior = FunctionChoiceBehavior.Auto(
+#     filters={"included_functions": ["time-date", "time-time", "math-Add"]}
+# )
+#
+# The filters attribute allows you to specify either: `included_functions`, `excluded_functions`,
+#  `included_plugins`, or `excluded_plugins`.
 
 # Note: the number of responses for auto invoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
@@ -66,7 +81,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(filters={"included_plugins": ["math", "time"]}),
+    function_choice_behavior="auto",
 )
 
 history = ChatHistory()

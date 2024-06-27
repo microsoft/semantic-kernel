@@ -40,8 +40,11 @@ class PromptExecutionSettings(KernelBaseModel):
         """Parse the function choice behavior data."""
         if data:
             function_choice_behavior_data = data.get("function_choice_behavior")
-            if function_choice_behavior_data and isinstance(function_choice_behavior_data, dict):
-                data["function_choice_behavior"] = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
+            if function_choice_behavior_data:
+                if isinstance(function_choice_behavior_data, str):
+                    data["function_choice_behavior"] = FunctionChoiceBehavior.from_string(function_choice_behavior_data)
+                elif isinstance(function_choice_behavior_data, dict):
+                    data["function_choice_behavior"] = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
             return data
         return None
 
