@@ -24,7 +24,7 @@ using OpenAI;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
-using AzureChatCompletion = OpenAI.Chat.ChatCompletion;
+using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -35,7 +35,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// </summary>
 internal abstract class ClientCore
 {
-    private const string CreatedMetadataKey = "Created";
     private const string PromptFilterResultsMetadataKey = "PromptFilterResults";
     private const string ContentFilterResultsMetadataKey = "ContentFilterResults";
     private const string LogProbabilityInfoMetadataKey = "LogProbabilityInfo";
@@ -125,13 +124,13 @@ internal abstract class ClientCore
             unit: "{token}",
             description: "Number of tokens used");
 
-    private static Dictionary<string, object?> GetChatChoiceMetadata(AzureChatCompletion completions)
+    private static Dictionary<string, object?> GetChatChoiceMetadata(OpenAIChatCompletion completions)
     {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         return new Dictionary<string, object?>(12)
         {
             { nameof(completions.Id), completions.Id },
-            { CreatedMetadataKey, completions.CreatedAt },
+            { nameof(completions.CreatedAt), completions.CreatedAt },
             { PromptFilterResultsMetadataKey, completions.GetContentFilterResultForPrompt() },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
@@ -149,7 +148,7 @@ internal abstract class ClientCore
         return new Dictionary<string, object?>(4)
         {
             { nameof(completionUpdate.Id), completionUpdate.Id },
-            { CreatedMetadataKey, completionUpdate.CreatedAt },
+            { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
             { nameof(completionUpdate.SystemFingerprint), completionUpdate.SystemFingerprint },
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
@@ -276,7 +275,7 @@ internal abstract class ClientCore
             var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
 
             // Make the request.
-            AzureChatCompletion? responseData = null;
+            OpenAIChatCompletion? responseData = null;
             AzureOpenAIChatMessageContent responseContent;
             using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, chatExecutionSettings))
             {
@@ -1045,7 +1044,7 @@ internal abstract class ClientCore
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
     }
 
-    private static ChatMessage GetRequestMessage(AzureChatCompletion completion)
+    private static ChatMessage GetRequestMessage(OpenAIChatCompletion completion)
     {
         if (completion.Role == ChatMessageRole.System)
         {
@@ -1065,7 +1064,7 @@ internal abstract class ClientCore
         throw new NotSupportedException($"Role {completion.Role} is not supported.");
     }
 
-    private AzureOpenAIChatMessageContent GetChatMessage(AzureChatCompletion completion)
+    private AzureOpenAIChatMessageContent GetChatMessage(OpenAIChatCompletion completion)
     {
         var message = new AzureOpenAIChatMessageContent(completion, this.DeploymentOrModelName, GetChatChoiceMetadata(completion));
 
