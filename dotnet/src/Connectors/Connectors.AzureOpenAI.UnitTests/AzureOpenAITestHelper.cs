@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.IO;
+using System.Net.Http;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests;
 
@@ -16,5 +17,14 @@ internal static class AzureOpenAITestHelper
     internal static string GetTestResponse(string fileName)
     {
         return File.ReadAllText($"./TestData/{fileName}");
+    }
+
+    /// <summary>
+    /// Reads test response from file and create <see cref="StreamContent"/>.
+    /// </summary>
+    /// <param name="fileName">Name of the file with test response.</param>
+    internal static StreamContent GetTestResponseAsStream(string fileName)
+    {
+        return new StreamContent(File.OpenRead($"./TestData/{fileName}"));
     }
 }

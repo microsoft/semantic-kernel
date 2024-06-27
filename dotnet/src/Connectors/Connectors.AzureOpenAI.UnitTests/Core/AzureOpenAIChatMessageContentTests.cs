@@ -3,9 +3,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using OpenAI.Chat;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Core;
 
@@ -18,10 +18,10 @@ public sealed class AzureOpenAIChatMessageContentTests
     public void ConstructorsWorkCorrectly()
     {
         // Arrange
-        List<ChatCompletionsToolCall> toolCalls = [new FakeChatCompletionsToolCall("id")];
+        List<ChatToolCall> toolCalls = [ChatToolCall.CreateFunctionToolCall("id", "name", "args")];
 
         // Act
-        var content1 = new AzureOpenAIChatMessageContent(new ChatRole("user"), "content1", "model-id1", toolCalls) { AuthorName = "Fred" };
+        var content1 = new AzureOpenAIChatMessageContent(ChatMessageRole.User, "content1", "model-id1", toolCalls) { AuthorName = "Fred" };
         var content2 = new AzureOpenAIChatMessageContent(AuthorRole.User, "content2", "model-id2", toolCalls);
 
         // Assert
@@ -33,11 +33,9 @@ public sealed class AzureOpenAIChatMessageContentTests
     public void GetOpenAIFunctionToolCallsReturnsCorrectList()
     {
         // Arrange
-        List<ChatCompletionsToolCall> toolCalls = [
-            new ChatCompletionsFunctionToolCall("id1", "name", string.Empty),
-            new ChatCompletionsFunctionToolCall("id2", "name", string.Empty),
-            new FakeChatCompletionsToolCall("id3"),
-            new FakeChatCompletionsToolCall("id4")];
+        List<ChatToolCall> toolCalls = [
+            ChatToolCall.CreateFunctionToolCall("id1", "name", string.Empty),
+            ChatToolCall.CreateFunctionToolCall("id2", "name", string.Empty)];
 
         var content1 = new AzureOpenAIChatMessageContent(AuthorRole.User, "content", "model-id", toolCalls);
         var content2 = new AzureOpenAIChatMessageContent(AuthorRole.User, "content", "model-id", []);
@@ -64,11 +62,9 @@ public sealed class AzureOpenAIChatMessageContentTests
             new CustomReadOnlyDictionary<string, object?>(new Dictionary<string, object?> { { "key", "value" } }) :
             new Dictionary<string, object?> { { "key", "value" } };
 
-        List<ChatCompletionsToolCall> toolCalls = [
-            new ChatCompletionsFunctionToolCall("id1", "name", string.Empty),
-            new ChatCompletionsFunctionToolCall("id2", "name", string.Empty),
-            new FakeChatCompletionsToolCall("id3"),
-            new FakeChatCompletionsToolCall("id4")];
+        List<ChatToolCall> toolCalls = [
+            ChatToolCall.CreateFunctionToolCall("id1", "name", string.Empty),
+            ChatToolCall.CreateFunctionToolCall("id2", "name", string.Empty)];
 
         // Act
         var content1 = new AzureOpenAIChatMessageContent(AuthorRole.User, "content1", "model-id1", [], metadata);
@@ -82,9 +78,9 @@ public sealed class AzureOpenAIChatMessageContentTests
         Assert.Equal(2, content2.Metadata.Count);
         Assert.Equal("value", content2.Metadata["key"]);
 
-        Assert.IsType<List<ChatCompletionsFunctionToolCall>>(content2.Metadata["ChatResponseMessage.FunctionToolCalls"]);
+        Assert.IsType<List<ChatToolCall>>(content2.Metadata["ChatResponseMessage.FunctionToolCalls"]);
 
-        var actualToolCalls = content2.Metadata["ChatResponseMessage.FunctionToolCalls"] as List<ChatCompletionsFunctionToolCall>;
+        var actualToolCalls = content2.Metadata["ChatResponseMessage.FunctionToolCalls"] as List<ChatToolCall>;
         Assert.NotNull(actualToolCalls);
 
         Assert.Equal(2, actualToolCalls.Count);
@@ -96,7 +92,7 @@ public sealed class AzureOpenAIChatMessageContentTests
         AuthorRole expectedRole,
         string expectedContent,
         string expectedModelId,
-        IReadOnlyList<ChatCompletionsToolCall> expectedToolCalls,
+        IReadOnlyList<ChatToolCall> expectedToolCalls,
         AzureOpenAIChatMessageContent actualContent,
         string? expectedName = null)
     {
@@ -106,9 +102,6 @@ public sealed class AzureOpenAIChatMessageContentTests
         Assert.Equal(expectedModelId, actualContent.ModelId);
         Assert.Same(expectedToolCalls, actualContent.ToolCalls);
     }
-
-    private sealed class FakeChatCompletionsToolCall(string id) : ChatCompletionsToolCall(id)
-    { }
 
     private sealed class CustomReadOnlyDictionary<TKey, TValue>(IDictionary<TKey, TValue> dictionary) : IReadOnlyDictionary<TKey, TValue> // explicitly not implementing IDictionary<>
     {
