@@ -10,45 +10,38 @@ import json
 import os
 from typing import Optional
 
-from azure.monitor.opentelemetry import configure_azure_monitor
 from opentelemetry import trace
-from opentelemetry.trace import Span
+from opentelemetry.trace import Span, StatusCode
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.utils.tracing.const import (
+    COMPLETION_EVENT,
+    COMPLETION_EVENT_COMPLETION,
+    COMPLETION_TOKEN,
+    ERROR_TYPE,
+    FINISH_REASON,
+    MAX_TOKEN,
+    MODEL,
+    OPERATION,
+    PROMPT_EVENT,
+    PROMPT_EVENT_PROMPT,
+    PROMPT_TOKEN,
+    RESPONSE_ID,
+    SYSTEM,
+    TEMPERATURE,
+    TOP_P,
+)
 
-# Activity tags
-_SYSTEM = "gen_ai.system"
-_OPERATION = "gen_ai.operation.name"
-_MODEL = "gen_ai.request.model"
-_MAX_TOKEN = "gen_ai.request.max_tokens"
-_TEMPERATURE = "gen_ai.request.temperature"
-_TOP_P = "gen_ai.request.top_p"
-_RESPONSE_ID = "gen_ai.response.id"
-_FINISH_REASON = "gen_ai.response.finish_reason"
-_PROMPT_TOKEN = "gen_ai.response.prompt_tokens"
-_COMPLETION_TOKEN = "gen_ai.response.completion_tokens"
+OTEL_ENABLED_ENV_VAR = "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS"
+OTEL_SENSITIVE_ENABLED_ENV_VAR = "SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE"
 
-# Activity events
-PROMPT_EVENT_PROMPT = "gen_ai.prompt"
-COMPLETION_EVENT_COMPLETION = "gen_ai.completion"
 
-_enable_diagnostics = os.getenv("SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS",
-                                "false").lower() in ("true", "1", "t")
+_enable_diagnostics = os.getenv(OTEL_ENABLED_ENV_VAR, "false").lower() in ("true", "1", "t")
+_enable_sensitive_events = os.getenv(OTEL_SENSITIVE_ENABLED_ENV_VAR, "false").lower() in ("true", "1", "t")
 
-_enable_sensitive_events = os.getenv("SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE",
-                                     "false").lower() in ("true", "1", "t")
-
-if _enable_diagnostics or _enable_sensitive_events:
-    # Configure OpenTelemetry to use Azure Monitor with the 
-    # APPLICATIONINSIGHTS_CONNECTION_STRING environment variable.
-    connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
-    if connection_string:
-        configure_azure_monitor(connection_string=connection_string)
-
-# Sets the global default tracer provider
+# Creates a tracer from the global tracer provider
 tracer = trace.get_tracer(__name__)
 
 
@@ -68,66 +61,86 @@ def are_sensitive_events_enabled() -> bool:
     return _enable_sensitive_events
 
 
-def start_completion_activity(model_name: str, model_provider: str, prompt: str,
-                              execution_settings: Optional[PromptExecutionSettings]) -> Optional[Span]:
-    """Start a text completion activity for a given model."""
+def start_completion_activity(
+    model_name: str, model_provider: str, prompt: str, execution_settings: Optional[PromptExecutionSettings]
+) -> Optional[Span]:
+    """Start a text or chat completion activity for a given model."""
     if not are_model_diagnostics_enabled():
         return None
 
-    operation_name: str = "chat.completions" if isinstance(prompt, ChatHistory) else "text.completions"
+    operation_name: str = "chat.completions"
 
     span = tracer.start_span(f"{operation_name} {model_name}")
 
     # Set attributes on the span
-    span.set_attributes({
-        _OPERATION: operation_name,
-        _SYSTEM: model_provider,
-        _MODEL: model_name,
-    })
+    span.set_attributes(
+        {
+            OPERATION: operation_name,
+            SYSTEM: model_provider,
+            MODEL: model_name,
+        }
+    )
 
     if execution_settings is not None:
-        span.set_attributes({
-            _MAX_TOKEN: str(execution_settings.extension_data.get("max_tokens")),
-            _TEMPERATURE: str(execution_settings.extension_data.get("temperature")),
-            _TOP_P: str(execution_settings.extension_data.get("top_p")),
-        })
+        attribute = execution_settings.extension_data.get("max_tokens")
+        if attribute is not None:
+            span.set_attribute(MAX_TOKEN, attribute)
+
+        attribute = execution_settings.extension_data.get("temperature")
+        if attribute is not None:
+            span.set_attribute(TEMPERATURE, attribute)
+
+        attribute = execution_settings.extension_data.get("top_p")
+        if attribute is not None:
+            span.set_attribute(TOP_P, attribute)
 
     if are_sensitive_events_enabled():
-        span.add_event(PROMPT_EVENT_PROMPT, {PROMPT_EVENT_PROMPT: prompt})
+        span.add_event(PROMPT_EVENT, {PROMPT_EVENT_PROMPT: prompt})
 
     return span
 
 
-def set_completion_response(span: Span, completions: list[ChatMessageContent], finish_reasons: list[str],
-                            response_id: str, prompt_tokens: Optional[int] = None,
-                            completion_tokens: Optional[int] = None) -> None:
-    """Set the text completion response for a given activity."""
+def set_completion_response(
+    span: Span,
+    completions: list[ChatMessageContent],
+    finish_reasons: list[str],
+    response_id: str,
+    prompt_tokens: Optional[int] = None,
+    completion_tokens: Optional[int] = None,
+) -> None:
+    """Set the a text or chat completion response for a given activity."""
     if not are_model_diagnostics_enabled():
         return
 
     if prompt_tokens:
-        span.set_attribute(_PROMPT_TOKEN, prompt_tokens)
+        span.set_attribute(PROMPT_TOKEN, prompt_tokens)
 
     if completion_tokens:
-        span.set_attribute(_COMPLETION_TOKEN, completion_tokens)
+        span.set_attribute(COMPLETION_TOKEN, completion_tokens)
 
     if finish_reasons:
-        span.set_attribute(_FINISH_REASON, ",".join(finish_reasons))
+        span.set_attribute(FINISH_REASON, ",".join(finish_reasons))
 
-    span.set_attribute(_RESPONSE_ID, response_id)
+    span.set_attribute(RESPONSE_ID, response_id)
 
-    if are_sensitive_events_enabled() and len(completions) > 0:
-        span.add_event(COMPLETION_EVENT_COMPLETION,
-                       {COMPLETION_EVENT_COMPLETION: _messages_to_openai_format(completions)})
+    if are_sensitive_events_enabled() and completions:
+        span.add_event(COMPLETION_EVENT, {COMPLETION_EVENT_COMPLETION: _messages_to_openai_format(completions)})
+
+
+def set_completion_error(span: Span, error: Exception) -> None:
+    """Set an error for a text or chat completion ."""
+    if not are_model_diagnostics_enabled():
+        return
+
+    span.set_attribute(ERROR_TYPE, str(type(error)))
+
+    span.set_status(StatusCode.ERROR, str(error))
 
 
 def _messages_to_openai_format(chat_history: list[ChatMessageContent]) -> str:
     formatted_messages = []
     for message in chat_history:
-        message_dict = {
-            "role": message.role,
-            "content": json.dumps(message.content)
-        }
+        message_dict = {"role": message.role, "content": json.dumps(message.content)}
         if any(isinstance(item, FunctionCallContent) for item in message.items):
             message_dict["tool_calls"] = _tool_calls_to_openai_format(message.items)
         formatted_messages.append(json.dumps(message_dict))

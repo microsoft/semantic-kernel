@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "1.1.1"
+version = "1.1.2"
 description = "Semantic Kernel Python SDK"
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -58,6 +58,9 @@ usearch = { version = "^2.9", optional = true}
 pyarrow = { version = ">=12.0.1,<17.0.0", optional = true}
 
 # Groups are for development only (installed through Poetry)
+opentelemetry-distro = "^0.46b0"
+opentelemetry-exporter-otlp = "^1.25.0"
+azure-monitor-opentelemetry-exporter = {version = "^1.0.0b27", allow-prereleases = true}
 [tool.poetry.group.dev.dependencies]
 pre-commit = ">=3.7.1"
 ruff = ">=0.4.5"

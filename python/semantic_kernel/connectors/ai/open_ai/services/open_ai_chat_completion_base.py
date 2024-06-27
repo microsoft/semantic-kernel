@@ -6,7 +6,7 @@ import logging
 from collections.abc import AsyncGenerator
 from copy import copy
 from functools import reduce
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
@@ -46,14 +46,15 @@ from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_c
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.kernel_filters_extension import _rebuild_auto_function_invocation_context
 from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.utils import model_diagnostics
+from semantic_kernel.utils.model_diagnostics import (
+    set_completion_error,
+    set_completion_response,
+    start_completion_activity,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
-
-
-MODEL_PROVIDER_NAME = 'openai'
 
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -67,6 +68,8 @@ class InvokeTermination(Exception):
 
 class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     """OpenAI Chat completion class."""
+
+    MODEL_PROVIDER_NAME: ClassVar[str] = "openai"
 
     # region Overriding base class methods
     # most of the methods are overridden from the ChatCompletionClientBase class, otherwise it is mentioned
@@ -276,24 +279,40 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     async def _send_chat_request(self, settings: OpenAIChatPromptExecutionSettings) -> list["ChatMessageContent"]:
         """Send the chat request."""
-        span = model_diagnostics.start_completion_activity(settings.ai_model_id, MODEL_PROVIDER_NAME,
-                                                           self._settings_messages_to_prompt(settings.messages),
-                                                           settings)
+        span = start_completion_activity(
+            settings.ai_model_id,
+            self.MODEL_PROVIDER_NAME,
+            self._settings_messages_to_prompt(settings.messages),
+            settings,
+        )
 
-        response = await self._send_request(request_settings=settings)
+        try:
+            response = await self._send_request(request_settings=settings)
+        except Exception as exception:
+            set_completion_error(span, exception)
+            span.end()
+            raise
+
         response_metadata = self._get_metadata_from_chat_response(response)
-        
-        chat_message_contents = [self._create_chat_message_content(response, choice, response_metadata)
-                                  for choice in response.choices]
-        
-        if span is not None:
+
+        chat_message_contents = [
+            self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices
+        ]
+
+        if span:
             finish_reasons: list[str] = []
             for choice in response.choices:
                 finish_reasons.append(choice.finish_reason)
             with trace.use_span(span, end_on_exit=True):
-                model_diagnostics.set_completion_response(span, chat_message_contents, finish_reasons, response.id,
-                                                          response.usage.prompt_tokens,
-                                                          response.usage.completion_tokens)
+                set_completion_response(
+                    span,
+                    chat_message_contents,
+                    finish_reasons,
+                    response.id,
+                    response.usage.prompt_tokens,
+                    response.usage.completion_tokens,
+                )
+
         return chat_message_contents
 
     async def _send_chat_stream_request(
