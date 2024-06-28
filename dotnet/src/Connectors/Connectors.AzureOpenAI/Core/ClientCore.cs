@@ -126,7 +126,7 @@ internal abstract class ClientCore
     private static Dictionary<string, object?> GetChatChoiceMetadata(OpenAIChatCompletion completions)
     {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        return new Dictionary<string, object?>(12)
+        return new Dictionary<string, object?>(8)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.CreatedAt), completions.CreatedAt },
