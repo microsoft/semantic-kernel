@@ -110,15 +110,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     }
 
     [MemberNotNull(nameof(_model))]
-    private Model GetModel()
-    {
-        if (this._model == null)
-        {
-            this._model = new Model(this._modelPath);
-        }
-
-        return this._model;
-    }
+    private Model GetModel() => this._model ??= new Model(this._modelPath);
 
     private Tokenizer GetTokenizer()
     {
