@@ -5,7 +5,6 @@ from typing import Any, Literal
 
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger = logging.getLogger(__name__)
@@ -15,11 +14,6 @@ class MistralAIPromptExecutionSettings(PromptExecutionSettings):
     """Common request settings for MistralAI services."""
 
     ai_model_id: str | None = Field(None, serialization_alias="model")
-    max_tokens: int | None = Field(None, gt=0)
-    seed: int | None = None
-    temperature: float | None = Field(None, ge=0.0, le=2.0)
-    top_p: float | None = Field(None, ge=0.0, le=1.0)
-    user: str | None = None
 
 
 class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
@@ -31,4 +25,8 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
     messages: list[dict[str, Any]] | None = None
     safe_mode: bool = False
     safe_prompt: bool = False
-    function_call_behavior: FunctionCallBehavior | None = Field(None, exclude=True)
+    max_tokens: int | None = Field(None, gt=0)
+    seed: int | None = None
+    temperature: float | None = Field(None, ge=0.0, le=2.0)
+    top_p: float | None = Field(None, ge=0.0, le=1.0)
+    random_seed: int | None = None

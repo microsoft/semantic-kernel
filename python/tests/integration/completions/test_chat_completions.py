@@ -25,6 +25,7 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from tests.integration.completions.test_utils import retry
 
 
@@ -36,6 +37,7 @@ def setup(
 ):
     kernel.add_service(services[service][0])
     kernel.add_plugin(MathPlugin(), plugin_name="math")
+    kernel.add_plugin(TimePlugin(), plugin_name="time")
     kernel.add_function(
         function_name="chat",
         plugin_name="chat",
@@ -292,6 +294,63 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["Hello", "well"],
             id="mistral_text_input",
+        ),
+        pytest.param(
+            "mistralai",
+            {
+                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                    auto_invoke=False, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is the current time?")]),
+            ],
+            [""],
+            id="mistral_tool_call_false",
+        ),
+        pytest.param(
+            "mistralai",
+            {
+                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[
+                    TextContent(
+                        text="What is the current time? Please use function calling!"
+                        )
+                    ]
+                ),
+            ],
+            [""],
+            id="mistral_tool_call_true_start_chat",
+        ),
+        pytest.param(
+            "mistralai",
+            {},
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                    ),
+                ],
+            ],
+            ["1.2"],
+            id="mistral_tool_call_flow",
         ),
     ],
 )

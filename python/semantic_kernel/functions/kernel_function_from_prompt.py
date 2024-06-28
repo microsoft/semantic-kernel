@@ -10,6 +10,7 @@ import yaml
 from pydantic import Field, ValidationError, model_validator
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
@@ -175,11 +176,19 @@ through prompt_template_config or in the prompt_template."
                 kwargs["arguments"] = context.arguments
 
             try:
-                chat_message_contents = await prompt_render_result.ai_service.get_chat_message_contents(
-                    chat_history=chat_history,
-                    settings=prompt_render_result.execution_settings,
-                    **kwargs,
-                )
+                # Test the new Concept only for MistraiAI, The other connectors are not implemented with this concept
+                if isinstance(prompt_render_result.ai_service, MistralAIChatCompletion):
+                    chat_message_contents = await prompt_render_result.ai_service.invoke(
+                        chat_history=chat_history,
+                        settings=prompt_render_result.execution_settings,
+                        **kwargs,
+                    )
+                else:
+                    chat_message_contents = await prompt_render_result.ai_service.get_chat_message_contents(
+                        chat_history=chat_history,
+                        settings=prompt_render_result.execution_settings,
+                        **kwargs,
+                    )
             except Exception as exc:
                 raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
 
@@ -218,12 +227,20 @@ through prompt_template_config or in the prompt_template."
                 kwargs["arguments"] = context.arguments
 
             chat_history = ChatHistory.from_rendered_prompt(prompt_render_result.rendered_prompt)
-
-            value: AsyncGenerator = prompt_render_result.ai_service.get_streaming_chat_message_contents(
-                chat_history=chat_history,
-                settings=prompt_render_result.execution_settings,
-                **kwargs,
-            )
+            # Test the new Concept only for MistraiAI, The other connectors are not implemented yet with this concept
+            value: AsyncGenerator
+            if isinstance(prompt_render_result.ai_service, MistralAIChatCompletion):
+                value = prompt_render_result.ai_service.invoke_streaming(
+                    chat_history=chat_history,
+                    settings=prompt_render_result.execution_settings,
+                    **kwargs,
+                )
+            else:
+                value = prompt_render_result.ai_service.get_streaming_chat_message_contents(
+                    chat_history=chat_history,
+                    settings=prompt_render_result.execution_settings,
+                    **kwargs,
+                )
         elif isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
             value = prompt_render_result.ai_service.get_streaming_text_contents(
                 prompt=prompt_render_result.rendered_prompt, settings=prompt_render_result.execution_settings

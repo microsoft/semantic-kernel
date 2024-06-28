@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 from collections.abc import AsyncGenerator
 from typing import Any
@@ -14,11 +15,12 @@ from mistralai.models.chat_completion import (
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_call_behavior import (
+    FunctionCallConfiguration,
+)
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_config_base import MistralAIConfigBase
-from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_handler import MistralAIHandler
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -31,22 +33,28 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
-    ServiceInvalidExecutionSettingsError,
-    ServiceInvalidResponseError,
+    ServiceResponseException,
 )
-from semantic_kernel.kernel import Kernel
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class MistralAIChatCompletion(MistralAIConfigBase, MistralAIHandler, ChatCompletionClientBase):
+class MistralAIChatCompletion(ChatCompletionClientBase):
     """Mistral Chat completion class."""
+
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+    async_client: MistralAsyncClient | None = None
+    requests_per_second: int = 1
 
     def __init__(
         self,
         ai_model_id: str | None = None,
         service_id: str | None = None,
         api_key: str | None = None,
+        requests_per_second: int | None = None,
         async_client: MistralAsyncClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
@@ -59,6 +67,8 @@ class MistralAIChatCompletion(MistralAIConfigBase, MistralAIHandler, ChatComplet
             service_id (str | None): Service ID tied to the execution settings.
             api_key (str | None): The optional API key to use. If provided will override,
                 the env vars or .env file value.
+            requests_per_second (int | None): The number of requests per second to make,
+                Free Tier is limited to 1 Request per second.
             async_client (Optional[MistralAsyncClient]): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
@@ -68,23 +78,24 @@ class MistralAIChatCompletion(MistralAIConfigBase, MistralAIHandler, ChatComplet
             mistralai_settings = MistralAISettings.create(
                 api_key=api_key,
                 chat_model_id=ai_model_id,
+                requests_per_second=requests_per_second,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create MistralAI settings.", ex) from ex
-        if not mistralai_settings.chat_model_id:
-            raise ServiceInitializationError("The MistralAI chat model ID is required.")
-        super().__init__(
-            ai_model_id=mistralai_settings.chat_model_id,
-            api_key=mistralai_settings.api_key.get_secret_value() if mistralai_settings.api_key else None,
-            service_id=service_id,
-            async_client=async_client,
-        )
+        
+        if not async_client:
+            async_client = MistralAsyncClient(
+                api_key=mistralai_settings.api_key.get_secret_value(),
+            )
 
-    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
-        """Create a request settings object."""
-        return MistralAIChatPromptExecutionSettings
+        super().__init__(
+            async_client=async_client,
+            requests_per_second=requests_per_second or mistralai_settings.requests_per_second,
+            service_id=service_id or mistralai_settings.chat_model_id,
+            ai_model_id=ai_model_id or mistralai_settings.chat_model_id,
+        )
 
     async def get_chat_message_contents(
         self,
@@ -103,35 +114,22 @@ class MistralAIChatCompletion(MistralAIConfigBase, MistralAIHandler, ChatComplet
         Returns:
             List[ChatMessageContent]: The completion result(s).
         """
-        kernel = kwargs.get("kernel", None)
-        arguments = kwargs.get("arguments", None)
-        if settings.function_call_behavior is not None:
-            if kernel is None:
-                raise ServiceInvalidExecutionSettingsError(
-                    "The kernel is required for MistralAI tool calls."
-                )
-            if arguments is None and settings.function_call_behavior.auto_invoke_kernel_functions:
-                raise ServiceInvalidExecutionSettingsError(
-                    "The kernel arguments are required for auto invoking MistralAI tool calls."
-                )
-            if settings.number_of_responses is not None and settings.number_of_responses > 1:
-                raise ServiceInvalidExecutionSettingsError(
-                    "Auto-invocation of tool calls may only be used with a "
-                    "MistralAIChatPromptExecutions.number_of_responses of 1."
-                )
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
 
-        # behavior for non-function calling or for enable, but not auto-invoke.
-        self._prepare_settings(settings, chat_history, kernel=kernel)
-        if settings.function_call_behavior is None or (
-            settings.function_call_behavior and not settings.function_call_behavior.auto_invoke_kernel_functions
-        ):
-            return await self._send_chat_request(settings)
-
-        # TODO(Nico Möller): Add Function Calling to Mistral
-        raise ServiceInvalidResponseError(
-            "Function Calling is not implemented yet for Mistral"
-        )
-       
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        try:
+            response = await self.async_client.chat(**settings.prepare_settings_dict())
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to complete the prompt",
+                ex,
+        ) from ex
+        
+        self.store_usage(response)
+        response_metadata = self._get_metadata_from_response(response)
+        return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
+        
     async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
@@ -150,100 +148,28 @@ class MistralAIChatCompletion(MistralAIConfigBase, MistralAIHandler, ChatComplet
             List[StreamingChatMessageContent]: A stream of
                 StreamingChatMessageContent when using Azure.
         """
-        kernel = kwargs.get("kernel", None)
-        arguments = kwargs.get("arguments", None)
-        if settings.function_call_behavior is not None:
-            if kernel is None:
-                raise ServiceInvalidExecutionSettingsError(
-                    "The kernel is required for OpenAI tool calls."
-                )
-            if arguments is None and settings.function_call_behavior.auto_invoke_kernel_functions:
-                raise ServiceInvalidExecutionSettingsError(
-                    "The kernel arguments are required for auto invoking OpenAI tool calls."
-                )
-            if settings.number_of_responses is not None and settings.number_of_responses > 1:
-                raise ServiceInvalidExecutionSettingsError(
-                    "Auto-invocation of tool calls may only be used with a "
-                    "OpenAIChatPromptExecutions.number_of_responses of 1."
-                )
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
 
-        # Prepare settings for streaming requests
-        self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
-
-        request_attempts = (
-            settings.function_call_behavior.max_auto_invoke_attempts 
-            if (settings.function_call_behavior and 
-                settings.function_call_behavior.auto_invoke_kernel_functions) 
-            else 1
-        )
-        # hold the messages, if there are more than one response, it will not be used, so we flatten
-        for request_index in range(request_attempts):
-            all_messages: list[StreamingChatMessageContent] = []
-            function_call_returned = False
-            async for messages in self._send_chat_stream_request(settings):
-                for msg in messages:
-                    if msg is not None:
-                        all_messages.append(msg)
-                        # TODO(Nico Möller): Add Function Calling 
-                        # --> See get_streaming_chat_message_contents in oai connector
-
-                yield messages
-
-            if (
-                settings.function_call_behavior is None
-                or (
-                    settings.function_call_behavior and not settings.function_call_behavior.auto_invoke_kernel_functions
-                )
-                or not function_call_returned
-            ):
-                # no need to process function calls
-                # note that we don't check the FinishReason and instead check whether there are any tool calls,
-                # as the service may return a FinishReason of "stop" even if there are tool calls to be made,
-                # in particular if a required tool is specified.
-                return
-
-            # TODO(Nico Möller): Add Function Calling --> See get_streaming_chat_message_contents in oai connector
-
-    def _chat_message_content_to_dict(self, message: "ChatMessageContent") -> dict[str, str | None]:
-        msg = super()._chat_message_content_to_dict(message)
-        if message.role == AuthorRole.ASSISTANT:
-            if tool_calls := getattr(message, "tool_calls", None):
-                msg["tool_calls"] = [tool_call.model_dump() for tool_call in tool_calls]
-            if function_call := getattr(message, "function_call", None):
-                msg["function_call"] = function_call.model_dump_json()
-        if message.role == AuthorRole.TOOL:
-            if tool_call_id := getattr(message, "tool_call_id", None):
-                msg["tool_call_id"] = tool_call_id
-            if message.metadata and "function" in message.metadata:
-                msg["name"] = message.metadata["function_name"]
-        return msg
-
-    # endregion
-    # region internal handlers
-
-    async def _send_chat_request(self, settings: MistralAIChatPromptExecutionSettings) -> list["ChatMessageContent"]:
-        """Send the chat request."""
-        response = await self._send_request(request_settings=settings, stream=False)
-        response_metadata = self._get_metadata_from_chat_response(response)
-        return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
-
-    async def _send_chat_stream_request(
-        self, settings: MistralAIChatPromptExecutionSettings
-    ) -> AsyncGenerator[list["StreamingChatMessageContent | None"], None]:
-        """Send the chat stream request."""
-        response = await self._send_request(request_settings=settings, stream=True)
-        if not isinstance(response, AsyncGenerator):
-            raise ServiceInvalidResponseError("Expected an AsyncGenerator response.")
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        try:
+            response = self.async_client.chat_stream(**settings.prepare_settings_dict())
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to complete the prompt",
+                ex,
+            ) from ex
         async for chunk in response:
             if len(chunk.choices) == 0:
                 continue
-            chunk_metadata = self._get_metadata_from_streaming_chat_response(chunk)
+            chunk_metadata = self._get_metadata_from_response(chunk)
             yield [
                 self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
+        await asyncio.sleep(1 / self.requests_per_second)
 
     # endregion
-    # region content creation
+    # region content conversion to SK
 
     def _create_chat_message_content(
         self, response: ChatCompletionResponse, choice: ChatCompletionResponseChoice, response_metadata: dict[str, Any]
@@ -253,7 +179,6 @@ class MistralAIChatCompletion(MistralAIConfigBase, MistralAIHandler, ChatComplet
         metadata.update(response_metadata)
 
         items: list[Any] = self._get_tool_calls_from_chat_choice(choice)
-        items.extend(self._get_function_call_from_chat_choice(choice))
         
         if choice.message.content:
             items.append(TextContent(text=choice.message.content))
@@ -278,7 +203,7 @@ class MistralAIChatCompletion(MistralAIConfigBase, MistralAIHandler, ChatComplet
         metadata.update(chunk_metadata)
 
         items: list[Any] = self._get_tool_calls_from_chat_choice(choice)
-        items.extend(self._get_function_call_from_chat_choice(choice))
+
         if choice.delta.content is not None:
             items.append(StreamingTextContent(choice_index=choice.index, text=choice.delta.content))
         return StreamingChatMessageContent(
@@ -291,20 +216,19 @@ class MistralAIChatCompletion(MistralAIConfigBase, MistralAIHandler, ChatComplet
             items=items,
         )
 
-    def _get_metadata_from_chat_response(self, response: ChatCompletionResponse) -> dict[str, Any]:
+    def _get_metadata_from_response(
+            self, 
+            response: ChatCompletionResponse | ChatCompletionStreamResponse
+    ) -> dict[str, Any]:
         """Get metadata from a chat response."""
-        return {
-            "id": response.id,
-            "created": response.created,
-            "usage": getattr(response, "usage", None),
-        }
-
-    def _get_metadata_from_streaming_chat_response(self, response: ChatCompletionStreamResponse) -> dict[str, Any]:
-        """Get metadata from a streaming chat response."""
-        return {
+        metadata = {
             "id": response.id,
             "created": response.created,
         }
+        # Check if usage exists and has a value, then add it to the metadata
+        if hasattr(response, "usage") and response.usage is not None:
+            metadata["usage"] = response.usage
+        return metadata
 
     def _get_metadata_from_chat_choice(
         self,
@@ -332,44 +256,57 @@ class MistralAIChatCompletion(MistralAIConfigBase, MistralAIHandler, ChatComplet
             for tool in content.tool_calls
         ]
 
-    def _get_function_call_from_chat_choice(
+    # endregion
+
+    # region function calling config
+
+    def update_settings_from_function_call_configuration(
         self,
-        choice: ChatCompletionResponseChoice | ChatCompletionResponseStreamChoice
-    ) -> list[FunctionCallContent]:
-        """Get a function call from a chat choice."""
-        content = choice.message if isinstance(choice, ChatCompletionResponseChoice) else choice.delta
-        if content.tool_calls is None:
-            return []
-        return [
-            FunctionCallContent(
-                id="legacy_function_call", name=content.function_call.name, arguments=content.function_call.arguments
+        function_call_configuration: FunctionCallConfiguration,
+        settings: MistralAIChatPromptExecutionSettings,
+    ) -> None:
+        """Update the settings from a FunctionCallConfiguration."""
+        if function_call_configuration.required_functions:
+            raise NotImplementedError("Required functions are not supported.")
+        if function_call_configuration.available_functions:
+            settings.tool_choice = (
+                "auto" if len(function_call_configuration.available_functions) > 0 else None
             )
-        ]
+            settings.tools = [
+                self.kernel_function_metadata_to_mistral_tool_format(f)
+                for f in function_call_configuration.available_functions
+            ]
 
-    # endregion
-    # region request preparation
-
-    def _prepare_settings(
+    def kernel_function_metadata_to_mistral_tool_format(
         self,
-        settings: MistralAIChatPromptExecutionSettings,
-        chat_history: ChatHistory,
-        stream_request: bool = False,
-        kernel: "Kernel | None" = None,
-    ) -> None:
-        """Prepare the prompt execution settings for the chat request."""
-        if not settings.ai_model_id:
-            settings.ai_model_id = self.ai_model_id
-        self._update_settings(settings=settings, chat_history=chat_history, kernel=kernel)
-
-    def _update_settings(
-        self,
-        settings: MistralAIChatPromptExecutionSettings,
-        chat_history: ChatHistory,
-        kernel: "Kernel | None" = None,
-    ) -> None:
-        """Update the settings with the chat history."""
-        settings.messages = self._prepare_chat_history_for_request(chat_history)
-
-        # TODO(Nico Möller): Function Calling Mistral Settings --> See _update_settings in oai connector
-        
+        metadata: KernelFunctionMetadata,
+    ) -> dict[str, Any]:
+        """Convert the kernel function metadata to MistralAI format."""
+        return {
+            "type": "function",
+            "function": {
+                "name": metadata.fully_qualified_name,
+                "description": metadata.description or "",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        param.name: param.schema_data for param in metadata.parameters
+                    },
+                    "required": [p.name for p in metadata.parameters if p.is_required],
+                },
+            },
+        }
     # endregion
+
+    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
+        """Create a request settings object."""
+        return MistralAIChatPromptExecutionSettings
+    
+    def store_usage(self, response):
+        """Store the usage information from the response."""
+        if not isinstance(response, AsyncGenerator):
+            logger.info(f"MistralAI usage: {response.usage}")
+            self.prompt_tokens += response.usage.prompt_tokens
+            self.total_tokens += response.usage.total_tokens
+            if hasattr(response.usage, "completion_tokens"):
+                self.completion_tokens += response.usage.completion_tokens

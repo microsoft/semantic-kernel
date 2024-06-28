@@ -4,6 +4,7 @@ from typing import Any
 
 from pydantic import Field
 
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
@@ -27,6 +28,7 @@ class PromptExecutionSettings(KernelBaseModel):
 
     service_id: str | None = Field(None, min_length=1)
     extension_data: dict[str, Any] = Field(default_factory=dict)
+    function_call_behavior: FunctionCallBehavior | None = Field(None, exclude=True)
 
     def __init__(self, service_id: str | None = None, **kwargs: Any):
         """Initialize the prompt execution settings.
