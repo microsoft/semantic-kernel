@@ -6,10 +6,7 @@ from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
-<< << << < HEAD
 from semantic_kernel.contents.chat_history import ChatHistory
-== == == =
->> >> >> > 2c21c804f(cleanup)
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
@@ -320,13 +317,13 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         self,
         function_call: FunctionCallContent,
         chat_history: ChatHistory,
-        arguments: "KernelArguments",
+        arguments: "KernelArguments | None" = None,
         function_call_count: int | None = None,
         request_index: int | None = None,
         function_behavior: "FunctionChoiceBehavior" = None,  # type: ignore
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
-        args_cloned = copy(arguments)
+        args_cloned = copy(arguments) if arguments else KernelArguments()
         try:
             parsed_args = function_call.to_kernel_arguments()
             if parsed_args:
@@ -389,8 +386,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             arguments=args_cloned,
             chat_history=chat_history,
             function_result=FunctionResult(function=function_to_call.metadata, value=None),
-            function_count=function_call_count,
-            request_sequence_index=request_index,
+            function_count=function_call_count or 0,
+            request_sequence_index=request_index or 0,
         )
         if function_call.index is not None:
             invocation_context.function_sequence_index = function_call.index

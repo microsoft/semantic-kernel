@@ -29,9 +29,24 @@ from semantic_kernel.contents import (
     TextContent,
 )
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+    AutoFunctionInvocationContext,
+)
+from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.functions import KernelArguments, kernel_function
 
 kernel = Kernel()
+
+
+@kernel.filter(FilterTypes.AUTO_FUNCTION_INVOCATION)
+async def auto_function_invocation_filter(context: AutoFunctionInvocationContext, next):
+    """A filter that will be called for each function call in the response."""
+    print("\033[92m\n  Function called by Nexus Raven model\033[0m")
+    print(f"    \033[96mFunction: {context.function.fully_qualified_name}")
+    print(f"    Arguments: {context.arguments}")
+    await next(context)
+    print(f"    Result: {context.function_result}\n\033[0m")
+
 
 #########################################################################
 # Step 0: Define a custom AI Service, with Prompt Execution settings. ###
@@ -88,18 +103,45 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             prompt=chat_history.messages[-1].content,
             settings=settings,
         )
-        function_call, function_result = await self._execute_function_calls(result[0], **kwargs)
-        if function_call:
-            return [
-                ChatMessageContent(role="assistant", items=[function_call], metadata={"ai_model_id": self.ai_model_id}),
-                ChatMessageContent(
-                    role="tool", items=[function_result], name="nexus", metadata={"ai_model_id": self.ai_model_id}
-                ),
-            ]
-        return [ChatMessageContent(role="assistant", items=result, metadata={"ai_model_id": self.ai_model_id})]
+        messages = []
+        for part in result[0].text.split(";"):
+            try:
+                function_call, function_result = await self._execute_function_calls(part, chat_history, **kwargs)
+                if function_call:
+                    messages.extend(
+                        [
+                            ChatMessageContent(
+                                role="assistant", items=[function_call], metadata={"ai_model_id": self.ai_model_id}
+                            ),
+                            ChatMessageContent(
+                                role="tool",
+                                items=[function_result],
+                                name="nexus",
+                                metadata={"ai_model_id": self.ai_model_id},
+                            ),
+                        ]
+                    )
+                else:
+                    messages.append(ChatMessageContent(role="assistant", content=part, ai_model_id=self.ai_model_id))
+            except Exception as e:
+                messages.append(
+                    ChatMessageContent(
+                        role="assistant",
+                        items=[
+                            TextContent(
+                                text=f"An error occurred while executing the function call: {e}",
+                                ai_model_id=self.ai_model_id,
+                            )
+                        ],
+                    )
+                )
+                return messages
+        return messages
 
-    async def _execute_function_calls(self, result: TextContent, **kwargs: Any) -> list[ChatMessageContent] | None:
-        function_call = result.text.strip().split("\n")[0].strip("Call:").strip()
+    async def _execute_function_calls(
+        self, result: str, chat_history: ChatHistory, **kwargs: Any
+    ) -> tuple[FunctionCallContent, FunctionResultContent] | None:
+        function_call = result.strip().split("\n")[0].strip("Call:").strip()
         if not function_call:
             return None
         parsed_fc = ast.parse(function_call, mode="eval")
@@ -135,7 +177,7 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         while any(call["result"] is None for call in call_stack.values()):
             await asyncio.gather(
                 *[
-                    self._execute_function_call(call, kwargs.get("kernel"))
+                    self._execute_function_call(call, chat_history, kwargs.get("kernel"))
                     for call in call_stack.values()
                     if not any(isinstance(arg, tuple) for arg in call["args"].values()) and call["result"] is None
                 ]
@@ -148,12 +190,18 @@ class NexusRavenCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                             call["args"][name] = function_result.result
         return call_stack[0]["fcc"], call_stack[0]["result"]
 
-    async def _execute_function_call(self, call_def: dict[str, Any], kernel: Kernel) -> FunctionResultContent:
+    async def _execute_function_call(
+        self, call_def: dict[str, Any], chat_history: ChatHistory, kernel: Kernel
+    ) -> FunctionResultContent:
         """Execute a function call."""
         call_def["fcc"] = FunctionCallContent(
             name=call_def["func"], arguments=json.dumps(call_def["args"]), id=str(call_def["idx"])
         )
-        call_def["result"] = await kernel.invoke_function_call_content(call_def["fcc"])
+        result = await kernel.invoke_function_call(call_def["fcc"], chat_history)
+        if not result:
+            call_def["result"] = chat_history.messages[-1].items[0]
+        else:
+            call_def["result"] = result.function_result
 
     async def get_text_contents(self, prompt: str, settings: NexusRavenPromptExecutionSettings) -> list[TextContent]:
         result = await self.client.text_generation(prompt, **settings.prepare_settings_dict(), stream=False)
