@@ -29,6 +29,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         this._httpClient = new HttpClient();
     }
 
+    #region Text generation
+
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
@@ -146,6 +148,10 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.NotNull(service);
         Assert.True(service is OpenAITextGenerationService);
     }
+
+    #endregion
+
+    #region Text embeddings
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -265,6 +271,10 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.True(service is OpenAITextEmbeddingGenerationService);
     }
 
+    #endregion
+
+    #region Chat completion
+
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
@@ -352,6 +362,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientEndpoint)]
     [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void KernelBuilderAddOpenAIChatCompletionAddsValidService(InitializationType type)
     {
@@ -367,6 +378,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
             InitializationType.ApiKey => builder.AddOpenAIChatCompletion("model-id", "api-key"),
             InitializationType.OpenAIClientInline => builder.AddOpenAIChatCompletion("model-id", client),
             InitializationType.OpenAIClientInServiceProvider => builder.AddOpenAIChatCompletion("model-id"),
+            InitializationType.OpenAIClientEndpoint => builder.AddOpenAIChatCompletion("model-id", new Uri("http://localhost:12345"), "apikey"),
             _ => builder
         };
 
@@ -380,6 +392,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientEndpoint)]
     [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void ServiceCollectionAddOpenAIChatCompletionAddsValidService(InitializationType type)
     {
@@ -394,6 +407,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         {
             InitializationType.ApiKey => builder.Services.AddOpenAIChatCompletion("model-id", "api-key"),
             InitializationType.OpenAIClientInline => builder.Services.AddOpenAIChatCompletion("model-id", client),
+            InitializationType.OpenAIClientEndpoint => builder.Services.AddOpenAIChatCompletion("model-id", new Uri("http://localhost:12345"), "apikey"),
             InitializationType.OpenAIClientInServiceProvider => builder.Services.AddOpenAIChatCompletion("model-id"),
             _ => builder.Services
         };
@@ -405,8 +419,46 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.True(service is OpenAIChatCompletionService);
     }
 
+    #endregion
+
+    #region Text to image
+
     [Fact]
-    public void KernelBuilderAddAzureOpenAITextToImageAddsValidService()
+    public void KernelBuilderAddAzureOpenAITextToImageAddsValidServiceWithTokenCredentials()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+
+        // Act
+        builder = builder.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials);
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToImageService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAITextToImageService);
+    }
+
+    [Fact]
+    public void ServiceCollectionAddAzureOpenAITextToImageAddsValidServiceTokenCredentials()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+
+        // Act
+        builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials);
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToImageService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAITextToImageService);
+    }
+
+    [Fact]
+    public void KernelBuilderAddAzureOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -422,7 +474,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public void ServiceCollectionAddAzureOpenAITextToImageAddsValidService()
+    public void ServiceCollectionAddAzureOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -438,7 +490,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public void KernelBuilderAddOpenAITextToImageAddsValidService()
+    public void KernelBuilderAddOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -454,7 +506,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public void ServiceCollectionAddOpenAITextToImageAddsValidService()
+    public void ServiceCollectionAddOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -468,6 +520,10 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.NotNull(service);
         Assert.True(service is OpenAITextToImageService);
     }
+
+    #endregion
+
+    #region Text to audio
 
     [Fact]
     public void KernelBuilderAddAzureOpenAITextToAudioAddsValidService()
@@ -532,6 +588,10 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.NotNull(service);
         Assert.True(service is OpenAITextToAudioService);
     }
+
+    #endregion
+
+    #region Audio to text
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -651,6 +711,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.True(service is OpenAIAudioToTextService);
     }
 
+    #endregion
+
     public void Dispose()
     {
         this._httpClient.Dispose();
@@ -662,6 +724,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         TokenCredential,
         OpenAIClientInline,
         OpenAIClientInServiceProvider,
+        OpenAIClientEndpoint,
         ChatCompletionWithData
     }
 

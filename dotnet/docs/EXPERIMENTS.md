@@ -6,7 +6,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 
 ```xml
 <PropertyGroup>
-  <NoWarn>SKEXP0001,SKEXP0010</NoWarn>
+  <NoWarn>$(NoWarn);SKEXP0001,SKEXP0010</NoWarn>
 </PropertyGroup>
 ```
 
@@ -22,6 +22,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0060 | Planners |
 | SKEXP0070 | AI connectors |
 | SKEXP0100 | Advanced Semantic Kernel features |
+| SKEXP0110 | Semantic Kernel Agents |
 
 ## Experimental Features Tracking
 
@@ -40,7 +41,6 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0010 | OpenAI chat history extension | | | | | |
 | SKEXP0010 | OpenAI file service | | | | | |
 | | | | | | | |
-| SKEXP0020 | Hugging Face AI connector | | | | | |
 | SKEXP0020 | Azure AI Search memory connector | | | | | |
 | SKEXP0020 | Chroma memory connector | | | | | |
 | SKEXP0020 | DuckDB memory connector | | | | | |
@@ -58,6 +58,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0040 | Markdown functions | | | | | |
 | SKEXP0040 | OpenAPI functions | | | | | |
 | SKEXP0040 | OpenAPI function extensions | | | | | |
+| SKEXP0040 | Prompty Format support | | | | | |
 | | | | | | | |
 | SKEXP0050 | Core plugins | | | | | |
 | SKEXP0050 | Document plugins | | | | | |
@@ -73,6 +74,9 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0070 | Gemini AI connector | | | | | |
 | SKEXP0070 | Mistral AI connector | | | | | |
 | SKEXP0070 | ONNX AI connector | | | | | |
+| SKEXP0070 | Hugging Face AI connector | | | | | |
 | | | | | | | |
 | SKEXP0101 | Experiment with Assistants | | | | | |
 | SKEXP0101 | Experiment with Flow Orchestration | | | | | |
+| | | | | | | |
+| SKEXP0110 | Agent Framework | | | | | |

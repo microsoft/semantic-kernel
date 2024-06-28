@@ -61,7 +61,7 @@ The disadvantage of it is that most probably these interfaces will be empty. The
 
 Rename `IAudioToTextService` and `ITextToAudioService` to more concrete type of conversion (e.g. `ITextToSpeechService`) and for any other type of audio conversion - create a separate interface, which potentially could be exactly the same except naming.
 
-The disadvantage of this approach is that even for the same type of conversion (e.g speech-to-text), it will be hard to pick a good name, because in different AI providers this capability is named differently, so it will be hard to avoid inconsistency. For example, in OpenAI it's [Audio transcription](https://platform.openai.com/docs/api-reference/audio/createTranscription) while in Hugging Face it's [Automatic Speech Recognition](https://huggingface.co/models?pipeline_tag=automatic-speech-recognition&sort=trending).
+The disadvantage of this approach is that even for the same type of conversion (e.g speech-to-text), it will be hard to pick a good name, because in different AI providers this capability is named differently, so it will be hard to avoid inconsistency. For example, in OpenAI it's [Audio transcription](https://platform.openai.com/docs/api-reference/audio/createTranscription) while in Hugging Face it's [Automatic Speech Recognition](https://huggingface.co/models?pipeline_tag=automatic-speech-recognition).
 
 The advantage of current name (`IAudioToTextService`) is that it's more generic and cover both Hugging Face and OpenAI services. It's named not after AI capability, but rather interface contract (audio-in/text-out).
 

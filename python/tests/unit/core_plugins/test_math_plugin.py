@@ -14,11 +14,11 @@ def test_can_be_instantiated():
 
 def test_can_be_imported():
     kernel = Kernel()
-    assert kernel.import_plugin_from_object(MathPlugin(), "math")
-    assert kernel.plugins["math"] is not None
-    assert kernel.plugins["math"].name == "math"
-    assert kernel.plugins["math"]["Add"] is not None
-    assert kernel.plugins["math"]["Subtract"] is not None
+    kernel.add_plugin(MathPlugin(), "math")
+    assert kernel.get_plugin(plugin_name="math") is not None
+    assert kernel.get_plugin(plugin_name="math").name == "math"
+    assert kernel.get_function(plugin_name="math", function_name="Add") is not None
+    assert kernel.get_function(plugin_name="math", function_name="Subtract") is not None
 
 
 @pytest.mark.parametrize(

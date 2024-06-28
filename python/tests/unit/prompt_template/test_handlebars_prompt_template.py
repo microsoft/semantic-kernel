@@ -3,11 +3,10 @@
 import pytest
 from pytest import mark
 
-from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.exceptions import HandlebarsTemplateRenderException, HandlebarsTemplateSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -15,11 +14,17 @@ from semantic_kernel.prompt_template.handlebars_prompt_template import Handlebar
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
-def create_handlebars_prompt_template(template: str) -> HandlebarsPromptTemplate:
+def create_handlebars_prompt_template(
+    template: str, allow_dangerously_set_content: bool = False
+) -> HandlebarsPromptTemplate:
     return HandlebarsPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
-            name="test", description="test", template=template, template_format="handlebars"
-        )
+            name="test",
+            description="test",
+            template=template,
+            template_format="handlebars",
+        ),
+        allow_dangerously_set_content=allow_dangerously_set_content,
     )
 
 
@@ -67,7 +72,7 @@ async def test_render_without_prompt(kernel: Kernel):
 @mark.asyncio
 async def test_it_renders_variables(kernel: Kernel):
     template = "Foo {{#if bar}}{{bar}}{{else}}No Bar{{/if}}"
-    target = create_handlebars_prompt_template(template)
+    target = create_handlebars_prompt_template(template, allow_dangerously_set_content=True)
 
     rendered = await target.render(kernel, KernelArguments(bar="Bar"))
     assert rendered == "Foo Bar"
@@ -113,17 +118,17 @@ async def test_it_renders_list(kernel: Kernel):
 
 @mark.asyncio
 async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method(plugin_name="plug", method=decorated_native_function)
+    kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{plug-getLightStatus arg1='test'}}"
     target = create_handlebars_prompt_template(template)
 
-    rendered = await target.render(kernel, KernelArguments())
+    rendered = await target.render(kernel)
     assert rendered == "Function: test"
 
 
 @mark.asyncio
 async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method(plugin_name="plug", method=decorated_native_function)
+    kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{plug-getLightStatus}}"
     target = create_handlebars_prompt_template(template)
 
@@ -268,30 +273,9 @@ async def test_helpers_message(kernel: Kernel):
     chat_history.add_user_message("User message")
     chat_history.add_assistant_message("Assistant message")
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
-    assert (
-        rendered.strip()
-        == """<message role="user">User message</message><message role="assistant">Assistant message</message>"""
-    )
 
-
-@mark.asyncio
-async def test_helpers_openai_message_tool_call(kernel: Kernel):
-    template = """{{#each chat_history}}{{#message role=role tool_calls=tool_calls tool_call_id=tool_call_id}}{{~content~}}{{/message}} {{/each}}"""  # noqa E501
-    target = create_handlebars_prompt_template(template)
-    chat_history = ChatHistory()
-    chat_history.add_message(ChatMessageContent(role="user", content="User message"))
-    chat_history.add_message(
-        OpenAIChatMessageContent(
-            role="assistant", tool_calls=[ToolCall(id="test", function=FunctionCall(name="plug-test"))]
-        )
-    )
-    chat_history.add_message(OpenAIChatMessageContent(role="tool", content="Tool message", tool_call_id="test"))
-    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
-
-    assert (
-        rendered.strip()
-        == """<message role="user">User message</message> <message role="assistant" tool_calls="[ToolCall(id=\'test\', type=\'function\', function=FunctionCall(name=\'plug-test\', arguments=None))]"></message> <message role="tool" tool_call_id="test">Tool message</message>"""  # noqa E501
-    )
+    assert "User message" in rendered
+    assert "Assistant message" in rendered
 
 
 @mark.asyncio
@@ -299,18 +283,21 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     template = """{{#each chat_history}}{{message_to_prompt}} {{/each}}"""
     target = create_handlebars_prompt_template(template)
     chat_history = ChatHistory()
-    chat_history.add_message(OpenAIChatMessageContent(role="user", content="User message"))
+    chat_history.add_user_message("User message")
     chat_history.add_message(
-        OpenAIChatMessageContent(
-            role="assistant", tool_calls=[ToolCall(id="test", function=FunctionCall(name="plug-test"))]
-        )
+        ChatMessageContent(role="assistant", items=[FunctionCallContent(id="1", name="plug-test")])
+    )
+    chat_history.add_message(
+        ChatMessageContent(role="tool", items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")])
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 
-    assert (
-        rendered.strip()
-        == """<message role="user">User message</message> <message role="assistant" tool_calls="{&quot;id&quot;:&quot;test&quot;,&quot;type&quot;:&quot;function&quot;,&quot;function&quot;:{&quot;name&quot;:&quot;plug-test&quot;}}"></message>"""  # noqa E501
-    )
+    assert "text" in rendered
+    assert "User message" in rendered
+    assert "function_call" in rendered
+    assert "plug-test" in rendered
+    assert "function_result" in rendered
+    assert "Tool message" in rendered
 
 
 @mark.asyncio
@@ -329,3 +316,50 @@ async def test_helpers_messageToPrompt_other(kernel: Kernel):
     other_list = ["test1", "test2"]
     rendered = await target.render(kernel, KernelArguments(other_list=other_list))
     assert rendered.strip() == """test1 test2"""
+
+
+@mark.asyncio
+async def test_helpers_unless(kernel: Kernel):
+    template = """{{#unless test}}test2{{/unless}}"""
+    target = create_handlebars_prompt_template(template)
+    rendered = await target.render(kernel, KernelArguments(test2="test2"))
+    assert rendered.strip() == """test2"""
+
+
+@mark.asyncio
+async def test_helpers_with(kernel: Kernel):
+    template = """{{#with test}}{{test1}}{{/with}}"""
+    target = create_handlebars_prompt_template(template)
+    rendered = await target.render(kernel, KernelArguments(test={"test1": "test2"}))
+    assert rendered.strip() == """test2"""
+
+
+@mark.asyncio
+async def test_helpers_lookup(kernel: Kernel):
+    template = """{{lookup test 'test1'}}"""
+    target = create_handlebars_prompt_template(template)
+    rendered = await target.render(kernel, KernelArguments(test={"test1": "test2"}))
+    assert rendered.strip() == """test2"""
+
+
+@mark.asyncio
+async def test_helpers_chat_history_messages(kernel: Kernel):
+    template = """{{messages chat_history}}"""
+    target = create_handlebars_prompt_template(template)
+    chat_history = ChatHistory()
+    chat_history.add_user_message("User message")
+    chat_history.add_assistant_message("Assistant message")
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert (
+        rendered.strip()
+        == """<chat_history><message role="user"><text>User message</text></message><message role="assistant"><text>Assistant message</text></message></chat_history>"""  # noqa E501
+    )
+
+
+@mark.asyncio
+async def test_helpers_chat_history_not_chat_history(kernel: Kernel):
+    template = """{{messages chat_history}}"""
+    target = create_handlebars_prompt_template(template)
+    chat_history = "this is not a chathistory object"
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert rendered.strip() == ""

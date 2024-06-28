@@ -2,16 +2,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
-using OllamaSharp;
-using OllamaSharp.Models;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
@@ -37,30 +35,29 @@ public sealed class OllamaTextEmbeddingGenerationService : ITextEmbeddingGenerat
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        this.Client = new OllamaApiClient(baseUri, model);
+        this.Client = new OllamaClient(
+            modelId: model,
+            baseUri: baseUri,
+#pragma warning disable CA2000
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+#pragma warning restore CA2000
+            logger: loggerFactory?.CreateLogger(typeof(OllamaChatCompletionService))
+        );
 
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    private OllamaApiClient Client { get; }
+    private OllamaClient Client { get; }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
     /// <inheritdoc/>
-    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var tasks = new List<Task<GenerateEmbeddingResponse>>();
-        foreach (var prompt in data)
-        {
-            tasks.Add(this.Client.GenerateEmbeddings(prompt, cancellationToken: cancellationToken));
-        }
-
-        await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
-
-        return new List<ReadOnlyMemory<float>>(tasks.Select(task=> new ReadOnlyMemory<float>(task.Result.Embedding.Cast<float>().ToArray())).ToList());
+        return this.Client.GenerateTextEmbeddingAsync(data, cancellationToken: cancellationToken);
     }
 }

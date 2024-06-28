@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Mapping, Optional
+from typing import Any
 
 from pydantic import Field
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class FunctionResult(KernelBaseModel):
     """The result of a function.
 
-    Arguments:
+    Args:
         function (KernelFunctionMetadata): The metadata of the function that was invoked.
         value (Any): The value of the result.
         metadata (Mapping[str, Any]): The metadata of the result.
@@ -31,14 +31,18 @@ class FunctionResult(KernelBaseModel):
 
     function: KernelFunctionMetadata
     value: Any
-    metadata: Mapping[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     def __str__(self) -> str:
         """Get the string representation of the result."""
         if self.value:
             try:
                 if isinstance(self.value, list):
-                    return str(self.value[0])
+                    return (
+                        str(self.value[0])
+                        if isinstance(self.value[0], KernelContent)
+                        else ",".join(map(str, self.value))
+                    )
                 elif isinstance(self.value, dict):
                     # TODO: remove this once function result doesn't include input args
                     # This is so an integration test can pass.
@@ -49,10 +53,10 @@ class FunctionResult(KernelBaseModel):
         else:
             return ""
 
-    def get_inner_content(self, index: int = 0) -> Optional[Any]:
+    def get_inner_content(self, index: int = 0) -> Any | None:
         """Get the inner content of the function result.
 
-        Arguments:
+        Args:
             index (int): The index of the inner content if the inner content is a list, default 0.
         """
         if isinstance(self.value, list):

@@ -3,35 +3,44 @@
 import json
 import logging
 import re
+from collections.abc import Callable
 from enum import Enum
-from typing import Callable, Dict
-
-from semantic_kernel.contents.chat_history import ROOT_KEY_MESSAGE
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+def _messages(this, options, *args, **kwargs):
+    from semantic_kernel.contents.chat_history import ChatHistory
+
+    if not isinstance(this.context["chat_history"], ChatHistory):
+        return ""
+    return this.context["chat_history"].to_prompt()
+
+
 def _message_to_prompt(this, *args, **kwargs):
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
     if isinstance(this.context, ChatMessageContent):
-        return str(this.context.to_prompt(ROOT_KEY_MESSAGE))
+        return str(this.context.to_prompt())
     return str(this.context)
 
 
 def _message(this, options, *args, **kwargs):
+    from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
+
     # everything in kwargs, goes to <ROOT_KEY_MESSAGE kwargs_key="kwargs_value">
     # everything in options, goes in between <ROOT_KEY_MESSAGE>options</ROOT_KEY_MESSAGE>
-    start = f"<{ROOT_KEY_MESSAGE}"
+    start = f"<{CHAT_MESSAGE_CONTENT_TAG}"
     for key, value in kwargs.items():
         if isinstance(value, Enum):
             value = value.value
         if value is not None:
             start += f' {key}="{value}"'
     start += ">"
-    end = f"</{ROOT_KEY_MESSAGE}>"
+    end = f"</{CHAT_MESSAGE_CONTENT_TAG}>"
     try:
         content = options["fn"](this)
-    except Exception:
+    except Exception:  # pragma: no cover
         content = ""
     return f"{start}{content}{end}"
 
@@ -133,7 +142,7 @@ def _snake_case(this, *args, **kwargs):
     return arg.lower()
 
 
-HANDLEBAR_SYSTEM_HELPERS: Dict[str, Callable] = {
+HANDLEBAR_SYSTEM_HELPERS: dict[str, Callable] = {
     "set": _set,
     "get": _get,
     "array": _array,
@@ -163,4 +172,5 @@ HANDLEBAR_SYSTEM_HELPERS: Dict[str, Callable] = {
     "message": _message,
     "message_to_prompt": _message_to_prompt,
     "messageToPrompt": _message_to_prompt,
+    "messages": _messages,
 }

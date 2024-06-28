@@ -1,9 +1,9 @@
 # Telemetry
 
 Telemetry in Semantic Kernel (SK) .NET implementation includes _logging_, _metering_ and _tracing_.
-The code is instrumented using native .NET instrumentation tools, which means that it's possible to use different monitoring platforms (e.g. Application Insights, Prometheus, Grafana etc.).
+The code is instrumented using native .NET instrumentation tools, which means that it's possible to use different monitoring platforms (e.g. Application Insights, Aspire dashboard, Prometheus, Grafana etc.).
 
-Code example using Application Insights can be found [here](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/TelemetryExample).
+Code example using Application Insights can be found [here](../samples/Demos/TelemetryWithAppInsights/).
 
 ## Logging
 
@@ -86,7 +86,7 @@ TagList tags = new() { { "semantic_kernel.function.name", this.Name } };
 s_invocationDuration.Record(duration.TotalSeconds, in tags);
 ```
 
-### [Examples](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/TelemetryExample/Program.cs)
+### [Examples](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Demos/TelemetryWithAppInsights/Program.cs)
 
 Depending on monitoring tool, there are different ways how to subscribe to available meters. Following example shows how to subscribe to available meters and export metrics to Application Insights using `OpenTelemetry.Sdk`:
 
@@ -108,7 +108,7 @@ Tracing is implemented with `Activity` class from `System.Diagnostics` namespace
 Available activity sources:
 
 - _Microsoft.SemanticKernel.Planning_ - creates activities for all planners.
-- _Microsoft.SemanticKernel_ - creates activities for `KernelFunction`.
+- _Microsoft.SemanticKernel_ - creates activities for `KernelFunction` as well as requests to models.
 
 ### Examples
 

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
 
 from pytest import mark
 
@@ -16,7 +15,8 @@ def create_handlebars_prompt_template(template: str) -> HandlebarsPromptTemplate
     return HandlebarsPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template, template_format="handlebars"
-        )
+        ),
+        allow_dangerously_set_content=True,
     )
 
 
@@ -26,7 +26,7 @@ class MyPlugin:
         return "123 ok" if input == "123" else f"{input} != 123"
 
     @kernel_function()
-    def asis(self, input: Optional[str] = None) -> str:
+    def asis(self, input: str | None = None) -> str:
         return input or ""
 
 
@@ -49,7 +49,7 @@ class TestHandlebarsPromptTemplateEngine:
     async def test_it_allows_to_pass_variables_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my-check123 input=call}} =="
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
 
         arguments = KernelArguments(call="123")
         # Act
@@ -62,7 +62,7 @@ class TestHandlebarsPromptTemplateEngine:
     async def test_it_allows_to_pass_values_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my-check123 input=234}} =="
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
 
         # Act
         result = await create_handlebars_prompt_template(template).render(kernel, None)
@@ -74,7 +74,7 @@ class TestHandlebarsPromptTemplateEngine:
     async def test_it_allows_to_pass_escaped_values1_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my-check123 input='a\\'b'}} =="
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
         # Act
         result = await create_handlebars_prompt_template(template).render(kernel, None)
 
@@ -85,7 +85,7 @@ class TestHandlebarsPromptTemplateEngine:
     async def test_it_allows_to_pass_escaped_values2_to_functions(self, kernel: Kernel):
         # Arrange
         template = '== {{my-check123 input="a\\"b"}} =='
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
 
         # Act
         result = await create_handlebars_prompt_template(template).render(kernel, None)

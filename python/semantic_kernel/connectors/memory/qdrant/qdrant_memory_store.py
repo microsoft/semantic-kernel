@@ -1,40 +1,40 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-"""
-QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
-The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
-"""
-
 import asyncio
 import logging
+import sys
 import uuid
-from typing import List, Optional, Tuple
 
 from numpy import ndarray
 from qdrant_client import QdrantClient
 from qdrant_client import models as qdrant_models
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class QdrantMemoryStore(MemoryStoreBase):
     _qdrantclient: QdrantClient
 
     def __init__(
         self,
         vector_size: int,
-        url: Optional[str] = None,
-        port: Optional[int] = 6333,
-        local: Optional[bool] = False,
+        url: str | None = None,
+        port: int | None = 6333,
+        local: bool | None = False,
         **kwargs,
     ) -> None:
         """Initializes a new instance of the QdrantMemoryStore class."""
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if local:
             if url:
                 self._qdrantclient = QdrantClient(location=url)
@@ -45,16 +45,8 @@ class QdrantMemoryStore(MemoryStoreBase):
 
         self._default_vector_size = vector_size
 
+    @override
     async def create_collection(self, collection_name: str) -> None:
-        """Creates a new collection if it does not exist.
-
-        Arguments:
-            collection_name {str} -- The name of the collection to create.
-            vector_size {int} -- The size of the vector.
-            distance {Optional[str]} -- The distance metric to use. (default: {"Cosine"})
-        Returns:
-            None
-        """
         self._qdrantclient.recreate_collection(
             collection_name=collection_name,
             vectors_config=qdrant_models.VectorParams(
@@ -62,19 +54,15 @@ class QdrantMemoryStore(MemoryStoreBase):
             ),
         )
 
+    @override
     async def get_collections(
         self,
-    ) -> List[str]:
-        """Gets the list of collections.
-
-        Returns:
-            List[str] -- The list of collections.
-        """
+    ) -> list[str]:
         collection_info = self._qdrantclient.get_collections()
         return [collection.name for collection in collection_info.collections]
 
     async def get_collection(self, collection_name: str) -> qdrant_models.CollectionInfo:
-        """Gets the a collections based upon collection name.
+        """Gets the collection based upon collection name.
 
         Returns:
             CollectionInfo -- Collection Information from Qdrant about collection.
@@ -82,43 +70,20 @@ class QdrantMemoryStore(MemoryStoreBase):
         collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
         return collection_info
 
+    @override
     async def delete_collection(self, collection_name: str) -> None:
-        """Deletes a collection.
-
-        Arguments:
-            collection_name {str} -- The name of the collection to delete.
-
-        Returns:
-            None
-        """
-
         self._qdrantclient.delete_collection(collection_name=collection_name)
 
+    @override
     async def does_collection_exist(self, collection_name: str) -> bool:
-        """Checks if a collection exists.
-
-        Arguments:
-            collection_name {str} -- The name of the collection to check.
-
-        Returns:
-            bool -- True if the collection exists; otherwise, False.
-        """
         try:
             result = await self.get_collection(collection_name=collection_name)
             return result.status == qdrant_models.CollectionStatus.GREEN
         except ValueError:
             return False
 
+    @override
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
-        """Upserts a record.
-
-        Arguments:
-            collection_name {str} -- The name of the collection to upsert the record into.
-            record {MemoryRecord} -- The record to upsert.
-
-        Returns:
-            str -- The unique database key of the record.
-        """
         data_to_upsert = await self._convert_from_memory_record(
             collection_name=collection_name,
             record=record,
@@ -134,7 +99,8 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             raise ServiceResponseException("Upsert failed")
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    @override
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         tasks = []
         for record in records:
             tasks.append(
@@ -156,7 +122,8 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             raise ServiceResponseException("Batch upsert failed")
 
-    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> Optional[MemoryRecord]:
+    @override
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord | None:
         result = await self._get_existing_record_by_payload_id(
             collection_name=collection_name,
             payload_id=key,
@@ -178,9 +145,13 @@ class QdrantMemoryStore(MemoryStoreBase):
         else:
             return None
 
+    @override
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self,
+        collection_name: str,
+        keys: list[str],
+        with_embeddings: bool = False,
+    ) -> list[MemoryRecord]:
         tasks = []
         for key in keys:
             tasks.append(
@@ -192,6 +163,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             )
         return await asyncio.gather(*tasks)
 
+    @override
     async def remove(self, collection_name: str, key: str) -> None:
         existing_record = await self._get_existing_record_by_payload_id(
             collection_name=collection_name,
@@ -205,7 +177,8 @@ class QdrantMemoryStore(MemoryStoreBase):
             if result.status != qdrant_models.UpdateStatus.COMPLETED:
                 raise ServiceResponseException("Delete failed")
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    @override
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         tasks = []
         for key in keys:
             tasks.append(
@@ -226,6 +199,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             if result.status != qdrant_models.UpdateStatus.COMPLETED:
                 raise ServiceResponseException("Delete failed")
 
+    @override
     async def get_nearest_matches(
         self,
         collection_name: str,
@@ -233,7 +207,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         match_results = self._qdrantclient.search(
             collection_name=collection_name,
             query_vector=embedding,
@@ -260,13 +234,14 @@ class QdrantMemoryStore(MemoryStoreBase):
             for result in match_results
         ]
 
+    @override
     async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
         min_relevance_score: float,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         result = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
@@ -281,15 +256,16 @@ class QdrantMemoryStore(MemoryStoreBase):
         collection_name: str,
         payload_id: str,
         with_embedding: bool = False,
-    ) -> Optional[qdrant_models.ScoredPoint]:
+    ) -> qdrant_models.ScoredPoint | None:
         """Gets an existing record based upon payload id.
 
-        Arguments:
-            collection_name {str} -- The name of the collection.
-            payload_id {str} -- The payload id to search for.
+        Args:
+            collection_name (str): The name of the collection.
+            payload_id (str): The payload id to search for.
+            with_embedding (bool): If true, the embedding will be returned in the memory records.
 
         Returns:
-            Optional[ScoredPoint] -- The existing record if found; otherwise, None.
+            Optional[ScoredPoint]: The existing record if found; otherwise, None.
         """
         filter = qdrant_models.Filter(
             must=[
