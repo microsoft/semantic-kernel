@@ -30,7 +30,7 @@ internal partial class ClientCore
     /// <param name="executionSettings">Text to Audio execution settings for the prompt</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Url of the generated image</returns>
-    internal async Task<IReadOnlyList<AudioContent>> GetAudioContentAsync(
+    internal async Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
         string prompt,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
