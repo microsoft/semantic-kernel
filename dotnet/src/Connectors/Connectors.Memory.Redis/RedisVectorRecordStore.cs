@@ -65,7 +65,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     /// <param name="database">The redis database to read/write records from.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
-    public RedisVectorRecordStore(IDatabase database, RedisVectorRecordStoreOptions<TRecord>? options)
+    public RedisVectorRecordStore(IDatabase database, RedisVectorRecordStoreOptions<TRecord>? options = null)
     {
         // Verify.
         Verify.NotNull(database);
