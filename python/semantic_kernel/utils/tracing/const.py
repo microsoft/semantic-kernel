@@ -6,13 +6,13 @@
 SYSTEM = "gen_ai.system"
 OPERATION = "gen_ai.operation.name"
 MODEL = "gen_ai.request.model"
-MAX_TOKEN = "gen_ai.request.max_tokens"
+MAX_TOKEN = "gen_ai.request.max_tokens"  # nosec
 TEMPERATURE = "gen_ai.request.temperature"
 TOP_P = "gen_ai.request.top_p"
 RESPONSE_ID = "gen_ai.response.id"
 FINISH_REASON = "gen_ai.response.finish_reason"
-PROMPT_TOKEN = "gen_ai.response.prompt_tokens"
-COMPLETION_TOKEN = "gen_ai.response.completion_tokens"
+PROMPT_TOKEN = "gen_ai.response.prompt_tokens"  # nosec
+COMPLETION_TOKEN = "gen_ai.response.completion_tokens"  # nosec
 ADDRESS = "server.address"
 PORT = "server.port"
 ERROR_TYPE = "error.type"
