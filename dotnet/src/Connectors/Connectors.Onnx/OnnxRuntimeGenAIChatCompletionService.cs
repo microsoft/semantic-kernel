@@ -109,6 +109,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         }
     }
 
+    [MemberNotNull(nameof(_model))]
     private Model GetModel()
     {
         if (this._model == null)
