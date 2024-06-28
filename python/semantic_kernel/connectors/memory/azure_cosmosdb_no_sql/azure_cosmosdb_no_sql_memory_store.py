@@ -5,9 +5,9 @@ import sys
 from typing import Any
 
 if sys.version_info >= (3, 12):
-    from typing import override
+    from typing import override  # pragma: no cover
 else:
-    from typing_extensions import override
+    from typing_extensions import override  # pragma: no cover
 
 import numpy as np
 from azure.cosmos.aio import ContainerProxy, CosmosClient, DatabaseProxy
@@ -182,8 +182,7 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
         )
         if len(nearest_results) > 0:
             return nearest_results[0]
-        else:
-            return None
+        return None
 
     @staticmethod
     def __serialize_metadata(record: MemoryRecord) -> str:

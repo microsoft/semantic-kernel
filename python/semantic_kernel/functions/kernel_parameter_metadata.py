@@ -17,19 +17,19 @@ class KernelParameterMetadata(KernelBaseModel):
     is_required: bool | None = False
     type_object: Any | None = None
     schema_data: dict[str, Any] | None = None
+    function_schema_include: bool | None = True
 
     @model_validator(mode="before")
     @classmethod
     def form_schema(cls, data: Any) -> Any:
         """Create a schema for the parameter metadata."""
-        if isinstance(data, dict):
-            if data.get("schema_data") is None:
-                type_object = data.get("type_object", None)
-                type_ = data.get("type_", None)
-                default_value = data.get("default_value", None)
-                description = data.get("description", None)
-                inferred_schema = cls.infer_schema(type_object, type_, default_value, description)
-                data["schema_data"] = inferred_schema
+        if isinstance(data, dict) and data.get("schema_data") is None:
+            type_object = data.get("type_object", None)
+            type_ = data.get("type_", None)
+            default_value = data.get("default_value", None)
+            description = data.get("description", None)
+            inferred_schema = cls.infer_schema(type_object, type_, default_value, description)
+            data["schema_data"] = inferred_schema
         return data
 
     @classmethod

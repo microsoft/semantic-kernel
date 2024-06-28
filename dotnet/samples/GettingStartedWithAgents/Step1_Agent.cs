@@ -15,7 +15,7 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseSingleChatCompletionAgentAsync()
     {
         // Define the agent
         ChatCompletionAgent agent =

@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from typing import Final
 
 import numpy as np
 import weaviate
@@ -63,49 +64,46 @@ SCHEMA = {
 ALL_PROPERTIES = [property["name"] for property in SCHEMA["properties"]]
 
 
-@experimental_class
-class WeaviateMemoryStore(MemoryStoreBase):
-    class FieldMapper:
-        """This maps attribute names between the SK's memory record and weaviate's schema.
+class FieldMapper:
+    """This maps attribute names between the SK's memory record and weaviate's schema.
 
-        It provides methods for converting between the two naming conventions.
-        """
+    It provides methods for converting between the two naming conventions.
+    """
 
-        SK_TO_WEAVIATE_MAPPING = {
-            "_key": "key",
-            "_timestamp": "timestamp",
-            "_is_reference": "isReference",
-            "_external_source_name": "externalSourceName",
-            "_id": "skId",
-            "_description": "description",
-            "_text": "text",
-            "_additional_metadata": "additionalMetadata",
-            "_embedding": "vector",
+    SK_TO_WEAVIATE_MAPPING: Final[dict[str, str]] = {
+        "_key": "key",
+        "_timestamp": "timestamp",
+        "_is_reference": "isReference",
+        "_external_source_name": "externalSourceName",
+        "_id": "skId",
+        "_description": "description",
+        "_text": "text",
+        "_additional_metadata": "additionalMetadata",
+        "_embedding": "vector",
+    }
+
+    WEAVIATE_TO_SK_MAPPING: Final[dict[str, str]] = {v: k for k, v in SK_TO_WEAVIATE_MAPPING.items()}
+
+    @classmethod
+    def sk_to_weaviate(cls, sk_dict):
+        """Used to convert a MemoryRecord to a dict of attribute-values that can be used by Weaviate."""
+        return {cls.SK_TO_WEAVIATE_MAPPING.get(k, k): v for k, v in sk_dict.items() if k in cls.SK_TO_WEAVIATE_MAPPING}
+
+    @classmethod
+    def weaviate_to_sk(cls, weaviate_dict):
+        """Used to convert a Weaviate object to a dict that can be used to initialize a MemoryRecord."""
+        return {
+            cls.WEAVIATE_TO_SK_MAPPING.get(k, k): v for k, v in weaviate_dict.items() if k in cls.WEAVIATE_TO_SK_MAPPING
         }
 
-        WEAVIATE_TO_SK_MAPPING = {v: k for k, v in SK_TO_WEAVIATE_MAPPING.items()}
+    @classmethod
+    def remove_underscore_prefix(cls, sk_dict):
+        """Used to initialize a MemoryRecord from a SK's dict of private attribute-values."""
+        return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
-        @classmethod
-        def sk_to_weaviate(cls, sk_dict):
-            """Used to convert a MemoryRecord to a dict of attribute-values that can be used by Weaviate."""
-            return {
-                cls.SK_TO_WEAVIATE_MAPPING.get(k, k): v for k, v in sk_dict.items() if k in cls.SK_TO_WEAVIATE_MAPPING
-            }
 
-        @classmethod
-        def weaviate_to_sk(cls, weaviate_dict):
-            """Used to convert a Weaviate object to a dict that can be used to initialize a MemoryRecord."""
-            return {
-                cls.WEAVIATE_TO_SK_MAPPING.get(k, k): v
-                for k, v in weaviate_dict.items()
-                if k in cls.WEAVIATE_TO_SK_MAPPING
-            }
-
-        @classmethod
-        def remove_underscore_prefix(cls, sk_dict):
-            """Used to initialize a MemoryRecord from a SK's dict of private attribute-values."""
-            return {key.lstrip("_"): value for key, value in sk_dict.items()}
-
+@experimental_class
+class WeaviateMemoryStore(MemoryStoreBase):
     def __init__(
         self,
         url: str | None = None,
@@ -166,7 +164,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record into Weaviate."""
-        weaviate_record = self.FieldMapper.sk_to_weaviate(vars(record))
+        weaviate_record = FieldMapper.sk_to_weaviate(vars(record))
 
         vector = weaviate_record.pop("vector", None)
         weaviate_id = weaviate.util.generate_uuid5(weaviate_record, collection_name)
@@ -187,7 +185,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
             results = []
             with self.client.batch as batch:
                 for record in records:
-                    weaviate_record = self.FieldMapper.sk_to_weaviate(vars(record))
+                    weaviate_record = FieldMapper.sk_to_weaviate(vars(record))
                     vector = weaviate_record.pop("vector", None)
                     weaviate_id = weaviate.util.generate_uuid5(weaviate_record, collection_name)
                     batch.add_data_object(
@@ -216,11 +214,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
         get_dict = results.get("data", {}).get("Get", {})
 
-        memory_records = [
-            self._convert_weaviate_doc_to_memory_record(doc) for docs in get_dict.values() for doc in docs
-        ]
-
-        return memory_records
+        return [self._convert_weaviate_doc_to_memory_record(doc) for docs in get_dict.values() for doc in docs]
 
     def _build_multi_get_query(self, collection_name: str, keys: list[str], with_embedding: bool):
         queries = []
@@ -245,8 +239,8 @@ class WeaviateMemoryStore(MemoryStoreBase):
         weaviate_doc_copy = weaviate_doc.copy()
         vector = weaviate_doc_copy.pop("_additional", {}).get("vector")
         weaviate_doc_copy["vector"] = np.array(vector) if vector else None
-        sk_doc = self.FieldMapper.weaviate_to_sk(weaviate_doc_copy)
-        mem_vals = self.FieldMapper.remove_underscore_prefix(sk_doc)
+        sk_doc = FieldMapper.weaviate_to_sk(weaviate_doc_copy)
+        mem_vals = FieldMapper.remove_underscore_prefix(sk_doc)
         return MemoryRecord(**mem_vals)
 
     async def remove(self, collection_name: str, key: str) -> None:
@@ -255,10 +249,6 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records from Weaviate by keys."""
-        # TODO: Use In operator when it's available
-        #       (https://github.com/weaviate/weaviate/issues/2387)
-        #       and handle max delete objects
-        #       (https://weaviate.io/developers/weaviate/api/rest/batch#maximum-number-of-deletes-per-query)
         for key in keys:
             where = {
                 "path": ["key"],
@@ -299,7 +289,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
         get_dict = results.get("data", {}).get("Get", {})
 
-        memory_records_and_scores = [
+        return [
             (
                 self._convert_weaviate_doc_to_memory_record(doc),
                 item["_additional"]["certainty"],
@@ -308,8 +298,6 @@ class WeaviateMemoryStore(MemoryStoreBase):
             for item in items
             for doc in [item]
         ]
-
-        return memory_records_and_scores
 
     async def get_nearest_match(
         self,

@@ -17,9 +17,11 @@ class BingSettings(KernelBaseSettings):
 
     Optional settings for prefix 'BING_' are:
     - api_key: SecretStr - The Bing API key (Env var BING_API_KEY)
+    - custom_config: str - The Bing Custom Search instance's unique identifier (Env var BING_CUSTOM_CONFIG)
 
     """
 
     env_prefix: ClassVar[str] = "BING_"
 
     api_key: SecretStr | None = None
+    custom_config: str | None = None

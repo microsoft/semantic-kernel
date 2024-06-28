@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -37,6 +38,16 @@ public abstract class Agent
     public string? Name { get; init; }
 
     /// <summary>
+    /// A <see cref="ILoggerFactory"/> for this <see cref="Agent"/>.
+    /// </summary>
+    public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
+
+    /// <summary>
+    /// The <see cref="ILogger"/> associated with this  <see cref="Agent"/>.
+    /// </summary>
+    protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
+
+    /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:
     /// <example>
     /// yield return typeof(YourAgentChannel).FullName;
@@ -53,12 +64,13 @@ public abstract class Agent
     /// <summary>
     /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type.
     /// </summary>
-    /// <param name="logger">An agent specific logger.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="AgentChannel"/> appropriate for the agent type.</returns>
     /// <remarks>
     /// Every agent conversation, or <see cref="AgentChat"/>, will establish one or more <see cref="AgentChannel"/>
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
-    protected internal abstract Task<AgentChannel> CreateChannelAsync(ILogger logger, CancellationToken cancellationToken);
+    protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);
+
+    private ILogger? _logger;
 }

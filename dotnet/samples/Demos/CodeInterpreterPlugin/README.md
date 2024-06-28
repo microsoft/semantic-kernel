@@ -31,3 +31,21 @@ OpenAI__ChatModelId
 # Azure Container Apps
 AzureContainerApps__Endpoint
 ```
+
+### Usage Example
+
+User: Upload the file c:\temp\code-interpreter\test-file.txt
+
+Assistant: The file test-file.txt has been successfully uploaded.
+
+User: How many files I have uploaded ?
+
+Assistant: You have uploaded 1 file.
+
+User: Show me the contents of this file
+
+Assistant: The contents of the file "test-file.txt" are as follows:
+
+```text
+the contents of the file
+```

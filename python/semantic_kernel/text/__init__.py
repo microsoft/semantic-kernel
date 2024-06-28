@@ -9,9 +9,9 @@ from semantic_kernel.text.text_chunker import (
 )
 
 __all__ = [
-    "split_plaintext_lines",
-    "split_markdown_paragraph",
-    "split_plaintext_paragraph",
-    "split_markdown_lines",
     "aggregate_chunked_results",
+    "split_markdown_lines",
+    "split_markdown_paragraph",
+    "split_plaintext_lines",
+    "split_plaintext_paragraph",
 ]

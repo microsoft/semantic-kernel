@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import contextlib
 import datetime
 import json
 import logging
@@ -52,8 +53,7 @@ class LoggingTransport(httpx.AsyncBaseTransport):
             logger.info(f"Request Stream Content: {self.request_content}")
             request.stream = httpx.AsyncByteStream(stream_content)
 
-        response = await self.inner.handle_async_request(request)
-        return response
+        return await self.inner.handle_async_request(request)
 
 
 class LoggingAsyncClient(httpx.AsyncClient):
@@ -195,7 +195,7 @@ async def test_prompt_with_chat_roles(is_inline, is_streaming, template_format, 
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="test",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -234,14 +234,14 @@ async def test_prompt_with_chat_roles(is_inline, is_streaming, template_format, 
 @pytest.mark.parametrize(
     "is_inline, is_streaming, template_format, prompt",
     [
-        (False, False, "handlebars", "Can you help me tell the time in {{city.name}} right now?"),  # noqa: E501
-        (False, True, "handlebars", "Can you help me tell the time in {{city.name}} right now?"),  # noqa: E501
-        (False, False, "jinja2", "Can you help me tell the time in {{city.name}} right now?"),  # noqa: E501
-        (False, True, "jinja2", "Can you help me tell the time in {{city.name}} right now?"),  # noqa: E501
-        (True, False, "handlebars", "Can you help me tell the time in {{city.name}} right now?"),  # noqa: E501
-        (True, True, "handlebars", "Can you help me tell the time in {{city.name}} right now?"),  # noqa: E501
-        (True, False, "jinja2", "Can you help me tell the time in {{city.name}} right now?"),  # noqa: E501
-        (True, True, "jinja2", "Can you help me tell the time in {{city.name}} right now?"),  # noqa: E501
+        (False, False, "handlebars", "Can you help me tell the time in {{city.name}} right now?"),
+        (False, True, "handlebars", "Can you help me tell the time in {{city.name}} right now?"),
+        (False, False, "jinja2", "Can you help me tell the time in {{city.name}} right now?"),
+        (False, True, "jinja2", "Can you help me tell the time in {{city.name}} right now?"),
+        (True, False, "handlebars", "Can you help me tell the time in {{city.name}} right now?"),
+        (True, True, "handlebars", "Can you help me tell the time in {{city.name}} right now?"),
+        (True, False, "jinja2", "Can you help me tell the time in {{city.name}} right now?"),
+        (True, True, "jinja2", "Can you help me tell the time in {{city.name}} right now?"),
     ],
 )
 @pytest.mark.asyncio
@@ -249,7 +249,7 @@ async def test_prompt_with_complex_objects(is_inline, is_streaming, template_for
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="default",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -293,14 +293,14 @@ async def test_prompt_with_complex_objects(is_inline, is_streaming, template_for
 @pytest.mark.parametrize(
     "is_inline, is_streaming, template_format, prompt",
     [
-        (True, False, "semantic-kernel", sk_prompt),  # noqa: E501
-        (True, True, "semantic-kernel", sk_prompt),  # noqa: E501
-        (False, False, "semantic-kernel", sk_prompt),  # noqa: E501
-        (False, True, "semantic-kernel", sk_prompt),  # noqa: E501
-        (False, False, "handlebars", hb_prompt),  # noqa: E501
-        (False, True, "handlebars", hb_prompt),  # noqa: E501
-        (False, False, "jinja2", j2_prompt),  # noqa: E501
-        (False, True, "jinja2", j2_prompt),  # noqa: E501
+        (True, False, "semantic-kernel", sk_prompt),
+        (True, True, "semantic-kernel", sk_prompt),
+        (False, False, "semantic-kernel", sk_prompt),
+        (False, True, "semantic-kernel", sk_prompt),
+        (False, False, "handlebars", hb_prompt),
+        (False, True, "handlebars", hb_prompt),
+        (False, False, "jinja2", j2_prompt),
+        (False, True, "jinja2", j2_prompt),
     ],
 )
 @pytest.mark.asyncio
@@ -308,7 +308,7 @@ async def test_prompt_with_helper_functions(is_inline, is_streaming, template_fo
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="default",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -378,7 +378,7 @@ async def test_prompt_with_simple_variable(is_inline, is_streaming, template_for
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="default",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -437,7 +437,7 @@ async def test_simple_prompt(is_inline, is_streaming, template_format, prompt):
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="default",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -495,7 +495,7 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="default",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -573,12 +573,9 @@ async def setup_openapi_function_call(kernel, function_name, arguments):
         )
 
         assert plugin is not None
-
-        try:
-            await run_function(kernel=kernel, is_streaming=False, function=plugin[function_name], arguments=arguments)
-        except Exception:
+        with contextlib.suppress(Exception):
             # It is expected that the API call will fail, ignore
-            pass
+            await run_function(kernel=kernel, is_streaming=False, function=plugin[function_name], arguments=arguments)
 
         return request_details
 

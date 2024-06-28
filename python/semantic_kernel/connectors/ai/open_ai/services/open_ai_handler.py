@@ -74,7 +74,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
             response = await self.client.embeddings.create(**settings.prepare_settings_dict())
             self.store_usage(response)
             # make numpy arrays from the response
-            # TODO: the openai response is cast to a list[float], could be used instead of ndarray
+            # TODO (eavanvalkenburg): the openai response is cast to a list[float], could be used instead of ndarray
             return [array(x.embedding) for x in response.data]
         except Exception as ex:
             raise ServiceResponseException(
