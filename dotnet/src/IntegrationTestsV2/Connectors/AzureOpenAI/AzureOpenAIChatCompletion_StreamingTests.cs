@@ -16,7 +16,7 @@ namespace SemanticKernel.IntegrationTestsV2.Connectors.AzureOpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class AzureOpenAIChatCompletionStreamingTests()
+public sealed class AzureOpenAIChatCompletionStreamingTests
 {
     [Fact]
     public async Task ChatCompletionShouldUseChatSystemPromptAsync()
