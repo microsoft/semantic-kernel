@@ -10,13 +10,8 @@ from azure.ai.inference.models import (
     AsyncStreamingChatCompletions,
     ChatChoice,
     ChatCompletions,
-    ChatRequestMessage,
-    ImageContentItem,
-    ImageDetailLevel,
-    ImageUrl,
     StreamingChatChoiceUpdate,
     SystemMessage,
-    TextContentItem,
     ToolMessage,
     UserMessage,
 )
@@ -28,11 +23,13 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceSettings,
 )
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
+from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_conversion_utils import (
+    format_chat_history,
+)
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -123,7 +120,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             A list of chat message contents.
         """
         response: ChatCompletions = await self.client.complete(
-            messages=self._format_chat_history(chat_history),
+            messages=format_chat_history(chat_history),
             model_extras=settings.extra_parameters,
             **settings.prepare_settings_dict(),
         )
@@ -149,7 +146,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         """
         response: AsyncStreamingChatCompletions = await self.client.complete(
             stream=True,
-            messages=self._format_chat_history(chat_history),
+            messages=format_chat_history(chat_history),
             model_extras=settings.extra_parameters,
             **settings.prepare_settings_dict(),
         )
@@ -263,43 +260,6 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
             metadata=metadata,
         )
-
-    def _format_chat_history(self, chat_history: ChatHistory) -> list[ChatRequestMessage]:
-        """Format the chat history to the expected objects for the client.
-
-        Args:
-            chat_history: The chat history.
-
-        Returns:
-            A list of formatted chat history.
-        """
-        chat_request_messages: list[ChatRequestMessage] = []
-
-        for message in chat_history.messages:
-            if message.role != AuthorRole.USER or not any(isinstance(item, ImageContent) for item in message.items):
-                chat_request_messages.append(_MESSAGE_CONVERTER[message.role](content=message.content))
-                continue
-
-            # If it's a user message and there are any image items in the message, we need to create a list of
-            # content items, otherwise we need to just pass in the content as a string or it will error.
-            contentItems = []
-            for item in message.items:
-                if isinstance(item, TextContent):
-                    contentItems.append(TextContentItem(text=item.text))
-                elif isinstance(item, ImageContent) and (item.data_uri or item.uri):
-                    contentItems.append(
-                        ImageContentItem(
-                            image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto)
-                        )
-                    )
-                else:
-                    logger.warning(
-                        "Unsupported item type in User message while formatting chat history for Azure AI"
-                        f" Inference: {type(item)}"
-                    )
-            chat_request_messages.append(_MESSAGE_CONVERTER[message.role](content=contentItems))
-
-        return chat_request_messages
 
     def get_prompt_execution_settings_class(
         self,
