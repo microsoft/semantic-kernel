@@ -108,6 +108,7 @@ azure-cosmos = "^4.7.0"
 usearch = "^2.9"
 pyarrow = ">=12.0.1,<17.0.0"
 msgraph-sdk = "^1.2.0"
+mistralai = "^0.4.1"
 
 # Extras are exposed to pip, this allows a user to easily add the right dependencies to their environment
 [tool.poetry.extras]

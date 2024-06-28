@@ -403,7 +403,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "mistralai",
             {
-                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                "function_call_behavior": FunctionChoiceBehavior.Auto(
                     auto_invoke=False, filters={"excluded_plugins": ["chat"]}
                 )
             },
@@ -416,7 +416,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "mistralai",
             {
-                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                "function_call_behavior": FunctionChoiceBehavior.Auto(
                     auto_invoke=True, filters={"excluded_plugins": ["chat"]}
                 )
             },

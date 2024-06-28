@@ -6,7 +6,7 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import (
     MistralAIChatCompletion,
     MistralAIChatPromptExecutionSettings,
@@ -65,9 +65,7 @@ execution_settings = MistralAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_call_behavior=FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["math", "time"]}
-    ),
+    function_choice_behavior=FunctionChoiceBehavior.Auto()
 )
 
 history = ChatHistory()
@@ -112,7 +110,7 @@ async def handle_streaming(
     print("Mosscap:> ", end="")
     streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
-        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
+        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and isinstance(
             message[0], StreamingChatMessageContent
         ):
             streamed_chunks.append(message[0])
@@ -143,7 +141,7 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
-    stream = False
+    stream = True
     if stream:
         await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
@@ -153,7 +151,7 @@ async def chat() -> bool:
         # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
         function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
-        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
+        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
             print_tool_calls(result.value[0])
             return True
 

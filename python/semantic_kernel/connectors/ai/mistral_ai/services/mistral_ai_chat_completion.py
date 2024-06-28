@@ -15,9 +15,7 @@ from mistralai.models.chat_completion import (
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_call_behavior import (
-    FunctionCallConfiguration,
-)
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionCallChoiceConfiguration, FunctionChoiceType
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
@@ -36,10 +34,12 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceResponseException,
 )
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class MistralAIChatCompletion(ChatCompletionClientBase):
     """Mistral Chat completion class."""
 
@@ -262,19 +262,19 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
 
     def update_settings_from_function_call_configuration(
         self,
-        function_call_configuration: FunctionCallConfiguration,
-        settings: MistralAIChatPromptExecutionSettings,
+        function_choice_configuration: "FunctionCallChoiceConfiguration",
+        settings: "MistralAIChatPromptExecutionSettings",
+        type: str,
     ) -> None:
-        """Update the settings from a FunctionCallConfiguration."""
-        if function_call_configuration.required_functions:
-            raise NotImplementedError("Required functions are not supported.")
-        if function_call_configuration.available_functions:
-            settings.tool_choice = (
-                "auto" if len(function_call_configuration.available_functions) > 0 else None
-            )
+        """Update the settings from a FunctionChoiceConfiguration."""
+        if function_choice_configuration.available_functions:
+            if type == FunctionChoiceType.REQUIRED:
+                settings.tool_choice = "any"
+            else:
+                settings.tool_choice = type
             settings.tools = [
                 self.kernel_function_metadata_to_mistral_tool_format(f)
-                for f in function_call_configuration.available_functions
+                for f in function_choice_configuration.available_functions
             ]
 
     def kernel_function_metadata_to_mistral_tool_format(
