@@ -168,6 +168,27 @@ internal sealed class Database
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
+    public Task DeleteBatchAsync(SqliteConnection conn, string collectionName, string[] keys, CancellationToken cancellationToken = default)
+    {
+        using SqliteCommand cmd = conn.CreateCommand();
+        var keyParameters = keys.Select((key, index) => $"@key{index}");
+        var parameters = string.Join(", ", keyParameters);
+
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+        cmd.CommandText = $@"
+         DELETE FROM {TableName}
+         WHERE collection=@collection
+            AND key IN ({parameters})";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+        cmd.Parameters.Add(new SqliteParameter("@collection", collectionName));
+        for (int i = 0; i < keys.Length; i++)
+        {
+            cmd.Parameters.Add(new SqliteParameter($"@key{i}", keys[i]));
+        }
+        return cmd.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     public Task DeleteEmptyAsync(SqliteConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
         using SqliteCommand cmd = conn.CreateCommand();
