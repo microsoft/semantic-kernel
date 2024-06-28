@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.aiservices.openai.textcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.CompletionsOptions;
+import com.azure.ai.openai.models.CompletionsUsage;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.OpenAiService;
 import com.microsoft.semantickernel.aiservices.openai.implementation.OpenAIRequestSettings;
@@ -91,7 +92,7 @@ public class OpenAITextGenerationService extends OpenAiService implements TextGe
                 return Mono.just(completionsResult.getValue());
             })
             .map(completions -> {
-                FunctionResultMetadata metadata = FunctionResultMetadata.build(
+                FunctionResultMetadata<CompletionsUsage> metadata = FunctionResultMetadata.build(
                     completions.getId(),
                     completions.getUsage(),
                     completions.getCreatedAt());

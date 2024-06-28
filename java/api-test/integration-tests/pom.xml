@@ -6,15 +6,9 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>api-test</artifactId>
-<<<<<<< main
-<<<<<<< HEAD
+        <version>1.1.6-SNAPSHOT</version>
         <version>0.2.10-alpha-SNAPSHOT</version>
-=======
-        <version>0.2.9-alpha-SNAPSHOT</version>
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
-=======
         <version>1.1.5-SNAPSHOT</version>
->>>>>>> origin/main-auto-tune
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -61,7 +55,6 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-<<<<<<< main
             <artifactId>semantickernel-connectors-ai-openai</artifactId>
             <scope>test</scope>
         </dependency>
@@ -80,7 +73,6 @@
             <artifactId>sample-code</artifactId>
             <version>${project.version}</version>
         </dependency>
-<<<<<<< HEAD
 
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
@@ -93,9 +85,6 @@
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-connectors-memory-postgresql</artifactId>
             <version>${project.version}</version>
-=======
-            <artifactId>semantickernel-api</artifactId>
->>>>>>> origin/main-auto-tune
             <scope>test</scope>
         </dependency>
 
@@ -132,7 +121,6 @@
             <version>3.3.1</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <dependencyManagement>
@@ -146,12 +134,8 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-<<<<<<< main
-=======
     </dependencies>
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 </project>
-=======
 
     <build>
         <plugins>
@@ -233,4 +217,3 @@
 
 
 </project>
->>>>>>> origin/main-auto-tune
