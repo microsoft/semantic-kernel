@@ -22,7 +22,7 @@ namespace SemanticKernel.IntegrationTestsV2.Connectors.AzureOpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class AzureOpenAIChatCompletionTests()
+public sealed class AzureOpenAIChatCompletionTests
 {
     [Fact]
     //[Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
