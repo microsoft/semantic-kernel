@@ -20,6 +20,7 @@ public static class OnnxServiceCollectionExtensions
     /// Add OnnxRuntimeGenAI Chat Completion services to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the OnnxRuntimeGenAI Text Generation service to.</param>
+    /// <param name="modelId">The name of the model.</param>
     /// <param name="modelPath">The generative AI ONNX model path.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
