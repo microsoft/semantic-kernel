@@ -70,13 +70,10 @@ public class VolatileMemoryStore implements MemoryStore {
                     // Contract:
                     //    Does not guarantee that the collection exists.
 
-<<<<<<< HEAD
                     Map<String, MemoryRecord> collection =
                             _store.computeIfAbsent(collectionName, k -> new ConcurrentHashMap<>());
-=======
                     // getCollection throws MemoryException if the collection does not exist.
                     Map<String, MemoryRecord> collection = getCollection(collectionName);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 
                     String key = record.getMetadata().getId();
                     // Assumption is that MemoryRecord will always have a non-null id.
@@ -98,12 +95,8 @@ public class VolatileMemoryStore implements MemoryStore {
 
         return Mono.fromCallable(
                 () -> {
-<<<<<<< HEAD
                     Map<String, MemoryRecord> collection =
                             _store.computeIfAbsent(collectionName, k -> new ConcurrentHashMap<>());
-=======
-                    Map<String, MemoryRecord> collection = getCollection(collectionName);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
                     Set<String> keys = new HashSet<>();
                     records.forEach(
                             record -> {
@@ -201,11 +194,8 @@ public class VolatileMemoryStore implements MemoryStore {
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             int limit,
-<<<<<<< HEAD
             float minRelevanceScore,
-=======
             double minRelevanceScore,
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
             boolean withEmbeddings) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);
@@ -266,11 +256,8 @@ public class VolatileMemoryStore implements MemoryStore {
     public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
-<<<<<<< HEAD
             float minRelevanceScore,
-=======
             double minRelevanceScore,
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
             boolean withEmbedding) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);
@@ -297,15 +284,12 @@ public class VolatileMemoryStore implements MemoryStore {
         return collection;
     }
 
-<<<<<<< HEAD
     public static class Builder implements MemoryStore.Builder<VolatileMemoryStore> {
         @Override
         public VolatileMemoryStore build() {
-=======
     public static class Builder implements MemoryStore.Builder {
         @Override
         public MemoryStore build() {
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
             return new VolatileMemoryStore();
         }
     }
