@@ -31,15 +31,12 @@ internal static class VectorStoreErrorHandler
         }
         catch (Exception ex)
         {
-            var wrapperException = new VectorStoreRecordMappingException("Failed to convert vector store record.", ex);
-
-            // Using Open Telemetry standard for naming of these entries.
-            // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
-            wrapperException.Data.Add("db.system", databaseSystemName);
-            wrapperException.Data.Add("db.collection.name", collectionName);
-            wrapperException.Data.Add("db.operation.name", operationName);
-
-            throw wrapperException;
+            throw new VectorStoreRecordMappingException("Failed to convert vector store record.", ex)
+            {
+                DBSystem = databaseSystemName,
+                DBCollectionName = collectionName,
+                DBOperationName = operationName
+            };
         }
     }
 }

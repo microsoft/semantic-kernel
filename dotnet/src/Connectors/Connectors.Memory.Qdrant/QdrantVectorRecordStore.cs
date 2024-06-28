@@ -368,15 +368,12 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         }
         catch (RpcException ex)
         {
-            var wrapperException = new VectorStoreOperationException("Call to vector store failed.", ex);
-
-            // Using Open Telemetry standard for naming of these entries.
-            // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
-            wrapperException.Data.Add("db.system", DatabaseName);
-            wrapperException.Data.Add("db.collection.name", collectionName);
-            wrapperException.Data.Add("db.operation.name", operationName);
-
-            throw wrapperException;
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                DBSystem = DatabaseName,
+                DBCollectionName = collectionName,
+                DBOperationName = operationName
+            };
         }
     }
 }
