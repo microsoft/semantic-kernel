@@ -170,7 +170,7 @@ through prompt_template_config or in the prompt_template."
 
             # pass the kernel in for auto function calling
             kwargs: dict[str, Any] = {}
-            if hasattr(prompt_render_result.execution_settings, "function_call_behavior"):
+            if hasattr(prompt_render_result.execution_settings, "function_choice_behavior"):
                 kwargs["kernel"] = context.kernel
                 kwargs["arguments"] = context.arguments
 
@@ -213,7 +213,7 @@ through prompt_template_config or in the prompt_template."
         if isinstance(prompt_render_result.ai_service, ChatCompletionClientBase):
             # pass the kernel in for auto function calling
             kwargs: dict[str, Any] = {}
-            if hasattr(prompt_render_result.execution_settings, "function_call_behavior"):
+            if hasattr(prompt_render_result.execution_settings, "function_choice_behavior"):
                 kwargs["kernel"] = context.kernel
                 kwargs["arguments"] = context.arguments
 

@@ -33,7 +33,7 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseKernelFunctionStrategiesWithAgentGroupChatAsync()
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =

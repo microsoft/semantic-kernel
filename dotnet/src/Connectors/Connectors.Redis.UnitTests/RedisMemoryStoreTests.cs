@@ -15,7 +15,7 @@ using NRedisStack;
 using StackExchange.Redis;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Redis;
+namespace SemanticKernel.Connectors.Redis.UnitTests;
 
 /// <summary>
 /// Unit tests of <see cref="RedisMemoryStore"/>.
