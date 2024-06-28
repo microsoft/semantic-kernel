@@ -23,7 +23,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 {
     private readonly string _modelId;
     private readonly string _modelPath;
-    private Model _model;
+    private Model? _model;
     private Tokenizer _tokenizer;
 
     private Dictionary<string, object?> AttributesInternal { get; } = new();
