@@ -8,7 +8,6 @@
 
 import json
 import os
-from typing import Optional
 
 from opentelemetry import trace
 from opentelemetry.trace import Span, StatusCode
@@ -62,8 +61,8 @@ def are_sensitive_events_enabled() -> bool:
 
 
 def start_completion_activity(
-    model_name: str, model_provider: str, prompt: str, execution_settings: Optional[PromptExecutionSettings]
-) -> Optional[Span]:
+    model_name: str, model_provider: str, prompt: str, execution_settings: PromptExecutionSettings | None
+) -> Span | None:
     """Start a text or chat completion activity for a given model."""
     if not are_model_diagnostics_enabled():
         return None
@@ -105,8 +104,8 @@ def set_completion_response(
     completions: list[ChatMessageContent],
     finish_reasons: list[str],
     response_id: str,
-    prompt_tokens: Optional[int] = None,
-    completion_tokens: Optional[int] = None,
+    prompt_tokens: int | None = None,
+    completion_tokens: int | None = None,
 ) -> None:
     """Set the a text or chat completion response for a given activity."""
     if not are_model_diagnostics_enabled():
