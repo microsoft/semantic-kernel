@@ -397,6 +397,47 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
+    [Fact]
+    public async Task ValidateGetStreamingChatMessageContentWithAutoFunctionInvocationFilterTerminateAsync()
+    {
+        // Arrange
+        var client = this.CreateMistralClientStreaming("mistral-tiny", "https://api.mistral.ai/v1/chat/completions", "chat_completions_streaming_function_call_response.txt");
+
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+
+        var filter = new FakeAutoFunctionFilter(async (context, next) =>
+        {
+            await next(context);
+            context.Terminate = true;
+        });
+        kernel.AutoFunctionInvocationFilters.Add(filter);
+
+        var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+
+        List<StreamingKernelContent> streamingContent = [];
+
+        // Act
+        await foreach (var item in client.GetStreamingChatMessageContentsAsync(chatHistory, default, executionSettings, kernel))
+        {
+            streamingContent.Add(item);
+        }
+
+        // Assert
+        // Results of function invoked before termination should be returned 
+        Assert.Equal(3, streamingContent.Count);
+
+        var lastMessageContent = streamingContent[^1] as StreamingChatMessageContent;
+        Assert.NotNull(lastMessageContent);
+
+        Assert.Equal("12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy", lastMessageContent.Content);
+        Assert.Equal(AuthorRole.Tool, lastMessageContent.Role);
+    }
+
     [Theory]
     [InlineData("system", "System Content")]
     [InlineData("user", "User Content")]

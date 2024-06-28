@@ -107,7 +107,6 @@ def gen_memory_records(count: int, ndim: int, start_index: int = 0) -> list[Memo
 
 def compare_memory_records(record1: MemoryRecord, record2: MemoryRecord, with_embedding: bool):
     """Compare two MemoryRecord instances and assert they are the same."""
-
     assert record1._key == record2._key, f"_key mismatch: {record1._key} != {record2._key}"
     assert (
         record1._timestamp == record2._timestamp

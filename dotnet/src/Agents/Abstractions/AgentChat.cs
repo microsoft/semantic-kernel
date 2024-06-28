@@ -131,9 +131,9 @@ public abstract class AgentChat
     /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
-    public void AddChatMessage(ChatMessageContent message)
+    public void Add(ChatMessageContent message)
     {
-        this.AddChatMessages([message]);
+        this.Add([message]);
     }
 
     /// <summary>
@@ -151,7 +151,7 @@ public abstract class AgentChat
     /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
-    public void AddChatMessages(IReadOnlyList<ChatMessageContent> messages)
+    public void Add(IReadOnlyList<ChatMessageContent> messages)
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
@@ -165,7 +165,7 @@ public abstract class AgentChat
 
         if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
         {
-            this.Logger.LogDebug("[{MethodName}] Adding Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
+            this.Logger.LogDebug("[{MethodName}] Adding Messages: {MessageCount}", nameof(Add), messages.Count);
         }
 
         try
@@ -180,7 +180,7 @@ public abstract class AgentChat
 
             if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
             {
-                this.Logger.LogInformation("[{MethodName}] Added Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
+                this.Logger.LogInformation("[{MethodName}] Added Messages: {MessageCount}", nameof(Add), messages.Count);
             }
         }
         finally
@@ -223,8 +223,8 @@ public abstract class AgentChat
                 this.History.Add(message);
                 messages.Add(message);
 
-                // Don't expose internal messages to caller.
-                if (message.Role == AuthorRole.Tool || message.Items.All(i => i is FunctionCallContent))
+                // Don't expose function-call and function-result messages to caller.
+                if (message.Items.All(i => i is FunctionCallContent || i is FunctionResultContent))
                 {
                     continue;
                 }
@@ -239,7 +239,7 @@ public abstract class AgentChat
                 this._agentChannels
                     .Where(kvp => kvp.Value != channel)
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
-            this._broadcastQueue.Enqueue(channelRefs, messages);
+            this._broadcastQueue.Enqueue(channelRefs, messages.Where(m => m.Role != AuthorRole.Tool).ToArray());
 
             this.Logger.LogInformation("[{MethodName}] Invoked agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
         }

@@ -29,7 +29,7 @@ async def populate_memory(memory: SemanticTextMemory) -> None:
 async def main() -> None:
     kernel = Kernel()
 
-    azure_ai_search_settings = AzureAISearchSettings()
+    azure_ai_search_settings = AzureAISearchSettings.create()
     vector_size = 1536
 
     # Setting up OpenAI services for text completion and text embedding

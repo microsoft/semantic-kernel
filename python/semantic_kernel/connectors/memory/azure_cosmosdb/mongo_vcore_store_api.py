@@ -1,17 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+import sys
 from typing import Any
+
+if sys.version >= "3.12":
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 import numpy as np
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import (
-    AzureCosmosDBStoreApi,
-)
-from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
-    CosmosDBSimilarityType,
-    CosmosDBVectorSearchType,
-)
+from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
+from semantic_kernel.connectors.memory.azure_cosmosdb.utils import CosmosDBSimilarityType, CosmosDBVectorSearchType
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -81,6 +82,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         ef_search: int,
         database=None,
     ):
+        """Initializes a new instance of the MongoStoreApi class."""
         self.database = database
         self.collection_name = collection_name
         self.index_name = index_name
@@ -92,33 +94,36 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         self.ef_construction = ef_construction
         self.ef_search = ef_search
 
+    @override
     async def create_collection(self, collection_name: str) -> None:
-        if not await self.does_collection_exist(collection_name):
-            if self.index_name not in self.database[collection_name].list_indexes():
-                # check the kind of vector search to be performed
-                # prepare the command accordingly
-                create_index_commands = {}
-                if self.kind == CosmosDBVectorSearchType.VECTOR_IVF:
-                    create_index_commands = self._get_vector_index_ivf(
-                        collection_name, self.kind, self.num_lists, self.similarity, self.vector_dimensions
-                    )
-                elif self.kind == CosmosDBVectorSearchType.VECTOR_HNSW:
-                    create_index_commands = self._get_vector_index_hnsw(
-                        collection_name,
-                        self.kind,
-                        self.m,
-                        self.ef_construction,
-                        self.similarity,
-                        self.vector_dimensions,
-                    )
-                # invoke the command from the database object
-                self.database.command(create_index_commands)
+        if (
+            not await self.does_collection_exist(collection_name)
+            and self.index_name not in self.database[collection_name].list_indexes()
+        ):
+            # check the kind of vector search to be performed
+            # prepare the command accordingly
+            create_index_commands = {}
+            if self.kind == CosmosDBVectorSearchType.VECTOR_IVF:
+                create_index_commands = self._get_vector_index_ivf(
+                    collection_name, self.kind, self.num_lists, self.similarity, self.vector_dimensions
+                )
+            elif self.kind == CosmosDBVectorSearchType.VECTOR_HNSW:
+                create_index_commands = self._get_vector_index_hnsw(
+                    collection_name,
+                    self.kind,
+                    self.m,
+                    self.ef_construction,
+                    self.similarity,
+                    self.vector_dimensions,
+                )
+            # invoke the command from the database object
+            self.database.command(create_index_commands)
         self.collection = self.database[collection_name]
 
     def _get_vector_index_ivf(
         self, collection_name: str, kind: str, num_lists: int, similarity: str, dimensions: int
     ) -> dict[str, Any]:
-        command = {
+        return {
             "createIndexes": collection_name,
             "indexes": [
                 {
@@ -133,12 +138,11 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 }
             ],
         }
-        return command
 
     def _get_vector_index_hnsw(
         self, collection_name: str, kind: str, m: int, ef_construction: int, similarity: str, dimensions: int
     ) -> dict[str, Any]:
-        command = {
+        return {
             "createIndexes": collection_name,
             "indexes": [
                 {
@@ -154,21 +158,25 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 }
             ],
         }
-        return command
 
+    @override
     async def get_collections(self) -> list[str]:
         return self.database.list_collection_names()
 
+    @override
     async def delete_collection(self, collection_name: str) -> None:
         return self.collection.drop()
 
+    @override
     async def does_collection_exist(self, collection_name: str) -> bool:
         return collection_name in self.database.list_collection_names()
 
+    @override
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         result = await self.upsert_batch(collection_name, [record])
         return result[0]
 
+    @override
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         doc_ids: list[str] = []
         cosmosRecords: list[dict] = []
@@ -188,6 +196,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         self.collection.insert_many(cosmosRecords)
         return doc_ids
 
+    @override
     async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         if not with_embedding:
             result = self.collection.find_one({"_id": key}, {"embedding": 0})
@@ -202,6 +211,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             timestamp=result.get("timestamp", None),
         )
 
+    @override
     async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         if not with_embeddings:
             results = self.collection.find({"_id": {"$in": keys}}, {"embedding": 0})
@@ -220,12 +230,15 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             for result in results
         ]
 
+    @override
     async def remove(self, collection_name: str, key: str) -> None:
         self.collection.delete_one({"_id": key})
 
+    @override
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         self.collection.delete_many({"_id": {"$in": keys}})
 
+    @override
     async def get_nearest_matches(
         self,
         collection_name: str,
@@ -303,6 +316,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         ]
         return pipeline
 
+    @override
     async def get_nearest_match(
         self,
         collection_name: str,
@@ -320,8 +334,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
 
         if len(nearest_results) > 0:
             return nearest_results[0]
-        else:
-            return None
+        return None
 
     @staticmethod
     def __serialize_metadata(record: MemoryRecord) -> str:

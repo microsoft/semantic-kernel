@@ -10,7 +10,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletionBase
-from semantic_kernel.contents import ChatMessageContent, StreamingChatMessageContent, TextContent
+from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException
@@ -64,7 +64,9 @@ async def test_complete_chat(tool_call, kernel: Kernel):
     settings.function_call_behavior = None
     mock_function_call = MagicMock(spec=FunctionCallContent)
     mock_text = MagicMock(spec=TextContent)
-    mock_message = ChatMessageContent(role="assistant", items=[mock_function_call] if tool_call else [mock_text])
+    mock_message = ChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[mock_function_call] if tool_call else [mock_text]
+    )
     mock_message_content = [mock_message]
     arguments = KernelArguments()
 
@@ -190,13 +192,13 @@ async def test_process_tool_calls_with_continuation_on_malformed_arguments():
             FunctionCallBehavior.AutoInvokeKernelFunctions(),
         )
 
-    logger_mock.exception.assert_any_call(
+    logger_mock.info.assert_any_call(
         "Received invalid arguments for function test_function: Malformed arguments. Trying tool call again."
     )
 
     add_message_calls = chat_history_mock.add_message.call_args_list
     assert any(
-        call[1]["message"].items[0].result == "The tool call arguments are malformed, please try again."
+        call[1]["message"].items[0].result == "The tool call arguments are malformed. Arguments must be in JSON format. Please try again."  # noqa: E501
         and call[1]["message"].items[0].id == "test_id"
         and call[1]["message"].items[0].name == "test_function"
         for call in add_message_calls

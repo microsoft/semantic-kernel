@@ -12,14 +12,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class GoogleConnector(ConnectorBase):
-    """
-    A search engine connector that uses the Google Custom Search API to perform a web search.
-    """
+    """A search engine connector that uses the Google Custom Search API to perform a web search."""
 
     _api_key: str
     _search_engine_id: str
 
     def __init__(self, api_key: str, search_engine_id: str) -> None:
+        """Initializes a new instance of the GoogleConnector class."""
         self._api_key = api_key
         self._search_engine_id = search_engine_id
 
@@ -30,15 +29,7 @@ class GoogleConnector(ConnectorBase):
             raise ServiceInitializationError("Google search engine ID cannot be null.")
 
     async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
-        """
-        Returns the search results of the query provided by pinging the Google Custom search API.
-        Returns `num_results` results and ignores the first `offset`.
-
-        :param query: search query
-        :param num_results: the number of search results to return
-        :param offset: the number of search results to ignore
-        :return: list of search results
-        """
+        """Returns the search results of the query provided by pinging the Google Custom search API."""
         if not query:
             raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
 
@@ -64,13 +55,11 @@ class GoogleConnector(ConnectorBase):
 
         logger.info("Sending GET request to Google Search API.")
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(_request_url, raise_for_status=True) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    logger.info("Request successful.")
-                    logger.info(f"API Response: {data}")
-                    return [x["snippet"] for x in data["items"]]
-                else:
-                    logger.error(f"Request to Google Search API failed with status code: {response.status}.")
-                    return []
+        async with aiohttp.ClientSession() as session, session.get(_request_url, raise_for_status=True) as response:
+            if response.status == 200:
+                data = await response.json()
+                logger.info("Request successful.")
+                logger.info(f"API Response: {data}")
+                return [x["snippet"] for x in data["items"]]
+            logger.error(f"Request to Google Search API failed with status code: {response.status}.")
+            return []

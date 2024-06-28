@@ -27,6 +27,7 @@ class FunctionCallingStepwisePlannerOptions(PlannerOptions):
     @model_validator(mode="before")
     @classmethod
     def calculate_token_limits(cls, data: Any) -> Any:
+        """Calculate the token limits based on the max_tokens and max_tokens_ratio."""
         if isinstance(data, dict):
             max_tokens = data.get("max_tokens")
             # Ensure max_tokens_ratio has a default value if not provided

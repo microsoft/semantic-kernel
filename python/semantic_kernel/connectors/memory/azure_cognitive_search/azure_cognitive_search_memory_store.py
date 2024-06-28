@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import contextlib
 import logging
 import uuid
 from inspect import isawaitable
@@ -50,49 +51,51 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         azure_credentials: AzureKeyCredential | None = None,
         token_credentials: TokenCredential | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
-
-        Arguments:
-            vector_size {int}                                -- Embedding vector size.
-            search_endpoint {str | None}                  -- The endpoint of the Azure Cognitive Search service
-                                                                (default: {None}).
-            admin_key {str | None}                        -- Azure Cognitive Search API key (default: {None}).
-            azure_credentials {AzureKeyCredential | None} -- Azure Cognitive Search credentials (default: {None}).
-            token_credentials {TokenCredential | None}    -- Azure Cognitive Search token credentials
-                                                                (default: {None}).
-            env_file_path {str | None}                  -- Use the environment settings file as a fallback
-                                                                to environment variables
 
         Instantiate using Async Context Manager:
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
+
+        Args:
+            vector_size (int): Embedding vector size.
+            search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
+                (default: {None}).
+            admin_key (str | None): Azure Cognitive Search API key (default: {None}).
+            azure_credentials (AzureKeyCredential | None): Azure Cognitive Search credentials (default: {None}).
+            token_credentials (TokenCredential | None): Azure Cognitive Search token credentials
+                (default: {None}).
+            env_file_path (str | None): Use the environment settings file as a fallback
+                to environment variables
+            env_file_encoding (str | None): The encoding of the environment settings file
+
         """
-        from semantic_kernel.connectors.memory.azure_cognitive_search import AzureAISearchSettings
+        from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import (
+            AzureAISearchSettings,
+        )
 
-        acs_memory_settings = None
         try:
-            acs_memory_settings = AzureAISearchSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load AzureAISearch pydantic settings: {e}")
-
-        admin_key = admin_key or (
-            acs_memory_settings.api_key.get_secret_value()
-            if acs_memory_settings and acs_memory_settings.api_key
-            else None
-        )
-        search_endpoint = search_endpoint or (
-            acs_memory_settings.endpoint if acs_memory_settings and acs_memory_settings.endpoint else None
-        )
-        assert search_endpoint, "The ACS endpoint is required to connect to Azure Cognitive Search."
+            acs_memory_settings = AzureAISearchSettings.create(
+                env_file_path=env_file_path,
+                endpoint=search_endpoint,
+                api_key=admin_key,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as exc:
+            raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
 
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
-            str(search_endpoint), admin_key, azure_credentials, token_credentials
+            search_endpoint=str(acs_memory_settings.endpoint),
+            admin_key=acs_memory_settings.api_key.get_secret_value() if acs_memory_settings.api_key else None,
+            azure_credential=azure_credentials,
+            token_credential=token_credentials,
         )
 
     async def close(self):
-        """Async close connection, invoked by MemoryStoreBase.__aexit__()"""
+        """Async close connection, invoked by MemoryStoreBase.__aexit__()."""
         if self._search_index_client is not None:
             await self._search_index_client.close()
 
@@ -104,18 +107,17 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     ) -> None:
         """Creates a new collection if it does not exist.
 
-        Arguments:
-            collection_name {str}                              -- The name of the collection to create.
-            vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
+        Args:
+            collection_name (str): The name of the collection to create.
+            vector_config (HnswVectorSearchAlgorithmConfiguration): Optional search algorithm configuration
                                                                       (default: {None}).
-            semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
-            search_resource_encryption_key {SearchResourceEncryptionKey}            -- Optional Search Encryption Key
+            semantic_config (SemanticConfiguration): Optional search index configuration (default: {None}).
+            search_resource_encryption_key (SearchResourceEncryptionKey): Optional Search Encryption Key
                                                                                        (default: {None}).
 
         Returns:
             None
         """
-
         vector_search_profile_name = "az-vector-config"
         if vector_config:
             vector_search_profile = VectorSearchProfile(
@@ -148,10 +150,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         # Check to see if collection exists
         collection_index = None
-        try:
+        with contextlib.suppress(ResourceNotFoundError):
             collection_index = await self._search_index_client.get_index(collection_name.lower())
-        except ResourceNotFoundError:
-            pass
 
         if not collection_index:
             # Create the search index with the semantic settings
@@ -168,9 +168,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            List[str]: The list of collections.
         """
-
         results_list = []
         items = self._search_index_client.list_index_names()
         if isawaitable(items):
@@ -184,8 +183,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to delete.
+        Args:
+            collection_name (str): The name of the collection to delete.
 
         Returns:
             None
@@ -195,34 +194,29 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to check.
+        Args:
+            collection_name (str): The name of the collection to check.
 
         Returns:
-            bool -- True if the collection exists; otherwise, False.
+            bool: True if the collection exists; otherwise, False.
         """
-
         try:
             collection_result = await self._search_index_client.get_index(name=collection_name.lower())
 
-            if collection_result:
-                return True
-            else:
-                return False
+            return bool(collection_result)
         except ResourceNotFoundError:
             return False
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upsert a record.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to upsert the record into.
-            record {MemoryRecord} -- The record to upsert.
+        Args:
+            collection_name (str): The name of the collection to upsert the record into.
+            record (MemoryRecord): The record to upsert.
 
         Returns:
-            str -- The unique record id of the record.
+            str: The unique record id of the record.
         """
-
         result = await self.upsert_batch(collection_name, [record])
         if result:
             return result[0]
@@ -231,14 +225,13 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upsert a batch of records.
 
-        Arguments:
-            collection_name {str}        -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+        Args:
+            collection_name (str): The name of the collection to upsert the records into.
+            records (List[MemoryRecord]): The records to upsert.
 
         Returns:
-            List[str] -- The unique database keys of the records.
+            List[str]: The unique database keys of the records.
         """
-
         # Initialize search client here
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
@@ -262,21 +255,19 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         if result[0].succeeded:
             return search_ids
-        else:
-            return None
+        return None
 
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to get the record from.
-            key {str}             -- The unique database key of the record.
-            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the record from.
+            key (str): The unique database key of the record.
+            with_embedding (bool): Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            MemoryRecord -- The record.
+            MemoryRecord: The record.
         """
-
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
 
@@ -298,15 +289,14 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
-        Arguments:
-            collection_name {str}  -- The name of the collection to get the records from.
-            keys {List[str]}       -- The unique database keys of the records.
-            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the records from.
+            keys (List[str]): The unique database keys of the records.
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            List[MemoryRecord]: The records.
         """
-
         search_results = []
 
         for key in keys:
@@ -322,28 +312,26 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]}      -- The unique database keys of the records to remove.
+        Args:
+            collection_name (str): The name of the collection to remove the records from.
+            keys (List[str]): The unique database keys of the records to remove.
 
         Returns:
             None
         """
-
         for record_id in keys:
             await self.remove(collection_name=collection_name.lower(), key=encode_id(record_id))
 
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to remove the record from.
-            key {str}             -- The unique database key of the record to remove.
+        Args:
+            collection_name (str): The name of the collection to remove the record from.
+            key (str): The unique database key of the record to remove.
 
         Returns:
             None
         """
-
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
         docs_to_delete = {SEARCH_FIELD_ID: encode_id(key)}
@@ -360,16 +348,15 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using vector configuration parameters.
 
-        Arguments:
-            collection_name {str}       -- The name of the collection to get the nearest match from.
-            embedding {ndarray}         -- The embedding to find the nearest match to.
-            min_relevance_score {float} -- The minimum relevance score of the match. (default: {0.0})
-            with_embedding {bool}       -- Whether to include the embedding in the result. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the nearest match from.
+            embedding (ndarray): The embedding to find the nearest match to.
+            min_relevance_score (float): The minimum relevance score of the match. (default: {0.0})
+            with_embedding (bool): Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            Tuple[MemoryRecord, float]: The record and the relevance score.
         """
-
         memory_records = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
@@ -380,8 +367,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         if len(memory_records) > 0:
             return memory_records[0]
-        else:
-            return None
+        return None
 
     async def get_nearest_matches(
         self,
@@ -394,16 +380,15 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """Gets the nearest matches to an embedding using vector configuration.
 
         Parameters:
-            collection_name (str)       -- The name of the collection to get the nearest matches from.
-            embedding (ndarray)         -- The embedding to find the nearest matches to.
-            limit {int}                 -- The maximum number of matches to return.
-            min_relevance_score {float} -- The minimum relevance score of the matches. (default: {0.0})
-            with_embeddings {bool}      -- Whether to include the embeddings in the results. (default: {False})
+            collection_name (str)      : The name of the collection to get the nearest matches from.
+            embedding (ndarray)        : The embedding to find the nearest matches to.
+            limit (int): The maximum number of matches to return.
+            min_relevance_score (float): The minimum relevance score of the matches. (default: {0.0})
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            List[Tuple[MemoryRecord, float]]: The records and their relevance scores.
         """
-
         # Look up Search client class to see if exists or create
         search_client = self._search_index_client.get_search_client(collection_name.lower())
 

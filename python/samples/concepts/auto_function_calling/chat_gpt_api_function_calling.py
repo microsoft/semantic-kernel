@@ -54,9 +54,9 @@ chat_function = kernel.add_function(
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
-# if the model or api version do not support this you will get an error.
+# if the model or api version does not support this you will get an error.
 
-# Note: the number of responses for auto inoking tool calls is limited to 1.
+# Note: the number of responses for auto invoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
 execution_settings = OpenAIChatPromptExecutionSettings(
     service_id="chat",
@@ -111,7 +111,7 @@ async def handle_streaming(
     streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
         if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
-            message[0], ChatMessageContent
+            message[0], StreamingChatMessageContent
         ):
             streamed_chunks.append(message[0])
         else:
@@ -150,9 +150,8 @@ async def chat() -> bool:
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
-        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
-            result.value[0], FunctionCallContent
-        ):
+        function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
+        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
             print_tool_calls(result.value[0])
             return True
 

@@ -3,16 +3,17 @@
 import pytest
 from defusedxml.ElementTree import XML
 
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 
 
 def test_cmc():
-    message = ChatMessageContent(role="user", content="Hello, world!")
+    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     assert len(message.items) == 1
@@ -20,12 +21,13 @@ def test_cmc():
 
 def test_cmc_str():
     message = ChatMessageContent(role="user", content="Hello, world!")
+    assert message.role == AuthorRole.USER
     assert str(message) == "Hello, world!"
 
 
 def test_cmc_full():
     message = ChatMessageContent(
-        role="user",
+        role=AuthorRole.USER,
         name="username",
         content="Hello, world!",
         inner_content="Hello, world!",
@@ -42,14 +44,14 @@ def test_cmc_full():
 
 
 def test_cmc_items():
-    message = ChatMessageContent(role="user", items=[TextContent(text="Hello, world!")])
+    message = ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello, world!")])
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     assert len(message.items) == 1
 
 
 def test_cmc_items_and_content():
-    message = ChatMessageContent(role="user", content="text", items=[TextContent(text="Hello, world!")])
+    message = ChatMessageContent(role=AuthorRole.USER, content="text", items=[TextContent(text="Hello, world!")])
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     assert message.items[0].text == "Hello, world!"
@@ -59,19 +61,16 @@ def test_cmc_items_and_content():
 
 def test_cmc_multiple_items():
     message = ChatMessageContent(
-        role="system",
-        items=[
-            TextContent(text="Hello, world!"),
-            TextContent(text="Hello, world!"),
-        ],
+        role=AuthorRole.SYSTEM,
+        items=[TextContent(text="Hello, world!"), TextContent(text="Hello, world!"), ImageContent(uri="http://test/")],
     )
     assert message.role == AuthorRole.SYSTEM
     assert message.content == "Hello, world!"
-    assert len(message.items) == 2
+    assert len(message.items) == 3
 
 
 def test_cmc_content_set():
-    message = ChatMessageContent(role="user", content="Hello, world!")
+    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     message.content = "Hello, world to you too!"
@@ -82,7 +81,7 @@ def test_cmc_content_set():
 
 
 def test_cmc_content_set_empty():
-    message = ChatMessageContent(role="user", content="Hello, world!")
+    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     message.items.pop()
@@ -92,7 +91,7 @@ def test_cmc_content_set_empty():
 
 
 def test_cmc_to_element():
-    message = ChatMessageContent(role="user", content="Hello, world!", name=None)
+    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!", name=None)
     element = message.to_element()
     assert element.tag == "message"
     assert element.attrib == {"role": "user"}
@@ -102,14 +101,56 @@ def test_cmc_to_element():
         assert child.text == "Hello, world!"
 
 
+@pytest.mark.parametrize(
+    "message",
+    [
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[
+                TextContent(text="test"),
+            ],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[ImageContent(uri="http://test/")],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[ImageContent(data=b"test_data", mime_type="image/jpeg")],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER, items=[FunctionCallContent(id="test", name="func_name", arguments="args")]
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[FunctionResultContent(id="test", name="func_name", result="result")],
+        ),
+        ChatMessageContent(
+            role=AuthorRole.USER,
+            items=[
+                TextContent(text="Hello, world!"),
+                FunctionCallContent(id="test", name="func_name", arguments="args"),
+                FunctionResultContent(id="test", name="func_name", result="result"),
+                ImageContent(uri="http://test/"),
+            ],
+        ),
+    ],
+    ids=["text", "image_uri", "image_data", "function_call", "function_result", "all"],
+)
+def test_cmc_to_from_element(message):
+    element = message.to_element()
+    new_message = ChatMessageContent.from_element(element)
+    assert message == new_message
+
+
 def test_cmc_to_prompt():
-    message = ChatMessageContent(role="user", content="Hello, world!")
+    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
     prompt = message.to_prompt()
     assert prompt == '<message role="user"><text>Hello, world!</text></message>'
 
 
 def test_cmc_from_element():
-    element = ChatMessageContent(role="user", content="Hello, world!").to_element()
+    element = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!").to_element()
     message = ChatMessageContent.from_element(element)
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
@@ -161,6 +202,7 @@ def test_cmc_from_element_content():
             1,  # TODO: review this case
         ),
         ('<message role="user" choice_index="0">Hello, world!</message>', "user", "Hello, world!", 1),
+        ('<message role="user"><image>data:image/jpeg;base64,dGVzdF9kYXRh</image></message>', "user", "", 1),
     ],
     ids=[
         "no_tag",
@@ -171,6 +213,7 @@ def test_cmc_from_element_content():
         "combined",
         "unknown_tag",
         "streaming",
+        "image",
     ],
 )
 def test_cmc_from_element_content_parse(xml_content, user, text_content, length):
@@ -182,14 +225,14 @@ def test_cmc_from_element_content_parse(xml_content, user, text_content, length)
 
 
 def test_cmc_serialize():
-    message = ChatMessageContent(role="user", content="Hello, world!")
+    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
     dumped = message.model_dump()
-    assert dumped["role"] == "user"
+    assert dumped["role"] == AuthorRole.USER
     assert dumped["items"][0]["text"] == "Hello, world!"
 
 
 def test_cmc_to_dict():
-    message = ChatMessageContent(role="user", content="Hello, world!")
+    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
     assert message.to_dict() == {
         "role": "user",
         "content": "Hello, world!",
@@ -197,7 +240,7 @@ def test_cmc_to_dict():
 
 
 def test_cmc_to_dict_keys():
-    message = ChatMessageContent(role="user", content="Hello, world!")
+    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
     assert message.to_dict(role_key="author", content_key="text") == {
         "author": "user",
         "text": "Hello, world!",

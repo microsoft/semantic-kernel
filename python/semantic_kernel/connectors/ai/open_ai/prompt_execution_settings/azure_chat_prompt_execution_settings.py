@@ -1,5 +1,7 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import logging
-from typing import Annotated, Any, Literal, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Union
 
 from pydantic import AliasGenerator, ConfigDict, Field
 from pydantic.alias_generators import to_camel, to_snake
@@ -9,6 +11,9 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +87,18 @@ class AzureAISearchDataSource(AzureChatRequestBase):
     type: Literal["azure_search"] = "azure_search"
     parameters: Annotated[dict, AzureAISearchDataSourceParameters]
 
+    @classmethod
+    def from_azure_ai_search_settings(cls, azure_ai_search_settings: "AzureAISearchSettings", **kwargs: Any):
+        """Create an instance from Azure AI Search settings."""
+        kwargs["parameters"] = {
+            "endpoint": str(azure_ai_search_settings.endpoint),
+            "index_name": azure_ai_search_settings.index_name,
+            "authentication": {
+                "key": azure_ai_search_settings.api_key.get_secret_value() if azure_ai_search_settings.api_key else None
+            },
+        }
+        return cls(**kwargs)
+
 
 DataSource = Annotated[Union[AzureAISearchDataSource, AzureCosmosDBDataSource], Field(discriminator="type")]
 
@@ -92,11 +109,11 @@ class ExtraBody(KernelBaseModel):
     output_language: str | None = Field(None, serialization_alias="outputLanguage")
 
     def __getitem__(self, item):
+        """Get an item from the ExtraBody."""
         return getattr(self, item)
 
 
 class AzureChatPromptExecutionSettings(OpenAIChatPromptExecutionSettings):
     """Specific settings for the Azure OpenAI Chat Completion endpoint."""
 
-    response_format: str | None = None
     extra_body: dict[str, Any] | ExtraBody | None = None
