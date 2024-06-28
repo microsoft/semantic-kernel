@@ -6,6 +6,7 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -18,6 +19,20 @@ if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
 
 
+# In this sample, we're working with the `FunctionChoiceBehavior.Required` type for auto function calling.
+# This type mandates that the model calls a specific function or a set of functions to handle the user input.
+# By default, the `maximum_auto_invoke_attempts` is set to 1. This can be adjusted by setting this attribute
+# in the `FunctionChoiceBehavior.Required` class.
+#
+# Note that if the maximum auto invoke attempts exceed the number of functions the model calls, it may repeat calling a
+# function and ultimately return a tool call response. For example, if we specify required plugins as `math-Multiply`
+# and `math-Add`, and set the maximum auto invoke attempts to 5, and query `What is 3+4*5?`, the model will first call
+# the `math-Multiply` function, then the `math-Add` function, satisfying 2 of the 5 max auto invoke attempts.
+# The remaining 3 attempts will continue calling `math-Add` because the execution settings are still configured with a
+# tool_choice `required` and the supplied tools. The final result will be a tool call response.
+#
+# This behavior is true for both streaming and non-streaming responses.
+
 system_message = """
 You are a chat bot. Your name is Mosscap and
 you have one goal: figure out what people need.
@@ -29,6 +44,7 @@ especially for adding and subtracting.
 You also excel at joke telling, where your tone is often sarcastic.
 Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
+Start all your answers with the current time.
 """
 
 # This concept example shows how to handle both streaming and non-streaming responses
@@ -38,7 +54,8 @@ stream = True
 kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-kernel.add_service(OpenAIChatCompletion(service_id="chat"))
+service_id = "chat"
+kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 
 plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
@@ -51,37 +68,23 @@ chat_function = kernel.add_function(
     function_name="Chat",
 )
 
-# Enabling or disabling function calling is done by setting the `function_choice_behavior` attribute for the
-# prompt execution settings. When the function_call parameter is set to "auto" the model will decide which
-# function to use, if any.
-#
-# There are two ways to define the `function_choice_behavior` parameter:
-# 1. Using the type string as `"auto"`, `"required"`, or `"none"`. For example:
-#   configure `function_choice_behavior="auto"` parameter directly in the execution settings.
-# 2. Using the FunctionChoiceBehavior class. For example:
-#   `function_choice_behavior=FunctionChoiceBehavior.Auto()`.
-# Both of these configure the `auto` tool_choice and all of the available plugins/functions
-# registered on the kernel. If you want to limit the available plugins/functions, you must
-# configure the `filters` dictionary attribute for each type of function choice behavior.
-# For example:
-#
-# from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+# enabling or disabling function calling is done by setting the function_choice_behavior parameter for the
+# prompt execution settings. When the function_call parameter is set to "required" the model will decide which
+# function to use, if any. If you only want to use a specific function, configure the filters dict with either:
+# 'excluded_plugins', 'included_plugins', 'excluded_functions', or 'included_functions'. For example, the
+# format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
+# if the model or api version does not support this you will get an error.
 
-# function_choice_behavior = FunctionChoiceBehavior.Auto(
-#     filters={"included_functions": ["time-date", "time-time", "math-Add"]}
-# )
-#
-# The filters attribute allows you to specify either: `included_functions`, `excluded_functions`,
-#  `included_plugins`, or `excluded_plugins`.
-
-# Note: the number of responses for auto invoking tool calls is limited to 1.
-# If configured to be greater than one, this value will be overridden to 1.
+# Note: by default, the number of responses for auto invoking `required` tool calls is limited to 1.
+# The value may be configured to be more than one depending upon your scenario.
 execution_settings = OpenAIChatPromptExecutionSettings(
-    service_id="chat",
+    service_id=service_id,
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior="auto",
+    function_choice_behavior=FunctionChoiceBehavior.Required(
+        filters={"included_functions": ["time-time", "time-date"]},
+    ),
 )
 
 history = ChatHistory()
@@ -129,9 +132,7 @@ async def handle_streaming(
     print("Mosscap:> ", end="")
     streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
-        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and isinstance(
-            message[0], StreamingChatMessageContent
-        ):
+        if isinstance(message[0], StreamingChatMessageContent):
             streamed_chunks.append(message[0])
         else:
             print(str(message[0]), end="")
@@ -140,7 +141,7 @@ async def handle_streaming(
         streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
         if hasattr(streaming_chat_message, "content"):
             print(streaming_chat_message.content)
-        print("Auto tool calls is disabled, printing returned tool calls...")
+        print("Printing returned tool calls...")
         print_tool_calls(streaming_chat_message)
 
     print("\n")
@@ -184,7 +185,7 @@ async def main() -> None:
     print(
         "Welcome to the chat bot!\
         \n  Type 'exit' to exit.\
-        \n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
+        \n  Try a question to see the function calling in action (i.e. what is the current time?)."
     )
     while chatting:
         chatting = await chat()
