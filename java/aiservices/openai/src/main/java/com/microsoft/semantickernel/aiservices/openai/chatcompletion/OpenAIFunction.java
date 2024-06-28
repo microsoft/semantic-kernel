@@ -155,7 +155,7 @@ class OpenAIFunction {
         if (parameter != null && parameter.getDescription() != null && !parameter.getDescription()
             .isEmpty()) {
             String description = parameter.getDescription();
-            description = description.replace("\n", "");
+            description = description.replaceAll("\\r?\\n|\\r", "");
             description = description.replace("\"", "\\\"");
 
             description = String.format("\"description\":\"%s\"", description);

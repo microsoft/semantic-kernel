@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
+import com.azure.ai.openai.models.CompletionsUsage;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
@@ -68,9 +69,9 @@ public class Example43_GetModelResult {
         // Display results
         System.out.println(result.getResult());
         System.out.println(
-            "Usage: " + result
+            "Usage: " + ((CompletionsUsage) result
                 .getMetadata()
-                .getUsage().getTotalTokens());
+                .getUsage()).getTotalTokens());
         System.out.println();
     }
 }

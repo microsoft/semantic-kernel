@@ -2,7 +2,9 @@
 package com.microsoft.semantickernel.aiservices.openai.implementation;
 
 import com.azure.core.http.HttpHeaderName;
+import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.core.http.rest.RequestOptions;
+import com.azure.core.util.Context;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -18,15 +20,19 @@ public final class OpenAIRequestSettings {
 
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTY_NAME = "semantic-kernel.version";
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTIES_FILE = "semantic-kernel-version.properties";
-    private static final String version;
+    private static final String useragent;
+
+    private static final String header;
 
     static {
-        version = loadVersion();
+        String version = loadVersion();
+        useragent = "Semantic-Kernel-Java-" + version;
+        header = "Java-" + version;
     }
 
     private static String loadVersion() {
 
-        String version = "Java/unknown";
+        String version = "unknown";
 
         try (InputStream settingsFile = OpenAIRequestSettings.class.getResourceAsStream(
             SEMANTIC_KERNEL_VERSION_PROPERTIES_FILE)) {
@@ -36,7 +42,7 @@ public final class OpenAIRequestSettings {
             if (props.containsKey(SEMANTIC_KERNEL_VERSION_PROPERTY_NAME)) {
                 String skVersion = props.getProperty(SEMANTIC_KERNEL_VERSION_PROPERTY_NAME);
                 if (skVersion != null && !skVersion.isEmpty()) {
-                    return "Java/" + skVersion;
+                    return skVersion;
                 }
             }
         } catch (IOException e) {
@@ -53,6 +59,8 @@ public final class OpenAIRequestSettings {
      */
     public static RequestOptions getRequestOptions() {
         return new RequestOptions()
-            .setHeader(HttpHeaderName.fromString("Semantic-Kernel-Version"), version);
+            .setHeader(HttpHeaderName.fromString("Semantic-Kernel-Version"), header)
+            .setContext(
+                new Context(UserAgentPolicy.APPEND_USER_AGENT_CONTEXT_KEY, useragent));
     }
 }

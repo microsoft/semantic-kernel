@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.contextvariables.converters.CollectionVariableContextVariableTypeConverter;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
@@ -79,7 +80,7 @@ public class SerializingPrompts {
         // <InvokeSerializedPrompts>
         // Create Kernel
         Kernel kernel = Kernel.builder()
-            .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
+            .withAIService(ChatCompletionService.class, OpenAIChatCompletion.builder()
                 .withModelId(MODEL_ID)
                 .withOpenAIAsyncClient(client)
                 .build())

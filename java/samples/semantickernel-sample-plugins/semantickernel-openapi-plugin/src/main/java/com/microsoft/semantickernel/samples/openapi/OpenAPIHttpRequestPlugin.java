@@ -179,7 +179,7 @@ public class OpenAPIHttpRequestPlugin {
                 .getGet()
                 .getParameters()
                 .stream()
-                .filter(param -> param.getName().equals(contextVariable)).findFirst())
+                .filter(param -> param.getName().equalsIgnoreCase(contextVariable)).findFirst())
             .filter(Optional::isPresent)
             .map(Optional::get);
     }

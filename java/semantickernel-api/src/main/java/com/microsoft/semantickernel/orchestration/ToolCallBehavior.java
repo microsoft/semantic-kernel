@@ -70,7 +70,7 @@ public class ToolCallBehavior {
     }
 
     private static final int DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS = 5;
-    private static final String FUNCTION_NAME_SEPARATOR = "-";
+    public static final String FUNCTION_NAME_SEPARATOR = "-";
     private final int maximumAutoInvokeAttempts;
 
     /**

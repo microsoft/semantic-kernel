@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 
 public class Prompts {
@@ -35,7 +36,7 @@ public class Prompts {
 
         // <KernelCreation>
         Kernel kernel = Kernel.builder()
-            .withAIService(ChatCompletionService.class, ChatCompletionService.builder()
+            .withAIService(ChatCompletionService.class, OpenAIChatCompletion.builder()
                 .withModelId(MODEL_ID)
                 .withOpenAIAsyncClient(client)
                 .build())

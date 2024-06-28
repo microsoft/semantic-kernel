@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -51,7 +52,7 @@ public class FunctionsWithinPrompts_Example {
                 .buildAsyncClient();
         }
 
-        ChatCompletionService chatCompletionService = ChatCompletionService.builder()
+        ChatCompletionService chatCompletionService = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .build();
