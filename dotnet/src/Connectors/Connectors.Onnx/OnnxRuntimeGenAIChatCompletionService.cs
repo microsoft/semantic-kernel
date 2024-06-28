@@ -112,15 +112,8 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     [MemberNotNull(nameof(_model))]
     private Model GetModel() => this._model ??= new Model(this._modelPath);
 
-    private Tokenizer GetTokenizer()
-    {
-        if (this._tokenizer == null)
-        {
-            this._tokenizer = new Tokenizer(this.GetModel());
-        }
-
-        return this._tokenizer;
-    }
+    [MemberNotNull(nameof(_tokenizer))]
+    private Tokenizer GetTokenizer() => this._tokenizer ??= new Tokenizer(this.GetModel());
 
     private string GetPrompt(ChatHistory chatHistory, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
     {
