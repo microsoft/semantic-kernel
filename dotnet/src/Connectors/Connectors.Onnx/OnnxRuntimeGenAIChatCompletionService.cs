@@ -186,13 +186,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (this._tokenizer != null)
-        {
-            this._tokenizer.Dispose();
-        }
-        if (this._model != null)
-        {
-            this._model.Dispose();
-        }
+        this._tokenizer?.Dispose();
+        this._model?.Dispose();
     }
 }
