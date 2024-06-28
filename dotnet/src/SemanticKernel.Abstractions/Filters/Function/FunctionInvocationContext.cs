@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class with data related to function invocation.
 /// </summary>
-[Experimental("SKEXP0001")]
 public class FunctionInvocationContext
 {
     /// <summary>
