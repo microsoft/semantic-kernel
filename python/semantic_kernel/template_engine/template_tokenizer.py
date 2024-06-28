@@ -128,7 +128,7 @@ class TemplateTokenizer:
                 )
             )
 
-        content_with_delimiters = text[block_start_pos : next_char_pos + 1]  # noqa: E203
+        content_with_delimiters = text[block_start_pos : next_char_pos + 1]
         content_without_delimiters = content_with_delimiters[2:-2].strip()
 
         if len(content_without_delimiters) == 0:

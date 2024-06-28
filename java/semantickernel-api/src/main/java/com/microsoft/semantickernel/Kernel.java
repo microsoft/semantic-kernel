@@ -2,6 +2,17 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+<<<<<<< main
+import com.microsoft.semantickernel.memory.MemoryStore;
+import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.SKFunction;
+<<<<<<< HEAD
+import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+=======
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.FunctionInvocation;
@@ -10,6 +21,7 @@ import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+>>>>>>> origin/main-auto-tune
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceCollection;
 import com.microsoft.semantickernel.services.AIServiceSelection;
@@ -152,7 +164,12 @@ public class Kernel {
     }
 
     /**
+<<<<<<< main
+<<<<<<< HEAD
+     * Register a semantic function on this kernel
+=======
      * Invokes a Prompt.
+>>>>>>> origin/main-auto-tune
      *
      * @param <T>      The return type of the prompt.
      * @param prompt   The prompt to invoke.
@@ -164,12 +181,19 @@ public class Kernel {
     }
 
     /**
+<<<<<<< main
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+     * Get a completion function builder, functions created with this builder will be registered on
+     * the kernel
+=======
      * Invokes a {@code KernelFunction}.
      *
      * @param <T>      The return type of the function.
      * @param function The function to invoke.
      * @return The result of the function invocation.
      * @see KernelFunction#invokeAsync(Kernel)
+>>>>>>> origin/main-auto-tune
      */
     public <T> FunctionInvocation<T> invokeAsync(KernelFunction<T> function) {
         return function.invokeAsync(this);

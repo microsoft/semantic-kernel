@@ -7,6 +7,7 @@
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
     <version>1.1.6-SNAPSHOT</version>
+    <version>0.2.10-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <url>https://www.github.com/microsoft/semantic-kernel</url>
@@ -14,9 +15,9 @@
     <description>Parent pom for the Semantic Kernel Project</description>
 
     <properties>
-        <azure-ai-openai.version>1.0.0-beta.8</azure-ai-openai.version>
-        <checkstyle.version>10.13.0</checkstyle.version>
-        <com.uber.nullaway.version>0.10.21</com.uber.nullaway.version>
+        <azure-ai-openai.version>1.0.0-beta.5</azure-ai-openai.version>
+        <checkstyle.version>10.12.2</checkstyle.version>
+        <com.uber.nullaway.version>0.10.10</com.uber.nullaway.version>
         <google.errorprone.core.version>2.19.1</google.errorprone.core.version>
         <google.java.format.version>1.17.0</google.java.format.version>
         <jreleaser.plugin.version>1.6.0</jreleaser.plugin.version>
@@ -66,7 +67,16 @@
     </properties>
 
     <modules>
-        <module>semantickernel-bom</module>
+        <module>connectors/semantickernel-connectors-ai-openai</module>
+        <module>connectors/semantickernel-connectors-memory-sqlite</module>
+        <module>connectors/semantickernel-connectors-memory-azurecognitivesearch</module>
+        <module>connectors/semantickernel-connectors-memory-jdbc</module>
+        <module>connectors/semantickernel-connectors-memory-postgresql</module>
+        <module>connectors/semantickernel-connectors-memory-mysql</module>
+
+        <module>extensions/semantickernel-planners</module>
+        <module>extensions/semantickernel-gpt3-tokenizer</module>
+        <module>extensions/semantickernel-settings-loader</module>
 
         <module>aiservices/openai</module>
         <module>aiservices/google</module>
@@ -785,6 +795,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>java-0.2.9-alpha</tag>
     </scm>
 </project>

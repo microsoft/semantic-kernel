@@ -1,14 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import ClassVar
+
 from pydantic import SecretStr
 
-from semantic_kernel.connectors.memory.memory_settings_base import BaseModelSettings
-from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class
-class AzureAISearchSettings(BaseModelSettings):
+class AzureAISearchSettings(KernelBaseSettings):
     """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector.
 
     Args:
@@ -17,19 +18,8 @@ class AzureAISearchSettings(BaseModelSettings):
     - index_name: str - Azure AI Search index name (Env var AZURE_AI_SEARCH_INDEX_NAME)
     """
 
-    api_key: SecretStr | None = None
-    endpoint: HttpsUrl | None = None
+    env_prefix: ClassVar[str] = "AZURE_AI_SEARCH_"
+
+    api_key: SecretStr
+    endpoint: HttpsUrl
     index_name: str | None = None
-
-    class Config(BaseModelSettings.Config):
-        """Pydantic configuration settings."""
-
-        env_prefix = "AZURE_AI_SEARCH_"
-
-    def model_dump(self):
-        """Custom method to dump model data in the required format."""
-        return {
-            "api_key": self.api_key.get_secret_value() if self.api_key else None,
-            "endpoint": str(self.endpoint),
-            "index_name": self.index_name,
-        }

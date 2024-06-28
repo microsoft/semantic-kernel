@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import ClassVar
+
 from pydantic import SecretStr
-from pydantic_settings import BaseSettings
+
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
 
 
-class GooglePalmSettings(BaseSettings):
+class GooglePalmSettings(KernelBaseSettings):
     """Google Palm model settings.
 
     The settings are first loaded from environment variables with the prefix 'GOOGLE_PALM_'. If the
@@ -24,26 +27,9 @@ class GooglePalmSettings(BaseSettings):
         (Env var GOOGLE_PALM_EMBEDDING_MODEL_ID)
     """
 
-    env_file_path: str | None = None
-    api_key: SecretStr | None = None
+    env_prefix: ClassVar[str] = "GOOGLE_PALM_"
+
+    api_key: SecretStr
     chat_model_id: str | None = None
     text_model_id: str | None = None
     embedding_model_id: str | None = None
-
-    class Config:
-        """Pydantic configuration settings."""
-
-        env_prefix = "GOOGLE_PALM_"
-        env_file = None
-        env_file_encoding = "utf-8"
-        extra = "ignore"
-        case_sensitive = False
-
-    @classmethod
-    def create(cls, **kwargs):
-        """Create the settings object."""
-        if "env_file_path" in kwargs and kwargs["env_file_path"]:
-            cls.Config.env_file = kwargs["env_file_path"]
-        else:
-            cls.Config.env_file = None
-        return cls(**kwargs)

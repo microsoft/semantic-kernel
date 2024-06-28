@@ -14,9 +14,8 @@ class InputVariable(KernelBaseModel):
         default: The default value of the input variable.
         is_required: Whether the input variable is required.
         json_schema: The JSON schema for the input variable.
-        allow_dangerously_set_content (bool = False): Allow content without encoding throughout, this overrides
-            the same settings in the prompt template config and input variables.
-            This reverts the behavior to unencoded input.
+        allow_dangerously_set_content: Allow content without encoding, this controls
+            if this variable is encoded before use, default is False.
     """
 
     name: str

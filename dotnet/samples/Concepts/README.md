@@ -21,10 +21,10 @@ Down below you can find the code snippets that demonstrate the usage of many Sem
 
 - [OpenAI_AudioToText](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/AudioToText/OpenAI_AudioToText.cs)
 
-## AutoFunctionCalling - Examples on `Auto Function Calling` with function call capable models
+## FunctionCalling - Examples on `Function Calling` with function call capable models
 
-- [Gemini_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/AutoFunctionCalling/Gemini_FunctionCalling.cs)
-- [OpenAI_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/AutoFunctionCalling/OpenAI_FunctionCalling.cs)
+- [Gemini_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/Gemini_FunctionCalling.cs)
+- [OpenAI_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/FunctionCalling/OpenAI_FunctionCalling.cs)
 
 ## Caching - Examples of caching implementations
 
@@ -126,10 +126,7 @@ Down below you can find the code snippets that demonstrate the usage of many Sem
 - [MultiplePromptTemplates](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/MultiplePromptTemplates.cs)
 - [PromptFunctionsWithChatGPT](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/PromptFunctionsWithChatGPT.cs)
 - [TemplateLanguage](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/TemplateLanguage.cs)
-
-## Prompty - Using Prompty file format to [import prompt functions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Functions/Functions.Prompty/Extensions/PromptyKernelExtensions.cs)
-
-- [PromptyFunction](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Prompty/PromptyFunction.cs)
+- [PromptyFunction](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptYemplates/PromptyFunction.cs)
 
 ## RAG - Retrieval-Augmented Generation
 

@@ -6,6 +6,7 @@
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
     <version>1.1.6-SNAPSHOT</version>
+    <version>0.2.10-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>
@@ -55,17 +56,21 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-memory-jdbc</artifactId>
                 <artifactId>semantickernel-plugin-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-memory-sqlite</artifactId>
                 <artifactId>aiservices-azureopenai</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-aiservices-huggingface</artifactId>
+                <artifactId>semantickernel-connectors-memory-postgresql</artifactId>
+                <artifactId>aiservices-huggingface</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -79,6 +84,14 @@
                 <artifactId>semantickernel-aiservices-google</artifactId>
                 <version>${project.version}</version>
             </dependency>
+                <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-ai-openai</artifactId>
+                <version>1.0.0-beta.5</version>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
@@ -113,6 +126,26 @@
                 <scope>runtime</scope>
             </dependency>
             <dependency>
+
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-core</artifactId>
+                <version>3.5.8</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-core-http-netty</artifactId>
+                <version>1.13.8</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-search-documents</artifactId>
+                <version>11.6.0-beta.9</version>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${com.fasterxml.jackson.core.version}</version>
@@ -154,6 +187,10 @@
                 <version>4.8.3</version>
             </dependency>
             <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.6.1</version>
+            </dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
                 <version>1.11.0</version>
@@ -201,6 +238,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>java-0.2.9-alpha</tag>
     </scm>
 </project>

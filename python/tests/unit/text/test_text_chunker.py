@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 import os
 
 from semantic_kernel.text import (
@@ -171,8 +172,8 @@ def test_split_text_paragraph_evenly_2():
         "The gentle breeze rustled the autumn leaves on the tree branches. " + "She smiled and walked away.",
         "The sun set over the horizon peacefully, the beautiful star. Cats love boxes.",
         "That is something. Incredible news that is. "
-        + "What a beautiful day to be alive. Seriously, this is the end. "
-        + "We're finished once of for all. All set. Ok. ",
+        "What a beautiful day to be alive. Seriously, this is the end. "
+        "We're finished once of for all. All set. Ok. ",
         "Done.",
         "Or is it?",
         "Surprise!",

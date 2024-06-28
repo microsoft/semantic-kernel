@@ -29,7 +29,7 @@ jobs:
       dotnetChanges: ${{ steps.filter.outputs.dotnet }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
@@ -81,7 +81,7 @@ jobs:
         run: |
           export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | grep -v -E "(Experimental.Orchestration.Flow.UnitTests.csproj|Experimental.Assistants.UnitTests.csproj)" | tr '\n' ' ')
           for project in $UT_PROJECTS; do
-            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=ObsoleteAttribute,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute
+            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute
           done
 
       - name: Run Integration Tests
@@ -121,7 +121,11 @@ jobs:
 
       # Generate test reports and check coverage
       - name: Generate test reports
+<<<<<<< main
         uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
+=======
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.6
+>>>>>>> origin/main-auto-tune
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
@@ -164,13 +168,13 @@ jobs:
       - name: Fail workflow if tests failed
         id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failure')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: core.setFailed('Integration Tests Failed!')
 
       - name: Fail workflow if tests cancelled
         id: check_tests_cancelled
         if: contains(join(needs.*.result, ','), 'cancelled')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: core.setFailed('Integration Tests Cancelled!')

@@ -1,0 +1,9 @@
+[submodule "Singularity"]
+	path = Singularity
+	url = git@github.com:Bryan-Roe/Singularity.git
+[submodule "Bryan-Roe"]
+	path = Bryan-Roe
+	url = git@github.com:Bryan-Roe/
+[submodule "semantic-kernel"]
+	path = semantic-kernel
+	url = git@github.com:Bryan-Roe/semantic-kernel.git
