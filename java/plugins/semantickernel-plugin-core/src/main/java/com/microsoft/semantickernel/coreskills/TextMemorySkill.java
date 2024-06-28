@@ -189,11 +189,8 @@ public class TextMemorySkill {
             if (collection == null) collection = DEFAULT_COLLECTION;
         }
         final String _collection = collection;
-<<<<<<< HEAD
         final float _relevance = (float) Math.min(1.0, Math.max(0.0, relevance));
-=======
         final double _relevance = Math.min(1.0, Math.max(0.0, relevance));
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         final int _limit = Math.max(1, limit);
 
         // context.Log.LogTrace("Searching memories in collection '{0}', relevance '{1}'",

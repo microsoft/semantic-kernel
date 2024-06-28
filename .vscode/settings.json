@@ -97,5 +97,6 @@
     "python/tests"
   ],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "azureFunctions.projectSubpath": "samples/dotnet/AIPluginsServer/AIPlugins.AzureFunctions"
 }
