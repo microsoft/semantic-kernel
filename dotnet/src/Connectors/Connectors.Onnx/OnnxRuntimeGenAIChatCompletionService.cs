@@ -31,6 +31,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     /// <summary>
     /// Initializes a new instance of the OnnxRuntimeGenAIChatCompletionService class.
     /// </summary>
+    /// <param name="modelId">The name of the model.</param>
     /// <param name="modelPath">The generative AI ONNX model path for the chat completion service.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OnnxRuntimeGenAIChatCompletionService(
