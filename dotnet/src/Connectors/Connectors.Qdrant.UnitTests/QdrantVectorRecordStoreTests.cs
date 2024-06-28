@@ -34,23 +34,7 @@ public class QdrantVectorRecordStoreTests
 
     [Theory]
     [MemberData(nameof(TestOptions))]
-    public Task CanGetRecordWithVectorsAsync(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, Type keyType)
-    {
-        if (keyType == typeof(ulong))
-        {
-            return this.CanGetRecordWithVectorsInternalAsync(useDefinition, passCollectionToMethod, hasNamedVectors, UlongTestRecordKey1);
-        }
-
-        if (keyType == typeof(Guid))
-        {
-            return this.CanGetRecordWithVectorsInternalAsync(useDefinition, passCollectionToMethod, hasNamedVectors, s_guidTestRecordKey1);
-        }
-
-        Assert.Fail("No valid key type provided.");
-        return Task.CompletedTask;
-    }
-
-    private async Task CanGetRecordWithVectorsInternalAsync<TKey>(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, TKey testRecordKey)
+    public async Task CanGetRecordWithVectorsAsync<TKey>(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, TKey testRecordKey)
     {
         var sut = this.CreateVectorRecordStore<TKey>(useDefinition, passCollectionToMethod, hasNamedVectors);
 
@@ -89,23 +73,7 @@ public class QdrantVectorRecordStoreTests
 
     [Theory]
     [MemberData(nameof(TestOptions))]
-    public Task CanGetRecordWithoutVectorsAsync(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, Type keyType)
-    {
-        if (keyType == typeof(ulong))
-        {
-            return this.CanGetRecordWithoutVectorsInternalAsync(useDefinition, passCollectionToMethod, hasNamedVectors, UlongTestRecordKey1);
-        }
-
-        if (keyType == typeof(Guid))
-        {
-            return this.CanGetRecordWithoutVectorsInternalAsync(useDefinition, passCollectionToMethod, hasNamedVectors, s_guidTestRecordKey1);
-        }
-
-        Assert.Fail("No valid key type provided.");
-        return Task.CompletedTask;
-    }
-
-    private async Task CanGetRecordWithoutVectorsInternalAsync<TKey>(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, TKey testRecordKey)
+    public async Task CanGetRecordWithoutVectorsAsync<TKey>(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, TKey testRecordKey)
     {
         // Arrange.
         var sut = this.CreateVectorRecordStore<TKey>(useDefinition, passCollectionToMethod, hasNamedVectors);
@@ -142,24 +110,8 @@ public class QdrantVectorRecordStoreTests
     }
 
     [Theory]
-    [MemberData(nameof(TestOptions))]
-    public Task CanGetManyRecordsWithVectorsAsync(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, Type keyType)
-    {
-        if (keyType == typeof(ulong))
-        {
-            return this.CanGetManyRecordsWithVectorsInternalAsync(useDefinition, passCollectionToMethod, hasNamedVectors, [UlongTestRecordKey1, UlongTestRecordKey2]);
-        }
-
-        if (keyType == typeof(Guid))
-        {
-            return this.CanGetManyRecordsWithVectorsInternalAsync(useDefinition, passCollectionToMethod, hasNamedVectors, [s_guidTestRecordKey1, s_guidTestRecordKey2]);
-        }
-
-        Assert.Fail("No valid key type provided.");
-        return Task.CompletedTask;
-    }
-
-    private async Task CanGetManyRecordsWithVectorsInternalAsync<TKey>(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, TKey[] testRecordKeys)
+    [MemberData(nameof(MultiRecordTestOptions))]
+    public async Task CanGetManyRecordsWithVectorsAsync<TKey>(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, TKey[] testRecordKeys)
     {
         // Arrange.
         var sut = this.CreateVectorRecordStore<TKey>(useDefinition, passCollectionToMethod, hasNamedVectors);
@@ -395,23 +347,7 @@ public class QdrantVectorRecordStoreTests
 
     [Theory]
     [MemberData(nameof(TestOptions))]
-    public Task CanUpsertRecordAsync(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, Type keyType)
-    {
-        if (keyType == typeof(ulong))
-        {
-            return this.CanGetRecordWithoutVectorsInternalAsync(useDefinition, passCollectionToMethod, hasNamedVectors, UlongTestRecordKey1);
-        }
-
-        if (keyType == typeof(Guid))
-        {
-            return this.CanGetRecordWithoutVectorsInternalAsync(useDefinition, passCollectionToMethod, hasNamedVectors, s_guidTestRecordKey1);
-        }
-
-        Assert.Fail("No valid key type provided.");
-        return Task.CompletedTask;
-    }
-
-    private async Task CanUpsertRecordInternalAsync<TKey>(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, TKey testRecordKey)
+    public async Task CanUpsertRecordAsync<TKey>(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, TKey testRecordKey)
     {
         // Arrange
         var sut = this.CreateVectorRecordStore<TKey>(useDefinition, passCollectionToMethod, hasNamedVectors);
@@ -440,24 +376,8 @@ public class QdrantVectorRecordStoreTests
     }
 
     [Theory]
-    [MemberData(nameof(TestOptions))]
-    public Task CanUpsertManyRecordsAsync(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, Type keyType)
-    {
-        if (keyType == typeof(ulong))
-        {
-            return this.CanGetRecordWithoutVectorsInternalAsync(useDefinition, passCollectionToMethod, hasNamedVectors, UlongTestRecordKey1);
-        }
-
-        if (keyType == typeof(Guid))
-        {
-            return this.CanGetRecordWithoutVectorsInternalAsync(useDefinition, passCollectionToMethod, hasNamedVectors, s_guidTestRecordKey1);
-        }
-
-        Assert.Fail("No valid key type provided.");
-        return Task.CompletedTask;
-    }
-
-    private async Task CanUpsertManyRecordsInternalAsync<TKey>(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, TKey[] testRecordKeys)
+    [MemberData(nameof(MultiRecordTestOptions))]
+    public async Task CanUpsertManyRecordsAsync<TKey>(bool useDefinition, bool passCollectionToMethod, bool hasNamedVectors, TKey[] testRecordKeys)
     {
         // Arrange
         var sut = this.CreateVectorRecordStore<TKey>(useDefinition, passCollectionToMethod, hasNamedVectors);
@@ -697,8 +617,16 @@ public class QdrantVectorRecordStoreTests
                 new object[] { true, false },
                 new object[] { true, false },
                 new object[] { true, false },
-                new object[] { typeof(ulong), typeof(Guid) }
+                new object[] { UlongTestRecordKey1, s_guidTestRecordKey1 }
         });
+
+    public static IEnumerable<object[]> MultiRecordTestOptions
+    => GenerateAllCombinations(new object[][] {
+                new object[] { true, false },
+                new object[] { true, false },
+                new object[] { true, false },
+                new object[] { new ulong[] { UlongTestRecordKey1, UlongTestRecordKey2 }, new Guid[] { s_guidTestRecordKey1, s_guidTestRecordKey2 } }
+    });
 
     private static object[][] GenerateAllCombinations(object[][] input)
     {
