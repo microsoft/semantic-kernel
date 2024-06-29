@@ -27,7 +27,7 @@ async def example2(kernel: Kernel, service_id: str):
 
     prompt = """
     Answer questions only when you know the facts or the information is provided.
-    When you don't have sufficient information you reply with a list of commands to find the information needed.
+    When you do not have sufficient information you reply with a list of commands to find the information needed.
     When answering multiple questions, use a bullet point list.
     Note: make sure single and double quotes are escaped using a backslash char.
 

@@ -47,7 +47,7 @@ The new OpenAI SDK introduce some limitations that need to be considered and pon
 - #### ⚠️ Text Generation modality is not supported.
 
   **Remediation**: Internally provide a HttpClient to be used against `gpt-3.5-turbo-instruct` for text generation modality. Same way was done for `TextToImage`, `AudioToText` service modalities.
-  **No remediation**: Breaking change removing any specific `TextGeneration` service implementations, this change don't impact `ChatCompletion` services that may still being used as `ITextGenerationService` implementations.
+  **No remediation**: Breaking change removing any specific `TextGeneration` service implementations, this change do not impact `ChatCompletion` services that may still being used as `ITextGenerationService` implementations.
 
 ## Improvements
 
@@ -192,7 +192,7 @@ Pros:
 Cons:
 
 - We will be limited on the OpenAI SDK version that is used by the latest `Azure.AI.OpenAI` package, which may not be the latest version available.
-- When using direct Azure or OpenAI specific services developers don't expect to see other provider specific services in their pool of options and dependencies.
+- When using direct Azure or OpenAI specific services developers do not expect to see other provider specific services in their pool of options and dependencies.
 
 ## Decision Outcome
 

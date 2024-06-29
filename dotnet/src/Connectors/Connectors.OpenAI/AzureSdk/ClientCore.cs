@@ -44,7 +44,7 @@ internal abstract class ClientCore
     /// to this limit, but if we do, auto-invoke will be disabled for the current flow in order to prevent runaway execution.
     /// With the current setup, the way this could possibly happen is if a prompt function is configured with built-in
     /// execution settings that opt-in to auto-invocation of everything in the kernel, in which case the invocation of that
-    /// prompt function could advertize itself as a candidate for auto-invocation. We don't want to outright block that,
+    /// prompt function could advertize itself as a candidate for auto-invocation. We do not want to outright block that,
     /// if that's something a developer has asked to do (e.g. it might be invoked with different arguments than its parent
     /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
     /// configurable should need arise.
@@ -425,7 +425,7 @@ internal abstract class ClientCore
                 activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
             }
 
-            // If we don't want to attempt to invoke any functions, just return the result.
+            // If we do not want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
@@ -434,9 +434,9 @@ internal abstract class ClientCore
 
             Debug.Assert(kernel is not null);
 
-            // Get our single result and extract the function call information. If this isn't a function call, or if it is
+            // Get our single result and extract the function call information. If this is not a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
-            // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
+            // Note that we do not check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
             ChatChoice resultChoice = responseData.Choices[0];
@@ -457,13 +457,13 @@ internal abstract class ClientCore
 
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses. Also add the result message to the caller's chat
-            // history: if they don't want it, they can remove it, but this makes the data available,
+            // history: if they do not want it, they can remove it, but this makes the data available,
             // including metadata like usage.
             chatOptions.Messages.Add(GetRequestMessage(resultChoice.Message));
             chat.Add(result);
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
-            // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
+            // If we successfully execute it, we'll add the result. If we do not, we'll add an error.
             for (int toolCallIndex = 0; toolCallIndex < result.ToolCalls.Count; toolCallIndex++)
             {
                 ChatCompletionsToolCall toolCall = result.ToolCalls[toolCallIndex];
@@ -488,7 +488,7 @@ internal abstract class ClientCore
                 }
 
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
-                // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
+                // then we do not need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
                 if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
@@ -572,7 +572,7 @@ internal abstract class ClientCore
 
             if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                // Don't add any tools as we've reached the maximum attempts limit.
+                // Do not add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
@@ -586,7 +586,7 @@ internal abstract class ClientCore
             }
 
             // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
-            // if we don't send any tools in subsequent requests, even if we say not to use any.
+            // if we do not send any tools in subsequent requests, even if we say not to use any.
             if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None)
             {
                 Debug.Assert(chatOptions.Tools.Count == 0);
@@ -733,8 +733,8 @@ internal abstract class ClientCore
                 }
             }
 
-            // If we don't have a function to invoke, we're done.
-            // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
+            // If we do not have a function to invoke, we're done.
+            // Note that we do not check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
             if (!autoInvoke ||
@@ -786,7 +786,7 @@ internal abstract class ClientCore
                 }
 
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
-                // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
+                // then we do not need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
                 if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
@@ -873,7 +873,7 @@ internal abstract class ClientCore
 
             if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
-                // Don't add any tools as we've reached the maximum attempts limit.
+                // Do not add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
@@ -887,7 +887,7 @@ internal abstract class ClientCore
             }
 
             // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
-            // if we don't send any tools in subsequent requests, even if we say not to use any.
+            // if we do not send any tools in subsequent requests, even if we say not to use any.
             if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None)
             {
                 Debug.Assert(chatOptions.Tools.Count == 0);

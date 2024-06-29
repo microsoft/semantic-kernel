@@ -118,7 +118,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
         return
             Track(
                 await CreateAgentBuilder()
-                    .WithInstructions("You are a copywriter with ten years of experience and are known for brevity and a dry humor. You're laser focused on the goal at hand. Don't waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.")
+                    .WithInstructions("You are a copywriter with ten years of experience and are known for brevity and a dry humor. You're laser focused on the goal at hand. Do not waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.")
                     .WithName("Copywriter")
                     .WithDescription("Copywriter")
                     .WithPlugin(agent?.AsPlugin())
@@ -130,7 +130,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
         return
             Track(
                 await CreateAgentBuilder()
-                    .WithInstructions("You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to determine is the given copy is acceptable to print, even if it isn't perfect.  If not, provide insight on how to refine suggested copy without example.  Always respond to the most recent message by evaluating and providing critique without example.  Always repeat the copy at the beginning.  If copy is acceptable and meets your criteria, say: PRINT IT.")
+                    .WithInstructions("You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to determine is the given copy is acceptable to print, even if it is not perfect.  If not, provide insight on how to refine suggested copy without example.  Always respond to the most recent message by evaluating and providing critique without example.  Always repeat the copy at the beginning.  If copy is acceptable and meets your criteria, say: PRINT IT.")
                     .WithName("Art Director")
                     .WithDescription("Art Director")
                     .BuildAsync());

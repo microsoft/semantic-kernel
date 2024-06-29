@@ -154,7 +154,7 @@ interface ISKFunction
 ## Prompt/Semantic Functions Behavior
 
 When Prompt Functions are invoked using the Streaming API, they will attempt to use the Connectors streaming implementation.
-The connector will be responsible to provide the specialized type of `StreamingContent` and even if the underlying backend API don't support streaming the output will be one streamingcontent with the whole data.
+The connector will be responsible to provide the specialized type of `StreamingContent` and even if the underlying backend API do not support streaming the output will be one streamingcontent with the whole data.
 
 ## Method/Native Functions Behavior
 
@@ -345,6 +345,6 @@ static class KernelExtensions
 
 ## Decision Outcome
 
-Option 1 was chosen as the best option as small benefit of the Option 2 don't justify the complexity involved described in the Cons.
+Option 1 was chosen as the best option as small benefit of the Option 2 do not justify the complexity involved described in the Cons.
 
 Was also decided that the Metadata related to a connector backend response can be added to the `StreamingContent.Metadata` property. This will allow the sk developer to get the metadata even without a `StreamingConnectorResult` or `StreamingFunctionResult`.

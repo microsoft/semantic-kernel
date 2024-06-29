@@ -39,7 +39,7 @@ components:
           type: array
           items:
             type: string
-          description: List of strings where each element is a recipe ingredient (e.g. ["2 cups of greek yogurt", "2 tablespoons of honey", "1 teaspoon of vanilla extract"]). Don't include items in the list that the user already mentioned they have.
+          description: List of strings where each element is a recipe ingredient (e.g. ["2 cups of greek yogurt", "2 tablespoons of honey", "1 teaspoon of vanilla extract"]). Do not include items in the list that the user already mentioned they have.
         instructions:
           type: array
           items:

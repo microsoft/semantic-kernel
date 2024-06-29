@@ -42,7 +42,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     /// to this limit, but if we do, auto-invoke will be disabled for the current flow in order to prevent runaway execution.
     /// With the current setup, the way this could possibly happen is if a prompt function is configured with built-in
     /// execution settings that opt-in to auto-invocation of everything in the kernel, in which case the invocation of that
-    /// prompt function could advertise itself as a candidate for auto-invocation. We don't want to outright block that,
+    /// prompt function could advertise itself as a candidate for auto-invocation. We do not want to outright block that,
     /// if that's something a developer has asked to do (e.g. it might be invoked with different arguments than its parent
     /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
     /// configurable should need arise.
@@ -188,7 +188,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                     geminiResponse.UsageMetadata?.CandidatesTokenCount);
             }
 
-            // If we don't want to attempt to invoke any functions, just return the result.
+            // If we do not want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!state.AutoInvoke || chatResponses.Count != 1)
             {
@@ -356,7 +356,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 // We disable auto-invoke because the first message in the stream doesn't contain ToolCalls or auto-invoke is already false
                 state.AutoInvoke = false;
 
-                // If we don't want to attempt to invoke any functions, just return the result.
+                // If we do not want to attempt to invoke any functions, just return the result.
                 yield return this.GetStreamingChatContentFromChatContent(messageContent);
             }
         }
@@ -383,7 +383,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         }
 
         // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
-        // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
+        // If we successfully execute it, we'll add the result. If we do not, we'll add an error.
         foreach (var toolCall in state.LastMessage!.ToolCalls!)
         {
             await this.ProcessSingleToolCallAsync(state, toolCall, cancellationToken).ConfigureAwait(false);
@@ -394,7 +394,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
         {
-            // Don't add any tools as we've reached the maximum attempts limit.
+            // Do not add any tools as we've reached the maximum attempts limit.
             if (this.Logger.IsEnabled(LogLevel.Debug))
             {
                 this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.",
@@ -423,7 +423,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     private async Task ProcessSingleToolCallAsync(ChatCompletionState state, GeminiFunctionToolCall toolCall, CancellationToken cancellationToken)
     {
         // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
-        // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
+        // then we do not need to check this, as it'll be handled when we look up the function in the kernel to be able
         // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
         if (state.ExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
             !IsRequestableTool(state.GeminiRequest.Tools![0].Functions, toolCall))

@@ -124,7 +124,7 @@ async def main(delay: int = 0):
 
     # <AvoidPrompt> 4.0 Tell the AI what to do to avoid doing something wrong
     prompt = """Instructions: What is the intent of this request?
-        If you don't know the intent, don't guess; instead respond with "Unknown".
+        If you do not know the intent, do not guess; instead respond with "Unknown".
         Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
 
         User Input: Can you send a very quick approval to the marketing team?
@@ -151,7 +151,7 @@ async def main(delay: int = 0):
         "AI response: I'm sorry to hear that. Messages may be a better way to communicate."
     )
     prompt = """Instructions: What is the intent of this request?\n"
-        If you don't know the intent, don't guess; instead respond with "Unknown".
+        If you do not know the intent, do not guess; instead respond with "Unknown".
         Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
 
         User Input: Can you send a very quick approval to the marketing team?
@@ -182,7 +182,7 @@ async def main(delay: int = 0):
 
     prompt = """
         <message role="system">Instructions: What is the intent of this request?
-        If you don't know the intent, don't guess; instead respond with "Unknown".
+        If you do not know the intent, do not guess; instead respond with "Unknown".
         Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.</message>
 
         <message role="user">Can you send a very quick approval to the marketing team?</message>
@@ -222,7 +222,7 @@ async def main(delay: int = 0):
 
     prompt = """
         <message role="system">Instructions: What is the intent of this request?
-        If you don't know the intent, don't guess; instead respond with "Unknown".
+        If you do not know the intent, do not guess; instead respond with "Unknown".
         Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
         Bonus: You'll get $20 if you get this right.</message>
 

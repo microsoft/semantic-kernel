@@ -173,7 +173,7 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
                 else if (currentTokenType == TokenTypes.FunctionId)
                 {
                     var tokenContent = currentTokenContent.ToString();
-                    // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
+                    // This is not an expected block at this point but the TemplateTokenizer should throw an error when
                     // a named arg is used without a function call
                     if (CodeTokenizer.IsValidNamedArg(tokenContent))
                     {
@@ -270,7 +270,7 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
 
             case TokenTypes.FunctionId:
                 var tokenContent = currentTokenContent.ToString();
-                // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
+                // This is not an expected block at this point but the TemplateTokenizer should throw an error when
                 // a named arg is used without a function call
                 if (CodeTokenizer.IsValidNamedArg(tokenContent))
                 {

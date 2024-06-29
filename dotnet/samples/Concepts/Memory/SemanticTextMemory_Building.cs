@@ -27,7 +27,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
 
         /* This example leverages Azure AI Search to provide SK with Semantic Memory.
          *
-         * Azure AI Search automatically indexes your data semantically, so you don't
+         * Azure AI Search automatically indexes your data semantically, so you do not
          * need to worry about embedding generation.
          */
 

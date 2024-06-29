@@ -223,7 +223,7 @@ public abstract class AgentChat
                 this.History.Add(message);
                 messages.Add(message);
 
-                // Don't expose function-call and function-result messages to caller.
+                // Do not expose function-call and function-result messages to caller.
                 if (message.Items.All(i => i is FunctionCallContent || i is FunctionResultContent))
                 {
                     continue;

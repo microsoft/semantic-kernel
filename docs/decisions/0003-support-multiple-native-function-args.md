@@ -22,7 +22,7 @@ Move native functions closer to a normal C# experience.
 - SKFunctionInputAttribute has been obsoleted and will be removed subsequently.  DescriptionAttribute, DefaultValueAttribute, and SKName attribute are used instead (the latter with "Input" as the name). However, the need to use SKName should be exceedingly rare.
 - InvokeAsync will now catch exceptions and store the exception into the context.  This means native skills should handle all failures by throwing exceptions rather than by directly interacting with the context.
 - Updated name selection heuristic to strip off an "Async" suffix for async methods.  There are now very few reasons to use [SKName] on a method.
-- Added support for ValueTasks as return types, just for completeness so that developers don't need to think about it. It just works.
+- Added support for ValueTasks as return types, just for completeness so that developers do not need to think about it. It just works.
 - Added ability to accept an ILogger or CancellationToken into a method; they're populated from the SKContext.  With that, there are very few reasons left to pass an SKContext into a native function.
 - Added support for non-string arguments. All C# primitive types and many core .NET types are supported, with their corresponding TypeConverters used to parse the string context variable into the appropriate type. Custom types attributed with TypeConverterAttribute may also be used, and the associated TypeConverter will be used as is appropriate.  It's the same mechanism used by UI frameworks like WinForms as well as ASP.NET MVC.
 - Similarly, added support for non-string return types.

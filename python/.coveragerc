@@ -11,10 +11,10 @@ exclude_lines =
     # Have to re-enable the standard pragma
     pragma: no cover
 
-    # Don't complain about missing debug-only code:
+    # Do not complain about missing debug-only code:
     def __repr__
 
-    # Don't complain if tests don't hit defensive assertion code:
+    # Do not complain if tests do not hit defensive assertion code:
     raise AssertionError
     raise NotImplementedError
 

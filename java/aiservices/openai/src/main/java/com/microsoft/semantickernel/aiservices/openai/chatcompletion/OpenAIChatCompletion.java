@@ -283,7 +283,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                 executeHook(invocationContext, new PostChatCompletionEvent(completions));
 
                 // Just return the result:
-                // If we don't want to attempt to invoke any functions
+                // If we do not want to attempt to invoke any functions
                 // Or if we are auto-invoking, but we somehow end up with other than 1 choice even though only 1 was requested
                 if (autoInvokeAttempts == 0 || responseMessages.size() != 1) {
                     return getChatMessageContentsAsync(completions)

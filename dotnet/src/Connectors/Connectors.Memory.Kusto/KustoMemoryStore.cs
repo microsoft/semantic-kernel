@@ -257,7 +257,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // In Kusto, upserts don't exist because it operates as an append-only store.
+        // In Kusto, upserts do not exist because it operates as an append-only store.
         // Nevertheless, given that we have a straightforward primary key (PK), we can simply insert a new record.
         // Our query always selects the latest row of that PK.
         // An interesting scenario arises when performing deletion after many "upserts".

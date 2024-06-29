@@ -33,7 +33,7 @@ class Math:
         return float(number1) / float(number2)
 
     @kernel_function(
-        description="Multiply two numbers. When increasing by a percentage, don't forget to add 1 to the percentage.",
+        description="Multiply two numbers. When increasing by a percentage, do not forget to add 1 to the percentage.",
         name="Multiply",
     )
     def multiply(

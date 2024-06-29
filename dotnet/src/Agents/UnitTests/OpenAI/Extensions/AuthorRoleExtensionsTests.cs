@@ -21,7 +21,7 @@ public class AuthorRoleExtensionsTests
         this.VerifyRoleConversion(AuthorRole.Assistant, MessageRole.Assistant);
         this.VerifyRoleConversion(AuthorRole.User, MessageRole.User);
 
-        // Conversion isn't designed to, and won't, encounter these roles; however,
+        // Conversion is not designed to, and won't, encounter these roles; however,
         // this is defined the behavior:
         this.VerifyRoleConversion(AuthorRole.System, MessageRole.Assistant);
         this.VerifyRoleConversion(AuthorRole.Tool, MessageRole.Assistant);

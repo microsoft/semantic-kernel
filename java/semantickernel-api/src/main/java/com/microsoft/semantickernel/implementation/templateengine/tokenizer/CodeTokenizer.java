@@ -201,7 +201,7 @@ public class CodeTokenizer {
                     currentTokenContent = new StringBuilder();
                 } else if (currentTokenType == TokenTypes.FunctionId) {
                     String tokenContent = currentTokenContent.toString();
-                    // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
+                    // This is not an expected block at this point but the TemplateTokenizer should throw an error when
                     // a named arg is used without a function call
 
                     NamedArgBlock namedArg = getNamedArg(tokenContent);
@@ -288,7 +288,7 @@ public class CodeTokenizer {
             case FunctionId:
                 NamedArgBlock namedArg = getNamedArg(currentTokenContent.toString());
 
-                // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
+                // This is not an expected block at this point but the TemplateTokenizer should throw an error when
                 // a named arg is used without a function call
                 if (namedArg != null) {
                     blocks.add(namedArg);

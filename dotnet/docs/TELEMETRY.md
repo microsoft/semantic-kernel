@@ -28,7 +28,7 @@ Log levels used in SK:
   - AI model used to execute a function
   - Function execution status (Success/Failed)
   - Function execution time (in seconds)
-- Warning - includes information about unusual events that don't cause the application to fail.
+- Warning - includes information about unusual events that do not cause the application to fail.
 - Error - used for logging exception details.
 
 ### Examples

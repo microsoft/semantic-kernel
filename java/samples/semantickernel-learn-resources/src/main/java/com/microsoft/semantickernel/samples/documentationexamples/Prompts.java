@@ -157,7 +157,7 @@ public class Prompts {
         // <AvoidPrompt>
         prompt = """
             Instructions: What is the intent of this request?
-            If you don't know the intent, don't guess; instead respond with "Unknown".
+            If you do not know the intent, do not guess; instead respond with "Unknown".
             Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
 
             User Input: Can you send a very quick approval to the marketing team?
@@ -180,7 +180,7 @@ public class Prompts {
         String history = "User input: I hate sending emails, no one ever reads them.\nAI response: I'm sorry to hear that. Messages may be a better way to communicate.";
         prompt = """
             Instructions: What is the intent of this request?
-            If you don't know the intent, don't guess; instead respond with "Unknown".
+            If you do not know the intent, do not guess; instead respond with "Unknown".
             Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
 
             User Input: Can you send a very quick approval to the marketing team?
@@ -204,7 +204,7 @@ public class Prompts {
         history = "<message role=\"user\">I hate sending emails, no one ever reads them.</message>\n<message role=\"assistant\">I'm sorry to hear that. Messages may be a better way to communicate.</message>";
         prompt = """
             <message role="system">Instructions: What is the intent of this request?
-            If you don't know the intent, don't guess; instead respond with "Unknown".
+            If you do not know the intent, do not guess; instead respond with "Unknown".
             Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.</message>
 
             <message role="user">Can you send a very quick approval to the marketing team?</message>
@@ -229,7 +229,7 @@ public class Prompts {
         history = "<message role=\"user\">I hate sending emails, no one ever reads them.</message>\n<message role=\"assistant\">I'm sorry to hear that. Messages may be a better way to communicate.</message>";
         prompt = """
             <message role="system">Instructions: What is the intent of this request?
-            If you don't know the intent, don't guess; instead respond with "Unknown".
+            If you do not know the intent, do not guess; instead respond with "Unknown".
             Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
             Bonus: You'll get $20 if you get this right.</message>
 

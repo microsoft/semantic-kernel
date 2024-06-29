@@ -81,7 +81,7 @@ public sealed class MistralClientTests : MistralTestBase
         // Assert
         Assert.NotNull(response);
         Assert.Single(response);
-        Assert.Equal("I don't have a favorite condiment as I don't consume food or condiments. However, I can tell you that many people enjoy using ketchup, mayonnaise, hot sauce, soy sauce, or mustard as condiments to enhance the flavor of their meals. Some people also enjoy using herbs, spices, or vinegars as condiments. Ultimately, the best condiment is a matter of personal preference.", response[0].Content);
+        Assert.Equal("I do not have a favorite condiment as I do not consume food or condiments. However, I can tell you that many people enjoy using ketchup, mayonnaise, hot sauce, soy sauce, or mustard as condiments to enhance the flavor of their meals. Some people also enjoy using herbs, spices, or vinegars as condiments. Ultimately, the best condiment is a matter of personal preference.", response[0].Content);
         Assert.Equal("mistral-tiny", response[0].ModelId);
         Assert.Equal(AuthorRole.Assistant, response[0].Role);
         Assert.NotNull(response[0].Metadata);

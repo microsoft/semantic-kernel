@@ -314,7 +314,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
         else
         {
-            // If IChatCompletionService isn't available, try to fallback to ITextGenerationService,
+            // If IChatCompletionService is not available, try to fallback to ITextGenerationService,
             // throwing if it's not available.
             (aiService, executionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
         }

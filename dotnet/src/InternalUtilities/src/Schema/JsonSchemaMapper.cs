@@ -368,7 +368,7 @@ static partial class JsonSchemaMapper
 
                     if (property.IsExtensionData)
                     {
-                        continue; // Extension data properties don't impact the schema.
+                        continue; // Extension data properties do not impact the schema.
                     }
 
                     JsonNumberHandling? propertyNumberHandling = property.NumberHandling ?? effectiveNumberHandling;

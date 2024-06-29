@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import javax.annotation.Nullable;
 
 /**
- * Interface of static blocks that don't need async IO to be rendered.
+ * Interface of static blocks that do not need async IO to be rendered.
  */
 public interface TextRendering {
 

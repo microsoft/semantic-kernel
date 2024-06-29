@@ -143,7 +143,7 @@ public abstract class MistralAIToolCallBehavior
             }
 
             // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
-            // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
+            // Lack of a kernel is fatal: we do not want to tell the model we can handle the functions
             // and then fail to do so, so we fail before we get to that point. This is an error
             // on the consumers behalf: if they specify auto-invocation with any functions, they must
             // specify the kernel and the kernel must contain those functions.
@@ -181,7 +181,7 @@ public abstract class MistralAIToolCallBehavior
             }
 
             // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
-            // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
+            // Lack of a kernel is fatal: we do not want to tell the model we can handle the functions
             // and then fail to do so, so we fail before we get to that point. This is an error
             // on the consumers behalf: if they specify auto-invocation with any functions, they must
             // specify the kernel and the kernel must contain those functions.

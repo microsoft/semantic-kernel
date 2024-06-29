@@ -150,7 +150,7 @@ public sealed class KernelParameterMetadata
             }
         }
 
-        // Always return an instance so that subsequent reads of the Schema don't try to regenerate
+        // Always return an instance so that subsequent reads of the Schema do not try to regenerate
         // it again. If inference failed, we just leave the Schema null in the instance.
         return new InitializedSchema { Inferred = true, Schema = schema };
     }

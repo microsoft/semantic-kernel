@@ -33,7 +33,7 @@ public sealed class MathPlugin
         return number1 - number2;
     }
 
-    [KernelFunction, Description("Multiply two numbers. When increasing by a percentage, don't forget to add 1 to the percentage.")]
+    [KernelFunction, Description("Multiply two numbers. When increasing by a percentage, do not forget to add 1 to the percentage.")]
     public static double Multiply(
         [Description("The first number to multiply")] double number1,
         [Description("The second number to multiply")] double number2

@@ -1,6 +1,6 @@
 ## Context and Problem Statement
 
-Currently Kernel invoking and invoked handlers don't expose the prompt to the handlers.
+Currently Kernel invoking and invoked handlers do not expose the prompt to the handlers.
 
 The proposal is a way to expose the prompt to the handlers.
 
@@ -109,7 +109,7 @@ Move `Dictionary<string, object>` property `Metadata` from `FunctionInvokedEvent
 
 Pro:
 
-- This will make all SKEventArgs extensible, allowing extra information to be passed to the EventArgs when `specialization` isn't possible.
+- This will make all SKEventArgs extensible, allowing extra information to be passed to the EventArgs when `specialization` is not possible.
 
 ### Option 1: Kernel awareness of SemanticFunctions
 
@@ -189,7 +189,7 @@ class Kernel : IKernel
 
         // Think about allowing to add data with the extra interface.
 
-        // If a function don't support the specific event we can:
+        // If a function do not support the specific event we can:
         return null; // Ignore or Throw.
         throw new NotSupportedException($"The provided function \"{function.Name}\" does not supports and implements ISKFunctionHandles<{typeof(TEventArgs).Name}>");
     }
@@ -332,7 +332,7 @@ Cons:
 - Unable to add new events if needed (ISKFunction interface change needed)
 - Functions need to implement behavior related to dependency (Kernel) events
 - Since Kernel needs to interact with the result of an event handler, a wrapper strategy is needed to access results by reference at the kernel level (control of flow)
-- Passing Kernel event handlers full responsibility downstream to the functions don't sound quite right (Single Responsibility)
+- Passing Kernel event handlers full responsibility downstream to the functions do not sound quite right (Single Responsibility)
 
 ### Option 4: Delegate to the ISKFunction how to handle events (SKContext Delegates approach)
 
@@ -437,7 +437,7 @@ Cons:
 
 - Functions now need to implement logic to handle in-context events
 - Since Kernel needs to interact with the result of an event handler, a wrapper strategy is needed to access results by reference at the kernel level (control of flow)
-- Passing Kernel event handlers full responsibility downstream to the functions don't sound quite right (Single Responsibility)
+- Passing Kernel event handlers full responsibility downstream to the functions do not sound quite right (Single Responsibility)
 
 ## Decision outcome
 

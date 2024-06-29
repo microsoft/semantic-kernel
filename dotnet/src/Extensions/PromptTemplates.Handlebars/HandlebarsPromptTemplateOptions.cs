@@ -26,7 +26,7 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     /// </summary>
     /// <remarks>
     /// This callback allows users to register their custom helpers while ensuring
-    /// that they don't conflict with existing system or custom helpers. Users should
+    /// that they do not conflict with existing system or custom helpers. Users should
     /// use the provided `registerHelper` callback when registering their custom helpers.
     /// </remarks>
     /// <example>

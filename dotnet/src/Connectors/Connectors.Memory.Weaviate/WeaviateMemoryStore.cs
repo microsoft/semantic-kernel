@@ -166,7 +166,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
             if (existing is not null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
             {
                 // ReSharper disable once CommentTypo
-                // Check that we don't have an accidental conflict.
+                // Check that we do not have an accidental conflict.
                 // For example a collectionName of '__this_collection' and 'this_collection' are
                 // both transformed to the class name of <classNamePrefix>thiscollection - even though the external
                 // system could consider them as unique collection names.

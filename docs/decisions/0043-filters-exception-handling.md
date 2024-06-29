@@ -187,7 +187,7 @@ Advantages:
 - Native way how to handle and rethrow exceptions.
 - Similar to `IAsyncActionFilter` and `IEndpointFilter` API in ASP.NET.
 - One filter method to implement instead of two (`Invoking/Invoked`) - this allows to keep invocation context information in one method instead of storing it on class level. For example, to measure function execution time, `Stopwatch` can be created and started before `await next(context)` call and used after the call, while in approach with `Invoking/Invoked` methods the data should be passed between filter actions in other way, for example setting it on class level, which is harder to maintain.
-- No need in cancellation logic (e.g. `context.Cancel = true`). To cancel the operation, simply don't call `await next(context)`.
+- No need in cancellation logic (e.g. `context.Cancel = true`). To cancel the operation, simply do not call `await next(context)`.
 
 Disadvantages:
 

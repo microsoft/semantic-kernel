@@ -135,7 +135,7 @@ public abstract class ToolCallBehavior
 
         internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
         {
-            // If no kernel is provided, we don't have any tools to provide.
+            // If no kernel is provided, we do not have any tools to provide.
             if (kernel is not null)
             {
                 // Provide all functions from the kernel.
@@ -187,7 +187,7 @@ public abstract class ToolCallBehavior
                 bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
 
                 // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
-                // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
+                // Lack of a kernel is fatal: we do not want to tell the model we can handle the functions
                 // and then fail to do so, so we fail before we get to that point. This is an error
                 // on the consumers behalf: if they specify auto-invocation with any functions, they must
                 // specify the kernel and the kernel must contain those functions.
@@ -238,7 +238,7 @@ public abstract class ToolCallBehavior
             bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
 
             // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
-            // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
+            // Lack of a kernel is fatal: we do not want to tell the model we can handle the functions
             // and then fail to do so, so we fail before we get to that point. This is an error
             // on the consumers behalf: if they specify auto-invocation with any functions, they must
             // specify the kernel and the kernel must contain those functions.

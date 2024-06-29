@@ -301,7 +301,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// <summary>
     /// Heap Sort in-place.
     /// This is destructive. Once you do this, the heap order is lost.
-    /// The advantage on in-place is that we don't need to do another allocation
+    /// The advantage on in-place is that we do not need to do another allocation
     /// </summary>
     public void SortDescending()
     {

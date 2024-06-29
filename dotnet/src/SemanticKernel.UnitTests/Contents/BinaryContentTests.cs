@@ -169,7 +169,7 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
         Assert.NotNull(content.Data);
         Assert.Equal(Convert.FromBase64String("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="), content.Data!.Value.ToArray());
 
-        // Don't change the referred Uri
+        // Do not change the referred Uri
         Assert.Equal("http://localhost/", content.Uri?.ToString());
     }
 

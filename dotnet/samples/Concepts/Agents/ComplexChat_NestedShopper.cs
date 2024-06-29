@@ -141,7 +141,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         Console.WriteLine("# DYNAMIC CHAT");
         Console.WriteLine("######################################");
 
-        await InvokeChatAsync("Can you provide three original birthday gift ideas.  I don't want a gift that someone else will also pick.");
+        await InvokeChatAsync("Can you provide three original birthday gift ideas.  I do not want a gift that someone else will also pick.");
 
         await InvokeChatAsync("The gift is for my adult brother.");
 

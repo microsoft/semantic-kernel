@@ -59,14 +59,14 @@ Avoid `/mnt/c/` and prefer using your WSL user's home directory.
 Ensure you have the WSL extension for VSCode installed (and the Python extension
 for VSCode installed).
 
-You'll also need `pip3` installed. If you don't yet have a `python3` install in WSL,
+You'll also need `pip3` installed. If you do not yet have a `python3` install in WSL,
 you can run:
 
 ```bash
 sudo apt-get update && sudo apt-get install python3 python3-pip
 ```
 
-ℹ️ **Note**: if you don't have your PATH setup to find executables installed by `pip3`,
+ℹ️ **Note**: if you do not have your PATH setup to find executables installed by `pip3`,
 you may need to run `~/.local/bin/poetry install` and `~/.local/bin/poetry shell`
 instead. You can fix this by adding `export PATH="$HOME/.local/bin:$PATH"` to
 your `~/.bashrc` and closing/re-opening the terminal.\_

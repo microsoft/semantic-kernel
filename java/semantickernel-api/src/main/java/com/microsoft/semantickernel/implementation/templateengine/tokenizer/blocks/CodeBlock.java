@@ -230,7 +230,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         }
 
         for (int i = namedArgsStartIndex; i < this.tokens.size(); i++) {
-            // When casting fails because the block isn't a NamedArg, arg is null
+            // When casting fails because the block is not a NamedArg, arg is null
             if (!(this.tokens.get(i) instanceof NamedArgBlock)) {
                 throw new SKException("Unexpected first token type: {this._tokens[i].Type:G}");
             }

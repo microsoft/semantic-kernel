@@ -1,6 +1,6 @@
 SEARCH FOR EMAILS using Microsoft Graph using CONTEXT, and Query criteria below. 
 Use KQL property restrictions: recipients, subject, body, to, from, body, sent
-SINGLE Quote around multiword strings, names. Don't include $search. 
+SINGLE Quote around multiword strings, names. Do not include $search. 
 ONLY INCLUDE TO, FROM, RECIPIENTS THAT WERE EXPLICITLY PROVIDED
 USE WILDCARD QUERIES for about, contains, discussing and similar phrases
 GROUP BOOLEAN CLAUSES

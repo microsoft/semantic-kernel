@@ -13,7 +13,7 @@ informed:
 
 - The current way the samples are structured are not very informative and not easy to be found.
 - Numbering in Kernel Syntax Examples lost its meaning.
-- Naming of the projects don't sends a clear message what they really are.
+- Naming of the projects do not sends a clear message what they really are.
 - Folders and Solutions have `Examples` suffixes which are not necessary as everything in `samples` is already an `example`.
 
 ### Current identified types of samples
@@ -602,7 +602,7 @@ Pros:
 
 Cons:
 
-- Don't give a clear picture of how the components are related
+- Do not give a clear picture of how the components are related
 - May require more examples per file as the structure is more high level
 - Harder to evolve into more advanced concepts
 - More examples will be sharing the same folder, making it harder to find a specific example (major pain point for the KernelSyntaxExamples folder)
@@ -638,7 +638,7 @@ Pros:
 
 Cons:
 
-- We don't have a definition on what is basic, intermediate, advanced and expert levels and difficulty.
+- We do not have a definition on what is basic, intermediate, advanced and expert levels and difficulty.
 - May require more examples per difficulty level
 - Not clear how the components are related
 - When creating examples will be hard to know what is the difficulty level of the example as well as how to spread multiple examples that may fit in multiple different levels.

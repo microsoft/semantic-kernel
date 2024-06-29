@@ -11,7 +11,7 @@ from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 
 prompt = """
 ChatBot can have a conversation with you about any topic.
-It can give explicit instructions or say 'I don't know'
+It can give explicit instructions or say 'I do not know'
 when it doesn't know the answer.
 
 {{$chat_history}}

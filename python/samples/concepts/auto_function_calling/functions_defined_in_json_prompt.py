@@ -117,7 +117,7 @@ async def auto_function_invocation_filter(context: AutoFunctionInvocationContext
     print("\nAuto function invocation filter")
     print(f"Function: {context.function.fully_qualified_name}")
 
-    # if we don't call next, it will skip this function, and go to the next one
+    # if we do not call next, it will skip this function, and go to the next one
     await next(context)
 
 

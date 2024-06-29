@@ -97,5 +97,10 @@
     "python/tests"
   ],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#1D321B",
+    "titleBar.activeBackground": "#284726",
+    "titleBar.activeForeground": "#F9FBF8"
+  }
 }

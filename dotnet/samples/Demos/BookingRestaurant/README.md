@@ -67,7 +67,7 @@ The sample can be configured by using the command line with .NET [Secret Manager
 ### Create Or Use a Booking Service and Business
 
 1. Go to the [Bookings Homepage](https://outlook.office.com/bookings) website.
-2. Create a new Booking Page and add a Service to the Booking (Skip if you don't ).
+2. Create a new Booking Page and add a Service to the Booking (Skip if you do not ).
 3. Access [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)
 4. Run the following query to get the Booking Business Id:
    ```http

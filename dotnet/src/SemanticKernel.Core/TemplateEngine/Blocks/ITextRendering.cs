@@ -2,7 +2,7 @@
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
-/// Interface of static blocks that don't need async IO to be rendered.
+/// Interface of static blocks that do not need async IO to be rendered.
 /// </summary>
 internal interface ITextRendering
 {

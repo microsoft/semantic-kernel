@@ -146,7 +146,7 @@ Cons:
 
             // Think about allowing to add data with the extra interface.
 
-            // If a function don't support the specific event we can:
+            // If a function do not support the specific event we can:
             return null; // Ignore or Throw.
             throw new NotSupportedException($"The provided function \"{function.Name}\" does not supports and implements ISKFunctionHandles<{typeof(TEventArgs).Name}>");
         }

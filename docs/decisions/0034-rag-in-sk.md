@@ -260,7 +260,7 @@ var result = await kernel.InvokePromptAsync("What is my budget for 2024?");
 
 From the usage perspective, prompt will contain just user query without additional data. The data will be added to the prompt behind the scenes.
 
-The reason why this approach is **partially supported** is because a call to vector DB most probably will be an asynchronous, but current Kernel filters don't support asynchronous scenarios. So, in order to support asynchronous calls, new type of filters should be added to Kernel: `IAsyncFunctionFilter` and `IAsyncPromptFilter`. They will be the same as current `IFunctionFilter` and `IPromptFilter` but with async methods.
+The reason why this approach is **partially supported** is because a call to vector DB most probably will be an asynchronous, but current Kernel filters do not support asynchronous scenarios. So, in order to support asynchronous calls, new type of filters should be added to Kernel: `IAsyncFunctionFilter` and `IAsyncPromptFilter`. They will be the same as current `IFunctionFilter` and `IPromptFilter` but with async methods.
 
 ### Option 4 [Proposal] - Memory as part of PromptExecutionSettings
 

@@ -19,7 +19,7 @@ If there is another deployment type you'd like to see supported, please open an 
 
 The following models are currently prioritized for development. If you'd like to see a model added to this list, please open an issue. If you'd like to contribute to the development of a model, please comment on the issue that you're wanting to help.
 
-Please note that not all of the model interfaces are defined yet. As part of contributing a new model, we'll work with you to define the interface and then implement it. As part of implementing the connector, you may also determine that the currently planned interface isn't the best fit for the model. If that's the case, we'll work with you to update the interface.
+Please note that not all of the model interfaces are defined yet. As part of contributing a new model, we'll work with you to define the interface and then implement it. As part of implementing the connector, you may also determine that the currently planned interface is not the best fit for the model. If that's the case, we'll work with you to update the interface.
 
 ### OpenAI
 

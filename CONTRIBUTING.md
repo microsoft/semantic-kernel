@@ -39,7 +39,7 @@ report should contain the following information:
 
 Project maintainers will merge accepted code changes from contributors.
 
-### DOs and DON'Ts
+### DOs and DO NOTs
 
 DO's:
 
@@ -58,15 +58,15 @@ DO's:
 - **DO** clearly state on an issue that you are going to take on implementing it.
 - **DO** blog and tweet (or whatever) about your contributions, frequently!
 
-DON'Ts:
+DO NOTs:
 
-- **DON'T** surprise us with big pull requests. Instead, file an issue and start
+- **DO NOT** surprise us with big pull requests. Instead, file an issue and start
   a discussion so we can agree on a direction before you invest a large amount of time.
-- **DON'T** commit code that you didn't write. If you find code that you think is a good
+- **DO NOT** commit code that you didn't write. If you find code that you think is a good
   fit to add to Semantic Kernel, file an issue and start a discussion before proceeding.
-- **DON'T** submit PRs that alter licensing related files or headers. If you believe
+- **DO NOT** submit PRs that alter licensing related files or headers. If you believe
   there's a problem with them, file an issue and we'll be happy to discuss it.
-- **DON'T** make new APIs without filing an issue and discussing with us first.
+- **DO NOT** make new APIs without filing an issue and discussing with us first.
 
 ### Breaking Changes
 
@@ -85,8 +85,8 @@ We use and recommend the following workflow:
      a good one.
    - Clearly state that you are going to take on implementing it, if that's the case.
      You can request that the issue be assigned to you. Note: The issue filer and
-     the implementer don't have to be the same person.
-2. Create a personal fork of the repository on GitHub (if you don't already have one).
+     the implementer do not have to be the same person.
+2. Create a personal fork of the repository on GitHub (if you do not already have one).
 3. In your fork, create a branch off of main (`git checkout -b mybranch`).
    - Name the branch so that it clearly communicates your intentions, such as
      "issue-123" or "githubhandle-issue".

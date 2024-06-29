@@ -44,7 +44,7 @@ John: Here is a new poem after updating the model.
 John: The universe is a mystery.
 John: The universe is a mystery.
 John: The universe is a mystery.
-John: Yikes, it's really stuck isn't it. Would you help me debug my code?
+John: Yikes, it's really stuck is not it. Would you help me debug my code?
 Jane: Sure, what's the problem?
 John: I'm not sure. I think it's a bug in the code.
 Jane: I'll take a look.
@@ -55,8 +55,8 @@ Jane: I'm now writing a bot to summarize conversations. I want to make sure it w
 John: So you need to keep talking with me to generate a long conversation?
 Jane: Yes, that's right.
 John: Ok, I'll keep talking. What should we talk about?
-Jane: I don't know, what do you want to talk about?
-John: I don't know, it's nice how CoPilot is doing most of the talking for us. But it definitely gets stuck sometimes.
+Jane: I do not know, what do you want to talk about?
+John: I do not know, it's nice how CoPilot is doing most of the talking for us. But it definitely gets stuck sometimes.
 Jane: I agree, it's nice that CoPilot is doing most of the talking for us.
 Jane: But it definitely gets stuck sometimes.
 John: Do you know how long it needs to be?

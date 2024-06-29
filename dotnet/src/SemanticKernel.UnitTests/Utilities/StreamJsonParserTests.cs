@@ -231,7 +231,7 @@ public sealed class StreamJsonParserTests
 
         // Act & Assert
         await parser.ParseAsync(stream, validateJson: false).ToListAsync();
-        // We don't need to use Assert here, because we are testing that the method doesn't throw
+        // We do not need to use Assert here, because we are testing that the method doesn't throw
     }
 
     private static void WriteToStream(Stream stream, string input)

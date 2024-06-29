@@ -21,7 +21,7 @@ public static class KernelServiceCollectionExtensions
 
         // Register a KernelPluginCollection to be populated with any IKernelPlugins that have been
         // directly registered in DI. It's transient because the Kernel will store the collection
-        // directly, and we don't want two Kernel instances to hold on to the same mutable collection.
+        // directly, and we do not want two Kernel instances to hold on to the same mutable collection.
         services.AddTransient<KernelPluginCollection>();
 
         // Register the Kernel as transient. It's mutable and expected to be mutated by consumers,

@@ -327,7 +327,7 @@ public abstract class KernelFunction
                 var enumerable = invocationContext.Result.GetValue<IAsyncEnumerable<TResult>>() ?? AsyncEnumerable.Empty<TResult>();
                 enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
 
-                // yielding within a try/catch isn't currently supported, so we break out of the try block
+                // yielding within a try/catch is not currently supported, so we break out of the try block
                 // in order to then wrap the actual MoveNextAsync in its own try/catch and allow the yielding
                 // to be lifted to be outside of the try/catch.
             }

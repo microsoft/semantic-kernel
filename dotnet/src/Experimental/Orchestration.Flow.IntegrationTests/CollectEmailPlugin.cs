@@ -21,7 +21,7 @@ public sealed partial class CollectEmailPlugin
         I am AI assistant and will only answer questions related to collect email.
         The email should conform to the regex: {EmailPattern}
 
-        If I cannot answer, say that I don't know.
+        If I cannot answer, say that I do not know.
         Do not expose the regex unless asked.
         """;
 

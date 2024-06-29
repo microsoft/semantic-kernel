@@ -23,7 +23,7 @@ public interface TextAIService extends AIService {
      * the current setup, the way this could possibly happen is if a prompt function is configured
      * with built-in execution settings that opt-in to auto-invocation of everything in the kernel,
      * in which case the invocation of that prompt function could advertise itself as a candidate
-     * for auto-invocation. We don't want to outright block that, if that's something a developer
+     * for auto-invocation. We do not want to outright block that, if that's something a developer
      * has asked to do (e.g. it might be invoked with different arguments than its parent was
      * invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the
      * future and/or made configurable should need arise.

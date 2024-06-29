@@ -231,7 +231,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        // In some cases we're expected to generate the key to use. Do so if one isn't provided.
+        // In some cases we're expected to generate the key to use. Do so if one is not provided.
         if (string.IsNullOrEmpty(record.Key))
         {
             record.Key = Guid.NewGuid().ToString();
@@ -290,7 +290,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
             WHERE 
             """;
         // NOTE: Cosmos DB queries are limited to 512kB, so we'll break this into chunks
-        // of around 500kB. We don't go all the way to 512kB so that we don't have to
+        // of around 500kB. We do not go all the way to 512kB so that we do not have to
         // remove the last clause we added once we go over.
         int keyIndex = 0;
         var keyList = keys.ToList();
@@ -386,7 +386,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // It would be nice to "WHERE" on the similarity score to stay above the `minRelevanceScore`, but alas
-        // queries don't support that.
+        // queries do not support that.
         var queryDefinition = new QueryDefinition($"""
             SELECT TOP @limit x.id,x.key,x.metadata,x.timestamp,{(withEmbeddings ? "x.embedding," : "")}VectorDistance(x.embedding, @embedding) AS SimilarityScore
             FROM x

@@ -34,7 +34,7 @@ async def setup_chat_with_memory(
 ) -> KernelFunction:
     prompt = """
     ChatBot can have a conversation with you about any topic.
-    It can give explicit instructions or say 'I don't know' if
+    It can give explicit instructions or say 'I do not know' if
     it does not have an answer.
 
     Information about me, from previous conversations:

@@ -223,7 +223,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 or not function_call_returned
             ):
                 # no need to process function calls
-                # note that we don't check the FinishReason and instead check whether there are any tool calls,
+                # note that we do not check the FinishReason and instead check whether there are any tool calls,
                 # as the service may return a FinishReason of "stop" even if there are tool calls to be made,
                 # in particular if a required tool is specified.
                 return

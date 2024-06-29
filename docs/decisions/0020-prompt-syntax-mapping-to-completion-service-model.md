@@ -47,7 +47,7 @@ Cons:
 **2. The SemanticFunction class.** This option proposes that the `SemanticFunction` class be responsible for the mapping. Similar to the previous option, the exact location of this functionality (whether in the `SemanticFunction` class or in the mapper classes) should be decided during the implementation phase.
 
 Pros:
- - New connectors of a new type or existing ones don't have to implement the mapping functionality
+ - New connectors of a new type or existing ones do not have to implement the mapping functionality
 
 Cons:
  - The `SemanticFunction` class has to be changed every time a new completion type needs to be supported by SK

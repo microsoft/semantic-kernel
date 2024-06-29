@@ -36,7 +36,7 @@ Pros:
 Cons:
 
 - Guidance doesn't use commas
-- Spaces are already used as delimiters elsewhere so the added complexity of supporting commas isn't necessary
+- Spaces are already used as delimiters elsewhere so the added complexity of supporting commas is not necessary
 
 ### Syntax idea 2: JavaScript/C#-Style delimiter (colon)
 
@@ -79,7 +79,7 @@ Cons:
 
 Pros:
 
-- Follows the convention followed by many programming languages of whitespace flexibility where spaces, tabs, and newlines within code don't impact a program's functionality
+- Follows the convention followed by many programming languages of whitespace flexibility where spaces, tabs, and newlines within code do not impact a program's functionality
 
 Cons:
 

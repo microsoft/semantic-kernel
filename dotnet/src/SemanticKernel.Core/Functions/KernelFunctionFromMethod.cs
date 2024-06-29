@@ -211,7 +211,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         {
             // Get the name to use for the function.  If the function has a KernelFunction attribute and it contains a name, we use that.
             // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
-            // We don't apply any heuristics to the value supplied by KernelFunction's Name so that it can always be used
+            // We do not apply any heuristics to the value supplied by KernelFunction's Name so that it can always be used
             // as a definitive override.
             functionName = method.GetCustomAttribute<KernelFunctionAttribute>(inherit: true)?.Name?.Trim();
             if (string.IsNullOrEmpty(functionName))
@@ -231,7 +231,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         // Build up a list of KernelParameterMetadata for the parameters we expect to be populated
         // from arguments. Some arguments are populated specially, not from arguments, and thus
-        // we don't want to advertize their metadata, e.g. CultureInfo, ILoggerFactory, etc.
+        // we do not want to advertize their metadata, e.g. CultureInfo, ILoggerFactory, etc.
         List<KernelParameterMetadata> argParameterViews = [];
 
         // Get marshaling funcs for parameters and build up the parameter metadata.
@@ -471,7 +471,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 JsonNode node => node.Deserialize(targetType),
                 JsonElement element => element.Deserialize(targetType),
                 // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
-                // Since we don't take dependencies on these libraries and don't have access to the types here,
+                // Since we do not take dependencies on these libraries and do not have access to the types here,
                 // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
                 // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
                 // For instance, the JObject for { "id": 28 } JSON is serialized into the string  "{ "Id": [] }", and the deserialization fails with the

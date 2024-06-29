@@ -161,7 +161,7 @@ def enable_debug_mode():
     Note:
     ----
         When you use `ss` or `pr` in a test, pylance or mypy will complain. This is
-        because they don't know that we're adding these functions to the builtins. The
+        because they do not know that we're adding these functions to the builtins. The
         tests will run fine though.
     """
     import builtins

@@ -30,7 +30,7 @@ public class MathPlugin {
         return number1 - number2;
     }
 
-    @DefineKernelFunction(name = "multiply", description = "Multiply two numbers. When increasing by a percentage, don't forget to add 1 to the percentage.")
+    @DefineKernelFunction(name = "multiply", description = "Multiply two numbers. When increasing by a percentage, do not forget to add 1 to the percentage.")
     public static double multiply(
         @KernelFunctionParameter(name = "number1", description = "The first number to multiply", type = double.class) double number1,
         @KernelFunctionParameter(name = "number2", description = "The second number to multiply", type = double.class) double number2) {

@@ -1,5 +1,5 @@
 {{$input}}
 
 ==
-Summarize, using a user friendly, using simple grammar. Don't use subjects like "we" "our" "us" "your".
+Summarize, using a user friendly, using simple grammar. Do not use subjects like "we" "our" "us" "your".
 ==

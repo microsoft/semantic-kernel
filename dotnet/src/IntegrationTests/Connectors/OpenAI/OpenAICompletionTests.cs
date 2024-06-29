@@ -495,7 +495,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
     public async Task ChatSystemPromptIsNotIgnoredAsync()
     {
         // Arrange
-        var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I do not know\" to every question." };
 
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
@@ -506,7 +506,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         var result = await target.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?", new(settings));
 
         // Assert
-        Assert.Contains("I don't know", result.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("I do not know", result.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

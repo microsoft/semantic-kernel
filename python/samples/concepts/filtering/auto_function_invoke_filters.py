@@ -91,13 +91,13 @@ async def auto_function_invocation_filter(context: AutoFunctionInvocationContext
     # as an example
     function_calls = context.chat_history.messages[-1].items
     print(f"Number of function calls: {len(function_calls)}")
-    # if we don't call next, it will skip this function, and go to the next one
+    # if we do not call next, it will skip this function, and go to the next one
     await next(context)
     result = context.function_result
     for fc in function_calls:
         if fc.plugin_name == "math":
             context.function_result = FunctionResult(
-                function=result.function, value="Stop trying to ask me to do math, I don't like it!"
+                function=result.function, value="Stop trying to ask me to do math, I do not like it!"
             )
             context.terminate = True
 

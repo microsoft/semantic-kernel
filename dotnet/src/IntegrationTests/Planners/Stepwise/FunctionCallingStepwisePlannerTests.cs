@@ -136,7 +136,7 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         Kernel kernel = this.InitializeKernel();
 
         var promptFunction = KernelFunctionFactory.CreateFromPrompt(
-           "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Don't ask for more details or context.",
+           "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Do not ask for more details or context.",
            functionName: "FindLatestNews",
            description: "Searches for the latest news.");
 

@@ -118,7 +118,7 @@ This solution work as follows:
     1. Set `AllowUnsafeContent = true` for the `KernelPromptTemplateFactory` or `HandlebarsPromptTemplateFactory` to trust all inserted content i.e. revert to behavior before these changes were implemented. In Python, this is done on each of the `PromptTemplate` classes, through the `PromptTemplateBase` class.
 
 - Good, because values inserted into a prompt are not trusted by default.
-- Bad, because there isn't a reliable way to decode message tags that were encoded.
+- Bad, because there is not a reliable way to decode message tags that were encoded.
 - Bad, because existing applications that have prompts with input variables or function calls which returns `<message>` tags will have to be updated.
 
 ## Examples

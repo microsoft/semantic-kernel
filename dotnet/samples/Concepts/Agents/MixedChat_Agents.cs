@@ -28,7 +28,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         The goal is to refine and decide on the single best copy as an expert in the field.
         Only provide a single proposal per response.
         You're laser focused on the goal at hand.
-        Don't waste time with chit chat.
+        Do not waste time with chit chat.
         Consider suggestions when refining an idea.
         """;
 

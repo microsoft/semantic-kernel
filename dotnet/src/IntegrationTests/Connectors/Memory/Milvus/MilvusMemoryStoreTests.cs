@@ -179,7 +179,7 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
         await this.Store.CreateCollectionAsync(CollectionName);
         await this.InsertSampleDataAsync();
 
-        // There seems to be some race condition where the upserted data above isn't taken into account in the search below and zero results are returned...
+        // There seems to be some race condition where the upserted data above is not taken into account in the search below and zero results are returned...
         await Task.Delay(1000);
 
         List<(MemoryRecord Record, double SimilarityScore)> results =

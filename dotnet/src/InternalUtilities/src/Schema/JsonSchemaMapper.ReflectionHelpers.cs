@@ -140,7 +140,7 @@ static partial class JsonSchemaMapper
         Debug.Assert(typeInfo.Kind is JsonTypeInfoKind.Object);
 
         if (typeInfo.Properties.Count > 0 &&
-            typeInfo.CreateObject is null && // Ensure that a default constructor isn't being used
+            typeInfo.CreateObject is null && // Ensure that a default constructor is not being used
             typeInfo.Type.TryGetDeserializationConstructor(useDefaultCtorInAnnotatedStructs: true, out ConstructorInfo? ctor))
         {
             ParameterInfo[]? parameters = ctor?.GetParameters();
@@ -151,7 +151,7 @@ static partial class JsonSchemaMapper
                 {
                     if (parameter.Name is not null)
                     {
-                        // We don't care about null parameter names or conflicts since they
+                        // We do not care about null parameter names or conflicts since they
                         // would have already been rejected by JsonTypeInfo configuration.
                         dict[new(parameter.Name, parameter.ParameterType)] = parameter;
                     }
@@ -236,7 +236,7 @@ static partial class JsonSchemaMapper
             }
         }
 
-        // Structs will use default constructor if attribute isn't used.
+        // Structs will use default constructor if attribute is not used.
         if (useDefaultCtorInAnnotatedStructs && type.IsValueType && ctorWithAttribute is null)
         {
             deserializationCtor = null;

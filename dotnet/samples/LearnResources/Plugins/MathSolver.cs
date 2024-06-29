@@ -21,7 +21,7 @@ public class MathSolver(ILoggerFactory loggerFactory)
     {
         var kernelWithMath = kernel.Clone();
 
-        // Remove the math solver plugin so that we don't get into an infinite loop
+        // Remove the math solver plugin so that we do not get into an infinite loop
         kernelWithMath.Plugins.Remove(kernelWithMath.Plugins["MathSolver"]);
 
         // Add the math plugin so the LLM can solve the problem

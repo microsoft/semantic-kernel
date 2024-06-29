@@ -107,7 +107,7 @@ Run `dotnet nuget list source` again to verify the source was added.
 
 ## Polyglot Notebooks
 
-If somehow the notebooks don't work, run these commands:
+If somehow the notebooks do not work, run these commands:
 
 - Install .NET Interactive: `dotnet tool install -g Microsoft.dotnet-interactive`
 - Register .NET kernels into Jupyter: `dotnet interactive jupyter install` (this might return some errors, ignore them)

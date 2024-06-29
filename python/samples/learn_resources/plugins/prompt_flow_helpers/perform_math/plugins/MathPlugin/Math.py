@@ -46,7 +46,7 @@ class Math:
         return str(float(context["input"]) - float(context["number2"]))
 
     @sk_function(
-        description="Multiply two numbers. When increasing by a percentage, don't forget to add 1 to the percentage.",
+        description="Multiply two numbers. When increasing by a percentage, do not forget to add 1 to the percentage.",
         name="Multiply",
     )
     @sk_function_context_parameter(

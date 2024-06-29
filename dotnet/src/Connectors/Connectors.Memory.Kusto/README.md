@@ -36,7 +36,7 @@ The function is called `series_cosine_similarity_fl` and is located in the `Func
 ### Append-Only Store
 
 Kusto is an append-only store. This means that when a fact is updated, the old fact is not deleted.
-This isn't a problem for the semantic memory connector, as it always utilizes the most recent fact.
+This is not a problem for the semantic memory connector, as it always utilizes the most recent fact.
 This is made possible by using the [arg_max](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/arg-max-aggfunction) aggregation function in conjunction with the [ingestion_time](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/ingestiontimefunction) function.  
 However, users manually querying the underlying table should be aware of this behavior.
 

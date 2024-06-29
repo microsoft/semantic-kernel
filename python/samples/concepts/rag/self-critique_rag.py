@@ -57,7 +57,7 @@ async def main() -> None:
     print("Populating memory...")
     await populate_memory(memory)
 
-    "It can give explicit instructions or say 'I don't know' if it does not have an answer."
+    "It can give explicit instructions or say 'I do not know' if it does not have an answer."
 
     sk_prompt_rag = """
 Assistant can have a conversation with you about any topic.
