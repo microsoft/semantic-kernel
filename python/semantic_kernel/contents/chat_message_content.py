@@ -296,5 +296,5 @@ class ChatMessageContent(KernelContent):
         if len(self.items) == 1 and isinstance(self.items[0], TextContent):
             return self.items[0].text
         if len(self.items) == 1 and isinstance(self.items[0], FunctionResultContent):
-            return self.items[0].result
+            return str(self.items[0].result)
         return [item.to_dict() for item in self.items]
