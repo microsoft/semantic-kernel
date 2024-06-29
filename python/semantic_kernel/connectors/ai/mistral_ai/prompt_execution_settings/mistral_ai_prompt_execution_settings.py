@@ -30,3 +30,10 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
     temperature: float | None = Field(None, ge=0.0, le=2.0)
     top_p: float | None = Field(None, ge=0.0, le=1.0)
     random_seed: int | None = None
+
+
+class MistralAIEmbeddingPromptExecutionSettings(MistralAIPromptExecutionSettings):
+    """Specific settings for the Text Embedding endpoint."""
+    
+    input: list[str] | None = None
+    
