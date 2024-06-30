@@ -146,7 +146,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             List[Dict[str, Optional[str]]]: The prepared chat history.
         """
-        function_call_behavior = self._check_for_function_calling(settings, **kwargs)
+        function_call_behavior = self._check_for_function_calling_behavior(settings, **kwargs)
         if not function_call_behavior:
             return await self.get_chat_message_contents(chat_history, settings, **kwargs)
         
@@ -242,7 +242,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Yields:
             A stream representing the response(s) from the LLM.
         """
-        function_call_behavior = self._check_for_function_calling(settings, **kwargs)
+        function_call_behavior = self._check_for_function_calling_behavior(settings, **kwargs)
         if not function_call_behavior:
             async for messages in self.get_streaming_chat_message_contents(chat_history, settings, **kwargs):
                 yield messages
@@ -340,7 +340,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     # endregion
         
-    def _check_for_function_calling(self, settings: "PromptExecutionSettings", **kwargs: Any) -> bool:
+    def _check_for_function_calling_behavior(self, settings: "PromptExecutionSettings", **kwargs: Any) -> bool:
         """Check if function calling is enabled."""
         if settings.function_choice_behavior is None:
             return False

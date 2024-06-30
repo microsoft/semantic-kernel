@@ -64,6 +64,29 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return OpenAIChatPromptExecutionSettings
+    
+    async def invoke(
+        self,
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+        **kwargs: Any
+    ) -> list["ChatMessageContent"]:
+        """This method is called by the kernel to perform the chat completion and potentially execute function calls.
+
+        The Method calls the get_chat_message_contents method to get the response from the connector.
+        Then it checks the function calling behavior and executes the function calls if needed.
+
+        Args:
+            chat_history (ChatHistory): A list of chat chat_history, that can be rendered into a
+                set of chat_history, from system, user, assistant and function.
+            settings (PromptExecutionSettings): Settings for the request.
+            kwargs (Dict[str, Any]): The optional arguments.
+        
+        Returns:
+            List[Dict[str, Optional[str]]]: The prepared chat history.
+        """
+        # Override parent method to ensure not breaking something
+        return await self.get_chat_message_contents(chat_history, settings, **kwargs)
 
     async def get_chat_message_contents(
         self,
@@ -151,6 +174,35 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             # do a final call, without function calling when the max has been reached.
             settings.function_choice_behavior.auto_invoke_kernel_functions = False
             return await self._send_chat_request(settings)
+
+    async def invoke_streaming(
+        self,
+        chat_history: ChatHistory,
+        settings: OpenAIChatPromptExecutionSettings,
+        **kwargs: Any,
+    ) -> AsyncGenerator[list[StreamingChatMessageContent | None], Any]:
+        """This method is called by the kernel to perform the chat completion and potentially execute function calls.
+
+        The Method calls the get_chat_message_contents method to get the response from the connector.
+        Then it checks the function calling behavior and executes the function calls if needed.
+
+        Args:
+            chat_history (ChatHistory): A list of chat chat_history, that can be rendered into a
+                set of chat_history, from system, user, assistant and function.
+            settings (PromptExecutionSettings): Settings for the request.
+            kwargs (Dict[str, Any]): The optional arguments.
+
+        Yields:
+            A stream representing the response(s) from the LLM.
+        """
+        # Override parent method to ensure not breaking something
+        async for message in self.get_streaming_chat_message_contents(
+            chat_history=chat_history,
+            settings=settings,
+            **kwargs
+        ):
+            yield message
+        return
 
     async def get_streaming_chat_message_contents(
         self,
