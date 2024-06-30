@@ -127,7 +127,7 @@ public sealed class AnthropicRequestTests
         chatHistory.AddUserMessage("user-message");
         chatHistory.AddAssistantMessage("assist-message");
         chatHistory.AddUserMessage(contentItems:
-            [new ImageContent(imageAsBytes) { MimeType = "image/png" }]);
+            [new ImageContent(imageAsBytes, "image/png")]);
         var executionSettings = new AnthropicPromptExecutionSettings
         {
             ModelId = "claude",
