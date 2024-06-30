@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 
@@ -36,6 +37,17 @@ public static class KernelFunctionFactory
         CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
 
     /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="options">Optional function creation options.</param>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
+    public static KernelFunction CreateFromMethod(
+        Delegate method,
+        KernelFunctionFromMethodOptions? options) =>
+        CreateFromMethod(method.Method, method.Target, options);
+
+    /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
@@ -56,6 +68,20 @@ public static class KernelFunctionFactory
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
         KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory);
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// and an optional target object if the method is an instance method.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
+    /// <param name="options">Optional function creation options.</param>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
+    public static KernelFunction CreateFromMethod(
+        MethodInfo method,
+        object? target,
+        KernelFunctionFromMethodOptions? options) =>
+        KernelFunctionFromMethod.Create(method, target, options);
     #endregion
 
     #region FromPrompt
@@ -77,6 +103,37 @@ public static class KernelFunctionFactory
     public static KernelFunction CreateFromPrompt(
         string promptTemplate,
         PromptExecutionSettings? executionSettings = null,
+        string? functionName = null,
+        string? description = null,
+        string? templateFormat = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory? loggerFactory = null) =>
+        KernelFunctionFromPrompt.Create(
+            promptTemplate,
+            CreateSettingsDictionary(executionSettings is null ? null : [executionSettings]),
+            functionName,
+            description,
+            templateFormat,
+            promptTemplateFactory,
+            loggerFactory);
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
+    /// </summary>
+    /// <param name="promptTemplate">Prompt template for the function.</param>
+    /// <param name="executionSettings">Default execution settings to use when invoking this prompt function.</param>
+    /// <param name="functionName">The name to use for the function. If null, it will default to a randomly generated name.</param>
+    /// <param name="description">The description to use for the function.</param>
+    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
+    public static KernelFunction CreateFromPrompt(
+        string promptTemplate,
+        IEnumerable<PromptExecutionSettings>? executionSettings,
         string? functionName = null,
         string? description = null,
         string? templateFormat = null,
@@ -116,10 +173,6 @@ public static class KernelFunctionFactory
     /// Wraps the specified settings into a dictionary with the default service ID as the key.
     /// </summary>
     [return: NotNullIfNotNull(nameof(settings))]
-    private static Dictionary<string, PromptExecutionSettings>? CreateSettingsDictionary(PromptExecutionSettings? settings) =>
-        settings is null ? null :
-            new Dictionary<string, PromptExecutionSettings>(1)
-            {
-                { PromptExecutionSettings.DefaultServiceId, settings },
-            };
+    private static Dictionary<string, PromptExecutionSettings>? CreateSettingsDictionary(IEnumerable<PromptExecutionSettings>? settings) =>
+        settings?.ToDictionary(s => s.ServiceId ?? PromptExecutionSettings.DefaultServiceId, s => s);
 }

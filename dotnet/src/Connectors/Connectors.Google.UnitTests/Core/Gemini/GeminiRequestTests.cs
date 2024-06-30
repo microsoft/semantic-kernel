@@ -177,7 +177,7 @@ public sealed class GeminiRequestTests
         chatHistory.AddUserMessage(contentItems:
             [new ImageContent(new Uri("https://example-image.com/")) { MimeType = "image/png" }]);
         chatHistory.AddUserMessage(contentItems:
-            [new ImageContent(imageAsBytes) { MimeType = "image/png" }]);
+            [new ImageContent(imageAsBytes, "image/png")]);
         var executionSettings = new GeminiPromptExecutionSettings();
 
         // Act
@@ -230,7 +230,7 @@ public sealed class GeminiRequestTests
         Assert.Single(request.Contents,
             c => c.Role == AuthorRole.Tool);
         Assert.Single(request.Contents,
-            c => c.Parts![0].FunctionResponse != null);
+            c => c.Parts![0].FunctionResponse is not null);
         Assert.Single(request.Contents,
             c => string.Equals(c.Parts![0].FunctionResponse!.FunctionName, toolCallResult.FullyQualifiedName, StringComparison.Ordinal));
         var args = request.Contents[0].Parts![0].FunctionResponse!.Response.Arguments;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -13,13 +14,19 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     /// <inheritdoc/>
     protected internal sealed override IEnumerable<string> GetChannelKeys()
     {
-        yield return typeof(ChatHistoryChannel).FullName;
+        yield return typeof(ChatHistoryChannel).FullName!;
     }
 
     /// <inheritdoc/>
     protected internal sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult<AgentChannel>(new ChatHistoryChannel());
+        ChatHistoryChannel channel =
+            new()
+            {
+                Logger = this.LoggerFactory.CreateLogger<ChatHistoryChannel>()
+            };
+
+        return Task.FromResult<AgentChannel>(channel);
     }
 
     /// <inheritdoc/>

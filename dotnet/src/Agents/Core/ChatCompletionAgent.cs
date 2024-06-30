@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -35,14 +35,33 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         }
         chat.AddRange(history);
 
-        var messages =
+        int messageCount = chat.Count;
+
+        this.Logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
+
+        IReadOnlyList<ChatMessageContent> messages =
             await chatCompletionService.GetChatMessageContentsAsync(
                 chat,
                 this.ExecutionSettings,
                 this.Kernel,
                 cancellationToken).ConfigureAwait(false);
 
-        foreach (var message in messages ?? [])
+        if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
+        {
+            this.Logger.LogInformation("[{MethodName}] Invoked {ServiceType} with message count: {MessageCount}.", nameof(InvokeAsync), chatCompletionService.GetType(), messages.Count);
+        }
+
+        // Capture mutated messages related function calling / tools
+        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
+        {
+            ChatMessageContent message = chat[messageIndex];
+
+            message.AuthorName = this.Name;
+
+            yield return message;
+        }
+
+        foreach (ChatMessageContent message in messages ?? [])
         {
             // TODO: MESSAGE SOURCE - ISSUE #5731
             message.AuthorName = this.Name;

@@ -7,23 +7,37 @@ want to run the tests included.
 ## LLM setup
 
 Make sure you have an
-[OpenAI API Key](https://openai.com/product/) or
+[OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
-Copy those keys into a `.env` file (see the `.env.example` file):
+There are two methods to manage keys, secrets, and endpoints:
 
-```bash
+1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints. This means that there is a first attempt to load them from environment variables. The `.env` file naming applies to how the names should be stored as environment variables.
+
+2. If you'd like to use the `.env` file, you will need to configure the `.env` file with the following keys into a `.env` file (see the `.env.example` file):
+
+```
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
-AZURE_OPENAI_DEPLOYMENT_NAME=""
+AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=""
+AZURE_OPENAI_TEXT_DEPLOYMENT_NAME=""
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=""
 AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
 ```
 
-We suggest adding a copy of the `.env` file under these folders:
+You will then configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
 
-- [python/tests](tests)
-- [./notebooks](./notebooks).
+```python
+chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
+```
+
+This optional `env_file_path` parameter will allow pydantic settings to use the `.env` file as a fallback to read the settings.
+
+If using the second method, we suggest adding a copy of the `.env` file under these folders:
+
+- [./tests](./tests)
+- [./samples/getting_started](./samples/getting_started).
 
 ## System setup
 
@@ -63,13 +77,46 @@ Poetry allows to use SK from the local files, without worrying about paths, as
 if you had SK pip package installed.
 
 To install Poetry in your system, first, navigate to the directory containing
-this README using your chosen shell. You will need to have Python 3.8+ installed.
+this README using your chosen shell. You will need to have Python 3.10, 3.11, or 3.12
+installed.
 
 Install the Poetry package manager and create a project virtual environment.
 Note: SK requires at least Poetry 1.2.0.
 
+### Note for MacOS Users
+
+It is best to install Poetry using their 
+[official installer](https://python-poetry.org/docs/#installing-with-the-official-installer).
+
+On MacOS, you might find that `python` commands are not recognized by default, 
+and you can only use `python3`. To make it easier to run `python ...` commands 
+(which Poetry requires), you can create an alias in your shell configuration file.
+
+Follow these steps:
+
+1. **Open your shell configuration file**:
+    - For **Bash**: `nano ~/.bash_profile` or `nano ~/.bashrc`
+    - For **Zsh** (default on macOS Catalina and later): `nano ~/.zshrc`
+
+2. **Add the alias**:
+    ```sh
+    alias python='python3'
+    ```
+
+3. **Save the file and exit**:
+    - In `nano`, press `CTRL + X`, then `Y`, and hit `Enter`.
+
+4. **Apply the changes**:
+    - For **Bash**: `source ~/.bash_profile` or `source ~/.bashrc`
+    - For **Zsh**: `source ~/.zshrc`
+
+After these steps, you should be able to use `python` in your terminal to run 
+Python 3 commands.
+
+### Poetry Installation
+
 ```bash
-# Install poetry package
+# Install poetry package if not choosing to install via their official installer
 pip3 install poetry
 
 # optionally, define which python version you want to use
@@ -92,20 +139,25 @@ poetry run pre-commit install
 
 ## VSCode Setup
 
+Open the [workspace](https://code.visualstudio.com/docs/editor/workspaces) in VSCode.
+> The Python workspace is the `./python` folder if you are at the root of the repository.
+
 Open any of the `.py` files in the project and run the `Python: Select Interpreter`
 command from the command palette. Make sure the virtual env (venv) created by
 `poetry` is selected.
 The python you're looking for should be under `~/.cache/pypoetry/virtualenvs/semantic-kernel-.../bin/python`.
 
-If prompted, install `ruff` and `black` (these should have been installed as part of `poetry install`).
+If prompted, install `ruff`. (It should have been installed as part of `poetry install`).
+
+You also need to install the `ruff` extension in VSCode so that auto-formatting uses the `ruff` formatter on save.
+Read more about the extension here: https://github.com/astral-sh/ruff-vscode
 
 ## Tests
 
 You can run the unit tests under the [tests/unit](tests/unit/) folder.
 
 ```bash
-    cd python
-    poetry install
+    poetry install --with unit-tests
     poetry run pytest tests/unit
 ```
 
@@ -115,15 +167,13 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 You can run the integration tests under the [tests/integration](tests/integration/) folder.
 
 ```bash
-    cd python
-    poetry install
+    poetry install --with tests
     poetry run pytest tests/integration
 ```
 
 You can also run all the tests together under the [tests](tests/) folder.
 
 ```bash
-    cd python
     poetry install
     poetry run pytest tests
 ```
@@ -133,13 +183,64 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 
 ## Tools and scripts
 
-## Implementation Decisions 
+## Implementation Decisions
 
 ### Asynchronous programming
 
-It's important to note that most of this library is written with asynchronous in mind. The 
-developer should always assume everything is asynchronous. One can use the function signature 
+It's important to note that most of this library is written with asynchronous in mind. The
+developer should always assume everything is asynchronous. One can use the function signature
 with either `async def` or `def` to understand if something is asynchronous or not.
+
+### Documentation
+
+Each file should have a single first line containing: # Copyright (c) Microsoft. All rights reserved.
+
+We follow the [Google Docstring](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#383-functions-and-methods) style guide for functions and methods.
+They are currently not checked for private functions (functions starting with '_').
+
+They should contain:
+- Single line explaining what the function does, ending with a period.
+- If necessary to further explain the logic a newline follows the first line and then the explanation is given.
+- The following three sections are optional, and if used should be separated by a single empty line.
+- Arguments are then specified after a header called `Args:`, with each argument being specified in the following format:
+    - `arg_name` (`arg_type`): Explanation of the argument, arg_type is optional, as long as you are consistent.
+    - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
+    - Default values do not have to be specified, they will be pulled from the definition.
+- Returns are specified after a header called `Returns:` or `Yields:`, with the return type and explanation of the return value.
+- Finally, a header for exceptions can be added, called `Raises:`, with each exception being specified in the following format:
+    - `ExceptionType`: Explanation of the exception.
+    - if a longer explanation is needed for a exception, it should be placed on the next line, indented by 4 spaces.
+
+Putting them all together, gives you at minimum this:
+
+```python
+def equal(arg1: str, arg2: str) -> bool:
+    """Compares two strings and returns True if they are the same."""
+    ...
+```
+Or a complete version of this:
+
+```python
+def equal(arg1: str, arg2: str) -> bool:
+    """Compares two strings and returns True if they are the same.
+
+    Here is extra explanation of the logic involved.
+
+    Args:
+        arg1 (str): The first string to compare.
+        arg2 (str): The second string to compare.
+            This string requires extra explanation.
+
+    Returns:
+        bool: True if the strings are the same, False otherwise.
+
+    Raises:
+        ValueError: If one of the strings is empty.
+    """
+    ...
+```
+
+If in doubt, use the link above to read much more considerations of what to do and when, or use common sense.
 
 ## Pydantic and Serialization
 
@@ -229,7 +330,6 @@ Ideally you should run these checks before committing any changes, use `poetry r
 We try to maintain a high code coverage for the project. To run the code coverage on the unit tests, you can use the following command:
 
 ```bash
-    cd python
     poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
 ```
 or use the following task (using `Ctrl+Shift+P`):
@@ -256,4 +356,3 @@ or:
 This is assuming the upstream branch refers to the main repository. If you have a different name for the upstream branch, you can replace `upstream` with the name of your upstream branch.
 
 After running the rebase command, you may need to resolve any conflicts that arise. If you are unsure how to resolve a conflict, please refer to the [GitHub's documentation on resolving conflicts](https://docs.github.com/en/get-started/using-git/resolving-merge-conflicts-after-a-git-rebase), or for [VSCode](https://code.visualstudio.com/docs/sourcecontrol/overview#_merge-conflicts).
-

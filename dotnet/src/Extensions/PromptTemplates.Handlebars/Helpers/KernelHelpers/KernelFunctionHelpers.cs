@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
+using System.Web;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 
@@ -22,18 +23,22 @@ internal static class KernelFunctionHelpers
     /// <param name="handlebarsInstance">The <see cref="IHandlebars"/>-context.</param>
     /// <param name="kernel">Kernel instance.</param>
     /// <param name="executionContext">Kernel arguments maintained as the executing context.</param>
+    /// <param name="promptConfig">The associated prompt template configuration.</param>
+    /// <param name="allowDangerouslySetContent">Flag indicating whether to allow unsafe dangerously set content</param>
     /// <param name="nameDelimiter">The character used to delimit the plugin name and function name in a Handlebars template.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static void Register(
         IHandlebars handlebarsInstance,
         Kernel kernel,
         KernelArguments executionContext,
+        PromptTemplateConfig promptConfig,
+        bool allowDangerouslySetContent,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent, nameDelimiter, cancellationToken);
         }
     }
 
@@ -44,6 +49,7 @@ internal static class KernelFunctionHelpers
         KernelArguments executionContext,
         IHandlebars handlebarsInstance,
         KernelFunctionMetadata functionMetadata,
+        bool allowDangerouslySetContent,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
@@ -74,7 +80,14 @@ internal static class KernelFunctionHelpers
                 KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
                 // Invoke the function and write the result to the template
-                return InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
+                var result = InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
+
+                if (!allowDangerouslySetContent && result is string resultAsString)
+                {
+                    result = HttpUtility.HtmlEncode(resultAsString);
+                }
+
+                return result;
             });
     }
 
@@ -213,7 +226,7 @@ internal static class KernelFunctionHelpers
             // Deserialize any JSON content or return the content as a string
             if (restApiOperationResponse.ContentType?.IndexOf("application/json", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                var parsedJson = JsonValue.Parse(restApiOperationResponse.Content.ToString());
+                var parsedJson = JsonValue.Parse(restApiOperationResponse.Content?.ToString() ?? string.Empty);
                 return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
             }
 
@@ -229,6 +242,5 @@ internal static class KernelFunctionHelpers
 
         return resultAsObject;
     }
-
     #endregion
 }

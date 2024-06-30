@@ -1,22 +1,25 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
-
 import asyncio
 import logging
 import os
 from copy import copy
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.utils import get_function_calling_object, get_tool_call_object
+from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -55,14 +58,14 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     generate_plan_yaml: str
     step_prompt: str
 
-    def __init__(self, service_id: str, options: Optional[FunctionCallingStepwisePlannerOptions] = None):
-        """Initialize a new instance of the FunctionCallingStepwisePlanner
+    def __init__(self, service_id: str, options: FunctionCallingStepwisePlannerOptions | None = None):
+        """Initialize a new instance of the FunctionCallingStepwisePlanner.
 
         The FunctionCallingStepwisePlanner is a planner based on top of an OpenAI Chat Completion service
         (whether it be AzureOpenAI or OpenAI), so that we can use tools.
 
         If the options are configured to use callbacks to get the initial plan and the step prompt,
-        the planner will use those provided callbacks to get that information. Otherwise it will
+        the planner will use those provided callbacks to get that information. Otherwise, it will
         read from the default yaml plan file and the step prompt file.
 
         Args:
@@ -71,10 +74,19 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 the function calling stepwise planner. Defaults to None.
         """
         options = options or FunctionCallingStepwisePlannerOptions()
-        generate_plan_yaml = (
-            options.get_initial_plan() if options.get_initial_plan else open(PLAN_YAML_FILE_PATH).read()
-        )
-        step_prompt = options.get_step_prompt() if options.get_step_prompt else open(STEP_PROMPT_FILE_PATH).read()
+
+        if options.get_initial_plan:
+            generate_plan_yaml = options.get_initial_plan()
+        else:
+            with open(PLAN_YAML_FILE_PATH) as f:
+                generate_plan_yaml = f.read()
+
+        if options.get_step_prompt:
+            step_prompt = options.get_step_prompt()
+        else:
+            with open(STEP_PROMPT_FILE_PATH) as f:
+                step_prompt = f.read()
+
         options.excluded_plugins.add(STEPWISE_PLANNER_PLUGIN_NAME)
 
         super().__init__(
@@ -91,8 +103,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         arguments: KernelArguments | None = None,
         **kwargs: Any,
     ) -> FunctionCallingStepwisePlannerResult:
-        """
-        Execute the function calling stepwise planner
+        """Execute the function calling stepwise planner.
 
         Args:
             kernel: The kernel instance
@@ -113,7 +124,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
 
         try:
-            chat_completion = kernel.get_service(service_id=self.service_id)
+            chat_completion: OpenAIChatCompletion | AzureChatCompletion = kernel.get_service(service_id=self.service_id)
         except Exception as exc:
             raise PlannerInvalidConfigurationError(
                 f"The OpenAI service `{self.service_id}` is not available. Please configure the AI service."
@@ -124,14 +135,12 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 f"The service with id `{self.service_id}` is not an OpenAI based service."
             )
 
-        prompt_execution_settings: (
-            OpenAIChatPromptExecutionSettings
-        ) = self.options.execution_settings or chat_completion.get_prompt_execution_settings_class()(
-            service_id=self.service_id
+        prompt_execution_settings: OpenAIChatPromptExecutionSettings = (
+            self.options.execution_settings
+            or chat_completion.instantiate_prompt_execution_settings(service_id=self.service_id)
         )
         if self.options.max_completion_tokens:
             prompt_execution_settings.max_tokens = self.options.max_completion_tokens
-        prompt_execution_settings.max_auto_invoke_attempts = self.options.max_iterations
 
         # Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         cloned_kernel = copy(kernel)
@@ -143,15 +152,16 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         chat_history_for_steps = await self._build_chat_history_for_step(
             goal=question, initial_plan=initial_plan, kernel=cloned_kernel, arguments=arguments, service=chat_completion
         )
-        prompt_execution_settings.tool_choice = "auto"
-        prompt_execution_settings.tools = get_tool_call_object(kernel, {"exclude_plugin": [self.service_id]})
+        prompt_execution_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(
+            auto_invoke=False, filters={"excluded_plugins": list(self.options.excluded_plugins)}
+        )
         for i in range(self.options.max_iterations):
             # sleep for a bit to avoid rate limiting
             if i > 0:
                 await asyncio.sleep(self.options.min_iteration_time_ms / 1000.0)  # convert ms to sec
             # For each step, request another completion to select a function for that step
             chat_history_for_steps.add_user_message(STEPWISE_USER_MESSAGE)
-            chat_result = await chat_completion.complete_chat(
+            chat_result = await chat_completion.get_chat_message_contents(
                 chat_history=chat_history_for_steps,
                 settings=prompt_execution_settings,
                 kernel=cloned_kernel,
@@ -159,27 +169,55 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             chat_result = chat_result[0]
             chat_history_for_steps.add_message(chat_result)
 
-            if not chat_result.tool_calls:
+            if not any(isinstance(item, FunctionCallContent) for item in chat_result.items):
                 chat_history_for_steps.add_user_message("That function call is invalid. Try something else!")
                 continue
 
             # Try to get the final answer out
-            if chat_result.tool_calls[0].function.name == USER_INTERACTION_SEND_FINAL_ANSWER:
-                args = chat_result.tool_calls[0].function.parse_arguments()
-                answer = args["answer"]
+            function_call_content = next(
+                (
+                    item
+                    for item in chat_result.items
+                    if isinstance(item, FunctionCallContent) and item.name == USER_INTERACTION_SEND_FINAL_ANSWER
+                ),
+                None,
+            )
+
+            if function_call_content is not None:
+                args = function_call_content.parse_arguments()
                 return FunctionCallingStepwisePlannerResult(
-                    final_answer=answer,
+                    final_answer=args.get("answer", ""),
                     chat_history=chat_history_for_steps,
                     iterations=i + 1,
                 )
 
-            try:
-                await chat_completion._process_tool_calls(
-                    result=chat_result, kernel=cloned_kernel, chat_history=chat_history_for_steps, arguments=arguments
-                )
-            except Exception as exc:
-                chat_history_for_steps.add_user_message(f"An error occurred during planner invocation: {exc}")
-                continue
+            for item in chat_result.items:
+                if not isinstance(item, FunctionCallContent):
+                    continue
+                try:
+                    context = await chat_completion._process_function_call(
+                        function_call=item,
+                        kernel=cloned_kernel,
+                        chat_history=chat_history_for_steps,
+                        arguments=arguments,
+                        function_call_count=1,
+                        request_index=0,
+                        function_call_behavior=prompt_execution_settings.function_choice_behavior,
+                    )
+                    if context is not None:
+                        # Only add the function result content to the chat history if the context is present
+                        # which means it wasn't added in the _process_function_call method
+                        frc = FunctionResultContent.from_function_call_content_and_result(
+                            function_call_content=item, result=context.function_result
+                        )
+                        chat_history_for_steps.add_message(message=frc.to_chat_message_content())
+                except Exception as exc:
+                    frc = FunctionResultContent.from_function_call_content_and_result(
+                        function_call_content=item,
+                        result=TextContent(text=f"An error occurred during planner invocation: {exc}"),
+                    )
+                    chat_history_for_steps.add_message(message=frc.to_chat_message_content())
+                    continue
 
         # We're done, but the model hasn't returned a final answer.
         return FunctionCallingStepwisePlannerResult(
@@ -196,8 +234,8 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         arguments: KernelArguments,
         service: OpenAIChatCompletion | AzureChatCompletion,
     ) -> ChatHistory:
-        """Build the chat history for the stepwise planner"""
-        chat_history = ChatHistory()
+        """Build the chat history for the stepwise planner."""
+        ChatHistory()
         additional_arguments = KernelArguments(
             goal=goal,
             initial_plan=initial_plan,
@@ -209,17 +247,18 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             )
         )
         prompt = await kernel_prompt_template.render(kernel, arguments)
-        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_type())
-        return chat_history
+        return ChatHistory.from_rendered_prompt(prompt)
 
     def _create_config_from_yaml(self, kernel: Kernel) -> "KernelFunction":
         """A temporary method to create a function from the yaml file.
+
         The yaml.safe_load will be replaced with the proper kernel
-        method later."""
+        method later.
+        """
         data = yaml.safe_load(self.generate_plan_yaml)
         prompt_template_config = PromptTemplateConfig(**data)
-        if "default" in prompt_template_config.execution_settings:
-            settings = prompt_template_config.execution_settings.pop("default")
+        if DEFAULT_SERVICE_NAME in prompt_template_config.execution_settings:
+            settings = prompt_template_config.execution_settings.pop(DEFAULT_SERVICE_NAME)
             prompt_template_config.execution_settings[self.service_id] = settings
         return kernel.add_function(
             function_name="create_plan",
@@ -234,11 +273,14 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         kernel: Kernel,
         arguments: KernelArguments,
     ) -> str:
-        """Generate the plan for the given question using the kernel"""
+        """Generate the plan for the given question using the kernel."""
         generate_plan_function = self._create_config_from_yaml(kernel)
-        functions_manual = get_function_calling_object(
-            kernel, {"exclude_function": [f"{self.service_id}", "sequential_planner-create_plan"]}
-        )
+        functions_manual = [
+            kernel_function_metadata_to_function_call_format(f)
+            for f in kernel.get_list_of_function_metadata(
+                {"excluded_functions": [f"{self.service_id}", "sequential_planner-create_plan"]}
+            )
+        ]
         generated_plan_args = KernelArguments(
             name_delimiter="-",
             available_functions=functions_manual,

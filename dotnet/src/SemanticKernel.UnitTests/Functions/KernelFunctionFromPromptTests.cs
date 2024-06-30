@@ -117,6 +117,60 @@ public class KernelFunctionFromPromptTests
     }
 
     [Fact]
+    public async Task ItUsesServiceIdWhenProvidedInMethodAsync()
+    {
+        // Arrange
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<ITextGenerationService>();
+        var fakeTextContent = new TextContent("llmResult");
+
+        mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
+        mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        Kernel kernel = builder.Build();
+
+        var func = kernel.CreateFunctionFromPrompt("my prompt", [new PromptExecutionSettings { ServiceId = "service2" }]);
+
+        // Act
+        await kernel.InvokeAsync(func);
+
+        // Assert
+        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("my prompt", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextGeneration2.Verify(a => a.GetTextContentsAsync("my prompt", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ItUsesChatServiceIdWhenProvidedInMethodAsync()
+    {
+        // Arrange
+        var mockTextGeneration1 = new Mock<ITextGenerationService>();
+        var mockTextGeneration2 = new Mock<IChatCompletionService>();
+        var fakeTextContent = new TextContent("llmResult");
+        var fakeChatContent = new ChatMessageContent(AuthorRole.User, "content");
+
+        mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
+        mockTextGeneration2.Setup(c => c.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeChatContent]);
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
+        builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
+        builder.Services.AddKeyedSingleton("service3", mockTextGeneration1.Object);
+        Kernel kernel = builder.Build();
+
+        var func = kernel.CreateFunctionFromPrompt("my prompt", [new PromptExecutionSettings { ServiceId = "service2" }]);
+
+        // Act
+        await kernel.InvokeAsync(func);
+
+        // Assert
+        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("my prompt", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextGeneration2.Verify(a => a.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
     {
         // Arrange
@@ -587,7 +641,7 @@ public class KernelFunctionFromPromptTests
         // Arrange
         var mockTextContent = new TextContent("Result");
         var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent]);
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
 
 #pragma warning disable CS0618 // Events are deprecated
         static void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
@@ -654,6 +708,197 @@ public class KernelFunctionFromPromptTests
         Assert.Equal("Test prompt as user message", messageContent.Content);
     }
 
+    [Theory]
+    [InlineData("semantic-kernel", "This is my prompt {{$input}}")]
+    [InlineData("handlebars", "This is my prompt {{input}}")]
+    public async Task ItUsesPromptWithEchoPromptTemplateFactoryAsync(string templateFormat, string template)
+    {
+        // Arrange
+        var mockTextGeneration = new Mock<ITextGenerationService>();
+        var fakeTextContent = new TextContent(template);
+
+        mockTextGeneration.Setup(c => c.GetTextContentsAsync(It.Is<string>(p => p.Equals(template, StringComparison.Ordinal)), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
+
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton("x", mockTextGeneration.Object);
+        Kernel kernel = builder.Build();
+
+        var promptConfig = new PromptTemplateConfig(template) { TemplateFormat = templateFormat };
+        var func = kernel.CreateFunctionFromPrompt(promptConfig, promptTemplateFactory: new EchoPromptTemplateFactory());
+        var args = new KernelArguments();
+        args["input"] = "Some Input";
+
+        // Act
+        var result = await kernel.InvokeAsync(func, args);
+
+        // Assert
+        mockTextGeneration.Verify(a => a.GetTextContentsAsync(template, It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        Assert.Equal(template, result.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithTextGenerationReturnsSingleResultAsync()
+    {
+        // Arrange
+        var expectedTextContent = new TextContent("text", "model-id", metadata: new Dictionary<string, object?> { { "key", "value" } });
+        var mockTextGenerationService = this.GetMockTextGenerationService(textContents: [expectedTextContent]);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => mockTextGenerationService.Object);
+        Kernel kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Prompt");
+
+        // Assert
+        Assert.Equal("text", result.GetValue<string>());
+        Assert.Equal("text", result.GetValue<KernelContent>()!.ToString());
+
+        var actualTextContent = result.GetValue<TextContent>();
+
+        Assert.NotNull(actualTextContent);
+        Assert.Equal(result.Metadata, actualTextContent.Metadata);
+
+        Assert.Equal(expectedTextContent.ModelId, actualTextContent.ModelId);
+        Assert.Equal(expectedTextContent.Text, actualTextContent.Text);
+        Assert.Equal(expectedTextContent.Metadata, actualTextContent.Metadata);
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithTextGenerationReturnsMultipleResultsAsync()
+    {
+        // Arrange
+        List<TextContent> expectedTextContents =
+        [
+            new TextContent("text1", "model-id", metadata: new Dictionary<string, object?> { { "key1", "value1" } }),
+            new TextContent("text2", "model-id", metadata: new Dictionary<string, object?> { { "key2", "value2" } }),
+        ];
+
+        var mockTextGenerationService = this.GetMockTextGenerationService(textContents: expectedTextContents);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<ITextGenerationService>((sp) => mockTextGenerationService.Object);
+        Kernel kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Prompt");
+
+        // Assert
+        Assert.Throws<InvalidCastException>(() => result.GetValue<string>());
+        Assert.Throws<InvalidCastException>(() => result.GetValue<KernelContent>());
+
+        var actualTextContents = result.GetValue<IReadOnlyList<TextContent>>();
+
+        Assert.NotNull(actualTextContents);
+        Assert.Null(result.Metadata);
+
+        Assert.Equal(expectedTextContents.Count, actualTextContents.Count);
+
+        for (var i = 0; i < expectedTextContents.Count; i++)
+        {
+            Assert.Equal(expectedTextContents[i].ModelId, actualTextContents[i].ModelId);
+            Assert.Equal(expectedTextContents[i].Text, actualTextContents[i].Text);
+            Assert.Equal(expectedTextContents[i].Metadata, actualTextContents[i].Metadata);
+        }
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithChatCompletionReturnsSingleResultAsync()
+    {
+        // Arrange
+        var expectedChatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "chat-message", "model-id", new Dictionary<string, object?> { { "key", "value" } });
+        var mockChatCompletionService = this.GetMockChatCompletionService(chatMessageContents: [expectedChatMessageContent]);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => mockChatCompletionService.Object);
+        Kernel kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Prompt");
+
+        // Assert
+        Assert.Equal("chat-message", result.GetValue<string>());
+        Assert.Equal("chat-message", result.GetValue<KernelContent>()!.ToString());
+
+        var actualChatMessageContent = result.GetValue<ChatMessageContent>();
+
+        Assert.NotNull(actualChatMessageContent);
+        Assert.Equal(result.Metadata, expectedChatMessageContent.Metadata);
+
+        Assert.Equal(expectedChatMessageContent.ModelId, actualChatMessageContent.ModelId);
+        Assert.Equal(expectedChatMessageContent.Role, actualChatMessageContent.Role);
+        Assert.Equal(expectedChatMessageContent.Content, actualChatMessageContent.Content);
+        Assert.Equal(expectedChatMessageContent.Metadata, actualChatMessageContent.Metadata);
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithChatCompletionReturnsMultipleResultsAsync()
+    {
+        // Arrange
+        List<ChatMessageContent> expectedChatMessageContents =
+        [
+            new ChatMessageContent(AuthorRole.Assistant, "chat-message1", "model-id", new Dictionary<string, object?> { { "key1", "value1" } }),
+            new ChatMessageContent(AuthorRole.Assistant, "chat-message2", "model-id", new Dictionary<string, object?> { { "key2", "value2" } })
+        ];
+
+        var mockChatCompletionService = this.GetMockChatCompletionService(chatMessageContents: expectedChatMessageContents);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => mockChatCompletionService.Object);
+        Kernel kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Prompt");
+
+        // Assert
+        Assert.Throws<InvalidCastException>(() => result.GetValue<string>());
+        Assert.Throws<InvalidCastException>(() => result.GetValue<KernelContent>());
+
+        var actualChatMessageContents = result.GetValue<IReadOnlyList<ChatMessageContent>>();
+
+        Assert.NotNull(actualChatMessageContents);
+        Assert.Null(result.Metadata);
+
+        Assert.Equal(expectedChatMessageContents.Count, actualChatMessageContents.Count);
+
+        for (var i = 0; i < expectedChatMessageContents.Count; i++)
+        {
+            Assert.Equal(expectedChatMessageContents[i].ModelId, actualChatMessageContents[i].ModelId);
+            Assert.Equal(expectedChatMessageContents[i].Role, actualChatMessageContents[i].Role);
+            Assert.Equal(expectedChatMessageContents[i].Content, actualChatMessageContents[i].Content);
+            Assert.Equal(expectedChatMessageContents[i].Metadata, actualChatMessageContents[i].Metadata);
+        }
+    }
+
+    [Fact]
+    public async Task InvokePromptAsyncWithPromptFunctionInTemplateAndSingleResultAsync()
+    {
+        // Arrange
+        var expectedChatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "chat-message", "model-id", new Dictionary<string, object?> { { "key", "value" } });
+        var mockChatCompletionService = this.GetMockChatCompletionService(chatMessageContents: [expectedChatMessageContent]);
+
+        KernelBuilder builder = new();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => mockChatCompletionService.Object);
+        Kernel kernel = builder.Build();
+
+        var innerFunction = KernelFunctionFactory.CreateFromPrompt("Prompt", functionName: "GetData");
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [innerFunction]);
+
+        kernel.Plugins.Add(plugin);
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Data: {{MyPlugin.GetData}}");
+
+        // Assert
+        Assert.True(mockChatCompletionService.Invocations is { Count: 2 });
+
+        var lastInvocation = mockChatCompletionService.Invocations[^1];
+        var lastInvocationChatHistory = lastInvocation!.Arguments[0] as ChatHistory;
+
+        Assert.NotNull(lastInvocationChatHistory);
+        Assert.Equal("Data: chat-message", lastInvocationChatHistory[0].Content);
+    }
+
     public enum KernelInvocationType
     {
         InvokePrompt,
@@ -695,6 +940,28 @@ public class KernelFunctionFromPromptTests
         {
             throw new NotImplementedException();
         }
+    }
+
+    private Mock<ITextGenerationService> GetMockTextGenerationService(IReadOnlyList<TextContent>? textContents = null)
+    {
+        var mockTextGenerationService = new Mock<ITextGenerationService>();
+
+        mockTextGenerationService
+            .Setup(l => l.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings?>(), It.IsAny<Kernel?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult<IReadOnlyList<TextContent>>(textContents ?? [new TextContent("Default result")]));
+
+        return mockTextGenerationService;
+    }
+
+    private Mock<IChatCompletionService> GetMockChatCompletionService(IReadOnlyList<ChatMessageContent>? chatMessageContents = null)
+    {
+        var mockChatCompletionService = new Mock<IChatCompletionService>();
+
+        mockChatCompletionService
+            .Setup(l => l.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings?>(), It.IsAny<Kernel?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult<IReadOnlyList<ChatMessageContent>>(chatMessageContents ?? [new(AuthorRole.Assistant, "Default result")]));
+
+        return mockChatCompletionService;
     }
 
     #endregion

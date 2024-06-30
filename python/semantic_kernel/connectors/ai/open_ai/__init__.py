@@ -1,13 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.connectors.ai.open_ai.contents import (
-    AzureChatMessageContent,
-    AzureStreamingChatMessageContent,
-    OpenAIChatMessageContent,
-    OpenAIStreamingChatMessageContent,
-)
-from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     ApiKeyAuthentication,
     AzureAISearchDataSource,
@@ -34,31 +26,25 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion impo
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
 
 __all__ = [
-    "OpenAIPromptExecutionSettings",
-    "OpenAIChatPromptExecutionSettings",
-    "OpenAITextPromptExecutionSettings",
-    "AzureChatPromptExecutionSettings",
-    "OpenAITextCompletion",
-    "OpenAIChatCompletion",
-    "OpenAITextEmbedding",
-    "AzureTextCompletion",
-    "AzureChatCompletion",
-    "AzureTextEmbedding",
-    "OpenAIChatMessageContent",
-    "OpenAIStreamingChatMessageContent",
-    "AzureChatMessageContent",
-    "AzureStreamingChatMessageContent",
+    "ApiKeyAuthentication",
     "AzureAISearchDataSource",
     "AzureAISearchDataSourceParameters",
+    "AzureChatCompletion",
+    "AzureChatPromptExecutionSettings",
     "AzureCosmosDBDataSource",
     "AzureCosmosDBDataSourceParameters",
     "AzureDataSourceParameters",
-    "ApiKeyAuthentication",
+    "AzureEmbeddingDependency",
+    "AzureTextCompletion",
+    "AzureTextEmbedding",
     "ConnectionStringAuthentication",
     "DataSourceFieldsMapping",
-    "ExtraBody",
-    "AzureEmbeddingDependency",
     "DataSourceFieldsMapping",
-    "FunctionCall",
-    "ToolCall",
+    "ExtraBody",
+    "OpenAIChatCompletion",
+    "OpenAIChatPromptExecutionSettings",
+    "OpenAIPromptExecutionSettings",
+    "OpenAITextCompletion",
+    "OpenAITextEmbedding",
+    "OpenAITextPromptExecutionSettings",
 ]

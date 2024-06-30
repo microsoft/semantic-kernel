@@ -137,7 +137,6 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
     /// same seed and parameters should return the same result. Determinism is not guaranteed.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("seed")]
     public long? Seed
     {
@@ -255,6 +254,56 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Whether to return log probabilities of the output tokens or not.
+    /// If true, returns the log probabilities of each output token returned in the `content` of `message`.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("logprobs")]
+    public bool? Logprobs
+    {
+        get => this._logprobs;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._logprobs = value;
+        }
+    }
+
+    /// <summary>
+    /// An integer specifying the number of most likely tokens to return at each token position, each with an associated log probability.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("top_logprobs")]
+    public int? TopLogprobs
+    {
+        get => this._topLogprobs;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._topLogprobs = value;
+        }
+    }
+
+    /// <summary>
+    /// An abstraction of additional settings for chat completion, see https://learn.microsoft.com/en-us/dotnet/api/azure.ai.openai.azurechatextensionsoptions.
+    /// This property is compatible only with Azure OpenAI.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonIgnore]
+    public AzureChatExtensionsOptions? AzureChatExtensionsOptions
+    {
+        get => this._azureChatExtensionsOptions;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._azureChatExtensionsOptions = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -295,7 +344,10 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
             ToolCallBehavior = this.ToolCallBehavior,
             User = this.User,
-            ChatSystemPrompt = this.ChatSystemPrompt
+            ChatSystemPrompt = this.ChatSystemPrompt,
+            Logprobs = this.Logprobs,
+            TopLogprobs = this.TopLogprobs,
+            AzureChatExtensionsOptions = this.AzureChatExtensionsOptions,
         };
     }
 
@@ -342,6 +394,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
+    [Obsolete("This method is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
     public static OpenAIPromptExecutionSettings FromExecutionSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         var settings = FromExecutionSettings(executionSettings, defaultMaxTokens);
@@ -371,6 +424,9 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private ToolCallBehavior? _toolCallBehavior;
     private string? _user;
     private string? _chatSystemPrompt;
+    private bool? _logprobs;
+    private int? _topLogprobs;
+    private AzureChatExtensionsOptions? _azureChatExtensionsOptions;
 
     #endregion
 }

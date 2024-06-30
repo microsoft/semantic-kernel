@@ -18,7 +18,7 @@ public class KernelFunctionExtensionsTests
         var testFunction = KernelFunctionFactory.CreateFromMethod(() => expectedValue, functionName: "Test");
 
         var kernel = new Kernel();
-        var resultValueInvokeSignature2 = await testFunction.InvokeAsync<object>(kernel, []);
+        var resultValueInvokeSignature2 = await testFunction.InvokeAsync<object>(kernel);
 
         Assert.Equal(expectedValue, resultValueInvokeSignature2);
     }

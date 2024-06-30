@@ -178,6 +178,7 @@ public sealed class PromptTemplateConfig
     /// </summary>
     /// <remarks>
     /// The settings dictionary is keyed by the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.
+    /// When setting, the service id of each <see cref="PromptExecutionSettings"/> must match the key in the dictionary.
     /// </remarks>
     [JsonPropertyName("execution_settings")]
     public Dictionary<string, PromptExecutionSettings> ExecutionSettings
@@ -186,9 +187,35 @@ public sealed class PromptTemplateConfig
         set
         {
             Verify.NotNull(value);
+
+            if (value.Count != 0)
+            {
+                foreach (var kv in value)
+                {
+                    // Ensures that if a service id is provided it must match the key in the dictionary.
+                    if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
+                    {
+                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
+                    }
+                }
+            }
+
             this._executionSettings = value;
         }
     }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to allow potentially dangerous content to be inserted into the prompt from functions.
+    /// </summary>
+    /// <remarks>
+    /// The default is false.
+    /// When set to true the return values from functions only are treated as safe content.
+    /// For prompts which are being used with a chat completion service this should be set to false to protect against prompt injection attacks.
+    /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    [JsonPropertyName("allow_dangerously_set_content")]
+    public bool AllowDangerouslySetContent { get; set; } = false;
 
     /// <summary>
     /// Gets the default execution settings from <see cref="ExecutionSettings"/>.
@@ -211,7 +238,13 @@ public sealed class PromptTemplateConfig
     {
         Verify.NotNull(settings);
 
-        var key = serviceId ?? PromptExecutionSettings.DefaultServiceId;
+        if (!string.IsNullOrWhiteSpace(serviceId) && !string.IsNullOrWhiteSpace(settings.ServiceId))
+        {
+            throw new ArgumentException($"Service id must not be passed when '{nameof(settings.ServiceId)}' is already provided in execution settings.", nameof(serviceId));
+        }
+
+        var key = serviceId ?? settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+
         if (this.ExecutionSettings.ContainsKey(key))
         {
             throw new ArgumentException($"Execution settings for service id '{key}' already exists.", nameof(serviceId));
