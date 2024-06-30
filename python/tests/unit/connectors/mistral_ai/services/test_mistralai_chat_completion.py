@@ -15,7 +15,7 @@ from semantic_kernel.kernel import Kernel
 
 
 @pytest.mark.asyncio
-async def test_complete_chat_stream(kernel: Kernel):
+async def test_complete_chat_stream_contents(kernel: Kernel):
     chat_history = MagicMock()
     settings = MagicMock()
     settings.number_of_responses = 1
@@ -29,6 +29,23 @@ async def test_complete_chat_stream(kernel: Kernel):
         chat_history, settings, kernel=kernel, arguments=arguments
     ):
         assert content is not None
+
+
+@pytest.mark.asyncio
+async def test_complete_chat_contents(kernel: Kernel):
+    chat_history = MagicMock()
+    settings = MagicMock()
+    settings.number_of_responses = 1
+    arguments = KernelArguments()
+
+    chat_completion_base = MistralAIChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key="", async_client=MagicMock(spec=MistralAsyncClient)
+    )
+
+    content = await chat_completion_base.get_chat_message_contents(
+        chat_history, settings, kernel=kernel, arguments=arguments
+    )
+    assert content is not None
 
 
 def test_mistral_ai_chat_completion_init(mistralai_unit_test_env) -> None:

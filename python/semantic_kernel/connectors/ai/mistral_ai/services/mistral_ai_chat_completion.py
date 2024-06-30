@@ -89,6 +89,8 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             async_client = MistralAsyncClient(
                 api_key=mistralai_settings.api_key.get_secret_value(),
             )
+        if not mistralai_settings.chat_model_id:
+            raise ServiceInitializationError("The MistralAI chat model ID is required.")
 
         super().__init__(
             async_client=async_client,
