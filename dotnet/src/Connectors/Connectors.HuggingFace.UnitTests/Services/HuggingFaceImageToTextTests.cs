@@ -29,9 +29,9 @@ public sealed class HuggingFaceImageToTextTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
 
         var expectedPayload = HuggingFaceTestHelper.GetTestResponseBytes("imagetotext_test_request.jpg");
-#pragma warning disable SKEXP0015
+#pragma warning disable SKEXP0010
         this._imageContentInput = new ImageContent(expectedPayload, "model") { MimeType = "image/jpeg" };
-#pragma warning restore SKEXP0015
+#pragma warning restore SKEXP0010
     }
 
     [Fact]
@@ -194,12 +194,13 @@ public sealed class HuggingFaceImageToTextTests : IDisposable
         var contents = await sut.GetTextContentsAsync(this._imageContentInput);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"
+            Content = new StringContent("""
             [
                 {
-                    ""generated_text"": ""Why the sky is blue? | Dept. of Science & Mathematics Education | University of Notre Dame\nWhen I was in high school I had a pretty simple conception of reality. I believed that if something made sense to me, then it must also be true. I believed that some problems were so fundamental that I couldn’t understand""
+                    "generated_text": "Why the sky is blue? | Dept. of Science & Mathematics Education | University of Notre Dame\nWhen I was in high school I had a pretty simple conception of reality. I believed that if something made sense to me, then it must also be true. I believed that some problems were so fundamental that I couldn’t understand"
                 }
-            ]",
+            ]
+            """,
             Encoding.UTF8,
             "application/json")
         };

@@ -33,12 +33,12 @@ public sealed class OpenAIFileServiceTests : IDisposable
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ConstructorWorksCorrectly(bool includeLoggerFactory)
+    public void ConstructorWorksCorrectlyForOpenAI(bool includeLoggerFactory)
     {
         // Arrange & Act
         var service = includeLoggerFactory ?
-            new OpenAIFileService("api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) :
-            new OpenAIFileService("api-key", "organization");
+            new OpenAIFileService("api-key", loggerFactory: this._mockLoggerFactory.Object) :
+            new OpenAIFileService("api-key");
 
         // Assert
         Assert.NotNull(service);
@@ -47,10 +47,26 @@ public sealed class OpenAIFileServiceTests : IDisposable
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task DeleteFileWorksCorrectlyAsync(bool isFailedRequest)
+    public void ConstructorWorksCorrectlyForAzure(bool includeLoggerFactory)
+    {
+        // Arrange & Act
+        var service = includeLoggerFactory ?
+            new OpenAIFileService(new Uri("http://localhost"), "api-key", loggerFactory: this._mockLoggerFactory.Object) :
+            new OpenAIFileService(new Uri("http://localhost"), "api-key");
+
+        // Assert
+        Assert.NotNull(service);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task DeleteFileWorksCorrectlyAsync(bool isAzure, bool isFailedRequest)
     {
         // Arrange
-        var service = new OpenAIFileService("api-key", "organization", this._httpClient);
+        var service = this.CreateFileService(isAzure);
         using var response =
             isFailedRequest ?
                 this.CreateFailedResponse() :
@@ -78,12 +94,14 @@ public sealed class OpenAIFileServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task GetFileWorksCorrectlyAsync(bool isFailedRequest)
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task GetFileWorksCorrectlyAsync(bool isAzure, bool isFailedRequest)
     {
         // Arrange
-        var service = new OpenAIFileService("api-key", "organization", this._httpClient);
+        var service = this.CreateFileService(isAzure);
         using var response =
             isFailedRequest ?
                 this.CreateFailedResponse() :
@@ -116,12 +134,14 @@ public sealed class OpenAIFileServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task GetFilesWorksCorrectlyAsync(bool isFailedRequest)
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task GetFilesWorksCorrectlyAsync(bool isAzure, bool isFailedRequest)
     {
         // Arrange
-        var service = new OpenAIFileService("api-key", "organization", this._httpClient);
+        var service = this.CreateFileService(isAzure);
         using var response =
             isFailedRequest ?
                 this.CreateFailedResponse() :
@@ -161,12 +181,14 @@ public sealed class OpenAIFileServiceTests : IDisposable
         }
     }
 
-    [Fact]
-    public async Task GetFileContentWorksCorrectlyAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetFileContentWorksCorrectlyAsync(bool isAzure)
     {
         // Arrange
         var data = BinaryData.FromString("Hello AI!");
-        var service = new OpenAIFileService("api-key", "organization", this._httpClient);
+        var service = this.CreateFileService(isAzure);
         this._messageHandlerStub.ResponseToReturn =
             new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
@@ -174,18 +196,20 @@ public sealed class OpenAIFileServiceTests : IDisposable
             };
 
         // Act & Assert
-        var content = service.GetFileContent("file-id");
-        var result = await content.GetContentAsync();
+        var content = await service.GetFileContentAsync("file-id");
+        var result = content.Data!.Value;
         Assert.Equal(data.ToArray(), result.ToArray());
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task UploadContentWorksCorrectlyAsync(bool isFailedRequest)
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task UploadContentWorksCorrectlyAsync(bool isAzure, bool isFailedRequest)
     {
         // Arrange
-        var service = new OpenAIFileService("api-key", "organization", this._httpClient);
+        var service = this.CreateFileService(isAzure);
         using var response =
             isFailedRequest ?
                 this.CreateFailedResponse() :
@@ -212,7 +236,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         stream.Position = 0;
 
-        var content = new BinaryContent(() => Task.FromResult<Stream>(stream));
+        var content = new BinaryContent(stream.ToArray(), "text/plain");
 
         // Act & Assert
         if (isFailedRequest)
@@ -228,6 +252,14 @@ public sealed class OpenAIFileServiceTests : IDisposable
             Assert.NotEqual(DateTime.MinValue, file.CreatedTimestamp);
             Assert.NotEqual(0, file.SizeInBytes);
         }
+    }
+
+    private OpenAIFileService CreateFileService(bool isAzure = false)
+    {
+        return
+            isAzure ?
+                new OpenAIFileService(new Uri("http://localhost"), "api-key", httpClient: this._httpClient) :
+                new OpenAIFileService("api-key", "organization", this._httpClient);
     }
 
     private HttpResponseMessage CreateSuccessResponse(string payload)

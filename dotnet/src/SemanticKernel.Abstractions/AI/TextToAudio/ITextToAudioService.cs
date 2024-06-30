@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.TextToAudio;
 /// <summary>
 /// Interface for text-to-audio services.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0001")]
 public interface ITextToAudioService : IAIService
 {
     /// <summary>

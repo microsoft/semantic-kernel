@@ -1,8 +1,14 @@
-from typing import Any, Dict, Optional
+# Copyright (c) Microsoft. All rights reserved.
 
-from pydantic import Field
+import logging
+from typing import Any
 
+from pydantic import Field, model_validator
+
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class PromptExecutionSettings(KernelBaseModel):
@@ -10,27 +16,52 @@ class PromptExecutionSettings(KernelBaseModel):
 
     Can be used by itself or as a base class for other prompt execution settings. The methods are used to create
     specific prompt execution settings objects based on the keys in the extension_data field, this way you can
-    create a generic PromptExecutionSettings object in your application, which get's mapped into the keys of the
+    create a generic PromptExecutionSettings object in your application, which gets mapped into the keys of the
     prompt execution settings that each services returns by using the service.get_prompt_execution_settings() method.
 
-    Parameters:
-        service_id (str): The service ID to use for the request.
-        extension_data (Dict[str, Any], optional): Any additional data to send with the request. Defaults to None.
-        kwargs (Any): Additional keyword arguments,
-            these are attempted to parse into the keys of the specific prompt execution settings.
+    Attributes:
+        service_id (str | None): The service ID to use for the request.
+        extension_data (Dict[str, Any]): Any additional data to send with the request.
+        function_choice_behavior (FunctionChoiceBehavior | None): The function choice behavior settings.
+
     Methods:
         prepare_settings_dict: Prepares the settings as a dictionary for sending to the AI service.
         update_from_prompt_execution_settings: Update the keys from another prompt execution settings object.
-        from_prompt_execution_settings: Create a prompt execution settings from another prompt execution settings object.
-    """  # noqa: E501
+        from_prompt_execution_settings: Create a prompt execution settings from another prompt execution settings.
+    """
 
-    service_id: Optional[str] = Field(None, min_length=1)
-    extension_data: Dict[str, Any] = Field(default_factory=dict)
+    service_id: str | None = Field(None, min_length=1)
+    extension_data: dict[str, Any] = Field(default_factory=dict)
+    function_choice_behavior: FunctionChoiceBehavior | None = Field(None, exclude=True)
 
-    def __init__(self, service_id: Optional[str] = None, **kwargs: Any):
+    @model_validator(mode="before")
+    @classmethod
+    def parse_function_choice_behavior(cls, data: dict[str, Any]) -> dict[str, Any] | None:
+        """Parse the function choice behavior data."""
+        if data:
+            function_choice_behavior_data = data.get("function_choice_behavior")
+            if function_choice_behavior_data:
+                if isinstance(function_choice_behavior_data, str):
+                    data["function_choice_behavior"] = FunctionChoiceBehavior.from_string(function_choice_behavior_data)
+                elif isinstance(function_choice_behavior_data, dict):
+                    data["function_choice_behavior"] = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
+            return data
+        return None
+
+    def __init__(self, service_id: str | None = None, **kwargs: Any):
+        """Initialize the prompt execution settings.
+
+        Args:
+            service_id (str): The service ID to use for the request.
+            kwargs (Any): Additional keyword arguments,
+                these are attempted to parse into the keys of the specific prompt execution settings.
+        """
         extension_data = kwargs.pop("extension_data", {})
+        function_choice_behavior = kwargs.pop("function_choice_behavior", None)
         extension_data.update(kwargs)
-        super().__init__(service_id=service_id, extension_data=extension_data)
+        super().__init__(
+            service_id=service_id, extension_data=extension_data, function_choice_behavior=function_choice_behavior
+        )
         self.unpack_extension_data()
 
     @property
@@ -38,7 +69,12 @@ class PromptExecutionSettings(KernelBaseModel):
         """Get the keys of the prompt execution settings."""
         return self.model_fields.keys()
 
-    def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
+    def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
+        """Prepare the settings as a dictionary for sending to the AI service.
+
+        By default, this method excludes the service_id and extension_data fields.
+        As well as any fields that are None.
+        """
         return self.model_dump(
             exclude={
                 "service_id",
@@ -63,6 +99,7 @@ class PromptExecutionSettings(KernelBaseModel):
         return cls(
             service_id=config.service_id,
             extension_data=config.extension_data,
+            function_choice_behavior=config.function_choice_behavior,
         )
 
     def unpack_extension_data(self) -> None:

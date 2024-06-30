@@ -19,17 +19,52 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// File service access for OpenAI: https://api.openai.com/v1/files
 /// </summary>
-[Experimental("SKEXP0015")]
+[Experimental("SKEXP0010")]
 public sealed class OpenAIFileService
 {
+    private const string HeaderNameAuthorization = "Authorization";
+    private const string HeaderNameAzureApiKey = "api-key";
+    private const string HeaderNameOpenAIAssistant = "OpenAI-Beta";
+    private const string HeaderNameUserAgent = "User-Agent";
+    private const string HeaderOpenAIValueAssistant = "assistants=v1";
     private const string OpenAIApiEndpoint = "https://api.openai.com/v1/";
     private const string OpenAIApiRouteFiles = "files";
+    private const string AzureOpenAIApiRouteFiles = "openai/files";
+    private const string AzureOpenAIDefaultVersion = "2024-02-15-preview";
 
     private readonly string _apiKey;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly Uri _serviceUri;
+    private readonly string? _version;
     private readonly string? _organization;
+
+    /// <summary>
+    /// Create an instance of the Azure OpenAI chat completion connector
+    /// </summary>
+    /// <param name="endpoint">Azure Endpoint URL</param>
+    /// <param name="apiKey">Azure OpenAI API Key</param>
+    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
+    /// <param name="version">The API version to target.</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public OpenAIFileService(
+        Uri endpoint,
+        string apiKey,
+        string? organization = null,
+        string? version = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(apiKey, nameof(apiKey));
+
+        this._apiKey = apiKey;
+        this._logger = loggerFactory?.CreateLogger(typeof(OpenAIFileService)) ?? NullLogger.Instance;
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        this._serviceUri = new Uri(this._httpClient.BaseAddress ?? endpoint, AzureOpenAIApiRouteFiles);
+        this._version = version ?? AzureOpenAIDefaultVersion;
+        this._organization = organization;
+    }
 
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
@@ -74,11 +109,28 @@ public sealed class OpenAIFileService
     /// <remarks>
     /// Files uploaded with <see cref="OpenAIFilePurpose.Assistants"/> do not support content retrieval.
     /// </remarks>
-    public BinaryContent GetFileContent(string id, CancellationToken cancellationToken = default)
+    public async Task<BinaryContent> GetFileContentAsync(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
+        var contentUri = $"{this._serviceUri}/{id}/content";
+        var (stream, mimetype) = await this.StreamGetRequestAsync(contentUri, cancellationToken).ConfigureAwait(false);
 
-        return new BinaryContent(() => this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken));
+        using (stream)
+        {
+            using var memoryStream = new MemoryStream();
+#if NETSTANDARD2_0
+            const int DefaultCopyBufferSize = 81920;
+            await stream.CopyToAsync(memoryStream, DefaultCopyBufferSize, cancellationToken).ConfigureAwait(false);
+#else
+            await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+#endif
+            return
+                new(memoryStream.ToArray(), mimetype)
+                {
+                    Metadata = new Dictionary<string, object?>() { { "id", id } },
+                    Uri = new Uri(contentUri),
+                };
+        }
     }
 
     /// <summary>
@@ -86,7 +138,7 @@ public sealed class OpenAIFileService
     /// </summary>
     /// <param name="id">The uploaded file identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Thet metadata associated with the specified file identifier.</returns>
+    /// <returns>The metadata associated with the specified file identifier.</returns>
     public async Task<OpenAIFileReference> GetFileAsync(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
@@ -100,12 +152,22 @@ public sealed class OpenAIFileService
     /// Retrieve metadata for all previously uploaded files.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Thet metadata of all uploaded files.</returns>
-    public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default)
-    {
-        var result = await this.ExecuteGetRequestAsync<FileInfoList>(this._serviceUri.ToString(), cancellationToken).ConfigureAwait(false);
+    /// <returns>The metadata of all uploaded files.</returns>
+    public Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default)
+        => this.GetFilesAsync(null, cancellationToken);
 
-        return result.Data.Select(r => this.ConvertFileReference(r)).ToArray();
+    /// <summary>
+    /// Retrieve metadata for previously uploaded files
+    /// </summary>
+    /// <param name="filePurpose">The purpose of the files by which to filter.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The metadata of all uploaded files.</returns>
+    public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(OpenAIFilePurpose? filePurpose, CancellationToken cancellationToken = default)
+    {
+        var serviceUri = filePurpose.HasValue && !string.IsNullOrEmpty(filePurpose.Value.Label) ? $"{this._serviceUri}?purpose={filePurpose}" : this._serviceUri.ToString();
+        var result = await this.ExecuteGetRequestAsync<FileInfoList>(serviceUri, cancellationToken).ConfigureAwait(false);
+
+        return result.Data.Select(this.ConvertFileReference).ToArray();
     }
 
     /// <summary>
@@ -118,11 +180,11 @@ public sealed class OpenAIFileService
     public async Task<OpenAIFileReference> UploadContentAsync(BinaryContent fileContent, OpenAIFileUploadExecutionSettings settings, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(settings, nameof(settings));
+        Verify.NotNull(fileContent.Data, nameof(fileContent.Data));
 
         using var formData = new MultipartFormDataContent();
-        using var contentPurpose = new StringContent(this.ConvertPurpose(settings.Purpose));
-        using var contentStream = await fileContent.GetStreamAsync().ConfigureAwait(false);
-        using var contentFile = new StreamContent(contentStream);
+        using var contentPurpose = new StringContent(settings.Purpose.Label);
+        using var contentFile = new ByteArrayContent(fileContent.Data.Value.ToArray());
         formData.Add(contentPurpose, "purpose");
         formData.Add(contentFile, "file", settings.FileName);
 
@@ -133,14 +195,14 @@ public sealed class OpenAIFileService
 
     private async Task ExecuteDeleteRequestAsync(string url, CancellationToken cancellationToken)
     {
-        using var request = HttpRequest.CreateDeleteRequest(url);
+        using var request = HttpRequest.CreateDeleteRequest(this.PrepareUrl(url));
         this.AddRequestHeaders(request);
         using var _ = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<TModel> ExecuteGetRequestAsync<TModel>(string url, CancellationToken cancellationToken)
     {
-        using var request = HttpRequest.CreateGetRequest(url);
+        using var request = HttpRequest.CreateGetRequest(this.PrepareUrl(url));
         this.AddRequestHeaders(request);
         using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -156,17 +218,18 @@ public sealed class OpenAIFileService
             };
     }
 
-    private async Task<Stream> StreamGetRequestAsync(string url, CancellationToken cancellationToken)
+    private async Task<(Stream Stream, string? MimeType)> StreamGetRequestAsync(string url, CancellationToken cancellationToken)
     {
-        using var request = HttpRequest.CreateGetRequest(url);
+        using var request = HttpRequest.CreateGetRequest(this.PrepareUrl(url));
         this.AddRequestHeaders(request);
         var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         try
         {
             return
-                new HttpResponseStream(
+                (new HttpResponseStream(
                     await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false),
-                    response);
+                    response),
+                    response.Content.Headers.ContentType?.MediaType);
         }
         catch
         {
@@ -177,7 +240,7 @@ public sealed class OpenAIFileService
 
     private async Task<TModel> ExecutePostRequestAsync<TModel>(string url, HttpContent payload, CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = payload };
+        using var request = new HttpRequestMessage(HttpMethod.Post, this.PrepareUrl(url)) { Content = payload };
         this.AddRequestHeaders(request);
         using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -193,11 +256,31 @@ public sealed class OpenAIFileService
             };
     }
 
+    private string PrepareUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(this._version))
+        {
+            return url;
+        }
+
+        return $"{url}?api-version={this._version}";
+    }
+
     private void AddRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
+        request.Headers.Add(HeaderNameUserAgent, HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIFileService)));
+
+        if (!string.IsNullOrWhiteSpace(this._version))
+        {
+            // Azure OpenAI
+            request.Headers.Add(HeaderNameAzureApiKey, this._apiKey);
+            return;
+        }
+
+        // OpenAI
+        request.Headers.Add(HeaderNameAuthorization, $"Bearer {this._apiKey}");
 
         if (!string.IsNullOrEmpty(this._organization))
         {
@@ -214,36 +297,20 @@ public sealed class OpenAIFileService
                 FileName = result.FileName,
                 CreatedTimestamp = DateTimeOffset.FromUnixTimeSeconds(result.CreatedAt).UtcDateTime,
                 SizeInBytes = result.Bytes ?? 0,
-                Purpose = this.ConvertPurpose(result.Purpose),
+                Purpose = new(result.Purpose),
             };
     }
 
-    private OpenAIFilePurpose ConvertPurpose(string purpose) =>
-        purpose.ToUpperInvariant() switch
-        {
-            "ASSISTANTS" => OpenAIFilePurpose.Assistants,
-            "FINE-TUNE" => OpenAIFilePurpose.FineTune,
-            _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}."),
-        };
-
-    private string ConvertPurpose(OpenAIFilePurpose purpose) =>
-        purpose switch
-        {
-            OpenAIFilePurpose.Assistants => "assistants",
-            OpenAIFilePurpose.FineTune => "fine-tune",
-            _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}."),
-        };
-
-    private class FileInfoList
+    private sealed class FileInfoList
     {
         [JsonPropertyName("data")]
-        public FileInfo[] Data { get; set; } = Array.Empty<FileInfo>();
+        public FileInfo[] Data { get; set; } = [];
 
         [JsonPropertyName("object")]
         public string Object { get; set; } = "list";
     }
 
-    private class FileInfo
+    private sealed class FileInfo
     {
         [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;

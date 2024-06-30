@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 
 namespace Microsoft.SemanticKernel;
 
@@ -11,14 +12,22 @@ namespace Microsoft.SemanticKernel;
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
 [JsonDerivedType(typeof(ImageContent), typeDiscriminator: nameof(ImageContent))]
-#pragma warning disable SKEXP0015
+[JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: nameof(FunctionCallContent))]
+[JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: nameof(FunctionResultContent))]
 [JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
-#pragma warning restore SKEXP0015
-#pragma warning disable SKEXP0005
 [JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
-#pragma warning restore SKEXP0005
+#pragma warning disable SKEXP0110
+[JsonDerivedType(typeof(AnnotationContent), typeDiscriminator: nameof(AnnotationContent))]
+[JsonDerivedType(typeof(FileReferenceContent), typeDiscriminator: nameof(FileReferenceContent))]
+#pragma warning disable SKEXP0110
 public abstract class KernelContent
 {
+    /// <summary>
+    /// MIME type of the content.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MimeType { get; set; }
+
     /// <summary>
     /// The inner content representation. Use this to bypass the current abstraction.
     /// </summary>
@@ -31,17 +40,14 @@ public abstract class KernelContent
     /// <summary>
     /// The model ID used to generate the content.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ModelId { get; set; }
 
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
-
-    /// <summary>
-    /// MIME type of the content.
-    /// </summary>
-    public string? MimeType { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.

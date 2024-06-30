@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using Json.Schema;
 
@@ -32,11 +33,11 @@ public static class RestApiOperationResponseExtensions
             return true;
         }
 
-        return response.ContentType switch
+        return response.ContentType! switch
         {
-            "application/json" => ValidateJson(response),
-            "application/xml" => ValidateXml(response),
-            "text/plain" or "text/html" => ValidateTextHtml(response),
+            var ct when ct.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) => ValidateJson(response),
+            var ct when ct.StartsWith("application/xml", StringComparison.OrdinalIgnoreCase) => ValidateXml(response),
+            var ct when ct.StartsWith("text/plain", StringComparison.OrdinalIgnoreCase) || ct.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) => ValidateTextHtml(response),
             _ => true,
         };
     }
@@ -46,7 +47,7 @@ public static class RestApiOperationResponseExtensions
         try
         {
             var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
-            using var contentDoc = JsonDocument.Parse(response.Content.ToString());
+            using var contentDoc = JsonDocument.Parse(response.Content?.ToString() ?? string.Empty);
             var result = jsonSchema.Evaluate(contentDoc);
             return result.IsValid;
         }
@@ -56,7 +57,7 @@ public static class RestApiOperationResponseExtensions
         }
     }
 
-    private static bool ValidateXml(RestApiOperationResponse response)
+    private static bool ValidateXml(RestApiOperationResponse _)
     {
         // todo -- implement
         return true;

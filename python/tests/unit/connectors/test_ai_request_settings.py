@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.connectors.ai import (
-    PromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai import PromptExecutionSettings
 
 
 def test_default_complete_prompt_execution_settings():

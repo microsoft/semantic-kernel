@@ -6,17 +6,17 @@ using System.Collections.ObjectModel;
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
-/// $$$
+/// Describes the message content type
 /// </summary>
 public enum ChatMessageType
 {
     /// <summary>
-    /// $$$
+    /// A message with text content
     /// </summary>
     Text,
 
     /// <summary>
-    /// $$$
+    /// A message that references an image by file-id
     /// </summary>
     Image,
 }
@@ -37,7 +37,7 @@ public interface IChatMessage
     string? AgentId { get; }
 
     /// <summary>
-    /// $$$
+    /// Describes the content-type of the message
     /// </summary>
     ChatMessageType ContentType { get; }
 

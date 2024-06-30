@@ -1,54 +1,40 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import ValidationError
+from google.generativeai.types import ChatResponse, MessageDict
 
-if sys.version_info >= (3, 9):
-    from google.generativeai.types import ChatResponse, MessageDict
-
-    from semantic_kernel.connectors.ai.google_palm import (
-        GooglePalmChatPromptExecutionSettings,
-    )
-    from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
-        GooglePalmChatCompletion,
-    )
-    from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.connectors.ai.google_palm import GooglePalmChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import GooglePalmChatCompletion
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
-pytestmark = pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater")
-
-
-def test_google_palm_chat_completion_init() -> None:
+def test_google_palm_chat_completion_init(google_palm_unit_test_env) -> None:
     ai_model_id = "test_model_id"
-    api_key = "test_api_key"
 
-    gp_chat_completion = GooglePalmChatCompletion(
-        ai_model_id=ai_model_id,
-        api_key=api_key,
-    )
+    gp_chat_completion = GooglePalmChatCompletion(ai_model_id=ai_model_id)
 
     assert gp_chat_completion.ai_model_id == ai_model_id
-    assert gp_chat_completion.api_key == api_key
+    assert gp_chat_completion.api_key == google_palm_unit_test_env["GOOGLE_PALM_API_KEY"]
     assert isinstance(gp_chat_completion, GooglePalmChatCompletion)
 
 
-def test_google_palm_chat_completion_init_with_empty_api_key() -> None:
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_PALM_API_KEY"]], indirect=True)
+def test_google_palm_chat_completion_init_with_empty_api_key(google_palm_unit_test_env) -> None:
     ai_model_id = "test_model_id"
-    # api_key = "test_api_key"
 
-    with pytest.raises(ValidationError, match="api_key"):
+    with pytest.raises(ServiceInitializationError):
         GooglePalmChatCompletion(
             ai_model_id=ai_model_id,
-            api_key="",
+            env_file_path="test.env",
         )
 
 
 @pytest.mark.asyncio
-async def test_google_palm_text_completion_complete_chat_call_with_parameters() -> None:
+async def test_google_palm_text_completion_complete_chat_call_with_parameters(google_palm_unit_test_env) -> None:
     class MockChatResponse(ChatResponse):
         def last(self):
             return ""
@@ -69,15 +55,13 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
         new=mock_gp,
     ):
         ai_model_id = "test_model_id"
-        api_key = "test_api_key"
         chats = ChatHistory()
         chats.add_user_message("Hello word")
         gp_chat_completion = GooglePalmChatCompletion(
             ai_model_id=ai_model_id,
-            api_key=api_key,
         )
         settings = GooglePalmChatPromptExecutionSettings()
-        response = await gp_chat_completion.complete_chat(chats, settings)
+        response = await gp_chat_completion.get_chat_message_contents(chats, settings)
 
         assert isinstance(response[0].content, str) and len(response) > 0
         print(mock_gp.chat)
@@ -87,5 +71,5 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
             top_p=settings.top_p,
             top_k=settings.top_k,
             candidate_count=settings.candidate_count,
-            messages=gp_chat_completion._prepare_chat_history_for_request(chats),
+            messages=[message.to_dict(role_key="author") for message in chats.messages],
         )
