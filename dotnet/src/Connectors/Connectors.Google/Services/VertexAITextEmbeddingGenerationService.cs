@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// </summary>
 public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
-    private readonly Dictionary<string, object?> _attributesInternal = new();
+    private readonly Dictionary<string, object?> _attributesInternal = [];
     private readonly VertexAIEmbeddingClient _embeddingClient;
 
     /// <summary>
@@ -28,6 +28,7 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
     /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The location to process the request.</param>
     /// <param name="projectId">Your Project Id.</param>
+    /// <param name="apiVersion">Version of the Vertex API</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public VertexAITextEmbeddingGenerationService(
@@ -35,9 +36,10 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
         string bearerKey,
         string location,
         string projectId,
+        VertexAIVersion apiVersion = VertexAIVersion.V1,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : this(modelId, () => Task.FromResult(bearerKey), location, projectId, httpClient, loggerFactory)
+        : this(modelId, () => new ValueTask<string>(bearerKey), location, projectId, apiVersion, httpClient, loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(bearerKey);
     }
@@ -49,6 +51,7 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
     /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
     /// <param name="location">The location to process the request.</param>
     /// <param name="projectId">Your Project Id.</param>
+    /// <param name="apiVersion">Version of the Vertex API</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     /// <remarks>
@@ -58,9 +61,10 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
     /// </remarks>
     public VertexAITextEmbeddingGenerationService(
         string modelId,
-        Func<Task<string>> bearerTokenProvider,
+        Func<ValueTask<string>> bearerTokenProvider,
         string location,
         string projectId,
+        VertexAIVersion apiVersion = VertexAIVersion.V1,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -77,6 +81,7 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
             bearerTokenProvider: bearerTokenProvider,
             location: location,
             projectId: projectId,
+            apiVersion: apiVersion,
             logger: loggerFactory?.CreateLogger(typeof(VertexAITextEmbeddingGenerationService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }

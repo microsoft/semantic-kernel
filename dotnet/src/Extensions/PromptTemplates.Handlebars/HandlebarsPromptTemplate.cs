@@ -2,6 +2,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers;
 using Microsoft.Extensions.Logging;
@@ -25,9 +26,11 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// Constructor for Handlebars PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
+    /// <param name="allowDangerouslySetContent">Flag indicating whether to allow potentially dangerous content to be inserted into the prompt</param>
     /// <param name="options">Handlebars prompt template options</param>
-    public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, HandlebarsPromptTemplateOptions? options = null)
+    internal HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, bool allowDangerouslySetContent = false, HandlebarsPromptTemplateOptions? options = null)
     {
+        this._allowDangerouslySetContent = allowDangerouslySetContent;
         this._loggerFactory ??= NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
         this._promptModel = promptConfig;
@@ -56,6 +59,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
+    private readonly bool _allowDangerouslySetContent;
 
     /// <summary>
     /// Registers kernel, system, and any custom helpers.
@@ -67,7 +71,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         CancellationToken cancellationToken = default)
     {
         // Add SK's built-in system helpers
-        KernelSystemHelpers.Register(handlebarsInstance, kernel, arguments, this._options);
+        KernelSystemHelpers.Register(handlebarsInstance, kernel, arguments);
 
         // Add built-in helpers from the HandlebarsDotNet library
         HandlebarsHelpers.Register(handlebarsInstance, optionsCallback: options =>
@@ -79,7 +83,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         });
 
         // Add helpers for kernel functions
-        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator, cancellationToken);
+        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._promptModel, this._allowDangerouslySetContent, this._options.PrefixSeparator, cancellationToken);
 
         // Add any custom helpers
         this._options.RegisterCustomHelpers?.Invoke(
@@ -94,11 +98,11 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// </summary>
     private KernelArguments GetVariables(KernelArguments? arguments)
     {
-        KernelArguments result = new();
+        KernelArguments result = [];
 
         foreach (var p in this._promptModel.InputVariables)
         {
-            if (p.Default == null || (p.Default is string stringDefault && stringDefault.Length == 0))
+            if (p.Default is null || (p.Default is string stringDefault && stringDefault.Length == 0))
             {
                 continue;
             }
@@ -112,12 +116,37 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
             {
                 if (kvp.Value is not null)
                 {
-                    result[kvp.Key] = kvp.Value;
+                    var value = kvp.Value;
+
+                    if (this.ShouldEncodeTags(this._promptModel, kvp.Key, kvp.Value))
+                    {
+                        value = HttpUtility.HtmlEncode(value.ToString());
+                    }
+
+                    result[kvp.Key] = value;
                 }
             }
         }
 
         return result;
+    }
+
+    private bool ShouldEncodeTags(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
+    {
+        if (propertyValue is null || propertyValue is not string || this._allowDangerouslySetContent)
+        {
+            return false;
+        }
+
+        foreach (var inputVariable in promptTemplateConfig.InputVariables)
+        {
+            if (inputVariable.Name == propertyName)
+            {
+                return !inputVariable.AllowDangerouslySetContent;
+            }
+        }
+
+        return true;
     }
 
     #endregion

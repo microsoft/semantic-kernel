@@ -6,24 +6,17 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAITextToAudioTests
 {
-    private readonly IConfigurationRoot _configuration;
-
-    public OpenAITextToAudioTests(ITestOutputHelper output)
-    {
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAITextToAudioTests>()
-            .Build();
-    }
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddUserSecrets<OpenAITextToAudioTests>()
+        .Build();
 
     [Fact(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     public async Task OpenAITextToAudioTestAsync()
@@ -42,8 +35,8 @@ public sealed class OpenAITextToAudioTests
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
 
         // Assert
-        Assert.NotNull(result.Data);
-        Assert.False(result.Data!.Value.IsEmpty);
+        var audioData = result.Data!.Value;
+        Assert.False(audioData.IsEmpty);
     }
 
     [Fact]
@@ -66,7 +59,7 @@ public sealed class OpenAITextToAudioTests
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
 
         // Assert
-        Assert.NotNull(result.Data);
-        Assert.False(result.Data!.Value.IsEmpty);
+        var audioData = result.Data!.Value;
+        Assert.False(audioData.IsEmpty);
     }
 }

@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
@@ -30,7 +31,7 @@ public static class IAgentExtensions
         IAgentThread thread = await agent.NewThreadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await foreach (var message in thread.InvokeAsync(agent, input, arguments, fileIds, cancellationToken))
+            await foreach (var message in thread.InvokeAsync(agent, input, arguments, fileIds, cancellationToken).ConfigureAwait(false))
             {
                 yield return message;
             }

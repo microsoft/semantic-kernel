@@ -40,6 +40,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         // Assert
         Assert.NotNull(service);
         Assert.Equal("organization", service.Attributes["Organization"]);
+        Assert.False(service.Attributes.ContainsKey("ModelId"));
     }
 
     [Theory]
@@ -51,17 +52,20 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public async Task GenerateImageWorksCorrectlyAsync(int width, int height, bool expectedException)
     {
         // Arrange
-        var service = new OpenAITextToImageService("api-key", "organization", this._httpClient);
+        var service = new OpenAITextToImageService("api-key", "organization", "dall-e-3", this._httpClient);
+        Assert.Equal("dall-e-3", service.Attributes["ModelId"]);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"{
-                                            ""created"": 1702575371,
-                                            ""data"": [
+            Content = new StringContent("""
+                                        {
+                                            "created": 1702575371,
+                                            "data": [
                                                 {
-                                                    ""url"": ""https://image-url""
+                                                    "url": "https://image-url"
                                                 }
                                             ]
-                                        }", Encoding.UTF8, "application/json")
+                                        }
+                                        """, Encoding.UTF8, "application/json")
         };
 
         // Act & Assert

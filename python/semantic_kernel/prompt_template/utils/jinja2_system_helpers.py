@@ -2,36 +2,39 @@
 
 import logging
 import re
+from collections.abc import Callable
 from enum import Enum
-from typing import Callable, Dict
-
-from semantic_kernel.contents.chat_history import ROOT_KEY_MESSAGE, ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _messages(chat_history):
+    from semantic_kernel.contents.chat_history import ChatHistory
+
     if not isinstance(chat_history, ChatHistory):
         return ""
-    return str(chat_history)
+    return chat_history.to_prompt()
 
 
 def _message_to_prompt(context):
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
     if isinstance(context, ChatMessageContent):
-        return str(context.to_prompt(ROOT_KEY_MESSAGE))
+        return str(context.to_prompt())
     return str(context)
 
 
 def _message(item):
-    start = f"<{ROOT_KEY_MESSAGE}"
+    from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
+
+    start = f"<{CHAT_MESSAGE_CONTENT_TAG}"
     role = item.role
     content = item.content
     if isinstance(role, Enum):
         role = role.value
     start += f' role="{role}"'
     start += ">"
-    end = f"</{ROOT_KEY_MESSAGE}>"
+    end = f"</{CHAT_MESSAGE_CONTENT_TAG}>"
     return f"{start}{content}{end}"
 
 
@@ -58,7 +61,6 @@ def _double_close():
 
 
 def _array(*args, **kwargs):
-    print(f"Received args: {args}")
     return list(args)
 
 
@@ -74,7 +76,7 @@ def _snake_case(*args, **kwargs):
     return arg.lower()
 
 
-JINJA2_SYSTEM_HELPERS: Dict[str, Callable] = {
+JINJA2_SYSTEM_HELPERS: dict[str, Callable] = {
     "get": _safe_get_wrapper,
     "double_open": _double_open,
     "doubleOpen": _double_open,

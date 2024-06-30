@@ -20,7 +20,11 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     [Experimental("SKEXP0001")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? AuthorName { get; set; }
+    public string? AuthorName
+    {
+        get => this._authorName;
+        set => this._authorName = string.IsNullOrWhiteSpace(value) ? null : value;
+    }
 
     /// <summary>
     /// Role of the author of the message
@@ -41,18 +45,12 @@ public class ChatMessageContent : KernelContent
         }
         set
         {
-            if (value == null)
-            {
-                return;
-            }
-
             var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
             if (textContent is not null)
             {
                 textContent.Text = value;
-                textContent.Encoding = this.Encoding;
             }
-            else
+            else if (value is not null)
             {
                 this.Items.Add(new TextContent(
                     text: value,
@@ -71,7 +69,7 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     public ChatMessageContentItemCollection Items
     {
-        get => this._items ??= new ChatMessageContentItemCollection();
+        get => this._items ??= [];
         set => this._items = value;
     }
 
@@ -177,4 +175,5 @@ public class ChatMessageContent : KernelContent
 
     private ChatMessageContentItemCollection? _items;
     private Encoding _encoding;
+    private string? _authorName;
 }

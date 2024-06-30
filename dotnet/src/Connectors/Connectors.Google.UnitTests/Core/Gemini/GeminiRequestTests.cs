@@ -43,10 +43,10 @@ public sealed class GeminiRequestTests
         var prompt = "prompt-example";
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            SafetySettings = new List<GeminiSafetySetting>
-            {
+            SafetySettings =
+            [
                 new(GeminiSafetyCategory.Derogatory, GeminiSafetyThreshold.BlockNone)
-            }
+            ]
         };
 
         // Act
@@ -107,10 +107,10 @@ public sealed class GeminiRequestTests
         chatHistory.AddUserMessage("user-message2");
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            SafetySettings = new List<GeminiSafetySetting>
-            {
+            SafetySettings =
+            [
                 new(GeminiSafetyCategory.Derogatory, GeminiSafetyThreshold.BlockNone)
-            }
+            ]
         };
 
         // Act
@@ -177,7 +177,7 @@ public sealed class GeminiRequestTests
         chatHistory.AddUserMessage(contentItems:
             [new ImageContent(new Uri("https://example-image.com/")) { MimeType = "image/png" }]);
         chatHistory.AddUserMessage(contentItems:
-            [new ImageContent(imageAsBytes) { MimeType = "image/png" }]);
+            [new ImageContent(imageAsBytes, "image/png")]);
         var executionSettings = new GeminiPromptExecutionSettings();
 
         // Act
@@ -230,7 +230,7 @@ public sealed class GeminiRequestTests
         Assert.Single(request.Contents,
             c => c.Role == AuthorRole.Tool);
         Assert.Single(request.Contents,
-            c => c.Parts![0].FunctionResponse != null);
+            c => c.Parts![0].FunctionResponse is not null);
         Assert.Single(request.Contents,
             c => string.Equals(c.Parts![0].FunctionResponse!.FunctionName, toolCallResult.FullyQualifiedName, StringComparison.Ordinal));
         var args = request.Contents[0].Parts![0].FunctionResponse!.Response.Arguments;
@@ -325,9 +325,6 @@ public sealed class GeminiRequestTests
             c => Equals(message.Role, c.Role));
     }
 
-    private sealed class DummyContent : KernelContent
-    {
-        public DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null)
-            : base(innerContent, modelId, metadata) { }
-    }
+    private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
+        KernelContent(innerContent, modelId, metadata);
 }

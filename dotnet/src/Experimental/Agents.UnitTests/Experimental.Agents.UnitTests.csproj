@@ -1,14 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Experimental.Agents.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Experimental.Agents.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CS1591;SKEXP0101</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;SKEXP0101</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Agents\Experimental.Agents.csproj" />

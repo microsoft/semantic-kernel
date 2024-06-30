@@ -9,24 +9,17 @@ using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class OpenAIAudioToTextTests
+public sealed class OpenAIAudioToTextTests()
 {
-    private readonly IConfigurationRoot _configuration;
-
-    public OpenAIAudioToTextTests(ITestOutputHelper output)
-    {
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAIAudioToTextTests>()
-            .Build();
-    }
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddUserSecrets<OpenAIAudioToTextTests>()
+        .Build();
 
     [Fact(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     public async Task OpenAIAudioToTextTestAsync()
@@ -47,7 +40,7 @@ public sealed class OpenAIAudioToTextTests
         var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioContent(audioData), new OpenAIAudioToTextExecutionSettings(Filename));
+        var result = await service.GetTextContentAsync(new AudioContent(audioData, mimeType: "audio/wav"), new OpenAIAudioToTextExecutionSettings(Filename));
 
         // Assert
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
@@ -75,7 +68,7 @@ public sealed class OpenAIAudioToTextTests
         var audioData = await BinaryData.FromStreamAsync(audio);
 
         // Act
-        var result = await service.GetTextContentAsync(new AudioContent(audioData), new OpenAIAudioToTextExecutionSettings(Filename));
+        var result = await service.GetTextContentAsync(new AudioContent(audioData, mimeType: "audio/wav"), new OpenAIAudioToTextExecutionSettings(Filename));
 
         // Assert
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);

@@ -32,7 +32,7 @@ public abstract class GeminiToolCallBehavior
     /// support, where the model can request multiple tools in a single response, it is significantly
     /// less likely that this limit is reached, as most of the time only a single request is needed.
     /// </remarks>
-    private const int DefaultMaximumAutoInvokeAttempts = 5;
+    private const int DefaultMaximumAutoInvokeAttempts = 128;
 
     /// <summary>
     /// Gets an instance that will provide all of the <see cref="Kernel"/>'s plugins' function information.
@@ -176,14 +176,9 @@ public abstract class GeminiToolCallBehavior
     /// <summary>
     /// Represents a <see cref="GeminiToolCallBehavior"/> that provides a specified list of functions to the model.
     /// </summary>
-    internal sealed class EnabledFunctions : GeminiToolCallBehavior
+    internal sealed class EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke) : GeminiToolCallBehavior(autoInvoke)
     {
-        private readonly GeminiFunction[] _functions;
-
-        public EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke) : base(autoInvoke)
-        {
-            this._functions = functions.ToArray();
-        }
+        private readonly GeminiFunction[] _functions = functions.ToArray();
 
         public override string ToString() =>
             $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): " +

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics.Tensors;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FastBertTokenizer;
@@ -16,7 +17,6 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Connectors.Onnx;
 
-#pragma warning disable CA1849, VSTHRD103 // Call async methods when in an async method
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
@@ -29,7 +29,7 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
     /// <summary>Reusable options instance passed to OnnxSession.Run.</summary>
     private static readonly RunOptions s_runOptions = new();
     /// <summary>Reusable input name columns passed to OnnxSession.Run.</summary>
-    private static readonly string[] s_inputNames = new[] { "input_ids", "attention_mask", "token_type_ids" };
+    private static readonly string[] s_inputNames = ["input_ids", "attention_mask", "token_type_ids"];
 
     /// <summary>The ONNX session instance associated with this service. This may be used concurrently.</summary>
     private readonly InferenceSession _onnxSession;
@@ -139,7 +139,7 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
         var modelBytes = new MemoryStream();
         if (async)
         {
-            await onnxModelStream.CopyToAsync(modelBytes, cancellationToken).ConfigureAwait(false);
+            await onnxModelStream.CopyToAsync(modelBytes, 81920, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -150,7 +150,7 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
         int dimensions = onnxSession.OutputMetadata.First().Value.Dimensions.Last();
 
         var tokenizer = new BertTokenizer();
-        using (StreamReader vocabReader = new(vocabStream, leaveOpen: true))
+        using (StreamReader vocabReader = new(vocabStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true))
         {
             if (async)
             {

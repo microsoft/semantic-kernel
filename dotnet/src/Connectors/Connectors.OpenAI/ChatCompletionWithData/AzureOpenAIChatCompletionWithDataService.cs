@@ -27,6 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
 [Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionService, ITextGenerationService
 {
     /// <summary>
@@ -89,7 +90,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-    private readonly Dictionary<string, object?> _attributes = new();
+    private readonly Dictionary<string, object?> _attributes = [];
     private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
     {
         Verify.NotNull(config);
@@ -183,7 +184,11 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
         while (!reader.EndOfStream)
         {
-            var body = await reader.ReadLineAsync().ConfigureAwait(false);
+            var body = await reader.ReadLineAsync(
+#if NET
+                cancellationToken
+#endif
+                ).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(body))
             {
@@ -245,9 +250,10 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
     private List<ChatWithDataSource> GetDataSources()
     {
-        return new List<ChatWithDataSource>
-        {
-            new() {
+        return
+        [
+            new()
+            {
                 Parameters = new ChatWithDataSourceParameters
                 {
                     Endpoint = this._config.DataSourceEndpoint,
@@ -255,7 +261,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
                     IndexName = this._config.DataSourceIndex
                 }
             }
-        };
+        ];
     }
 
     private List<ChatWithDataMessage> GetMessages(ChatHistory chat)

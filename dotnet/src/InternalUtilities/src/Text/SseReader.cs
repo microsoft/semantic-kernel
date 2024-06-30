@@ -15,17 +15,11 @@ namespace Microsoft.SemanticKernel.Text;
 /// <a href="https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream">SSE specification</a>
 /// </remarks>
 [ExcludeFromCodeCoverage]
-internal sealed class SseReader : IDisposable
+internal sealed class SseReader(Stream stream) : IDisposable
 {
-    private readonly Stream _stream;
-    private readonly StreamReader _reader;
+    private readonly Stream _stream = stream;
+    private readonly StreamReader _reader = new(stream);
     private string? _lastEventName;
-
-    public SseReader(Stream stream)
-    {
-        this._stream = stream;
-        this._reader = new StreamReader(stream);
-    }
 
     public SseLine? ReadSingleDataEvent()
     {
@@ -106,7 +100,7 @@ internal sealed class SseReader : IDisposable
     private SseLine? ReadLine()
     {
         string? lineText = this._reader.ReadLine();
-        if (lineText == null)
+        if (lineText is null)
         {
             return null;
         }
@@ -126,12 +120,13 @@ internal sealed class SseReader : IDisposable
 
     private async Task<SseLine?> ReadLineAsync(CancellationToken cancellationToken)
     {
-#if NET7_0_OR_GREATER
-        string lineText = await this._reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
-#else
-        string? lineText = await this._reader.ReadLineAsync().ConfigureAwait(false);
+        string? lineText = await this._reader.ReadLineAsync(
+#if NET
+            cancellationToken
 #endif
-        if (lineText == null)
+            ).ConfigureAwait(false);
+
+        if (lineText is null)
         {
             return null;
         }

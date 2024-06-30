@@ -56,7 +56,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<string>> SearchAsync(
+    public async Task<IEnumerable<T>> SearchAsync<T>(
         string query,
         int count,
         int offset,
@@ -80,7 +80,38 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 
         var results = await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
-        return results.Items.Select(item => item.Snippet);
+        List<T>? returnValues = null;
+        if (results.Items is not null)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                returnValues = results.Items.Select(item => item.Snippet).ToList() as List<T>;
+            }
+            else if (typeof(T) == typeof(WebPage))
+            {
+                List<WebPage> webPages = [];
+                foreach (var item in results.Items)
+                {
+                    WebPage webPage = new()
+                    {
+                        Name = item.Title,
+                        Snippet = item.Snippet,
+                        Url = item.Link
+                    };
+                    webPages.Add(webPage);
+                }
+                returnValues = webPages.Take(count).ToList() as List<T>;
+            }
+            else
+            {
+                throw new NotSupportedException($"Type {typeof(T)} is not supported.");
+            }
+        }
+
+        return
+            returnValues is null ? [] :
+            returnValues.Count <= count ? returnValues :
+            returnValues.Take(count);
     }
 
     /// <summary>

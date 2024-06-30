@@ -14,6 +14,8 @@ extend-exclude = [
     "vocab.bpe",
     "CodeTokenizerTests.cs",
     "test_code_tokenizer.py",
+    "*response.json",
+    "test_content.txt",
 ]
 
 [default.extend-words]
@@ -25,6 +27,9 @@ HD = "HD"                 # Test header value
 EOF = "EOF"               # End of File
 ans = "ans"               # Short for answers
 arange = "arange"         # Method in Python numpy package
+prompty = "prompty"       # prompty is a format name.
+ist = "ist"               # German language
+dall = "dall"             # OpenAI model name
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service

@@ -3,11 +3,11 @@
 import pytest
 from pytest import mark
 
-from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.exceptions.template_engine_exceptions import Jinja2TemplateRenderException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -94,6 +94,15 @@ async def test_it_renders_fail(kernel: Kernel):
 
 
 @pytest.mark.asyncio
+async def test_it_renders_fail_empty_template(kernel: Kernel):
+    template = "{{ plug-func 'test1'}}"
+    target = create_jinja2_prompt_template(template)
+    target.prompt_template_config.template = None
+    with pytest.raises(Jinja2TemplateRenderException):
+        await target.render(kernel, KernelArguments())
+
+
+@pytest.mark.asyncio
 async def test_it_renders_list(kernel: Kernel):
     template = "List: {% for item in items %}{{ item }}{% endfor %}"
     target = create_jinja2_prompt_template(template)
@@ -104,7 +113,7 @@ async def test_it_renders_list(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method(plugin_name="plug", method=decorated_native_function)
+    kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{ plug_getLightStatus(arg1='test') }}"
     target = create_jinja2_prompt_template(template)
 
@@ -114,7 +123,7 @@ async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, dec
 
 @pytest.mark.asyncio
 async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method(plugin_name="plug", method=decorated_native_function)
+    kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{ plug_getLightStatus() }}"
     target = create_jinja2_prompt_template(template)
 
@@ -195,17 +204,26 @@ async def test_helpers_set_get(kernel: Kernel):
     template = """{% set arg = 'test' %}{{ arg }} {{ arg }}"""
     target = create_jinja2_prompt_template(template)
 
-    rendered = await target.render(kernel, None)
+    rendered = await target.render(kernel, KernelArguments(arg2="test"))
     assert rendered == "test test"
 
 
 @mark.asyncio
 async def test_helpers_empty_get(kernel: Kernel):
-    template = """{{get()}}"""
+    template = """{{get(default='test')}}"""
     target = create_jinja2_prompt_template(template)
 
     rendered = await target.render(kernel, None)
-    assert rendered == ""
+    assert rendered == "test"
+
+
+@mark.asyncio
+async def test_helpers_get(kernel: Kernel):
+    template = """{{get(context=args, name='arg', default='fail')}}"""
+    target = create_jinja2_prompt_template(template)
+
+    rendered = await target.render(kernel, KernelArguments(args={"arg": "test"}))
+    assert rendered == "test"
 
 
 @mark.asyncio
@@ -267,32 +285,6 @@ async def test_helpers_message(kernel: Kernel):
 
 
 @mark.asyncio
-async def test_helpers_openai_message_tool_call(kernel: Kernel):
-    template = """
-    {% for chat in chat_history %}
-    <message role="{{ chat.role }}" tool_calls="{{ chat.tool_calls }}" tool_call_id="{{ chat.tool_call_id }}">
-        {{ chat.content }}
-    </message>
-    {% endfor %}
-    """
-    target = create_jinja2_prompt_template(template)
-    chat_history = ChatHistory()
-    chat_history.add_message(ChatMessageContent(role="user", content="User message"))
-    chat_history.add_message(
-        OpenAIChatMessageContent(
-            role="assistant", tool_calls=[ToolCall(id="test", function=FunctionCall(name="plug-test"))]
-        )
-    )
-    chat_history.add_message(OpenAIChatMessageContent(role="tool", content="Tool message", tool_call_id="test"))
-    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
-
-    assert "User message" in rendered
-    assert "ToolCall" in rendered
-    assert "plug-test" in rendered
-    assert "Tool message" in rendered
-
-
-@mark.asyncio
 async def test_helpers_message_to_prompt(kernel: Kernel):
     template = """
     {% for chat in chat_history %}
@@ -300,17 +292,23 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     {% endfor %}"""
     target = create_jinja2_prompt_template(template)
     chat_history = ChatHistory()
-    chat_history.add_message(OpenAIChatMessageContent(role="user", content="User message"))
+    chat_history.add_user_message("User message")
     chat_history.add_message(
-        OpenAIChatMessageContent(
-            role="assistant", tool_calls=[ToolCall(id="test", function=FunctionCall(name="plug-test"))]
+        ChatMessageContent(role=AuthorRole.ASSISTANT, items=[FunctionCallContent(id="1", name="plug-test")])
+    )
+    chat_history.add_message(
+        ChatMessageContent(
+            role=AuthorRole.TOOL, items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")]
         )
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 
+    assert "text" in rendered
     assert "User message" in rendered
-    assert "tool_calls=" in rendered
+    assert "function_call" in rendered
     assert "plug-test" in rendered
+    assert "function_result" in rendered
+    assert "Tool message" in rendered
 
 
 @mark.asyncio
@@ -350,5 +348,14 @@ async def test_helpers_chat_history_messages(kernel: Kernel):
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
     assert (
         rendered.strip()
-        == """<chat_history><message role="user">User message</message><message role="assistant">Assistant message</message></chat_history>"""  # noqa E501
+        == """<chat_history><message role="user"><text>User message</text></message><message role="assistant"><text>Assistant message</text></message></chat_history>"""  # noqa E501
     )
+
+
+@mark.asyncio
+async def test_helpers_chat_history_messages_non(kernel: Kernel):
+    template = """{{ messages(chat_history) }}"""
+    target = create_jinja2_prompt_template(template)
+    chat_history = "text instead of a chat_history object"
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert rendered.strip() == ""

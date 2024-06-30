@@ -251,19 +251,19 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
         var metadata = record.Metadata;
 
-        List<FieldData> fieldData = new()
-        {
-            FieldData.Create(IdFieldName, new[] { metadata.Id }),
-            FieldData.CreateFloatVector(EmbeddingFieldName, new[] { record.Embedding }),
+        List<FieldData> fieldData =
+        [
+            FieldData.Create(IdFieldName, [metadata.Id]),
+            FieldData.CreateFloatVector(EmbeddingFieldName, [record.Embedding]),
 
-            FieldData.Create(IsReferenceFieldName, new[] { metadata.IsReference }, isDynamic: true),
-            FieldData.Create(ExternalSourceNameFieldName, new[] { metadata.ExternalSourceName }, isDynamic: true),
-            FieldData.Create(DescriptionFieldName, new[] { metadata.Description }, isDynamic: true),
-            FieldData.Create(TextFieldName, new[] { metadata.Text }, isDynamic: true),
-            FieldData.Create(AdditionalMetadataFieldName, new[] { metadata.AdditionalMetadata }, isDynamic: true),
-            FieldData.Create(KeyFieldName, new[] { record.Key }, isDynamic: true),
-            FieldData.Create(TimestampFieldName, new[] { record.Timestamp?.ToString(CultureInfo.InvariantCulture) ?? string.Empty }, isDynamic: true)
-        };
+            FieldData.Create(IsReferenceFieldName, [metadata.IsReference], isDynamic: true),
+            FieldData.Create(ExternalSourceNameFieldName, [metadata.ExternalSourceName], isDynamic: true),
+            FieldData.Create(DescriptionFieldName, [metadata.Description], isDynamic: true),
+            FieldData.Create(TextFieldName, [metadata.Text], isDynamic: true),
+            FieldData.Create(AdditionalMetadataFieldName, [metadata.AdditionalMetadata], isDynamic: true),
+            FieldData.Create(KeyFieldName, [record.Key], isDynamic: true),
+            FieldData.Create(TimestampFieldName, [record.Timestamp?.ToString(CultureInfo.InvariantCulture) ?? string.Empty], isDynamic: true)
+        ];
 
         MutationResult result = await collection.UpsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -278,15 +278,15 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     {
         StringBuilder idString = new();
 
-        List<bool> isReferenceData = new();
-        List<string> externalSourceNameData = new();
-        List<string> idData = new();
-        List<string> descriptionData = new();
-        List<string> textData = new();
-        List<string> additionalMetadataData = new();
-        List<ReadOnlyMemory<float>> embeddingData = new();
-        List<string> keyData = new();
-        List<string> timestampData = new();
+        List<bool> isReferenceData = [];
+        List<string> externalSourceNameData = [];
+        List<string> idData = [];
+        List<string> descriptionData = [];
+        List<string> textData = [];
+        List<string> additionalMetadataData = [];
+        List<ReadOnlyMemory<float>> embeddingData = [];
+        List<string> keyData = [];
+        List<string> timestampData = [];
 
         foreach (MemoryRecord record in records)
         {
@@ -313,7 +313,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         MilvusCollection collection = this.Client.GetCollection(collectionName);
 
         FieldData[] fieldData =
-        {
+        [
             FieldData.Create(IdFieldName, idData),
             FieldData.CreateFloatVector(EmbeddingFieldName, embeddingData),
 
@@ -324,7 +324,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             FieldData.Create(AdditionalMetadataFieldName, additionalMetadataData, isDynamic: true),
             FieldData.Create(KeyFieldName, keyData, isDynamic: true),
             FieldData.Create(TimestampFieldName, timestampData, isDynamic: true)
-        };
+        ];
 
         MutationResult result = await collection.UpsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -341,7 +341,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        await foreach (MemoryRecord record in this.GetBatchAsync(collectionName, new[] { key }, withEmbedding, cancellationToken))
+        await foreach (MemoryRecord record in this.GetBatchAsync(collectionName, [key], withEmbedding, cancellationToken).ConfigureAwait(false))
         {
             return record;
         }
@@ -426,7 +426,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        await foreach ((MemoryRecord, double) result in this.GetNearestMatchesAsync(collectionName, embedding, limit: 1, minRelevanceScore, withEmbedding, cancellationToken))
+        await foreach ((MemoryRecord, double) result in this.GetNearestMatchesAsync(collectionName, embedding, limit: 1, minRelevanceScore, withEmbedding, cancellationToken).ConfigureAwait(false))
         {
             return result;
         }
@@ -446,7 +446,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         MilvusCollection collection = this.Client.GetCollection(collectionName);
 
         SearchResults results = await collection
-            .SearchAsync(EmbeddingFieldName, new[] { embedding }, SimilarityMetricType.Ip, limit, this._searchParameters, cancellationToken)
+            .SearchAsync(EmbeddingFieldName, [embedding], SimilarityMetricType.Ip, limit, this._searchParameters, cancellationToken)
             .ConfigureAwait(false);
 
         IReadOnlyList<string> ids = results.Ids.StringIds!;
