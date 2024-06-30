@@ -444,13 +444,13 @@ pytestmark = pytest.mark.parametrize(
                         role=AuthorRole.ASSISTANT,
                         items=[
                             FunctionCallContent(
-                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                                id="123456789", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
                             )
                         ],
                     ),
                     ChatMessageContent(
                         role=AuthorRole.TOOL,
-                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                        items=[FunctionResultContent(id="123456789", name="finance-search", result="1.2B")],
                     ),
                 ],
             ],
