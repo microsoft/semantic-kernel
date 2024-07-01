@@ -41,7 +41,7 @@ public sealed class AzureOpenAIStreamingChatMessageContent : StreamingChatMessag
             Encoding.UTF8,
             metadata)
     {
-        this.ToolCallUpdate = chatUpdate.ToolCallUpdates;
+        this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
         this.FinishReason = chatUpdate.FinishReason;
         this.Items = CreateContentItems(chatUpdate.ContentUpdate);
     }
@@ -51,7 +51,7 @@ public sealed class AzureOpenAIStreamingChatMessageContent : StreamingChatMessag
     /// </summary>
     /// <param name="authorRole">Author role of the message</param>
     /// <param name="content">Content of the message</param>
-    /// <param name="tootToolCallUpdate">Tool call update</param>
+    /// <param name="toolCallUpdates">Tool call updates</param>
     /// <param name="completionsFinishReason">Completion finish reason</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="modelId">The model ID used to generate the content</param>
@@ -59,7 +59,7 @@ public sealed class AzureOpenAIStreamingChatMessageContent : StreamingChatMessag
     internal AzureOpenAIStreamingChatMessageContent(
         AuthorRole? authorRole,
         string? content,
-        IReadOnlyList<StreamingChatToolCallUpdate>? tootToolCallUpdate = null,
+        IReadOnlyList<StreamingChatToolCallUpdate>? toolCallUpdates = null,
         ChatFinishReason? completionsFinishReason = null,
         int choiceIndex = 0,
         string? modelId = null,
@@ -73,12 +73,12 @@ public sealed class AzureOpenAIStreamingChatMessageContent : StreamingChatMessag
             Encoding.UTF8,
             metadata)
     {
-        this.ToolCallUpdate = tootToolCallUpdate;
+        this.ToolCallUpdates = toolCallUpdates;
         this.FinishReason = completionsFinishReason;
     }
 
     /// <summary>Gets any update information in the message about a tool call.</summary>
-    public IReadOnlyList<StreamingChatToolCallUpdate>? ToolCallUpdate { get; }
+    public IReadOnlyList<StreamingChatToolCallUpdate>? ToolCallUpdates { get; }
 
     /// <inheritdoc/>
     public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());

@@ -44,7 +44,7 @@ internal sealed class AzureOpenAIClientCore : ClientCore
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        var options = GetOpenAIClientOptions(httpClient);
+        var options = GetAzureOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
         this.Endpoint = new Uri(endpoint);
@@ -70,7 +70,7 @@ internal sealed class AzureOpenAIClientCore : ClientCore
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
-        var options = GetOpenAIClientOptions(httpClient);
+        var options = GetAzureOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
         this.Endpoint = new Uri(endpoint);

@@ -46,7 +46,7 @@ public sealed class AzureOpenAIFunctionToolCallTests
         var functionArgumentBuildersByIndex = new Dictionary<int, StringBuilder>();
 
         // Act
-        var toolCalls = AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
+        var toolCalls = AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(
             ref toolCallIdsByIndex,
             ref functionNamesByIndex,
             ref functionArgumentBuildersByIndex);
@@ -64,7 +64,7 @@ public sealed class AzureOpenAIFunctionToolCallTests
         var functionArgumentBuildersByIndex = new Dictionary<int, StringBuilder> { { 3, new("test-argument") } };
 
         // Act
-        var toolCalls = AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
+        var toolCalls = AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(
             ref toolCallIdsByIndex,
             ref functionNamesByIndex,
             ref functionArgumentBuildersByIndex);
