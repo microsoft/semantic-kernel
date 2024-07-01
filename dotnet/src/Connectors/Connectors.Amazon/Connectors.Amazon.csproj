@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AWSSDK.BedrockRuntime" />
+      <PackageReference Include="Microsoft.SemanticKernel" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    </ItemGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props"/>
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props"/>
+
+</Project>
