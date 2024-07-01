@@ -5,7 +5,7 @@ import logging
 import os
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAISearchDataSource,
     AzureChatCompletion,
@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.DEBUG)
 kernel = sk.Kernel()
 
 # Create the data source settings
-azure_ai_search_settings = AzureAISearchSettings()
+azure_ai_search_settings = AzureAISearchSettings.create()
 az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings.model_dump())
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_body=extra, tool_choice="auto")
@@ -79,9 +79,7 @@ chat_function = kernel.add_function(
 # calling the chat, you could add a overloaded version of the settings here,
 # to enable or disable function calling or set the function calling to a specific plugin.
 # see the openai_function_calling example for how to use this with a unrelated function definition
-req_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-    auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
-)
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
 
 arguments = KernelArguments(settings=req_settings)
 
@@ -103,7 +101,7 @@ async def chat() -> bool:
     arguments["chat_history"] = history
     arguments["user_input"] = user_input
     answer = await kernel.invoke(
-        functions=chat_function,
+        function=chat_function,
         arguments=arguments,
     )
     print(f"Mosscap:> {answer}")
