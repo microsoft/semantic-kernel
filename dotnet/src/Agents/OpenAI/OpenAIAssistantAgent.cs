@@ -165,20 +165,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Create a new assistant thread.
     /// </summary>
-    /// <param name="config">Configuration for accessing the Assistants API service, such as the api-key.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
-    public static async Task<string> CreateThreadAsync(
-        OpenAIAssistantConfiguration config,
-        CancellationToken cancellationToken = default)
+    public async Task<string> CreateThreadAsync(CancellationToken cancellationToken = default)
     {
-        // Validate input
-        Verify.NotNull(config, nameof(config));
-
-        // Create the client
-        AssistantsClient client = CreateClient(config);
-
-        AssistantThread thread = await client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
+        AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 
         return thread.Id;
     }
@@ -186,23 +177,17 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Create a new assistant thread.
     /// </summary>
-    /// <param name="config">Configuration for accessing the Assistants API service, such as the api-key.</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
-    public static async Task<bool> DeleteThreadAsync(
-        OpenAIAssistantConfiguration config,
+    public async Task<bool> DeleteThreadAsync(
         string threadId,
         CancellationToken cancellationToken = default)
     {
         // Validate input
         Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
-        Verify.NotNull(config, nameof(config));
 
-        // Create the client
-        AssistantsClient client = CreateClient(config);
-
-        return await client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+        return await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

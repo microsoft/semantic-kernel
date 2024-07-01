@@ -39,7 +39,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a chat for agent interaction.
-        string threadId = await OpenAIAssistantAgent.CreateThreadAsync(config);
+        string threadId = await agent.CreateThreadAsync();
 
         // Respond to user input
         try
@@ -51,7 +51,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         }
         finally
         {
-            await OpenAIAssistantAgent.DeleteThreadAsync(config, threadId);
+            await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
         }
 
