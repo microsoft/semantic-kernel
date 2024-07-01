@@ -98,9 +98,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// The timestamp granularities to populate for this transcription. response_format must be set verbose_json to use timestamp granularities. Either or both of these options are supported: word, or segment.
     /// </summary>
     [JsonPropertyName("granularities")]
-#pragma warning disable CA1819 // Properties should not return arrays
-    public TimeStampGranularities[]? Granularities { get; set; }
-#pragma warning restore CA1819 // Properties should not return arrays
+    public IReadOnlyList<TimeStampGranularities>? Granularities { get; set; }
 
     /// <summary>
     /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class with default filename - "file.mp3".
@@ -154,12 +152,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIAudioToTextExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
-        if (openAIExecutionSettings is not null)
-        {
-            return openAIExecutionSettings;
-        }
-
-        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIAudioToTextExecutionSettings)}", nameof(executionSettings));
+        return openAIExecutionSettings!;
     }
 
     /// <summary>

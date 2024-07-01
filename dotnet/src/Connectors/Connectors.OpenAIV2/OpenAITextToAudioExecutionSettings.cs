@@ -115,12 +115,7 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
 
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAITextToAudioExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
-        if (openAIExecutionSettings is not null)
-        {
-            return openAIExecutionSettings;
-        }
-
-        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAITextToAudioExecutionSettings)}", nameof(executionSettings));
+        return openAIExecutionSettings!;
     }
 
     #region private ================================================================================

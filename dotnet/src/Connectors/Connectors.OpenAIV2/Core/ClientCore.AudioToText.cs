@@ -1,14 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-/* 
-Phase 02
-
-- This class was created focused in the Image Generation using the SDK client instead of the own client in V1.
-- Added Checking for empty or whitespace prompt.
-- Removed the format parameter as this is never called in V1 code. Plan to implement it in the future once we change the ITextToImageService abstraction, using PromptExecutionSettings.
-- Allow custom size for images when the endpoint is not the default OpenAI v1 endpoint.
-*/
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -96,7 +87,7 @@ internal partial class ClientCore
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIAudioToTextExecutionSettings)}", nameof(executionSettings));
     }
 
-    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(OpenAIAudioToTextExecutionSettings.TimeStampGranularities[]? granularity)
+    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(IEnumerable<OpenAIAudioToTextExecutionSettings.TimeStampGranularities>? granularity)
     {
         return granularity?.FirstOrDefault() switch
         {
@@ -108,12 +99,10 @@ internal partial class ClientCore
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)
-    {
-        return new Dictionary<string, object?>(3)
+        => new(3)
         {
-            { nameof(audioTranscription.Language), audioTranscription.Language },
-            { nameof(audioTranscription.Duration), audioTranscription.Duration },
-            { nameof(audioTranscription.Segments), audioTranscription.Segments }
+            [nameof(audioTranscription.Language)] = audioTranscription.Language,
+            [nameof(audioTranscription.Duration)] = audioTranscription.Duration,
+            [nameof(audioTranscription.Segments)] = audioTranscription.Segments
         };
-    }
 }

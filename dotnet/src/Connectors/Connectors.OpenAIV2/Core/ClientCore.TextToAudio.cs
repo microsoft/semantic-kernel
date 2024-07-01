@@ -1,14 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-/* 
-Phase 02
-
-- This class was created focused in the Image Generation using the SDK client instead of the own client in V1.
-- Added Checking for empty or whitespace prompt.
-- Removed the format parameter as this is never called in V1 code. Plan to implement it in the future once we change the ITextToImageService abstraction, using PromptExecutionSettings.
-- Allow custom size for images when the endpoint is not the default OpenAI v1 endpoint.
-*/
-
 using System;
 using System.ClientModel;
 using System.Collections.Generic;
@@ -62,7 +53,7 @@ internal partial class ClientCore
             _ => throw new NotSupportedException($"The voice '{voice}' is not supported."),
         };
 
-    private static (GeneratedSpeechFormat, string) GetGeneratedSpeechFormatAndMimeType(string? format)
+    private static (GeneratedSpeechFormat Format, string MimeType) GetGeneratedSpeechFormatAndMimeType(string? format)
         => format?.ToUpperInvariant() switch
         {
             "WAV" => (GeneratedSpeechFormat.Wav, "audio/wav"),

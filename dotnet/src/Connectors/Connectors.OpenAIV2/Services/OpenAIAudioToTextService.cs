@@ -68,9 +68,9 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
-        AudioContent input,
+        AudioContent content,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetTextFromAudioContentsAsync(input, executionSettings, cancellationToken);
+        => this._client.GetTextFromAudioContentsAsync(content, executionSettings, cancellationToken);
 }
