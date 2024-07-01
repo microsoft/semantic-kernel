@@ -10,10 +10,10 @@ using Microsoft.SemanticKernel.Memory;
 namespace Memory;
 
 /// <summary>
-/// This sample provides an example of HttpClientHandler that will help you implement specific tasks.
+/// This example shows how to use custom <see cref="HttpClientHandler"/> to override Hugging Face HTTP response. 
 /// Generally, an embedding model will return results as a 1 * n matrix for input type [string]. However, the model can have different matrix dimensionality. For example,
-/// the <a href="https://huggingface.co/cointegrated/LaBSE-en-ru">cointegrated/LaBSE-en-ru</a> model returns results as a 1 * 1 * 4 * 768 matrix, which differs from what SemanticTextMemory expects from EmbeddingGenerationExtensions.
-/// To address this, a custom HttpClientHandler is created to modify the response before sending it back.
+/// the <a href="https://huggingface.co/cointegrated/LaBSE-en-ru">cointegrated/LaBSE-en-ru</a> model returns results as a 1 * 1 * 4 * 768 matrix, which is different from Hugging Face embedding generation service implementation.
+/// To address this, a custom <see cref="HttpClientHandler"/> can be used to modify the response before sending it back.
 /// </summary>
 public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output) : BaseTest(output)
 {
