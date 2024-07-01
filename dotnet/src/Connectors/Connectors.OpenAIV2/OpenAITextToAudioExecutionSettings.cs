@@ -5,7 +5,6 @@ Bringing the OpenAITextToAudioExecutionSettings class to the OpenAIV2 connector 
 
 */
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;

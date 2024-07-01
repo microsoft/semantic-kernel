@@ -47,10 +47,10 @@ internal partial class ClientCore
     }
 
     /// <summary>
-    /// Converts <see cref="PromptExecutionSettings"/> to derived <see cref="OpenAIAudioToTextExecutionSettings"/> type.
+    /// Converts <see cref="PromptExecutionSettings"/> to <see cref="AudioTranscriptionOptions"/> type.
     /// </summary>
     /// <param name="executionSettings">Instance of <see cref="PromptExecutionSettings"/>.</param>
-    /// <returns>Instance of <see cref="OpenAIAudioToTextExecutionSettings"/>.</returns>
+    /// <returns>Instance of <see cref="AudioTranscriptionOptions"/>.</returns>
     private static AudioTranscriptionOptions? AudioOptionsFromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         if (executionSettings is null)
