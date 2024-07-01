@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from pydantic import Field, StringConstraints
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 class AIServiceClientBase(KernelBaseModel, ABC):
@@ -41,7 +43,9 @@ class AIServiceClientBase(KernelBaseModel, ABC):
         """
         return self.get_prompt_execution_settings_class()(**kwargs)
 
-    def get_prompt_execution_settings_from_settings(self, settings: PromptExecutionSettings) -> PromptExecutionSettings:
+    def get_prompt_execution_settings_from_settings(
+        self, settings: "PromptExecutionSettings"
+    ) -> "PromptExecutionSettings":
         """Get the request settings from a settings object."""
         prompt_execution_settings_type = self.get_prompt_execution_settings_class()
         if isinstance(settings, prompt_execution_settings_type):

@@ -8,24 +8,25 @@ from semantic_kernel.data.models.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordField,
     VectorStoreRecordKeyField,
+    VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
 
 
 class ToDictProtocol(Protocol):
-    def __call__(self, record: Any, **kwargs: Any) -> list[dict[str, Any]]: ...
+    def __call__(self, record: Any, **kwargs: Any) -> list[dict[str, Any]]: ...  # noqa: D102
 
 
 class FromDictProtocol(Protocol):
-    def __call__(self, records: list[dict[str, Any]], **kwargs: Any) -> Any: ...
+    def __call__(self, records: list[dict[str, Any]], **kwargs: Any) -> Any: ...  # noqa: D102
 
 
 class SerializeProtocol(Protocol):
-    def __call__(self, record: Any, **kwargs: Any) -> Any: ...
+    def __call__(self, record: Any, **kwargs: Any) -> Any: ...  # noqa: D102
 
 
 class DeserializeProtocol(Protocol):
-    def __call__(self, records: Any, **kwargs: Any) -> Any: ...
+    def __call__(self, records: Any, **kwargs: Any) -> Any: ...  # noqa: D102
 
 
 @dataclass
@@ -49,6 +50,11 @@ class VectorStoreRecordDefinition:
     def key_field(self) -> "VectorStoreRecordKeyField":
         """Get the key field."""
         return self.fields[self.key_field_name]  # type: ignore
+
+    @cached_property
+    def vector_fields(self) -> list[str]:
+        """Get the names of the vector fields."""
+        return [name for name, value in self.fields.items() if isinstance(value, VectorStoreRecordVectorField)]
 
     def __post_init__(self):
         """Validate the fields.
