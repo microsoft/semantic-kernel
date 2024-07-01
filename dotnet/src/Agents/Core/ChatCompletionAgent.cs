@@ -31,8 +31,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
 
-        int messageCount = chat.Count;
-
         this.Logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
 
         IReadOnlyList<ChatMessageContent> messages =
@@ -45,16 +43,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
         {
             this.Logger.LogInformation("[{MethodName}] Invoked {ServiceType} with message count: {MessageCount}.", nameof(InvokeAsync), chatCompletionService.GetType(), messages.Count);
-        }
-
-        // Capture mutated messages related function calling / tools
-        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
-        {
-            ChatMessageContent message = chat[messageIndex];
-
-            message.AuthorName = this.Name;
-
-            yield return message;
         }
 
         foreach (ChatMessageContent message in messages ?? [])
@@ -75,8 +63,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
 
-        int messageCount = chat.Count;
-
         this.Logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
 
         IAsyncEnumerable<StreamingChatMessageContent> messages =
@@ -89,24 +75,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         if (this.Logger.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation("[{MethodName}] Invoked {ServiceType} with streaming messages.", nameof(InvokeAsync), chatCompletionService.GetType());
-        }
-
-        // Capture mutated messages related function calling / tools
-        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++) // %%%
-        {
-            ChatMessageContent message = chat[messageIndex];
-
-            message.AuthorName = this.Name;
-
-            yield return
-                new StreamingChatMessageContent(
-                    message.Role,
-                    message.Content,
-                    message.InnerContent,
-                    choiceIndex: default,
-                    message.ModelId,
-                    message.Encoding,
-                    message.Metadata);
         }
 
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
