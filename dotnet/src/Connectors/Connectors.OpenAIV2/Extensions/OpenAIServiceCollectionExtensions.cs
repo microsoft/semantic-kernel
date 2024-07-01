@@ -2,11 +2,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 using OpenAI;
 
@@ -89,7 +91,7 @@ public static class OpenAIServiceCollectionExtensions
 
     #region Text to Image
     /// <summary>
-    /// Add the OpenAI Dall-E text to image service to the list
+    /// Add the OpenAI text-to-image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">The model to use for image generation.</param>
@@ -142,5 +144,64 @@ public static class OpenAIServiceCollectionExtensions
                 openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
                 serviceProvider.GetService<ILoggerFactory>()));
     }
+    #endregion
+
+    #region Text to Audio
+
+    /// <summary>
+    /// Adds the OpenAI text-to-audio service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="endpoint">Non-default endpoint for the OpenAI API.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddOpenAITextToAudio(
+        this IServiceCollection services,
+        string modelId,
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null,
+        Uri? endpoint = null)
+    {
+        Verify.NotNull(services);
+
+        return services.AddKeyedSingleton<ITextToAudioService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextToAudioService(
+                modelId,
+                apiKey,
+                orgId,
+                endpoint,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
+    }
+
+    /// <summary>
+    /// Adds the OpenAI text-to-audio service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddOpenAITextToAudio(
+        this IServiceCollection services,
+        string modelId,
+        OpenAIClient? openAIClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+
+        return services.AddKeyedSingleton<ITextToAudioService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextToAudioService(
+                modelId,
+                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
+                serviceProvider.GetService<ILoggerFactory>()));
+    }
+
     #endregion
 }

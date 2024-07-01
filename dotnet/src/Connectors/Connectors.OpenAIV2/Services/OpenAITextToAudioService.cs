@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToAudio;
+using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI text-to-audio service.
 /// </summary>
-[Experimental("SKEXP0001")]
+[Experimental("SKEXP0010")]
 public sealed class OpenAITextToAudioService : ITextToAudioService
 {
     /// <summary>
@@ -49,6 +50,20 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         ILoggerFactory? loggerFactory = null)
     {
         this._client = new(modelId, apiKey, organization, endpoint, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
+    }
+
+    /// <summary>
+    /// Creates an instance of the <see cref="OpenAITextToAudioService"/> with API key auth.
+    /// </summary>
+    /// <param name="modelId">Model name</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public OpenAITextToAudioService(
+        string modelId,
+        OpenAIClient openAIClient,
+        ILoggerFactory? loggerFactory = null)
+    {
+        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
     }
 
     /// <inheritdoc/>
