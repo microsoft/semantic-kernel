@@ -167,18 +167,11 @@ through prompt_template_config or in the prompt_template."
 
         if isinstance(prompt_render_result.ai_service, ChatCompletionClientBase):
             chat_history = ChatHistory.from_rendered_prompt(prompt_render_result.rendered_prompt)
-
-            # pass the kernel in for auto function calling
-            kwargs: dict[str, Any] = {}
-            if hasattr(prompt_render_result.execution_settings, "function_choice_behavior"):
-                kwargs["kernel"] = context.kernel
-                kwargs["arguments"] = context.arguments
-
             try:
                 chat_message_contents = await prompt_render_result.ai_service.get_chat_message_contents(
                     chat_history=chat_history,
                     settings=prompt_render_result.execution_settings,
-                    **kwargs,
+                    **{"kernel": context.kernel, "arguments": context.arguments},
                 )
             except Exception as exc:
                 raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
@@ -211,18 +204,11 @@ through prompt_template_config or in the prompt_template."
         prompt_render_result = await self._render_prompt(context)
 
         if isinstance(prompt_render_result.ai_service, ChatCompletionClientBase):
-            # pass the kernel in for auto function calling
-            kwargs: dict[str, Any] = {}
-            if hasattr(prompt_render_result.execution_settings, "function_choice_behavior"):
-                kwargs["kernel"] = context.kernel
-                kwargs["arguments"] = context.arguments
-
             chat_history = ChatHistory.from_rendered_prompt(prompt_render_result.rendered_prompt)
-
             value: AsyncGenerator = prompt_render_result.ai_service.get_streaming_chat_message_contents(
                 chat_history=chat_history,
                 settings=prompt_render_result.execution_settings,
-                **kwargs,
+                **{"kernel": context.kernel, "arguments": context.arguments},
             )
         elif isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
             value = prompt_render_result.ai_service.get_streaming_text_contents(
