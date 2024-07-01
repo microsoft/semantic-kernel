@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+import contextlib
 import logging
 import types
 from abc import ABC, abstractmethod
@@ -87,48 +89,146 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
                 "as it is not a DataModel, your input may be incorrect."
             )
 
-    async def __aenter__(self):
-        """Enter the context manager."""
-        return self
-
-    async def __aexit__(self, *args):
-        """Exit the context manager."""
-        await self.close()
-
+    # region Overloadable Methods
     async def close(self):
         """Close the connection."""
         pass
 
-    # region Abstract methods
+    @abstractmethod
+    async def _inner_upsert(
+        self,
+        records: list[Any],
+        collection_name: str | None = None,
+        **kwargs: Any,
+    ) -> list[TKey]:
+        """Upsert the records, this should be overridden by the child class.
+
+        Args:
+            records (list[Any]): The records, the format is specific to the store.
+            collection_name (str): The collection name. Defaults to None.
+            **kwargs (Any): Additional arguments, to be passed to the store.
+
+        Returns:
+            The keys of the upserted records.
+        """
+        ...
 
     @abstractmethod
+    async def _inner_get(
+        self, keys: list[TKey], collection_name: str | None = None, **kwargs: Any
+    ) -> OneOrMany[Any] | None:
+        """Get the records, this should be overridden by the child class.
+
+        Args:
+            keys (list[TKey]): The keys to get.
+            collection_name (str): The collection name. Defaults to None.
+            **kwargs (Any): Additional arguments.
+
+        Returns:
+            The records from the store, not deserialized.
+        """
+        ...
+
+    @abstractmethod
+    async def _inner_delete(self, keys: list[TKey], collection_name: str | None = None, **kwargs: Any) -> None:
+        """Delete the records, this should be overridden by the child class.
+
+        Args:
+            keys (list[TKey]): The keys.
+            collection_name (str): The collection name. Defaults to None.
+            **kwargs (Any): Additional arguments.
+        """
+        ...
+
+    @property
+    def supported_key_types(self) -> list[type] | None:
+        """Supply the types that keys are allowed to have. None means any."""
+        return None
+
+    @property
+    def supported_vector_types(self) -> list[type] | None:
+        """Supply the types that vectors are allowed to have. None means any."""
+        return None
+
+    def _validate_data_model(self):
+        """Internal function that should be overloaded by child classes to validate datatypes, etc.
+
+        This should take the VectorStoreRecordDefinition from the item_type and validate it against the store.
+
+        Checks should include, allowed naming of parameters, allowed data types, allowed vector dimensions.
+        """
+        model_sig = signature(self._data_model_type)
+        key_type = model_sig.parameters[self._key_field].annotation.__args__[0]  # type: ignore
+        if self.supported_key_types and key_type not in self.supported_key_types:
+            raise ValueError(f"Key field must be one of {self.supported_key_types}")
+        if not self.supported_vector_types:
+            return
+        for field_name, field in self._data_model_definition.fields.items():
+            if isinstance(field, VectorStoreRecordVectorField):
+                field_type = model_sig.parameters[field_name].annotation.__args__[0]
+                if field_type.__class__ is types.UnionType:
+                    field_type = field_type.__args__[0]
+                if field_type not in self.supported_vector_types:
+                    raise ValueError(f"Vector field {field_name} must be one of {self.supported_vector_types}")
+        return
+
+    @abstractmethod
+    def _serialize_dicts_to_store_models(self, records: list[dict[str, Any]], **kwargs: Any) -> list[Any]:
+        """Serialize a list of dicts of the data to the store model.
+
+        This method should be overridden by the child class to convert the dict to the store model.
+        """
+        ...
+
+    @abstractmethod
+    def _deserialize_store_models_to_dicts(self, records: list[Any], **kwargs: Any) -> list[dict[str, Any]]:
+        """Deserialize the store models to a list of dicts.
+
+        This method should be overridden by the child class to convert the store model to a list of dicts.
+        """
+        ...
+
+    # endregion
+    # region Public Methods
+
     async def upsert(
         self,
         record: TModel,
         collection_name: str | None = None,
-        generate_vectors: bool = True,
+        generate_embeddings: bool = False,
         **kwargs: Any,
     ) -> OneOrMany[TKey] | None:
         """Upsert a record.
 
         Args:
             record (TModel): The record.
-            collection_name (str, optional): The collection name. Defaults to None.
-            generate_vectors (bool): Whether to generate vectors. Defaults to True.
+            collection_name (str): The collection name. Defaults to None.
+            generate_embeddings (bool): Whether to generate vectors. Defaults to True.
                 If there are no vector fields in the model or the vectors are created
-                by the service, this is ignored, defaults to True.
+                by the service, this is ignored, defaults to False.
             **kwargs (Any): Additional arguments.
 
         Returns:
-            TKey: The key of the upserted record, a list of keys, when a container is used.
+            The key of the upserted record or a list of keys, when a container type is used.
         """
+        if generate_embeddings:
+            await self._add_vector_to_records(record)
+        data = self.serialize(record)
+        if not isinstance(data, list):
+            data = [data]
+        try:
+            results = await self._inner_upsert(data, collection_name, **kwargs)
+        except Exception as exc:
+            raise MemoryConnectorException(f"Error upserting record: {exc}") from exc
+        if self._container_mode:
+            return results
+        return results[0]
 
-    @abstractmethod
     async def upsert_batch(
         self,
         records: OneOrMany[TModel],
         collection_name: str | None = None,
-        generate_vectors: bool = True,
+        generate_embeddings: bool = False,
         **kwargs: Any,
     ) -> list[TKey]:
         """Upsert a batch of records.
@@ -136,17 +236,23 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         Args:
             records (list[TModel] | TModel): The records to upsert, can be a list of records, or a single container.
             collection_name (str, optional): The collection name. Defaults to None.
-            generate_vectors (bool): Whether to generate vectors. Defaults to True.
+            generate_embeddings (bool): Whether to generate vectors. Defaults to True.
                 If there are no vector fields in the model or the vectors are created
-                by the service, this is ignored, defaults to True.
+                by the service, this is ignored, defaults to False.
             **kwargs (Any): Additional arguments.
 
         Returns:
             list[TKey]: The keys of the upserted records, this is always a list,
             corresponds to the input or the items in the container.
         """
+        if generate_embeddings:
+            await self._add_vector_to_records(records)
+        data = self.serialize(records)
+        try:
+            return await self._inner_upsert(data, collection_name, **kwargs)  # type: ignore
+        except Exception as exc:
+            raise MemoryConnectorException(f"Error upserting records: {exc}") from exc
 
-    @abstractmethod
     async def get(self, key: TKey, collection_name: str | None = None, **kwargs: Any) -> TModel | None:
         """Get a record.
 
@@ -158,11 +264,23 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         Returns:
             TModel: The record.
         """
+        try:
+            records = await self._inner_get([key], collection_name)
+        except Exception as exc:
+            raise MemoryConnectorException(f"Error getting record: {exc}") from exc
+        if not records:
+            return None
+        try:
+            model_records = self.deserialize(records, keys=[key], **kwargs)
+            if isinstance(model_records, list):
+                return model_records[0]
+            return model_records
+        except Exception as exc:
+            raise MemoryConnectorException(f"Error deserializing record: {exc}") from exc
 
-    @abstractmethod
     async def get_batch(
         self, keys: list[TKey], collection_name: str | None = None, **kwargs: Any
-    ) -> list[TModel] | None:
+    ) -> OneOrMany[TModel] | None:
         """Get a batch of records.
 
         Args:
@@ -171,10 +289,19 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
             **kwargs (Any): Additional arguments.
 
         Returns:
-            list[TModel]: The records.
+            The records, either a list of TModel or the container type.
         """
+        try:
+            records = await self._inner_get(keys, collection_name)
+        except Exception as exc:
+            raise MemoryConnectorException(f"Error getting record: {exc}") from exc
+        if not records:
+            return None
+        try:
+            return self.deserialize(records, keys=keys, **kwargs)
+        except Exception as exc:
+            raise MemoryConnectorException(f"Error deserializing record: {exc}") from exc
 
-    @abstractmethod
     async def delete(self, key: TKey, collection_name: str | None = None, **kwargs: Any) -> None:
         """Delete a record.
 
@@ -184,8 +311,11 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
             **kwargs (Any): Additional arguments.
 
         """
+        try:
+            await self._inner_delete([key], collection_name, **kwargs)
+        except Exception as exc:
+            raise MemoryConnectorException(f"Error deleting record: {exc}") from exc
 
-    @abstractmethod
     async def delete_batch(self, keys: list[TKey], collection_name: str | None = None, **kwargs: Any) -> None:
         """Delete a batch of records.
 
@@ -195,6 +325,10 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
             **kwargs (Any): Additional arguments.
 
         """
+        try:
+            await self._inner_delete(keys, collection_name, **kwargs)
+        except Exception as exc:
+            raise MemoryConnectorException(f"Error deleting records: {exc}") from exc
 
     # endregion
     # region Internal SerDe methods
@@ -216,15 +350,15 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
             return serialized
         if isinstance(records, list):
             dict_records = [self._serialize_data_model_to_dict(rec) for rec in records]
-            return self._serialize_dict_to_store_model(dict_records, **kwargs)  # type: ignore
+            return self._serialize_dicts_to_store_models(dict_records, **kwargs)  # type: ignore
         dict_records = self._serialize_data_model_to_dict(records)  # type: ignore
         if isinstance(dict_records, list):
             # most likely this is a container, so we return all records as a list
             # can also be a single record, but the to_dict returns a list
             # hence we will treat it as a container.
-            return self._serialize_dict_to_store_model(dict_records, **kwargs)  # type: ignore
+            return self._serialize_dicts_to_store_models(dict_records, **kwargs)  # type: ignore
         # this case is single record in, single record out
-        return self._serialize_dict_to_store_model([dict_records], **kwargs)[0]
+        return self._serialize_dicts_to_store_models([dict_records], **kwargs)[0]
 
     def deserialize(self, records: OneOrMany[Any | dict[str, Any]], **kwargs: Any) -> OneOrMany[TModel] | None:
         """Deserialize the store model to the data model.
@@ -238,9 +372,9 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         if deserialized := self._deserialize_store_model_to_data_model(records, **kwargs):
             return deserialized
         if isinstance(records, list):
-            dict_records = self._deserialize_store_model_to_dict(records, **kwargs)
+            dict_records = self._deserialize_store_models_to_dicts(records, **kwargs)
             return [self._deserialize_dict_to_data_model(rec, **kwargs) for rec in dict_records]
-        dict_records = self._deserialize_store_model_to_dict([records], **kwargs)
+        dict_records = self._deserialize_store_models_to_dicts([records], **kwargs)
         if self._container_mode:
             return self._deserialize_dict_to_data_model(dict_records, **kwargs)
         # this case is single record in, single record out
@@ -363,58 +497,21 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         return self._data_model_type(**data_model_dict)
 
     # endregion
-    # region Overloadable Methods
 
-    @property
-    def supported_key_types(self) -> list[type] | None:
-        """Supply the types that keys are allowed to have. None means any."""
-        return None
-
-    @property
-    def supported_vector_types(self) -> list[type] | None:
-        """Supply the types that vectors are allowed to have. None means any."""
-        return None
-
-    def _validate_data_model(self):
-        """Internal function that should be overloaded by child classes to validate datatypes, etc.
-
-        This should take the VectorStoreRecordDefinition from the item_type and validate it against the store.
-
-        Checks should include, allowed naming of parameters, allowed data types, allowed vector dimensions.
-        """
-        model_sig = signature(self._data_model_type)
-        key_type = model_sig.parameters[self._key_field].annotation.__args__[0]  # type: ignore
-        if self.supported_key_types and key_type not in self.supported_key_types:
-            raise ValueError(f"Key field must be one of {self.supported_key_types}")
-        if not self.supported_vector_types:
-            return
-        for field_name, field in self._data_model_definition.fields.items():
-            if isinstance(field, VectorStoreRecordVectorField):
-                field_type = model_sig.parameters[field_name].annotation.__args__[0]
-                if field_type.__class__ is types.UnionType:
-                    field_type = field_type.__args__[0]
-                if field_type not in self.supported_vector_types:
-                    raise ValueError(f"Vector field {field_name} must be one of {self.supported_vector_types}")
-        return
-
-    @abstractmethod
-    def _serialize_dict_to_store_model(self, record: list[dict[str, Any]], **kwargs: Any) -> list[Any]:
-        """Serialize a dict of the data to the store model.
-
-        This method should be overridden by the child class to convert the dict to the store model.
-        """
-        ...
-
-    @abstractmethod
-    def _deserialize_store_model_to_dict(self, record: list[Any], **kwargs: Any) -> list[dict[str, Any]]:
-        """Deserialize the store model to a dict.
-
-        This method should be overridden by the child class to convert the store model to a dict.
-        """
-        ...
-
-    # endregion
     # region Internal Functions
+
+    async def __aenter__(self):
+        """Enter the context manager."""
+        return self
+
+    async def __aexit__(self, *args):
+        """Exit the context manager."""
+        await self.close()
+
+    def __del__(self):
+        """Delete the instance."""
+        with contextlib.suppress(Exception):
+            asyncio.get_running_loop().create_task(self.close())
 
     def _get_collection_name(self, collection_name: str | None = None):
         """Gets the collection name, ensuring it is lower case.

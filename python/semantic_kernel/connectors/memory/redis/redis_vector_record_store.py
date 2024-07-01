@@ -23,12 +23,8 @@ from semantic_kernel.data.models.vector_store_record_fields import (
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
-from semantic_kernel.exceptions import (
-    ServiceResponseException,
-)
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -79,110 +75,33 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         logger.info("Closing Redis connection")
         await self._database.close()
 
-    async def _upsert(
+    @override
+    async def _inner_upsert(
         self,
-        record: TModel,
+        records: list[Any],
         collection_name: str | None = None,
-        generate_embeddings: bool = True,
         **kwargs: Any,
-    ) -> list[str] | None:
-        if generate_embeddings:
-            await self._add_vector_to_records(record)
-        upsert_records = self.serialize(record, collection_name=collection_name)
-        if not isinstance(upsert_records, list):
-            upsert_records = [upsert_records]
-        keys = []
-        for upsert_record in upsert_records:
-            try:
-                await self._database.hset(**upsert_record)
-            except Exception as e:
-                raise ServiceResponseException("Could not upsert messages.") from e
-            keys.append(upsert_record["name"])
-        return keys if keys else None
+    ) -> list[str]:
+        return await asyncio.gather(*[self._single_upsert(record, collection_name) for record in records])
+
+    async def _single_upsert(self, upsert_record: Any, collection_name: str | None = None) -> str:
+        await self._database.hset(**upsert_record)
+        return self._unget_redis_key(upsert_record["name"], collection_name)
 
     @override
-    async def upsert(
-        self,
-        record: TModel,
-        collection_name: str | None = None,
-        generate_embeddings: bool = True,
-        **kwargs: Any,
-    ) -> OneOrMany[str] | None:
-        result = await self._upsert(record, collection_name, generate_embeddings, **kwargs)
-        if result:
-            return result if self._container_mode else result[0]
-        return None
+    async def _inner_get(
+        self, keys: list[str], collection_name: str | None = None, **kwargs
+    ) -> list[dict[bytes, bytes]] | None:
+        return await asyncio.gather(
+            *[self._database.hgetall(self._get_redis_key(key, collection_name)) for key in keys]
+        )
 
     @override
-    async def upsert_batch(
-        self,
-        records: OneOrMany[TModel],
-        collection_name: str | None = None,
-        generate_embeddings: bool = False,
-        **kwargs,
-    ) -> list[str] | None:
-        return await self._upsert(records, collection_name, generate_embeddings, **kwargs)
-
-    async def _get(self, key: str, collection_name: str | None = None) -> dict[bytes, bytes] | None:
-        r_key = self._get_redis_key(key, collection_name)
-        fields = await self._database.hgetall(r_key)
-        if len(fields) == 0:
-            return None
-        return fields
-
-    @override
-    async def get(self, key: str, collection_name: str | None = None, **kwargs) -> TModel:
-        fields = await self._get(key, collection_name)
-        # Did not find the record
-        if not fields:
-            return None
-        return self.deserialize(fields, keys=[key], collection_name=collection_name)
-
-    @override
-    async def get_batch(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> OneOrMany[TModel]:
-        fields = await asyncio.gather(*[self._get(key, collection_name) for key in keys])
-        # Did not find the record
-        if not fields:
-            return None
-        return self.deserialize(fields, keys=keys, collection_name=collection_name)
-
-    async def delete(self, collection_name: str, key: str) -> None:
-        """Removes a memory record from the data store.
-
-        Does not guarantee that the collection exists.
-        If the key does not exist, do nothing.
-
-        Args:
-            collection_name (str): Name for a collection of embeddings
-            key (str): ID associated with the memory to remove
-        """
-        await self._database.delete(self._get_redis_key(key, collection_name))
-
-    async def delete_batch(self, collection_name: str, keys: list[str]) -> None:
-        """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
-
-        Args:
-            collection_name (str): Name for a collection of embeddings
-            keys (List[str]): IDs associated with the memory records to remove
-        """
+    async def _inner_delete(self, keys: list[str], collection_name: str | None = None) -> None:
         await self._database.delete(*[self._get_redis_key(key, collection_name) for key in keys])
 
-    def _get_redis_key(self, key: str, collection_name: str | None = None) -> str:
-        if self._prefix_collection_name_to_key_names and (prefix := self._get_collection_name(collection_name)):
-            return f"{prefix}:{key}"
-        return key
-
-    def _unget_redis_key(self, key: str, collection_name: str | None = None) -> str:
-        if (
-            self._prefix_collection_name_to_key_names
-            and (prefix := self._get_collection_name(collection_name))
-            and ":" in key
-        ):
-            return key[len(prefix) + 1 :]
-        return key
-
     @override
-    def _serialize_dict_to_store_model(
+    def _serialize_dicts_to_store_models(
         self,
         record: list[dict[str, Any]],
         collection_name: str | None = None,
@@ -209,7 +128,7 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         return results
 
     @override
-    def _deserialize_store_model_to_dict(
+    def _deserialize_store_models_to_dicts(
         self,
         search_result: list[dict[bytes, bytes]],
         keys: list[str],
@@ -223,6 +142,8 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
                 if isinstance(field, VectorStoreRecordKeyField):
                     flattened[name] = self._unget_redis_key(key, collection_name)
                 if isinstance(field, VectorStoreRecordVectorField):
+                    # TODO (eavanvalkenburg): This is a temporary fix to handle the fact that
+                    # the vector is returned as a bytes object, and the user needs that or a list.
                     vector = np.frombuffer(rec[name.encode()], dtype=np.float64).tolist()
                     if field.cast_function:
                         flattened[name] = field.cast_function(vector)
@@ -236,7 +157,22 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
     def supported_key_types(self) -> list[type] | None:
         return [str]
 
+    @override
     @property
     def supported_vector_types(self) -> list[type] | None:
         """Supply the types that vectors are allowed to have. None means any."""
         return [list[float], np.ndarray]
+
+    def _get_redis_key(self, key: str, collection_name: str | None = None) -> str:
+        if self._prefix_collection_name_to_key_names and (prefix := self._get_collection_name(collection_name)):
+            return f"{prefix}:{key}"
+        return key
+
+    def _unget_redis_key(self, key: str, collection_name: str | None = None) -> str:
+        if (
+            self._prefix_collection_name_to_key_names
+            and (prefix := self._get_collection_name(collection_name))
+            and ":" in key
+        ):
+            return key[len(prefix) + 1 :]
+        return key
