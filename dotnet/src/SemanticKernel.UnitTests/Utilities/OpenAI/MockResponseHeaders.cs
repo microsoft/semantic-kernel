@@ -9,7 +9,7 @@ using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 
-namespace SemanticKernel.Connectors.OpenAI.UnitTests;
+namespace SemanticKernel.UnitTests.Utilities.OpenAI;
 
 public class MockResponseHeaders : PipelineResponseHeaders
 {

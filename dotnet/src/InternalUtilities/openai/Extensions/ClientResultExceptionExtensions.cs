@@ -8,8 +8,7 @@ Preserved the logic as is.
 
 using System.ClientModel;
 using System.Net;
-
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides extension methods for the <see cref="ClientResultException"/> class.

@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="SemanticKernel.Connectors.OpenAI.UnitTests"/>
+    <Using Include="SemanticKernel.Connectors.OpenAI.UnitTests" />
   </ItemGroup>
   
   <ItemGroup>

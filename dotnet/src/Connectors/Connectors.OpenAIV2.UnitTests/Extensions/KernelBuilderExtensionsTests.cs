@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -97,6 +98,36 @@ public class KernelBuilderExtensionsTests
         var service = sut.AddOpenAITextToAudio("model", new OpenAIClient("key"))
             .Build()
             .GetRequiredService<ITextToAudioService>();
+
+        // Assert
+        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
+    }
+
+    [Fact]
+    public void ItCanAddAudioToTextService()
+    {
+        // Arrange
+        var sut = Kernel.CreateBuilder();
+
+        // Act
+        var service = sut.AddOpenAIAudioToText("model", "key")
+            .Build()
+            .GetRequiredService<IAudioToTextService>();
+
+        // Assert
+        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
+    }
+
+    [Fact]
+    public void ItCanAddAudioToTextServiceWithOpenAIClient()
+    {
+        // Arrange
+        var sut = Kernel.CreateBuilder();
+
+        // Act
+        var service = sut.AddOpenAIAudioToText("model", new OpenAIClient("key"))
+            .Build()
+            .GetRequiredService<IAudioToTextService>();
 
         // Assert
         Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
