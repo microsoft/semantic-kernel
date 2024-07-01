@@ -12,12 +12,11 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
-using SemanticKernel.IntegrationTestsV2.Connectors.AzureOpenAI;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
+namespace SemanticKernel.IntegrationTestsV2.Connectors.AzureOpenAI;
 
-public sealed class AzureOpenAIChatCompletionFunctionCallingTests
+public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrationTest
 {
     [Fact]
     public async Task CanAutoInvokeKernelFunctionsAsync()
@@ -34,7 +33,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
         kernel.FunctionInvocationFilters.Add(filter);
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIChatCompletionExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var result = await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings));
@@ -60,7 +59,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
         kernel.FunctionInvocationFilters.Add(filter);
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIChatCompletionExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         var stringBuilder = new StringBuilder();
 
@@ -82,7 +81,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIChatCompletionExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var result = await kernel.InvokePromptAsync("What is the current temperature in Dublin, Ireland, in Fahrenheit?", new(settings));
@@ -98,7 +97,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIChatCompletionExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var result = await kernel.InvokePromptAsync("Convert 50 degrees Fahrenheit to Celsius.", new(settings));
@@ -114,7 +113,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIChatCompletionExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var result = await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings));
@@ -140,7 +139,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
             "Delivers up-to-date news content.",
             [promptFunction]));
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIChatCompletionExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var result = await kernel.InvokePromptAsync("Show me the latest news as they are.", new(settings));
@@ -166,7 +165,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
             "Delivers up-to-date news content.",
             [promptFunction]));
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIChatCompletionExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var streamingResult = kernel.InvokePromptStreamingAsync("Show me the latest news as they are.", new(settings));
@@ -194,7 +193,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -241,7 +240,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -282,7 +281,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         chatHistory.AddSystemMessage("Add the \"Error\" keyword to the response, if you are unable to answer a question or an error has happen.");
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         var completionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -326,7 +325,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         chatHistory.AddSystemMessage("if there's a tornado warning, please add the 'tornado' keyword to the response.");
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         var completionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -374,7 +373,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         var completionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -398,7 +397,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -458,7 +457,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -517,7 +516,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -582,7 +581,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -640,7 +639,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -707,7 +706,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
-        var kernelBuilder = Kernel.CreateBuilder();
+        var kernelBuilder = base.CreateKernelBuilder();
 
         kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,

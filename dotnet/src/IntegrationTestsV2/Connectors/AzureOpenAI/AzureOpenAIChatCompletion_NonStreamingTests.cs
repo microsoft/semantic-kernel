@@ -17,7 +17,7 @@ namespace SemanticKernel.IntegrationTestsV2.Connectors.AzureOpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class AzureOpenAIChatCompletionNonStreamingTests
+public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
 {
     [Fact]
     public async Task ChatCompletionShouldUseChatSystemPromptAsync()
@@ -27,7 +27,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests
 
         var chatCompletion = kernel.Services.GetRequiredService<IChatCompletionService>();
 
-        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         // Act
         var result = await chatCompletion.GetChatMessageContentAsync("What is the capital of France?", settings, kernel);
@@ -93,7 +93,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests
 
         var textGeneration = kernel.Services.GetRequiredService<ITextGenerationService>();
 
-        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         // Act
         var result = await textGeneration.GetTextContentAsync("What is the capital of France?", settings, kernel);
@@ -158,7 +158,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
-        var kernelBuilder = Kernel.CreateBuilder();
+        var kernelBuilder = base.CreateKernelBuilder();
 
         kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,

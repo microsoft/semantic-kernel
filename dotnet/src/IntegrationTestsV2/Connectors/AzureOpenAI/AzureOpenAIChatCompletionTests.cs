@@ -22,7 +22,7 @@ namespace SemanticKernel.IntegrationTestsV2.Connectors.AzureOpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class AzureOpenAIChatCompletionTests
+public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
 {
     [Fact]
     //[Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
@@ -33,7 +33,7 @@ public sealed class AzureOpenAIChatCompletionTests
 
         var func = kernel.CreateFunctionFromPrompt(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.",
-            new AzureOpenAIPromptExecutionSettings());
+            new AzureOpenAIChatCompletionExecutionSettings());
 
         // Act
         var result = await func.InvokeAsync(kernel, new() { [InputParameterName] = "Jupiter" });
@@ -74,13 +74,15 @@ public sealed class AzureOpenAIChatCompletionTests
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
-        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration!.ChatDeploymentName!,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
 
-        this._kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
+        kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
         {
             // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
             c.AddStandardResilienceHandler().Configure(o =>
@@ -94,7 +96,7 @@ public sealed class AzureOpenAIChatCompletionTests
             });
         });
 
-        var target = this._kernelBuilder.Build();
+        var target = kernelBuilder.Build();
 
         var plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
@@ -167,7 +169,7 @@ public sealed class AzureOpenAIChatCompletionTests
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
-        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         // Act
         var result = await kernel.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?", new(settings));
@@ -203,7 +205,7 @@ public sealed class AzureOpenAIChatCompletionTests
     public async Task LogProbsDataIsReturnedWhenRequestedAsync(bool? logprobs, int? topLogprobs)
     {
         // Arrange
-        var settings = new AzureOpenAIPromptExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
+        var settings = new AzureOpenAIChatCompletionExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
 
         var kernel = this.CreateAndInitializeKernel();
 
@@ -237,7 +239,9 @@ public sealed class AzureOpenAIChatCompletionTests
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+        var kernelBuilder = base.CreateKernelBuilder();
+
+        kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
@@ -245,11 +249,10 @@ public sealed class AzureOpenAIChatCompletionTests
             serviceId: azureOpenAIConfiguration.ServiceId,
             httpClient: httpClient);
 
-        return this._kernelBuilder.Build();
+        return kernelBuilder.Build();
     }
 
     private const string InputParameterName = "input";
-    private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
 
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)

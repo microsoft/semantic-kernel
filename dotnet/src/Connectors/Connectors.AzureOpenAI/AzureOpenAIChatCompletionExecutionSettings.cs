@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// Execution settings for an AzureOpenAI completion request.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
+public sealed class AzureOpenAIChatCompletionExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -312,7 +312,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
-        return new AzureOpenAIPromptExecutionSettings()
+        return new AzureOpenAIChatCompletionExecutionSettings()
         {
             ModelId = this.ModelId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
@@ -345,30 +345,30 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static AzureOpenAIPromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    public static AzureOpenAIChatCompletionExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         if (executionSettings is null)
         {
-            return new AzureOpenAIPromptExecutionSettings()
+            return new AzureOpenAIChatCompletionExecutionSettings()
             {
                 MaxTokens = defaultMaxTokens
             };
         }
 
-        if (executionSettings is AzureOpenAIPromptExecutionSettings settings)
+        if (executionSettings is AzureOpenAIChatCompletionExecutionSettings settings)
         {
             return settings;
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
 
-        var openAIExecutionSettings = JsonSerializer.Deserialize<AzureOpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
+        var openAIExecutionSettings = JsonSerializer.Deserialize<AzureOpenAIChatCompletionExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
         if (openAIExecutionSettings is not null)
         {
             return openAIExecutionSettings;
         }
 
-        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureOpenAIPromptExecutionSettings)}", nameof(executionSettings));
+        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureOpenAIChatCompletionExecutionSettings)}", nameof(executionSettings));
     }
 
     /// <summary>
@@ -378,7 +378,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
     [Obsolete("This method is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
-    public static AzureOpenAIPromptExecutionSettings FromExecutionSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    public static AzureOpenAIChatCompletionExecutionSettings FromExecutionSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         var settings = FromExecutionSettings(executionSettings, defaultMaxTokens);
 

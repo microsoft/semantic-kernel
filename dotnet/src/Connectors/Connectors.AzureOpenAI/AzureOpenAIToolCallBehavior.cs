@@ -62,7 +62,7 @@ public abstract class AzureOpenAIToolCallBehavior
     /// <param name="functions">The functions that should be made available to the model.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
     /// <returns>
-    /// The <see cref="AzureOpenAIToolCallBehavior"/> that may be set into <see cref="AzureOpenAIPromptExecutionSettings.ToolCallBehavior"/>
+    /// The <see cref="AzureOpenAIToolCallBehavior"/> that may be set into <see cref="AzureOpenAIChatCompletionExecutionSettings.ToolCallBehavior"/>
     /// to indicate that the specified functions should be made available to the model.
     /// </returns>
     public static AzureOpenAIToolCallBehavior EnableFunctions(IEnumerable<AzureOpenAIFunction> functions, bool autoInvoke = false)
@@ -75,7 +75,7 @@ public abstract class AzureOpenAIToolCallBehavior
     /// <param name="function">The function the model should request to use.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
     /// <returns>
-    /// The <see cref="AzureOpenAIToolCallBehavior"/> that may be set into <see cref="AzureOpenAIPromptExecutionSettings.ToolCallBehavior"/>
+    /// The <see cref="AzureOpenAIToolCallBehavior"/> that may be set into <see cref="AzureOpenAIChatCompletionExecutionSettings.ToolCallBehavior"/>
     /// to indicate that the specified function should be requested by the model.
     /// </returns>
     public static AzureOpenAIToolCallBehavior RequireFunction(AzureOpenAIFunction function, bool autoInvoke = false)

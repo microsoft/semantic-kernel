@@ -242,8 +242,8 @@ public static class AzureOpenAIServiceCollectionExtensions
     #endregion
 
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
-        new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
+        new(new Uri(endpoint), credentials, ClientCore.GetAzureOpenAIClientOptions(httpClient));
 
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient) =>
-        new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
+        new(new Uri(endpoint), credentials, ClientCore.GetAzureOpenAIClientOptions(httpClient));
 }

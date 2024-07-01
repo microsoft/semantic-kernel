@@ -62,7 +62,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
         // Act
-        var result = await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIPromptExecutionSettings
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIChatCompletionExecutionSettings
         {
             ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions
         }));
@@ -107,7 +107,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
 
-        var executionSettings = new AzureOpenAIPromptExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new AzureOpenAIChatCompletionExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
@@ -165,7 +165,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         // Case #2 - Add filter to kernel
         kernel.AutoFunctionInvocationFilters.Add(filter2);
 
-        var result = await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIPromptExecutionSettings
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIChatCompletionExecutionSettings
         {
             ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions
         }));
@@ -225,7 +225,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var kernel = builder.Build();
 
-        var arguments = new KernelArguments(new AzureOpenAIPromptExecutionSettings
+        var arguments = new KernelArguments(new AzureOpenAIChatCompletionExecutionSettings
         {
             ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions
         });
@@ -275,7 +275,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
         // Act
-        var result = await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIPromptExecutionSettings
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIChatCompletionExecutionSettings
         {
             ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions
         }));
@@ -309,7 +309,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var chatCompletion = new AzureOpenAIChatCompletionService("test-deployment", "https://endpoint", "test-api-key", "test-model-id", this._httpClient);
 
-        var executionSettings = new AzureOpenAIPromptExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new AzureOpenAIChatCompletionExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         var chatHistory = new ChatHistory();
         chatHistory.AddSystemMessage("System message");
@@ -350,7 +350,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         var chatCompletion = new AzureOpenAIChatCompletionService("test-deployment", "https://endpoint", "test-api-key", "test-model-id", this._httpClient);
 
         var chatHistory = new ChatHistory();
-        var executionSettings = new AzureOpenAIPromptExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new AzureOpenAIChatCompletionExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         await foreach (var item in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel))
@@ -394,7 +394,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
-        var result = await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIPromptExecutionSettings
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIChatCompletionExecutionSettings
         {
             ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions
         }));
@@ -428,7 +428,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
         // Act
-        await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIPromptExecutionSettings
+        await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIChatCompletionExecutionSettings
         {
             ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions
         }));
@@ -460,7 +460,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
 
-        var executionSettings = new AzureOpenAIPromptExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new AzureOpenAIChatCompletionExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
@@ -499,7 +499,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
         // Act
-        var result = await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIPromptExecutionSettings
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new AzureOpenAIChatCompletionExecutionSettings
         {
             ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions
         }));
@@ -545,7 +545,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
 
-        var executionSettings = new AzureOpenAIPromptExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new AzureOpenAIChatCompletionExecutionSettings { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
 
         List<StreamingKernelContent> streamingContent = [];
 
