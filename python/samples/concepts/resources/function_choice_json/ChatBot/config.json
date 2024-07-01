@@ -1,0 +1,30 @@
+{
+  "name": "ChatBot",
+  "template_format": "semantic-kernel",
+  "description": "A chat bot that helps the user tell the date and time.",
+  "input_variables": [
+    {
+      "name": "chat_history",
+      "description": "The on-going chat history",
+      "is_required": true
+    },
+    {
+      "name": "user_input",
+      "description": "The user input",
+      "is_required": true
+    }
+  ],
+  "execution_settings": {
+    "chat": {
+      "function_choice_behavior": {
+        "type": "auto",
+        "maximum_auto_invoke_attempts": 5,
+        "functions": [
+          "time.date",
+          "time.time",
+          "math.Add"
+        ]
+      }
+    }
+  }
+}
