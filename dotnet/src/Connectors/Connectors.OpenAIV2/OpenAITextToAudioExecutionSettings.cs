@@ -77,9 +77,9 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     /// Creates an instance of <see cref="OpenAITextToAudioExecutionSettings"/> class.
     /// </summary>
     /// <param name="voice">The voice to use when generating the audio. Supported voices are alloy, echo, fable, onyx, nova, and shimmer.</param>
-    public OpenAITextToAudioExecutionSettings(string voice)
+    public OpenAITextToAudioExecutionSettings(string? voice)
     {
-        this._voice = voice;
+        this._voice = voice ?? DefaultVoice;
     }
 
     /// <inheritdoc/>

@@ -11,7 +11,7 @@ using Moq;
 using OpenAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.Services;
+namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
 
 /// <summary>
 /// Unit tests for <see cref="OpenAITextToImageService"/> class.
