@@ -27,7 +27,7 @@ def update_settings_from_function_call_configuration(
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
     if function_choice_configuration.available_functions:
-        # Mapp Function Choice Behaviors NoneInvoke & Auto --> auto and Required --> required
+        # Map FunctionChoiceBehaviors NoneInvoke & Auto --> auto and Required --> required
         settings.tool_choice = 'required' if type is FunctionChoiceType.REQUIRED else 'auto'
         settings.tools = [
             kernel_function_metadata_to_function_call_format(f)
