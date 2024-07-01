@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
-using Microsoft.SemanticKernel.Connectors.Ollama.Core;
+using OllamaSharp.Models.Chat;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Ollama.UnitTests;
@@ -23,7 +24,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OllamaTestHelper.GetTestResponse("chat_completion_test_response.json"));
-        this._httpClient = new HttpClient(this._messageHandlerStub, false);
+        this._httpClient = new HttpClient(this._messageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
     }
 
     [Fact]
@@ -79,7 +80,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
         await sut.GetChatMessageContentsAsync(chat);
 
         //Assert
-        var requestPayload = JsonSerializer.Deserialize<OllamaChatRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<ChatRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
         Assert.Equal("fake-text", requestPayload.Messages!.First().Content);
     }
@@ -157,16 +158,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"
-            {
-              ""message"": {
-                ""role"": ""assistant"",
-                ""content"": ""This is test completion response""
-              },
-              ""model"": ""fake-model""
-            }",
-                Encoding.UTF8,
-                "application/json")
+            Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response_stream.txt"))
         };
 
         var chat = new ChatHistory();

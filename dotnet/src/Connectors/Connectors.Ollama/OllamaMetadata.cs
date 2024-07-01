@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
-using Microsoft.SemanticKernel.Connectors.Ollama.Core;
+using OllamaSharp.Models;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
@@ -13,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 /// </summary>
 public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
 {
-    internal OllamaMetadata(OllamaResponseBase ollamaResponse) : base(new Dictionary<string, object?>())
+    internal OllamaMetadata(GenerateCompletionDoneResponseStream ollamaResponse) : base(new Dictionary<string, object?>())
     {
         this.TotalDuration = ollamaResponse.TotalDuration;
         this.EvalCount = ollamaResponse.EvalCount;
@@ -54,9 +53,9 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
     /// <summary>
     /// Returns the prompt's feedback related to the content filters.
     /// </summary>
-    public DateTime? CreatedAt
+    public string? CreatedAt
     {
-        get => this.GetValueFromDictionary() as DateTime? ?? DateTime.MinValue;
+        get => this.GetValueFromDictionary() as string;
         internal init => this.SetValueInDictionary(value);
     }
 

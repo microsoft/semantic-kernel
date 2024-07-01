@@ -3,13 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.Ollama.Core;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
+using OllamaSharp;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
@@ -18,6 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 /// </summary>
 public sealed class OllamaTextGenerationService : ITextGenerationService
 {
+    private readonly OllamaApiClient _client;
     private Dictionary<string, object?> AttributesInternal { get; } = new();
 
     /// <summary>
@@ -35,28 +36,53 @@ public sealed class OllamaTextGenerationService : ITextGenerationService
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        this.Client = new OllamaClient(
-            modelId: model,
-            baseUri: baseUri,
-#pragma warning disable CA2000
-            httpClient: HttpClientProvider.GetHttpClient(httpClient),
-#pragma warning restore CA2000
-            logger: loggerFactory?.CreateLogger(typeof(OllamaChatCompletionService))
-        );
+        this._client = new OllamaApiClient(baseUri, model);
 
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    private OllamaClient Client { get; }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OllamaTextGenerationService"/> class.
+    /// </summary>
+    /// <param name="model">The hosted model.</param>
+    /// <param name="ollamaClient">The Ollama API client.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public OllamaTextGenerationService(
+        string model,
+        OllamaApiClient ollamaClient,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNullOrWhiteSpace(model);
+        this._client = ollamaClient;
+        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+    }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        var completionResponse = await this._client.GetCompletion(prompt, null, cancellationToken).ConfigureAwait(false);
+
+        TextContent stc = new(completionResponse.Response);
+        return new List<TextContent> { stc };
+    }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+    public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var content in this._client.StreamCompletion(prompt, null, cancellationToken).ConfigureAwait(false))
+        {
+            yield return new StreamingTextContent(content?.Response);
+        }
+    }
 }

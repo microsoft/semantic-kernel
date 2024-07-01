@@ -1,0 +1,3 @@
+{"model":"llama2","created_at":"2024-07-01T11:32:04.209289398Z","message":{"role":"assistant","content":"\n"},"done":false}
+{"model":"llama2","created_at":"2024-07-01T11:32:04.258266148Z","message":{"role":"assistant","content":"The"},"done":false}
+{"role":"assistant","content":""},"done":true,"total_duration":3538740276,"load_duration":41242060,"prompt_eval_duration":46387000,"eval_count":279,"eval_duration":3450152000}

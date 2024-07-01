@@ -13,11 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
-    /// Default max tokens for a text generation.
-    /// </summary>
-    public static int DefaultTextMaxTokens { get; } = 256;
-
-    /// <summary>
     /// Gets the specialization for the Ollama execution settings.
     /// </summary>
     /// <param name="executionSettings">Generic prompt execution settings.</param>
@@ -27,7 +22,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
         switch (executionSettings)
         {
             case null:
-                return new OllamaPromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
+                return new();
             case OllamaPromptExecutionSettings settings:
                 return settings;
         }
@@ -45,23 +40,82 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// Maximum number of tokens to generate.
+    /// Sets the stop sequences to use. When this pattern is encountered the
+    /// LLM will stop generating text and return. Multiple stop patterns may
+    /// be set by specifying multiple separate stop parameters in a modelfile.
     /// </summary>
-    [JsonPropertyName("max_tokens")]
-    public int? MaxTokens
+    [JsonPropertyName("stop")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Stop
     {
-        get => this._maxTokens;
+        get => this._stop;
 
         set
         {
             this.ThrowIfFrozen();
-            this._maxTokens = value;
+            this._stop = value;
+        }
+    }
+
+    /// <summary>
+    /// Reduces the probability of generating nonsense. A higher value
+    /// (e.g. 100) will give more diverse answers, while a lower value (e.g. 10)
+    /// will be more conservative. (Default: 40)
+    /// </summary>
+    [JsonPropertyName("top_k")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? TopK
+    {
+        get => this._topK;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._topK = value;
+        }
+    }
+
+    /// <summary>
+    /// Works together with top-k. A higher value (e.g., 0.95) will lead to
+    /// more diverse text, while a lower value (e.g., 0.5) will generate more
+    /// focused and conservative text. (Default: 0.9)
+    /// </summary>
+    [JsonPropertyName("top_p")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public float? TopP
+    {
+        get => this._topP;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._topP = value;
+        }
+    }
+
+    /// <summary>
+    /// The temperature of the model. Increasing the temperature will make the
+    /// model answer more creatively. (Default: 0.8)
+    /// </summary>
+    [JsonPropertyName("temperature")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public float? Temperature
+    {
+        get => this._temperature;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._temperature = value;
         }
     }
 
     #region private ================================================================================
 
-    private int? _maxTokens;
+    private string? _stop;
+    private float? _temperature;
+    private float? _topP;
+    private int? _topK;
 
     #endregion
 }

@@ -1,7 +1,15 @@
 {
+  "model": "llama2",
+  "created_at": "2024-07-01T11:16:36.555533084Z",
   "message": {
     "role": "assistant",
-    "content": "This is test completion response"
+    "content": "\nThe sky appears blue because of a phenomenon called Rayleigh scattering. When sunlight enters Earth's atmosphere, it encounters tiny molecules of gases such as nitrogen and oxygen. These molecules scatter the light in all directions, but they scatter shorter (blue) wavelengths more than longer (red) wavelengths. This is known as Rayleigh scattering.\n\nAs a result of this scattering, the blue light is dispersed throughout the atmosphere, giving the sky its blue color. The blue light scatters in all directions and reaches our eyes from all parts of the sky, creating the illusion of a blue sky.\n\nOther factors can also affect the color of the sky, such as the amount of dust and water vapor in the air, which can scatter light in different ways and create a more yellow or red tint. However, under normal conditions, Rayleigh scattering is the main cause of the blue color of the sky.\n\nIt's worth noting that the blue color of the sky can appear different under different lighting conditions. For example, during sunrise and sunset, the sky can take on more orange or red hues due to the angle of the sunlight and the scattering of light by atmospheric particles."
   },
-  "model": "fake-model"
+  "done": true,
+  "total_duration": 171492135390,
+  "load_duration": 167891394048,
+  "prompt_eval_count": 26,
+  "prompt_eval_duration": 197005000,
+  "eval_count": 277,
+  "eval_duration": 3402761000
 }

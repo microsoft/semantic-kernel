@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
+using OllamaSharp;
 
 namespace Microsoft.SemanticKernel;
 
@@ -34,7 +35,6 @@ public static class OllamaKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new OllamaTextGenerationService(
@@ -46,7 +46,31 @@ public static class OllamaKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Add Ollama Chat Completion services to the kernel builder.
+    /// Add Ollama Text Generation service to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="ollamaClient">The Ollama Sharp library client.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddOllamaTextGeneration(
+        this IKernelBuilder builder,
+        string modelId,
+        OllamaApiClient ollamaClient,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+            new OllamaTextGenerationService(
+                model: modelId,
+                ollamaClient: ollamaClient,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Ollama Chat Completion service to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
@@ -75,7 +99,32 @@ public static class OllamaKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Add Ollama Text Embedding Generation services to the kernel builder.
+    /// Add Ollama Chat Completion service to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="ollamaClient">The Ollama Sharp library client.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddOllamaChatCompletion(
+        this IKernelBuilder builder,
+        string modelId,
+        OllamaApiClient ollamaClient,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+            new OllamaChatCompletionService(
+                model: modelId,
+                client: ollamaClient,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Ollama Text Embeddings Generation service to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
@@ -91,13 +140,37 @@ public static class OllamaKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OllamaTextEmbeddingGenerationService(
                 model: modelId,
                 baseUri: baseUri,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Ollama Text Embeddings Generation service to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="ollamaClient">The Ollama Sharp library client.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddOllamaTextEmbeddingGeneration(
+        this IKernelBuilder builder,
+        string modelId,
+        OllamaApiClient ollamaClient,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OllamaTextEmbeddingGenerationService(
+                model: modelId,
+                ollamaClient: ollamaClient,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;

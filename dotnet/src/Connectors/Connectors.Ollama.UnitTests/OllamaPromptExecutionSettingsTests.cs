@@ -35,7 +35,10 @@ public class OllamaPromptExecutionSettingsTests
         var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         // Assert
-        Assert.Equal(OllamaPromptExecutionSettings.DefaultTextMaxTokens, ollamaExecutionSettings.MaxTokens);
+        Assert.Null(ollamaExecutionSettings.Stop);
+        Assert.Null(ollamaExecutionSettings.Temperature);
+        Assert.Null(ollamaExecutionSettings.TopP);
+        Assert.Null(ollamaExecutionSettings.TopK);
     }
 
     [Fact]
@@ -43,13 +46,19 @@ public class OllamaPromptExecutionSettingsTests
     {
         string jsonSettings = """
                                 {
-                                    "max_tokens": 100
+                                    "stop": "stop me",
+                                    "temperature": 0.5,
+                                    "topP": 0.9,
+                                    "topK": 100
                                 }
                                 """;
 
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(jsonSettings);
         var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
-        Assert.Equal(100, ollamaExecutionSettings.MaxTokens);
+        Assert.Equal("stop me", ollamaExecutionSettings.Stop);
+        Assert.Equal(0.5f, ollamaExecutionSettings.Temperature);
+        Assert.Equal(0.9f, ollamaExecutionSettings.TopP);
+        Assert.Equal(100, ollamaExecutionSettings.TopK);
     }
 }

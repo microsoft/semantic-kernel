@@ -8,8 +8,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
-using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Microsoft.SemanticKernel.TextGeneration;
+using OllamaSharp.Models;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Ollama.UnitTests;
@@ -72,7 +72,7 @@ public sealed class OllamaTextGenerationTests : IDisposable
         await sut.GetTextContentsAsync("fake-text");
 
         //Assert
-        var requestPayload = JsonSerializer.Deserialize<OllamaTextRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<GenerateCompletionRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
         Assert.Equal("fake-text", requestPayload.Prompt);
     }

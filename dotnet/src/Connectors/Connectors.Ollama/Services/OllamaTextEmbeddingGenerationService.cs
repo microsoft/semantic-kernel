@@ -20,11 +20,12 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 public sealed class OllamaTextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private readonly OllamaApiClient _client;
 
     /// <summary>
-    /// Initializes a new instance of the OllamaTextEmbeddingGenerationService class.
+    /// Initializes a new instance of the <see cref="OllamaTextEmbeddingGenerationService"/> class.
     /// </summary>
-    /// <param name="model">The Ollama model for the chat completion service.</param>
+    /// <param name="model">The hosted model.</param>
     /// <param name="baseUri">The base uri including the port where Ollama server is hosted</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Ollama API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
@@ -36,12 +37,26 @@ public sealed class OllamaTextEmbeddingGenerationService : ITextEmbeddingGenerat
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        this.Client = new OllamaApiClient(baseUri, model);
+        this._client = new OllamaApiClient(baseUri, model);
 
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    private OllamaApiClient Client { get; }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OllamaTextEmbeddingGenerationService"/> class.
+    /// </summary>
+    /// <param name="model">The hosted model.</param>
+    /// <param name="ollamaClient">The Ollama API client.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public OllamaTextEmbeddingGenerationService(
+        string model,
+        OllamaApiClient ollamaClient,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNullOrWhiteSpace(model);
+        this._client = ollamaClient;
+        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+    }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
@@ -55,11 +70,17 @@ public sealed class OllamaTextEmbeddingGenerationService : ITextEmbeddingGenerat
         var tasks = new List<Task<GenerateEmbeddingResponse>>();
         foreach (var prompt in data)
         {
-            tasks.Add(this.Client.GenerateEmbeddings(prompt, cancellationToken: cancellationToken));
+            tasks.Add(this._client.GenerateEmbeddings(prompt, cancellationToken: cancellationToken));
         }
 
         await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
 
-        return new List<ReadOnlyMemory<float>>(tasks.Select(task => new ReadOnlyMemory<float>(task.Result.Embedding.Cast<float>().ToArray())).ToList());
+        return new List<ReadOnlyMemory<float>>(
+            tasks.Select(
+                task => new ReadOnlyMemory<float>(task.Result.Embedding
+                    .Select(@decimal => (float)@decimal).ToArray()
+                )
+            )
+        );
     }
 }
