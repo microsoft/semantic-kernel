@@ -5,7 +5,7 @@ import logging
 import os
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAISearchDataSource,
     AzureChatCompletion,
@@ -79,9 +79,7 @@ chat_function = kernel.add_function(
 # calling the chat, you could add a overloaded version of the settings here,
 # to enable or disable function calling or set the function calling to a specific plugin.
 # see the openai_function_calling example for how to use this with a unrelated function definition
-req_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-    auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
-)
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
 
 arguments = KernelArguments(settings=req_settings)
 

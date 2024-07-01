@@ -53,7 +53,10 @@ def test_validate_endpoint_no_final_slash(aca_python_sessions_unit_test_env):
 @pytest.mark.parametrize("exclude_list", [["ACA_POOL_MANAGEMENT_ENDPOINT"]], indirect=True)
 def test_validate_settings_fail(aca_python_sessions_unit_test_env):
     with pytest.raises(FunctionInitializationError):
-        SessionsPythonTool(auth_callback=auth_callback_test)
+        SessionsPythonTool(
+            auth_callback=auth_callback_test,
+            env_file_path="test.env",
+        )
 
 
 def test_it_can_be_imported(kernel: Kernel, aca_python_sessions_unit_test_env):
@@ -151,7 +154,10 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
         )
         mock_post.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
+        plugin = SessionsPythonTool(
+            auth_callback=lambda: "sample_token",
+            env_file_path="test.env",
+        )
 
         result = await plugin.upload_file(local_file_path="test.txt", remote_file_path="uploaded_test.txt")
         assert result.filename == "test.txt"
@@ -194,7 +200,10 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
         )
         mock_post.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
+        plugin = SessionsPythonTool(
+            auth_callback=lambda: "sample_token",
+            env_file_path="test.env",
+        )
 
         result = await plugin.upload_file(local_file_path="test.txt")
         assert result.filename == "test.txt"
@@ -338,7 +347,10 @@ async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_en
         mock_response = httpx.Response(status_code=200, content=b"file data", request=mock_request)
         mock_get.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(auth_callback=mock_auth_callback)
+        plugin = SessionsPythonTool(
+            auth_callback=mock_auth_callback,
+            env_file_path="test.env",
+        )
 
         await plugin.download_file(remote_file_path="remote_test.txt", local_file_path="local_test.txt")
         mock_get.assert_awaited_once()
