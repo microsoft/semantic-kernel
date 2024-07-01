@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.TextGeneration;
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 
 /// <summary>
-/// Unit tests for <see cref="AzureOpenAIServiceKernelBuilderExtensions"/> class.
+/// Unit tests for the kernel builder extensions in the <see cref="AzureOpenAIServiceCollectionExtensions"/> class.
 /// </summary>
 public sealed class AzureOpenAIServiceKernelBuilderExtensionsTests
 {
