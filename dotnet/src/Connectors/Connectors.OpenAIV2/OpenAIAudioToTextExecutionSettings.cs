@@ -8,6 +8,11 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
+/*
+Phase 04
+Droped support for multiple granularities as it is not supported in OpenAI V2 SDK Options.
+
+*/
 /// <summary>
 /// Execution settings for OpenAI audio-to-text request.
 /// </summary>
@@ -94,10 +99,10 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// The timestamp granularities to populate for this transcription. response_format must be set verbose_json to use timestamp granularities. Either or both of these options are supported: word, or segment.
+    /// The timestamp granularities to populate for this transcription. response_format must be set verbose_json to use timestamp granularities. Either of these options are supported: word, or segment.
     /// </summary>
     [JsonPropertyName("granularities")]
-    public IReadOnlyList<TimeStampGranularities>? Granularities { get; set; }
+    public TimeStampGranularities? Granularities { get; set; }
 
     /// <summary>
     /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class with default filename - "file.mp3".
@@ -135,7 +140,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <param name="executionSettings">Instance of <see cref="PromptExecutionSettings"/>.</param>
     /// <returns>Instance of <see cref="OpenAIAudioToTextExecutionSettings"/>.</returns>
-    public static OpenAIAudioToTextExecutionSettings? FromExecutionSettings(PromptExecutionSettings? executionSettings)
+    public static OpenAIAudioToTextExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         if (executionSettings is null)
         {

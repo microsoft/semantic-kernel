@@ -4,10 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Text;
 using OpenAI.Audio;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -34,12 +32,12 @@ internal partial class ClientCore
             throw new ArgumentException("The input audio content is not readable.", nameof(input));
         }
 
-        OpenAIAudioToTextExecutionSettings? audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
-        AudioTranscriptionOptions? audioOptions = AudioOptionsFromExecutionSettings(executionSettings);
+        OpenAIAudioToTextExecutionSettings audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
+        AudioTranscriptionOptions? audioOptions = AudioOptionsFromExecutionSettings(audioExecutionSettings);
 
         Verify.ValidFilename(audioExecutionSettings?.Filename);
 
-        var memoryStream = new MemoryStream(input.Data!.Value.ToArray());
+        using var memoryStream = new MemoryStream(input.Data!.Value.ToArray());
 
         AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioClient(this.ModelId).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
 
@@ -51,47 +49,19 @@ internal partial class ClientCore
     /// </summary>
     /// <param name="executionSettings">Instance of <see cref="PromptExecutionSettings"/>.</param>
     /// <returns>Instance of <see cref="AudioTranscriptionOptions"/>.</returns>
-    private static AudioTranscriptionOptions? AudioOptionsFromExecutionSettings(PromptExecutionSettings? executionSettings)
+    private static AudioTranscriptionOptions? AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
+        => new()
+        {
+            Granularities = ConvertToAudioTimestampGranularities(executionSettings!.Granularities),
+            Language = executionSettings.Language,
+            Prompt = executionSettings.Prompt,
+            Temperature = executionSettings.Temperature
+        };
+
+    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(OpenAIAudioToTextExecutionSettings.TimeStampGranularities? granularity)
     {
-        if (executionSettings is null)
+        return granularity switch
         {
-            return new AudioTranscriptionOptions();
-        }
-
-        if (executionSettings is OpenAIAudioToTextExecutionSettings settings)
-        {
-            return new AudioTranscriptionOptions
-            {
-                Granularities = ConvertToAudioTimestampGranularities(settings.Granularities),
-                Language = settings.Language,
-                Prompt = settings.Prompt,
-                Temperature = settings.Temperature
-            };
-        }
-
-        var json = JsonSerializer.Serialize(executionSettings);
-
-        var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIAudioToTextExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-
-        if (openAIExecutionSettings is not null)
-        {
-            return new AudioTranscriptionOptions
-            {
-                Granularities = ConvertToAudioTimestampGranularities(openAIExecutionSettings.Granularities),
-                Language = openAIExecutionSettings.Language,
-                Prompt = openAIExecutionSettings.Prompt,
-                Temperature = openAIExecutionSettings.Temperature
-            };
-        }
-
-        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIAudioToTextExecutionSettings)}", nameof(executionSettings));
-    }
-
-    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(IEnumerable<OpenAIAudioToTextExecutionSettings.TimeStampGranularities>? granularity)
-    {
-        return granularity?.FirstOrDefault() switch
-        {
-            OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Default => AudioTimestampGranularities.Default,
             OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Word => AudioTimestampGranularities.Word,
             OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Segment => AudioTimestampGranularities.Segment,
             _ => AudioTimestampGranularities.Default
