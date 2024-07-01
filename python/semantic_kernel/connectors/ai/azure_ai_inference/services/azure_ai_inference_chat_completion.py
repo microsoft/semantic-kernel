@@ -135,9 +135,6 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
-            # TODO(<TaoChen>): make sure there is only one message.
-            # Currently only OpenAI models allow multiple messages but the Azure AI Inference service
-            # requires a special handling for multiple messages.
             chat_history.add_message(message=completions[0])
             function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
             if (fc_count := len(function_calls)) == 0:
@@ -383,6 +380,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                 raise ServiceInvalidExecutionSettingsError("Kernel is required for tool calls.")
             if arguments is None and settings.function_choice_behavior.auto_invoke_kernel_functions:
                 raise ServiceInvalidExecutionSettingsError("Kernel arguments are required for auto tool calls.")
+            if settings.extra_parameters is not None and settings.extra_parameters.get("n", 1) > 1:
+                # Currently only OpenAI models allow multiple completions but the Azure AI Inference service
+                # does not expose the functionality directly. If users want to have more than 1 responses, they
+                # need to configure `extra_parameters` with a key of "n" and a value greater than 1.
+                raise ServiceInvalidExecutionSettingsError(
+                    "Auto invocation of tool calls may only be used with a single completion."
+                )
 
     def _configure_function_choice_behavior(
         self, settings: AzureAIInferenceChatPromptExecutionSettings, kernel: Kernel
