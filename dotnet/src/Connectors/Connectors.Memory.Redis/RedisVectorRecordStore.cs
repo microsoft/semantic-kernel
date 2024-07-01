@@ -361,9 +361,9 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                DBSystem = DatabaseName,
-                DBCollectionName = collectionName,
-                DBOperationName = operationName
+                VectorStoreType = DatabaseName,
+                CollectionName = collectionName,
+                OperationName = operationName
             };
         }
     }

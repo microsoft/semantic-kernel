@@ -370,9 +370,9 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                DBSystem = DatabaseName,
-                DBCollectionName = collectionName,
-                DBOperationName = operationName
+                VectorStoreType = DatabaseName,
+                CollectionName = collectionName,
+                OperationName = operationName
             };
         }
     }

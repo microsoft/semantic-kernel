@@ -33,9 +33,9 @@ internal static class VectorStoreErrorHandler
         {
             throw new VectorStoreRecordMappingException("Failed to convert vector store record.", ex)
             {
-                DBSystem = databaseSystemName,
-                DBCollectionName = collectionName,
-                DBOperationName = operationName
+                VectorStoreType = databaseSystemName,
+                CollectionName = collectionName,
+                OperationName = operationName
             };
         }
     }

@@ -36,17 +36,17 @@ public abstract class VectorStoreException : KernelException
     }
 
     /// <summary>
-    /// Gets or sets the name of the database system that the failing operation was performed on.
+    /// Gets or sets the type of vector store that the failing operation was performed on.
     /// </summary>
-    public string? DBSystem { get; init; }
+    public string? VectorStoreType { get; init; }
 
     /// <summary>
-    /// Gets or sets the name of the database collection that the failing operation was performed on.
+    /// Gets or sets the name of the vector store collection that the failing operation was performed on.
     /// </summary>
-    public string? DBCollectionName { get; init; }
+    public string? CollectionName { get; init; }
 
     /// <summary>
-    /// Gets or sets the name of the database operation that failed.
+    /// Gets or sets the name of the vector store operation that failed.
     /// </summary>
-    public string? DBOperationName { get; init; }
+    public string? OperationName { get; init; }
 }
