@@ -128,6 +128,25 @@ public class ChatMessageContentTests
         Assert.Equal("fake-content-1", sut.Content);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("\t")]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public void ContentPropertySetterShouldConvertEmptyOrWhitespaceAuthorNameToNull(string? authorName)
+    {
+        // Arrange
+        var message = new ChatMessageContent(AuthorRole.User, content: null)
+        {
+            AuthorName = authorName
+        };
+
+        // Assert
+        Assert.Null(message.AuthorName);
+    }
+
     [Fact]
     public void ItShouldBePossibleToSetAndGetEncodingEvenIfThereAreNoItems()
     {
