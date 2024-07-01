@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c)c Microsoft. All rights reserved.
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -20,13 +20,11 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task UseSingleOpenAIAssistantAgentAsync()
     {
-        OpenAIAssistantConfiguration config = new(this.ApiKey, this.Endpoint);
-
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config,
+                config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
                     Instructions = HostInstructions,
