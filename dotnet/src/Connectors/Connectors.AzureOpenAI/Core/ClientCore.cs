@@ -123,7 +123,7 @@ internal abstract class ClientCore
             unit: "{token}",
             description: "Number of tokens used");
 
-    private static Dictionary<string, object?> GetCompletionMetadata(OpenAIChatCompletion completions)
+    private static Dictionary<string, object?> GetChatCompletionMetadata(OpenAIChatCompletion completions)
     {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         return new Dictionary<string, object?>(8)
@@ -142,7 +142,7 @@ internal abstract class ClientCore
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
-    private static Dictionary<string, object?> GetCompletionMetadata(StreamingChatCompletionUpdate completionUpdate)
+    private static Dictionary<string, object?> GetChatCompletionMetadata(StreamingChatCompletionUpdate completionUpdate)
     {
         return new Dictionary<string, object?>(4)
         {
@@ -519,7 +519,7 @@ internal abstract class ClientCore
                         }
 
                         StreamingChatCompletionUpdate chatCompletionUpdate = responseEnumerator.Current;
-                        metadata = GetCompletionMetadata(chatCompletionUpdate);
+                        metadata = GetChatCompletionMetadata(chatCompletionUpdate);
                         streamedRole ??= chatCompletionUpdate.Role;
                         //streamedName ??= update.AuthorName;
                         finishReason = chatCompletionUpdate.FinishReason ?? default;
@@ -1065,7 +1065,7 @@ internal abstract class ClientCore
 
     private AzureOpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion)
     {
-        var message = new AzureOpenAIChatMessageContent(completion, this.DeploymentOrModelName, GetCompletionMetadata(completion));
+        var message = new AzureOpenAIChatMessageContent(completion, this.DeploymentOrModelName, GetChatCompletionMetadata(completion));
 
         message.Items.AddRange(this.GetFunctionCallContents(completion.ToolCalls));
 
