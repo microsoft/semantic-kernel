@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Exception thrown when a failure occurs while trying to convert models for storage or retrieval.
 /// </summary>
-public class VectorStoreRecordMappingException : KernelException
+[Experimental("SKEXP0001")]
+public class VectorStoreRecordMappingException : VectorStoreException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordMappingException"/> class.
