@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Exception thrown when a vector store command fails, such as upserting a record or deleting a collection.
 /// </summary>
-public class VectorStoreOperationException : KernelException
+[Experimental("SKEXP0001")]
+public class VectorStoreOperationException : VectorStoreException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreOperationException"/> class.
