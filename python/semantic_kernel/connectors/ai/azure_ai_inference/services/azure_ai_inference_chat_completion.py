@@ -11,6 +11,7 @@ from azure.ai.inference.models import (
     AsyncStreamingChatCompletions,
     ChatChoice,
     ChatCompletions,
+    ChatCompletionsFunctionToolCall,
     StreamingChatChoiceUpdate,
 )
 from azure.core.credentials import AzureKeyCredential
@@ -25,7 +26,11 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
     format_chat_history,
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionCallChoiceConfiguration,
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -126,6 +131,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         self._verify_function_choice_behavior(settings, **kwargs)
         kernel: Kernel = kwargs.get("kernel")
         arguments: KernelArguments = kwargs.get("arguments")
+        self._configure_function_choice_behavior(settings, kernel)
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
@@ -248,6 +254,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         self._verify_function_choice_behavior(settings, **kwargs)
         kernel: Kernel = kwargs.get("kernel")
         arguments: KernelArguments = kwargs.get("arguments")
+        self._configure_function_choice_behavior(settings, kernel)
         request_attempts = settings.function_choice_behavior.maximum_auto_invoke_attempts
 
         for request_index in range(request_attempts):
@@ -329,14 +336,15 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             )
         if choice.delta.tool_calls:
             for tool_call in choice.delta.tool_calls:
-                items.append(
-                    FunctionCallContent(
-                        id=tool_call.id,
-                        index=choice.index,
-                        name=tool_call.function.name,
-                        arguments=tool_call.function.arguments,
+                if isinstance(tool_call, ChatCompletionsFunctionToolCall):
+                    items.append(
+                        FunctionCallContent(
+                            id=tool_call.id,
+                            index=choice.index,
+                            name=tool_call.function.name,
+                            arguments=tool_call.function.arguments,
+                        )
                     )
-                )
 
         return StreamingChatMessageContent(
             role=AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT,
@@ -376,6 +384,30 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             if arguments is None and settings.function_choice_behavior.auto_invoke_kernel_functions:
                 raise ServiceInvalidExecutionSettingsError("Kernel arguments are required for auto tool calls.")
 
+    def _configure_function_choice_behavior(
+        self, settings: AzureAIInferenceChatPromptExecutionSettings, kernel: Kernel
+    ):
+        """Configure the function choice behavior to include the kernel functions."""
+
+        def _config_call_back(
+            function_choice_configuration: FunctionCallChoiceConfiguration,
+            settings: AzureAIInferenceChatPromptExecutionSettings,
+            type: str,
+        ):
+            """Update the settings from a FunctionChoiceConfiguration."""
+            if function_choice_configuration.available_functions:
+                settings.tool_choice = type
+                # The list of tool objects will be initialized with the JSON string returned by
+                # `kernel_function_metadata_to_function_call_format`.
+                settings.tools = [
+                    kernel_function_metadata_to_function_call_format(f)
+                    for f in function_choice_configuration.available_functions
+                ]
+
+        settings.function_choice_behavior.configure(
+            kernel=kernel, update_settings_callback=_config_call_back, settings=settings
+        )
+
     async def _process_function_calls(
         self,
         function_calls: list[FunctionCallContent],
@@ -391,7 +423,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
 
         return await asyncio.gather(
             *[
-                await kernel.invoke_function_call(
+                kernel.invoke_function_call(
                     function_call=function_call,
                     chat_history=chat_history,
                     arguments=arguments,
