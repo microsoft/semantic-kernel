@@ -22,7 +22,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\AzureOpenAITextEmbeddingGenerationService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureOpenAI.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Services\AzureOpenAITextEmbeddingGenerationService.cs" />
   </ItemGroup>
 
   <ItemGroup>
