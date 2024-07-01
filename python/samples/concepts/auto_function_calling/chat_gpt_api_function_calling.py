@@ -6,7 +6,6 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -32,6 +31,10 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
+# This concept example shows how to handle both streaming and non-streaming responses
+# To toggle the behavior, set the following flag accordingly:
+stream = True
+
 kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
@@ -39,9 +42,6 @@ kernel.add_service(OpenAIChatCompletion(service_id="chat"))
 
 plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
-# the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
-# kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
-# the math plugin is a core plugin and has the function calling enabled.
 kernel.add_plugin(MathPlugin(), plugin_name="math")
 kernel.add_plugin(TimePlugin(), plugin_name="time")
 
@@ -50,11 +50,29 @@ chat_function = kernel.add_function(
     plugin_name="ChatBot",
     function_name="Chat",
 )
-# enabling or disabling function calling is done by setting the function_call parameter for the completion.
-# when the function_call parameter is set to "auto" the model will decide which function to use, if any.
-# if you only want to use a specific function, set the name of that function in this parameter,
-# the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
-# if the model or api version does not support this you will get an error.
+
+# Enabling or disabling function calling is done by setting the `function_choice_behavior` attribute for the
+# prompt execution settings. When the function_call parameter is set to "auto" the model will decide which
+# function to use, if any.
+#
+# There are two ways to define the `function_choice_behavior` parameter:
+# 1. Using the type string as `"auto"`, `"required"`, or `"none"`. For example:
+#   configure `function_choice_behavior="auto"` parameter directly in the execution settings.
+# 2. Using the FunctionChoiceBehavior class. For example:
+#   `function_choice_behavior=FunctionChoiceBehavior.Auto()`.
+# Both of these configure the `auto` tool_choice and all of the available plugins/functions
+# registered on the kernel. If you want to limit the available plugins/functions, you must
+# configure the `filters` dictionary attribute for each type of function choice behavior.
+# For example:
+#
+# from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+
+# function_choice_behavior = FunctionChoiceBehavior.Auto(
+#     filters={"included_functions": ["time-date", "time-time", "math-Add"]}
+# )
+#
+# The filters attribute allows you to specify either: `included_functions`, `excluded_functions`,
+#  `included_plugins`, or `excluded_plugins`.
 
 # Note: the number of responses for auto invoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
@@ -63,9 +81,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_call_behavior=FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["math", "time"]}
-    ),
+    function_choice_behavior="auto",
 )
 
 history = ChatHistory()
@@ -93,7 +109,10 @@ def print_tool_calls(message: ChatMessageContent) -> None:
                 f"tool_call {i} arguments: {function_arguments}"
             )
             formatted_tool_calls.append(formatted_str)
-    print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+    if len(formatted_tool_calls) > 0:
+        print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+    else:
+        print("The model used its own knowledge and didn't return any tool calls.")
 
 
 async def handle_streaming(
@@ -110,7 +129,7 @@ async def handle_streaming(
     print("Mosscap:> ", end="")
     streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
-        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
+        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and isinstance(
             message[0], StreamingChatMessageContent
         ):
             streamed_chunks.append(message[0])
@@ -119,6 +138,8 @@ async def handle_streaming(
 
     if streamed_chunks:
         streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
+        if hasattr(streaming_chat_message, "content"):
+            print(streaming_chat_message.content)
         print("Auto tool calls is disabled, printing returned tool calls...")
         print_tool_calls(streaming_chat_message)
 
@@ -141,7 +162,6 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
-    stream = True
     if stream:
         await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
@@ -151,7 +171,7 @@ async def chat() -> bool:
         # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
         function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
-        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
+        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
             print_tool_calls(result.value[0])
             return True
 

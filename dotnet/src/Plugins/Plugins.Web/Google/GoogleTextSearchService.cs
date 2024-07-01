@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 /// <summary>
 /// A Google Search service that creates and recalls memories associated with text.
 /// </summary>
-public sealed class GoogleTextSearchService : ITextSearchService<string>, ITextSearchService<TextSearchResult>, IDisposable
+public sealed class GoogleTextSearchService : ITextSearchService<TextSearchResult>, ITextSearchService<global::Google.Apis.CustomSearchAPI.v1.Data.Result>, IDisposable
 {
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
@@ -59,19 +59,19 @@ public sealed class GoogleTextSearchService : ITextSearchService<string>, ITextS
     }
 
     /// <inheritdoc/>
-    async Task<KernelSearchResults<string>> ITextSearchService<string>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        var searchResponse = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
-
-        return new KernelSearchResults<string>(searchResponse, this.GetResultsAsync<string>(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
-    }
-
-    /// <inheritdoc/>
     async Task<KernelSearchResults<TextSearchResult>> ITextSearchService<TextSearchResult>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         var searchResponse = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
 
         return new KernelSearchResults<TextSearchResult>(searchResponse, this.GetResultsAsync<TextSearchResult>(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
+    }
+
+    /// <inheritdoc/>
+    async Task<KernelSearchResults<global::Google.Apis.CustomSearchAPI.v1.Data.Result>> ITextSearchService<global::Google.Apis.CustomSearchAPI.v1.Data.Result>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        var searchResponse = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
+
+        return new KernelSearchResults<global::Google.Apis.CustomSearchAPI.v1.Data.Result>(searchResponse, this.GetResultsAsync<global::Google.Apis.CustomSearchAPI.v1.Data.Result>(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
@@ -139,10 +139,6 @@ public sealed class GoogleTextSearchService : ITextSearchService<string>, ITextS
             if (item is T itemT)
             {
                 yield return itemT;
-            }
-            else if (typeof(T) == typeof(string))
-            {
-                yield return (T)(object)item.Snippet;
             }
             else if (typeof(T) == typeof(TextSearchResult))
             {

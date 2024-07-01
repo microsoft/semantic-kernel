@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// <summary>
 /// A Bing Search service that creates and recalls memories associated with text.
 /// </summary>
-public sealed class BingTextSearchService : ITextSearchService<string>, ITextSearchService<TextSearchResult>, ITextSearchService<BingWebPage>
+public sealed class BingTextSearchService : ITextSearchService<TextSearchResult>, ITextSearchService<BingWebPage>
 {
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes { get; }
@@ -43,31 +43,6 @@ public sealed class BingTextSearchService : ITextSearchService<string>, ITextSea
         this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingTextSearchService)));
 
         this.Attributes = new Dictionary<string, object?>();
-    }
-
-    /// <inheritdoc/>
-    async Task<KernelSearchResults<string>> ITextSearchService<string>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        BingSearchResponse<BingWebPage>? webPages = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
-
-        BingSearchResponse<string>? searchResponse = null;
-        if (webPages is not null && webPages.WebPages is not null)
-        {
-            searchResponse = new BingSearchResponse<string>()
-            {
-                Type = webPages.Type,
-                QueryContext = webPages.QueryContext,
-                WebPages = new BingWebPages<string>()
-                {
-                    Id = webPages.WebPages.Id,
-                    SomeResultsRemoved = webPages.WebPages.SomeResultsRemoved,
-                    TotalEstimatedMatches = webPages.WebPages.TotalEstimatedMatches,
-                    Value = webPages?.WebPages?.Value?.Select(x => x.Snippet).ToList() as List<string> ?? [],
-                },
-            };
-        }
-
-        return new KernelSearchResults<string>(searchResponse, this.GetResultsAsync(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>

@@ -11,19 +11,16 @@ from semantic_kernel.prompt_template import KernelPromptTemplate, PromptTemplate
 async def main():
     kernel = Kernel()
 
-    useAzureOpenAI = False
-    model = "gpt-35-turbo" if useAzureOpenAI else "gpt-3.5-turbo-1106"
-    service_id = model
-
+    service_id = "template_language"
     kernel.add_service(
-        OpenAIChatCompletion(service_id=service_id, ai_model_id=model),
+        OpenAIChatCompletion(service_id=service_id),
     )
 
     kernel.add_plugin(TimePlugin(), "time")
 
     function_definition = """
-    Today is: {{time.Date}}
-    Current time is: {{time.Time}}
+    Today is: {{time.date}}
+    Current time is: {{time.time}}
 
     Answer to the following questions using JSON syntax, including the data used.
     Is it morning, afternoon, evening, or night (morning/afternoon/evening/night)?
@@ -32,7 +29,7 @@ async def main():
 
     print("--- Rendered Prompt ---")
     prompt_template_config = PromptTemplateConfig(template=function_definition)
-    prompt_template = KernelPromptTemplate(prompt_template_config)
+    prompt_template = KernelPromptTemplate(prompt_template_config=prompt_template_config)
     rendered_prompt = await prompt_template.render(kernel, arguments=None)
     print(rendered_prompt)
 
@@ -41,10 +38,11 @@ async def main():
         template=function_definition,
         execution_settings=OpenAIChatPromptExecutionSettings(service_id=service_id, max_tokens=100),
         function_name="kind_of_day",
+        prompt_template=prompt_template,
     )
 
     print("--- Prompt Function Result ---")
-    result = await kernel.invoke(kind_of_day)
+    result = await kernel.invoke(function=kind_of_day)
     print(result)
 
 
