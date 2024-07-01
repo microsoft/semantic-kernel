@@ -103,7 +103,10 @@ async def test_invoke_function_call_processing_with_function_call_content_result
         role=AuthorRole.ASSISTANT, items=[mock_function_call]
     )
 
-    if prompt_execution_settings.function_choice_behavior is not None:
+    if (
+        prompt_execution_settings.function_choice_behavior is not None
+        and prompt_execution_settings.function_choice_behavior.type is not FunctionChoiceType.NONE
+    ):
         # Mock Tool Flow FunctionCall --> FunctionResult --> TextContent
         mock_messages = [[mock_message_function_call], [mock_message_text_content]]
     else:
@@ -161,16 +164,11 @@ async def test_invoke_function_call_processing_with_function_call_content_result
             return
 
         # Full Automation Flow should return TextContent
-        if (
-            prompt_execution_settings.function_choice_behavior.type is FunctionChoiceType.AUTO
-            or prompt_execution_settings.function_choice_behavior.type is FunctionChoiceType.REQUIRED
-        ):
+        if prompt_execution_settings.function_choice_behavior.type is not FunctionChoiceType.NONE:
             mock_process_function_call.assert_awaited()
-            assert result == [mock_message_text_content]
-        # None Flow should return FunctionCallContent
         else:
             mock_process_function_call.assert_not_awaited()
-            assert result == [mock_message_function_call]
+        assert result == [mock_message_text_content]
 
 
 @pytest.mark.asyncio
