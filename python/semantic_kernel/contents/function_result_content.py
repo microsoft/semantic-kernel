@@ -4,9 +4,10 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
-from pydantic import Field, field_validator
+from pydantic import Field
 
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG, ContentTypes
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -47,7 +48,7 @@ class FunctionResultContent(KernelContent):
     tag: ClassVar[str] = FUNCTION_RESULT_CONTENT_TAG
     id: str
     name: str | None = None
-    result: str
+    result: Any
     encoding: str | None = None
 
     @cached_property
@@ -59,13 +60,6 @@ class FunctionResultContent(KernelContent):
     def plugin_name(self) -> str | None:
         """Get the plugin name."""
         return self.split_name()[0]
-
-    @field_validator("result", mode="before")
-    @classmethod
-    def _validate_result(cls, result: Any):
-        if not isinstance(result, str):
-            result = str(result)
-        return result
 
     def __str__(self) -> str:
         """Return the text of the response."""
@@ -95,11 +89,30 @@ class FunctionResultContent(KernelContent):
         metadata: dict[str, Any] = {},
     ) -> _T:
         """Create an instance from a FunctionCallContent and a result."""
+        from semantic_kernel.contents.chat_message_content import ChatMessageContent
+        from semantic_kernel.functions.function_result import FunctionResult
+
         if function_call_content.metadata:
             metadata.update(function_call_content.metadata)
+        inner_content = result
+        if isinstance(result, FunctionResult):
+            result = result.value
+        if isinstance(result, TextContent):
+            res = result.text
+        elif isinstance(result, ChatMessageContent):
+            if isinstance(result.items[0], TextContent):
+                res = result.items[0].text
+            elif isinstance(result.items[0], ImageContent):
+                res = result.items[0].data_uri
+            elif isinstance(result.items[0], FunctionResultContent):
+                res = result.items[0].result
+            res = str(result)
+        else:
+            res = result
         return cls(
             id=function_call_content.id or "unknown",
-            result=str(result),
+            inner_content=inner_content,
+            result=res,
             name=function_call_content.name,
             ai_model_id=function_call_content.ai_model_id,
             metadata=metadata,
