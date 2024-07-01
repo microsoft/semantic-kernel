@@ -314,9 +314,13 @@ public sealed class Kernel
         KernelFunction function,
         KernelArguments arguments,
         FunctionResult functionResult,
-        Func<FunctionInvocationContext, Task> functionCallback)
+        Func<FunctionInvocationContext, Task> functionCallback,
+        CancellationToken cancellationToken)
     {
-        FunctionInvocationContext context = new(this, function, arguments, functionResult);
+        FunctionInvocationContext context = new(this, function, arguments, functionResult)
+        {
+            CancellationToken = cancellationToken
+        };
 
         await InvokeFilterOrFunctionAsync(this._functionInvocationFilters, functionCallback, context).ConfigureAwait(false);
 
@@ -351,9 +355,13 @@ public sealed class Kernel
     internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,
-        Func<PromptRenderContext, Task> renderCallback)
+        Func<PromptRenderContext, Task> renderCallback,
+        CancellationToken cancellationToken)
     {
-        PromptRenderContext context = new(this, function, arguments);
+        PromptRenderContext context = new(this, function, arguments)
+        {
+            CancellationToken = cancellationToken
+        };
 
         await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);
 
