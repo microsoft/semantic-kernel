@@ -18,7 +18,6 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 internal static class AssistantThreadActions
 {
-    /*AssistantsClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration*/
     private const string FunctionDelimiter = "-";
 
     private static readonly HashSet<AuthorRole> s_messageRoles =

@@ -286,7 +286,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
         AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 
-        OpenAIAssistantChannel channel = 
+        OpenAIAssistantChannel channel =
             new(this._client, thread.Id, this._config.Polling)
             {
                 Logger = this.LoggerFactory.CreateLogger<OpenAIAssistantChannel>()
