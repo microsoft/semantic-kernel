@@ -139,7 +139,7 @@ public sealed class AzureOpenAIFunctionToolCall
     /// <param name="toolCallIdsByIndex">Dictionary mapping indices to IDs.</param>
     /// <param name="functionNamesByIndex">Dictionary mapping indices to names.</param>
     /// <param name="functionArgumentBuildersByIndex">Dictionary mapping indices to arguments.</param>
-    internal static ChatToolCall[] ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
+    internal static ChatToolCall[] ConvertToolCallUpdatesToFunctionToolCalls(
         ref Dictionary<int, string>? toolCallIdsByIndex,
         ref Dictionary<int, string>? functionNamesByIndex,
         ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)

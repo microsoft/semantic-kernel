@@ -22,7 +22,7 @@ namespace SemanticKernel.IntegrationTestsV2.Connectors.AzureOpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class AzureOpenAIChatCompletionTests
+public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
 {
     [Fact]
     //[Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
@@ -74,13 +74,15 @@ public sealed class AzureOpenAIChatCompletionTests
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
-        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration!.ChatDeploymentName!,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
 
-        this._kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
+        kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
         {
             // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
             c.AddStandardResilienceHandler().Configure(o =>
@@ -94,7 +96,7 @@ public sealed class AzureOpenAIChatCompletionTests
             });
         });
 
-        var target = this._kernelBuilder.Build();
+        var target = kernelBuilder.Build();
 
         var plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
@@ -237,7 +239,9 @@ public sealed class AzureOpenAIChatCompletionTests
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        this._kernelBuilder.AddAzureOpenAIChatCompletion(
+        var kernelBuilder = base.CreateKernelBuilder();
+
+        kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             modelId: azureOpenAIConfiguration.ChatModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
@@ -245,11 +249,10 @@ public sealed class AzureOpenAIChatCompletionTests
             serviceId: azureOpenAIConfiguration.ServiceId,
             httpClient: httpClient);
 
-        return this._kernelBuilder.Build();
+        return kernelBuilder.Build();
     }
 
     private const string InputParameterName = "input";
-    private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
 
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)

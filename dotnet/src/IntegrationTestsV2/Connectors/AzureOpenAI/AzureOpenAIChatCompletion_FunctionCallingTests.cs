@@ -12,12 +12,11 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
-using SemanticKernel.IntegrationTestsV2.Connectors.AzureOpenAI;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
+namespace SemanticKernel.IntegrationTestsV2.Connectors.AzureOpenAI;
 
-public sealed class AzureOpenAIChatCompletionFunctionCallingTests
+public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrationTest
 {
     [Fact]
     public async Task CanAutoInvokeKernelFunctionsAsync()
@@ -707,7 +706,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
-        var kernelBuilder = Kernel.CreateBuilder();
+        var kernelBuilder = base.CreateKernelBuilder();
 
         kernelBuilder.AddAzureOpenAIChatCompletion(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
