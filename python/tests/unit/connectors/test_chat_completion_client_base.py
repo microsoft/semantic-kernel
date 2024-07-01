@@ -11,6 +11,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.connectors.ai.mistral_ai import MistralAIChatCompletion, MistralAIChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.ollama import OllamaChatCompletion, OllamaPromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import (
@@ -66,6 +67,20 @@ pytestmark = pytest.mark.parametrize('completion_object , prompt_execution_setti
         ),
         False,
         id="azure_ai_inference_not_implemented"
+    ),
+    pytest.param(
+        OllamaChatCompletion(ai_model_id="test"),
+        OllamaPromptExecutionSettings(), 
+        False,
+        id="ollama_none_settings"
+    ),
+    pytest.param(
+        OllamaChatCompletion(ai_model_id="test"),
+        OllamaPromptExecutionSettings(
+            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke()
+        ),
+        False,
+        id="ollama_not_implemented"
     ),
 ]
 )
