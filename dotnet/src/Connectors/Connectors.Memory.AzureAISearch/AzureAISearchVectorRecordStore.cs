@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -94,12 +95,13 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         }
 
         // Validate property types and store for later use.
+        var jsonSerializerOptions = this._options.jsonSerializerOptions ?? JsonSerializerOptions.Default;
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
-        this._keyPropertyName = properties.keyProperty.Name;
+        this._keyPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(jsonSerializerOptions, properties.keyProperty);
 
         // Build the list of property names from the current model that are either key or data fields.
-        this._nonVectorPropertyNames = properties.dataProperties.Concat([properties.keyProperty]).Select(x => x.Name).ToList();
+        this._nonVectorPropertyNames = properties.dataProperties.Concat([properties.keyProperty]).Select(x => VectorStoreRecordPropertyReader.GetJsonPropertyName(jsonSerializerOptions, x)).ToList();
     }
 
     /// <inheritdoc />

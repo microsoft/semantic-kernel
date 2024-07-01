@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using Azure.Search.Documents.Indexes;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -39,4 +41,10 @@ public sealed class AzureAISearchVectorRecordStoreOptions<TRecord>
     /// See <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the json serializer options to use when converting between the data model and the azure ai search record.
+    /// Note that when using the default mapper, you will need to provide the same set of <see cref="JsonSerializerOptions"/> both here and when constructing the <see cref="SearchIndexClient"/>.
+    /// </summary>
+    public JsonSerializerOptions? jsonSerializerOptions { get; init; } = null;
 }

@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
@@ -163,6 +167,8 @@ public class VectorStoreRecordPropertyReaderTests
 
         Assert.True(data1.HasEmbedding);
         Assert.False(data2.HasEmbedding);
+
+        Assert.Equal("Vector1", data1.EmbeddingPropertyName);
     }
 
     [Fact]
@@ -186,6 +192,56 @@ public class VectorStoreRecordPropertyReaderTests
 
         // Assert.
         Assert.Equal("Data properties must be one of the supported types: System.Int32, System.Single. Type of Data is System.String.", ex.Message);
+    }
+
+    [Fact]
+    public void VerifyStoragePropertyNameMapChecksAttributeAndFallsBackToPropertyName()
+    {
+        // Arrange.
+        var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(MultiPropsModel), true);
+
+        // Act.
+        var storageNameMap = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._multiPropsDefinition);
+
+        // Assert.
+        Assert.Equal(5, storageNameMap.Count);
+
+        // From Property Names.
+        Assert.Equal("Key", storageNameMap["Key"]);
+        Assert.Equal("Data1", storageNameMap["Data1"]);
+        Assert.Equal("Vector1", storageNameMap["Vector1"]);
+        Assert.Equal("Vector2", storageNameMap["Vector2"]);
+
+        // From storage property name on vector store record property attribute.
+        Assert.Equal("data_2", storageNameMap["Data2"]);
+    }
+
+    [Fact]
+    public void VerifyGetJsonPropertyNameChecksJsonOptionsAndJsonAttributesAndFallsBackToPropertyName()
+    {
+        // Arrange.
+        var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseUpper };
+        var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(MultiPropsModel), true);
+        var allProperties = (new PropertyInfo[] { properties.keyProperty })
+            .Concat(properties.dataProperties)
+            .Concat(properties.vectorProperties);
+
+        // Act.
+        var jsonNameMap = allProperties
+            .Select(p => new { PropertyName = p.Name, JsonName = VectorStoreRecordPropertyReader.GetJsonPropertyName(options, p) })
+            .ToDictionary(p => p.PropertyName, p => p.JsonName);
+
+        // Assert.
+        Assert.Equal(5, jsonNameMap.Count);
+
+        // From JsonNamingPolicy.
+        Assert.Equal("KEY", jsonNameMap["Key"]);
+        Assert.Equal("DATA1", jsonNameMap["Data1"]);
+        Assert.Equal("DATA2", jsonNameMap["Data2"]);
+        Assert.Equal("VECTOR1", jsonNameMap["Vector1"]);
+
+        // From JsonPropertyName attribute.
+        Assert.Equal("vector-2", jsonNameMap["Vector2"]);
     }
 
 #pragma warning disable CA1812 // Invalid unused classes error, since I am using these for testing purposes above.
@@ -266,6 +322,7 @@ public class VectorStoreRecordPropertyReaderTests
         public ReadOnlyMemory<float> Vector1 { get; set; }
 
         [VectorStoreRecordVector]
+        [JsonPropertyName("vector-2")]
         public ReadOnlyMemory<float> Vector2 { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;
@@ -277,7 +334,7 @@ public class VectorStoreRecordPropertyReaderTests
         [
             new VectorStoreRecordKeyProperty("Key"),
             new VectorStoreRecordDataProperty("Data1") { HasEmbedding = true, EmbeddingPropertyName = "Vector1" },
-            new VectorStoreRecordDataProperty("Data2"),
+            new VectorStoreRecordDataProperty("Data2") { StoragePropertyName = "data_2" },
             new VectorStoreRecordVectorProperty("Vector1"),
             new VectorStoreRecordVectorProperty("Vector2")
         ]

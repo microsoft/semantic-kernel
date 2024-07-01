@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Memory;
 
@@ -204,8 +205,11 @@ internal static class VectorStoreRecordPropertyReader
         var properties = FindProperties(type, supportsMultipleVectors);
         var definitionProperties = new List<VectorStoreRecordProperty>();
 
-        definitionProperties.Add(new VectorStoreRecordKeyProperty(properties.keyProperty.Name));
+        // Key property.
+        var keyAttribute = properties.keyProperty.GetCustomAttribute<VectorStoreRecordKeyAttribute>();
+        definitionProperties.Add(new VectorStoreRecordKeyProperty(properties.keyProperty.Name) { StoragePropertyName = keyAttribute!.StoragePropertyName });
 
+        // Data properties.
         foreach (var dataProperty in properties.dataProperties)
         {
             var dataAttribute = dataProperty.GetCustomAttribute<VectorStoreRecordDataAttribute>();
@@ -215,16 +219,21 @@ internal static class VectorStoreRecordPropertyReader
                 {
                     HasEmbedding = dataAttribute.HasEmbedding,
                     EmbeddingPropertyName = dataAttribute.EmbeddingPropertyName,
+                    StoragePropertyName = dataAttribute.StoragePropertyName
                 });
             }
         }
 
+        // Vector properties.
         foreach (var vectorProperty in properties.vectorProperties)
         {
             var vectorAttribute = vectorProperty.GetCustomAttribute<VectorStoreRecordVectorAttribute>();
             if (vectorAttribute is not null)
             {
-                definitionProperties.Add(new VectorStoreRecordVectorProperty(vectorProperty.Name));
+                definitionProperties.Add(new VectorStoreRecordVectorProperty(vectorProperty.Name)
+                {
+                    StoragePropertyName = vectorAttribute.StoragePropertyName
+                });
             }
         }
 
@@ -251,12 +260,89 @@ internal static class VectorStoreRecordPropertyReader
     }
 
     /// <summary>
-    /// Get the serialized name of a property by first checking the <see cref="JsonPropertyNameAttribute"/> and then falling back to the property name.
+    /// Get the json property name of a property by using the <see cref="JsonPropertyNameAttribute"/> if available, otherwise
+    /// using the <see cref="JsonNamingPolicy"/> if available, otherwise falling back to the property name.
     /// </summary>
-    /// <param name="property">The property to retrieve a serialized name for.</param>
-    /// <returns>The serialized name for the property.</returns>
-    public static string GetSerializedPropertyName(PropertyInfo property)
+    /// <param name="options">The options used for json serialization.</param>
+    /// <param name="property">The property to retrieve a storage name for.</param>
+    /// <returns>The json storage property name.</returns>
+    public static string GetJsonPropertyName(JsonSerializerOptions options, PropertyInfo property)
     {
-        return property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name;
+        var jsonPropertyNameAttribute = property.GetCustomAttribute<JsonPropertyNameAttribute>();
+        if (jsonPropertyNameAttribute is not null)
+        {
+            return jsonPropertyNameAttribute.Name;
+        }
+
+        if (options.PropertyNamingPolicy is not null)
+        {
+            return options.PropertyNamingPolicy.ConvertName(property.Name);
+        }
+
+        return property.Name;
+    }
+
+    /// <summary>
+    /// Get the storage name of a property by first checking the <see cref="VectorStoreRecordDefinition"/>, if one is available,
+    /// otherwise falling back to the attributes on the property and finally, the property name.
+    /// </summary>
+    /// <param name="property">The property to retrieve a storage name for.</param>
+    /// <param name="vectorStoreRecordDefinition">The property configuration, if available.</param>
+    /// <returns>The storage name for the property.</returns>
+    public static string GetStoragePropertyName(PropertyInfo property, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    {
+        if (vectorStoreRecordDefinition is not null)
+        {
+            // First check to see if the developer configured a storage property name on the record definition.
+            if (vectorStoreRecordDefinition.Properties.FirstOrDefault(p => p.PropertyName == property.Name) is VectorStoreRecordProperty recordProperty && recordProperty.StoragePropertyName is not null)
+            {
+                return recordProperty.StoragePropertyName;
+            }
+
+            // Otherwise, return just the property name.
+            return property.Name;
+        }
+        // If no definition was supplied, check the attributes.
+        else if (property.GetCustomAttribute<VectorStoreRecordDataAttribute>() is VectorStoreRecordDataAttribute dataAttribute)
+        {
+            return dataAttribute.StoragePropertyName ?? property.Name;
+        }
+        else if (property.GetCustomAttribute<VectorStoreRecordVectorAttribute>() is VectorStoreRecordVectorAttribute vectorAttribute)
+        {
+            return vectorAttribute.StoragePropertyName ?? property.Name;
+        }
+        else if (property.GetCustomAttribute<VectorStoreRecordKeyAttribute>() is VectorStoreRecordKeyAttribute keyAttribute)
+        {
+            return keyAttribute.StoragePropertyName ?? property.Name;
+        }
+
+        // Otherwise, return just the property name.
+        return property.Name;
+    }
+
+    /// <summary>
+    /// Build a map of property names to the names under which they should be saved in storage, for the given properties.
+    /// </summary>
+    /// <param name="properties">The properties to build the map for.</param>
+    /// <param name="vectorStoreRecordDefinition">The property configuration, if available.</param>
+    /// <returns>The map from property names to the names under which they should be saved in storage.</returns>
+    public static Dictionary<string, string> BuildPropertyNameToStorageNameMap(
+        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties,
+        VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    {
+        var storagePropertyNameMap = new Dictionary<string, string>();
+        storagePropertyNameMap.Add(properties.keyProperty.Name, GetStoragePropertyName(properties.keyProperty, vectorStoreRecordDefinition));
+
+        foreach (var dataProperty in properties.dataProperties)
+        {
+            storagePropertyNameMap.Add(dataProperty.Name, GetStoragePropertyName(dataProperty, vectorStoreRecordDefinition));
+        }
+
+        foreach (var vectorProperty in properties.vectorProperties)
+        {
+            storagePropertyNameMap.Add(vectorProperty.Name, GetStoragePropertyName(vectorProperty, vectorStoreRecordDefinition));
+        }
+
+        return storagePropertyNameMap;
     }
 }
