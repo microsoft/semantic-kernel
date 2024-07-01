@@ -261,7 +261,7 @@ internal abstract class ClientCore
         }
 
         // Convert the incoming execution settings to OpenAI settings.
-        AzureOpenAIChatCompletionExecutionSettings chatExecutionSettings = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettings(executionSettings);
+        AzureOpenAIPromptExecutionSettings chatExecutionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
@@ -454,7 +454,7 @@ internal abstract class ClientCore
                 JsonSerializer.Serialize(executionSettings));
         }
 
-        AzureOpenAIChatCompletionExecutionSettings chatExecutionSettings = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettings(executionSettings);
+        AzureOpenAIPromptExecutionSettings chatExecutionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
@@ -731,7 +731,7 @@ internal abstract class ClientCore
         Kernel? kernel,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        AzureOpenAIChatCompletionExecutionSettings chatSettings = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettings(executionSettings);
+        AzureOpenAIPromptExecutionSettings chatSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ChatHistory chat = CreateNewChat(prompt, chatSettings);
 
         await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
@@ -746,7 +746,7 @@ internal abstract class ClientCore
         Kernel? kernel,
         CancellationToken cancellationToken = default)
     {
-        AzureOpenAIChatCompletionExecutionSettings chatSettings = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettings(executionSettings);
+        AzureOpenAIPromptExecutionSettings chatSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         ChatHistory chat = CreateNewChat(text, chatSettings);
         return (await this.GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
@@ -790,7 +790,7 @@ internal abstract class ClientCore
     /// <param name="text">Optional chat instructions for the AI service</param>
     /// <param name="executionSettings">Execution settings</param>
     /// <returns>Chat object</returns>
-    private static ChatHistory CreateNewChat(string? text = null, AzureOpenAIChatCompletionExecutionSettings? executionSettings = null)
+    private static ChatHistory CreateNewChat(string? text = null, AzureOpenAIPromptExecutionSettings? executionSettings = null)
     {
         var chat = new ChatHistory();
 
@@ -812,7 +812,7 @@ internal abstract class ClientCore
     }
 
     private ChatCompletionOptions CreateChatCompletionOptions(
-        AzureOpenAIChatCompletionExecutionSettings executionSettings,
+        AzureOpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
         ToolCallingConfig toolCallingConfig,
         Kernel? kernel)
@@ -863,7 +863,7 @@ internal abstract class ClientCore
         return options;
     }
 
-    private static List<ChatMessage> CreateChatCompletionMessages(AzureOpenAIChatCompletionExecutionSettings executionSettings, ChatHistory chatHistory)
+    private static List<ChatMessage> CreateChatCompletionMessages(AzureOpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory)
     {
         List<ChatMessage> messages = [];
 
@@ -1291,7 +1291,7 @@ internal abstract class ClientCore
         }
     }
 
-    private ToolCallingConfig GetToolCallingConfiguration(Kernel? kernel, AzureOpenAIChatCompletionExecutionSettings executionSettings, int requestIndex)
+    private ToolCallingConfig GetToolCallingConfiguration(Kernel? kernel, AzureOpenAIPromptExecutionSettings executionSettings, int requestIndex)
     {
         if (executionSettings.ToolCallBehavior is null)
         {
@@ -1331,7 +1331,7 @@ internal abstract class ClientCore
             AutoInvoke: autoInvoke);
     }
 
-    private static ChatResponseFormat? GetResponseFormat(AzureOpenAIChatCompletionExecutionSettings executionSettings)
+    private static ChatResponseFormat? GetResponseFormat(AzureOpenAIPromptExecutionSettings executionSettings)
     {
         switch (executionSettings.ResponseFormat)
         {

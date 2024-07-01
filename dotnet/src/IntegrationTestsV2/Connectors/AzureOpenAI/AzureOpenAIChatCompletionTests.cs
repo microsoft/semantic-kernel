@@ -33,7 +33,7 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
 
         var func = kernel.CreateFunctionFromPrompt(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.",
-            new AzureOpenAIChatCompletionExecutionSettings());
+            new AzureOpenAIPromptExecutionSettings());
 
         // Act
         var result = await func.InvokeAsync(kernel, new() { [InputParameterName] = "Jupiter" });
@@ -169,7 +169,7 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
 
-        var settings = new AzureOpenAIChatCompletionExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         // Act
         var result = await kernel.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?", new(settings));
@@ -205,7 +205,7 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
     public async Task LogProbsDataIsReturnedWhenRequestedAsync(bool? logprobs, int? topLogprobs)
     {
         // Arrange
-        var settings = new AzureOpenAIChatCompletionExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
+        var settings = new AzureOpenAIPromptExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
 
         var kernel = this.CreateAndInitializeKernel();
 

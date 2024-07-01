@@ -11,14 +11,14 @@ namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests;
 /// <summary>
 /// Unit tests of AzureOpenAIPromptExecutionSettingsTests
 /// </summary>
-public class AzureOpenAIChatCompletionExecutionSettingsTests
+public class AzureOpenAIPromptExecutionSettingsTests
 {
     [Fact]
     public void ItCreatesOpenAIExecutionSettingsWithCorrectDefaults()
     {
         // Arrange
         // Act
-        AzureOpenAIChatCompletionExecutionSettings executionSettings = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettings(null, 128);
+        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(null, 128);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -38,7 +38,7 @@ public class AzureOpenAIChatCompletionExecutionSettingsTests
     public void ItUsesExistingOpenAIExecutionSettings()
     {
         // Arrange
-        AzureOpenAIChatCompletionExecutionSettings actualSettings = new()
+        AzureOpenAIPromptExecutionSettings actualSettings = new()
         {
             Temperature = 0.7,
             TopP = 0.7,
@@ -53,7 +53,7 @@ public class AzureOpenAIChatCompletionExecutionSettingsTests
         };
 
         // Act
-        AzureOpenAIChatCompletionExecutionSettings executionSettings = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettings(actualSettings);
+        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -73,7 +73,7 @@ public class AzureOpenAIChatCompletionExecutionSettingsTests
         };
 
         // Act
-        AzureOpenAIChatCompletionExecutionSettings executionSettings = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettings(actualSettings, null);
+        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings, null);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -105,7 +105,7 @@ public class AzureOpenAIChatCompletionExecutionSettingsTests
         };
 
         // Act
-        AzureOpenAIChatCompletionExecutionSettings executionSettings = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettings(actualSettings, null);
+        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings, null);
 
         // Assert
         AssertExecutionSettings(executionSettings);
@@ -135,7 +135,7 @@ public class AzureOpenAIChatCompletionExecutionSettingsTests
         };
 
         // Act
-        AzureOpenAIChatCompletionExecutionSettings executionSettings = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettings(actualSettings, null);
+        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings, null);
 
         // Assert
         AssertExecutionSettings(executionSettings);
@@ -164,7 +164,7 @@ public class AzureOpenAIChatCompletionExecutionSettingsTests
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
-        AzureOpenAIChatCompletionExecutionSettings executionSettings = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettings(actualSettings);
+        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         AssertExecutionSettings(executionSettings);
@@ -176,7 +176,7 @@ public class AzureOpenAIChatCompletionExecutionSettingsTests
     public void ItUsesCorrectChatSystemPrompt(string chatSystemPrompt, string expectedChatSystemPrompt)
     {
         // Arrange & Act
-        var settings = new AzureOpenAIChatCompletionExecutionSettings { ChatSystemPrompt = chatSystemPrompt };
+        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = chatSystemPrompt };
 
         // Assert
         Assert.Equal(expectedChatSystemPrompt, settings.ChatSystemPrompt);
@@ -195,7 +195,7 @@ public class AzureOpenAIChatCompletionExecutionSettingsTests
             "frequency_penalty": 0.0
         }
         """;
-        var executionSettings = JsonSerializer.Deserialize<AzureOpenAIChatCompletionExecutionSettings>(configPayload);
+        var executionSettings = JsonSerializer.Deserialize<AzureOpenAIPromptExecutionSettings>(configPayload);
 
         // Act
         var clone = executionSettings!.Clone();
@@ -221,7 +221,7 @@ public class AzureOpenAIChatCompletionExecutionSettingsTests
             "token_selection_biases": { "1": 2, "3": 4 }
         }
         """;
-        var executionSettings = JsonSerializer.Deserialize<AzureOpenAIChatCompletionExecutionSettings>(configPayload);
+        var executionSettings = JsonSerializer.Deserialize<AzureOpenAIPromptExecutionSettings>(configPayload);
 
         // Act
         executionSettings!.Freeze();
@@ -242,17 +242,17 @@ public class AzureOpenAIChatCompletionExecutionSettingsTests
     public void FromExecutionSettingsWithDataDoesNotIncludeEmptyStopSequences()
     {
         // Arrange
-        var executionSettings = new AzureOpenAIChatCompletionExecutionSettings { StopSequences = [] };
+        var executionSettings = new AzureOpenAIPromptExecutionSettings { StopSequences = [] };
 
         // Act
 #pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
-        var executionSettingsWithData = AzureOpenAIChatCompletionExecutionSettings.FromExecutionSettingsWithData(executionSettings);
+        var executionSettingsWithData = AzureOpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 #pragma warning restore CS0618
         // Assert
         Assert.Null(executionSettingsWithData.StopSequences);
     }
 
-    private static void AssertExecutionSettings(AzureOpenAIChatCompletionExecutionSettings executionSettings)
+    private static void AssertExecutionSettings(AzureOpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);
         Assert.Equal(0.7, executionSettings.Temperature);

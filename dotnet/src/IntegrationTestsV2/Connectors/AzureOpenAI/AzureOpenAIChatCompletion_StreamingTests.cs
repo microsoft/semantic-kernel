@@ -26,7 +26,7 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 
         var chatCompletion = kernel.Services.GetRequiredService<IChatCompletionService>();
 
-        var settings = new AzureOpenAIChatCompletionExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         var stringBuilder = new StringBuilder();
 
@@ -89,7 +89,7 @@ public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTes
 
         var textGeneration = kernel.Services.GetRequiredService<ITextGenerationService>();
 
-        var settings = new AzureOpenAIChatCompletionExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         var stringBuilder = new StringBuilder();
 

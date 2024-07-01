@@ -27,7 +27,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         var chatCompletion = kernel.Services.GetRequiredService<IChatCompletionService>();
 
-        var settings = new AzureOpenAIChatCompletionExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         // Act
         var result = await chatCompletion.GetChatMessageContentAsync("What is the capital of France?", settings, kernel);
@@ -93,7 +93,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         var textGeneration = kernel.Services.GetRequiredService<ITextGenerationService>();
 
-        var settings = new AzureOpenAIChatCompletionExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         // Act
         var result = await textGeneration.GetTextContentAsync("What is the capital of France?", settings, kernel);
