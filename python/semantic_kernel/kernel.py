@@ -36,6 +36,7 @@ from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
+from semantic_kernel.utils.naming import generate_random_ascii_name
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (
@@ -128,6 +129,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
         if not function:
             if not function_name or not plugin_name:
                 raise KernelFunctionNotFoundError("No function(s) or function- and plugin-name provided")
@@ -207,9 +210,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
     async def invoke_prompt(
         self,
-        function_name: str,
-        plugin_name: str,
         prompt: str,
+        function_name: str | None = None,
+        plugin_name: str | None = None,
         arguments: KernelArguments | None = None,
         template_format: Literal[
             "semantic-kernel",
@@ -221,9 +224,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """Invoke a function from the provided prompt.
 
         Args:
-            function_name (str): The name of the function
-            plugin_name (str): The name of the plugin
             prompt (str): The prompt to use
+            function_name (str): The name of the function, optional
+            plugin_name (str): The name of the plugin, optional
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
@@ -237,7 +240,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             raise TemplateSyntaxError("The prompt is either null or empty.")
 
         function = KernelFunctionFromPrompt(
-            function_name=function_name,
+            function_name=function_name or generate_random_ascii_name(),
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
@@ -246,9 +249,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
     async def invoke_prompt_stream(
         self,
-        function_name: str,
-        plugin_name: str,
         prompt: str,
+        function_name: str | None = None,
+        plugin_name: str | None = None,
         arguments: KernelArguments | None = None,
         template_format: Literal[
             "semantic-kernel",
@@ -261,9 +264,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """Invoke a function from the provided prompt and stream the results.
 
         Args:
-            function_name (str): The name of the function
-            plugin_name (str): The name of the plugin
             prompt (str): The prompt to use
+            function_name (str): The name of the function, optional
+            plugin_name (str): The name of the plugin, optional
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
             return_function_results (bool): If True, the function results are yielded as a list[FunctionResult]
@@ -280,7 +283,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 
         function = KernelFunctionFromPrompt(
-            function_name=function_name,
+            function_name=function_name or generate_random_ascii_name(),
             plugin_name=plugin_name,
             prompt=prompt,
             template_format=template_format,
@@ -314,13 +317,13 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         self,
         function_call: FunctionCallContent,
         chat_history: ChatHistory,
-        arguments: "KernelArguments",
+        arguments: "KernelArguments | None" = None,
         function_call_count: int | None = None,
         request_index: int | None = None,
         function_behavior: "FunctionChoiceBehavior" = None,  # type: ignore
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
-        args_cloned = copy(arguments)
+        args_cloned = copy(arguments) if arguments else KernelArguments()
         try:
             parsed_args = function_call.to_kernel_arguments()
             if parsed_args:
@@ -383,8 +386,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             arguments=args_cloned,
             chat_history=chat_history,
             function_result=FunctionResult(function=function_to_call.metadata, value=None),
-            function_count=function_call_count,
-            request_sequence_index=request_index,
+            function_count=function_call_count or 0,
+            request_sequence_index=request_index or 0,
         )
         if function_call.index is not None:
             invocation_context.function_sequence_index = function_call.index
