@@ -4,6 +4,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.azure_ai_inference import (
+    AzureAIInferenceChatCompletion,
+    AzureAIInferenceChatPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.connectors.ai.mistral_ai import MistralAIChatCompletion, MistralAIChatPromptExecutionSettings
@@ -18,38 +22,20 @@ from semantic_kernel.contents.chat_message_content import (
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
-pytestmark = pytest.mark.parametrize('completion_object , prompt_execution_settings , fake_tool_call', [
+pytestmark = pytest.mark.parametrize('completion_object , prompt_execution_settings , function_calling_implemented', [
+    pytest.param(
+        MistralAIChatCompletion(),
+        MistralAIChatPromptExecutionSettings(),
+        True,
+        id="mistral_none_settings"
+    ),
     pytest.param(
         MistralAIChatCompletion(),
         MistralAIChatPromptExecutionSettings(
             function_choice_behavior=FunctionChoiceBehavior.Auto()
         ),
         True,
-        id="MistralToolProcessingTrueAutoInvoke"
-    ),
-    pytest.param(
-        MistralAIChatCompletion(),
-        MistralAIChatPromptExecutionSettings(
-            function_choice_behavior=FunctionChoiceBehavior.Auto()
-        ),
-        False,
-        id="MistralToolProcessingFalseAutoInvoke"
-    ),
-    pytest.param(
-        MistralAIChatCompletion(),
-        MistralAIChatPromptExecutionSettings(
-            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke()
-        ),
-        True,
-        id="MistralToolProcessingTrueNoneInvoke"
-    ),
-    pytest.param(
-        MistralAIChatCompletion(),
-        MistralAIChatPromptExecutionSettings(
-            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke()
-        ),
-        False,
-        id="MistralToolProcessingFalseNoneInvoke"
+        id="mistral_tool_auto"
     ),
     pytest.param(
         MistralAIChatCompletion(),
@@ -57,23 +43,42 @@ pytestmark = pytest.mark.parametrize('completion_object , prompt_execution_setti
             function_choice_behavior=FunctionChoiceBehavior.Required()
         ),
         True,
-        id="MistralToolProcessingTrueRequired"
-    )
+        id="mistral_tool_required"
+    ),
+    pytest.param(
+        MistralAIChatCompletion(),
+        MistralAIChatPromptExecutionSettings(
+            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke()
+        ),
+        True,
+        id="mistral_tool_none_invoke"
+    ),
+    pytest.param(
+        AzureAIInferenceChatCompletion(ai_model_id="test"),
+        AzureAIInferenceChatPromptExecutionSettings(),
+        False,
+        id="azure_ai_inference_none_settings"
+    ),
+    pytest.param(
+        AzureAIInferenceChatCompletion(ai_model_id="test"),
+        AzureAIInferenceChatPromptExecutionSettings(
+            function_choice_behavior=FunctionChoiceBehavior.NoneInvoke()
+        ),
+        False,
+        id="azure_ai_inference_not_implemented"
+    ),
 ]
 )
 
 
 @pytest.mark.asyncio
-async def test_function_call_processing_with_function_call_content_result(
+async def test_invoke_function_call_processing_with_function_call_content_result(
     completion_object: ChatCompletionClientBase,
     prompt_execution_settings: PromptExecutionSettings,
-    kernel: Kernel,
-    fake_tool_call: bool
+    function_calling_implemented: bool,
+    kernel: Kernel
 ):
-
-    arguments = KernelArguments()
-    chat_history = ChatHistory(system_message="Test")
-
+    # Prepare Connector Mocks
     mock_text = MagicMock(spec=TextContent)
     mock_message_text_content = ChatMessageContent(
         role=AuthorRole.ASSISTANT, items=[mock_text]
@@ -83,9 +88,11 @@ async def test_function_call_processing_with_function_call_content_result(
         role=AuthorRole.ASSISTANT, items=[mock_function_call]
     )
 
-    if fake_tool_call:
+    if prompt_execution_settings.function_choice_behavior is not None:
+        # Mock Tool Flow FunctionCall --> FunctionResult --> TextContent
         mock_messages = [[mock_message_function_call], [mock_message_text_content]]
     else:
+        # Mock None Flow TextContent
         mock_messages = [[mock_message_text_content]]
 
     def fake_function_result(
@@ -115,30 +122,80 @@ async def test_function_call_processing_with_function_call_content_result(
             
         ) as mock_process_function_call,
     ):
+        # Check for Proper Error when function Calling is not implemented
+        if not function_calling_implemented and prompt_execution_settings.function_choice_behavior is not None:
+            with pytest.raises(NotImplementedError):
+                await completion_object.invoke(
+                    chat_history=ChatHistory(system_message="Test"),
+                    settings=prompt_execution_settings,
+                    kernel=kernel,
+                    arguments=KernelArguments()
+                )
+            return
+
+        result = await completion_object.invoke(
+            chat_history=ChatHistory(system_message="Test"),
+            settings=prompt_execution_settings,
+            kernel=kernel,
+            arguments=KernelArguments()
+        )
+
+        # Flow without Function Choice Settings should return TextContent
+        if prompt_execution_settings.function_choice_behavior is None:
+            assert result == [mock_message_text_content]
+            return
+
+        # Full Automation Flow should return TextContent
+        if (
+            prompt_execution_settings.function_choice_behavior.type is FunctionChoiceType.AUTO
+            or prompt_execution_settings.function_choice_behavior.type is FunctionChoiceType.REQUIRED
+        ):
+            mock_process_function_call.assert_awaited()
+            assert result == [mock_message_text_content]
+        # None Flow should return FunctionCallContent
+        else:
+            mock_process_function_call.assert_not_awaited()
+            assert result == [mock_message_function_call]
+
+
+@pytest.mark.asyncio
+async def test_invoke_function_call_processing_with_text_content_content_result(
+    completion_object: ChatCompletionClientBase,
+    prompt_execution_settings: PromptExecutionSettings,
+    function_calling_implemented: bool,
+    kernel: Kernel,
+):
+    
+    arguments = KernelArguments()
+    chat_history = ChatHistory(system_message="Test")
+
+    mock_text = MagicMock(spec=TextContent)
+    mock_message_text_content = ChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[mock_text]
+    )
+    mock_messages = [[mock_message_text_content]]
+
+    with (
+        patch.object(
+            completion_object.__class__, 
+            'get_chat_message_contents',
+              side_effect=mock_messages),
+    ):
+        # Check for Proper Error when function Calling is not implemented
+        if not function_calling_implemented and prompt_execution_settings.function_choice_behavior is not None:
+            with pytest.raises(NotImplementedError):
+                await completion_object.invoke(
+                    chat_history=ChatHistory(system_message="Test"),
+                    settings=prompt_execution_settings,
+                    kernel=kernel,
+                    arguments=KernelArguments()
+                )
+            return
+
         result = await completion_object.invoke(
             chat_history=chat_history,
             settings=prompt_execution_settings,
             kernel=kernel,
             arguments=arguments
         )
-
-        if (
-            prompt_execution_settings.function_choice_behavior.type is FunctionChoiceType.AUTO
-            and fake_tool_call is True
-        ):
-            mock_process_function_call.assert_awaited()
-            assert result == [mock_message_text_content]
-        elif (
-            prompt_execution_settings.function_choice_behavior.type is FunctionChoiceType.NONE
-            and fake_tool_call is True 
-        ):
-            mock_process_function_call.assert_not_awaited()
-            assert result == [mock_message_function_call]
-        elif (
-            prompt_execution_settings.function_choice_behavior.type is FunctionChoiceType.REQUIRED
-            and fake_tool_call is True 
-        ):
-            mock_process_function_call.assert_awaited()
-            assert result == [mock_message_text_content]
-        else:
-            assert result ==  [mock_message_text_content]
+        assert result == [mock_message_text_content]

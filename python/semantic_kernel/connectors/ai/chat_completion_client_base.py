@@ -85,6 +85,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         self,
         function_call_configuration: "FunctionCallConfiguration",
         settings: "PromptExecutionSettings",
+        type: str,
     ) -> None:
         """This Method is used to convert the function call configuration to the desired format for the connector.
         
@@ -96,6 +97,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Args:
             function_call_configuration (FunctionCallConfiguration): The function call configuration.
             settings (PromptExecutionSettings): The settings to update.
+            type (str): The type of the function choice configuration.
         """
         raise NotImplementedError("Function Calling is not implemented for this Connector.")
     
@@ -212,7 +214,6 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
                 return completions
         else:
             # do a final call, without function calling when the max has been reached.
-            settings.function_choice_behavior.auto_invoke_kernel_functions = False
             return await self.get_chat_message_contents(
                     chat_history=chat_history,
                     settings=settings,
