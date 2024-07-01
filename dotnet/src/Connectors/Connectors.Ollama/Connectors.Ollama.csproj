@@ -21,6 +21,10 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.Ollama.UnitTests" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="OllamaSharp" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />

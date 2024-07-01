@@ -2,14 +2,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Ollama.Core;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
+using OllamaSharp;
+using OllamaSharp.Models.Chat;
+using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
@@ -35,28 +37,73 @@ public sealed class OllamaChatCompletionService : IChatCompletionService
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        this.Client = new OllamaClient(
-            modelId: model,
-            baseUri: baseUri,
-#pragma warning disable CA2000
-            httpClient: HttpClientProvider.GetHttpClient(httpClient),
-#pragma warning restore CA2000
-            logger: loggerFactory?.CreateLogger(typeof(OllamaChatCompletionService))
-        );
+        this.Client = new OllamaApiClient(baseUri, model);
 
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    private OllamaClient Client { get; }
+    private OllamaApiClient Client { get; }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+    public async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        var request = CreateChatRequest(chatHistory, this.Client.SelectedModel);
+
+        var answer = await this.Client.SendChat(request, _ => { }, cancellationToken).ConfigureAwait(false);
+
+        var last = answer.Last();
+
+        return [new(GetAuthorRole(last.Role) ?? AuthorRole.Assistant, content: last.Content)];
+    }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.StreamGenerateChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+    public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        var request = CreateChatRequest(chatHistory, this.Client.SelectedModel);
+
+        OllamaChatResponseStreamer streamer = new();
+
+        foreach (var message in await this.Client.SendChat(request, streamer, cancellationToken).ConfigureAwait(false))
+        {
+            yield return new StreamingChatMessageContent(GetAuthorRole(message.Role), message.Content);
+        }
+    }
+
+    private static AuthorRole? GetAuthorRole(ChatRole? role) => role.ToString().ToUpperInvariant() switch
+    {
+        "USER" => AuthorRole.User,
+        "ASSISTANT" => AuthorRole.Assistant,
+        "SYSTEM" => AuthorRole.System,
+        _ => null
+    };
+
+    private static ChatRequest CreateChatRequest(ChatHistory chatHistory, string selectedModel)
+    {
+        var messages = new List<Message>();
+        foreach (var chatHistoryMessage in chatHistory)
+        {
+            ChatRole role = ChatRole.User;
+            if (chatHistoryMessage.Role == AuthorRole.System)
+            {
+                role = ChatRole.System;
+            }
+            else if (chatHistoryMessage.Role == AuthorRole.Assistant)
+            {
+                role = ChatRole.Assistant;
+            }
+
+            messages.Add(new Message(role, chatHistoryMessage.Content!));
+        }
+
+        var request = new ChatRequest
+        {
+            Messages = messages.ToList(),
+            Model = selectedModel,
+            Stream = true
+        };
+        return request;
+    }
 }
