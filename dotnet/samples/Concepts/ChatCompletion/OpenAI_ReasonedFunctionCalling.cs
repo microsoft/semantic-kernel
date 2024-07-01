@@ -64,7 +64,7 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
     }
 
     /// <summary>
-    /// Shows how to use a function that has ben decorated with an extra parameter which must be set by the model
+    /// Shows how to use a function that has been decorated with an extra parameter which must be set by the model
     /// with the reason this function needs to be called.
     /// </summary>
     [Fact]
