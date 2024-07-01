@@ -58,14 +58,26 @@ internal partial class ClientCore
             Temperature = executionSettings.Temperature
         };
 
-    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(OpenAIAudioToTextExecutionSettings.TimeStampGranularities? granularity)
+    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(IEnumerable<OpenAIAudioToTextExecutionSettings.TimeStampGranularities>? granularities)
     {
-        return granularity switch
+        AudioTimestampGranularities result = AudioTimestampGranularities.Default;
+
+        if (granularities is not null)
         {
-            OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Word => AudioTimestampGranularities.Word,
-            OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Segment => AudioTimestampGranularities.Segment,
-            _ => AudioTimestampGranularities.Default
-        };
+            foreach (var granularity in granularities)
+            {
+                var openAIGranularity = granularity switch
+                {
+                    OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Word => AudioTimestampGranularities.Word,
+                    OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Segment => AudioTimestampGranularities.Segment,
+                    _ => AudioTimestampGranularities.Default
+                };
+
+                result |= openAIGranularity;
+            }
+        }
+
+        return result;
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)
