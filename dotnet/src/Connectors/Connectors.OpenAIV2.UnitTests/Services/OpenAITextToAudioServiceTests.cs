@@ -112,10 +112,10 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         var result = await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings(voice) { ResponseFormat = format });
 
         // Assert
-        var resquestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         var audioData = result[0].Data!.Value;
-        Assert.Contains($"\"voice\":\"{voice}\"", resquestBody);
-        Assert.Contains($"\"response_format\":\"{format}\"", resquestBody);
+        Assert.Contains($"\"voice\":\"{voice}\"", requestBody);
+        Assert.Contains($"\"response_format\":\"{format}\"", requestBody);
         Assert.False(audioData.IsEmpty);
         Assert.True(audioData.Span.SequenceEqual(expectedByteArray));
     }
