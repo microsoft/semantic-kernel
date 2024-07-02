@@ -519,11 +519,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     private static void ValidateChatHistory(ChatHistory chatHistory)
     {
         Verify.NotNullOrEmpty(chatHistory);
-        ThrowIfChatContainsOnlySystemMessages(chatHistory);
-    }
-
-    private static void ThrowIfChatContainsOnlySystemMessages(ChatHistory chatHistory)
-    {
         if (chatHistory.All(message => message.Role == AuthorRole.System))
         {
             throw new InvalidOperationException("Chat history can't contain only system messages.");
