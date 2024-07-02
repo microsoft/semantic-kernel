@@ -128,9 +128,9 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         ):
             return await self._send_chat_request(chat_history, settings)
 
-        self._verify_function_choice_behavior(settings, **kwargs)
         kernel: Kernel = kwargs.get("kernel")
         arguments: KernelArguments = kwargs.get("arguments")
+        self._verify_function_choice_behavior(settings, kernel, arguments)
         self._configure_function_choice_behavior(settings, kernel)
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
@@ -248,9 +248,9 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Get streaming chat message contents from the Azure AI Inference service with auto invoking functions."""
-        self._verify_function_choice_behavior(settings, **kwargs)
         kernel: Kernel = kwargs.get("kernel")
         arguments: KernelArguments = kwargs.get("arguments")
+        self._verify_function_choice_behavior(settings, kernel, arguments)
         self._configure_function_choice_behavior(settings, kernel)
         request_attempts = settings.function_choice_behavior.maximum_auto_invoke_attempts
 
@@ -370,11 +370,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             "usage": response.usage,
         }
 
-    def _verify_function_choice_behavior(self, settings: AzureAIInferenceChatPromptExecutionSettings, **kwargs: Any):
+    def _verify_function_choice_behavior(
+        self,
+        settings: AzureAIInferenceChatPromptExecutionSettings,
+        kernel: Kernel,
+        arguments: KernelArguments,
+    ):
         """Verify the function choice behavior."""
-        kernel = kwargs.get("kernel", None)
-        arguments = kwargs.get("arguments", None)
-
         if settings.function_choice_behavior is not None:
             if kernel is None:
                 raise ServiceInvalidExecutionSettingsError("Kernel is required for tool calls.")
