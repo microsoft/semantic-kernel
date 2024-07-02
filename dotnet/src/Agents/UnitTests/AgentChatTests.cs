@@ -135,7 +135,7 @@ public class AgentChatTests
         public int InvokeCount { get; private set; }
 
         public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            IReadOnlyList<ChatMessageContent> history,
+            ChatHistory history,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await Task.Delay(0, cancellationToken);
@@ -146,7 +146,7 @@ public class AgentChatTests
         }
 
         public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
-            IReadOnlyList<ChatMessageContent> history,
+            ChatHistory history,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await Task.Delay(0, cancellationToken);

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -16,7 +17,7 @@ public interface IChatHistoryHandler
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        IReadOnlyList<ChatMessageContent> history,
+        ChatHistory history,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -26,6 +27,6 @@ public interface IChatHistoryHandler
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of streaming content.</returns>
     public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
-        IReadOnlyList<ChatMessageContent> history,
+        ChatHistory history,
         CancellationToken cancellationToken = default);
 }

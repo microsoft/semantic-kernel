@@ -24,12 +24,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        IReadOnlyList<ChatMessageContent> history,
+        ChatHistory history,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IChatCompletionService chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
+
+        int messageCount = chat.Count;
 
         this.Logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
 
@@ -45,6 +47,16 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             this.Logger.LogInformation("[{MethodName}] Invoked {ServiceType} with message count: {MessageCount}.", nameof(InvokeAsync), chatCompletionService.GetType(), messages.Count);
         }
 
+        // Capture mutated messages related function calling / tools
+        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
+        {
+            ChatMessageContent message = chat[messageIndex];
+
+            message.AuthorName = this.Name;
+
+            history.Add(message);
+        }
+
         foreach (ChatMessageContent message in messages ?? [])
         {
             // TODO: MESSAGE SOURCE - ISSUE #5731
@@ -56,12 +68,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
-        IReadOnlyList<ChatMessageContent> history,
+        ChatHistory history,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IChatCompletionService chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
+
+        int messageCount = chat.Count;
 
         this.Logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
 
@@ -75,6 +89,16 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         if (this.Logger.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation("[{MethodName}] Invoked {ServiceType} with streaming messages.", nameof(InvokeAsync), chatCompletionService.GetType());
+        }
+
+        // Capture mutated messages related function calling / tools
+        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
+        {
+            ChatMessageContent message = chat[messageIndex];
+
+            message.AuthorName = this.Name;
+
+            history.Add(message);
         }
 
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
@@ -94,6 +118,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         {
             chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
         }
+
         chat.AddRange(history);
 
         return chat;
