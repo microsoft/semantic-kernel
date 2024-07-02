@@ -15,7 +15,7 @@ namespace SemanticKernel.Connectors.Google.UnitTests.Core.Gemini;
 public sealed class GeminiRequestTests
 {
     [Fact]
-    public void FromPromptItReturnsGeminiRequestWithConfiguration()
+    public void FromPromptItReturnsWithConfiguration()
     {
         // Arrange
         var prompt = "prompt-example";
@@ -37,7 +37,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromPromptItReturnsGeminiRequestWithSafetySettings()
+    public void FromPromptItReturnsWithSafetySettings()
     {
         // Arrange
         var prompt = "prompt-example";
@@ -59,7 +59,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromPromptItReturnsGeminiRequestWithPrompt()
+    public void FromPromptItReturnsWithPrompt()
     {
         // Arrange
         var prompt = "prompt-example";
@@ -73,7 +73,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromChatHistoryItReturnsGeminiRequestWithConfiguration()
+    public void FromChatHistoryItReturnsWithConfiguration()
     {
         // Arrange
         ChatHistory chatHistory = [];
@@ -98,7 +98,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromChatHistoryItReturnsGeminiRequestWithSafetySettings()
+    public void FromChatHistoryItReturnsWithSafetySettings()
     {
         // Arrange
         ChatHistory chatHistory = [];
@@ -123,7 +123,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromChatHistoryItReturnsGeminiRequestWithChatHistory()
+    public void FromChatHistoryItReturnsWithChatHistory()
     {
         // Arrange
         string systemMessage = "system-message";
@@ -151,7 +151,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromChatHistoryMultipleSystemMessagesItReturnsGeminiRequestWithSystemMessages()
+    public void FromChatHistoryMultipleSystemMessagesItReturnsWithSystemMessages()
     {
         // Arrange
         string[] systemMessages = ["system-message", "system-message2", "system-message3", "system-message4"];
@@ -168,7 +168,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromChatHistoryTextAsTextContentItReturnsGeminiRequestWithChatHistory()
+    public void FromChatHistoryTextAsTextContentItReturnsWithChatHistory()
     {
         // Arrange
         ChatHistory chatHistory = [];
@@ -188,7 +188,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromChatHistoryImageAsImageContentItReturnsGeminiRequestWithChatHistory()
+    public void FromChatHistoryImageAsImageContentItReturnsWithChatHistory()
     {
         // Arrange
         ReadOnlyMemory<byte> imageAsBytes = new byte[] { 0x00, 0x01, 0x02, 0x03 };
@@ -293,7 +293,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void AddFunctionItAddsFunctionToGeminiRequest()
+    public void AddFunctionToGeminiRequest()
     {
         // Arrange
         var request = new GeminiRequest();
@@ -308,7 +308,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void AddMultipleFunctionsItAddsFunctionsToGeminiRequest()
+    public void AddMultipleFunctionsToGeminiRequest()
     {
         // Arrange
         var request = new GeminiRequest();
@@ -329,7 +329,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void AddChatMessageToRequestItAddsChatMessageToGeminiRequest()
+    public void AddChatMessageToRequestt()
     {
         // Arrange
         ChatHistory chat = [];
