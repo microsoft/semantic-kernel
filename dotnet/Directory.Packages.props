@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
-    <PackageVersion Include="Azure.AI.OpenAI.Assistants" Version="1.0.0-beta.3" />
+    <PackageVersion Include="Azure.AI.OpenAI.Assistants" Version="1.0.0-beta.4" />
     <PackageVersion Include="Azure.Identity" Version="1.12.0" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.2.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
