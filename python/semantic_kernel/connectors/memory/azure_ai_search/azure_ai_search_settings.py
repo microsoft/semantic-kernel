@@ -24,9 +24,9 @@ class AzureAISearchSettings(KernelBaseSettings):
     endpoint: HttpsUrl
     index_name: str | None = None
 
-    def model_dump(self) -> dict[str, str]:
+    def model_dump(self, **kwargs) -> dict[str, str]:
         """Dump the model to a dictionary."""
-        data = super().model_dump()
+        data = super().model_dump(**kwargs)
         data.update(
             {
                 "endpoint": str(self.endpoint),

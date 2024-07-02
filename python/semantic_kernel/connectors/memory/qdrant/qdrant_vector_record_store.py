@@ -13,6 +13,7 @@ else:
     from typing_extensions import override
 
 from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
+from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
 from semantic_kernel.exceptions import ServiceResponseException
@@ -98,6 +99,9 @@ class QdrantVectorRecordStore(VectorRecordStoreBase[str | int, TModel]):
             env_file_encoding=env_file_encoding,
         )
         try:
+            if APP_INFO:
+                kwargs.setdefault("metadata", {})
+                kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(kwargs["metadata"])
             self._qdrant_client = AsyncQdrantClient(**settings.model_dump(exclude_none=True), **kwargs)
         except ValueError as ex:
             raise MemoryConnectorInitializationError("Failed to create Qdrant client.", ex) from ex
@@ -153,6 +157,7 @@ class QdrantVectorRecordStore(VectorRecordStoreBase[str | int, TModel]):
         return [
             PointStruct(
                 id=record.pop(self._key_field),
+                # TODO: deal with non-named vectors
                 vector={field: record.pop(field) for field in self._data_model_definition.vector_fields},
                 payload=record,
             )

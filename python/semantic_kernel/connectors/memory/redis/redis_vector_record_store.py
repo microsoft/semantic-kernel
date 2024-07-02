@@ -97,32 +97,32 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         )
 
     @override
-    async def _inner_delete(self, keys: list[str], collection_name: str | None = None) -> None:
+    async def _inner_delete(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> None:
         await self._database.delete(*[self._get_redis_key(key, collection_name) for key in keys])
 
     @override
     def _serialize_dicts_to_store_models(
         self,
-        record: list[dict[str, Any]],
+        records: list[dict[str, Any]],
         collection_name: str | None = None,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
         """Serialize the dict to a Redis store model."""
         results = []
-        for rec in record:
+        for record in records:
             result = {"mapping": {"timestamp": datetime.now().isoformat()}}
             metadata = {}
             for name, field in self._data_model_definition.fields.items():
                 if isinstance(field, VectorStoreRecordVectorField):
-                    if isinstance(rec[name], np.ndarray):
-                        result["mapping"][name] = rec[name].tobytes()
+                    if isinstance(record[name], np.ndarray):
+                        result["mapping"][name] = record[name].tobytes()
                     else:
-                        result["mapping"][name] = np.array(rec[name]).astype(np.float64).tobytes()
+                        result["mapping"][name] = np.array(record[name]).astype(np.float64).tobytes()
                     continue
                 if isinstance(field, VectorStoreRecordKeyField):
-                    result["name"] = self._get_redis_key(rec[name], collection_name)
+                    result["name"] = self._get_redis_key(record[name], collection_name)
                     continue
-                metadata[name] = rec[field.name]
+                metadata[name] = record[field.name]
             result["mapping"]["metadata"] = json.dumps(metadata)
             results.append(result)
         return results
@@ -130,21 +130,21 @@ class RedisVectorRecordStore(VectorRecordStoreBase[str, TModel]):
     @override
     def _deserialize_store_models_to_dicts(
         self,
-        search_result: list[dict[bytes, bytes]],
+        records: list[dict[bytes, bytes]],
         keys: list[str],
         collection_name: str | None = None,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
         results = []
-        for key, rec in zip(keys, search_result):
-            flattened = json.loads(rec[b"metadata"])
+        for key, record in zip(keys, records):
+            flattened = json.loads(record[b"metadata"])
             for name, field in self._data_model_definition.fields.items():
                 if isinstance(field, VectorStoreRecordKeyField):
                     flattened[name] = self._unget_redis_key(key, collection_name)
                 if isinstance(field, VectorStoreRecordVectorField):
                     # TODO (eavanvalkenburg): This is a temporary fix to handle the fact that
                     # the vector is returned as a bytes object, and the user needs that or a list.
-                    vector = np.frombuffer(rec[name.encode()], dtype=np.float64).tolist()
+                    vector = np.frombuffer(record[name.encode()], dtype=np.float64).tolist()
                     if field.cast_function:
                         flattened[name] = field.cast_function(vector)
                     else:
