@@ -72,5 +72,8 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetTextFromAudioContentsAsync(content, executionSettings, cancellationToken);
+    {
+        this._client.LogActionDetails();
+        return this._client.GetTextFromAudioContentsAsync(content, executionSettings, cancellationToken);
+    }
 }

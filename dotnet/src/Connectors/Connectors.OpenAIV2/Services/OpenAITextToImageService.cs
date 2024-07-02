@@ -28,10 +28,10 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0010")]
 public class OpenAITextToImageService : ITextToImageService
 {
-    private readonly ClientCore _core;
+    private readonly ClientCore _client;
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAITextToImageService"/> class.
@@ -50,7 +50,7 @@ public class OpenAITextToImageService : ITextToImageService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organizationId, endpoint, httpClient, loggerFactory?.CreateLogger(this.GetType()));
+        this._client = new(modelId, apiKey, organizationId, endpoint, httpClient, loggerFactory?.CreateLogger(this.GetType()));
     }
 
     /// <summary>
@@ -64,13 +64,13 @@ public class OpenAITextToImageService : ITextToImageService
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
     }
 
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        this._core.LogActionDetails();
-        return this._core.GenerateImageAsync(description, width, height, cancellationToken);
+        this._client.LogActionDetails();
+        return this._client.GenerateImageAsync(description, width, height, cancellationToken);
     }
 }

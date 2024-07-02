@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -88,6 +89,37 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         Assert.True(audioData.Span.SequenceEqual(expectedByteArray));
     }
 
+    [Theory]
+    [InlineData("echo", "wav")]
+    [InlineData("fable", "opus")]
+    [InlineData("onyx", "flac")]
+    [InlineData("nova", "aac")]
+    [InlineData("shimmer", "pcm")]
+    public async Task GetAudioContentVoicesWorksCorrectlyAsync(string voice, string format)
+    {
+        // Arrange
+        byte[] expectedByteArray = [0x00, 0x00, 0xFF, 0x7F];
+
+        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
+        await using var stream = new MemoryStream(expectedByteArray);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        // Act
+        var result = await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings(voice) { ResponseFormat = format });
+
+        // Assert
+        var resquestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        var audioData = result[0].Data!.Value;
+        Assert.Contains($"\"voice\":\"{voice}\"", resquestBody);
+        Assert.Contains($"\"response_format\":\"{format}\"", resquestBody);
+        Assert.False(audioData.IsEmpty);
+        Assert.True(audioData.Span.SequenceEqual(expectedByteArray));
+    }
+
     [Fact]
     public async Task GetAudioContentThrowsWhenVoiceIsNotSupportedAsync()
     {
@@ -98,6 +130,18 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () => await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings("voice")));
+    }
+
+    [Fact]
+    public async Task GetAudioContentThrowsWhenFormatIsNotSupportedAsync()
+    {
+        // Arrange
+        byte[] expectedByteArray = [0x00, 0x00, 0xFF, 0x7F];
+
+        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings() { ResponseFormat = "not supported" }));
     }
 
     [Theory]
@@ -126,6 +170,26 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
 
         // Assert
         Assert.StartsWith(expectedBaseAddress, this._messageHandlerStub.RequestUri!.AbsoluteUri, StringComparison.InvariantCulture);
+    }
+
+    [Fact]
+    public async Task GetAudioContentDoesLogActionAsync()
+    {
+        // Assert
+        var modelId = "whisper-1";
+        var logger = new Mock<ILogger<OpenAITextToAudioService>>();
+        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+
+        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
+
+        // Arrange
+        var sut = new OpenAITextToAudioService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
+
+        // Act
+        await sut.GetAudioContentsAsync("description");
+
+        // Assert
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAITextToAudioService.GetAudioContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
     }
 
     public void Dispose()
