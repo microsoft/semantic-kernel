@@ -9,7 +9,7 @@ namespace Connectors.Amazon.Models.Amazon;
 public class TitanRequest
 {
     [Serializable]
-    public class TitanChatCompletionRequest : IChatCompletionRequest
+    public class TitanTextGenerationRequest : ITextGenerationRequest
     {
         [JsonPropertyName("inputText")]
         public required string InputText { get; set; }
@@ -18,13 +18,13 @@ public class TitanRequest
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public AmazonTitanTextGenerationConfig? TextGenerationConfig { get; set; }
 
-        int? IChatCompletionRequest.MaxTokens => TextGenerationConfig?.MaxTokenCount;
+        int? ITextGenerationRequest.MaxTokens => TextGenerationConfig?.MaxTokenCount;
 
-        double? IChatCompletionRequest.TopP => TextGenerationConfig?.TopP;
+        double? ITextGenerationRequest.TopP => TextGenerationConfig?.TopP;
 
-        double? IChatCompletionRequest.Temperature => TextGenerationConfig?.Temperature;
+        double? ITextGenerationRequest.Temperature => TextGenerationConfig?.Temperature;
 
-        IList<string>? IChatCompletionRequest.StopSequences => TextGenerationConfig?.StopSequences;
+        IList<string>? ITextGenerationRequest.StopSequences => TextGenerationConfig?.StopSequences;
     }
 
     public class AmazonTitanTextGenerationConfig

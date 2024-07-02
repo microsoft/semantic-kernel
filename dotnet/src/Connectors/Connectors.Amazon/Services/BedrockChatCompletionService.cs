@@ -8,21 +8,25 @@ using Connectors.Amazon.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
+using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Connectors.Amazon.Services;
 
-public class BedrockChatCompletionService : BedrockClientBase<IChatCompletionRequest, IChatCompletionResponse>, IChatCompletionService
+public class BedrockChatCompletionService : BedrockChatCompletionClient<IChatCompletionRequest, IChatCompletionResponse>, IChatCompletionService
 {
-    private readonly AmazonBedrockRuntimeClient _chatCompletionClient;
-    public BedrockChatCompletionService(string modelId, IAmazonBedrockRuntime bedrockApi, IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse> ioService)
-        : base(modelId, bedrockApi, ioService)
+    private readonly Dictionary<string, object?> _attributesInternal = [];
+    private readonly BedrockChatCompletionClient<IChatCompletionRequest, IChatCompletionResponse> _chatCompletionClient;
+    public BedrockChatCompletionService(string modelId, IAmazonBedrockRuntime bedrockApi)
+        : base(modelId, bedrockApi)
     {
     }
 
-    public BedrockChatCompletionService(string modelId, IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse> ioService)
-        : base(modelId, new AmazonBedrockRuntimeClient(), ioService)
+    public BedrockChatCompletionService(string modelId)
+        : base(modelId, new AmazonBedrockRuntimeClient())
     {
     }
+
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributesInternal;
 
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
         ChatHistory chatHistory,
@@ -30,7 +34,7 @@ public class BedrockChatCompletionService : BedrockClientBase<IChatCompletionReq
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        return this._chatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
@@ -41,4 +45,14 @@ public class BedrockChatCompletionService : BedrockClientBase<IChatCompletionReq
     {
         throw new NotImplementedException();
     }
+    // public static IChatCompletion GetChatCompletionService(string modelId)
+    // {
+    //     if (modelId.StartsWith("titan-"))
+    //     {
+    //         return new AmazonTitanChatCompletion(modelId);
+    //     }
+    //     // other models here
+    //
+    //     throw new ArgumentException($"Invalid model ID: {modelId}");
+    // }
 }
