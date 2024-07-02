@@ -259,21 +259,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldThrowInvalidOperationExceptionIfChatHistoryContainsMoreThanOneSystemMessageAsync()
-    {
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = new ChatHistory("System message");
-        chatHistory.AddSystemMessage("System message 2");
-        chatHistory.AddSystemMessage("System message 3");
-        chatHistory.AddUserMessage("hello");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
-    }
-
-    [Fact]
-    public async Task ShouldPassConvertedSystemMessageToUserMessageToRequestAsync()
+    public async Task ShouldPassSystemMessageToRequestAsync()
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
@@ -287,10 +273,35 @@ public sealed class GeminiChatGenerationTests : IDisposable
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
-        var systemMessage = request.Contents[0].Parts![0].Text;
-        var messageRole = request.Contents[0].Role;
-        Assert.Equal(AuthorRole.User, messageRole);
+        Assert.NotNull(request.SystemMessages);
+        var systemMessage = request.SystemMessages.Parts![0].Text;
+        Assert.Null(request.SystemMessages.Role);
         Assert.Equal(message, systemMessage);
+    }
+
+    [Fact]
+    public async Task ShouldPassMultipleSystemMessagesToRequestAsync()
+    {
+        // Arrange
+        string[] messages = ["System message 1", "System message 2", "System message 3"];
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = new ChatHistory(messages[0]);
+        chatHistory.AddSystemMessage(messages[1]);
+        chatHistory.AddSystemMessage(messages[2]);
+        chatHistory.AddUserMessage("Hello");
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.NotNull(request.SystemMessages);
+        Assert.Null(request.SystemMessages.Role);
+        Assert.Collection(request.SystemMessages.Parts!,
+            item => Assert.Equal(messages[0], item.Text),
+            item => Assert.Equal(messages[1], item.Text),
+            item => Assert.Equal(messages[2], item.Text));
     }
 
     [Fact]
