@@ -20,8 +20,6 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
     response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
-    tools: list[dict[str, Any]] | None = Field(None, max_length=64)
-    tool_choice: str | None = None
     messages: list[dict[str, Any]] | None = None
     safe_mode: bool = False
     safe_prompt: bool = False
