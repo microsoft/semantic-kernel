@@ -21,6 +21,6 @@ internal class OllamaChatResponseStreamer : IResponseStreamer<ChatResponseStream
 
     public bool TryGetMessage(out string result)
     {
-       return this._messages.TryDequeue(out result);
+        return this._messages.TryDequeue(out result);
     }
 }

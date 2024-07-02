@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Services;
 using OllamaSharp;
 using OllamaSharp.Models;
 
