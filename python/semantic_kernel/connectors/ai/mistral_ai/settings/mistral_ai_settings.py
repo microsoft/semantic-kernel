@@ -20,11 +20,6 @@ class MistralAISettings(KernelBaseSettings):
         (Env var MISTRALAI_API_KEY)
     - chat_model_id: str | None - The The Mistral AI chat model ID to use see https://docs.mistral.ai/getting-started/models/.
         (Env var MISTRALAI_CHAT_MODEL_ID)
-    - emmbedding_model_id: str | None - The The Mistral AI embedding model ID to use see https://docs.mistral.ai/getting-started/models/.
-        (Env var MISTRALAI_EMBEDDING_MODEL_ID)
-    - requests_per_second: str | None - Mistral has a Requests per second limit,
-        for function calling we have to wait this time for the second request.
-        (Env var MISTRALAI_REQUESTS_PER_SECOND)
     - env_file_path: str | None - if provided, the .env settings are read from this file path location
     """
 
@@ -32,4 +27,3 @@ class MistralAISettings(KernelBaseSettings):
 
     api_key: SecretStr
     chat_model_id: str | None = None
-    requests_per_second: int = 1

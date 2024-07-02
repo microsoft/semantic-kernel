@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import logging
 from collections.abc import AsyncGenerator
 from typing import Any
@@ -45,14 +44,12 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
     completion_tokens: int = 0
     total_tokens: int = 0
     async_client: MistralAsyncClient | None = None
-    requests_per_second: int = 1
 
     def __init__(
         self,
         ai_model_id: str | None = None,
         service_id: str | None = None,
         api_key: str | None = None,
-        requests_per_second: int | None = None,
         async_client: MistralAsyncClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
@@ -65,8 +62,6 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             service_id (str | None): Service ID tied to the execution settings.
             api_key (str | None): The optional API key to use. If provided will override,
                 the env vars or .env file value.
-            requests_per_second (int | None): The number of requests per second to make,
-                Free Tier is limited to 1 Request per second.
             async_client (Optional[MistralAsyncClient]): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
@@ -76,23 +71,22 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             mistralai_settings = MistralAISettings.create(
                 api_key=api_key,
                 chat_model_id=ai_model_id,
-                requests_per_second=requests_per_second,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create MistralAI settings.", ex) from ex
         
+        if not mistralai_settings.chat_model_id:
+            raise ServiceInitializationError("The MistralAI chat model ID is required.")
+
         if not async_client:
             async_client = MistralAsyncClient(
                 api_key=mistralai_settings.api_key.get_secret_value(),
             )
-        if not mistralai_settings.chat_model_id:
-            raise ServiceInitializationError("The MistralAI chat model ID is required.")
 
         super().__init__(
             async_client=async_client,
-            requests_per_second=requests_per_second or mistralai_settings.requests_per_second,
             service_id=service_id or mistralai_settings.chat_model_id,
             ai_model_id=ai_model_id or mistralai_settings.chat_model_id,
         )
@@ -166,7 +160,6 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             yield [
                 self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
-        await asyncio.sleep(1 / self.requests_per_second)
 
     # endregion
     # region content conversion to SK
