@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+import pytest
 
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
@@ -108,3 +109,18 @@ def test_create_options():
     assert options["temperature"] == 0.5
     assert options["top_p"] == 0.5
     assert options["max_tokens"] == 128
+
+
+def test_create_options_with_function_choice_behavior():
+    with pytest.raises(NotImplementedError):
+        MistralAIChatPromptExecutionSettings(
+            service_id="test_service",
+            function_choice_behavior="auto",
+            extension_data={
+                "temperature": 0.5,
+                "top_p": 0.5,
+                "max_tokens": 128,
+                "tools": [{}],
+                "messages": [{"role": "system", "content": "Hello"}],
+            },
+        )

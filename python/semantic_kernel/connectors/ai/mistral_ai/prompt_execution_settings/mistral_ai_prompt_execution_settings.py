@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
@@ -28,3 +28,11 @@ class MistralAIChatPromptExecutionSettings(MistralAIPromptExecutionSettings):
     temperature: float | None = Field(None, ge=0.0, le=2.0)
     top_p: float | None = Field(None, ge=0.0, le=1.0)
     random_seed: int | None = None
+
+    @model_validator(mode="after")
+    def check_function_call_behavior(self) -> None:
+        """Check if the user is requesting function call behavior."""
+        if self.function_choice_behavior is not None:
+            raise NotImplementedError("MistralAI does not support function call behavior.")
+            
+        return
