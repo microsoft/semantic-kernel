@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using OpenAI;
-using OpenAI.Audio;
 using Xunit;
 using static Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIAudioToTextExecutionSettings;
 
