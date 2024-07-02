@@ -305,36 +305,6 @@ public sealed class GeminiChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldThrowNotSupportedIfChatHistoryHaveIncorrectOrderAsync()
-    {
-        // Arrange
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Hello");
-        chatHistory.AddAssistantMessage("Hi");
-        chatHistory.AddAssistantMessage("Hi me again");
-        chatHistory.AddUserMessage("How are you?");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<NotSupportedException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
-    }
-
-    [Fact]
-    public async Task ShouldThrowNotSupportedIfChatHistoryNotEndWithUserMessageAsync()
-    {
-        // Arrange
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Hello");
-        chatHistory.AddAssistantMessage("Hi");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<NotSupportedException>(
-            () => client.GenerateChatMessageAsync(chatHistory));
-    }
-
-    [Fact]
     public async Task ShouldThrowArgumentExceptionIfChatHistoryIsEmptyAsync()
     {
         // Arrange

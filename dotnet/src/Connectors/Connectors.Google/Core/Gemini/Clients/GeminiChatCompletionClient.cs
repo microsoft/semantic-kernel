@@ -520,7 +520,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     {
         Verify.NotNullOrEmpty(chatHistory);
         ThrowIfChatContainsOnlySystemMessages(chatHistory);
-        ValidateChatHistoryMessagesOrder(chatHistory);
     }
 
     private static void ThrowIfChatContainsOnlySystemMessages(ChatHistory chatHistory)
@@ -528,32 +527,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         if (chatHistory.All(message => message.Role == AuthorRole.System))
         {
             throw new InvalidOperationException("Chat history can't contain only system messages.");
-        }
-    }
-
-    private static void ValidateChatHistoryMessagesOrder(ChatHistory chatHistory)
-    {
-        bool incorrectOrder = false;
-        // Exclude tool calls and system messages from the validation
-        ChatHistory chatHistoryCopy = new(chatHistory
-            .Where(message => message.Role != AuthorRole.Tool &&
-                              message.Role != AuthorRole.System &&
-                              message is not GeminiChatMessageContent { ToolCalls: not null }));
-        for (int i = 0; i < chatHistoryCopy.Count; i++)
-        {
-            if (chatHistoryCopy[i].Role != (i % 2 == 0 ? AuthorRole.User : AuthorRole.Assistant) ||
-                (i == chatHistoryCopy.Count - 1 && chatHistoryCopy[i].Role != AuthorRole.User))
-            {
-                incorrectOrder = true;
-                break;
-            }
-        }
-
-        if (incorrectOrder)
-        {
-            throw new NotSupportedException(
-                "Gemini API support only chat history with order of messages alternates between the user and the assistant. " +
-                "Last message have to be User message.");
         }
     }
 
