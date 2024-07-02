@@ -45,7 +45,7 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task WhenHttpClientDoesNotHaveBaseAddresssProvidedEndpointShouldBeUsedAsync()
+    public async Task WhenHttpClientDoesNotHaveBaseAddressProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
         this._httpClient.BaseAddress = null;

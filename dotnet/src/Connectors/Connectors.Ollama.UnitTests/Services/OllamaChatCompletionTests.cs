@@ -50,7 +50,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task WhenHttpClientDoesNotHaveBaseAddresssProvidedEndpointShouldBeUsedAsync()
+    public async Task WhenHttpClientDoesNotHaveBaseAddressProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
         this._httpClient.BaseAddress = null;
