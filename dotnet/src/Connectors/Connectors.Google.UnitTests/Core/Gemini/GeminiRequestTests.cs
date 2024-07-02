@@ -157,6 +157,9 @@ public sealed class GeminiRequestTests
         string[] systemMessages = ["system-message", "system-message2", "system-message3", "system-message4"];
         var chatHistory = new ChatHistory(systemMessages[0]);
         chatHistory.AddUserMessage("user-message");
+        chatHistory.AddSystemMessage(systemMessages[1]);
+        chatHistory.AddMessage(AuthorRole.System,
+            [new TextContent(systemMessages[2]), new TextContent(systemMessages[3])]);
         var executionSettings = new GeminiPromptExecutionSettings();
 
         // Act
@@ -164,7 +167,7 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.NotNull(request.SystemInstruction?.Parts);
-        Assert.Contains(request.SystemInstruction.Parts, part => systemMessages.Contains(part.Text));
+        Assert.All(systemMessages, msg => Assert.Contains(request.SystemInstruction.Parts, p => p.Text == msg));
     }
 
     [Fact]
