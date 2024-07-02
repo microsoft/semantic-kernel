@@ -73,7 +73,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
     /// If generated plan is important, then an access to <see cref="ChatHistory"/> is required. It's possible to get it by using <see cref="IChatCompletionService"/>.
     /// </summary>
     [Fact]
-    public async Task ExecutionOptionsAsync()
+    public async Task PlanExecutionOptionsAsync()
     {
         var kernel = GetKernel();
 
@@ -297,7 +297,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 
         var kernel = builder.Build();
 
-        // Add plugins we want to allow the model to utilize.
+        // Import sample plugins.
         kernel.ImportPluginFromType<TimePlugin>();
         kernel.ImportPluginFromType<WeatherPlugin>();
 
