@@ -249,8 +249,9 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     return env_vars
 
 
+@pytest.fixture()
 def mistralai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for AzureOpenAISettings."""
+    """Fixture to set environment variables for MistralAISettings."""
     if exclude_list is None:
         exclude_list = []
 
