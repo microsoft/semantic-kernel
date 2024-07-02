@@ -71,7 +71,7 @@ the chat has not been restored.  The chat may continue to be utilized as the `Ag
 
 ## Analysis
 
-**Relationships:**
+#### Relationships:
 
 The relationships between any `AgentChat`, the `Agent` instances participating in the conversation, and the associated `AgentChannel` conduits are illustrated in the following diagram:
 
@@ -81,13 +81,13 @@ While an `AgentChat` manages a primary `ChatHistory`, each `AgentChannel` manage
 
 This implies that logically the `AgentChat` state must retain the primary `ChatHistory` in addition to the appropriate state for each `AgentChannel`:
 
-**Logical State:**
+#### Logical State:
 
 These relationships translate into the following logical state definition:
 
 ![AgentChat State](diagrams/agentchat-state.png)
 
-**Serialized State:**
+#### Serialized State:
 
 ```javascript 
 {
