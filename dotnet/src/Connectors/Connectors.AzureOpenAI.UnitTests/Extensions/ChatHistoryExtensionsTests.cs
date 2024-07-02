@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
-namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests;
+namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 public class ChatHistoryExtensionsTests
 {
     [Fact]

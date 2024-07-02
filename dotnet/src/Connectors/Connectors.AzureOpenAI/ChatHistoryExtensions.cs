@@ -43,7 +43,7 @@ public static class ChatHistoryExtensions
                 (contentBuilder ??= new()).Append(contentUpdate);
             }
 
-            AzureOpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatMessage.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+            AzureOpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatMessage.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
 
             // Is always expected to have at least one chunk with the role provided from a streaming message
             streamedRole ??= chatMessage.Role;
@@ -62,7 +62,7 @@ public static class ChatHistoryExtensions
                     role,
                     contentBuilder?.ToString() ?? string.Empty,
                     messageContents[0].ModelId!,
-                    AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
+                    AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
                     metadata)
                 { AuthorName = streamedName });
         }

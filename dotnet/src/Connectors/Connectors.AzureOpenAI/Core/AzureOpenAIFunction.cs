@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Azure.AI.OpenAI;
+using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -124,10 +124,10 @@ public sealed class AzureOpenAIFunction
 
     /// <summary>
     /// Converts the <see cref="AzureOpenAIFunction"/> representation to the Azure SDK's
-    /// <see cref="FunctionDefinition"/> representation.
+    /// <see cref="ChatTool"/> representation.
     /// </summary>
-    /// <returns>A <see cref="FunctionDefinition"/> containing all the function information.</returns>
-    public FunctionDefinition ToFunctionDefinition()
+    /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>
+    public ChatTool ToFunctionDefinition()
     {
         BinaryData resultParameters = s_zeroFunctionParametersSchema;
 
@@ -155,12 +155,12 @@ public sealed class AzureOpenAIFunction
             });
         }
 
-        return new FunctionDefinition
-        {
-            Name = this.FullyQualifiedName,
-            Description = this.Description,
-            Parameters = resultParameters,
-        };
+        return ChatTool.CreateFunctionTool
+        (
+            functionName: this.FullyQualifiedName,
+            functionDescription: this.Description,
+            functionParameters: resultParameters
+        );
     }
 
     /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>

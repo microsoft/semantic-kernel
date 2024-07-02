@@ -1,29 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
-using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
-/// Azure OpenAI chat completion service.
+/// Azure OpenAI text embedding service.
 /// </summary>
-public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, ITextGenerationService
+[Experimental("SKEXP0010")]
+public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
-    /// <summary>Core implementation shared by Azure OpenAI clients.</summary>
     private readonly AzureOpenAIClientCore _core;
+    private readonly int? _dimensions;
 
     /// <summary>
-    /// Create an instance of the <see cref="AzureOpenAIChatCompletionService"/> connector with API key auth.
+    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client instance using API Key auth.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -31,73 +32,80 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAIChatCompletionService(
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
+    public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         string endpoint,
         string apiKey,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
-        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+
+        this._dimensions = dimensions;
     }
 
     /// <summary>
-    /// Create an instance of the <see cref="AzureOpenAIChatCompletionService"/> connector with AAD auth.
+    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client instance supporting AAD auth.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAIChatCompletionService(
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
+    public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         string endpoint,
-        TokenCredential credentials,
+        TokenCredential credential,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
-        this._core = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
+
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+
+        this._dimensions = dimensions;
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAIChatCompletionService"/> client instance using the specified <see cref="OpenAIClient"/>.
+    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="openAIClient">Custom <see cref="AzureOpenAIClient"/> for HTTP requests.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAIChatCompletionService(
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
+    public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         AzureOpenAIClient openAIClient,
         string? modelId = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
-        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
+
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+
+        this._dimensions = dimensions;
     }
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatAsTextStreamingContentsAsync(prompt, executionSettings, kernel, cancellationToken);
+    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this._core.GetEmbeddingsAsync(data, kernel, this._dimensions, cancellationToken);
+    }
 }

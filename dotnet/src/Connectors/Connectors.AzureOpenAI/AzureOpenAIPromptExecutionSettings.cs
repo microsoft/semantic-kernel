@@ -6,9 +6,10 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Azure.AI.OpenAI;
+using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
+using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -117,23 +118,6 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// How many completions to generate for each prompt. Default is 1.
-    /// Note: Because this parameter generates many completions, it can quickly consume your token quota.
-    /// Use carefully and ensure that you have reasonable settings for max_tokens and stop.
-    /// </summary>
-    [JsonPropertyName("results_per_prompt")]
-    public int ResultsPerPrompt
-    {
-        get => this._resultsPerPrompt;
-
-        set
-        {
-            this.ThrowIfFrozen();
-            this._resultsPerPrompt = value;
-        }
-    }
-
-    /// <summary>
     /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
     /// same seed and parameters should return the same result. Determinism is not guaranteed.
     /// </summary>
@@ -153,7 +137,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Gets or sets the response format to use for the completion.
     /// </summary>
     /// <remarks>
-    /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/> object.
+    /// Possible values are: "json_object", "text", <see cref="ChatResponseFormat"/> object.
     /// </remarks>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
@@ -207,18 +191,18 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <item>To disable all tool calling, set the property to null (the default).</item>
     /// <item>
     /// To request that the model use a specific function, set the property to an instance returned
-    /// from <see cref="AzureToolCallBehavior.RequireFunction"/>.
+    /// from <see cref="AzureOpenAIToolCallBehavior.RequireFunction"/>.
     /// </item>
     /// <item>
     /// To allow the model to request one of any number of functions, set the property to an
-    /// instance returned from <see cref="AzureToolCallBehavior.EnableFunctions"/>, called with
+    /// instance returned from <see cref="AzureOpenAIToolCallBehavior.EnableFunctions"/>, called with
     /// a list of the functions available.
     /// </item>
     /// <item>
     /// To allow the model to request one of any of the functions in the supplied <see cref="Kernel"/>,
-    /// set the property to <see cref="AzureToolCallBehavior.EnableKernelFunctions"/> if the client should simply
+    /// set the property to <see cref="AzureOpenAIToolCallBehavior.EnableKernelFunctions"/> if the client should simply
     /// send the information about the functions and not handle the response in any special manner, or
-    /// <see cref="AzureToolCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
+    /// <see cref="AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
     /// invoke the function and send the result back to the service.
     /// </item>
     /// </list>
@@ -229,7 +213,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// the function, and sending back the result. The intermediate messages will be retained in the
     /// <see cref="ChatHistory"/> if an instance was provided.
     /// </remarks>
-    public AzureToolCallBehavior? ToolCallBehavior
+    public AzureOpenAIToolCallBehavior? ToolCallBehavior
     {
         get => this._toolCallBehavior;
 
@@ -293,14 +277,14 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonIgnore]
-    public AzureChatExtensionsOptions? AzureChatExtensionsOptions
+    public AzureChatDataSource? AzureChatDataSource
     {
-        get => this._azureChatExtensionsOptions;
+        get => this._azureChatDataSource;
 
         set
         {
             this.ThrowIfFrozen();
-            this._azureChatExtensionsOptions = value;
+            this._azureChatDataSource = value;
         }
     }
 
@@ -338,7 +322,6 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
             FrequencyPenalty = this.FrequencyPenalty,
             MaxTokens = this.MaxTokens,
             StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
-            ResultsPerPrompt = this.ResultsPerPrompt,
             Seed = this.Seed,
             ResponseFormat = this.ResponseFormat,
             TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
@@ -347,7 +330,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
             ChatSystemPrompt = this.ChatSystemPrompt,
             Logprobs = this.Logprobs,
             TopLogprobs = this.TopLogprobs,
-            AzureChatExtensionsOptions = this.AzureChatExtensionsOptions,
+            AzureChatDataSource = this.AzureChatDataSource,
         };
     }
 
@@ -417,16 +400,15 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
     private double _frequencyPenalty;
     private int? _maxTokens;
     private IList<string>? _stopSequences;
-    private int _resultsPerPrompt = 1;
     private long? _seed;
     private object? _responseFormat;
     private IDictionary<int, int>? _tokenSelectionBiases;
-    private AzureToolCallBehavior? _toolCallBehavior;
+    private AzureOpenAIToolCallBehavior? _toolCallBehavior;
     private string? _user;
     private string? _chatSystemPrompt;
     private bool? _logprobs;
     private int? _topLogprobs;
-    private AzureChatExtensionsOptions? _azureChatExtensionsOptions;
+    private AzureChatDataSource? _azureChatDataSource;
 
     #endregion
 }

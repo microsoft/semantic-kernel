@@ -2,8 +2,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Chat;
+using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -13,28 +14,28 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 public sealed class AzureOpenAIChatMessageContent : ChatMessageContent
 {
     /// <summary>
-    /// Gets the metadata key for the <see cref="ChatCompletionsToolCall.Id"/> name property.
+    /// Gets the metadata key for the tool id.
     /// </summary>
-    public static string ToolIdProperty => $"{nameof(ChatCompletionsToolCall)}.{nameof(ChatCompletionsToolCall.Id)}";
+    public static string ToolIdProperty => "ChatCompletionsToolCall.Id";
 
     /// <summary>
-    /// Gets the metadata key for the list of <see cref="ChatCompletionsFunctionToolCall"/>.
+    /// Gets the metadata key for the list of <see cref="ChatToolCall"/>.
     /// </summary>
-    internal static string FunctionToolCallsProperty => $"{nameof(ChatResponseMessage)}.FunctionToolCalls";
+    internal static string FunctionToolCallsProperty => "ChatResponseMessage.FunctionToolCalls";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatMessageContent"/> class.
     /// </summary>
-    internal AzureOpenAIChatMessageContent(ChatResponseMessage chatMessage, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, CreateMetadataDictionary(chatMessage.ToolCalls, metadata))
+    internal AzureOpenAIChatMessageContent(OpenAIChatCompletion completion, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(new AuthorRole(completion.Role.ToString()), CreateContentItems(completion.Content), modelId, completion, System.Text.Encoding.UTF8, CreateMetadataDictionary(completion.ToolCalls, metadata))
     {
-        this.ToolCalls = chatMessage.ToolCalls;
+        this.ToolCalls = completion.ToolCalls;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatMessageContent"/> class.
     /// </summary>
-    internal AzureOpenAIChatMessageContent(ChatRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
+    internal AzureOpenAIChatMessageContent(ChatMessageRole role, string? content, string modelId, IReadOnlyList<ChatToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(new AuthorRole(role.ToString()), content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
     {
         this.ToolCalls = toolCalls;
@@ -43,16 +44,32 @@ public sealed class AzureOpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatMessageContent"/> class.
     /// </summary>
-    internal AzureOpenAIChatMessageContent(AuthorRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
+    internal AzureOpenAIChatMessageContent(AuthorRole role, string? content, string modelId, IReadOnlyList<ChatToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(role, content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
     {
         this.ToolCalls = toolCalls;
     }
 
+    private static ChatMessageContentItemCollection CreateContentItems(IReadOnlyList<ChatMessageContentPart> contentUpdate)
+    {
+        ChatMessageContentItemCollection collection = [];
+
+        foreach (var part in contentUpdate)
+        {
+            // We only support text content for now.
+            if (part.Kind == ChatMessageContentPartKind.Text)
+            {
+                collection.Add(new TextContent(part.Text));
+            }
+        }
+
+        return collection;
+    }
+
     /// <summary>
     /// A list of the tools called by the model.
     /// </summary>
-    public IReadOnlyList<ChatCompletionsToolCall> ToolCalls { get; }
+    public IReadOnlyList<ChatToolCall> ToolCalls { get; }
 
     /// <summary>
     /// Retrieve the resulting function from the chat result.
@@ -64,7 +81,7 @@ public sealed class AzureOpenAIChatMessageContent : ChatMessageContent
 
         foreach (var toolCall in this.ToolCalls)
         {
-            if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
+            if (toolCall is ChatToolCall functionToolCall)
             {
                 (functionToolCallList ??= []).Add(new AzureOpenAIFunctionToolCall(functionToolCall));
             }
@@ -79,7 +96,7 @@ public sealed class AzureOpenAIChatMessageContent : ChatMessageContent
     }
 
     private static IReadOnlyDictionary<string, object?>? CreateMetadataDictionary(
-        IReadOnlyList<ChatCompletionsToolCall> toolCalls,
+        IReadOnlyList<ChatToolCall> toolCalls,
         IReadOnlyDictionary<string, object?>? original)
     {
         // We only need to augment the metadata if there are any tool calls.
@@ -107,7 +124,7 @@ public sealed class AzureOpenAIChatMessageContent : ChatMessageContent
             }
 
             // Add the additional entry.
-            newDictionary.Add(FunctionToolCallsProperty, toolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList());
+            newDictionary.Add(FunctionToolCallsProperty, toolCalls.Where(ctc => ctc.Kind == ChatToolCallKind.Function).ToList());
 
             return newDictionary;
         }

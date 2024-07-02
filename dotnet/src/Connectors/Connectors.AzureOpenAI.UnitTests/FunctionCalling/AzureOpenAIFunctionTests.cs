@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using OpenAI.Chat;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.FunctionCalling;
 
@@ -51,11 +51,11 @@ public sealed class AzureOpenAIFunctionTests
         AzureOpenAIFunction sut = KernelFunctionFactory.CreateFromMethod(() => { }, "myfunc", "This is a description of the function.").Metadata.ToAzureOpenAIFunction();
 
         // Act
-        FunctionDefinition result = sut.ToFunctionDefinition();
+        ChatTool result = sut.ToFunctionDefinition();
 
         // Assert
-        Assert.Equal(sut.FunctionName, result.Name);
-        Assert.Equal(sut.Description, result.Description);
+        Assert.Equal(sut.FunctionName, result.FunctionName);
+        Assert.Equal(sut.Description, result.FunctionDescription);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class AzureOpenAIFunctionTests
         var result = sut.ToFunctionDefinition();
 
         // Assert
-        Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{}}", result.Parameters.ToString());
+        Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{}}", result.FunctionParameters.ToString());
     }
 
     [Fact]
@@ -81,11 +81,11 @@ public sealed class AzureOpenAIFunctionTests
         }).GetFunctionsMetadata()[0].ToAzureOpenAIFunction();
 
         // Act
-        FunctionDefinition result = sut.ToFunctionDefinition();
+        ChatTool result = sut.ToFunctionDefinition();
 
         // Assert
-        Assert.Equal("myplugin-myfunc", result.Name);
-        Assert.Equal(sut.Description, result.Description);
+        Assert.Equal("myplugin-myfunc", result.FunctionName);
+        Assert.Equal(sut.Description, result.FunctionDescription);
     }
 
     [Fact]
@@ -103,15 +103,15 @@ public sealed class AzureOpenAIFunctionTests
 
         AzureOpenAIFunction sut = plugin.GetFunctionsMetadata()[0].ToAzureOpenAIFunction();
 
-        FunctionDefinition functionDefinition = sut.ToFunctionDefinition();
+        ChatTool functionDefinition = sut.ToFunctionDefinition();
 
         var exp = JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema));
-        var act = JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters));
+        var act = JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.FunctionParameters));
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal("Tests-TestFunction", functionDefinition.Name);
-        Assert.Equal("My test function", functionDefinition.Description);
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
+        Assert.Equal("Tests-TestFunction", functionDefinition.FunctionName);
+        Assert.Equal("My test function", functionDefinition.FunctionDescription);
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.FunctionParameters)));
     }
 
     [Fact]
@@ -129,12 +129,12 @@ public sealed class AzureOpenAIFunctionTests
 
         AzureOpenAIFunction sut = plugin.GetFunctionsMetadata()[0].ToAzureOpenAIFunction();
 
-        FunctionDefinition functionDefinition = sut.ToFunctionDefinition();
+        ChatTool functionDefinition = sut.ToFunctionDefinition();
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal("Tests-TestFunction", functionDefinition.Name);
-        Assert.Equal("My test function", functionDefinition.Description);
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
+        Assert.Equal("Tests-TestFunction", functionDefinition.FunctionName);
+        Assert.Equal("My test function", functionDefinition.FunctionDescription);
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.FunctionParameters)));
     }
 
     [Fact]
@@ -146,8 +146,8 @@ public sealed class AzureOpenAIFunctionTests
             parameters: [new KernelParameterMetadata("param1")]).Metadata.ToAzureOpenAIFunction();
 
         // Act
-        FunctionDefinition result = f.ToFunctionDefinition();
-        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.Parameters.ToString())!;
+        ChatTool result = f.ToFunctionDefinition();
+        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.FunctionParameters.ToString())!;
 
         // Assert
         Assert.NotNull(pd.properties);
@@ -166,8 +166,8 @@ public sealed class AzureOpenAIFunctionTests
             parameters: [new KernelParameterMetadata("param1") { Description = "something neat" }]).Metadata.ToAzureOpenAIFunction();
 
         // Act
-        FunctionDefinition result = f.ToFunctionDefinition();
-        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.Parameters.ToString())!;
+        ChatTool result = f.ToFunctionDefinition();
+        ParametersData pd = JsonSerializer.Deserialize<ParametersData>(result.FunctionParameters.ToString())!;
 
         // Assert
         Assert.NotNull(pd.properties);

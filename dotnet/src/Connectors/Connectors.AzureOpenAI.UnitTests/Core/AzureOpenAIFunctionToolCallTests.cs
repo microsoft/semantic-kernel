@@ -2,8 +2,8 @@
 
 using System.Collections.Generic;
 using System.Text;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using OpenAI.Chat;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Core;
 
@@ -18,7 +18,7 @@ public sealed class AzureOpenAIFunctionToolCallTests
     public void FullyQualifiedNameReturnsValidName(string toolCallName, string expectedName)
     {
         // Arrange
-        var toolCall = new ChatCompletionsFunctionToolCall("id", toolCallName, string.Empty);
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", toolCallName, string.Empty);
         var openAIFunctionToolCall = new AzureOpenAIFunctionToolCall(toolCall);
 
         // Act & Assert
@@ -30,7 +30,7 @@ public sealed class AzureOpenAIFunctionToolCallTests
     public void ToStringReturnsCorrectValue()
     {
         // Arrange
-        var toolCall = new ChatCompletionsFunctionToolCall("id", "MyPlugin_MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}");
+        var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n}");
         var openAIFunctionToolCall = new AzureOpenAIFunctionToolCall(toolCall);
 
         // Act & Assert
@@ -46,7 +46,7 @@ public sealed class AzureOpenAIFunctionToolCallTests
         var functionArgumentBuildersByIndex = new Dictionary<int, StringBuilder>();
 
         // Act
-        var toolCalls = AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
+        var toolCalls = AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(
             ref toolCallIdsByIndex,
             ref functionNamesByIndex,
             ref functionArgumentBuildersByIndex);
@@ -64,7 +64,7 @@ public sealed class AzureOpenAIFunctionToolCallTests
         var functionArgumentBuildersByIndex = new Dictionary<int, StringBuilder> { { 3, new("test-argument") } };
 
         // Act
-        var toolCalls = AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
+        var toolCalls = AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(
             ref toolCallIdsByIndex,
             ref functionNamesByIndex,
             ref functionArgumentBuildersByIndex);
@@ -75,7 +75,7 @@ public sealed class AzureOpenAIFunctionToolCallTests
         var toolCall = toolCalls[0];
 
         Assert.Equal("test-id", toolCall.Id);
-        Assert.Equal("test-function", toolCall.Name);
-        Assert.Equal("test-argument", toolCall.Arguments);
+        Assert.Equal("test-function", toolCall.FunctionName);
+        Assert.Equal("test-argument", toolCall.FunctionArguments);
     }
 }
