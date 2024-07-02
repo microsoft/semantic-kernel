@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -567,6 +568,53 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         Assert.Equal("function1-value", lastMessageContent.Content);
         Assert.Equal(AuthorRole.Tool, lastMessageContent.Role);
+    }
+
+    [Fact]
+    public async Task FilterContextHasCancellationTokenAsync()
+    {
+        // Arrange
+        using var cancellationTokenSource = new CancellationTokenSource();
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) =>
+        {
+            cancellationTokenSource.Cancel();
+            firstFunctionInvocations++;
+            return parameter;
+        }, "Function1");
+
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) =>
+        {
+            secondFunctionInvocations++;
+            return parameter;
+        }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            Assert.Equal(cancellationTokenSource.Token, context.CancellationToken);
+
+            await next(context);
+
+            context.CancellationToken.ThrowIfCancellationRequested();
+        });
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_multiple_function_calls_test_response.json")) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
+
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        var arguments = new KernelArguments(new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions });
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(()
+            => kernel.InvokePromptAsync("Test prompt", arguments, cancellationToken: cancellationTokenSource.Token));
+
+        Assert.Equal(1, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
     }
 
     public void Dispose()
