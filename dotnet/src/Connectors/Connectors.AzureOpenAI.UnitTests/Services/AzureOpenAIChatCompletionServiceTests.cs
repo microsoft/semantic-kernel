@@ -20,7 +20,7 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Moq;
 using OpenAI.Chat;
 
-namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.ChatCompletion;
+namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAIChatCompletionService"/>
@@ -690,7 +690,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task FunctionCallsShouldBePropagatedToCallersViaChatMessageItemsOfTypeFunctionCallContentAsync()
     {
         // Arrange
-        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_multiple_function_calls_test_response.json"))
         });
@@ -752,7 +752,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task FunctionCallsShouldBeReturnedToLLMAsync()
     {
         // Arrange
-        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         });
@@ -810,7 +810,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task FunctionResultsCanBeProvidedToLLMAsOneResultPerChatMessageAsync()
     {
         // Arrange
-        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         });
@@ -858,7 +858,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task FunctionResultsCanBeProvidedToLLMAsManyResultsInOneChatMessageAsync()
     {
         // Arrange
-        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
         });
