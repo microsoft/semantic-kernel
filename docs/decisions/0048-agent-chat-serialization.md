@@ -244,7 +244,7 @@ OpenAIAssistantAgent agent2 = ...;
 // Create agent-chat
 AgentGroupChat chat = new(agent1, agent2);
 
-// Initiate converation
+// Initiate conversation
 await chat.InvokeAsync();
 
 // Initialize the serialization stream
