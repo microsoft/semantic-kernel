@@ -12,7 +12,7 @@ from samples.learn_resources.serializing_prompts import main as serializing_prom
 from samples.learn_resources.templates import main as templates
 from samples.learn_resources.using_the_kernel import main as using_the_kernel
 from samples.learn_resources.your_first_prompt import main as your_first_prompt
-from tests.samples.test_samples_utils import retry
+from tests.samples.samples_utils import retry
 
 
 @mark.asyncio
