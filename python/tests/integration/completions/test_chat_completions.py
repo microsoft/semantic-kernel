@@ -19,6 +19,10 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
+    MistralAIChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -90,6 +94,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "azure": (AzureChatCompletion(), AzureChatPromptExecutionSettings),
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
         "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
+        "mistral_ai": (MistralAIChatCompletion(), MistralAIChatPromptExecutionSettings),
     }
 
 
@@ -382,6 +387,16 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["house", "germany"],
             id="azure_ai_inference_image_input_file",
+        ),
+        pytest.param(
+            "mistral_ai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            id="mistral_ai_text_input",
         ),
     ],
 )
