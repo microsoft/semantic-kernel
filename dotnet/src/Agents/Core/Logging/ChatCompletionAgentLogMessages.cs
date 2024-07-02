@@ -41,4 +41,17 @@ internal static partial class ChatCompletionAgentLogMessages
         string agentId,
         Type serviceType,
         int messageCount);
+
+    /// <summary>
+    /// Logs <see cref="ChatCompletionAgent"/> invoked streaming agent (complete).
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Information,
+        Message = "[{MethodName}] Agent #{AgentId} Invoked service {ServiceType}.")]
+    public static partial void LogAgentChatServiceInvokedStreamingAgent(
+        this ILogger logger,
+        string methodName,
+        string agentId,
+        Type serviceType);
 }
