@@ -184,7 +184,7 @@ public sealed class GeminiRequestTests
         Assert.Collection(request.Contents,
             c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
             c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
-            c => Assert.Equal(chatHistory[2].Items!.Cast<TextContent>().Single().Text, c.Parts![0].Text));
+            c => Assert.Equal(chatHistory[2].Items.Cast<TextContent>().Single().Text, c.Parts![0].Text));
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public sealed class GeminiRequestTests
         Assert.Collection(request.Contents,
             c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
             c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
-            c => Assert.Equal(chatHistory[2].Items!.Cast<ImageContent>().Single().Uri,
+            c => Assert.Equal(chatHistory[2].Items.Cast<ImageContent>().Single().Uri,
                 c.Parts![0].FileData!.FileUri),
             c => Assert.True(imageAsBytes.ToArray()
                 .SequenceEqual(Convert.FromBase64String(c.Parts![0].InlineData!.InlineData))));
