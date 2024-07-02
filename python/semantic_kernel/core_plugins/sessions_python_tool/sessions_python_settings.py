@@ -27,10 +27,10 @@ class CodeExecutionType(str, Enum):
 class SessionsPythonSettings(KernelBaseModel):
     """The Sessions Python code interpreter settings."""
 
-    session_id: str | None = Field(default_factory=lambda: str(uuid.uuid4()), alias="identifier")
+    session_id: str | None = Field(default_factory=lambda: str(uuid.uuid4()), alias="identifier", exclude=True)
     code_input_type: CodeInputType | None = Field(default=CodeInputType.Inline, alias="codeInputType")
     execution_type: CodeExecutionType | None = Field(default=CodeExecutionType.Synchronous, alias="executionType")
-    python_code: str | None = Field(alias="pythonCode", default=None)
+    python_code: str | None = Field(alias="code", default=None)
     timeout_in_sec: int | None = Field(default=100, alias="timeoutInSeconds")
     sanitize_input: bool | None = Field(default=True, alias="sanitizeInput")
 
