@@ -87,6 +87,7 @@ azure-ai-inference = {version = "^1.0.0b1", allow-prereleases = true}
 azure-search-documents = {version = "11.6.0b4", allow-prereleases = true}
 azure-core = "^1.28.0"
 azure-cosmos = "^4.7.0"
+mistralai = "^0.4.1"
 transformers = { version = "^4.28.1", extras=["torch"]}
 sentence-transformers = "^2.2.2"
 
