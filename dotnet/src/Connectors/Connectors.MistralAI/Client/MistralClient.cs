@@ -177,7 +177,8 @@ internal sealed class MistralClient
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = chatChoice.ToolCalls.Count
+                    FunctionCount = chatChoice.ToolCalls.Count,
+                    CancellationToken = cancellationToken
                 };
                 s_inflightAutoInvokes.Value++;
                 try
@@ -409,6 +410,7 @@ internal sealed class MistralClient
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
                     FunctionCount = toolCalls.Count,
+                    CancellationToken = cancellationToken
                 };
                 s_inflightAutoInvokes.Value++;
                 try
