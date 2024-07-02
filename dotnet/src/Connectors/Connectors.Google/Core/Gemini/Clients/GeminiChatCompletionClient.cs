@@ -164,11 +164,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            GeminiResponse geminiResponse;
             List<GeminiChatMessageContent> chatResponses;
             using (var activity = ModelDiagnostics.StartCompletionActivity(
                 this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
+                GeminiResponse geminiResponse;
                 try
                 {
                     geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
