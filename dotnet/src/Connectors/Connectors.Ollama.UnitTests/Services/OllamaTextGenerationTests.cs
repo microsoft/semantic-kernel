@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -22,7 +23,7 @@ public sealed class OllamaTextGenerationTests : IDisposable
     public OllamaTextGenerationTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OllamaTestHelper.GetTestResponse("text_generation_test_response.json"));
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OllamaTestHelper.GetTestResponse("text_generation_test_response.txt"));
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
 
@@ -47,10 +48,11 @@ public sealed class OllamaTextGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ProvidedEndpointShouldBeUsedAsync()
+    public async Task WhenHttpClientDoesNotHaveBaseAddresssProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new OllamaTextGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
+        this._httpClient.BaseAddress = null;
+        var sut = new OllamaTextGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path/"), httpClient: this._httpClient);
 
         //Act
         await sut.GetTextContentsAsync("fake-text");
@@ -106,17 +108,6 @@ public sealed class OllamaTextGenerationTests : IDisposable
             new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent(@"
-            {
-              ""response"": ""This is test completion response"",
-              ""model"": ""fake-model""
-            }",
-                Encoding.UTF8,
-                "application/json")
-        };
-
         // Act
         var textContent = await sut.GetTextContentAsync("Any prompt");
 
@@ -129,20 +120,15 @@ public sealed class OllamaTextGenerationTests : IDisposable
     public async Task GetStreamingTextContentsShouldHaveModelIdDefinedAsync()
     {
         //Arrange
+        var expectedModel = "phi3";
         var sut = new OllamaTextGenerationService(
-            "fake-model",
+            expectedModel,
             new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"
-            {
-              ""response"": ""This is test completion response"",
-              ""model"": ""fake-model""
-            }",
-                Encoding.UTF8,
-                "application/json")
+            Content = new StreamContent(File.OpenRead("TestData/text_generation_test_response_stream.txt"))
         };
 
         // Act
@@ -154,7 +140,7 @@ public sealed class OllamaTextGenerationTests : IDisposable
 
         // Assert
         Assert.NotNull(lastTextContent!.ModelId);
-        Assert.Equal("fake-model", lastTextContent.ModelId);
+        Assert.Equal(expectedModel, lastTextContent.ModelId);
     }
 
     /// <summary>

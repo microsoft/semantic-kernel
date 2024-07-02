@@ -23,7 +23,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
     public OllamaChatCompletionTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OllamaTestHelper.GetTestResponse("chat_completion_test_response.json"));
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.txt"));
         this._httpClient = new HttpClient(this._messageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
     }
 
@@ -51,10 +51,11 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task ProvidedEndpointShouldBeUsedAsync()
+    public async Task WhenHttpClientDoesNotHaveBaseAddresssProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new OllamaChatCompletionService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
+        this._httpClient.BaseAddress = null;
+        var sut = new OllamaChatCompletionService("fake-model", new Uri("https://fake-random-test-host/fake-path/"), httpClient: this._httpClient);
         var chat = new ChatHistory();
         chat.AddMessage(AuthorRole.User, "fake-text");
 
@@ -109,7 +110,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task GetTextContentsShouldHaveModelIdDefinedAsync()
+    public async Task GetChatMessageContentsShouldHaveModelIdDefinedAsync()
     {
         //Arrange
         var sut = new OllamaChatCompletionService(
@@ -119,16 +120,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"
-            {
-              ""message"": {
-                ""role"": ""assistant"",
-                ""content"": ""This is test completion response""
-              },
-              ""model"": ""fake-model""
-            }",
-                Encoding.UTF8,
-                "application/json")
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.txt"))
         };
 
         var chat = new ChatHistory();
@@ -148,11 +140,12 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task GetStreamingTextContentsShouldHaveModelIdDefinedAsync()
+    public async Task GetStreamingChatMessageContentsShouldHaveModelIdDefinedAsync()
     {
         //Arrange
+        var expectedModel = "phi3";
         var sut = new OllamaChatCompletionService(
-            "fake-model",
+            expectedModel,
             new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
@@ -173,7 +166,7 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
         // Assert
         Assert.NotNull(lastMessage!.ModelId);
-        Assert.Equal("fake-model", lastMessage.ModelId);
+        Assert.Equal(expectedModel, lastMessage.ModelId);
     }
 
     public void Dispose()

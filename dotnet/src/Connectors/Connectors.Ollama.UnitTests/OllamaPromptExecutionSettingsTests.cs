@@ -48,8 +48,8 @@ public class OllamaPromptExecutionSettingsTests
                                 {
                                     "stop": "stop me",
                                     "temperature": 0.5,
-                                    "topP": 0.9,
-                                    "topK": 100
+                                    "top_p": 0.9,
+                                    "top_k": 100
                                 }
                                 """;
 
@@ -58,7 +58,7 @@ public class OllamaPromptExecutionSettingsTests
 
         Assert.Equal("stop me", ollamaExecutionSettings.Stop);
         Assert.Equal(0.5f, ollamaExecutionSettings.Temperature);
-        Assert.Equal(0.9f, ollamaExecutionSettings.TopP);
+        Assert.Equal(0.9f, ollamaExecutionSettings.TopP!.Value, 0.1f);
         Assert.Equal(100, ollamaExecutionSettings.TopK);
     }
 }

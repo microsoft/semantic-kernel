@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Microsoft.SemanticKernel.TextGeneration;
 using OllamaSharp;
 
@@ -16,11 +16,8 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 /// <summary>
 /// Represents a text generation service using Ollama Original API.
 /// </summary>
-public sealed class OllamaTextGenerationService : ITextGenerationService
+public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationService
 {
-    private readonly OllamaApiClient _client;
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaTextGenerationService"/> class.
     /// </summary>
@@ -33,12 +30,8 @@ public sealed class OllamaTextGenerationService : ITextGenerationService
         Uri baseUri,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
+        : base(model, baseUri, httpClient, loggerFactory)
     {
-        Verify.NotNullOrWhiteSpace(model);
-
-        this._client = new OllamaApiClient(baseUri, model);
-
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
     /// <summary>
@@ -51,10 +44,8 @@ public sealed class OllamaTextGenerationService : ITextGenerationService
         string model,
         OllamaApiClient ollamaClient,
         ILoggerFactory? loggerFactory = null)
+        : base(model, ollamaClient, loggerFactory)
     {
-        Verify.NotNullOrWhiteSpace(model);
-        this._client = ollamaClient;
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
     /// <inheritdoc />
@@ -67,10 +58,9 @@ public sealed class OllamaTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var completionResponse = await this._client.GetCompletion(prompt, null, cancellationToken).ConfigureAwait(false);
+        var content = await this._client.GetCompletion(prompt, null, cancellationToken).ConfigureAwait(false);
 
-        TextContent stc = new(completionResponse.Response);
-        return new List<TextContent> { stc };
+        return [new(content.Response, modelId: this._client.SelectedModel, innerContent: content)];
     }
 
     /// <inheritdoc />
@@ -82,7 +72,7 @@ public sealed class OllamaTextGenerationService : ITextGenerationService
     {
         await foreach (var content in this._client.StreamCompletion(prompt, null, cancellationToken).ConfigureAwait(false))
         {
-            yield return new StreamingTextContent(content?.Response);
+            yield return new StreamingTextContent(content?.Response, modelId: content?.Model, innerContent: content);
         }
     }
 }

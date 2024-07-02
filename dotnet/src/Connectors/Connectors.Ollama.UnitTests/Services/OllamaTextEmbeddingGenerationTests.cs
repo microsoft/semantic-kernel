@@ -45,10 +45,11 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ProvidedEndpointShouldBeUsedAsync()
+    public async Task WhenHttpClientDoesNotHaveBaseAddresssProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new OllamaTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
+        this._httpClient.BaseAddress = null;
+        var sut = new OllamaTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path/"), httpClient: this._httpClient);
 
         //Act
         await sut.GenerateEmbeddingsAsync(new List<string> { "fake-text" });

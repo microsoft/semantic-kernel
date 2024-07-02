@@ -1,0 +1,1 @@
+{"model":"llama2","created_at":"2024-07-02T14:32:06.227383499Z","response":"This is test completion response","done":true,"done_reason":"stop","context":[518,25580,29962,3532,298,434,29889],"total_duration":94608355007,"load_duration":91044187969,"prompt_eval_count":26,"prompt_eval_duration":22543000,"eval_count":313,"eval_duration":3490651000}

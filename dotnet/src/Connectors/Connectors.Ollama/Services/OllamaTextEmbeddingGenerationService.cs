@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
 using OllamaSharp;
@@ -17,11 +18,8 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 /// <summary>
 /// Represents a embedding generation service using Ollama Original API.
 /// </summary>
-public sealed class OllamaTextEmbeddingGenerationService : ITextEmbeddingGenerationService
+public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmbeddingGenerationService
 {
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
-    private readonly OllamaApiClient _client;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaTextEmbeddingGenerationService"/> class.
     /// </summary>
@@ -34,12 +32,8 @@ public sealed class OllamaTextEmbeddingGenerationService : ITextEmbeddingGenerat
         Uri baseUri,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
+        : base(model, baseUri, httpClient, loggerFactory)
     {
-        Verify.NotNullOrWhiteSpace(model);
-
-        this._client = new OllamaApiClient(baseUri, model);
-
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
     /// <summary>
@@ -52,10 +46,8 @@ public sealed class OllamaTextEmbeddingGenerationService : ITextEmbeddingGenerat
         string model,
         OllamaApiClient ollamaClient,
         ILoggerFactory? loggerFactory = null)
+        : base(model, ollamaClient, loggerFactory)
     {
-        Verify.NotNullOrWhiteSpace(model);
-        this._client = ollamaClient;
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
     /// <inheritdoc />

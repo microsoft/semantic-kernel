@@ -11,19 +11,17 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 using OllamaSharp;
 using OllamaSharp.Models.Chat;
-using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 using System.Runtime.CompilerServices;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Connectors.Ollama.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
 /// <summary>
 /// Represents a chat completion service using Ollama Original API.
 /// </summary>
-public sealed class OllamaChatCompletionService : IChatCompletionService
+public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionService
 {
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
-    private readonly OllamaApiClient _client;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaChatCompletionService"/> class.
     /// </summary>
@@ -36,11 +34,8 @@ public sealed class OllamaChatCompletionService : IChatCompletionService
         Uri baseUri,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
+        : base(model, baseUri, httpClient, loggerFactory)
     {
-        Verify.NotNullOrWhiteSpace(model);
-
-        this._client = (httpClient is null) ? new(baseUri, model) : new(httpClient, model);
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
     /// <summary>
@@ -53,10 +48,8 @@ public sealed class OllamaChatCompletionService : IChatCompletionService
         string model,
         OllamaApiClient client,
         ILoggerFactory? loggerFactory = null)
+        : base(model, client, loggerFactory)
     {
-        Verify.NotNullOrWhiteSpace(model);
-        this._client = client;
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
     /// <inheritdoc />
@@ -74,9 +67,15 @@ public sealed class OllamaChatCompletionService : IChatCompletionService
 
         var answer = await this._client.SendChat(request, _ => { }, cancellationToken).ConfigureAwait(false);
 
-        var last = answer.Last();
+        // Ollama Client gives back the same requested history with added message at the end
+        // To be compatible with this API behavior, we only return the added message (last).
+        var message = answer.Last();
 
-        return [new(GetAuthorRole(last.Role) ?? AuthorRole.Assistant, content: last.Content)];
+        return [new ChatMessageContent(
+            role: GetAuthorRole(message.Role) ?? AuthorRole.Assistant,
+            content: message.Content,
+            modelId: this._client.SelectedModel,
+            innerContent: message)];
     }
 
     /// <inheritdoc />
@@ -91,7 +90,7 @@ public sealed class OllamaChatCompletionService : IChatCompletionService
 
         await foreach (var message in this._client.StreamChat(request, cancellationToken).ConfigureAwait(false))
         {
-            yield return new StreamingChatMessageContent(GetAuthorRole(message?.Message.Role), message?.Message.Content);
+            yield return new StreamingChatMessageContent(GetAuthorRole(message?.Message.Role), message?.Message.Content, modelId: message?.Model, innerContent: message);
         }
     }
 
