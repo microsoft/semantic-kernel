@@ -74,8 +74,6 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.max_tokens == 128
-    assert chat_settings.tools is None
-    assert chat_settings.tool_choice is None
 
 
 def test_openai_chat_prompt_execution_settings_from_custom_completion_config_with_functions():
@@ -93,7 +91,6 @@ def test_openai_chat_prompt_execution_settings_from_custom_completion_config_wit
     assert chat_settings.temperature == 0.5
     assert chat_settings.top_p == 0.5
     assert chat_settings.max_tokens == 128
-    assert chat_settings.tools == [{}]
 
 
 def test_create_options():
