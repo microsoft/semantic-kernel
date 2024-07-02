@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -128,7 +130,7 @@ public sealed class TextMemoryPlugin
             return string.Empty;
         }
 
-        return limit == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
+        return limit == 1 ? DecodeUnicodeEscapes(memories[0].Metadata.Text) : DecodeUnicodeEscapes(JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text)));
     }
 
     /// <summary>
@@ -177,5 +179,13 @@ public sealed class TextMemoryPlugin
         }
 
         await this._memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    private static string DecodeUnicodeEscapes(string input)
+    {
+        return Regex.Replace(input, @"\\u([0-9A-Fa-f]{4})", match =>
+        {
+            return ((char)Convert.ToInt32(match.Groups[1].Value, 16)).ToString();
+        });
     }
 }
