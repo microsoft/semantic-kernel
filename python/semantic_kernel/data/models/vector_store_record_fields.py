@@ -26,6 +26,8 @@ class VectorStoreRecordDataField(VectorStoreRecordField):
 
     has_embedding: bool = False
     embedding_property_name: str | None = None
+    is_filterable: bool | None = None
+    property_type: type[T] | None = None
 
 
 @dataclass
@@ -43,6 +45,9 @@ class VectorStoreRecordVectorField(VectorStoreRecordField):
     """
 
     local_embedding: bool = True
+    dimensions: int | None = None
+    index_kind: str | None = None  # hnsw, flat, etc.
+    distance_function: str | None = None  # cosine, dot prod, euclidan
     embedding_settings: dict[str, PromptExecutionSettings] = field(default_factory=dict)
     cast_function: Callable[[list[float]], Any] | None = None
 

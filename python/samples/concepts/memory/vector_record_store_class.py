@@ -60,7 +60,9 @@ stores = {
         collection_name="test",
         prefix_collection_name_to_key_names=True,
     ),
-    "qdrant": QdrantVectorRecordStore[MyDataModel](data_model_type=MyDataModel, kernel=kernel, collection_name="test"),
+    "qdrant": QdrantVectorRecordStore[MyDataModel](
+        data_model_type=MyDataModel, kernel=kernel, collection_name="test", prefer_grpc=True
+    ),
 }
 
 store = "qdrant"

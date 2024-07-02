@@ -31,3 +31,12 @@ class QdrantSettings(KernelBaseSettings):
         if "url" not in values and "host" not in values and "path" not in values and "location" not in values:
             values["location"] = IN_MEMORY_STRING
         return values
+
+    def model_dump(self, **kwargs):
+        """Dump the model."""
+        dump = super().model_dump(**kwargs)
+        if "api_key" in dump:
+            dump["api_key"] = dump["api_key"].get_secret_value()
+        if "url" in dump:
+            dump["url"] = str(dump["url"])
+        return dump

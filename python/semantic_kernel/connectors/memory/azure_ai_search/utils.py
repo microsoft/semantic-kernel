@@ -6,7 +6,7 @@ from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.indexes.aio import SearchIndexClient
 
 from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_settings import AzureAISearchSettings
-from semantic_kernel.const import USER_AGENT
+from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.exceptions import ServiceInitializationError
 
 if TYPE_CHECKING:
@@ -41,6 +41,6 @@ def get_search_index_async_client(
 
     return SearchIndexClient(
         endpoint=str(azure_ai_search_settings.endpoint),
-        credential=credential,
-        headers={USER_AGENT: "Semantic-Kernel"},
+        credential=credential,  # type: ignore
+        headers=prepend_semantic_kernel_to_user_agent({}) if APP_INFO else None,
     )
