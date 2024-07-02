@@ -46,7 +46,7 @@ from samples.concepts.prompt_templates.template_language import main as template
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
 from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
 from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
-from tests.samples.test_samples_utils import retry
+from tests.samples.samples_utils import retry
 
 concepts = [
     param(
