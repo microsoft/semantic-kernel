@@ -126,7 +126,8 @@ public sealed class GeminiRequestTests
     public void FromChatHistoryItReturnsGeminiRequestWithChatHistory()
     {
         // Arrange
-        ChatHistory chatHistory = [];
+        string systemMessage = "system-message";
+        var chatHistory = new ChatHistory(systemMessage);
         chatHistory.AddUserMessage("user-message");
         chatHistory.AddAssistantMessage("assist-message");
         chatHistory.AddUserMessage("user-message2");
@@ -136,14 +137,34 @@ public sealed class GeminiRequestTests
         var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
 
         // Assert
+        Assert.NotNull(request.SystemMessages?.Parts);
+        Assert.Single(request.SystemMessages.Parts);
+        Assert.Equal(request.SystemMessages.Parts[0].Text, systemMessage);
         Assert.Collection(request.Contents,
-            c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
             c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
-            c => Assert.Equal(chatHistory[2].Content, c.Parts![0].Text));
+            c => Assert.Equal(chatHistory[2].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[3].Content, c.Parts![0].Text));
         Assert.Collection(request.Contents,
-            c => Assert.Equal(chatHistory[0].Role, c.Role),
             c => Assert.Equal(chatHistory[1].Role, c.Role),
-            c => Assert.Equal(chatHistory[2].Role, c.Role));
+            c => Assert.Equal(chatHistory[2].Role, c.Role),
+            c => Assert.Equal(chatHistory[3].Role, c.Role));
+    }
+
+    [Fact]
+    public void FromChatHistoryMultipleSystemMessagesItReturnsGeminiRequestWithSystemMessages()
+    {
+        // Arrange
+        string[] systemMessages = ["system-message", "system-message2", "system-message3", "system-message4"];
+        var chatHistory = new ChatHistory(systemMessages[0]);
+        chatHistory.AddUserMessage("user-message");
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.SystemMessages?.Parts);
+        Assert.Contains(request.SystemMessages.Parts, part => systemMessages.Contains(part.Text));
     }
 
     [Fact]
