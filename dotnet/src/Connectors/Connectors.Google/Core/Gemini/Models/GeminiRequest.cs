@@ -102,7 +102,7 @@ internal sealed class GeminiRequest
             Contents = chatHistory
                 .Where(message => message.Role != AuthorRole.System)
                 .Select(CreateGeminiContentFromChatMessage).ToList(),
-            SystemMessages = CreateSystemChatMessages(chatHistory)
+            SystemMessages = CreateSystemMessages(chatHistory)
         };
         return obj;
     }
@@ -116,7 +116,7 @@ internal sealed class GeminiRequest
         };
     }
 
-    private static GeminiContent? CreateSystemChatMessages(ChatHistory chatHistory)
+    private static GeminiContent? CreateSystemMessages(ChatHistory chatHistory)
     {
         var contents = chatHistory.Where(message => message.Role == AuthorRole.System).ToList();
         if (contents.Count == 0)
