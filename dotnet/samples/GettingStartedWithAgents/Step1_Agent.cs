@@ -27,7 +27,7 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
             };
 
         /// Create a chat for agent interaction. For more, <see cref="Step3_Chat"/>.
-        AgentGroupChat chat = new();
+        ChatHistory chat = new();
 
         // Respond to user input
         await InvokeAgentAsync("Fortune favors the bold.");
@@ -37,11 +37,11 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in chat.InvokeAsync(agent))
+            await foreach (var content in agent.InvokeAsync(chat))
             {
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
