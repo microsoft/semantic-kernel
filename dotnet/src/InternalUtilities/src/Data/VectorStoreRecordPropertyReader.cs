@@ -260,12 +260,12 @@ internal static class VectorStoreRecordPropertyReader
     }
 
     /// <summary>
-    /// Get the json property name of a property by using the <see cref="JsonPropertyNameAttribute"/> if available, otherwise
+    /// Get the JSON property name of a property by using the <see cref="JsonPropertyNameAttribute"/> if available, otherwise
     /// using the <see cref="JsonNamingPolicy"/> if available, otherwise falling back to the property name.
     /// </summary>
-    /// <param name="options">The options used for json serialization.</param>
+    /// <param name="options">The options used for JSON serialization.</param>
     /// <param name="property">The property to retrieve a storage name for.</param>
-    /// <returns>The json storage property name.</returns>
+    /// <returns>The JSON storage property name.</returns>
     public static string GetJsonPropertyName(JsonSerializerOptions options, PropertyInfo property)
     {
         var jsonPropertyNameAttribute = property.GetCustomAttribute<JsonPropertyNameAttribute>();

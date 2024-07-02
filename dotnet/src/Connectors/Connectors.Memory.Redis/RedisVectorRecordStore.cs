@@ -41,7 +41,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         typeof(ReadOnlyMemory<double>?)
     ];
 
-    /// <summary>The redis database to read/write records from.</summary>
+    /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
 
     /// <summary>Optional configuration options for this class.</summary>
@@ -50,22 +50,22 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
-    /// <summary>The name of the temporary json property that the key property will be serialized / parsed from.</summary>
+    /// <summary>The name of the temporary JSON property that the key property will be serialized / parsed from.</summary>
     private readonly string _keyJsonPropertyName;
 
-    /// <summary>An array of the names of all the data properties that are part of the redis payload, i.e. all properties except the key and vector properties.</summary>
+    /// <summary>An array of the names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties.</summary>
     private readonly string[] _dataPropertyNames;
 
-    /// <summary>The mapper to use when mapping between the consumer data model and the redis record.</summary>
+    /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)> _mapper;
 
-    /// <summary>The json serializer options to use when converting between the data model and the redis record.</summary>
+    /// <summary>The JSON serializer options to use when converting between the data model and the Redis record.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisVectorRecordStore{TRecord}"/> class.
     /// </summary>
-    /// <param name="database">The redis database to read/write records from.</param>
+    /// <param name="database">The Redis database to read/write records from.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
     public RedisVectorRecordStore(IDatabase database, RedisVectorRecordStoreOptions<TRecord>? options = null)
@@ -127,7 +127,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         var maybePrefixedKey = this.PrefixKeyIfNeeded(key, collectionName);
         var includeVectors = options?.IncludeVectors ?? false;
 
-        // Get the redis value.
+        // Get the Redis value.
         var redisResult = await RunOperationAsync(
             collectionName,
             "GET",
@@ -145,7 +145,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             return null;
         }
 
-        // Check if the value contained any json text before trying to parse the result.
+        // Check if the value contained any JSON text before trying to parse the result.
         var redisResultString = redisResult.ToString();
         if (redisResultString is null)
         {
@@ -176,7 +176,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         var redisKeys = maybePrefixedKeys.Select(x => new RedisKey(x)).ToArray();
         var includeVectors = options?.IncludeVectors ?? false;
 
-        // Get the list of redis results.
+        // Get the list of Redis results.
         var redisResults = await RunOperationAsync(
             collectionName,
             "MGET",
@@ -196,7 +196,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
                 continue;
             }
 
-            // Check if the value contained any json text before trying to parse the result.
+            // Check if the value contained any JSON text before trying to parse the result.
             var redisResultString = redisResult.ToString();
             if (redisResultString is null)
             {
@@ -358,7 +358,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     }
 
     /// <summary>
-    /// Run the given operation and wrap any redis exceptions with <see cref="VectorStoreOperationException"/>."/>
+    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreOperationException"/>."/>
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
     /// <param name="collectionName">The name of the collection the operation is being run on.</param>
