@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Azure;
@@ -248,6 +249,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         public string[] Tags { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
+        [JsonPropertyName("parking_is_included")]
         [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         [VectorStoreRecordData]
         public bool? ParkingIncluded { get; set; }

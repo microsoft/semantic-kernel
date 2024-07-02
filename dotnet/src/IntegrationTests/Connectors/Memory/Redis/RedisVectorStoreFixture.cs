@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
@@ -94,14 +95,14 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             Description = "This is a great hotel.",
             DescriptionEmbedding = embedding,
             Tags = new[] { "pool", "air conditioning", "concierge" },
-            ParkingIncluded = true,
+            parking_is_included = true,
             LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
             Rating = 3.6,
             Address = address
         });
-        await this.Database.JSON().SetAsync("hotels:BaseSet-2", "$", new { HotelName = "My Hotel 2", HotelCode = 2, Description = "This is a great hotel.", DescriptionEmbedding = embedding, ParkingIncluded = false });
-        await this.Database.JSON().SetAsync("hotels:BaseSet-3", "$", new { HotelName = "My Hotel 3", HotelCode = 3, Description = "This is a great hotel.", DescriptionEmbedding = embedding, ParkingIncluded = false });
-        await this.Database.JSON().SetAsync("hotels:BaseSet-4-Invalid", "$", new { HotelId = "AnotherId", HotelName = "My Invalid Hotel", HotelCode = 4, Description = "This is an invalid hotel.", DescriptionEmbedding = embedding, ParkingIncluded = false });
+        await this.Database.JSON().SetAsync("hotels:BaseSet-2", "$", new { HotelName = "My Hotel 2", HotelCode = 2, Description = "This is a great hotel.", DescriptionEmbedding = embedding, parking_is_included = false });
+        await this.Database.JSON().SetAsync("hotels:BaseSet-3", "$", new { HotelName = "My Hotel 3", HotelCode = 3, Description = "This is a great hotel.", DescriptionEmbedding = embedding, parking_is_included = false });
+        await this.Database.JSON().SetAsync("hotels:BaseSet-4-Invalid", "$", new { HotelId = "AnotherId", HotelName = "My Invalid Hotel", HotelCode = 4, Description = "This is an invalid hotel.", DescriptionEmbedding = embedding, parking_is_included = false });
     }
 
     /// <summary>
@@ -182,6 +183,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         public string[] Tags { get; init; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
+        [JsonPropertyName("parking_is_included")]
         [VectorStoreRecordData]
         public bool ParkingIncluded { get; init; }
 

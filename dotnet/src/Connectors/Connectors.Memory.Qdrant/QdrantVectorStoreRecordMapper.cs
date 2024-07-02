@@ -70,6 +70,9 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
+    /// <summary>A dictionary that maps from a property name to the configured name that should be used when storing it.</summary>
+    private readonly Dictionary<string, string> _storagePropertyNames = new();
+
     /// <summary>Configuration options for this class.</summary>
     private readonly QdrantVectorStoreRecordMapperOptions _options;
 
@@ -101,6 +104,8 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         this._keyPropertyInfo = properties.keyProperty;
         this._payloadPropertiesInfo = properties.dataProperties;
         this._vectorPropertiesInfo = properties.vectorProperties;
+
+        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._options.VectorStoreRecordDefinition);
     }
 
     /// <inheritdoc />
@@ -133,7 +138,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         // Add point payload.
         foreach (var payloadPropertyInfo in this._payloadPropertiesInfo)
         {
-            var propertyName = VectorStoreRecordPropertyReader.GetSerializedPropertyName(payloadPropertyInfo);
+            var propertyName = this._storagePropertyNames[payloadPropertyInfo.Name];
             var propertyValue = payloadPropertyInfo.GetValue(dataModel);
             pointStruct.Payload.Add(propertyName, ConvertToGrpcFieldValue(propertyValue));
         }
@@ -144,7 +149,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
             var namedVectors = new NamedVectors();
             foreach (var vectorPropertyInfo in this._vectorPropertiesInfo)
             {
-                var propertyName = VectorStoreRecordPropertyReader.GetSerializedPropertyName(vectorPropertyInfo);
+                var propertyName = this._storagePropertyNames[vectorPropertyInfo.Name];
                 var propertyValue = vectorPropertyInfo.GetValue(dataModel);
                 if (propertyValue is not null)
                 {
@@ -176,13 +181,13 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     public TRecord MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
         // Get the key property name and value.
-        var keyPropertyName = VectorStoreRecordPropertyReader.GetSerializedPropertyName(this._keyPropertyInfo);
+        var keyPropertyName = this._storagePropertyNames[this._keyPropertyInfo.Name];
         var keyPropertyValue = storageModel.Id.HasNum ? storageModel.Id.Num as object : storageModel.Id.Uuid as object;
 
         // Create a json object to represent the point.
         var outputJsonObject = new JsonObject
         {
-            { keyPropertyName, JsonValue.Create(keyPropertyValue) },
+            { this._keyPropertyInfo.Name, JsonValue.Create(keyPropertyValue) },
         };
 
         // Add each vector property if embeddings are included in the point.
@@ -190,18 +195,18 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         {
             foreach (var vectorProperty in this._vectorPropertiesInfo)
             {
-                var propertyName = VectorStoreRecordPropertyReader.GetSerializedPropertyName(vectorProperty);
+                var propertyName = this._storagePropertyNames[vectorProperty.Name];
 
                 if (this._options.HasNamedVectors)
                 {
                     if (storageModel.Vectors.Vectors_.Vectors.TryGetValue(propertyName, out var vector))
                     {
-                        outputJsonObject.Add(propertyName, new JsonArray(vector.Data.Select(x => JsonValue.Create(x)).ToArray()));
+                        outputJsonObject.Add(vectorProperty.Name, new JsonArray(vector.Data.Select(x => JsonValue.Create(x)).ToArray()));
                     }
                 }
                 else
                 {
-                    outputJsonObject.Add(propertyName, new JsonArray(storageModel.Vectors.Vector.Data.Select(x => JsonValue.Create(x)).ToArray()));
+                    outputJsonObject.Add(vectorProperty.Name, new JsonArray(storageModel.Vectors.Vector.Data.Select(x => JsonValue.Create(x)).ToArray()));
                 }
             }
         }
@@ -209,10 +214,10 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         // Add each payload property.
         foreach (var payloadProperty in this._payloadPropertiesInfo)
         {
-            var propertyName = VectorStoreRecordPropertyReader.GetSerializedPropertyName(payloadProperty);
+            var propertyName = this._storagePropertyNames[payloadProperty.Name];
             if (storageModel.Payload.TryGetValue(propertyName, out var value))
             {
-                outputJsonObject.Add(propertyName, ConvertFromGrpcFieldValueToJsonNode(value));
+                outputJsonObject.Add(payloadProperty.Name, ConvertFromGrpcFieldValueToJsonNode(value));
             }
         }
 

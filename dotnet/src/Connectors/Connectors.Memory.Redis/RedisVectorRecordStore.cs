@@ -41,7 +41,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         typeof(ReadOnlyMemory<double>?)
     ];
 
-    /// <summary>The redis database to read/write records from.</summary>
+    /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
 
     /// <summary>Optional configuration options for this class.</summary>
@@ -50,19 +50,22 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
-    /// <summary>The name of the temporary json property that the key property will be serialized / parsed from.</summary>
+    /// <summary>The name of the temporary JSON property that the key property will be serialized / parsed from.</summary>
     private readonly string _keyJsonPropertyName;
 
-    /// <summary>An array of the names of all the data properties that are part of the redis payload, i.e. all properties except the key and vector properties.</summary>
+    /// <summary>An array of the names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties.</summary>
     private readonly string[] _dataPropertyNames;
 
-    /// <summary>The mapper to use when mapping between the consumer data model and the redis record.</summary>
+    /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)> _mapper;
+
+    /// <summary>The JSON serializer options to use when converting between the data model and the Redis record.</summary>
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisVectorRecordStore{TRecord}"/> class.
     /// </summary>
-    /// <param name="database">The redis database to read/write records from.</param>
+    /// <param name="database">The Redis database to read/write records from.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
     public RedisVectorRecordStore(IDatabase database, RedisVectorRecordStoreOptions<TRecord>? options = null)
@@ -73,6 +76,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         // Assign.
         this._database = database;
         this._options = options ?? new RedisVectorRecordStoreOptions<TRecord>();
+        this._jsonSerializerOptions = this._options.jsonSerializerOptions ?? JsonSerializerOptions.Default;
 
         // Enumerate public properties using configuration or attributes.
         (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
@@ -90,11 +94,11 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
 
         this._keyPropertyInfo = properties.keyProperty;
-        this._keyJsonPropertyName = VectorStoreRecordPropertyReader.GetSerializedPropertyName(this._keyPropertyInfo);
+        this._keyJsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(this._jsonSerializerOptions, this._keyPropertyInfo);
 
         this._dataPropertyNames = properties
             .dataProperties
-            .Select(VectorStoreRecordPropertyReader.GetSerializedPropertyName)
+            .Select(x => VectorStoreRecordPropertyReader.GetJsonPropertyName(this._jsonSerializerOptions, x))
             .ToArray();
 
         // Assign Mapper.
@@ -123,7 +127,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         var maybePrefixedKey = this.PrefixKeyIfNeeded(key, collectionName);
         var includeVectors = options?.IncludeVectors ?? false;
 
-        // Get the redis value.
+        // Get the Redis value.
         var redisResult = await RunOperationAsync(
             collectionName,
             "GET",
@@ -141,7 +145,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             return null;
         }
 
-        // Check if the value contained any json text before trying to parse the result.
+        // Check if the value contained any JSON text before trying to parse the result.
         var redisResultString = redisResult.ToString();
         if (redisResultString is null)
         {
@@ -155,7 +159,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             "GET",
             () =>
             {
-                var node = JsonSerializer.Deserialize<JsonNode>(redisResultString)!;
+                var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
                 return this._mapper.MapFromStorageToDataModel((key, node), new() { IncludeVectors = includeVectors });
             });
     }
@@ -172,7 +176,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         var redisKeys = maybePrefixedKeys.Select(x => new RedisKey(x)).ToArray();
         var includeVectors = options?.IncludeVectors ?? false;
 
-        // Get the list of redis results.
+        // Get the list of Redis results.
         var redisResults = await RunOperationAsync(
             collectionName,
             "MGET",
@@ -192,7 +196,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
                 continue;
             }
 
-            // Check if the value contained any json text before trying to parse the result.
+            // Check if the value contained any JSON text before trying to parse the result.
             var redisResultString = redisResult.ToString();
             if (redisResultString is null)
             {
@@ -206,7 +210,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
                 "MGET",
                 () =>
                 {
-                    var node = JsonSerializer.Deserialize<JsonNode>(redisResultString)!;
+                    var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
                     return this._mapper.MapFromStorageToDataModel((key, node), new() { IncludeVectors = includeVectors });
                 });
         }
@@ -253,7 +257,12 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             DatabaseName,
             collectionName,
             "SET",
-            () => this._mapper.MapFromDataToStorageModel(record));
+                () =>
+                {
+                    var mapResult = this._mapper.MapFromDataToStorageModel(record);
+                    var serializedRecord = JsonSerializer.Serialize(mapResult.Node, this._jsonSerializerOptions);
+                    return new { Key = mapResult.Key, SerializedRecord = serializedRecord };
+                });
 
         // Upsert.
         var maybePrefixedKey = this.PrefixKeyIfNeeded(redisJsonRecord.Key, collectionName);
@@ -265,7 +274,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
                 .SetAsync(
                     maybePrefixedKey,
                     "$",
-                    redisJsonRecord.Node)).ConfigureAwait(false);
+                    redisJsonRecord.SerializedRecord)).ConfigureAwait(false);
 
         return redisJsonRecord.Key;
     }
@@ -279,21 +288,26 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         var collectionName = this.ChooseCollectionName(options?.CollectionName);
 
         // Map.
-        var redisRecords = new List<(string maybePrefixedKey, string originalKey, JsonNode jsonNode)>();
+        var redisRecords = new List<(string maybePrefixedKey, string originalKey, string serializedRecord)>();
         foreach (var record in records)
         {
             var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
                 collectionName,
                 "MSET",
-                () => this._mapper.MapFromDataToStorageModel(record));
+                () =>
+                {
+                    var mapResult = this._mapper.MapFromDataToStorageModel(record);
+                    var serializedRecord = JsonSerializer.Serialize(mapResult.Node, this._jsonSerializerOptions);
+                    return new { Key = mapResult.Key, SerializedRecord = serializedRecord };
+                });
 
             var maybePrefixedKey = this.PrefixKeyIfNeeded(redisJsonRecord.Key, collectionName);
-            redisRecords.Add((maybePrefixedKey, redisJsonRecord.Key, redisJsonRecord.Node));
+            redisRecords.Add((maybePrefixedKey, redisJsonRecord.Key, redisJsonRecord.SerializedRecord));
         }
 
         // Upsert.
-        var keyPathValues = redisRecords.Select(x => new KeyPathValue(x.maybePrefixedKey, "$", x.jsonNode)).ToArray();
+        var keyPathValues = redisRecords.Select(x => new KeyPathValue(x.maybePrefixedKey, "$", x.serializedRecord)).ToArray();
         await RunOperationAsync(
             collectionName,
             "MSET",
@@ -344,7 +358,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     }
 
     /// <summary>
-    /// Run the given operation and wrap any redis exceptions with <see cref="VectorStoreOperationException"/>."/>
+    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreOperationException"/>."/>
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
     /// <param name="collectionName">The name of the collection the operation is being run on.</param>
