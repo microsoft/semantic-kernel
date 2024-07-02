@@ -22,7 +22,7 @@ Adding the non-default endpoint parameter to the constructor.
 [Experimental("SKEXP0010")]
 public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
-    private readonly ClientCore _core;
+    private readonly ClientCore _client;
     private readonly int? _dimensions;
 
     /// <summary>
@@ -44,7 +44,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
     {
-        this._core = new(
+        this._client = new(
             modelId: modelId,
             apiKey: apiKey,
             endpoint: endpoint,
@@ -68,12 +68,12 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
     {
-        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
         this._dimensions = dimensions;
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
 
     /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
@@ -81,7 +81,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this._core.LogActionDetails();
-        return this._core.GetEmbeddingsAsync(data, kernel, this._dimensions, cancellationToken);
+        this._client.LogActionDetails();
+        return this._client.GetEmbeddingsAsync(data, kernel, this._dimensions, cancellationToken);
     }
 }
