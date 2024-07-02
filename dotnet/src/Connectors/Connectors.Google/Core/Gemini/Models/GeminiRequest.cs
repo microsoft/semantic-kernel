@@ -28,7 +28,7 @@ internal sealed class GeminiRequest
 
     [JsonPropertyName("systemInstruction")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public GeminiContent? SystemMessages { get; set; }
+    public GeminiContent? SystemInstruction { get; set; }
 
     public void AddFunction(GeminiFunction function)
     {
@@ -102,7 +102,7 @@ internal sealed class GeminiRequest
             Contents = chatHistory
                 .Where(message => message.Role != AuthorRole.System)
                 .Select(CreateGeminiContentFromChatMessage).ToList(),
-            SystemMessages = CreateSystemMessages(chatHistory)
+            SystemInstruction = CreateSystemMessages(chatHistory)
         };
         return obj;
     }

@@ -137,9 +137,9 @@ public sealed class GeminiRequestTests
         var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
 
         // Assert
-        Assert.NotNull(request.SystemMessages?.Parts);
-        Assert.Single(request.SystemMessages.Parts);
-        Assert.Equal(request.SystemMessages.Parts[0].Text, systemMessage);
+        Assert.NotNull(request.SystemInstruction?.Parts);
+        Assert.Single(request.SystemInstruction.Parts);
+        Assert.Equal(request.SystemInstruction.Parts[0].Text, systemMessage);
         Assert.Collection(request.Contents,
             c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
             c => Assert.Equal(chatHistory[2].Content, c.Parts![0].Text),
@@ -163,8 +163,8 @@ public sealed class GeminiRequestTests
         var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
 
         // Assert
-        Assert.NotNull(request.SystemMessages?.Parts);
-        Assert.Contains(request.SystemMessages.Parts, part => systemMessages.Contains(part.Text));
+        Assert.NotNull(request.SystemInstruction?.Parts);
+        Assert.Contains(request.SystemInstruction.Parts, part => systemMessages.Contains(part.Text));
     }
 
     [Fact]
@@ -329,7 +329,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void AddChatMessageToRequestt()
+    public void AddChatMessageToRequest()
     {
         // Arrange
         ChatHistory chat = [];

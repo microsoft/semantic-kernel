@@ -273,9 +273,9 @@ public sealed class GeminiChatGenerationTests : IDisposable
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
-        Assert.NotNull(request.SystemMessages);
-        var systemMessage = request.SystemMessages.Parts![0].Text;
-        Assert.Null(request.SystemMessages.Role);
+        Assert.NotNull(request.SystemInstruction);
+        var systemMessage = request.SystemInstruction.Parts![0].Text;
+        Assert.Null(request.SystemInstruction.Role);
         Assert.Equal(message, systemMessage);
     }
 
@@ -296,9 +296,9 @@ public sealed class GeminiChatGenerationTests : IDisposable
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
-        Assert.NotNull(request.SystemMessages);
-        Assert.Null(request.SystemMessages.Role);
-        Assert.Collection(request.SystemMessages.Parts!,
+        Assert.NotNull(request.SystemInstruction);
+        Assert.Null(request.SystemInstruction.Role);
+        Assert.Collection(request.SystemInstruction.Parts!,
             item => Assert.Equal(messages[0], item.Text),
             item => Assert.Equal(messages[1], item.Text),
             item => Assert.Equal(messages[2], item.Text));
