@@ -7,12 +7,14 @@ Preserved the logic as is.
 */
 
 using System.ClientModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides extension methods for the <see cref="ClientResultException"/> class.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class ClientResultExceptionExtensions
 {
     /// <summary>
