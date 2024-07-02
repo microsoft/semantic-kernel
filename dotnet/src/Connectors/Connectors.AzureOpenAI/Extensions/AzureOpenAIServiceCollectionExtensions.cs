@@ -46,7 +46,6 @@ public static class AzureOpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
@@ -85,7 +84,6 @@ public static class AzureOpenAIServiceCollectionExtensions
         string? modelId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
@@ -126,7 +124,6 @@ public static class AzureOpenAIServiceCollectionExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
@@ -165,7 +162,6 @@ public static class AzureOpenAIServiceCollectionExtensions
         string? modelId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credentials);
 
@@ -269,9 +265,6 @@ public static class AzureOpenAIServiceCollectionExtensions
         int? dimensions = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(deploymentName);
-        Verify.NotNullOrWhiteSpace(endpoint);
-        Verify.NotNullOrWhiteSpace(apiKey);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextEmbeddingGenerationService(
@@ -308,9 +301,6 @@ public static class AzureOpenAIServiceCollectionExtensions
         int? dimensions = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(deploymentName);
-        Verify.NotNullOrWhiteSpace(endpoint);
-        Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextEmbeddingGenerationService(
@@ -347,8 +337,6 @@ public static class AzureOpenAIServiceCollectionExtensions
         int? dimensions = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(deploymentName);
-        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
@@ -386,8 +374,6 @@ public static class AzureOpenAIServiceCollectionExtensions
         int? dimensions = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(deploymentName);
-        Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
@@ -421,7 +407,6 @@ public static class AzureOpenAIServiceCollectionExtensions
         int? dimensions = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNullOrWhiteSpace(deploymentName);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextEmbeddingGenerationService(
@@ -454,7 +439,6 @@ public static class AzureOpenAIServiceCollectionExtensions
         int? dimensions = null)
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(deploymentName);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new AzureOpenAITextEmbeddingGenerationService(
