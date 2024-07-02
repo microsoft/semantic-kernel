@@ -115,7 +115,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
         Console.WriteLine($"Kernel result: {result}");
 
         // Output:
-        // Function InvokePromptAsync_8337ea42208c4fdfbe9dffebcdbc4f5b invoking.
+        // Function InvokePromptAsync_Id invoking.
         // Function arguments: {}
         // Rendered prompt: Check current UTC time and return current weather in Boston city.
         // ChatHistory: [{"Role":{"Label":"user"...
@@ -136,7 +136,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
         // Function result: 61 and rainy
         // Function completed. Duration: 0.0019822s
         // Prompt tokens: 161. Completion tokens: 34. Total tokens: 195.
-        // Function InvokePromptAsync_8337ea42208c4fdfbe9dffebcdbc4f5b succeeded.
+        // Function InvokePromptAsync_Id succeeded.
         // Function result: The current time in UTC is Tue, 02 Jul 2024 01:20:07 GMT. The weather in Boston is 61 degrees and rainy.
         // Function completed. Duration: 5.1014667s
         // Kernel result: The current time in UTC is Tue, 02 Jul 2024 01:20:07 GMT. The weather in Boston is 61 degrees and rainy.
