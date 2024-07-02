@@ -27,6 +27,7 @@ internal sealed class GeminiRequest
     public IList<GeminiTool>? Tools { get; set; }
 
     [JsonPropertyName("systemInstruction")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiContent? SystemMessages { get; set; }
 
     public void AddFunction(GeminiFunction function)
