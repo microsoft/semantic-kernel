@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 internal static partial class TerminationStrategyLogMessages
 {
     /// <summary>
-    /// Logs <see cref="TerminationStrategy"/> evaluting criteria (started).
+    /// Logs <see cref="TerminationStrategy"/> evaluating criteria (started).
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -42,7 +42,7 @@ internal static partial class TerminationStrategyLogMessages
         string agentId);
 
     /// <summary>
-    /// Logs <see cref="TerminationStrategy"/> evaluted criteria (complete).
+    /// Logs <see cref="TerminationStrategy"/> evaluated criteria (complete).
     /// </summary>
     [LoggerMessage(
         EventId = 0,
