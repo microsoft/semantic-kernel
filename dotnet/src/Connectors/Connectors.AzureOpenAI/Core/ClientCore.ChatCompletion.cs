@@ -593,22 +593,6 @@ internal partial class ClientCore
         }
     }
 
-    /// <summary>Checks if a tool call is for a function that was defined.</summary>
-    private static bool IsRequestableTool(ChatCompletionOptions options, AzureOpenAIFunctionToolCall ftc)
-    {
-        IList<ChatTool> tools = options.Tools;
-        for (int i = 0; i < tools.Count; i++)
-        {
-            if (tools[i].Kind == ChatToolKind.Function &&
-                string.Equals(tools[i].FunctionName, ftc.FullyQualifiedName, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     internal async IAsyncEnumerable<StreamingTextContent> GetChatAsTextStreamingContentsAsync(
         string prompt,
         PromptExecutionSettings? executionSettings,
@@ -636,6 +620,22 @@ internal partial class ClientCore
         return (await this.GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
             .Select(chat => new TextContent(chat.Content, chat.ModelId, chat.Content, Encoding.UTF8, chat.Metadata))
             .ToList();
+    }
+
+    /// <summary>Checks if a tool call is for a function that was defined.</summary>
+    private static bool IsRequestableTool(ChatCompletionOptions options, AzureOpenAIFunctionToolCall ftc)
+    {
+        IList<ChatTool> tools = options.Tools;
+        for (int i = 0; i < tools.Count; i++)
+        {
+            if (tools[i].Kind == ChatToolKind.Function &&
+                string.Equals(tools[i].FunctionName, ftc.FullyQualifiedName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
