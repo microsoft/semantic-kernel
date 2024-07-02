@@ -4,12 +4,20 @@ classDiagram
 
     AgentChatState --> ChatHistory
     AgentChannelState --* AgentChatState
+    AgentReference --* AgentChatState
     class AgentChatState {
         ChatHistory History
-        IEnumerable~AgentChannelState~ Channels
+        Iterable~AgentReference~ Agents
+        Iterable~AgentChannelState~ Channels
     }
 
     class AgentChannelState {
-        +string ChannelKey
-        +string ChannelState
+        +text ChannelKey
+        +text ChannelState
+    }
+
+    class AgentReference {
+        +text AgentId
+        +text? AgentName
+        +text AgentType
     }

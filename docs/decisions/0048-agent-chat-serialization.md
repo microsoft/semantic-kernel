@@ -12,10 +12,20 @@ Users of the _Agent Framework_ are unable to store and later retrieve conversati
 
 Formalizing a mechanism that supports serialization and deserialization of any `AgentChat` class provides an avenue to capture and restore state across multiple sessions as well as compute boundaries.
 
+#### Goals
+- **Capture & Restore Primary Chat History**: The primary `AgentChat` history must be captured and restored for full fidelity.
+- **Capture & Restore Channel State**: In addition to the primary chat history, the state for each `AgentChannel` within the `AgentChat` must be captured and restored.
+- **Capture Agent Metadata**: Capturing the agent Identifier, Name, and Type upon serialization provides a guidance on how to restore the the `AgentChat` during deserialization.
+
+
 #### Non-Goals
 - **Manage agent definition:** An `Agent` definition shall not be captured as part of the conversation state.  `Agent` instances will not be produced when deserializing the state of an `AgentChat` class.
 - **Manage secrets or api-keys:** Secrets / api-keys are required when producing an `Agent` instance.  Managing this type of sensitive data is out-of-scope due to security considerations.
 
+
+## Issues
+
+- Serialized `ChatHistory` must be equivalent across platforms / languages for interoperability
 
 ## Cases
 When restoring an `AgentChat`, the application must also re-create the `Agent` instances participating in the chat (outside of the control of the deserialization process).  This creates the opportunity for the following cases:
@@ -57,11 +67,12 @@ the chat has not been restored.  The chat may continue to be utilized as the `Ag
 
 #### Notes:
 
-> The number or definitions of  `Agents` instances has no consequence on the ability to restore `AgentChat` state.
-
 > Once restored, additional `Agent` instances may join the `AgentChat`, no different from any `AgentChat` instance.
 
 ## Analysis
+
+**Relationships:**
+
 The relationships between any `AgentChat`, the `Agent` instances participating in the conversation, and the associated `AgentChannel` conduits are illustrated in the following diagram:
 
 ![AgentChat Relationships](diagrams/agentchat-relationships.png)
@@ -70,8 +81,41 @@ While an `AgentChat` manages a primary `ChatHistory`, each `AgentChannel` manage
 
 This implies that logically the `AgentChat` state must retain the primary `ChatHistory` in addition to the appropriate state for each `AgentChannel`:
 
+**Logical State:**
+
+These relationships translate into the following logical state definition:
+
 ![AgentChat State](diagrams/agentchat-state.png)
 
+**Serialized State:**
+
+```javascript 
+{
+     // Serialized ChatHistory
+    "history": [
+        { "role": "user", "items": [ /* ... */ ] },
+        { "role": "assistant", "name": "John", "items": [ /* ... */ ] },
+        // ...
+    ],
+     // Serialized AgentReference
+    "agents": [
+        {
+            "id": "01b6a120-7fef-45e2-aafb-81cf4a90d931",
+            "name": "John",
+            "type": "ChatCompletionAgent"
+        },
+        // ...
+    ],
+     // Serialized AgentChannel state
+    "channels": [
+        {
+            "channelkey": "Vdx37EnWT9BS+kkCkEgFCg9uHvHNw1+hXMA4sgNMKs4=",
+            "channelstate": "...",  // Serialized state for an AgentChannel
+        },
+        // ...
+    ]
+}
+```
 
 ## Options
 
@@ -79,18 +123,49 @@ This implies that logically the `AgentChat` state must retain the primary `ChatH
 
 A dominant serialization pattern is to use the dotnet `JsonSerializer`.  This is the approach relied upon by the _Semantic Kernel_ content types.
 
-**Serialize:**
-```c#
-Agent agent1 = ...;
-Agent agent2 = ...;
-AgentGroupChat chat = new (agent1, agent2);
+**Serialize Example:**
 
+(_dotnet_)
+```c#
+// Create the agents
+ChatCompletionAgent agent1 = ...;
+OpenAIAssistantAgent agent2 = ...;
+
+// Create the agent-chat
+AgentGroupChat chat = new(agent1, agent2);
+
+// Serialize the chat object to JSON
 string chatState = JsonSerializer.Serialize(chat);
 ```
 
-**Deserialize:**
+(_python_)
+```python
+# Create the agents
+agent1 = ChatCompletionAgent(...)
+agent2 = OpenAIAssistantAgent(...)
+
+# Create the agent-chat
+chat = AgentGroupChat(agent1, agent2)
+
+# Serialize the chat to JSON
+chat_state = json.dumps(chat.model_dump())
+```
+
+**Deserialize Example:**
+
+(_dotnet_)
 ```c#
+// Deserialize JSON
 AgentGroupChat chat = JsonSerializer.Deserialize<AgentGroupChat>(chatState);
+```
+
+(_python_)
+```python
+# Deserialize JSON
+def agent_group_chat_decoder(obj) -> AgentGroupChat:
+    pass
+    
+chat = json.loads(chat_state, object_hook=agent_group_chat_decoder)
 ```
 
 **Pro:**
@@ -107,87 +182,182 @@ AgentGroupChat chat = JsonSerializer.Deserialize<AgentGroupChat>(chatState);
 
 Introducing a serializer with specific knowledge of `AgentChat` contracts enables the ability to streamline serialization and deserialization.
 
+(_dotnet_)
 ```c#
-public static class AgentChatSerializer
+class AgentChatSerializer
 {
-    public static async Task SerializeAsync<TChat>(TChat chat, Stream stream)
-        where TChat : AgentChat;
+    // Captures chat state to the provided stream
+    static async Task SerializeAsync(AgentChat chat, Stream stream)
 
-    public static async Task DeserializeAsync<TChat>(TChat chat, Stream stream)
-        where TChat : AgentChat;
+    // Reads chat state from the provided stream and returns serializer
+    static async Task<AgentChatSerializer> DeserializeAsync(AgentChat chat, Stream stream)
+
+    // Provides list of agent references
+    IReadOnlyList<AgentReference> GetAgentReferences();
+
+    // Restores the chat state
+    Task RestoreAsync(AgentChat chat);
 }
 ```
 
+(_python_)
+```python
+class AgentChatSerializer:
+
+    # Captures chat state to the provided stream
+    @staticmethod
+    async def serialize(chat: AgentChat, stream);
+        pass
+
+    # Reads chat state from the provided stream and returns serializer
+    @staticmethod
+    async def deserialize(chat: AgentChat, stream) -> AgentChatSerializer:
+        pass
+
+    # Provides list of agent references
+    def get_agent_references(self) -> list[AgentReference]:
+        pass
+
+    # Restores the chat state
+    async def restore(self, chat: AgentChat):
+        pass
+```
+
 **Pro:**
-- Able to clearly defines the chat-state, separate from the chat _service_ requirements.
+- Able to clearly define the chat-state, separate from the chat _service_ requirements.
 - Support any `AgentChat` and `AgentChannel` subclass.
 - Ability to support post processing when restoring chat (e.g. channel synchronization).
 - Allows any `AgentChat` to be properly initialized prior to deserialization.
+- Allows for inspection of `AgentReference` metadata.
 
 **Con:**
 - Require knowledge of a serialization pattern specific to the _Agent Framework_.
-- Channel state is escaped.
 
-**Serialize:**
+**Serialize Example:**
+
+(_dotnet_)
 ```c#
-Agent agent1 = ...;
-Agent agent2 = ...;
-AgentGroupChat chat = new (agent1, agent2);
+// Create agents
+ChatCompletionAgent agent1 = ...;
+OpenAIAssistantAgent agent2 = ...;
 
+// Create agent-chat
+AgentGroupChat chat = new(agent1, agent2);
+
+// Initiate converation
 await chat.InvokeAsync();
 
-async using Stream stream = ...; // Initialize the serialization stream
-AgentChatSerializer.Serialize(chat, stream);
+// Initialize the serialization stream
+async using Stream stream = ...;
+
+// Capture agent-chat
+await AgentChatSerializer.SerializeAsync(chat, stream);
 ```
 
-**Deserialize:**
+(_python_)
+```python
+# Create agents
+agent1 = ChatCompletionAgent(...)
+agent2 = OpenAIAssistantAgent(...)
+
+# Create agent-chat
+chat = AgentGroupChat(agent1, agent2)
+
+# Initiate conversation
+await chat.invoke()
+
+# Initialize the serialization stream
+async with ... as stream:
+
+# Capture agent-chat
+await AgentChatSerializer.serialize(chat, stream)
+```
+
+**Deserialize Example:**
+
+(_dotnet_)
 ```c#
-Agent agent1 = ...;
-Agent agent2 = ...;
-AgentGroupChat chat = new (agent1, agent2);
+// Create agents
+ChatCompletionAgent agent1 = ...;
+OpenAIAssistantAgent agent2 = ...;
 
-async using Stream stream = ...; // Initialize the deserialization stream
-AgentChatSerializer.Deserialize(chat, stream);
+Dictionary<string, Agent> agents =
+    new()
+    {
+        { agent1.Id, agent1 },
+        { agent2.Id, agent2 },
+    }
 
-await chat.InvokeAsync();
-```
+// Initialize the deserialization stream
+async using Stream stream = ...;
+AgentChatSerializer serializer = AgentChatSerializer.Deserialize(stream);
 
-**Serialized State:**
-```json
+// Create agent-chat
+AgentGroupChat chat = new();
+
+// Restore agents
+foreach (AgentReference agentRef in serializer.GetAgentReferences())
 {
-    "history": [
-        { "role": "user", "items": [ /* ... */ ] }, // Serialized ChatMessageContent
-        { "role": "assistant", "name": "John", "items": [ /* ... */ ] }, // Serialized ChatMessageContent
-        // ...
-    ],
-    "channels": [
-        {
-            "channelkey": "Vdx37EnWT9BS+kkCkEgFCg9uHvHNw1+hXMA4sgNMKs4=",
-            "channelstate": "...",  // Serialized state for an AgentChannel
-        },
-        // ...
-    ]
+    chat.AddAgent(agents[agentRef.Id]);
 }
+
+// Restore chat
+serializer.Deserialize(chat);
+
+// Continue chat
+await chat.InvokeAsync();
 ```
 
+(_python_)
+```python
+# Create agents
+agent1 = ChatCompletionAgent(...)
+agent2 = OpenAIAssistantAgent(...)
 
-#### 3. `AgentChat` Serializer Encoded
+agents = {
+    agent1.id: agent1,
+    agent2.id: agent2,
+}
 
-This option is identical to the second option; however, each discrete state is encoded to discourage modification / manipulation of the captured state.
+# Initialize the serialization stream
+async with ... as stream:
+serializer = await AgentChatSerializer.serialize(stream)
+
+# Create agent-chat
+chat = AgentGroupChat(agent1, agent2)
+
+# Restore agents
+for agent_ref in serializer.get_agent_references():
+    chat.add_agent(agents[agent_ref.id])
+    
+# Restore agent-chat
+await serializer.deserialize(chat)
+
+# Continue chat
+await chat.invoke();
+```
+
+#### 3. Encoded State 
+
+This option is identical to the second option; however, each discrete state is base64 encoded to discourage modification / manipulation of the captured state.
 
 **Pro:**
 - Discourages ability to inspect and modify.
-- Still able to decode to inspect and modify.
-- Eliminates need to escape channel state.
 
 **Con:**
-- Discourages ability to inspect and modify.
+- Obscures ability to inspect.
 - Still able to decode to inspect and modify.
 
 **Serialized State:**
-```json
+```javascript
 {
     "history": "VGhpcyBpcyB0aGUgcHJpbWFyeSBjaGF0IGhpc3Rvcnkg...",
+    "agents": [
+        {
+            "aId37EnWT9BS+kkCkEgFCg9uHvHNw1+hXMA4sgNMKs4...",
+            // ...
+        },
+    ],
     "channels": [
         {
             "channelkey": "Vdx37EnWT9BS+kkCkEgFCg9uHvHNw1+hXMA4sgNMKs4=",
