@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using Azure.Search.Documents.Indexes;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -18,12 +20,12 @@ public sealed class AzureAISearchVectorRecordStoreOptions<TRecord>
     public string? DefaultCollectionName { get; init; } = null;
 
     /// <summary>
-    /// Gets or sets the choice of mapper to use when converting between the data model and the azure ai search record.
+    /// Gets or sets the choice of mapper to use when converting between the data model and the Azure AI Search record.
     /// </summary>
     public AzureAISearchRecordMapperType MapperType { get; init; } = AzureAISearchRecordMapperType.Default;
 
     /// <summary>
-    /// Gets or sets an optional custom mapper to use when converting between the data model and the azure ai search record.
+    /// Gets or sets an optional custom mapper to use when converting between the data model and the Azure AI Search record.
     /// </summary>
     /// <remarks>
     /// Set <see cref="MapperType"/> to <see cref="AzureAISearchRecordMapperType.JsonObjectCustomMapper"/> to use this mapper."/>
@@ -39,4 +41,10 @@ public sealed class AzureAISearchVectorRecordStoreOptions<TRecord>
     /// See <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure AI Search record.
+    /// Note that when using the default mapper, you will need to provide the same set of <see cref="System.Text.Json.JsonSerializerOptions"/> both here and when constructing the <see cref="SearchIndexClient"/>.
+    /// </summary>
+    public JsonSerializerOptions? JsonSerializerOptions { get; init; } = null;
 }

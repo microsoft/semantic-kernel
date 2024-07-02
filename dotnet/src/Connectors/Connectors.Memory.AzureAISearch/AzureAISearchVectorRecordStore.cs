@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -94,12 +95,13 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         }
 
         // Validate property types and store for later use.
+        var jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
-        this._keyPropertyName = properties.keyProperty.Name;
+        this._keyPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(jsonSerializerOptions, properties.keyProperty);
 
         // Build the list of property names from the current model that are either key or data fields.
-        this._nonVectorPropertyNames = properties.dataProperties.Concat([properties.keyProperty]).Select(x => x.Name).ToList();
+        this._nonVectorPropertyNames = properties.dataProperties.Concat([properties.keyProperty]).Select(x => VectorStoreRecordPropertyReader.GetJsonPropertyName(jsonSerializerOptions, x)).ToList();
     }
 
     /// <inheritdoc />
@@ -212,7 +214,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     /// <param name="collectionName">The name of the collection to retrieve the record from.</param>
     /// <param name="key">The key of the record to get.</param>
     /// <param name="includeVectors">A value indicating whether to include vectors in the result or not.</param>
-    /// <param name="innerOptions">The azure ai search sdk options for getting a document.</param>
+    /// <param name="innerOptions">The Azure AI Search sdk options for getting a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The retrieved document, mapped to the consumer data model.</returns>
     private async Task<TRecord?> GetDocumentAndMapToDataModelAsync(
@@ -258,7 +260,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     /// <param name="searchClient">The search client to use when uploading the document.</param>
     /// <param name="collectionName">The name of the collection to upsert the records to.</param>
     /// <param name="records">The records to upload.</param>
-    /// <param name="innerOptions">The azure ai search sdk options for uploading a document.</param>
+    /// <param name="innerOptions">The Azure AI Search sdk options for uploading a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The document upload result.</returns>
     private Task<Response<IndexDocumentsResult>> MapToStorageModelAndUploadDocumentAsync(
@@ -330,10 +332,10 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     }
 
     /// <summary>
-    /// Convert the public <see cref="GetRecordOptions"/> options model to the azure ai search <see cref="GetDocumentOptions"/> options model.
+    /// Convert the public <see cref="GetRecordOptions"/> options model to the Azure AI Search <see cref="GetDocumentOptions"/> options model.
     /// </summary>
     /// <param name="options">The public options model.</param>
-    /// <returns>The azure ai search options model.</returns>
+    /// <returns>The Azure AI Search options model.</returns>
     private GetDocumentOptions ConvertGetDocumentOptions(GetRecordOptions? options)
     {
         var innerOptions = new GetDocumentOptions();
@@ -351,7 +353,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     /// <typeparam name="T">The type to deserialize the document to.</typeparam>
     /// <param name="searchClient">The search client to use when fetching the document.</param>
     /// <param name="key">The key of the record to get.</param>
-    /// <param name="innerOptions">The azure ai search sdk options for getting a document.</param>
+    /// <param name="innerOptions">The Azure AI Search sdk options for getting a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The retrieved document, mapped to the consumer data model, or null if not found.</returns>
     private static async Task<T?> GetDocumentWithNotFoundHandlingAsync<T>(
