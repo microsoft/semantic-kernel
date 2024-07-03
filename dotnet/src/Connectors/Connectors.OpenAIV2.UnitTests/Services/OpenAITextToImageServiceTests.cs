@@ -48,6 +48,18 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     }
 
     [Fact]
+    public void ItThrowsIfModelIdIsNotProvided()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService(" ", "apikey"));
+        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService(" ", openAIClient: new("apikey")));
+        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService("", "apikey"));
+        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService("", openAIClient: new("apikey")));
+        Assert.Throws<ArgumentNullException>(() => new OpenAITextToImageService(null!, "apikey"));
+        Assert.Throws<ArgumentNullException>(() => new OpenAITextToImageService(null!, openAIClient: new("apikey")));
+    }
+
+    [Fact]
     public void OpenAIClientConstructorWorksCorrectly()
     {
         // Arrange

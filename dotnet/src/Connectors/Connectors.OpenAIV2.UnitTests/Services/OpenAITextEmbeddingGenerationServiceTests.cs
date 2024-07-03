@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.ClientModel;
 using System.IO;
 using System.Net;
@@ -33,6 +34,18 @@ public class OpenAITextEmbeddingGenerationServiceTests
         Assert.NotNull(sutWithOpenAIClient);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
         Assert.Equal("model", sutWithOpenAIClient.Attributes[AIServiceExtensions.ModelIdKey]);
+    }
+
+    [Fact]
+    public void ItThrowsIfModelIdIsNotProvided()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService(" ", "apikey"));
+        Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService(" ", openAIClient: new("apikey")));
+        Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService("", "apikey"));
+        Assert.Throws<ArgumentException>(() => new OpenAITextEmbeddingGenerationService("", openAIClient: new("apikey")));
+        Assert.Throws<ArgumentNullException>(() => new OpenAITextEmbeddingGenerationService(null!, "apikey"));
+        Assert.Throws<ArgumentNullException>(() => new OpenAITextEmbeddingGenerationService(null!, openAIClient: new("apikey")));
     }
 
     [Fact]

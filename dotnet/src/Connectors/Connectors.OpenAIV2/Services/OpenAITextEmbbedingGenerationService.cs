@@ -44,6 +44,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
     {
+        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
         this._client = new(
             modelId: modelId,
             apiKey: apiKey,
@@ -68,6 +69,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
     {
+        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
         this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
         this._dimensions = dimensions;
     }

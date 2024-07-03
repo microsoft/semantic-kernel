@@ -50,6 +50,7 @@ public class OpenAITextToImageService : ITextToImageService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
         this._client = new(modelId, apiKey, organizationId, endpoint, httpClient, loggerFactory?.CreateLogger(this.GetType()));
     }
 
@@ -64,6 +65,7 @@ public class OpenAITextToImageService : ITextToImageService
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
         this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
     }
 
