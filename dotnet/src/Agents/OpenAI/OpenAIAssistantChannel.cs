@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI.Assistants;
+using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-internal sealed class OpenAIAssistantChannel(AssistantsClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration)
+internal sealed class OpenAIAssistantChannel(AssistantClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration)
     : AgentChannel<OpenAIAssistantAgent>
 {
-    private readonly AssistantsClient _client = client;
+    private readonly AssistantClient _client = client;
     private readonly string _threadId = threadId;
 
     /// <inheritdoc/>

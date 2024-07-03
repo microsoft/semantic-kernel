@@ -147,7 +147,8 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <returns>The thread identifier</returns>
     public async Task<string> CreateThreadAsync(CancellationToken cancellationToken = default)
     {
-        AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
+        ThreadCreationOptions options = new(); // %%%
+        AssistantThread thread = await this._client.CreateThreadAsync(options, cancellationToken).ConfigureAwait(false);
 
         return thread.Id;
     }
