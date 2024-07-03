@@ -75,15 +75,15 @@ public sealed class AzureOpenAIChatMessageContent : ChatMessageContent
     /// Retrieve the resulting function from the chat result.
     /// </summary>
     /// <returns>The <see cref="AzureOpenAIFunctionToolCall"/>, or null if no function was returned by the model.</returns>
-    public IReadOnlyList<AzureOpenAIFunctionToolCall> GetOpenAIFunctionToolCalls()
+    public IReadOnlyList<AzureOpenAIFunctionToolCall> GetFunctionToolCalls()
     {
         List<AzureOpenAIFunctionToolCall>? functionToolCallList = null;
 
         foreach (var toolCall in this.ToolCalls)
         {
-            if (toolCall is ChatToolCall functionToolCall)
+            if (toolCall.Kind == ChatToolCallKind.Function)
             {
-                (functionToolCallList ??= []).Add(new AzureOpenAIFunctionToolCall(functionToolCall));
+                (functionToolCallList ??= []).Add(new AzureOpenAIFunctionToolCall(toolCall));
             }
         }
 
