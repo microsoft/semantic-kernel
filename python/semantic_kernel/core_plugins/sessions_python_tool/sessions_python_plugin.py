@@ -69,6 +69,7 @@ class SessionsPythonTool(KernelBaseModel):
             **kwargs,
         )
 
+    # region Helper Methods
     async def _ensure_auth_token(self) -> str:
         """Ensure the auth token is valid."""
         try:
@@ -117,6 +118,9 @@ class SessionsPythonTool(KernelBaseModel):
             endpoint = endpoint[:-1]
         return f"{base_url}{endpoint}?{query_string}"
 
+    # endregion
+
+    # region Kernel Functions
     @kernel_function(
         description="""Executes the provided Python code.
                      Start and end the code snippet with double quotes to define it as a string.
@@ -180,7 +184,7 @@ class SessionsPythonTool(KernelBaseModel):
             error_message = e.response.text if e.response.text else e.response.reason_phrase
             raise FunctionExecutionException(
                 f"Code execution failed with status code {e.response.status_code} and error: {error_message}"
-            )
+            ) from e
 
     @kernel_function(name="upload_file", description="Uploads a file for the current Session ID")
     async def upload_file(
@@ -233,7 +237,7 @@ class SessionsPythonTool(KernelBaseModel):
             error_message = e.response.text if e.response.text else e.response.reason_phrase
             raise FunctionExecutionException(
                 f"Upload failed with status code {e.response.status_code} and error: {error_message}"
-            )
+            ) from e
 
     @kernel_function(name="list_files", description="Lists all files in the provided Session ID")
     async def list_files(self) -> list[SessionsRemoteFileMetadata]:
@@ -267,7 +271,7 @@ class SessionsPythonTool(KernelBaseModel):
             error_message = e.response.text if e.response.text else e.response.reason_phrase
             raise FunctionExecutionException(
                 f"List files failed with status code {e.response.status_code} and error: {error_message}"
-            )
+            ) from e
 
     async def download_file(
         self,
@@ -314,4 +318,5 @@ class SessionsPythonTool(KernelBaseModel):
             error_message = e.response.text if e.response.text else e.response.reason_phrase
             raise FunctionExecutionException(
                 f"Download failed with status code {e.response.status_code} and error: {error_message}"
-            )
+            ) from e
+        # endregion
