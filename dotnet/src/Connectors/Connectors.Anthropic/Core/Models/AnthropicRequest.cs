@@ -145,29 +145,7 @@ internal sealed class AnthropicRequest
 
     private static List<AnthropicContent> CreateClaudeMessages(ChatMessageContent content)
     {
-        List<AnthropicContent> messages = [];
-        switch (content)
-        {
-            case AnthropicChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
-                messages.Add(new AnthropicToolResultContent
-                {
-                    ToolId = contentWithCalledTool.CalledToolResult.ToolUseId ?? throw new InvalidOperationException("Tool ID must be provided."),
-                    Content = new AnthropicTextContent(contentWithCalledTool.CalledToolResult.FunctionResult.ToString())
-                });
-                break;
-            case AnthropicChatMessageContent { ToolCalls: not null } contentWithToolCalls:
-                messages.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
-                    new AnthropicToolCallContent
-                    {
-                        ToolId = toolCall.ToolUseId,
-                        FunctionName = toolCall.FullyQualifiedName,
-                        Arguments = JsonSerializer.SerializeToNode(toolCall.Arguments),
-                    }));
-                break;
-            default:
-                messages.AddRange(content.Items.Select(GetClaudeMessageFromKernelContent));
-                break;
-        }
+        var messages = content.Items.Select(GetClaudeMessageFromKernelContent).ToList();
 
         if (messages.Count == 0)
         {
