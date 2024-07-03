@@ -2,10 +2,9 @@
 
 using System.ClientModel;
 using System.ClientModel.Primitives;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.OpenAI.UnitTests.Extensions;
+namespace SemanticKernel.UnitTests.Utilities.OpenAI;
 
 public class ClientResultExceptionExtensionsTests
 {

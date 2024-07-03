@@ -5,24 +5,23 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using OpenAI;
-using Xunit;
 
-namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
+namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
 /// <summary>
-/// Unit tests for <see cref="OpenAITextToImageService"/> class.
+/// Unit tests for <see cref="AzureOpenAITextToImageServiceTests"/> class.
 /// </summary>
-public sealed class OpenAITextToImageServiceTests : IDisposable
+public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
-    public OpenAITextToImageServiceTests()
+    public AzureOpenAITextToImageServiceTests()
     {
         this._messageHandlerStub = new()
         {
@@ -39,7 +38,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public void ConstructorWorksCorrectly()
     {
         // Arrange & Act
-        var sut = new OpenAITextToImageService("model", "api-key", "organization");
+        var sut = new AzureOpenAITextToImageServiceTests("model", "api-key", "organization");
 
         // Assert
         Assert.NotNull(sut);
@@ -51,7 +50,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public void OpenAIClientConstructorWorksCorrectly()
     {
         // Arrange
-        var sut = new OpenAITextToImageService("model", new OpenAIClient("apikey"));
+        var sut = new AzureOpenAITextToImageServiceTests("model", new OpenAIClient("apikey"));
 
         // Assert
         Assert.NotNull(sut);
@@ -70,7 +69,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public async Task GenerateImageWorksCorrectlyAsync(int width, int height, string modelId)
     {
         // Arrange
-        var sut = new OpenAITextToImageService(modelId, "api-key", httpClient: this._httpClient);
+        var sut = new AzureOpenAITextToImageServiceTests(modelId, "api-key", httpClient: this._httpClient);
         Assert.Equal(modelId, sut.Attributes["ModelId"]);
 
         // Act 
@@ -85,19 +84,19 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     {
         // Assert
         var modelId = "dall-e-2";
-        var logger = new Mock<ILogger<OpenAITextToImageService>>();
+        var logger = new Mock<ILogger<AzureOpenAITextToImageServiceTests>>();
         logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
 
         this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
 
         // Arrange
-        var sut = new OpenAITextToImageService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
+        var sut = new AzureOpenAITextToImageServiceTests(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
 
         // Act
         await sut.GenerateImageAsync("description", 256, 256);
 
         // Assert
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAITextToImageService.GenerateImageAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(AzureOpenAITextToImageServiceTests.GenerateImageAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
     }
 
     public void Dispose()

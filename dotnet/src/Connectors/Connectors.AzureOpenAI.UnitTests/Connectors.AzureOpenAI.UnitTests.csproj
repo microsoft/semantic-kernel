@@ -8,7 +8,7 @@
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010;CA2007,CA1806,CA1869,CA1861,IDE0300,VSTHRD111</NoWarn>
+    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010;CA2007,CA1806,CA1869,CA1861,IDE0300,VSTHRD111,IDE1006</NoWarn>
     
   </PropertyGroup>
 
@@ -27,7 +27,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/HttpMessageHandlerStub.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Services\AzureOpenAITextToImageServiceTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Services\AzureOpenAITextToImageServiceTests.cs" />
   </ItemGroup>
 
   <ItemGroup>

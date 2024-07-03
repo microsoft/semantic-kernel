@@ -22,7 +22,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Services\AzureOpenAITextEmbeddingGenerationService.cs" />
+    <Compile Remove="Core\ClientCore.TextToImage.cs" />
+    <Compile Remove="Services\AzureOpenAITextToImageService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Services\AzureOpenAITextEmbeddingGenerationService.cs" />
+    <None Include="Core\ClientCore.TextToImage.cs" />
+    <None Include="Services\AzureOpenAITextToImageService.cs" />
   </ItemGroup>
 
   <ItemGroup>

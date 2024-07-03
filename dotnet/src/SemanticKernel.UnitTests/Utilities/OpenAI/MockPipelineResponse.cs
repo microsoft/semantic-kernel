@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SemanticKernel.Connectors.OpenAI.UnitTests;
+namespace SemanticKernel.UnitTests.Utilities.OpenAI;
 
 public class MockPipelineResponse : PipelineResponse
 {
