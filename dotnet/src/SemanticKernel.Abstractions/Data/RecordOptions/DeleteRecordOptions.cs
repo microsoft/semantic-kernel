@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Memory;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Optional options when calling <see cref="IVectorRecordStore{TKey, TDataModel}.DeleteAsync"/>.

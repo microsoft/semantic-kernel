@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Data;
 using Moq;
 using Qdrant.Client.Grpc;
 using Xunit;

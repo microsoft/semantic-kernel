@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Grpc.Core;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Data;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 using Xunit;

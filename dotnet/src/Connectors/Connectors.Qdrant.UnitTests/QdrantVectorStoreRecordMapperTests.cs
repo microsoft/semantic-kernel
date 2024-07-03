@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Data;
 using Qdrant.Client.Grpc;
 using Xunit;
 
