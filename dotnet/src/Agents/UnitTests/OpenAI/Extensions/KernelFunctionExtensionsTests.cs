@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.ComponentModel;
-using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using OpenAI.Assistants;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI.Extensions;
@@ -26,11 +26,11 @@ public class KernelFunctionExtensionsTests
         KernelFunction f2 = plugin[nameof(TestPlugin.TestFunction2)];
 
         FunctionToolDefinition definition1 = f1.ToToolDefinition("testplugin", "-");
-        Assert.StartsWith($"testplugin-{nameof(TestPlugin.TestFunction1)}", definition1.Name, StringComparison.Ordinal);
+        Assert.StartsWith($"testplugin-{nameof(TestPlugin.TestFunction1)}", definition1.FunctionName, StringComparison.Ordinal);
         Assert.Equal("test description", definition1.Description);
 
         FunctionToolDefinition definition2 = f2.ToToolDefinition("testplugin", "-");
-        Assert.StartsWith($"testplugin-{nameof(TestPlugin.TestFunction2)}", definition2.Name, StringComparison.Ordinal);
+        Assert.StartsWith($"testplugin-{nameof(TestPlugin.TestFunction2)}", definition2.FunctionName, StringComparison.Ordinal);
         Assert.Equal("test description", definition2.Description);
     }
 

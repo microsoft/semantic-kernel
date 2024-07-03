@@ -46,8 +46,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\..\src\Agents\Abstractions\Agents.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
-    <ProjectReference Include="..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />
+    <!--<ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />-->
+    <!--<ProjectReference Include="..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />-->
     <ProjectReference Include="..\..\src\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
@@ -102,5 +102,14 @@
     <EmbeddedResource Include="Resources\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Agents\ComplexChat_NestedShopper.cs" />
+    <Compile Remove="Agents\MixedChat_Agents.cs" />
+    <Compile Remove="Agents\OpenAIAssistant_ChartMaker.cs" />
+    <Compile Remove="Agents\OpenAIAssistant_CodeInterpreter.cs" />
+    <Compile Remove="Agents\OpenAIAssistant_FileManipulation.cs" />
+    <Compile Remove="Agents\OpenAIAssistant_FileService.cs" />
+    <Compile Remove="Agents\OpenAIAssistant_Retrieval.cs" />
   </ItemGroup>
 </Project>

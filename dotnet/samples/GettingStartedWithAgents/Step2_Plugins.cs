@@ -3,7 +3,7 @@ using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 namespace GettingStarted;
 
@@ -26,7 +26,7 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
                 Instructions = HostInstructions,
                 Name = HostName,
                 Kernel = this.CreateKernelWithChatCompletion(),
-                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+                ExecutionSettings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions },
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

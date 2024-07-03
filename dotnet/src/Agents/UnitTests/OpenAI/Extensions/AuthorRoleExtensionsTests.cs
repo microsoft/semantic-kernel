@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
 using Xunit;
 using KernelExtensions = Microsoft.SemanticKernel.Agents.OpenAI;
 

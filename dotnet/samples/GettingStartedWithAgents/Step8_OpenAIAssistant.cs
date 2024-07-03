@@ -14,6 +14,8 @@ namespace GettingStarted;
 /// </summary>
 public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
 {
+    protected override bool ForceOpenAI => true;
+
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
 
@@ -29,7 +31,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
                 {
                     Instructions = HostInstructions,
                     Name = HostName,
-                    ModelId = this.Model,
+                    Model = this.Model,
                 });
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

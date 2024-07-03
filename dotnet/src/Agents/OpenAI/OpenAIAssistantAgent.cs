@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
-using Azure.AI.OpenAI.Assistants;
-using Azure.Core;
-using Azure.Core.Pipeline;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Agents.OpenAI.Azure;
 using Microsoft.SemanticKernel.Http;
+using OpenAI;
+using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
@@ -21,13 +21,13 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 public sealed partial class OpenAIAssistantAgent : KernelAgent
 {
     private readonly Assistant _assistant;
-    private readonly AssistantsClient _client;
+    private readonly AssistantClient _client;
     private readonly OpenAIAssistantConfiguration _config;
 
-    /// <summary>
-    /// A list of previously uploaded file IDs to attach to the assistant.
-    /// </summary>
-    public IReadOnlyList<string> FileIds => this._assistant.FileIds;
+    ///// <summary>
+    ///// A list of previously uploaded file IDs to attach to the assistant.
+    ///// </summary>
+    //public IReadOnlyList<string> FileIds => this._assistant.FileIds; %%%
 
     /// <summary>
     /// A set of up to 16 key/value pairs that can be attached to an agent, used for
@@ -67,11 +67,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         Verify.NotNull(definition, nameof(definition));
 
         // Create the client
-        AssistantsClient client = CreateClient(config);
+        AssistantClient client = CreateClient(config);
 
         // Create the assistant
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
-        Assistant model = await client.CreateAssistantAsync(assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+        Assistant model = await client.CreateAssistantAsync(definition.Model, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
         return
@@ -85,53 +85,31 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// Retrieve a list of assistant definitions: <see cref="OpenAIAssistantDefinition"/>.
     /// </summary>
     /// <param name="config">Configuration for accessing the Assistants API service, such as the api-key.</param>
-    /// <param name="maxResults">The maximum number of assistant definitions to retrieve</param>
-    /// <param name="lastId">The identifier of the assistant beyond which to begin selection.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An list of <see cref="OpenAIAssistantDefinition"/> objects.</returns>
     public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListDefinitionsAsync(
         OpenAIAssistantConfiguration config,
-        int maxResults = 100,
-        string? lastId = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Create the client
-        AssistantsClient client = CreateClient(config);
+        AssistantClient client = CreateClient(config);
 
-        // Retrieve the assistants
-        PageableList<Assistant> assistants;
-
-        int resultCount = 0;
-        do
+        await foreach (Assistant assistant in client.GetAssistantsAsync(ListOrder.NewestFirst, cancellationToken).ConfigureAwait(false))
         {
-            assistants = await client.GetAssistantsAsync(limit: Math.Min(maxResults, 100), ListSortOrder.Descending, after: lastId, cancellationToken: cancellationToken).ConfigureAwait(false);
-            foreach (Assistant assistant in assistants)
-            {
-                if (resultCount >= maxResults)
+            yield return
+                new()
                 {
-                    break;
-                }
-
-                resultCount++;
-
-                yield return
-                    new()
-                    {
-                        Id = assistant.Id,
-                        Name = assistant.Name,
-                        Description = assistant.Description,
-                        Instructions = assistant.Instructions,
-                        EnableCodeInterpreter = assistant.Tools.Any(t => t is CodeInterpreterToolDefinition),
-                        EnableRetrieval = assistant.Tools.Any(t => t is RetrievalToolDefinition),
-                        FileIds = assistant.FileIds,
-                        Metadata = assistant.Metadata,
-                        ModelId = assistant.Model,
-                    };
-
-                lastId = assistant.Id;
-            }
+                    Id = assistant.Id,
+                    Name = assistant.Name,
+                    Description = assistant.Description,
+                    Instructions = assistant.Instructions,
+                    EnableCodeInterpreter = assistant.Tools.Any(t => t is CodeInterpreterToolDefinition),
+                    EnableFileSearch = assistant.Tools.Any(t => t is FileSearchToolDefinition),
+                    //FileIds = assistant.FileIds, %%%
+                    Metadata = assistant.Metadata,
+                    Model = assistant.Model,
+                };
         }
-        while (assistants.HasMore && resultCount < maxResults);
     }
 
     /// <summary>
@@ -149,10 +127,10 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         CancellationToken cancellationToken = default)
     {
         // Create the client
-        AssistantsClient client = CreateClient(config);
+        AssistantClient client = CreateClient(config);
 
         // Retrieve the assistant
-        Assistant model = await client.GetAssistantAsync(id, cancellationToken).ConfigureAwait(false);
+        Assistant model = await client.GetAssistantAsync(id).ConfigureAwait(false); // %%% CANCEL TOKEN
 
         // Instantiate the agent
         return
@@ -182,12 +160,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         // Distinguish between different Azure OpenAI endpoints or OpenAI services.
         yield return this._config.Endpoint ?? "openai";
 
-        // Distinguish between different API versioning.
-        if (this._config.Version.HasValue)
-        {
-            yield return this._config.Version.ToString()!;
-        }
-
         // Custom client receives dedicated channel.
         if (this._config.HttpClient is not null)
         {
@@ -208,7 +180,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         logger.LogDebug("[{MethodName}] Creating assistant thread", nameof(CreateChannelAsync));
 
-        AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
+        AssistantThread thread = await this._client.CreateThreadAsync(options: null, cancellationToken).ConfigureAwait(false);
 
         logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
@@ -219,7 +191,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgent"/> class.
     /// </summary>
     private OpenAIAssistantAgent(
-        AssistantsClient client,
+        AssistantClient client,
         Assistant model,
         OpenAIAssistantConfiguration config)
     {
@@ -233,64 +205,124 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         this.Instructions = this._assistant.Instructions;
     }
 
+    private static AzureOpenAIClientOptions GetAzureOpenAIClientOptions(HttpClient? httpClient)
+    {
+        AzureOpenAIClientOptions options = new()
+        {
+            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+        };
+
+        options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIAssistantAgent))), PipelinePosition.PerCall);
+
+        if (httpClient is not null)
+        {
+            options.Transport = new HttpClientPipelineTransport(httpClient);
+            options.RetryPolicy = new ClientRetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            options.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
+        }
+
+        return options;
+    }
+
     private static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
     {
         AssistantCreationOptions assistantCreationOptions =
-            new(definition.ModelId)
+            new()
             {
                 Description = definition.Description,
                 Instructions = definition.Instructions,
                 Name = definition.Name,
-                Metadata = definition.Metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
+                // %%% ResponseFormat =
+                // %%% Temperature =
+                // %%% ToolResources
+                //assistantCreationOptions.FileIds.AddRange(definition.FileIds ?? []); %%%
+                // %%% NucleusSamplingFactor
             };
 
-        assistantCreationOptions.FileIds.AddRange(definition.FileIds ?? []);
+        // %%% COPY METADATA
+        // Metadata = definition.Metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
 
         if (definition.EnableCodeInterpreter)
         {
             assistantCreationOptions.Tools.Add(new CodeInterpreterToolDefinition());
         }
 
-        if (definition.EnableRetrieval)
+        if (definition.EnableFileSearch)
         {
-            assistantCreationOptions.Tools.Add(new RetrievalToolDefinition());
+            assistantCreationOptions.Tools.Add(new FileSearchToolDefinition());
         }
 
         return assistantCreationOptions;
     }
 
-    private static AssistantsClient CreateClient(OpenAIAssistantConfiguration config)
+    private static AssistantClient CreateClient(OpenAIAssistantConfiguration config)
     {
-        AssistantsClientOptions clientOptions = CreateClientOptions(config);
+        OpenAIClient client;
 
         // Inspect options
-        if (!string.IsNullOrWhiteSpace(config.Endpoint))
+        if (!string.IsNullOrWhiteSpace(config.Endpoint)) // %%% INSUFFICENT (BOTH HAVE ENDPOINT OPTION)
         {
             // Create client configured for Azure OpenAI, if endpoint definition is present.
-            return new AssistantsClient(new Uri(config.Endpoint), new AzureKeyCredential(config.ApiKey), clientOptions);
+            AzureOpenAIClientOptions clientOptions = CreateAzureClientOptions(config.HttpClient);
+            client = new AzureOpenAIClient(new Uri(config.Endpoint), config.ApiKey, clientOptions);
+        }
+        else
+        {
+            // Otherwise, create client configured for OpenAI.
+            OpenAIClientOptions clientOptions = CreateClientOptions(config.HttpClient, config.Endpoint);
+            client = new OpenAIClient(config.ApiKey, clientOptions);
         }
 
-        // Otherwise, create client configured for OpenAI.
-        return new AssistantsClient(config.ApiKey, clientOptions);
+        return client.GetAssistantClient();
     }
 
-    private static AssistantsClientOptions CreateClientOptions(OpenAIAssistantConfiguration config)
+    internal static AzureOpenAIClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
-        AssistantsClientOptions options =
-            config.Version.HasValue ?
-                new(config.Version.Value) :
-                new();
-
-        options.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
-        options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIAssistantAgent))), HttpPipelinePosition.PerCall);
-
-        if (config.HttpClient is not null)
+        AzureOpenAIClientOptions options = new()
         {
-            options.Transport = new HttpClientTransport(config.HttpClient);
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
-            options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
+            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+        };
+
+        options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIAssistantAgent))), PipelinePosition.PerCall);
+
+        if (httpClient is not null)
+        {
+            options.Transport = new HttpClientPipelineTransport(httpClient);
+            options.RetryPolicy = new ClientRetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            options.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
         }
 
         return options;
+    }
+
+    private static OpenAIClientOptions CreateClientOptions(HttpClient? httpClient, string? endpoint)
+    {
+        OpenAIClientOptions options = new()
+        {
+            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+            Endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint)
+        };
+
+        options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIAssistantAgent))), PipelinePosition.PerCall);
+
+        if (httpClient is not null)
+        {
+            options.Transport = new HttpClientPipelineTransport(httpClient);
+            options.RetryPolicy = new ClientRetryPolicy(maxRetries: 0); // Disable retry policy if and only if a custom HttpClient is provided.
+            options.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable default timeout
+        }
+
+        return options;
+    }
+
+    private static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
+    {
+        return new GenericActionPipelinePolicy((message) =>
+        {
+            if (message?.Request?.Headers?.TryGetValue(headerName, out string? _) == false)
+            {
+                message.Request.Headers.Set(headerName, headerValue);
+            }
+        });
     }
 }

@@ -23,7 +23,7 @@ public class OpenAIAssistantConfigurationTests
         Assert.Equal("testkey", config.ApiKey);
         Assert.Null(config.Endpoint);
         Assert.Null(config.HttpClient);
-        Assert.Null(config.Version);
+        //Assert.Null(config.Version); %%%
     }
 
     /// <summary>
@@ -38,13 +38,13 @@ public class OpenAIAssistantConfigurationTests
             new(apiKey: "testkey", endpoint: "https://localhost")
             {
                 HttpClient = client,
-                Version = AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview,
+                //Version = AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview, %%%
             };
 
         Assert.Equal("testkey", config.ApiKey);
         Assert.Equal("https://localhost", config.Endpoint);
         Assert.NotNull(config.HttpClient);
-        Assert.Equal(AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview, config.Version);
+        //Assert.Equal(AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview, config.Version); %%%
     }
 
     /// <summary>

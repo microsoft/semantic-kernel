@@ -11,7 +11,7 @@ public sealed class OpenAIAssistantDefinition
     /// <summary>
     /// Identifies the AI model (OpenAI) or deployment (AzureOAI) this agent targets.
     /// </summary>
-    public string? ModelId { get; init; }
+    public string? Model { get; init; }
 
     /// <summary>
     /// The description of the assistant.
@@ -41,7 +41,7 @@ public sealed class OpenAIAssistantDefinition
     /// <summary>
     /// Set if retrieval is enabled.
     /// </summary>
-    public bool EnableRetrieval { get; init; }
+    public bool EnableFileSearch { get; init; }
 
     /// <summary>
     /// A list of previously uploaded file IDs to attach to the assistant.

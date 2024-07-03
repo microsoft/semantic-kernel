@@ -20,13 +20,13 @@ public class OpenAIAssistantDefinitionTests
 
         Assert.Null(definition.Id);
         Assert.Null(definition.Name);
-        Assert.Null(definition.ModelId);
+        Assert.Null(definition.Model);
         Assert.Null(definition.Instructions);
         Assert.Null(definition.Description);
         Assert.Null(definition.Metadata);
         Assert.Null(definition.FileIds);
         Assert.False(definition.EnableCodeInterpreter);
-        Assert.False(definition.EnableRetrieval);
+        Assert.False(definition.EnableFileSearch);
     }
 
     /// <summary>
@@ -40,23 +40,23 @@ public class OpenAIAssistantDefinitionTests
             {
                 Id = "testid",
                 Name = "testname",
-                ModelId = "testmodel",
+                Model = "testmodel",
                 Instructions = "testinstructions",
                 Description = "testdescription",
                 FileIds = ["id"],
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 EnableCodeInterpreter = true,
-                EnableRetrieval = true,
+                EnableFileSearch = true,
             };
 
         Assert.Equal("testid", definition.Id);
         Assert.Equal("testname", definition.Name);
-        Assert.Equal("testmodel", definition.ModelId);
+        Assert.Equal("testmodel", definition.Model);
         Assert.Equal("testinstructions", definition.Instructions);
         Assert.Equal("testdescription", definition.Description);
         Assert.Single(definition.Metadata);
         Assert.Single(definition.FileIds);
         Assert.True(definition.EnableCodeInterpreter);
-        Assert.True(definition.EnableRetrieval);
+        Assert.True(definition.EnableFileSearch);
     }
 }

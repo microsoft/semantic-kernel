@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Net.Http;
-using Azure.AI.OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
@@ -21,11 +20,6 @@ public sealed class OpenAIAssistantConfiguration
     public string? Endpoint { get; }
 
     /// <summary>
-    /// An optional API version override.
-    /// </summary>
-    public AssistantsClientOptions.ServiceVersion? Version { get; init; }
-
-    /// <summary>
     /// Custom <see cref="HttpClient"/> for HTTP requests.
     /// </summary>
     public HttpClient? HttpClient { get; init; }
@@ -33,7 +27,7 @@ public sealed class OpenAIAssistantConfiguration
     /// <summary>
     /// Defineds polling behavior for Assistant API requests.
     /// </summary>
-    public PollingConfiguration Polling { get; } = new PollingConfiguration();
+    public PollingConfiguration Polling { get; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantConfiguration"/> class.
