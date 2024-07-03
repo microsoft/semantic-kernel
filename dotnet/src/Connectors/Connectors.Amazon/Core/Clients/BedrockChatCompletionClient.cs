@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections;
 using System.Text.Json;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
@@ -44,7 +45,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                 break;
         }
     }
-    internal async Task<IChatCompletionResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings executionSettings, CancellationToken cancellationToken = default)
+    internal async Task<ConverseResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings executionSettings, CancellationToken cancellationToken = default)
     {
         // var requestBody = this._ioService.GetApiRequestBody(prompt, executionSettings);
         var converseRequest = new ConverseRequest
@@ -62,7 +63,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
             }).ToList()
         };
         var response = await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(true);
-        return this._ioService.ConvertApiResponse(response);
+        return response;
     }
     internal async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
@@ -70,19 +71,35 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        IChatCompletionResponse responses;
-        using var activity = ModelDiagnostics.StartCompletionActivity(
+        ConverseResponse response;
+        var activity = ModelDiagnostics.StartCompletionActivity(
             this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings);
         try
         {
-            responses = await this.ConverseBedrockModelAsync(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
+            response = await this.ConverseBedrockModelAsync(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (activity is not null)
         {
             activity.SetError(ex);
             throw;
         }
-        return activity?.SetCompletionResponse(responses); //parse msg content, convert to list
+        IEnumerable<ChatMessageContent> chatMessageContents = response.Output.Message.Content
+            .Select(contentBlock => new ChatMessageContent
+            {
+                Role = (AuthorRole)Enum.Parse(typeof(AuthorRole), response.Output.Message.Role.ToString(), true),
+                Content = contentBlock.Text
+            }); //parse msg content, convert to list
+        IReadOnlyList<ChatMessageContent> chatMessageContentsList = chatMessageContents.ToList();
+        return activity?.SetCompletionResponse(chatMessageContentsList);
+    }
+
+    private static List<ChatMessageContent> GetChatMessageContentFromResponse(ConverseResponse response, string modelId)
+    {
+        var chatMessageContents = new List<ChatMessageContent>();
+        foreach (var message in response.Output.Message)
+        {
+            chatMessageContents.Add(new ChatMessageContent(message.Content[0].Text, modelId));
+        }
     }
     // private ConversationRole GetConversationRole(AuthorRole authorRole)
     // {

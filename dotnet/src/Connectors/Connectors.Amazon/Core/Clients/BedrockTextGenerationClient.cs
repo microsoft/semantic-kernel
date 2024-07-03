@@ -42,7 +42,7 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
 
     private protected async Task<IReadOnlyList<TextContent>> InvokeBedrockModelAsync(string prompt, PromptExecutionSettings executionSettings, CancellationToken cancellationToken = default)
     {
-        var requestBody = this._ioService.GetApiRequestBody(prompt, executionSettings);
+        var requestBody = this._ioService.GetInvokeModelRequestBody(prompt, executionSettings);
         var invokeRequest = new InvokeModelRequest
         {
             ModelId = this._modelId,
@@ -53,6 +53,5 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
         var response = await this._bedrockApi.InvokeModelAsync(invokeRequest, cancellationToken).ConfigureAwait(true);
         var responseBody = JsonSerializer.Deserialize<TResponse>(response.Body);
         return responseBody?.GetResults() ?? new List<TextContent>();
-        // return this._ioService.ConvertApiResponse(response.Body);
     }
 }

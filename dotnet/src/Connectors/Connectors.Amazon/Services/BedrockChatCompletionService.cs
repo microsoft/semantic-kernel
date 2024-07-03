@@ -20,12 +20,10 @@ public class BedrockChatCompletionService : BedrockChatCompletionClient<IChatCom
         : base(modelId, bedrockApi)
     {
     }
-
     public BedrockChatCompletionService(string modelId)
         : base(modelId, new AmazonBedrockRuntimeClient())
     {
     }
-
     public IReadOnlyDictionary<string, object?> Attributes => this._attributesInternal;
 
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
