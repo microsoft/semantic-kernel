@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
@@ -43,10 +46,11 @@ public class AmazonIoService : IBedrockModelIoService<IChatCompletionRequest, IC
         {
             Messages = chatHistory.Select(m => new Message
             {
-                Role = MapRole(m.Role.ToString()),
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Role = "assistant",
+                Content = new List<ContentBlock> { new ContentBlock { Text = "This is a sample message." } }
+                // Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
             }).ToList(),
-            System = new List<SystemContentBlock> { new SystemContentBlock { Text = "You are an AI assistant." } },
+            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
             InferenceConfig = new InferenceConfiguration
             {
                 Temperature = 0.7f, // Default value
@@ -59,7 +63,15 @@ public class AmazonIoService : IBedrockModelIoService<IChatCompletionRequest, IC
         var converseRequest = new ConverseRequest
         {
             ModelId = modelId,
-            Messages = titanRequest.Messages,
+            Messages = new List<Message>
+            {
+                new Message
+                {
+                    Role = ConversationRole.User,
+                    Content = new List<ContentBlock> { new ContentBlock { Text = "This is a sample message." } }
+                }
+            },
+            // Messages = titanRequest.Messages,
             System = titanRequest.System,
             InferenceConfig = titanRequest.InferenceConfig,
             AdditionalModelRequestFields = titanRequest.AdditionalModelRequestFields,

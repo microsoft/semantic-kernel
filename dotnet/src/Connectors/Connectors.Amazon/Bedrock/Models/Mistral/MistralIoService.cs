@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;

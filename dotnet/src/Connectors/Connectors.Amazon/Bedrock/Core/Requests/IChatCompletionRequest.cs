@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;

@@ -1,5 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
 using Connectors.Amazon.Core;
 using Connectors.Amazon.Core.Requests;
@@ -32,7 +36,7 @@ public class BedrockChatCompletionService : BedrockChatCompletionClient<IChatCom
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._chatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        return GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(

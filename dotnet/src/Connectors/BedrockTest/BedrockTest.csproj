@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -10,16 +11,7 @@
       <PackageReference Include="AWSSDK.BedrockRuntime" />
       <PackageReference Include="Microsoft.SemanticKernel" />
     </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Bedrock\" />
-    </ItemGroup>
-
-  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props"/>
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props"/>
-
+  <ItemGroup>
+    <ProjectReference Include="..\Connectors.Amazon\Connectors.Amazon.csproj"/>
+  </ItemGroup>
 </Project>

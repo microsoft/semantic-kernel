@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Core.Requests;
@@ -28,7 +33,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     {
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
-        this._chatGenerationEndpoint = new Uri("something");
+        this._chatGenerationEndpoint = new Uri("https://bedrock-runtime.us-east-1.amazonaws.com");
         int periodIndex = modelId.IndexOf('.'); //modelId looks like "amazon.titan-embed-text-v1"
         string modelProvider = periodIndex >= 0 ? modelId.Substring(0, periodIndex) : modelId;
         this._modelProvider = modelProvider;
