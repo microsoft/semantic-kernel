@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
-internal sealed class AnthropicTextContent : AnthropicContent
+internal sealed class AnthropicDeltaTextContent : AnthropicContent
 {
     /// <summary>
     /// Only used when type is "text". The text content.

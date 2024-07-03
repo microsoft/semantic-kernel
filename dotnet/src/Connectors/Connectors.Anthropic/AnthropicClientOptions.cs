@@ -27,7 +27,15 @@ public sealed class AnthropicClientOptions
 
     internal string Version { get; }
 
-    /// <summary> Initializes new instance of OpenAIClientOptions. </summary>
+    /// <summary>
+    /// Initializes new instance of <see cref="AnthropicClientOptions"/>
+    /// </summary>
+    /// <param name="version">
+    /// This parameter is optional.
+    /// Default value is <see cref="AnthropicClientOptions.LatestVersion"/>.<br/>
+    /// The version is ignored when used with other vendor than Anthropic.
+    /// </param>
+    /// <exception cref="NotSupportedException">Provided version is not supported.</exception>
     public AnthropicClientOptions(ServiceVersion version = LatestVersion)
     {
         this.Version = version switch

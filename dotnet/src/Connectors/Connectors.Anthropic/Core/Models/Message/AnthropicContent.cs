@@ -7,11 +7,8 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 /// <summary>
 /// Represents the request/response content of Claude.
 /// </summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
-[JsonDerivedType(typeof(AnthropicTextContent), typeDiscriminator: "text")]
-[JsonDerivedType(typeof(AnthropicTextContent), typeDiscriminator: "text_delta")]
-[JsonDerivedType(typeof(AnthropicJsonDeltaContent), typeDiscriminator: "input_json_delta")]
-[JsonDerivedType(typeof(AnthropicImageContent), typeDiscriminator: "image")]
-[JsonDerivedType(typeof(AnthropicToolCallContent), typeDiscriminator: "tool_use")]
-[JsonDerivedType(typeof(AnthropicToolResultContent), typeDiscriminator: "tool_result")]
+[HackyJsonDerived(typeof(AnthropicTextContent), typeDiscriminator: "text")]
+[HackyJsonDerived(typeof(AnthropicDeltaTextContent), typeDiscriminator: "text_delta")]
+[HackyJsonDerived(typeof(AnthropicDeltaJsonContent), typeDiscriminator: "input_json_delta")]
+[HackyJsonDerived(typeof(AnthropicImageContent), typeDiscriminator: "image")]
 internal abstract class AnthropicContent;

@@ -63,7 +63,7 @@ public static class AnthropicKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         Uri endpoint,
-        Func<HttpRequestMessage, Task>? requestHandler,
+        Func<HttpRequestMessage, ValueTask>? requestHandler,
         AnthropicClientOptions? options = null,
         string? serviceId = null,
         HttpClient? httpClient = null)

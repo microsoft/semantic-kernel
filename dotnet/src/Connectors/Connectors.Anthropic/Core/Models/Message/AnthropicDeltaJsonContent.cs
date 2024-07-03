@@ -4,14 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
-internal sealed class AnthropicJsonDeltaContent
+internal sealed class AnthropicDeltaJsonContent : AnthropicContent
 {
-    [JsonConstructor]
-    public AnthropicJsonDeltaContent(string partialJson)
-    {
-        this.PartialJson = partialJson;
-    }
-
     /// <summary>
     /// Only used when type is "input_json_delta". The partial json content.
     /// </summary>

@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
@@ -23,10 +23,6 @@ internal sealed class AnthropicRequest
     /// </summary>
     [JsonPropertyName("messages")]
     public IList<Message> Messages { get; set; } = null!;
-
-    [JsonPropertyName("tools")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<AnthropicToolFunctionDeclaration>? Tools { get; set; }
 
     [JsonPropertyName("model")]
     public string ModelId { get; set; } = null!;
@@ -79,12 +75,6 @@ internal sealed class AnthropicRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("top_k")]
     public int? TopK { get; set; }
-
-    public void AddFunction(AnthropicFunction function)
-    {
-        this.Tools ??= new List<AnthropicToolFunctionDeclaration>();
-        this.Tools.Add(function.ToFunctionDeclaration());
-    }
 
     public void AddChatMessage(ChatMessageContent message)
     {
@@ -145,36 +135,42 @@ internal sealed class AnthropicRequest
 
     private static List<AnthropicContent> CreateClaudeMessages(ChatMessageContent content)
     {
-        var messages = content.Items.Select(GetClaudeMessageFromKernelContent).ToList();
-
-        if (messages.Count == 0)
-        {
-            messages.Add(new AnthropicTextContent(content.Content ?? string.Empty));
-        }
-
-        return messages;
+        return content.Items.Select(GetClaudeMessageFromKernelContent).ToList();
     }
 
     private static AnthropicContent GetClaudeMessageFromKernelContent(KernelContent content) => content switch
     {
-        TextContent textContent => new AnthropicTextContent(textContent.Text ?? string.Empty),
-        ImageContent imageContent => new AnthropicImageContent(
-            type: "base64",
-            mediaType: imageContent.MimeType ?? throw new InvalidOperationException("Image content must have a MIME type."),
-            data: imageContent.Data.HasValue
-                ? Convert.ToBase64String(imageContent.Data.Value.ToArray())
-                : throw new InvalidOperationException("Image content must have a data.")
-        ),
+        TextContent textContent => new AnthropicTextContent { Text = textContent.Text ?? string.Empty },
+        ImageContent imageContent => CreateAnthropicImageContent(imageContent),
         _ => throw new NotSupportedException($"Content type '{content.GetType().Name}' is not supported.")
     };
+
+    private static AnthropicImageContent CreateAnthropicImageContent(ImageContent imageContent)
+    {
+        var dataUri = DataUriParser.Parse(imageContent.DataUri);
+        if (dataUri.DataFormat?.Equals("base64", StringComparison.OrdinalIgnoreCase) != true)
+        {
+            throw new InvalidOperationException("Image content must be base64 encoded.");
+        }
+
+        return new AnthropicImageContent
+        {
+            Source = new()
+            {
+                Type = dataUri.DataFormat,
+                MediaType = imageContent.MimeType ?? throw new InvalidOperationException("Image content must have a MIME type."),
+                Data = dataUri.Data ?? throw new InvalidOperationException("Image content must have a data.")
+            }
+        };
+    }
 
     internal sealed class Message
     {
         [JsonConverter(typeof(AuthorRoleConverter))]
         [JsonPropertyName("role")]
-        public AuthorRole Role { get; set; }
+        public AuthorRole Role { get; init; }
 
         [JsonPropertyName("content")]
-        public IList<AnthropicContent> Contents { get; set; } = null!;
+        public IList<AnthropicContent> Contents { get; init; } = null!;
     }
 }

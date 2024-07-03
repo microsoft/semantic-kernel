@@ -30,7 +30,7 @@ internal sealed class AnthropicResponse
     public string ModelId { get; init; } = null!;
 
     [JsonPropertyName("stop_reason")]
-    public AnthropicFinishReason? StopReason { get; init; }
+    public AnthropicFinishReason? FinishReason { get; init; }
 
     [JsonPropertyName("stop_sequence")]
     public string? StopSequence { get; init; }

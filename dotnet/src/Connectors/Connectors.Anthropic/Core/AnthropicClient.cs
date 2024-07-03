@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +16,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
@@ -24,12 +27,19 @@ internal sealed class AnthropicClient
 {
     private const string ModelProvider = "anthropic";
 
+    internal static JsonSerializerOptions SerializerOptions { get; }
+        = new(JsonOptionsCache.Default)
+        {
+            Converters = { new PolymorphicJsonConverterFactory() },
+            TypeInfoResolver = JsonTypeDiscriminatorHelper.TypeInfoResolver
+        };
+
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly string _modelId;
     private readonly string? _apiKey;
     private readonly Uri _endpoint;
-    private readonly Func<HttpRequestMessage, Task>? _customRequestHandler;
+    private readonly Func<HttpRequestMessage, ValueTask>? _customRequestHandler;
     private readonly AnthropicClientOptions _options;
 
     private static readonly string s_namespace = typeof(AnthropicChatCompletionService).Namespace!;
@@ -106,7 +116,7 @@ internal sealed class AnthropicClient
         HttpClient httpClient,
         string modelId,
         Uri endpoint,
-        Func<HttpRequestMessage, Task>? requestHandler,
+        Func<HttpRequestMessage, ValueTask>? requestHandler,
         AnthropicClientOptions? options,
         ILogger? logger = null)
     {
@@ -141,13 +151,12 @@ internal sealed class AnthropicClient
         using var activity = ModelDiagnostics.StartCompletionActivity(
             this._endpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings);
 
-        List<ChatMessageContent> chatResponses;
+        List<AnthropicChatMessageContent> chatResponses;
         AnthropicResponse anthropicResponse;
         try
         {
             anthropicResponse = await this.SendRequestAndReturnValidResponseAsync(
-                    this._endpoint, state.AnthropicRequest, cancellationToken)
-                .ConfigureAwait(false);
+                this._endpoint, state.AnthropicRequest, cancellationToken).ConfigureAwait(false);
             chatResponses = this.GetChatResponseFrom(anthropicResponse);
         }
         catch (Exception ex) when (activity is not null)
@@ -164,16 +173,16 @@ internal sealed class AnthropicClient
         return chatResponses;
     }
 
-    private List<ChatMessageContent> GetChatResponseFrom(AnthropicResponse response)
+    private List<AnthropicChatMessageContent> GetChatResponseFrom(AnthropicResponse response)
     {
         var chatMessageContents = this.GetChatMessageContentsFromResponse(response);
         this.LogUsage(chatMessageContents);
         return chatMessageContents;
     }
 
-    private void LogUsage(List<ChatMessageContent> chatMessageContents)
+    private void LogUsage(List<AnthropicChatMessageContent> chatMessageContents)
     {
-        if (chatMessageContents[0].Metadata is not AnthropicMetadata { TotalTokenCount: > 0 } metadata)
+        if (chatMessageContents[0].Metadata is not { TotalTokenCount: > 0 } metadata)
         {
             this.Log(LogLevel.Debug, "Token usage information unavailable.");
             return;
@@ -190,20 +199,21 @@ internal sealed class AnthropicClient
         s_totalTokensCounter.Add(metadata.TotalTokenCount);
     }
 
-    private List<ChatMessageContent> GetChatMessageContentsFromResponse(AnthropicResponse response)
-        => response.Contents!.Select(content => this.GetChatMessageContentFromAnthropicContent(response, content)).ToList();
+    private List<AnthropicChatMessageContent> GetChatMessageContentsFromResponse(AnthropicResponse response)
+        => response.Contents.Select(content => this.GetChatMessageContentFromAnthropicContent(response, content)).ToList();
 
-    private ChatMessageContent GetChatMessageContentFromAnthropicContent(AnthropicResponse response, AnthropicContent content)
+    private AnthropicChatMessageContent GetChatMessageContentFromAnthropicContent(AnthropicResponse response, AnthropicContent content)
     {
         if (content is not AnthropicTextContent textContent)
         {
             throw new NotSupportedException($"Content type {content.GetType()} is not supported yet.");
         }
 
-        return new ChatMessageContent(
+        return new AnthropicChatMessageContent(
             role: response.Role,
-            content: textContent.Text ?? string.Empty,
+            items: [new TextContent(textContent.Text ?? string.Empty)],
             modelId: response.ModelId ?? this._modelId,
+            innerContent: response,
             metadata: GetResponseMetadata(response));
     }
 
@@ -211,7 +221,7 @@ internal sealed class AnthropicClient
         => new()
         {
             MessageId = response.Id,
-            FinishReason = response.StopReason,
+            FinishReason = response.FinishReason,
             StopSequence = response.StopSequence,
             InputTokenCount = response.Usage?.InputTokens ?? 0,
             OutputTokenCount = response.Usage?.OutputTokens ?? 0
@@ -246,6 +256,7 @@ internal sealed class AnthropicClient
 
         var anthropicExecutionSettings = AnthropicPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ValidateMaxTokens(anthropicExecutionSettings.MaxTokens);
+        anthropicExecutionSettings.ModelId ??= this._modelId;
 
         this.Log(LogLevel.Trace, "ChatHistory: {ChatHistory}, Settings: {Settings}",
             JsonSerializer.Serialize(chatHistory),
@@ -324,7 +335,7 @@ internal sealed class AnthropicClient
     {
         try
         {
-            return JsonSerializer.Deserialize<T>(body) ?? throw new JsonException("Response is null");
+            return JsonSerializer.Deserialize<T>(body, options: SerializerOptions) ?? throw new JsonException("Response is null");
         }
         catch (JsonException exc)
         {
@@ -337,7 +348,7 @@ internal sealed class AnthropicClient
 
     private async Task<HttpRequestMessage> CreateHttpRequestAsync(object requestData, Uri endpoint)
     {
-        var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
+        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, endpoint) { Content = CreateJsonContent(requestData) };
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AnthropicClient)));
@@ -346,8 +357,29 @@ internal sealed class AnthropicClient
         {
             await this._customRequestHandler(httpRequestMessage).ConfigureAwait(false);
         }
+        else
+        {
+            httpRequestMessage.Headers.Add("anthropic-version", this._options.Version);
+            httpRequestMessage.Headers.Add("x-api-key", this._apiKey);
+        }
 
         return httpRequestMessage;
+    }
+
+    private static HttpContent? CreateJsonContent(object? payload)
+    {
+        HttpContent? content = null;
+        if (payload is not null)
+        {
+            byte[] utf8Bytes = payload is string s
+                ? Encoding.UTF8.GetBytes(s)
+                : JsonSerializer.SerializeToUtf8Bytes(payload, SerializerOptions);
+
+            content = new ByteArrayContent(utf8Bytes);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
+        }
+
+        return content;
     }
 
     private void Log(LogLevel logLevel, string? message, params object?[] args)

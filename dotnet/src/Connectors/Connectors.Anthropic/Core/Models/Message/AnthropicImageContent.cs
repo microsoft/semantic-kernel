@@ -6,12 +6,6 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
 internal sealed class AnthropicImageContent : AnthropicContent
 {
-    [JsonConstructor]
-    public AnthropicImageContent(string type, string mediaType, string data)
-    {
-        this.Source = new SourceEntity(type, mediaType, data);
-    }
-
     /// <summary>
     /// Only used when type is "image". The image content.
     /// </summary>
@@ -20,14 +14,6 @@ internal sealed class AnthropicImageContent : AnthropicContent
 
     internal sealed class SourceEntity
     {
-        [JsonConstructor]
-        internal SourceEntity(string type, string mediaType, string data)
-        {
-            this.Type = type;
-            this.MediaType = mediaType;
-            this.Data = data;
-        }
-
         /// <summary>
         /// Currently supported only base64.
         /// </summary>

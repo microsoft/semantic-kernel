@@ -62,7 +62,7 @@ public sealed class AnthropicChatCompletionService : IChatCompletionService
     public AnthropicChatCompletionService(
         string modelId,
         Uri endpoint,
-        Func<HttpRequestMessage, Task>? requestHandler,
+        Func<HttpRequestMessage, ValueTask>? requestHandler,
         AnthropicClientOptions? options = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)

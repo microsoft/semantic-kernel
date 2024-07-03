@@ -60,7 +60,7 @@ public static class AnthropicServiceCollectionExtensions
         this IServiceCollection services,
         string modelId,
         Uri endpoint,
-        Func<HttpRequestMessage, Task>? requestHandler,
+        Func<HttpRequestMessage, ValueTask>? requestHandler,
         AnthropicClientOptions? options = null,
         string? serviceId = null)
     {
