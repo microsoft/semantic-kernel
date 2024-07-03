@@ -166,7 +166,6 @@ internal static class AssistantThreadActions
             options.ToolsOverride.Add(tool);
         }
 
-
         // Create run
         ThreadRun run = await client.CreateRunAsync(threadId, agent.Id, options, cancellationToken).ConfigureAwait(false);
 

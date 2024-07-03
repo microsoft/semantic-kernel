@@ -42,6 +42,8 @@
     <PackageReference Include="Testcontainers.Milvus" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Agents\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.OpenAIV2\Connectors.OpenAIV2.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
