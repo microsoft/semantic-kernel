@@ -511,7 +511,8 @@ internal abstract class ClientCore
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = result.ToolCalls.Count
+                    FunctionCount = result.ToolCalls.Count,
+                    CancellationToken = cancellationToken
                 };
 
                 s_inflightAutoInvokes.Value++;
@@ -693,7 +694,18 @@ internal abstract class ClientCore
                             OpenAIFunctionToolCall.TrackStreamingToolingUpdate(update.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                         }
 
-                        var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName };
+                        AuthorRole? role = null;
+                        if (streamedRole.HasValue)
+                        {
+                            role = new AuthorRole(streamedRole.Value.ToString());
+                        }
+
+                        OpenAIStreamingChatMessageContent openAIStreamingChatMessageContent =
+                            new(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata)
+                            {
+                                AuthorName = streamedName,
+                                Role = role,
+                            };
 
                         if (update.ToolCallUpdate is StreamingFunctionToolCallUpdate functionCallUpdate)
                         {
@@ -798,7 +810,8 @@ internal abstract class ClientCore
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = toolCalls.Length
+                    FunctionCount = toolCalls.Length,
+                    CancellationToken = cancellationToken
                 };
 
                 s_inflightAutoInvokes.Value++;
