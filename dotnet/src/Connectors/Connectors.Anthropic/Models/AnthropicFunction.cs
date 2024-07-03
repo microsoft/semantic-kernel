@@ -8,11 +8,11 @@ using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
 // NOTE: Since this space is evolving rapidly, in order to reduce the risk of needing to take breaking
-// changes as Gemini's APIs evolve, these types are not externally constructible. In the future, once
+// changes as Anthropic's APIs evolve, these types are not externally constructible. In the future, once
 // things stabilize, and if need demonstrates, we could choose to expose those constructors.
 
 /// <summary>
-/// Represents a function parameter that can be passed to an Gemini function tool call.
+/// Represents a function parameter that can be passed to an Anthropic function tool call.
 /// </summary>
 public sealed class ClaudeFunctionParameter
 {
@@ -47,7 +47,7 @@ public sealed class ClaudeFunctionParameter
 }
 
 /// <summary>
-/// Represents a function return parameter that can be returned by a tool call to Gemini.
+/// Represents a function return parameter that can be returned by a tool call to Anthropic.
 /// </summary>
 public sealed class ClaudeFunctionReturnParameter
 {
@@ -72,7 +72,7 @@ public sealed class ClaudeFunctionReturnParameter
 }
 
 /// <summary>
-/// Represents a function that can be passed to the Gemini API
+/// Represents a function that can be passed to the Anthropic API
 /// </summary>
 public sealed class AnthropicFunction
 {
@@ -99,7 +99,7 @@ public sealed class AnthropicFunction
     }
 
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
-    /// <remarks>Default is <c>_</c><br/> It can't be <c>-</c>, because Gemini truncates the plugin name if a dash is used</remarks>
+    /// <remarks>Default is <c>_</c><br/> It can't be <c>-</c>, because Anthropic truncates the plugin name if a dash is used</remarks>
     public static string NameSeparator { get; set; } = "_";
 
     /// <summary>Gets the name of the plugin with which the function is associated, if any.</summary>
@@ -127,7 +127,7 @@ public sealed class AnthropicFunction
     public ClaudeFunctionReturnParameter? ReturnParameter { get; }
 
     /// <summary>
-    /// Converts the <see cref="AnthropicFunction"/> representation to the Gemini API's
+    /// Converts the <see cref="AnthropicFunction"/> representation to the Anthropic API's
     /// <see cref="AnthropicToolFunctionDeclaration"/> representation.
     /// </summary>
     /// <returns>A <see cref="AnthropicToolFunctionDeclaration"/> containing all the function information.</returns>

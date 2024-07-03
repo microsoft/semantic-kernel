@@ -107,11 +107,11 @@ internal sealed class AnthropicRequest
         bool streamingMode = false)
     {
         AnthropicRequest request = CreateRequest(chatHistory, executionSettings, streamingMode);
-        AddMessages(chatHistory, request);
+        AddMessages(chatHistory.Where(msg => msg.Role != AuthorRole.System), request);
         return request;
     }
 
-    private static void AddMessages(ChatHistory chatHistory, AnthropicRequest request)
+    private static void AddMessages(IEnumerable<ChatMessageContent> chatHistory, AnthropicRequest request)
         => request.Messages = chatHistory.Select(CreateClaudeMessageFromChatMessage).ToList();
 
     private static Message CreateClaudeMessageFromChatMessage(ChatMessageContent message)
@@ -129,7 +129,11 @@ internal sealed class AnthropicRequest
         {
             ModelId = executionSettings.ModelId ?? throw new InvalidOperationException("Model ID must be provided."),
             MaxTokens = executionSettings.MaxTokens ?? throw new InvalidOperationException("Max tokens must be provided."),
-            SystemPrompt = chatHistory.SingleOrDefault(c => c.Role == AuthorRole.System)?.Content,
+            SystemPrompt = string.Join("\n", chatHistory
+                .Where(msg => msg.Role == AuthorRole.System)
+                .SelectMany(msg => msg.Items)
+                .OfType<TextContent>()
+                .Select(content => content.Text)),
             StopSequences = executionSettings.StopSequences,
             Stream = streamingMode,
             Temperature = executionSettings.Temperature,
@@ -141,7 +145,7 @@ internal sealed class AnthropicRequest
 
     private static List<AnthropicContent> CreateClaudeMessages(ChatMessageContent content)
     {
-        List<AnthropicContent> messages = new();
+        List<AnthropicContent> messages = [];
         switch (content)
         {
             case AnthropicChatMessageContent { CalledToolResult: not null } contentWithCalledTool:

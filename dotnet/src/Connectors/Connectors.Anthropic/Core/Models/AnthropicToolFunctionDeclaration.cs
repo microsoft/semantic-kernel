@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
 /// <summary>
 /// A Tool is a piece of code that enables the system to interact with external systems to perform an action,
-/// or set of actions, outside of knowledge and scope of the model.
+/// or set of actions, outside the knowledge and scope of the model.
 /// Structured representation of a function declaration as defined by the OpenAPI 3.03 specification.
 /// Included in this declaration are the function name and parameters.
 /// This FunctionDeclaration is a representation of a block of code that can be used as a Tool by the model and executed by the client.

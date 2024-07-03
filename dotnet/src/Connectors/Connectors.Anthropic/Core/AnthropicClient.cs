@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -10,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
@@ -19,6 +22,8 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 /// </summary>
 internal sealed class AnthropicClient
 {
+    private const string ModelProvider = "anthropic";
+
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly string _modelId;
@@ -26,6 +31,40 @@ internal sealed class AnthropicClient
     private readonly Uri _endpoint;
     private readonly Func<HttpRequestMessage, Task>? _customRequestHandler;
     private readonly AnthropicClientOptions _options;
+
+    private static readonly string s_namespace = typeof(AnthropicChatCompletionService).Namespace!;
+
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for metrics.
+    /// </summary>
+    private static readonly Meter s_meter = new(s_namespace);
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_promptTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{s_namespace}.tokens.prompt",
+            unit: "{token}",
+            description: "Number of prompt tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_completionTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{s_namespace}.tokens.completion",
+            unit: "{token}",
+            description: "Number of completion tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_totalTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{s_namespace}.tokens.total",
+            unit: "{token}",
+            description: "Number of tokens used");
 
     /// <summary>
     /// Represents a client for interacting with the Anthropic chat completion models.
@@ -97,8 +136,131 @@ internal sealed class AnthropicClient
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        await Task.Yield();
-        throw new NotImplementedException("Implement this method in next PR.");
+        var state = this.ValidateInputAndCreateChatCompletionState(chatHistory, executionSettings);
+
+        using var activity = ModelDiagnostics.StartCompletionActivity(
+            this._endpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings);
+
+        List<ChatMessageContent> chatResponses;
+        AnthropicResponse anthropicResponse;
+        try
+        {
+            anthropicResponse = await this.SendRequestAndReturnValidResponseAsync(
+                    this._endpoint, state.AnthropicRequest, cancellationToken)
+                .ConfigureAwait(false);
+            chatResponses = this.GetChatResponseFrom(anthropicResponse);
+        }
+        catch (Exception ex) when (activity is not null)
+        {
+            activity.SetError(ex);
+            throw;
+        }
+
+        activity?.SetCompletionResponse(
+            chatResponses,
+            anthropicResponse.Usage?.InputTokens,
+            anthropicResponse.Usage?.OutputTokens);
+
+        return chatResponses;
+    }
+
+    private List<ChatMessageContent> GetChatResponseFrom(AnthropicResponse response)
+    {
+        var chatMessageContents = this.GetChatMessageContentsFromResponse(response);
+        this.LogUsage(chatMessageContents);
+        return chatMessageContents;
+    }
+
+    private void LogUsage(List<ChatMessageContent> chatMessageContents)
+    {
+        if (chatMessageContents[0].Metadata is not AnthropicMetadata { TotalTokenCount: > 0 } metadata)
+        {
+            this.Log(LogLevel.Debug, "Token usage information unavailable.");
+            return;
+        }
+
+        this.Log(LogLevel.Information,
+            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
+            metadata.InputTokenCount,
+            metadata.OutputTokenCount,
+            metadata.TotalTokenCount);
+
+        s_promptTokensCounter.Add(metadata.InputTokenCount);
+        s_completionTokensCounter.Add(metadata.OutputTokenCount);
+        s_totalTokensCounter.Add(metadata.TotalTokenCount);
+    }
+
+    private List<ChatMessageContent> GetChatMessageContentsFromResponse(AnthropicResponse response)
+        => response.Contents!.Select(content => this.GetChatMessageContentFromAnthropicContent(response, content)).ToList();
+
+    private ChatMessageContent GetChatMessageContentFromAnthropicContent(AnthropicResponse response, AnthropicContent content)
+    {
+        if (content is not AnthropicTextContent textContent)
+        {
+            throw new NotSupportedException($"Content type {content.GetType()} is not supported yet.");
+        }
+
+        return new ChatMessageContent(
+            role: response.Role,
+            content: textContent.Text ?? string.Empty,
+            modelId: response.ModelId ?? this._modelId,
+            metadata: GetResponseMetadata(response));
+    }
+
+    private static AnthropicMetadata GetResponseMetadata(AnthropicResponse response)
+        => new()
+        {
+            MessageId = response.Id,
+            FinishReason = response.StopReason,
+            StopSequence = response.StopSequence,
+            InputTokenCount = response.Usage?.InputTokens ?? 0,
+            OutputTokenCount = response.Usage?.OutputTokens ?? 0
+        };
+
+    private async Task<AnthropicResponse> SendRequestAndReturnValidResponseAsync(
+        Uri endpoint,
+        AnthropicRequest anthropicRequest,
+        CancellationToken cancellationToken)
+    {
+        using var httpRequestMessage = await this.CreateHttpRequestAsync(anthropicRequest, endpoint).ConfigureAwait(false);
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+        var response = DeserializeResponse<AnthropicResponse>(body);
+        ValidateAnthropicResponse(response);
+        return response;
+    }
+
+    private static void ValidateAnthropicResponse(AnthropicResponse response)
+    {
+        if (response.Contents is null || response.Contents.Count == 0)
+        {
+            throw new KernelException("Anthropic API doesn't return any data.");
+        }
+    }
+
+    private ChatCompletionState ValidateInputAndCreateChatCompletionState(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings)
+    {
+        ValidateChatHistory(chatHistory);
+
+        var anthropicExecutionSettings = AnthropicPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        ValidateMaxTokens(anthropicExecutionSettings.MaxTokens);
+
+        this.Log(LogLevel.Trace, "ChatHistory: {ChatHistory}, Settings: {Settings}",
+            JsonSerializer.Serialize(chatHistory),
+            JsonSerializer.Serialize(anthropicExecutionSettings));
+
+        var filteredChatHistory = new ChatHistory(chatHistory.Where(IsAssistantOrUserOrSystem));
+        return new ChatCompletionState()
+        {
+            ChatHistory = chatHistory,
+            ExecutionSettings = anthropicExecutionSettings,
+            AnthropicRequest = AnthropicRequest.FromChatHistoryAndExecutionSettings(filteredChatHistory, anthropicExecutionSettings)
+        };
+
+        static bool IsAssistantOrUserOrSystem(ChatMessageContent msg)
+            => msg.Role == AuthorRole.Assistant || msg.Role == AuthorRole.User || msg.Role == AuthorRole.System;
     }
 
     /// <summary>
@@ -126,6 +288,15 @@ internal sealed class AnthropicClient
         if (maxTokens is < 1)
         {
             throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+        }
+    }
+
+    private static void ValidateChatHistory(ChatHistory chatHistory)
+    {
+        Verify.NotNullOrEmpty(chatHistory);
+        if (chatHistory.All(msg => msg.Role == AuthorRole.System))
+        {
+            throw new InvalidOperationException("Chat history can't contain only system messages.");
         }
     }
 
@@ -179,7 +350,7 @@ internal sealed class AnthropicClient
         return httpRequestMessage;
     }
 
-    private void Log(LogLevel logLevel, string? message, params object[] args)
+    private void Log(LogLevel logLevel, string? message, params object?[] args)
     {
         if (this._logger.IsEnabled(logLevel))
         {
@@ -187,5 +358,12 @@ internal sealed class AnthropicClient
             this._logger.Log(logLevel, message, args);
 #pragma warning restore CA2254
         }
+    }
+
+    private sealed class ChatCompletionState
+    {
+        internal ChatHistory ChatHistory { get; set; } = null!;
+        internal AnthropicRequest AnthropicRequest { get; set; } = null!;
+        internal AnthropicPromptExecutionSettings ExecutionSettings { get; set; } = null!;
     }
 }

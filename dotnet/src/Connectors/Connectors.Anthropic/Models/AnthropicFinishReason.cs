@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
 /// <summary>
-/// Represents a Claude Finish Reason.
+/// Represents a Anthropic Finish Reason.
 /// </summary>
 [JsonConverter(typeof(ClaudeFinishReasonConverter))]
 public readonly struct AnthropicFinishReason : IEquatable<AnthropicFinishReason>
@@ -26,6 +26,11 @@ public readonly struct AnthropicFinishReason : IEquatable<AnthropicFinishReason>
     /// One of your provided custom stop sequences was generated.
     /// </summary>
     public static AnthropicFinishReason StopSequence { get; } = new("stop_sequence");
+
+    /// <summary>
+    /// The model invoked one or more tools
+    /// </summary>
+    public static AnthropicFinishReason ToolUse { get; } = new("tool_use");
 
     /// <summary>
     /// Gets the label of the property.

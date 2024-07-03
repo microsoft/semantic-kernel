@@ -9,7 +9,9 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(AnthropicTextContent), typeDiscriminator: "text")]
+[JsonDerivedType(typeof(AnthropicTextContent), typeDiscriminator: "text_delta")]
+[JsonDerivedType(typeof(AnthropicJsonDeltaContent), typeDiscriminator: "input_json_delta")]
 [JsonDerivedType(typeof(AnthropicImageContent), typeDiscriminator: "image")]
 [JsonDerivedType(typeof(AnthropicToolCallContent), typeDiscriminator: "tool_use")]
 [JsonDerivedType(typeof(AnthropicToolResultContent), typeDiscriminator: "tool_result")]
-internal abstract class AnthropicContent { }
+internal abstract class AnthropicContent;

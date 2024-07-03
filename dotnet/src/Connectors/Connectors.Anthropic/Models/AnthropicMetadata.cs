@@ -62,6 +62,12 @@ public sealed class AnthropicMetadata : ReadOnlyDictionary<string, object?>
     }
 
     /// <summary>
+    /// Represents the total count of tokens in the Anthropic response,
+    /// which is calculated by summing the input token count and the output token count.
+    /// </summary>
+    public int TotalTokenCount => this.InputTokenCount + this.OutputTokenCount;
+
+    /// <summary>
     /// Converts a dictionary to a <see cref="AnthropicMetadata"/> object.
     /// </summary>
     public static AnthropicMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch

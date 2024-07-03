@@ -15,6 +15,7 @@ internal sealed class AnthropicTextContent : AnthropicContent
     /// <summary>
     /// Only used when type is "text". The text content.
     /// </summary>
+    [JsonRequired]
     [JsonPropertyName("text")]
     public string Text { get; set; }
 }
