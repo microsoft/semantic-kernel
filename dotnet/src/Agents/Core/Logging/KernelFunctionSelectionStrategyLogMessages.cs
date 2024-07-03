@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// This extension uses the <see cref="LoggerMessageAttribute"/> to
 /// generate logging code at compile time to achieve optimized code.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 internal static partial class KernelFunctionStrategyLogMessages
 {
     /// <summary>

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Diagnostics.CodeAnalysis;
 using Azure.AI.OpenAI.Assistants;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// This extension uses the <see cref="LoggerMessageAttribute"/> to
 /// generate logging code at compile time to achieve optimized code.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 internal static partial class AssistantThreadActionsLogMessages
 {
     /// <summary>

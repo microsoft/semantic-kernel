@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -15,6 +16,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// This extension uses the <see cref="LoggerMessageAttribute"/> to
 /// generate logging code at compile time to achieve optimized code.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 internal static partial class AgentGroupChatLogMessages
 {
     /// <summary>
