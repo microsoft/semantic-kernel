@@ -23,7 +23,7 @@ using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
-/// Base class for AI clients that provides common functionality for interacting with OpenAI services.
+/// Base class for AI clients that provides common functionality for interacting with Azure OpenAI services.
 /// </summary>
 internal partial class ClientCore
 {

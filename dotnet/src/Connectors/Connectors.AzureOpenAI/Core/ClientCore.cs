@@ -17,7 +17,7 @@ using OpenAI;
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
-/// Base class for AI clients that provides common functionality for interacting with OpenAI services.
+/// Base class for AI clients that provides common functionality for interacting with Azure OpenAI services.
 /// </summary>
 internal partial class ClientCore
 {
@@ -135,13 +135,13 @@ internal partial class ClientCore
 
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="serviceVersion">Optional API version.</param>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    internal static AzureOpenAIClientOptions GetAzureOpenAIClientOptions(HttpClient? httpClient)
+    internal static AzureOpenAIClientOptions GetAzureOpenAIClientOptions(HttpClient? httpClient, AzureOpenAIClientOptions.ServiceVersion? serviceVersion = null)
     {
-        AzureOpenAIClientOptions options = new()
-        {
-            ApplicationId = HttpHeaderConstant.Values.UserAgent,
-        };
+        AzureOpenAIClientOptions options = serviceVersion is not null
+            ? new(serviceVersion.Value) { ApplicationId = HttpHeaderConstant.Values.UserAgent }
+            : new() { ApplicationId = HttpHeaderConstant.Values.UserAgent };
 
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), PipelinePosition.PerCall);
 

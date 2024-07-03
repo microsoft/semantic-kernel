@@ -6,14 +6,16 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
+using Azure.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
-using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
-/// OpenAI text to image service.
+/// Azure OpenAI text to image service.
 /// </summary>
 [Experimental("SKEXP0010")]
 public class AzureOpenAITextToImageService : ITextToImageService
@@ -26,41 +28,115 @@ public class AzureOpenAITextToImageService : ITextToImageService
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAITextToImageService"/> class.
     /// </summary>
-    /// <param name="modelId">The model to use for image generation.</param>
-    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="organizationId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="endpoint">Non-default endpoint for the OpenAI API.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="apiVersion">Azure OpenAI service API version, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     public AzureOpenAITextToImageService(
-        string modelId,
-        string? apiKey = null,
-        string? organizationId = null,
-        Uri? endpoint = null,
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        string? modelId,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        string? apiVersion = null)
     {
-        this._client = new(modelId, apiKey, organizationId, endpoint, httpClient, loggerFactory?.CreateLogger(this.GetType()));
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
+        if (connectorEndpoint is null)
+        {
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
+        }
+
+        var options = ClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion switch
+        {
+            // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
+            _ => AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview
+        });
+
+        var azureOpenAIClient = new AzureOpenAIClient(new Uri(connectorEndpoint), apiKey, options);
+
+        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(this.GetType()));
+
+        if (modelId is not null)
+        {
+            this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAITextToImageService"/> class.
     /// </summary>
-    /// <param name="modelId">Model name</param>
-    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="apiVersion">Azure OpenAI service API version, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    public AzureOpenAITextToImageService(
+        string deploymentName,
+        string endpoint,
+        TokenCredential credential,
+        string? modelId,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null,
+        string? apiVersion = null)
+    {
+        Verify.NotNull(credential);
+
+        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
+        if (connectorEndpoint is null)
+        {
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
+        }
+
+        var options = ClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion switch
+        {
+            // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
+            _ => AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview
+        });
+
+        var azureOpenAIClient = new AzureOpenAIClient(new Uri(connectorEndpoint), credential, options);
+
+        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(this.GetType()));
+
+        if (modelId is not null)
+        {
+            this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureOpenAITextToImageService"/> class.
+    /// </summary>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="azureOpenAIClient">Custom <see cref="AzureOpenAIClient"/>.</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAITextToImageService(
-        string modelId,
-        OpenAIClient openAIClient,
+        string deploymentName,
+        AzureOpenAIClient azureOpenAIClient,
+        string? modelId,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+        Verify.NotNull(azureOpenAIClient);
+
+        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(this.GetType()));
+
+        if (modelId is not null)
+        {
+            this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
     }
 
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        this._client.LogActionDetails();
         return this._client.GenerateImageAsync(description, width, height, cancellationToken);
     }
 }

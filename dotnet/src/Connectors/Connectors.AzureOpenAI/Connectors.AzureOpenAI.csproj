@@ -22,17 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Core\ClientCore.TextToImage.cs" />
-    <Compile Remove="Services\AzureOpenAITextToImageService.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureOpenAI.UnitTests" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Core\ClientCore.TextToImage.cs" />
-    <None Include="Services\AzureOpenAITextToImageService.cs" />
   </ItemGroup>
 
   <ItemGroup>

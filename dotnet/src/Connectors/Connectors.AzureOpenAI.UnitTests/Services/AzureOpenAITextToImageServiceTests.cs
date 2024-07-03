@@ -3,17 +3,20 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
+using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Services;
 using Moq;
-using OpenAI;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
 /// <summary>
-/// Unit tests for <see cref="AzureOpenAITextToImageServiceTests"/> class.
+/// Unit tests for <see cref="AzureOpenAITextToImageService"/> class.
 /// </summary>
 public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 {
@@ -35,25 +38,21 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
     }
 
     [Fact]
-    public void ConstructorWorksCorrectly()
+    public void ConstructorsAddRequiredMetadata()
     {
-        // Arrange & Act
-        var sut = new AzureOpenAITextToImageServiceTests("model", "api-key", "organization");
-
-        // Assert
-        Assert.NotNull(sut);
-        Assert.Equal("organization", sut.Attributes[ClientCore.OrganizationKey]);
+        // Case #1
+        var sut = new AzureOpenAITextToImageService("deployment", "https://api-host/", "api-key", "model");
+        Assert.Equal("deployment", sut.Attributes[ClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
 
-    [Fact]
-    public void OpenAIClientConstructorWorksCorrectly()
-    {
-        // Arrange
-        var sut = new AzureOpenAITextToImageServiceTests("model", new OpenAIClient("apikey"));
+        // Case #2
+        sut = new AzureOpenAITextToImageService("deployment", "https://api-hostapi/", new Mock<TokenCredential>().Object, "model");
+        Assert.Equal("deployment", sut.Attributes[ClientCore.DeploymentNameKey]);
+        Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
 
-        // Assert
-        Assert.NotNull(sut);
+        // Case #3
+        sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(), "model");
+        Assert.Equal("deployment", sut.Attributes[ClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 
@@ -69,34 +68,20 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
     public async Task GenerateImageWorksCorrectlyAsync(int width, int height, string modelId)
     {
         // Arrange
-        var sut = new AzureOpenAITextToImageServiceTests(modelId, "api-key", httpClient: this._httpClient);
-        Assert.Equal(modelId, sut.Attributes["ModelId"]);
+        var sut = new AzureOpenAITextToImageService("deployment", "https://api-host", "api-key", modelId, this._httpClient);
 
         // Act 
         var result = await sut.GenerateImageAsync("description", width, height);
 
         // Assert
         Assert.Equal("https://image-url/", result);
-    }
 
-    [Fact]
-    public async Task GenerateImageDoesLogActionAsync()
-    {
-        // Assert
-        var modelId = "dall-e-2";
-        var logger = new Mock<ILogger<AzureOpenAITextToImageServiceTests>>();
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-
-        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
-
-        // Arrange
-        var sut = new AzureOpenAITextToImageServiceTests(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
-
-        // Act
-        await sut.GenerateImageAsync("description", 256, 256);
-
-        // Assert
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(AzureOpenAITextToImageServiceTests.GenerateImageAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+        var request = JsonSerializer.Deserialize<JsonObject>(this._messageHandlerStub.RequestContent); // {"prompt":"description","model":"deployment","response_format":"url","size":"179x124"}
+        Assert.NotNull(request);
+        Assert.Equal("description", request["prompt"]?.ToString());
+        Assert.Equal("deployment", request["model"]?.ToString());
+        Assert.Equal("url", request["response_format"]?.ToString());
+        Assert.Equal($"{width}x{height}", request["size"]?.ToString());
     }
 
     public void Dispose()
