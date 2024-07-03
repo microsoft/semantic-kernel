@@ -37,11 +37,6 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
             .WithMemoryStore(sqliteMemory)
             .Build();
 
-        if (!await sqliteMemory.DoesCollectionExistAsync("Sqlite"))
-        {
-            await sqliteMemory.CreateCollectionAsync("Sqlite");
-        }
-
         await skMemory.SaveInformationAsync("Test", "THIS IS A SAMPLE", "sample", "TEXT");
     }
 
