@@ -10,23 +10,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.TextToImage;
 using OpenAI;
 
-/* Phase 02
-- Breaking the current constructor parameter order to follow the same order as the other services.
-- Added custom endpoint support, and removed ApiKey validation, as it is performed by the ClientCore when the Endpoint is not provided.
-- Added custom OpenAIClient support.
-- Updated "organization" parameter to "organizationId".
-- "modelId" parameter is now required in the constructor.
-
-- Added OpenAIClient breaking glass constructor.
-*/
-
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
 /// OpenAI text to image service.
 /// </summary>
 [Experimental("SKEXP0010")]
-public class OpenAITextToImageService : ITextToImageService
+public class AzureOpenAITextToImageService : ITextToImageService
 {
     private readonly ClientCore _client;
 
@@ -34,7 +24,7 @@ public class OpenAITextToImageService : ITextToImageService
     public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAITextToImageService"/> class.
+    /// Initializes a new instance of the <see cref="AzureOpenAITextToImageService"/> class.
     /// </summary>
     /// <param name="modelId">The model to use for image generation.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
@@ -42,7 +32,7 @@ public class OpenAITextToImageService : ITextToImageService
     /// <param name="endpoint">Non-default endpoint for the OpenAI API.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextToImageService(
+    public AzureOpenAITextToImageService(
         string modelId,
         string? apiKey = null,
         string? organizationId = null,
@@ -54,17 +44,17 @@ public class OpenAITextToImageService : ITextToImageService
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAITextToImageService"/> class.
+    /// Initializes a new instance of the <see cref="AzureOpenAITextToImageService"/> class.
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextToImageService(
+    public AzureOpenAITextToImageService(
         string modelId,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextToImageService)));
+        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
     }
 
     /// <inheritdoc/>
