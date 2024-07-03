@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Data;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Redis.UnitTests;

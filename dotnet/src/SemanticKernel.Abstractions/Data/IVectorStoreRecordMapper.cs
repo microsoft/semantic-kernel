@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Memory;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Interface for mapping between a storage model, and the consumer record data model.
 /// </summary>
 /// <typeparam name="TRecordDataModel">The consumer record data model to map to or from.</typeparam>
 /// <typeparam name="TStorageModel">The storage model to map to or from.</typeparam>
+[Experimental("SKEXP0001")]
 public interface IVectorStoreRecordMapper<TRecordDataModel, TStorageModel>
     where TRecordDataModel : class
 {

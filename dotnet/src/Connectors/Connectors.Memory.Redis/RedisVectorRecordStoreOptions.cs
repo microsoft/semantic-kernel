@@ -2,7 +2,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -54,5 +54,5 @@ public sealed class RedisVectorRecordStoreOptions<TRecord>
     /// <summary>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Redis record.
     /// </summary>
-    public JsonSerializerOptions? jsonSerializerOptions { get; init; } = null;
+    public JsonSerializerOptions? JsonSerializerOptions { get; init; } = null;
 }

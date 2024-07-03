@@ -3,7 +3,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Azure.Search.Documents.Indexes;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
