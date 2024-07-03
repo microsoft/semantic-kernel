@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Data;
 using NRedisStack.Json.DataTypes;
 using NRedisStack.RedisStackCommands;
 using StackExchange.Redis;
@@ -76,7 +76,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         // Assign.
         this._database = database;
         this._options = options ?? new RedisVectorRecordStoreOptions<TRecord>();
-        this._jsonSerializerOptions = this._options.jsonSerializerOptions ?? JsonSerializerOptions.Default;
+        this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
 
         // Enumerate public properties using configuration or attributes.
         (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;

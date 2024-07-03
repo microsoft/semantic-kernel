@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Data;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 

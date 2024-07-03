@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Memory;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// An interface for adding, updating, deleting and retrieving records from a vector store.

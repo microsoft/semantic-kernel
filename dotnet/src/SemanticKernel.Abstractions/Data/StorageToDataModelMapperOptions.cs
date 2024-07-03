@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Memory;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Options to use with the <see cref="IVectorStoreRecordMapper{TRecordDataModel, TStorageModel}.MapFromStorageToDataModel"/> method.
 /// </summary>
+[Experimental("SKEXP0001")]
 public class StorageToDataModelMapperOptions
 {
     /// <summary>

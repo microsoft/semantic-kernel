@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 

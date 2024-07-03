@@ -3,7 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Memory;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Base exception type thrown for any type of failure when using vector stores.
