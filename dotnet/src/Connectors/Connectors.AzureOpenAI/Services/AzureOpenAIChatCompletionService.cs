@@ -69,16 +69,16 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     /// Creates a new <see cref="AzureOpenAIChatCompletionService"/> client instance using the specified <see cref="OpenAIClient"/>.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="azureOpenAIClient">Custom <see cref="AzureOpenAIClient"/>.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAIChatCompletionService(
         string deploymentName,
-        AzureOpenAIClient openAIClient,
+        AzureOpenAIClient azureOpenAIClient,
         string? modelId = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._core = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
