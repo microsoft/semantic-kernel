@@ -159,8 +159,13 @@ internal static class AssistantThreadActions
                 //InstructionsOverride = agent.Instructions,
                 //ParallelToolCallsEnabled = true, // %%%
                 //ResponseFormat = %%%
-                //ToolsOverride = tools, %%%
             };
+
+        foreach (ToolDefinition tool in tools) // %%%
+        {
+            options.ToolsOverride.Add(tool);
+        }
+
 
         // Create run
         ThreadRun run = await client.CreateRunAsync(threadId, agent.Id, options, cancellationToken).ConfigureAwait(false);
