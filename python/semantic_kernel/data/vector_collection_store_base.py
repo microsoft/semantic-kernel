@@ -7,18 +7,18 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class
-class VectorCollectionNonSchemaBase(ABC):
+class VectorCollectionStoreBase(ABC):
     @abstractmethod
-    async def get_collection_names(self, **kwargs) -> list[str]:
-        """Get the collection names."""
+    async def list_collection_names(self, **kwargs) -> list[str]:
+        """Get the names of all collections."""
         ...
 
     @abstractmethod
     async def collection_exists(self, collection_name: str, **kwargs) -> bool:
-        """Check if the collection exists."""
+        """Check if a collection exists."""
         ...
 
     @abstractmethod
-    async def delete_collection(self, collection_name: str, **kwargs):
+    async def delete_collection(self, collection_name: str, **kwargs) -> None:
         """Delete a collection."""
         ...

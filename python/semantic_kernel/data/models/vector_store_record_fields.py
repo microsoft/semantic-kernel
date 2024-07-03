@@ -3,6 +3,7 @@
 from abc import ABC
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any, TypeVar
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -10,9 +11,21 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 T = TypeVar("T")
 
 
+class IndexKind(str, Enum):
+    hnsw = "hnsw"
+    flat = "flat"
+
+
+class DistanceFunction(str, Enum):
+    cosine = "cosine"
+    dot_prod = "dot_prod"
+    euclidean = "euclidean"
+
+
 @dataclass
 class VectorStoreRecordField(ABC):
     name: str | None = None
+    property_type: str | None = None
 
 
 @dataclass
@@ -27,7 +40,6 @@ class VectorStoreRecordDataField(VectorStoreRecordField):
     has_embedding: bool = False
     embedding_property_name: str | None = None
     is_filterable: bool | None = None
-    property_type: type[T] | None = None
 
 
 @dataclass
@@ -46,8 +58,8 @@ class VectorStoreRecordVectorField(VectorStoreRecordField):
 
     local_embedding: bool = True
     dimensions: int | None = None
-    index_kind: str | None = None  # hnsw, flat, etc.
-    distance_function: str | None = None  # cosine, dot prod, euclidan
+    index_kind: IndexKind | None = None  # hnsw, flat, etc.
+    distance_function: DistanceFunction | None = None  # cosine, dot prod, euclidan
     embedding_settings: dict[str, PromptExecutionSettings] = field(default_factory=dict)
     cast_function: Callable[[list[float]], Any] | None = None
 

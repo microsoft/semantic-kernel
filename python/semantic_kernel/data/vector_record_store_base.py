@@ -513,7 +513,7 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         with contextlib.suppress(Exception):
             asyncio.get_running_loop().create_task(self.close())
 
-    def _get_collection_name(self, collection_name: str | None = None):
+    def _get_collection_name(self, collection_name: str | None = None) -> str:
         """Gets the collection name, ensuring it is lower case.
 
         First tries the supplied argument, then self.
