@@ -337,6 +337,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Policies", "Policies", "{73
 		src\InternalUtilities\openai\Policies\GeneratedActionPipelinePolicy.cs = src\InternalUtilities\openai\Policies\GeneratedActionPipelinePolicy.cs
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{738DCDB1-EFA8-4913-AD4C-6FC3F09B0A0C}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\openai\Extensions\ClientResultExceptionExtensions.cs = src\InternalUtilities\openai\Extensions\ClientResultExceptionExtensions.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -944,6 +949,7 @@ Global
 		{DB219924-208B-4CDD-8796-EE424689901E} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{2E79AD99-632F-411F-B3A5-1BAF3F5F89AB} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
 		{7308EF7D-5F9A-47B2-A62F-0898603262A8} = {2E79AD99-632F-411F-B3A5-1BAF3F5F89AB}
+		{738DCDB1-EFA8-4913-AD4C-6FC3F09B0A0C} = {2E79AD99-632F-411F-B3A5-1BAF3F5F89AB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
