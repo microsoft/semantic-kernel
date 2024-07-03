@@ -58,10 +58,12 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
             // response.Headers.Add("X-Custom-Header", "CustomValue");
 
             // For example, modify the response content
-            string originalContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var modifiedContent = JsonSerializer.Deserialize<List<List<List<ReadOnlyMemory<float>>>>>(originalContent);
-            var modifiedResponse = JsonSerializer.Serialize(modifiedContent[0][0].ToList());
-            response.Content = new StringContent(modifiedResponse);
+            Stream originalContent = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            List<List<List<ReadOnlyMemory<float>>>> modifiedContent = (await JsonSerializer.DeserializeAsync<List<List<List<ReadOnlyMemory<float>>>>>(originalContent, new JsonSerializerOptions(), cancellationToken).ConfigureAwait(false))!;
+
+            Stream modifiedStream = new MemoryStream();
+            await JsonSerializer.SerializeAsync(modifiedStream, modifiedContent[0][0].ToList(), new JsonSerializerOptions(), cancellationToken).ConfigureAwait(false);
+            response.Content = new StreamContent(modifiedStream);
 
             // Return the modified response
             return response;
