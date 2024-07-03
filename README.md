@@ -78,7 +78,7 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 ### For Python:
 
 1. Go to the Quick start page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-csharp) and follow the steps to dive in.
-2. You'll need to ensure that you toggle to C# in the the Choose a programming lanugage table at the top of the page.
+2. You'll need to ensure that you toggle to C# in the the Choose a programming language table at the top of the page.
  ![csharpmap](https://learn.microsoft.com/en-us/semantic-kernel/media/pythonmap.png)
 
 ### For Java:
@@ -125,7 +125,9 @@ To learn more and get started:
 
 - Read the [documentation](https://aka.ms/sk/learn)
 - Learn how to [contribute](https://learn.microsoft.com/en-us/semantic-kernel/get-started/contributing) to the project
-- Ask questions in the [GitHub Discussion community](https://aka.ms/SKDiscord)
+- Ask questions in the [GitHub discussions](https://github.com/microsoft/semantic-kernel/discussions)
+- Ask questions in the [Discord community](https://aka.ms/SKDiscord)
+
 - Attend [regular office hours and SK community events](COMMUNITY.md)
 - Follow the team on our [blog](https://aka.ms/sk/blog)
 
