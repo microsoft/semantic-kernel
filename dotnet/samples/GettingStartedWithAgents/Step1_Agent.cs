@@ -26,7 +26,6 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
-        /// Create a chat for agent interaction. For more, <see cref="Step3_Chat"/>.
         ChatHistory chat = [];
 
         // Respond to user input
