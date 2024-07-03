@@ -10,7 +10,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
 from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_vector_record_store import (
-    AzureAISearchVectorRecordStore,
+    AzureAISearchVectorStore,
 )
 from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.models.vector_store_record_fields import (
@@ -31,7 +31,7 @@ model_fields = VectorStoreRecordDefinition(
 async def main():
     kernel = Kernel()
     kernel.add_service(OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embedding-3-small"))
-    async with AzureAISearchVectorRecordStore[dict](
+    async with AzureAISearchVectorStore[dict](
         data_model_type=dict,
         data_model_definition=model_fields,
         collection_name=os.environ["ALT_SEARCH_INDEX_NAME"],

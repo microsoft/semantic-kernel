@@ -34,10 +34,10 @@ def get_search_index_async_client(
     elif token_credential:
         credential = token_credential
     else:
-        raise ServiceInitializationError("Error: missing Azure Cognitive Search client credentials.")
+        raise ServiceInitializationError("Error: missing Azure AI Search client credentials.")
 
     if not credential:
-        raise ServiceInitializationError("Error: Azure Cognitive Search credentials not set.")
+        raise ServiceInitializationError("Error: Azure AI Search credentials not set.")
 
     return SearchIndexClient(
         endpoint=str(azure_ai_search_settings.endpoint),

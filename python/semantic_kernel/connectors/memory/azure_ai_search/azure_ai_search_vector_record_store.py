@@ -5,6 +5,15 @@ import logging
 import sys
 from typing import Any, TypeVar
 
+from semantic_kernel.data.models.vector_store_record_fields import (
+    DistanceFunction,
+    IndexKind,
+    VectorStoreRecordDataField,
+    VectorStoreRecordKeyField,
+    VectorStoreRecordVectorField,
+)
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
+
 if sys.version_info >= (3, 12):
     from typing import override
 else:
@@ -13,6 +22,20 @@ else:
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
+from azure.search.documents.indexes.models import (
+    ExhaustiveKnnAlgorithmConfiguration,
+    ExhaustiveKnnParameters,
+    HnswAlgorithmConfiguration,
+    HnswParameters,
+    SearchField,
+    SearchFieldDataType,
+    SearchIndex,
+    SearchResourceEncryptionKey,
+    SimpleField,
+    VectorSearch,
+    VectorSearchAlgorithmMetric,
+    VectorSearchProfile,
+)
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_ai_search.utils import get_search_index_async_client
@@ -20,16 +43,47 @@ from semantic_kernel.data.models.vector_store_model_definition import VectorStor
 from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 TModel = TypeVar("TModel")
 
+INDEX_ALGORITHM_MAP = {
+    IndexKind.hnsw: (HnswAlgorithmConfiguration, HnswParameters),
+    IndexKind.flat: (ExhaustiveKnnAlgorithmConfiguration, ExhaustiveKnnParameters),
+    "default": (HnswAlgorithmConfiguration, HnswParameters),
+}
+
+DISTANCE_FUNCTION_MAP = {
+    DistanceFunction.cosine: VectorSearchAlgorithmMetric.COSINE,
+    DistanceFunction.dot_prod: VectorSearchAlgorithmMetric.DOT_PRODUCT,
+    DistanceFunction.euclidean: VectorSearchAlgorithmMetric.EUCLIDEAN,
+    "default": VectorSearchAlgorithmMetric.COSINE,
+}
+
+TYPE_MAPPER_DATA = {
+    "str": SearchFieldDataType.String,
+    "int": SearchFieldDataType.Int64,
+    "float": SearchFieldDataType.Double,
+    "bool": SearchFieldDataType.Boolean,
+    "list[str]": SearchFieldDataType.Collection(SearchFieldDataType.String),
+    "list[int]": SearchFieldDataType.Collection(SearchFieldDataType.Int64),
+    "list[float]": SearchFieldDataType.Collection(SearchFieldDataType.Double),
+    "list[bool]": SearchFieldDataType.Collection(SearchFieldDataType.Boolean),
+    "default": SearchFieldDataType.String,
+}
+
+TYPE_MAPPER_VECTOR = {
+    "list[float]": SearchFieldDataType.Collection(SearchFieldDataType.Single),
+    "list[int]": "Collection(Edm.Int16)",
+    "list[binary]": "Collection(Edm.Byte)",
+    "default": SearchFieldDataType.Collection(SearchFieldDataType.Single),
+}
+
 
 @experimental_class
-class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
+class AzureAISearchVectorStore(VectorRecordStoreBase[str, TModel]):
     def __init__(
         self,
         data_model_type: type[TModel],
@@ -123,7 +177,7 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
     ) -> list[dict[str, Any]]:
         client = self._get_search_client(collection_name)
         return await asyncio.gather(
-            *[client.get_document(key=key, selected_fields=kwargs.get("selected_fields", None)) for key in keys]
+            *[client.get_document(key=key, selected_fields=kwargs.get("selected_fields", ["*"])) for key in keys]
         )
 
     @override
@@ -138,20 +192,25 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         return [str]
 
     @override
-    def _serialize_dicts_to_store_models(self, record: OneOrMany[dict[str, Any]]) -> OneOrMany[Any]:
+    @property
+    def supported_vector_types(self) -> list[type] | None:
+        return [list[float], list[int]]
+
+    @override
+    def _serialize_dicts_to_store_models(self, records: list[dict[str, Any]], **kwargs: Any) -> list[Any]:
         """Serialize a dict of the data to the store model.
 
         This method should be overridden by the child class to convert the dict to the store model.
         """
-        return record
+        return records
 
     @override
-    def _deserialize_store_models_to_dicts(self, record: OneOrMany[Any]) -> OneOrMany[dict[str, Any]]:
+    def _deserialize_store_models_to_dicts(self, records: list[Any], **kwargs: Any) -> list[dict[str, Any]]:
         """Deserialize the store model to a dict.
 
         This method should be overridden by the child class to convert the store model to a dict.
         """
-        return record
+        return records
 
     def _get_search_client(self, collection_name: str | None = None) -> SearchClient:
         """Create or get a search client for the specified collection."""
@@ -159,3 +218,123 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
         if collection_name not in self._search_clients:
             self._search_clients[collection_name] = self._search_index_client.get_search_client(collection_name)
         return self._search_clients[collection_name]
+
+    async def list_collection_names(self, **kwargs: Any) -> list[str]:
+        """Get the names of all collections."""
+        if "params" not in kwargs:
+            kwargs["params"] = {"select": ["name"]}
+        return [index async for index in self._search_index_client.list_index_names(**kwargs)]
+
+    async def collection_exists(self, collection_name: str | None = None, **kwargs) -> bool:
+        """Check if a collection with the name exists."""
+        return self._get_collection_name(collection_name) in await self.list_collection_names(**kwargs)
+
+    async def delete_collection(self, collection_name: str | None = None, **kwargs) -> None:
+        """Delete a collection."""
+        await self._search_index_client.delete_index(index=self._get_collection_name(collection_name), **kwargs)
+
+    async def create_collection(
+        self, collection_name: str | None = None, definition: VectorStoreRecordDefinition | None = None, **kwargs
+    ) -> SearchIndex:
+        """Create a new collection in Azure AI Search.
+
+        Args:
+            collection_name (str): The name of the collection.
+            definition (VectorStoreRecordDefinition): The definition to use to create an index,
+                if supplied this takes precedence over the definition set in the constructor.
+            **kwargs: Additional keyword arguments.
+                index (SearchIndex): The search index to create, if this is supplied
+                    this is used instead of the index created based on the definition.
+                encryption_key (SearchResourceEncryptionKey): The encryption key to use,
+                    not used when index is supplied.
+                other kwargs are passed to the create_index method.
+        """
+        if index := kwargs.pop("index", None):
+            if isinstance(index, SearchIndex):
+                return await self._search_index_client.create_index(index=index, **kwargs)
+            raise MemoryConnectorException("Invalid index type.")
+        if not definition and not self._data_model_definition:
+            raise MemoryConnectorInitializationError("Definition is required to create a collection.")
+        index = self._data_model_to_index(
+            collection_name=self._get_collection_name(collection_name),
+            definition=definition or self._data_model_definition,
+            encryption_key=kwargs.pop("encryption_key", None),
+        )
+        return await self._search_index_client.create_index(index=index, **kwargs)
+
+    def _data_model_to_index(
+        self,
+        collection_name: str,
+        definition: VectorStoreRecordDefinition,
+        encryption_key: SearchResourceEncryptionKey | None = None,
+    ) -> SearchIndex:
+        fields = []
+        search_profiles = []
+        search_algos = []
+
+        for field in definition.fields.values():
+            if isinstance(field, VectorStoreRecordDataField):
+                if not field.property_type:
+                    logger.debug(f"Field {field.name} has not specified type, defaulting to Edm.String.")
+                type_ = TYPE_MAPPER_DATA[field.property_type or "default"]
+                fields.append(
+                    SearchField(
+                        name=field.name,
+                        type=type_,
+                        filterable=field.is_filterable,
+                        searchable=type_ in ("Edm.String", "Collection(Edm.String)"),
+                        sortable=True,
+                        hidden=False,
+                    )
+                )
+            elif isinstance(field, VectorStoreRecordKeyField):
+                assert field.name  # nosec
+                fields.append(
+                    SimpleField(
+                        name=field.name,
+                        type="Edm.String",  # hardcoded, only allowed type for key
+                        key=True,
+                        filterable=True,
+                        searchable=True,
+                    )
+                )
+            elif isinstance(field, VectorStoreRecordVectorField):
+                if not field.property_type:
+                    logger.debug(f"Field {field.name} has not specified type, defaulting to Collection(Edm.Single).")
+                if not field.index_kind:
+                    logger.debug(f"Field {field.name} has not specified index kind, defaulting to hnsw.")
+                if not field.distance_function:
+                    logger.debug(f"Field {field.name} has not specified distance function, defaulting to cosine.")
+                profile_name = f"{field.name}_profile"
+                algo_name = f"{field.name}_algorithm"
+                fields.append(
+                    SearchField(
+                        name=field.name,
+                        type=TYPE_MAPPER_VECTOR[field.property_type or "default"],
+                        searchable=True,
+                        vector_search_dimensions=field.dimensions,
+                        vector_search_profile_name=profile_name,
+                        hidden=False,
+                    )
+                )
+                search_profiles.append(
+                    VectorSearchProfile(
+                        name=profile_name,
+                        algorithm_configuration_name=algo_name,
+                    )
+                )
+                algo_class, algo_params = INDEX_ALGORITHM_MAP[field.index_kind or "default"]
+                search_algos.append(
+                    algo_class(
+                        name=algo_name,
+                        parameters=algo_params(
+                            metric=DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
+                        ),
+                    )
+                )
+        return SearchIndex(
+            name=collection_name,
+            fields=fields,
+            vector_search=VectorSearch(profiles=search_profiles, algorithms=search_algos),
+            encryption_key=encryption_key,
+        )
