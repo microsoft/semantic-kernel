@@ -31,6 +31,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\AzureOpenAITextToImageServiceTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Services\AzureOpenAITextToImageServiceTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
   </ItemGroup>
 

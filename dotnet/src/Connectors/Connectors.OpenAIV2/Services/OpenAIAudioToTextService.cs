@@ -33,7 +33,7 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
     public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
 
     /// <summary>
-    /// Creates an instance of the <see cref="OpenAITextToAudioService"/> with API key auth.
+    /// Creates an instance of the <see cref="OpenAIAudioToTextService"/> with API key auth.
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
@@ -50,11 +50,11 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
-        this._client = new(modelId, apiKey, organization, endpoint, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
+        this._client = new(modelId, apiKey, organization, endpoint, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIAudioToTextService)));
     }
 
     /// <summary>
-    /// Creates an instance of the <see cref="OpenAITextToAudioService"/> with API key auth.
+    /// Creates an instance of the <see cref="OpenAIAudioToTextService"/> with API key auth.
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
