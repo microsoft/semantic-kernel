@@ -98,7 +98,7 @@ demonstrate how to use Semantic Kernel with code snippets that you can run with 
 Once you've finished the getting started notebooks, you can then check out the main walkthroughs
 on our Learn site. Each sample comes with a completed C# and Python project that you can run locally.
 
-1. 📖 [Getting Started]((https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)
+1. 📖 [Getting Started](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)
 1. 🔌 [Detailed Samples](https://learn.microsoft.com/en-us/semantic-kernel/get-started/detailed-samples)
 1. 💡 [Concepts](https://learn.microsoft.com/en-us/semantic-kernel/concepts/agents)
 
