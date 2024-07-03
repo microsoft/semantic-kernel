@@ -228,8 +228,7 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
         //Create collection with default, Ip metric
         await this.Store.CreateCollectionAsync(CollectionName);
         await this.InsertSampleDataAsync();
-        // There seems to be some race condition where the upserted data above isn't taken into account in the search below and zero results are returned...
-        await Task.Delay(1000);
+        await this.Store.Client.FlushAsync([CollectionName]);
 
         //Search with Ip metric, run correctly
         List<(MemoryRecord Record, double SimilarityScore)> ipResults =
@@ -240,7 +239,7 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
         //Set the store to Cosine metric, without recreate collection
         this.Store = new(this._milvusFixture.Host, vectorSize: 5, port: this._milvusFixture.Port, metricType: SimilarityMetricType.Cosine, consistencyLevel: ConsistencyLevel.Strong);
 
-        //An exception willl be thrown here, the exception message includes "metric type not match"
+        //An exception will be thrown here, the exception message includes "metric type not match"
         MilvusException milvusException = Assert.Throws<MilvusException>(() => this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToEnumerable().ToList());
 
         Assert.NotNull(milvusException);
@@ -251,8 +250,7 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
         await this.Store.DeleteCollectionAsync(CollectionName);
         await this.Store.CreateCollectionAsync(CollectionName);
         await this.InsertSampleDataAsync();
-        // There seems to be some race condition where the upserted data above isn't taken into account in the search below and zero results are returned...
-        await Task.Delay(1000);
+        await this.Store.Client.FlushAsync([CollectionName]);
 
         //Search with Ip metric, run correctly
         List<(MemoryRecord Record, double SimilarityScore)> cosineResults =
