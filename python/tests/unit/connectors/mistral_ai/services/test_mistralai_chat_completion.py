@@ -1,11 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from mistralai.async_client import MistralAsyncClient
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -18,12 +19,15 @@ async def test_complete_chat_contents(kernel: Kernel):
     settings.number_of_responses = 1
     arguments = KernelArguments()
     client = MagicMock(spec=MistralAsyncClient)
-
+    chat_completion_response = AsyncMock()
+    choices = [MagicMock(finish_reason="stop", message=MagicMock(role="assistant", content="Test"))]
+    chat_completion_response.choices = choices
+    client.chat.return_value = chat_completion_response
     chat_completion_base = MistralAIChatCompletion(
         ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
     )
 
-    content = await chat_completion_base.get_chat_message_contents(
+    content: list[ChatMessageContent] = await chat_completion_base.get_chat_message_contents(
         chat_history, settings, kernel=kernel, arguments=arguments
     )
     assert content is not None
@@ -36,6 +40,12 @@ async def test_complete_chat_stream_contents(kernel: Kernel):
     settings.number_of_responses = 1
     arguments = KernelArguments()
     client = MagicMock(spec=MistralAsyncClient)
+    chat_completion_response = MagicMock()
+    choices = [MagicMock(finish_reason="stop", delta=MagicMock(role="assistant", content="Test"))]
+    chat_completion_response.choices = choices
+    generator_mock = MagicMock()
+    generator_mock.__aiter__.return_value = [chat_completion_response]
+    client.chat_stream.return_value = generator_mock
 
     chat_completion_base = MistralAIChatCompletion(
         ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
