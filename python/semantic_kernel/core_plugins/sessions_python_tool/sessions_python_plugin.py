@@ -216,7 +216,7 @@ class SessionsPythonTool(KernelBaseModel):
         self.http_client.headers.update(
             {
                 "Authorization": f"Bearer {auth_token}",
-                USER_AGENT: "SESSIONS_USER_AGENT",
+                USER_AGENT: SESSIONS_USER_AGENT,
             }
         )
 
