@@ -43,14 +43,4 @@ public class BedrockChatCompletionService : BedrockChatCompletionClient<IChatCom
     {
         throw new NotImplementedException();
     }
-    // public static IChatCompletion GetChatCompletionService(string modelId)
-    // {
-    //     if (modelId.StartsWith("titan-"))
-    //     {
-    //         return new AmazonTitanChatCompletion(modelId);
-    //     }
-    //     // other models here
-    //
-    //     throw new ArgumentException($"Invalid model ID: {modelId}");
-    // }
 }

@@ -4,11 +4,12 @@ using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models;
 
 public interface IBedrockModelIoService<TRequest, TResponse>
 {
     ITextGenerationRequest GetInvokeModelRequestBody(string text, PromptExecutionSettings settings);
-    object GetConverseRequestBody();
+    ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory);
 }

@@ -40,30 +40,13 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
             case "mistral":
                 this._ioService = new MistralIoService();
                 break;
-            default:
-                throw new Exception("Error: model not found");
-                break;
         }
     }
     internal async Task<ConverseResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings executionSettings, CancellationToken cancellationToken = default)
     {
-        // var requestBody = this._ioService.GetApiRequestBody(prompt, executionSettings);
-        var converseRequest = new ConverseRequest
-        {
-            ModelId = this._modelId,
-            Messages = chatHistory.Select(messageContent => new Message
-            {
-                Content = new List<ContentBlock>
-                {
-                    new ContentBlock
-                    {
-                        Text = messageContent.Content
-                    }
-                }
-            }).ToList()
-        };
-        var response = await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(true);
-        return response;
+        var converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory);
+        // var converseRequest = new ConverseRequest();
+        return await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(true);
     }
     internal async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
@@ -83,31 +66,45 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
             activity.SetError(ex);
             throw;
         }
-        IEnumerable<ChatMessageContent> chatMessageContents = response.Output.Message.Content
-            .Select(contentBlock => new ChatMessageContent
-            {
-                Role = (AuthorRole)Enum.Parse(typeof(AuthorRole), response.Output.Message.Role.ToString(), true),
-                Content = contentBlock.Text
-            }); //parse msg content, convert to list
-        IReadOnlyList<ChatMessageContent> chatMessageContentsList = chatMessageContents.ToList();
-        return activity?.SetCompletionResponse(chatMessageContentsList);
+
+        IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
+        activity?.SetCompletionResponse(chat);
+        return chat.ToList();
     }
 
-    private static List<ChatMessageContent> GetChatMessageContentFromResponse(ConverseResponse response, string modelId)
+    public static IEnumerable<ChatMessageContent> ConvertToMessageContent(ConverseResponse response)
     {
-        var chatMessageContents = new List<ChatMessageContent>();
-        foreach (var message in response.Output.Message)
+        if (response.Output.Message != null)
         {
-            chatMessageContents.Add(new ChatMessageContent(message.Content[0].Text, modelId));
+            var message = response.Output.Message;
+            return new[]
+            {
+                new ChatMessageContent
+                {
+                    Role = MapRole(message.Role.Value),
+                    Items = CreateChatMessageContentItemCollection(message.Content)
+                }
+            };
         }
+        return Enumerable.Empty<ChatMessageContent>();
     }
-    // private ConversationRole GetConversationRole(AuthorRole authorRole)
-    // {
-    //     return authorRole switch
-    //     {
-    //         AuthorRole.User => new ConversationRole("user"),
-    //         AuthorRole.Assistant => new ConversationRole("assistant"),
-    //         _ => throw new ArgumentOutOfRangeException(nameof(authorRole), $"Unknown author role: {authorRole}")
-    //     };
-    // }
+    private static AuthorRole MapRole(string role)
+    {
+        return role.ToLowerInvariant() switch
+        {
+            "user" => AuthorRole.User,
+            "assistant" => AuthorRole.Assistant,
+            "system" => AuthorRole.System,
+            _ => throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}")
+        };
+    }
+    private static ChatMessageContentItemCollection CreateChatMessageContentItemCollection(List<ContentBlock> contentBlocks)
+    {
+        var itemCollection = new ChatMessageContentItemCollection();
+        foreach (var contentBlock in contentBlocks)
+        {
+            itemCollection.Add(new TextContent(contentBlock.Text));
+        }
+        return itemCollection;
+    }
 }

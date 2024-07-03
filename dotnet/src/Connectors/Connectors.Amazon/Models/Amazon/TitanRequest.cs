@@ -1,8 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Amazon.BedrockRuntime;
+using Amazon.BedrockRuntime.Model;
+using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Amazon;
 
@@ -56,5 +62,15 @@ public class TitanRequest
         [JsonPropertyName("stopSequences")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public IList<string>? StopSequences { get; set; } = new List<string>();
+    }
+
+    public class TitanChatGenerationRequest : IChatCompletionRequest
+    {
+        public List<Message> Messages { get; set; }
+        public List<SystemContentBlock> System { get; set; }
+        public InferenceConfiguration InferenceConfig { get; set; }
+        public Document AdditionalModelRequestFields { get; set; }
+        public List<string> AdditionalModelResponseFieldPaths { get; set; }
+        public GuardrailConfiguration GuardrailConfig { get; set; }
     }
 }

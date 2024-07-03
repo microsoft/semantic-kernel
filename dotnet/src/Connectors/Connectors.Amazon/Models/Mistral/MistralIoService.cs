@@ -4,19 +4,20 @@ using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Mistral;
 
 public class MistralIoService : IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIoService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public InvokeModelRequest GetApiRequestBody(string prompt, PromptExecutionSettings settings)
+    public ITextGenerationRequest GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {
-        return new InvokeModelRequest(); //FIX
+        throw new NotImplementedException();
     }
 
-    public TResponse ConvertApiResponse(object response)
+    public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory)
     {
-        return response;
+        throw new NotImplementedException();
     }
 }

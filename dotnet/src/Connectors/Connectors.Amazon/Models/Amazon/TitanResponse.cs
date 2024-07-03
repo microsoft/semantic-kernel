@@ -30,10 +30,10 @@ public class AmazonTitanTextCompletionResult : ChatMessageContent
     [JsonPropertyName("completionReason")]
     public string? CompletionReason { get; set; }
 
-    ModelResult ITextResult.ModelResult => new(OutputText);
-
-    Task<string> ITextResult.GetCompletionAsync(CancellationToken cancellationToken)
-    {
-        return Task.FromResult(OutputText);
-    }
+    // ModelResult ITextResult.ModelResult => new(OutputText);
+    //
+    // Task<string> ITextResult.GetCompletionAsync(CancellationToken cancellationToken)
+    // {
+    //     return Task.FromResult(OutputText);
+    // }
 }
