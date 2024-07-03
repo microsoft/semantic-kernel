@@ -10,6 +10,8 @@ from mistralai.models.chat_completion import (
     ChatCompletionResponseChoice,
     ChatCompletionResponseStreamChoice,
     ChatCompletionStreamResponse,
+    ChatMessage,
+    DeltaMessage,
 )
 from pydantic import ValidationError
 
@@ -18,7 +20,6 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
     MistralAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -43,7 +44,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     total_tokens: int = 0
-    async_client: MistralAsyncClient | None = None
+    async_client: MistralAsyncClient
 
     def __init__(
         self,
@@ -93,10 +94,10 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
 
     async def get_chat_message_contents(
         self,
-        chat_history: ChatHistory,
-        settings: MistralAIChatPromptExecutionSettings,
+        chat_history: "ChatHistory",
+        settings: "MistralAIChatPromptExecutionSettings",  # type: ignore[override]
         **kwargs: Any,
-    ) -> list["ChatMessageContent"]:
+    ) -> list["ChatMessageContent"]: 
         """Executes a chat completion request and returns the result.
 
         Args:
@@ -127,9 +128,9 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
     async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
-        settings: MistralAIChatPromptExecutionSettings,
+        settings: MistralAIChatPromptExecutionSettings,  # type: ignore[override]
         **kwargs: Any,
-    ) -> AsyncGenerator[list[StreamingChatMessageContent | None], Any]:
+    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]: 
         """Executes a streaming chat completion request and returns the result.
 
         Args:
@@ -190,7 +191,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
         chunk: ChatCompletionStreamResponse,
         choice: ChatCompletionResponseStreamChoice,
         chunk_metadata: dict[str, Any],
-    ) -> StreamingChatMessageContent | None:
+    ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
         metadata.update(chunk_metadata)
@@ -214,7 +215,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             response: ChatCompletionResponse | ChatCompletionStreamResponse
     ) -> dict[str, Any]:
         """Get metadata from a chat response."""
-        metadata = {
+        metadata: dict[str, Any] = {
             "id": response.id,
             "created": response.created,
         }
@@ -236,6 +237,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
         choice: ChatCompletionResponseChoice | ChatCompletionResponseStreamChoice
     ) -> list[FunctionCallContent]:
         """Get tool calls from a chat choice."""
+        content: ChatMessage | DeltaMessage 
         content = choice.message if isinstance(choice, ChatCompletionResponseChoice) else choice.delta
         if content.tool_calls is None:
             return []
@@ -251,7 +253,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
 
     # endregion
 
-    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
+    def get_prompt_execution_settings_class(self) -> "type[MistralAIChatPromptExecutionSettings]":
         """Create a request settings object."""
         return MistralAIChatPromptExecutionSettings
     
