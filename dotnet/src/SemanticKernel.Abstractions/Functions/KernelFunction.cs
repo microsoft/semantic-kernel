@@ -186,7 +186,7 @@ public abstract class KernelFunction
             {
                 // Invoking the function and updating context with result.
                 context.Result = functionResult = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
-            }).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
 
             // Apply any changes from the function filters context to final result.
             functionResult = invocationContext.Result;
@@ -321,7 +321,7 @@ public abstract class KernelFunction
                     context.Result = new FunctionResult(this, enumerable, kernel.Culture);
 
                     return Task.CompletedTask;
-                }).ConfigureAwait(false);
+                }, cancellationToken).ConfigureAwait(false);
 
                 // Apply changes from the function filters to final result.
                 var enumerable = invocationContext.Result.GetValue<IAsyncEnumerable<TResult>>() ?? AsyncEnumerable.Empty<TResult>();
