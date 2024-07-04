@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
@@ -40,7 +37,8 @@ public sealed class AnthropicChatMessageContent : ChatMessageContent
             modelId: modelId,
             innerContent: innerContent,
             encoding: Encoding.UTF8,
-            metadata: metadata) { }
+            metadata: metadata)
+    { }
 
     /// <summary>
     /// The metadata associated with the content.

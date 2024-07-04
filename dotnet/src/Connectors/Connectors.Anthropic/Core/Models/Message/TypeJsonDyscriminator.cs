@@ -50,8 +50,8 @@ internal static class JsonTypeDiscriminatorHelper
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = true, Inherited = false)]
 internal sealed class HackyJsonDerivedAttribute(Type subtype, string typeDiscriminator) : Attribute
 {
-    public Type Subtype { get; set; } = subtype;
-    public string TypeDiscriminator { get; set; } = typeDiscriminator;
+    public Type Subtype { get; internal set; } = subtype;
+    public string TypeDiscriminator { get; internal set; } = typeDiscriminator;
 }
 
 internal sealed class PolymorphicJsonConverterFactory : JsonConverterFactory
