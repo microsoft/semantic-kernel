@@ -2,7 +2,6 @@
 
 
 import contextlib
-import os
 from dataclasses import dataclass, field
 from typing import Annotated
 from uuid import uuid4
@@ -59,9 +58,6 @@ stores = {
     "ai_search": AzureAISearchVectorStore[MyDataModel](
         data_model_type=MyDataModel,
         kernel=kernel,
-        collection_name=os.environ["ALT_SEARCH_INDEX_NAME"],
-        search_endpoint=os.environ["ALT_SEARCH_ENDPOINT"],
-        api_key=os.environ["ALT_SEARCH_API_KEY"],
     ),
     "redis": RedisVectorRecordStore[MyDataModel](
         data_model_type=MyDataModel,
