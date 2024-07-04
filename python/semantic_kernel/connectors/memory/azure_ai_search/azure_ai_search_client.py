@@ -38,7 +38,7 @@ from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnect
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
-    from semantic_kernel import Kernel
+    pass
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -133,41 +133,38 @@ class AzureAISearchClient:
             azure_credential=azure_credentials,
             token_credential=token_credentials,
         )
+        self._collection_name = azure_ai_search_settings.index_name
         self._vector_stores = {}
 
     def get_vector_record_store(
         self,
         data_model_type: type[TModel],
+        definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
-        kernel: "Kernel | None" = None,
+        vector_store_kwargs: dict[str, Any] = {},
         **kwargs: Any,
     ) -> AzureAISearchVectorRecordStore:
-        """Get a vector record store for the collection."""
+        """Get a vector record store for the collection.
+
+        Args:
+            data_model_type (type[TModel]): The type of the data model.
+            definition (VectorStoreRecordDefinition | None): The model fields, optional.
+            collection_name (str): The name of the collection,
+                when None the collection_name set in the constructor is used.
+            vector_store_kwargs (dict[str, Any]): Additional keyword arguments,
+                passed to the vector store as kwargs.
+            **kwargs: Additional keyword arguments, passed to the search client constructor.
+        """
         collection_name = self._get_collection_name(collection_name)
         if collection_name not in self._vector_stores:
-            self._vector_stores[collection_name] = AzureAISearchVectorRecordStore(
+            self._vector_stores[collection_name] = AzureAISearchVectorRecordStore[data_model_type](
                 search_client=self._search_index_client.get_search_client(collection_name, **kwargs),
+                collection_name=collection_name,
                 data_model_type=data_model_type,
-                data_model_definition=data_model_definition,
-                kernel=kernel,
-                **kwargs,
+                data_model_definition=definition,
+                **vector_store_kwargs,
             )
         return self._vector_stores[collection_name]
-
-    async def list_collection_names(self, **kwargs: Any) -> list[str]:
-        """Get the names of all collections."""
-        if "params" not in kwargs:
-            kwargs["params"] = {"select": ["name"]}
-        return [index async for index in self._search_index_client.list_index_names(**kwargs)]
-
-    async def collection_exists(self, collection_name: str | None = None, **kwargs) -> bool:
-        """Check if a collection with the name exists."""
-        return self._get_collection_name(collection_name) in await self.list_collection_names(**kwargs)
-
-    async def delete_collection(self, collection_name: str | None = None, **kwargs) -> None:
-        """Delete a collection."""
-        await self._search_index_client.delete_index(index=self._get_collection_name(collection_name), **kwargs)
 
     async def create_collection(
         self, definition: VectorStoreRecordDefinition, collection_name: str | None = None, **kwargs
@@ -278,7 +275,21 @@ class AzureAISearchClient:
 
         First tries the supplied argument, then self.
         """
-        collection_name = collection_name or self.collection_name or None
+        collection_name = collection_name or self._collection_name or None
         if not collection_name:
             raise MemoryConnectorException("Error: collection_name not set.")
         return collection_name
+
+    async def list_collection_names(self, **kwargs: Any) -> list[str]:
+        """Get the names of all collections."""
+        if "params" not in kwargs:
+            kwargs["params"] = {"select": ["name"]}
+        return [index async for index in self._search_index_client.list_index_names(**kwargs)]
+
+    async def collection_exists(self, collection_name: str | None = None, **kwargs) -> bool:
+        """Check if a collection with the name exists."""
+        return self._get_collection_name(collection_name) in await self.list_collection_names(**kwargs)
+
+    async def delete_collection(self, collection_name: str | None = None, **kwargs) -> None:
+        """Delete a collection."""
+        await self._search_index_client.delete_index(index=self._get_collection_name(collection_name), **kwargs)
