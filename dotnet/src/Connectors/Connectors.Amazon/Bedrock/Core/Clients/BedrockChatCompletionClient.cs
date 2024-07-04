@@ -50,7 +50,6 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     internal async Task<ConverseResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings executionSettings, CancellationToken cancellationToken = default)
     {
         var converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory);
-        // var converseRequest = new ConverseRequest();
         return await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(true);
     }
     internal async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
