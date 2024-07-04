@@ -69,7 +69,7 @@ internal partial class ClientCore
     internal ILogger Logger { get; init; }
 
     /// <summary>
-    /// OpenAI / Azure OpenAI Client
+    /// OpenAI Client
     /// </summary>
     internal OpenAIClient Client { get; }
 
@@ -134,7 +134,7 @@ internal partial class ClientCore
     /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">OpenAI model Id</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal ClientCore(

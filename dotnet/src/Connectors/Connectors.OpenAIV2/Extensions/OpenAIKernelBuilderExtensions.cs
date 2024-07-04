@@ -293,7 +293,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <summary>
     /// Add the OpenAI file service to the list
     /// </summary>
-    /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>

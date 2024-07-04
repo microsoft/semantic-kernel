@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Execution serttings associated with Open AI file upload <see cref="OpenAIFileService.UploadContentAsync"/>.
+/// Execution settings associated with Open AI file upload <see cref="OpenAIFileService.UploadContentAsync"/>.
 /// </summary>
 [Experimental("SKEXP0010")]
 public sealed class OpenAIFileUploadExecutionSettings

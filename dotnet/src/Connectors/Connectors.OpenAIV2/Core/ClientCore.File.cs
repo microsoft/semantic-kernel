@@ -2,7 +2,6 @@
 
 /* 
 Phase 05
-
 - Ignoring the specific Purposes not implemented by current FileService.
 */
 
@@ -25,6 +24,14 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
+    /// <summary>
+    /// Uploads a file to OpenAI.
+    /// </summary>
+    /// <param name="fileName">File name</param>
+    /// <param name="fileContent">File content</param>
+    /// <param name="purpose">Purpose of the file</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Uploaded file information</returns>
     internal async Task<OpenAIFileReference> UploadFileAsync(
         string fileName,
         Stream fileContent,
@@ -35,6 +42,11 @@ internal partial class ClientCore
         return ConvertToFileReference(response.Value);
     }
 
+    /// <summary>
+    /// Delete a previously uploaded file.
+    /// </summary>
+    /// <param name="fileId">The uploaded file identifier.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     internal async Task DeleteFileAsync(
         string fileId,
         CancellationToken cancellationToken)
@@ -42,6 +54,12 @@ internal partial class ClientCore
         await RunRequestAsync(() => this.Client.GetFileClient().DeleteFileAsync(fileId, cancellationToken)).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Retrieve metadata for a previously uploaded file.
+    /// </summary>
+    /// <param name="fileId">The uploaded file identifier.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The metadata associated with the specified file identifier.</returns>
     internal async Task<OpenAIFileReference> GetFileAsync(
         string fileId,
         CancellationToken cancellationToken)
@@ -50,14 +68,26 @@ internal partial class ClientCore
         return ConvertToFileReference(response.Value);
     }
 
-    internal async Task<IList<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// Retrieve metadata for all previously uploaded files.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The metadata of all uploaded files.</returns>
+    internal async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken)
     {
         ClientResult<OpenAIFileInfoCollection> response = await RunRequestAsync(() => this.Client.GetFileClient().GetFilesAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
-        return response.Value
-            .Select(ConvertToFileReference)
-            .ToList();
+        return response.Value.Select(ConvertToFileReference);
     }
 
+    /// <summary>
+    /// Retrieve the file content from a previously uploaded file.
+    /// </summary>
+    /// <param name="fileId">The uploaded file identifier.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The file content as <see cref="BinaryContent"/></returns>
+    /// <remarks>
+    /// Files uploaded with <see cref="OpenAIFilePurpose.Assistants"/> do not support content retrieval.
+    /// </remarks>
     internal async Task<byte[]> GetFileContentAsync(
         string fileId,
         CancellationToken cancellationToken)
@@ -78,31 +108,17 @@ internal partial class ClientCore
 
     private static FileUploadPurpose ConvertToOpenAIFilePurpose(SKFilePurpose purpose)
     {
-        if (SKFilePurpose.FineTune == purpose) { return FileUploadPurpose.FineTune; }
-        if (SKFilePurpose.Assistants == purpose) { return FileUploadPurpose.Assistants; }
+        if (purpose == SKFilePurpose.Assistants) { return FileUploadPurpose.Assistants; }
+        if (purpose == SKFilePurpose.FineTune) { return FileUploadPurpose.FineTune; }
 
-        /* WIB - Ignoring the following cases for now
-        if (SKFilePurpose.Vision == purpose) { return FileUploadPurpose.Vision; }
-        if (SKFilePurpose.Batch == purpose) { return FileUploadPurpose.Batch; }
-        */
-
-        throw new NotSupportedException($"Unsupported file purpose: {purpose}");
+        throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}.");
     }
 
     private static SKFilePurpose ConvertToFilePurpose(OAIFilePurpose purpose)
     {
-        if (OAIFilePurpose.FineTune == purpose) { return SKFilePurpose.FineTune; }
-        if (OAIFilePurpose.Assistants == purpose) { return SKFilePurpose.Assistants; }
+        if (purpose == OAIFilePurpose.Assistants) { return SKFilePurpose.Assistants; }
+        if (purpose == OAIFilePurpose.FineTune) { return SKFilePurpose.FineTune; }
 
-        /* WIB - Ignoring the following cases for now
-        if (OAIFilePurpose.FineTuneResults == purpose) { return SKFilePurpose.FineTuneResults; }
-        if (OAIFilePurpose.AssistantsOutput == purpose) { return SKFilePurpose.AssistantsOutput; }
-        if (OAIFilePurpose.Vision == purpose) { return SKFilePurpose.Vision; }
-        if (OAIFilePurpose.Batch == purpose) { return SKFilePurpose.Batch; }
-        if (OAIFilePurpose.BatchOutput == purpose) { return SKFilePurpose.BatchOutput; }
-        if (OAIFilePurpose.FineTuneResults == purpose) { return SKFilePurpose.FineTuneResults; }
-        */
-
-        throw new NotSupportedException($"Unsupported file purpose: {purpose}");
+        throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}.");
     }
 }

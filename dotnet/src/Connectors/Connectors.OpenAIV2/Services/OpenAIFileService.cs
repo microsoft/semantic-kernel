@@ -23,19 +23,17 @@ public sealed class OpenAIFileService
     private readonly ClientCore _client;
 
     /// <summary>
-    /// Create an instance of the Azure OpenAI chat completion connector
+    /// Create an instance of the OpenAI chat completion connector
     /// </summary>
-    /// <param name="endpoint">Azure Endpoint URL</param>
-    /// <param name="apiKey">Azure OpenAI API Key</param>
+    /// <param name="endpoint">Non-default endpoint for the OpenAI API.</param>
+    /// <param name="apiKey">API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
-    /// <param name="version">The API version to target.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIFileService(
         Uri endpoint,
         string apiKey,
         string? organization = null,
-        string? version = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
