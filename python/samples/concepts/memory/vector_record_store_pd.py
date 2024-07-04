@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
 from uuid import uuid4
 
 import pandas as pd
@@ -41,9 +40,6 @@ async def main():
     async with AzureAISearchVectorStore[pd.DataFrame](
         data_model_type=pd.DataFrame,
         data_model_definition=model_fields,
-        collection_name=os.environ["ALT_SEARCH_INDEX_NAME"],
-        search_endpoint=os.environ["ALT_SEARCH_ENDPOINT"],
-        api_key=os.environ["ALT_SEARCH_API_KEY"],
         kernel=kernel,
     ) as record_store:
         records = [

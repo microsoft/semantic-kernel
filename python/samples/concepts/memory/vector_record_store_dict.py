@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-import os
 from uuid import uuid4
 
 from semantic_kernel import Kernel
@@ -34,9 +33,6 @@ async def main():
     async with AzureAISearchVectorStore[dict](
         data_model_type=dict,
         data_model_definition=model_fields,
-        collection_name=os.environ["ALT_SEARCH_INDEX_NAME"],
-        search_endpoint=os.environ["ALT_SEARCH_ENDPOINT"],
-        api_key=os.environ["ALT_SEARCH_API_KEY"],
         kernel=kernel,
     ) as record_store:
         record1 = {"id": str(uuid4()), "content": "my dict text", "vector": None}
