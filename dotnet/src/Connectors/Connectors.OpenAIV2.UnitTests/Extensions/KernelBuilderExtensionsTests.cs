@@ -2,6 +2,7 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -131,5 +132,16 @@ public class KernelBuilderExtensionsTests
 
         // Assert
         Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
+    }
+
+    [Fact]
+    public void ItCanAddFileService()
+    {
+        // Arrange
+        var sut = Kernel.CreateBuilder();
+
+        // Act
+        var service = sut.AddOpenAIFiles("key").Build()
+            .GetRequiredService<OpenAIFileService>();
     }
 }

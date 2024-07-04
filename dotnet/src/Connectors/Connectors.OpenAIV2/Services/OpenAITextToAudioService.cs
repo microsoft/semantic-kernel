@@ -49,6 +49,7 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
         this._client = new(modelId, apiKey, organization, endpoint, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
     }
 
@@ -63,6 +64,7 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
         this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
     }
 

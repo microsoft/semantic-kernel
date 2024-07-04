@@ -223,15 +223,6 @@ public partial class ClientCoreTests
     }
 
     [Fact]
-    public void ItThrowsIfModelIdIsNotProvided()
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => new ClientCore(" ", "apikey"));
-        Assert.Throws<ArgumentException>(() => new ClientCore("", "apikey"));
-        Assert.Throws<ArgumentNullException>(() => new ClientCore(null!));
-    }
-
-    [Fact]
     public void ItThrowsWhenNotUsingCustomEndpointAndApiKeyIsNotProvided()
     {
         // Act & Assert

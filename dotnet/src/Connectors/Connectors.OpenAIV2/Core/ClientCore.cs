@@ -9,6 +9,10 @@ Phase 02 :
 - Moved AddAttributes usage to the constructor, avoiding the need verify and adding it in the services.
 - Added ModelId attribute to the OpenAIClient constructor.
 - Added WhiteSpace instead of empty string for ApiKey to avoid exception from OpenAI Client on custom endpoints added an issue in OpenAI SDK repo. https://github.com/openai/openai-dotnet/issues/90
+
+Phase 05:
+- Model Id became not be required to support services like: File Service.
+        
 */
 
 using System;
@@ -65,7 +69,7 @@ internal partial class ClientCore
     internal ILogger Logger { get; init; }
 
     /// <summary>
-    /// OpenAI / Azure OpenAI Client
+    /// OpenAI Client
     /// </summary>
     internal OpenAIClient Client { get; }
 
@@ -84,19 +88,20 @@ internal partial class ClientCore
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal ClientCore(
-        string modelId,
+        string? modelId = null,
         string? apiKey = null,
         string? organizationId = null,
         Uri? endpoint = null,
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
+        if (!string.IsNullOrWhiteSpace(modelId))
+        {
+            this.ModelId = modelId!;
+            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
 
         this.Logger = logger ?? NullLogger.Instance;
-        this.ModelId = modelId;
-
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
 
         // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
         this.Endpoint = endpoint ?? httpClient?.BaseAddress;
@@ -129,22 +134,25 @@ internal partial class ClientCore
     /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="modelId">OpenAI model Id</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal ClientCore(
-        string modelId,
+        string? modelId,
         OpenAIClient openAIClient,
         ILogger? logger = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
+        // Model Id may not be required when other services. i.e: File Service.
+        if (modelId is not null)
+        {
+            this.ModelId = modelId;
+            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
+
         Verify.NotNull(openAIClient);
 
         this.Logger = logger ?? NullLogger.Instance;
-        this.ModelId = modelId;
         this.Client = openAIClient;
-
-        this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
