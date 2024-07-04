@@ -51,7 +51,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
 
         // Case #3
-        sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(), "model");
+        sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(new Uri("https://api-host/"), "api-key"), "model");
         Assert.Equal("deployment", sut.Attributes[ClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
     }
