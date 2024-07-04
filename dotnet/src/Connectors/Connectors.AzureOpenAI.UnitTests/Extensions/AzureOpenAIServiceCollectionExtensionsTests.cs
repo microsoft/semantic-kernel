@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToImage;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 
@@ -84,6 +85,40 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextEmbeddingGenerationService);
+    }
+
+    #endregion
+
+    #region Text to image
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.TokenCredential)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
+    public void ServiceCollectionExtensionsAddAzureOpenAITextToImageService(InitializationType type)
+    {
+        // Arrange
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+        var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<AzureOpenAIClient>(client);
+
+        // Act
+        IServiceCollection collection = type switch
+        {
+            InitializationType.ApiKey => builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials),
+            InitializationType.ClientInline => builder.Services.AddAzureOpenAITextToImage("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAITextToImage("deployment-name"),
+            _ => builder.Services
+        };
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToImageService>();
+
+        Assert.True(service is AzureOpenAITextToImageService);
     }
 
     #endregion
