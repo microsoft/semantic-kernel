@@ -8,7 +8,7 @@ using OpenAI.Images;
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
-/// Base class for AI clients that provides common functionality for interacting with OpenAI services.
+/// Base class for AI clients that provides common functionality for interacting with Azure OpenAI services.
 /// </summary>
 internal partial class ClientCore
 {
@@ -36,9 +36,8 @@ internal partial class ClientCore
             ResponseFormat = GeneratedImageFormat.Uri
         };
 
-        ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client.GetImageClient(this.ModelId).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
-        var generatedImage = response.Value;
+        ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client.GetImageClient(this.DeploymentOrModelName).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
 
-        return generatedImage.ImageUri?.ToString() ?? throw new KernelException("The generated image is not in url format");
+        return response.Value.ImageUri?.ToString() ?? throw new KernelException("The generated image is not in url format");
     }
 }
