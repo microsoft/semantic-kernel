@@ -143,8 +143,5 @@ public class KernelBuilderExtensionsTests
         // Act
         var service = sut.AddOpenAIFiles("key").Build()
             .GetRequiredService<OpenAIFileService>();
-
-        // Assert
-        Assert.NotNull(service);
     }
 }

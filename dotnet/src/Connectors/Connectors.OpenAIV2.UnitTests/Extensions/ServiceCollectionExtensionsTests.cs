@@ -145,8 +145,5 @@ public class ServiceCollectionExtensionsTests
         var service = sut.AddOpenAIFiles("key")
             .BuildServiceProvider()
             .GetRequiredService<OpenAIFileService>();
-
-        // Assert
-        Assert.NotNull(service);
     }
 }
