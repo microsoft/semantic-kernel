@@ -41,7 +41,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from tests.integration.completions.test_utils import retry
 
-mistral_ai_setup: bool
+mistral_ai_setup: bool = False
 try:
     if os.environ["MISTRALAI_API_KEY"] and os.environ["MISTRALAI_CHAT_MODEL_ID"]:
         mistral_ai_setup = True
