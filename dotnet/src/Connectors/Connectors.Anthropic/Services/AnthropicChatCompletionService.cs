@@ -32,7 +32,7 @@ public sealed class AnthropicChatCompletionService : IChatCompletionService
     public AnthropicChatCompletionService(
         string modelId,
         string apiKey,
-        AnthropicClientOptions? options = null,
+        ClientOptions? options = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -56,19 +56,21 @@ public sealed class AnthropicChatCompletionService : IChatCompletionService
     /// <param name="modelId">The model for the chat completion service.</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
-    /// <param name="options">Optional options for the anthropic client</param>
+    /// <param name="options">Options for the anthropic client</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Claude API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public AnthropicChatCompletionService(
         string modelId,
         Uri endpoint,
-        Func<HttpRequestMessage, ValueTask>? requestHandler,
-        AnthropicClientOptions? options = null,
+        Func<HttpRequestMessage, ValueTask> requestHandler,
+        ClientOptions options,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(endpoint);
+        Verify.NotNull(options);
+        Verify.NotNull(requestHandler);
 
         this._client = new AnthropicClient(
 #pragma warning disable CA2000

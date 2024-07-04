@@ -11,6 +11,9 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
 internal sealed class AnthropicRequest
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Version { get; set; }
+
     /// <summary>
     /// Input messages.<br/>
     /// Our models are trained to operate on alternating user and assistant conversational turns.

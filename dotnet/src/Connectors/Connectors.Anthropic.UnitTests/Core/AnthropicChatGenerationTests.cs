@@ -223,6 +223,28 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     }
 
     [Fact]
+    public async Task ShouldPassVersionToRequestBodyIfCustomHandlerUsedAsync()
+    {
+        // Arrange
+        var options = new AnthropicClientOptions();
+        var client = new AnthropicClient(
+            httpClient: this._httpClient,
+            modelId: "fake-model",
+            options: new AnthropicClientOptions(),
+            endpoint: new Uri("https://fake-uri.com"),
+            requestHandler: _ => ValueTask.CompletedTask);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        AnthropicRequest? request = Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.Equal(options.Version, request.Version);
+    }
+
+    [Fact]
     public async Task ShouldThrowArgumentExceptionIfChatHistoryIsEmptyAsync()
     {
         // Arrange
@@ -266,7 +288,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ItCreatesPostRequestWithValidUserAgentAsync()
+    public async Task ItCreatesRequestWithValidUserAgentAsync()
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
@@ -281,7 +303,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ItCreatesPostRequestWithSemanticKernelVersionHeaderAsync()
+    public async Task ItCreatesRequestWithSemanticKernelVersionHeaderAsync()
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
@@ -299,7 +321,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ItCreatesPostRequestWithValidAnthropicVersionAsync()
+    public async Task ItCreatesRequestWithValidAnthropicVersionAsync()
     {
         // Arrange
         var options = new AnthropicClientOptions();
@@ -315,7 +337,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ItCreatesPostRequestWithValidApiKeyAsync()
+    public async Task ItCreatesRequestWithValidApiKeyAsync()
     {
         // Arrange
         string apiKey = "fake-claude-key";
@@ -331,7 +353,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ItCreatesPostRequestWithJsonContentTypeAsync()
+    public async Task ItCreatesRequestWithJsonContentTypeAsync()
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
@@ -347,7 +369,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     }
 
     [Fact]
-    public async Task ItCreatesPostRequestWithCustomUriAndCustomHeadersAsync()
+    public async Task ItCreatesRequestWithCustomUriAndCustomHeadersAsync()
     {
         // Arrange
         Uri uri = new("https://fake-uri.com");
@@ -360,7 +382,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         var client = new AnthropicClient(
             httpClient: this._httpClient,
             modelId: "fake-model",
-            options: null,
+            options: new AnthropicClientOptions(),
             endpoint: uri,
             requestHandler: RequestHandler);
 

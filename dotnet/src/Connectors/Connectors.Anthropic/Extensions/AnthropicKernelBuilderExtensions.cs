@@ -30,7 +30,7 @@ public static class AnthropicKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
-        AnthropicClientOptions? options = null,
+        ClientOptions? options = null,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -55,7 +55,7 @@ public static class AnthropicKernelBuilderExtensions
     /// <param name="modelId">The model for chat completion.</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
-    /// <param name="options">Optional options for the anthropic client</param>
+    /// <param name="options">Options for the anthropic client</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
@@ -63,14 +63,16 @@ public static class AnthropicKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         Uri endpoint,
-        Func<HttpRequestMessage, ValueTask>? requestHandler,
-        AnthropicClientOptions? options = null,
+        Func<HttpRequestMessage, ValueTask> requestHandler,
+        ClientOptions options,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(modelId);
         Verify.NotNull(endpoint);
+        Verify.NotNull(options);
+        Verify.NotNull(requestHandler);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new AnthropicChatCompletionService(

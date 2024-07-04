@@ -14,10 +14,12 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Anthropic;
 
-public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : TestsBase(output)
+public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : TestBase(output)
 {
     [RetryTheory]
     [InlineData(ServiceType.Anthropic, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationReturnsValidResponseAsync(ServiceType serviceType)
     {
         // Arrange
@@ -40,6 +42,8 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
 
     [RetryTheory]
     [InlineData(ServiceType.Anthropic, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This test is for manual verification.")]
     public async Task ChatStreamingReturnsValidResponseAsync(ServiceType serviceType)
     {
         // Arrange
@@ -64,6 +68,8 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
 
     [RetryTheory]
     [InlineData(ServiceType.Anthropic, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationVisionBinaryDataAsync(ServiceType serviceType)
     {
         // Arrange
@@ -89,6 +95,8 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
 
     [RetryTheory]
     [InlineData(ServiceType.Anthropic, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This test is for manual verification.")]
     public async Task ChatStreamingVisionBinaryDataAsync(ServiceType serviceType)
     {
         // Arrange
@@ -116,6 +124,8 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
 
     [RetryTheory]
     [InlineData(ServiceType.Anthropic, Skip = "This test needs setup first.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test needs setup first.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This test needs setup first.")]
     public async Task ChatGenerationVisionUriAsync(ServiceType serviceType)
     {
         // Arrange
@@ -141,6 +151,8 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
 
     [RetryTheory]
     [InlineData(ServiceType.Anthropic, Skip = "This test needs setup first.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test needs setup first.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This test needs setup first.")]
     public async Task ChatStreamingVisionUriAsync(ServiceType serviceType)
     {
         // Arrange
@@ -168,6 +180,8 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
 
     [RetryTheory]
     [InlineData(ServiceType.Anthropic, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationReturnsUsedTokensAsync(ServiceType serviceType)
     {
         // Arrange
@@ -196,6 +210,8 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
 
     [RetryTheory]
     [InlineData(ServiceType.Anthropic, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This test is for manual verification.")]
     public async Task ChatStreamingReturnsUsedTokensAsync(ServiceType serviceType)
     {
         // Arrange
@@ -222,6 +238,8 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
 
     [RetryTheory]
     [InlineData(ServiceType.Anthropic, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationReturnsStopFinishReasonAsync(ServiceType serviceType)
     {
         // Arrange
@@ -244,6 +262,8 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
 
     [RetryTheory]
     [InlineData(ServiceType.Anthropic, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This test is for manual verification.")]
     public async Task ChatStreamingReturnsStopFinishReasonAsync(ServiceType serviceType)
     {
         // Arrange

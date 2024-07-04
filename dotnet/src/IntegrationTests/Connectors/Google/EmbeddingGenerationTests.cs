@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Google;
 
-public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBase(output)
+public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestBase(output)
 {
     [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]

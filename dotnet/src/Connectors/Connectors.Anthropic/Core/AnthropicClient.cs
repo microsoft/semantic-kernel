@@ -40,7 +40,7 @@ internal sealed class AnthropicClient
     private readonly string? _apiKey;
     private readonly Uri _endpoint;
     private readonly Func<HttpRequestMessage, ValueTask>? _customRequestHandler;
-    private readonly AnthropicClientOptions _options;
+    private readonly ClientOptions _options;
 
     private static readonly string s_namespace = typeof(AnthropicChatCompletionService).Namespace!;
 
@@ -88,7 +88,7 @@ internal sealed class AnthropicClient
         HttpClient httpClient,
         string modelId,
         string apiKey,
-        AnthropicClientOptions? options,
+        ClientOptions? options,
         ILogger? logger = null)
     {
         Verify.NotNull(httpClient);
@@ -116,20 +116,22 @@ internal sealed class AnthropicClient
         HttpClient httpClient,
         string modelId,
         Uri endpoint,
-        Func<HttpRequestMessage, ValueTask>? requestHandler,
-        AnthropicClientOptions? options,
+        Func<HttpRequestMessage, ValueTask> requestHandler,
+        ClientOptions options,
         ILogger? logger = null)
     {
         Verify.NotNull(httpClient);
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(endpoint);
+        Verify.NotNull(requestHandler);
+        Verify.NotNull(options);
 
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
         this._modelId = modelId;
         this._endpoint = endpoint;
         this._customRequestHandler = requestHandler;
-        this._options = options ?? new AnthropicClientOptions();
+        this._options = options;
     }
 
     /// <summary>
@@ -263,11 +265,17 @@ internal sealed class AnthropicClient
             JsonSerializer.Serialize(anthropicExecutionSettings));
 
         var filteredChatHistory = new ChatHistory(chatHistory.Where(IsAssistantOrUserOrSystem));
-        return new ChatCompletionState()
+        var anthropicRequest = AnthropicRequest.FromChatHistoryAndExecutionSettings(filteredChatHistory, anthropicExecutionSettings);
+        if (this._customRequestHandler != null)
+        {
+            anthropicRequest.Version = this._options.Version;
+        }
+
+        return new ChatCompletionState
         {
             ChatHistory = chatHistory,
             ExecutionSettings = anthropicExecutionSettings,
-            AnthropicRequest = AnthropicRequest.FromChatHistoryAndExecutionSettings(filteredChatHistory, anthropicExecutionSettings)
+            AnthropicRequest = anthropicRequest
         };
 
         static bool IsAssistantOrUserOrSystem(ChatMessageContent msg)
