@@ -5,7 +5,6 @@ import asyncio
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.mistral_ai import MistralAIChatCompletion
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.functions import KernelArguments
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -19,7 +18,7 @@ flowery prose.
 kernel = Kernel()
 
 service_id = "mistral-ai-chat"
-kernel.add_service(MistralAIChatCompletion(service_id=service_id, ai_model_id="mistral-small-latest"))
+kernel.add_service(MistralAIChatCompletion(service_id=service_id))
 
 settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 settings.max_tokens = 2000
@@ -54,10 +53,26 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.invoke(chat_function, KernelArguments(user_input=user_input, chat_history=chat_history))
+    stream = True
+    if stream:
+        answer = kernel.invoke_stream(
+            chat_function,
+            user_input=user_input,
+            chat_history=chat_history,
+        )
+        print("Mosscap:> ", end="")
+        async for message in answer:
+            print(str(message[0]), end="")
+        print("\n")
+        return True
+    answer = await kernel.invoke(
+        chat_function,
+        user_input=user_input,
+        chat_history=chat_history,
+    )
+    print(f"Mosscap:> {answer}")
     chat_history.add_user_message(user_input)
     chat_history.add_assistant_message(str(answer))
-    print(f"Mosscap:> {answer}")
     return True
 
 

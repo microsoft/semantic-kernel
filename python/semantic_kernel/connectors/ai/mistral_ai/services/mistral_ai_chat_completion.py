@@ -63,10 +63,10 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             service_id (str | None): Service ID tied to the execution settings.
             api_key (str | None): The optional API key to use. If provided will override,
                 the env vars or .env file value.
-            async_client (Optional[MistralAsyncClient]): An existing client to use. (Optional)
+            async_client (MistralAsyncClient | None) : An existing client to use. 
             env_file_path (str | None): Use the environment settings file as a fallback
-                to environment variables. (Optional)
-            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
+                to environment variables. 
+            env_file_encoding (str | None): The encoding of the environment settings file. 
         """
         try:
             mistralai_settings = MistralAISettings.create(
@@ -162,7 +162,6 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
                 self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
 
-    # endregion
     # region content conversion to SK
 
     def _create_chat_message_content(
@@ -200,6 +199,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
 
         if choice.delta.content is not None:
             items.append(StreamingTextContent(choice_index=choice.index, text=choice.delta.content))
+
         return StreamingChatMessageContent(
             choice_index=choice.index,
             inner_content=chunk,
@@ -222,6 +222,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
         # Check if usage exists and has a value, then add it to the metadata
         if hasattr(response, "usage") and response.usage is not None:
             metadata["usage"] = response.usage
+        
         return metadata
 
     def _get_metadata_from_chat_choice(
@@ -241,6 +242,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
         content = choice.message if isinstance(choice, ChatCompletionResponseChoice) else choice.delta
         if content.tool_calls is None:
             return []
+        
         return [
             FunctionCallContent(
                 id=tool.id,
