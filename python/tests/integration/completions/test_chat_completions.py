@@ -101,7 +101,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "azure": (AzureChatCompletion(), AzureChatPromptExecutionSettings),
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
         "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
-        "mistral_ai": (MistralAIChatCompletion(), MistralAIChatPromptExecutionSettings),
+        "mistral_ai": (MistralAIChatCompletion() if mistral_ai_setup else None, MistralAIChatPromptExecutionSettings),
     }
 
 
