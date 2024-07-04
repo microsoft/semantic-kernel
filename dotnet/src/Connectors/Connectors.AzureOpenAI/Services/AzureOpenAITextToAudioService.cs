@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -18,9 +20,14 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 {
     /// <summary>
-    /// Azure OpenAI text-to-audio client for HTTP operations.
+    /// Azure OpenAI text-to-audio client.
     /// </summary>
-    private readonly AzureOpenAITextToAudioClient _client;
+    private readonly ClientCore _client;
+
+    /// <summary>
+    /// Azure OpenAI model id.
+    /// </summary>
+    private readonly string? _modelId;
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
@@ -47,10 +54,19 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(deploymentName, endpoint, apiKey, modelId, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToAudioService)));
+        var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
-        this._client.AddAttribute(DeploymentNameKey, deploymentName);
+        var options = ClientCore.GetAzureOpenAIClientOptions(
+            httpClient,
+            AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
+
+        var azureOpenAIClient = new AzureOpenAIClient(new Uri(url), apiKey, options);
+
+        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToAudioService)));
+
         this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+
+        this._modelId = modelId;
     }
 
     /// <inheritdoc/>
@@ -59,5 +75,5 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetAudioContentsAsync(text, executionSettings, cancellationToken);
+        => this._client.GetAudioContentsAsync(text, executionSettings, this._modelId, cancellationToken);
 }

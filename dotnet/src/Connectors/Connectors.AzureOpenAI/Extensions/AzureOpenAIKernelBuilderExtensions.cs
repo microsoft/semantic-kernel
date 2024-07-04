@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToAudio;
 
 #pragma warning disable IDE0039 // Use local function
 
@@ -242,6 +243,47 @@ public static class AzureOpenAIKernelBuilderExtensions
                 modelId,
                 serviceProvider.GetService<ILoggerFactory>(),
                 dimensions));
+
+        return builder;
+    }
+
+    #endregion
+
+    #region Text-to-Audio
+
+    /// <summary>
+    /// Adds the Azure OpenAI text-to-audio service to the list.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="apiKey">Azure OpenAI API key</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0001")]
+    public static IKernelBuilder AddAzureOpenAITextToAudio(
+        this IKernelBuilder builder,
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        string? modelId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        builder.Services.AddKeyedSingleton<ITextToAudioService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToAudioService(
+                deploymentName,
+                endpoint,
+                apiKey,
+                modelId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
     }

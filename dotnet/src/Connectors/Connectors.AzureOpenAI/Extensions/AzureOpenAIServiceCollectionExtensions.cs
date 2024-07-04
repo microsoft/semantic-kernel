@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToAudio;
 
 #pragma warning disable IDE0039 // Use local function
 
@@ -230,6 +231,46 @@ public static class AzureOpenAIServiceCollectionExtensions
                 modelId,
                 serviceProvider.GetService<ILoggerFactory>(),
                 dimensions));
+    }
+
+    #endregion
+
+    #region Text-to-Audio
+
+    /// <summary>
+    /// Adds the Azure OpenAI text-to-audio service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="apiKey">Azure OpenAI API key</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0001")]
+    public static IServiceCollection AddAzureOpenAITextToAudio(
+        this IServiceCollection services,
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        string? modelId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        return services.AddKeyedSingleton<ITextToAudioService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToAudioService(
+                deploymentName,
+                endpoint,
+                apiKey,
+                modelId,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
     }
 
     #endregion
