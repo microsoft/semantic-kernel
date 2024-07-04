@@ -5,6 +5,8 @@ import logging
 import sys
 from typing import Any, TypeVar
 
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+
 if sys.version_info >= (3, 12):
     from typing import override
 else:
@@ -14,7 +16,6 @@ from azure.search.documents.aio import SearchClient
 
 from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
-from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -27,9 +28,10 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
     def __init__(
         self,
         search_client: SearchClient,
+        collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
-        kernel: Kernel | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
 
@@ -38,29 +40,25 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
                 await memory.<...>
 
         Args:
+            search_client (SearchClient): The search client for interacting with Azure AI Search.
+            collection_name (str): The name of the collection, optional.
             data_model_type (type[TModel]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
-            collection_name (str): The name of the collection, optional.
-            kernel: Kernel to use for embedding generation.
-            search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
-                (default: {None}).
-            api_key (str | None): Azure Cognitive Search API key (default: {None}).
-            azure_credentials (AzureKeyCredential | None): Azure Cognitive Search credentials (default: {None}).
-            token_credentials (TokenCredential | None): Azure Cognitive Search token credentials
-                (default: {None}).
-            search_index_client (SearchIndexClient | None): The search index client (default: {None}).
-            env_file_path (str | None): Use the environment settings file as a fallback
-                to environment variables
-            env_file_encoding (str | None): The encoding of the environment settings file
+            **kwargs: Additional keyword arguments.
+                kernel: Kernel to use for embedding generation.
 
         """
         super().__init__(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
-            collection_name=search_client._index_name,
-            kernel=kernel,
+            collection_name=collection_name,
+            kernel=kwargs.get("kernel", None),
         )
         self._search_client = search_client
+        if self._search_client._index_name != self.collection_name:
+            raise MemoryConnectorInitializationError(
+                f"Collection name '{collection_name}' does not match the index name '{self._search_client._index_name}'."
+            )
 
     async def close(self):
         """Async close connection, invoked by MemoryStoreBase.__aexit__()."""
@@ -70,23 +68,20 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
     async def _inner_upsert(
         self,
         records: list[Any],
-        collection_name: str | None = None,
         **kwargs: Any,
     ) -> list[str]:
         results = await self._search_client.merge_or_upload_documents(documents=records, **kwargs)
         return [result.key for result in results]  # type: ignore
 
     @override
-    async def _inner_get(
-        self, keys: list[str], collection_name: str | None = None, **kwargs: Any
-    ) -> list[dict[str, Any]]:
+    async def _inner_get(self, keys: list[str], **kwargs: Any) -> list[dict[str, Any]]:
         client = self._search_client
         return await asyncio.gather(
             *[client.get_document(key=key, selected_fields=kwargs.get("selected_fields", ["*"])) for key in keys]
         )
 
     @override
-    async def _inner_delete(self, keys: list[str], collection_name: str | None = None, **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: list[str], **kwargs: Any) -> None:
         await self._search_client.delete_documents(documents=[{self._key_field: key} for key in keys])
 
     @override
