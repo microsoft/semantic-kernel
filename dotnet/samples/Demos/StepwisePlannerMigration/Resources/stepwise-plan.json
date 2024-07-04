@@ -1,0 +1,125 @@
+[
+  {
+    "Role": { "Label": "system" },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "Original request: Check current UTC time and return current weather in Boston city.\n\nYou are in the process of helping the user fulfill this request using the following plan:\nPlan:\n\n1. Use the \u0026quot;TimePlugin-GetCurrentUtcTime\u0026quot; function to get the current UTC time.\n2. Use the \u0026quot;WeatherPlugin-GetWeatherForCity\u0026quot; function with the parameter \u0026quot;cityName\u0026quot; set to \u0026quot;Boston\u0026quot; to get the current weather in Boston.\n3. Combine the results from steps 1 and 2 into a single message.\n4. Use the \u0026quot;UserInteraction-SendFinalAnswer\u0026quot; function with the combined message from step 3 as the \u0026quot;answer\u0026quot; parameter to send the final answer to the user.\n\nThe user will ask you for help with each step."
+      }
+    ]
+  },
+  {
+    "Role": { "Label": "user" },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "Perform the next step of the plan if there is more work to do. When you have reached a final answer, use the UserInteraction-SendFinalAnswer function to communicate this back to the user."
+      }
+    ]
+  },
+  {
+    "Role": { "Label": "assistant" },
+    "Items": [
+      {
+        "$type": "FunctionCallContent",
+        "Id": "call_zk4X05l4IjZrtvG7SXwdgpu2",
+        "PluginName": "TimePlugin",
+        "FunctionName": "GetCurrentUtcTime",
+        "Arguments": {}
+      }
+    ],
+    "ModelId": "gpt-4",
+    "Metadata": {
+      "Id": "chatcmpl-9h4wSOujc7QxGOFQHdNiz24VQaVTn",
+      "Created": "2024-07-04T00:48:48+00:00",
+      "PromptFilterResults": [],
+      "SystemFingerprint": null,
+      "Usage": {
+        "CompletionTokens": 11,
+        "PromptTokens": 325,
+        "TotalTokens": 336
+      },
+      "ContentFilterResults": null,
+      "FinishReason": "tool_calls",
+      "FinishDetails": null,
+      "LogProbabilityInfo": null,
+      "Index": 0,
+      "Enhancements": null,
+      "ChatResponseMessage.FunctionToolCalls": [
+        {
+          "Name": "TimePlugin-GetCurrentUtcTime",
+          "Arguments": "{}",
+          "Id": "call_zk4X05l4IjZrtvG7SXwdgpu2"
+        }
+      ]
+    }
+  },
+  {
+    "Role": { "Label": "tool" },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "Thu, 04 Jul 2024 00:48:49 GMT",
+        "Metadata": { "ChatCompletionsToolCall.Id": "call_zk4X05l4IjZrtvG7SXwdgpu2" }
+      }
+    ],
+    "Metadata": { "ChatCompletionsToolCall.Id": "call_zk4X05l4IjZrtvG7SXwdgpu2" }
+  },
+  {
+    "Role": { "Label": "user" },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "Perform the next step of the plan if there is more work to do. When you have reached a final answer, use the UserInteraction-SendFinalAnswer function to communicate this back to the user."
+      }
+    ]
+  },
+  {
+    "Role": { "Label": "assistant" },
+    "Items": [
+      {
+        "$type": "FunctionCallContent",
+        "Id": "call_wpIUUK7UloW00NCMQCfspRcg",
+        "PluginName": "WeatherPlugin",
+        "FunctionName": "GetWeatherForCity",
+        "Arguments": { "cityName": "Boston" }
+      }
+    ],
+    "ModelId": "gpt-4",
+    "Metadata": {
+      "Id": "chatcmpl-9h4wTwSPTJ8CBmFuIB8X6kMjJXOvA",
+      "Created": "2024-07-04T00:48:49+00:00",
+      "PromptFilterResults": [],
+      "SystemFingerprint": null,
+      "Usage": {
+        "CompletionTokens": 22,
+        "PromptTokens": 407,
+        "TotalTokens": 429
+      },
+      "ContentFilterResults": null,
+      "FinishReason": "tool_calls",
+      "FinishDetails": null,
+      "LogProbabilityInfo": null,
+      "Index": 0,
+      "Enhancements": null,
+      "ChatResponseMessage.FunctionToolCalls": [
+        {
+          "Name": "WeatherPlugin-GetWeatherForCity",
+          "Arguments": "{\n  \u0022cityName\u0022: \u0022Boston\u0022\n}",
+          "Id": "call_wpIUUK7UloW00NCMQCfspRcg"
+        }
+      ]
+    }
+  },
+  {
+    "Role": { "Label": "tool" },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "61 and rainy",
+        "Metadata": { "ChatCompletionsToolCall.Id": "call_wpIUUK7UloW00NCMQCfspRcg" }
+      }
+    ],
+    "Metadata": { "ChatCompletionsToolCall.Id": "call_wpIUUK7UloW00NCMQCfspRcg" }
+  }
+]
