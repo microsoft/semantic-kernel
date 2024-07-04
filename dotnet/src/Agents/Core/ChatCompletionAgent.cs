@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -23,17 +24,12 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        IReadOnlyList<ChatMessageContent> history,
+        ChatHistory history,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
+        IChatCompletionService chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
 
-        ChatHistory chat = [];
-        if (!string.IsNullOrWhiteSpace(this.Instructions))
-        {
-            chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
-        }
-        chat.AddRange(history);
+        ChatHistory chat = this.SetupAgentChatHistory(history);
 
         int messageCount = chat.Count;
 
@@ -58,7 +54,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
             message.AuthorName = this.Name;
 
-            yield return message;
+            history.Add(message);
         }
 
         foreach (ChatMessageContent message in messages ?? [])
@@ -68,5 +64,63 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
             yield return message;
         }
+    }
+
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        ChatHistory history,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        IChatCompletionService chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
+
+        ChatHistory chat = this.SetupAgentChatHistory(history);
+
+        int messageCount = chat.Count;
+
+        this.Logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
+
+        IAsyncEnumerable<StreamingChatMessageContent> messages =
+            chatCompletionService.GetStreamingChatMessageContentsAsync(
+                chat,
+                this.ExecutionSettings,
+                this.Kernel,
+                cancellationToken);
+
+        if (this.Logger.IsEnabled(LogLevel.Information))
+        {
+            this.Logger.LogInformation("[{MethodName}] Invoked {ServiceType} with streaming messages.", nameof(InvokeAsync), chatCompletionService.GetType());
+        }
+
+        // Capture mutated messages related function calling / tools
+        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
+        {
+            ChatMessageContent message = chat[messageIndex];
+
+            message.AuthorName = this.Name;
+
+            history.Add(message);
+        }
+
+        await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
+        {
+            // TODO: MESSAGE SOURCE - ISSUE #5731
+            message.AuthorName = this.Name;
+
+            yield return message;
+        }
+    }
+
+    private ChatHistory SetupAgentChatHistory(IReadOnlyList<ChatMessageContent> history)
+    {
+        ChatHistory chat = [];
+
+        if (!string.IsNullOrWhiteSpace(this.Instructions))
+        {
+            chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
+        }
+
+        chat.AddRange(history);
+
+        return chat;
     }
 }
