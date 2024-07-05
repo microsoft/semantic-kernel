@@ -10,7 +10,6 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
 
-# Define the mock subclass for ChatHistoryKernelAgent
 class MockChatHistoryKernelAgent(ChatHistoryKernelAgent):
     async def invoke(self, history: list[ChatMessageContent]) -> AsyncIterable[ChatMessageContent]:
         for message in history:

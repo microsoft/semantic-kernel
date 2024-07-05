@@ -9,7 +9,6 @@ from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.agent_channel import AgentChannel
 
 
-# Mock subclass of Agent to implement the abstract methods for testing
 class MockAgent(Agent):
     def get_channel_keys(self) -> list[str]:
         return ["key1", "key2"]

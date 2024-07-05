@@ -57,12 +57,9 @@ async def test_invoke_tool_call_added():
     chat_completion_service = create_autospec(ChatCompletionClientBase)
     kernel.get_service.return_value = chat_completion_service
 
-    # Define the initial chat history
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
-    # Modify the mock to add new messages to the chat history
     async def mock_get_chat_message_contents(chat_history, settings, kernel, arguments):
-        # Simulate adding new messages to the chat history
         new_messages = [
             ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message 1"),
             ChatMessageContent(role=AuthorRole.TOOL, content="Processed Message 2"),
@@ -78,8 +75,7 @@ async def test_invoke_tool_call_added():
     assert messages[0].content == "Processed Message 1"
     assert messages[1].content == "Processed Message 2"
 
-    # Check that the new messages were added to history
-    assert len(history.messages) == 3  # Initial message + 2 new messages
+    assert len(history.messages) == 3
     assert history.messages[1].content == "Processed Message 1"
     assert history.messages[2].content == "Processed Message 2"
     assert history.messages[1].name == "Test Agent"
@@ -108,12 +104,9 @@ async def test_invoke_streaming():
     chat_completion_service = create_autospec(ChatCompletionClientBase)
     kernel.get_service.return_value = chat_completion_service
 
-    # Define the initial chat history
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
-    # Modify the mock to add new messages to the chat history
     async def mock_get_streaming_chat_message_contents(chat_history, settings, kernel, arguments):
-        # Simulate adding new messages to the chat history
         new_messages = [
             ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message 1"),
             ChatMessageContent(role=AuthorRole.TOOL, content="Processed Message 2"),

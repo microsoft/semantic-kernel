@@ -38,7 +38,7 @@ async def test_receive():
 @pytest.mark.asyncio
 async def test_invoke():
     mock_channel = AsyncMock(spec=MockAgentChannel)
-    agent = AsyncMock()  # Assuming Agent is another class you have
+    agent = AsyncMock()
 
     async def async_generator():
         yield ChatMessageContent(role=AuthorRole.SYSTEM, content="test message")
