@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
@@ -32,6 +33,12 @@ public class AutoFunctionInvocationContext
         this.Result = result;
         this.ChatHistory = chatHistory;
     }
+
+    /// <summary>
+    /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
+    /// The default is <see cref="CancellationToken.None"/>.
+    /// </summary>
+    public CancellationToken CancellationToken { get; init; }
 
     /// <summary>
     /// Gets the arguments associated with the operation.

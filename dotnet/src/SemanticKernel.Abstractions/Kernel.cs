@@ -260,7 +260,7 @@ public sealed class Kernel
             // M.E.DI doesn't support querying for a service without a key, and it also doesn't
             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
-            // mapping. We can query for that service and and then use it to try to get a service.
+            // mapping. We can query for that service and then use it to try to get a service.
             if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
             {
                 if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?>? keys))
@@ -310,9 +310,13 @@ public sealed class Kernel
         KernelFunction function,
         KernelArguments arguments,
         FunctionResult functionResult,
-        Func<FunctionInvocationContext, Task> functionCallback)
+        Func<FunctionInvocationContext, Task> functionCallback,
+        CancellationToken cancellationToken)
     {
-        FunctionInvocationContext context = new(this, function, arguments, functionResult);
+        FunctionInvocationContext context = new(this, function, arguments, functionResult)
+        {
+            CancellationToken = cancellationToken
+        };
 
         await InvokeFilterOrFunctionAsync(this._functionInvocationFilters, functionCallback, context).ConfigureAwait(false);
 
@@ -346,9 +350,13 @@ public sealed class Kernel
     internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,
-        Func<PromptRenderContext, Task> renderCallback)
+        Func<PromptRenderContext, Task> renderCallback,
+        CancellationToken cancellationToken)
     {
-        PromptRenderContext context = new(this, function, arguments);
+        PromptRenderContext context = new(this, function, arguments)
+        {
+            CancellationToken = cancellationToken
+        };
 
         await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);
 
