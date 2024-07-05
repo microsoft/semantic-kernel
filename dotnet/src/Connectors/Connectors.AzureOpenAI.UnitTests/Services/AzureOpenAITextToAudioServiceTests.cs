@@ -162,10 +162,10 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
 
         if (useHttpClientBaseAddress)
         {
-            this._httpClient.BaseAddress = new Uri("http://local-endpoint");
+            this._httpClient.BaseAddress = new Uri("http://local-endpoint/path");
         }
 
-        var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint/path", "api-key", "model-id", this._httpClient);
         await using var stream = new MemoryStream(expectedByteArray);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)

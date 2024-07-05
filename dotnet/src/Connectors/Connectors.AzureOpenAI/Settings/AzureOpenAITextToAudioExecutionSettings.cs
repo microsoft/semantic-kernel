@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// <summary>
 /// Execution settings for Azure OpenAI text-to-audio request.
 /// </summary>
-[Experimental("SKEXP0001")]
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAITextToAudioExecutionSettings : PromptExecutionSettings
 {
     /// <summary>

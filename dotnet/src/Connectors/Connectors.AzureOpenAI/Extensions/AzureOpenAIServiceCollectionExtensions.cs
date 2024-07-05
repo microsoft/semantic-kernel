@@ -249,7 +249,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0001")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToAudio(
         this IServiceCollection services,
         string deploymentName,
