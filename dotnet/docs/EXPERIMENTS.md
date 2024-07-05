@@ -26,57 +26,57 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 
 ## Experimental Features Tracking
 
-| SKEXP​ | Features​​ | API docs​​ | Learn docs​​ | Samples​​ | Issues​​ | Implementations​ |
-|-------|----------|----------|------------|---------|--------|-----------------|
-| SKEXP0001 | Embedding services | | | | | |
-| SKEXP0001 | Image services | | | | | |
-| SKEXP0001 | Memory connectors | | | | | |
-| SKEXP0001 | Kernel filters | [AutoFunctionInvocationContext Class](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel.autofunctioninvocationcontext?view=semantic-kernel-dotnet) <br> [IAutoFunctionInvocationFilter Interface](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel.iautofunctioninvocationfilter?view=semantic-kernel-dotnet) <br>[FunctionInvocationContext Class](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel.functioninvocationcontext?view=semantic-kernel-dotnet) <br>[IFunctionInvocationFilter Interface](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel.ifunctioninvocationfilter?view=semantic-kernel-dotnet) <br> [IPromptRenderFilter Interface](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel.ipromptrenderfilter?view=semantic-kernel-dotnet) <br> [PromptRenderContext Class](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel.promptrendercontext?view=semantic-kernel-dotnet) | | [Auto Function Invocation Filtering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/AutoFunctionInvocationFiltering.cs) <br> [Function Invocation Filtering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/FunctionInvocationFiltering.cs) <br> [Prompt Render Filtering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/PromptRenderFiltering.cs) <br> [FrugalGPT with Filters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Optimization/FrugalGPTWithFilters.cs) <br> [Plugin selection with Filters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Optimization/PluginSelectionWithFilters.cs) <br> [PII Detection](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/PIIDetection.cs) <br> [Retry with Filters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/RetryWithFilters.cs) <br> [Telemetry with Filters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/TelemetryWithFilters.cs) <br> [Semantic Caching with Filters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Caching/SemanticCachingWithFilters.cs) <br> [Azure AI Content Safety and Prompt Shields service](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/Demos/ContentSafety) <br> [Function Invocation Approval](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/Demos/FunctionInvocationApproval) <br> [Quality Check with Filters](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/Demos/QualityCheck) | | |
-| SKEXP0001 | Audio services | | | | | |
+| SKEXP​ | Features​​ |
+|-------|----------|
+| SKEXP0001 | Embedding services |
+| SKEXP0001 | Image services |
+| SKEXP0001 | Memory connectors |
+| SKEXP0001 | Kernel filters |
+| SKEXP0001 | Audio services |
 | | | | | | | |
-| SKEXP0010 | Azure OpenAI with your data service | | | | | |
-| SKEXP0010 | OpenAI embedding service | | | | | |
-| SKEXP0010 | OpenAI image service | | | | | |
-| SKEXP0010 | OpenAI parameters | | | | | |
-| SKEXP0010 | OpenAI chat history extension | | | | | |
-| SKEXP0010 | OpenAI file service | | | | | |
+| SKEXP0010 | Azure OpenAI with your data service |
+| SKEXP0010 | OpenAI embedding service |
+| SKEXP0010 | OpenAI image service |
+| SKEXP0010 | OpenAI parameters |
+| SKEXP0010 | OpenAI chat history extension |
+| SKEXP0010 | OpenAI file service |
 | | | | | | | |
-| SKEXP0020 | Azure AI Search memory connector | | | | | |
-| SKEXP0020 | Chroma memory connector | | | | | |
-| SKEXP0020 | DuckDB memory connector | | | | | |
-| SKEXP0020 | Kusto memory connector | | | | | |
-| SKEXP0020 | Milvus memory connector | | | | | |
-| SKEXP0020 | Qdrant memory connector | | | | | |
-| SKEXP0020 | Redis memory connector | | | | | |
-| SKEXP0020 | Sqlite memory connector | | | | | |
-| SKEXP0020 | Weaviate memory connector | | | | | |
-| SKEXP0020 | MongoDB memory connector | | | | | |
-| SKEXP0020 | Pinecone memory connector | | | | | |
-| SKEXP0020 | Postgres memory connector | | | | | |
+| SKEXP0020 | Azure AI Search memory connector |
+| SKEXP0020 | Chroma memory connector |
+| SKEXP0020 | DuckDB memory connector |
+| SKEXP0020 | Kusto memory connector |
+| SKEXP0020 | Milvus memory connector |
+| SKEXP0020 | Qdrant memory connector |
+| SKEXP0020 | Redis memory connector |
+| SKEXP0020 | Sqlite memory connector |
+| SKEXP0020 | Weaviate memory connector |
+| SKEXP0020 | MongoDB memory connector |
+| SKEXP0020 | Pinecone memory connector |
+| SKEXP0020 | Postgres memory connector |
 | | | | | | | |
-| SKEXP0040 | GRPC functions | | | | | |
-| SKEXP0040 | Markdown functions | | | | | |
-| SKEXP0040 | OpenAPI functions | | | | | |
-| SKEXP0040 | OpenAPI function extensions | | | | | |
-| SKEXP0040 | Prompty Format support | | | | | |
+| SKEXP0040 | GRPC functions |
+| SKEXP0040 | Markdown functions |
+| SKEXP0040 | OpenAPI functions |
+| SKEXP0040 | OpenAPI function extensions |
+| SKEXP0040 | Prompty Format support |
 | | | | | | | |
-| SKEXP0050 | Core plugins | | | | | |
-| SKEXP0050 | Document plugins | | | | | |
-| SKEXP0050 | Memory plugins | | | | | |
-| SKEXP0050 | Microsoft 365 plugins | | | | | |
-| SKEXP0050 | Web plugins | | | | | |
-| SKEXP0050 | Text chunker plugin | | | | | |
+| SKEXP0050 | Core plugins |
+| SKEXP0050 | Document plugins |
+| SKEXP0050 | Memory plugins |
+| SKEXP0050 | Microsoft 365 plugins |
+| SKEXP0050 | Web plugins |
+| SKEXP0050 | Text chunker plugin |
 | | | | | | | |
-| SKEXP0060 | Handlebars planner | | | | | |
-| SKEXP0060 | OpenAI Stepwise planner | | | | | |
+| SKEXP0060 | Handlebars planner |
+| SKEXP0060 | OpenAI Stepwise planner |
 | | | | | | | |
-| SKEXP0070 | Ollama AI connector | | | | | |
-| SKEXP0070 | Gemini AI connector | | | | | |
-| SKEXP0070 | Mistral AI connector | | | | | |
-| SKEXP0070 | ONNX AI connector | | | | | |
-| SKEXP0070 | Hugging Face AI connector | | | | | |
+| SKEXP0070 | Ollama AI connector |
+| SKEXP0070 | Gemini AI connector |
+| SKEXP0070 | Mistral AI connector |
+| SKEXP0070 | ONNX AI connector |
+| SKEXP0070 | Hugging Face AI connector |
 | | | | | | | |
-| SKEXP0101 | Experiment with Assistants | | | | | |
-| SKEXP0101 | Experiment with Flow Orchestration | | | | | |
+| SKEXP0101 | Experiment with Assistants |
+| SKEXP0101 | Experiment with Flow Orchestration |
 | | | | | | | |
-| SKEXP0110 | Agent Framework | | | | | |
+| SKEXP0110 | Agent Framework |
