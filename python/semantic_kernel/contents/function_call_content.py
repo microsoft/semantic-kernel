@@ -10,7 +10,7 @@ from typing_extensions import deprecated
 
 from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException, FunctionCallInvalidNameException
+from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 if TYPE_CHECKING:
@@ -29,7 +29,7 @@ class FunctionCallContent(KernelContent):
     tag: ClassVar[str] = FUNCTION_CALL_CONTENT_TAG
     id: str | None
     index: int | None = None
-    name: str
+    name: str | None = None
     function_name: str
     plugin_name: str | None = None
     arguments: str | dict[str, Any] | None = None
@@ -60,11 +60,7 @@ class FunctionCallContent(KernelContent):
         """
         if function_name and plugin_name and not name:
             name = f"{plugin_name}-{function_name}"
-        if not name:
-            raise FunctionCallInvalidNameException(
-                "Name is not set, should be supplied as name, or with both function_name and plugin_name."
-            )
-        if not function_name and not plugin_name:
+        if name and not function_name and not plugin_name:
             if "-" in name:
                 plugin_name, function_name = name.split("-", maxsplit=1)
             else:
@@ -74,7 +70,7 @@ class FunctionCallContent(KernelContent):
             index=index,
             name=name,
             arguments=arguments,
-            function_name=function_name,
+            function_name=function_name or "",
             plugin_name=plugin_name,
         )
 
