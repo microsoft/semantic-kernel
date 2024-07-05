@@ -27,7 +27,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     #region Chat Completion
 
     /// <summary>
-    /// Adds the Azure OpenAI chat completion service to the list.
+    /// Adds the <see cref="AzureOpenAIChatCompletionService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -67,7 +67,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds the Azure OpenAI chat completion service to the list.
+    /// Adds the <see cref="AzureOpenAIChatCompletionService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -107,7 +107,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds the Azure OpenAI chat completion service to the list.
+    /// Adds the <see cref="AzureOpenAIChatCompletionService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -139,7 +139,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     #region Text Embedding
 
     /// <summary>
-    /// Adds an Azure OpenAI text embeddings service to the list.
+    /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -177,7 +177,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI text embeddings service to the list.
+    /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -216,7 +216,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI text embeddings service to the list.
+    /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -252,7 +252,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     #region Images
 
     /// <summary>
-    /// Add the Azure OpenAI text-to-image service to the list.
+    /// Adds the <see cref="AzureOpenAITextToImageService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -290,7 +290,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Add the Azure OpenAI text-to-image service to the list.
+    /// Adds the <see cref="AzureOpenAITextToImageService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -330,7 +330,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Add the Azure OpenAI text-to-image service to the list.
+    /// Adds the <see cref="AzureOpenAITextToImageService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>

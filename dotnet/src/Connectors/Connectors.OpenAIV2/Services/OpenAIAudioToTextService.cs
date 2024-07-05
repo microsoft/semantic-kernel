@@ -33,7 +33,7 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
     public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
 
     /// <summary>
-    /// Creates an instance of the <see cref="OpenAIAudioToTextService"/> with API key auth.
+    /// Initializes a new instance of the <see cref="OpenAIAudioToTextService"/> class.
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
@@ -54,7 +54,7 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
     }
 
     /// <summary>
-    /// Creates an instance of the <see cref="OpenAIAudioToTextService"/> with API key auth.
+    /// Initializes a new instance of the <see cref="OpenAIAudioToTextService"/> class.
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>

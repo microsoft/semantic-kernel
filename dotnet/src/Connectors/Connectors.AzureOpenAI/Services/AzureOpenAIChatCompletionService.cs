@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
-using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -23,7 +22,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     private readonly ClientCore _core;
 
     /// <summary>
-    /// Create an instance of the <see cref="AzureOpenAIChatCompletionService"/> connector with API key auth.
+    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -45,7 +44,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     }
 
     /// <summary>
-    /// Create an instance of the <see cref="AzureOpenAIChatCompletionService"/> connector with AAD auth.
+    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -66,7 +65,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAIChatCompletionService"/> client instance using the specified <see cref="OpenAIClient"/>.
+    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="azureOpenAIClient">Custom <see cref="AzureOpenAIClient"/>.</param>
