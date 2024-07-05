@@ -24,7 +24,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     private readonly int? _dimensions;
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client instance using API Key auth.
+    /// Initializes a new instance of the <see cref="AzureOpenAITextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -50,7 +50,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client instance supporting AAD auth.
+    /// Initializes a new instance of the <see cref="AzureOpenAITextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -76,7 +76,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client.
+    /// Initializes a new instance of the <see cref="AzureOpenAITextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="azureOpenAIClient">Custom <see cref="AzureOpenAIClient"/> for HTTP requests.</param>
