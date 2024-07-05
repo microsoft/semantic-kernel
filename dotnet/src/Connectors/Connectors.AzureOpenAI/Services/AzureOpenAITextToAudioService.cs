@@ -38,7 +38,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     public static string DeploymentNameKey => "DeploymentName";
 
     /// <summary>
-    /// Creates an instance of the <see cref="AzureOpenAITextToAudioService"/> connector with API key auth.
+    /// Initializes a new instance of the <see cref="AzureOpenAITextToAudioService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>

@@ -252,7 +252,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     #region Text-to-Audio
 
     /// <summary>
-    /// Adds the Azure OpenAI text-to-audio service to the list.
+    /// Adds the <see cref="AzureOpenAITextToAudioService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>

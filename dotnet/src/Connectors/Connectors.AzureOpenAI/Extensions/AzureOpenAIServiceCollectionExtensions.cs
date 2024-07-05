@@ -238,7 +238,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     #region Text-to-Audio
 
     /// <summary>
-    /// Adds the Azure OpenAI text-to-audio service to the list.
+    /// Adds the <see cref="AzureOpenAITextToAudioService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
