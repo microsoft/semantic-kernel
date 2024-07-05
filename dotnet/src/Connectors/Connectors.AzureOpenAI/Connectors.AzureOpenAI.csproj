@@ -22,7 +22,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Core\ClientCore.AudioToText.cs" />
     <Compile Remove="Core\ClientCore.TextToAudio.cs" />
+    <Compile Remove="Services\AzureOpenAIAudioToTextService.cs" />
     <Compile Remove="Services\AzureOpenAITextToAudioService.cs" />
   </ItemGroup>
 
@@ -31,7 +33,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Core\ClientCore.AudioToText.cs" />
     <None Include="Core\ClientCore.TextToAudio.cs" />
+    <None Include="Services\AzureOpenAIAudioToTextService.cs" />
     <None Include="Services\AzureOpenAITextToAudioService.cs" />
   </ItemGroup>
 
