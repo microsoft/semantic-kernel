@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// Options when creating a <see cref="VolatileVectorRecordStore{TRecord}"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
-public class VolatileVectorRecordStoreOptions
+public sealed class VolatileVectorRecordStoreOptions
 {
     /// <summary>
     /// Gets or sets the default collection name to use.

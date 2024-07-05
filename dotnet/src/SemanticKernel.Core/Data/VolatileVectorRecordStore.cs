@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 [Experimental("SKEXP0001")]
-public class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<string, TRecord>
+public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<string, TRecord>
     where TRecord : class
 {
     /// <summary>Internal storage for the record store.</summary>
