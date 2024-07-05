@@ -148,6 +148,7 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of auto function invocation filters available through the kernel.
     /// </summary>
+    [Experimental("SKEXP0001")]
     public IList<IAutoFunctionInvocationFilter> AutoFunctionInvocationFilters =>
         this._autoFunctionInvocationFilters ??
         Interlocked.CompareExchange(ref this._autoFunctionInvocationFilters, [], null) ??
