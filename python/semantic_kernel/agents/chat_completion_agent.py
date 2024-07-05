@@ -1,0 +1,170 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import logging
+import sys
+from collections.abc import AsyncGenerator, AsyncIterable
+from typing import TYPE_CHECKING, Any, cast
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override  # pragma: no cover
+
+from pydantic import Field
+
+from semantic_kernel.agents.chat_history_kernel_agent import ChatHistoryKernelAgent
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import DEFAULT_SERVICE_NAME
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions import KernelServiceNotFoundError
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.utils.experimental_decorator import experimental_class
+
+if TYPE_CHECKING:
+    from semantic_kernel.kernel import Kernel
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+
+@experimental_class
+class ChatCompletionAgent(ChatHistoryKernelAgent):
+    service_id: str | None = Field(default=DEFAULT_SERVICE_NAME)
+    execution_settings: PromptExecutionSettings | None = None
+
+    def __init__(
+        self,
+        service_id: str | None = None,
+        name: str | None = None,
+        id: str | None = None,
+        description: str | None = None,
+        instructions: str | None = None,
+        execution_settings: PromptExecutionSettings | None = None,
+    ):
+        """Initialize a new instance of ChatCompletionAgent."""
+        super().__init__(name=name, instructions=instructions, id=id, description=description)
+        self.service_id = service_id
+        self.execution_settings = execution_settings
+
+    @override
+    async def invoke(self, kernel: "Kernel", history: ChatHistory) -> AsyncIterable[ChatMessageContent]:  # type: ignore
+        """Invoke the chat history handler."""
+        # Get the chat completion service
+        service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+
+        if not service:
+            raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
+
+        # Cast the service to the expected type - satisfy type checking
+        chat_completion_service = cast(ChatCompletionClientBase, service)
+
+        # To satisfy typechecker
+        if self.service_id is None:
+            self.service_id = DEFAULT_SERVICE_NAME  # pragma: no cover
+
+        settings = (
+            self.execution_settings
+            or kernel.get_prompt_execution_settings_from_service_id(self.service_id)
+            or chat_completion_service.instantiate_prompt_execution_settings(
+                service_id=self.service_id, extension_data={"ai_model_id": chat_completion_service.ai_model_id}
+            )
+        )
+
+        chat = self._setup_agent_chat_history(history)
+
+        message_count = len(chat)
+
+        logger.debug(f"[{type(self).__name__}] Invoking {type(chat_completion_service).__name__}.")
+
+        messages = await chat_completion_service.get_chat_message_contents(
+            chat_history=chat,
+            settings=settings,
+            kernel=kernel,
+            arguments=KernelArguments(),
+        )
+
+        logger.info(
+            f"[{type(self).__name__}] Invoked {type(chat_completion_service).__name__} "
+            f"with message count: {message_count}."
+        )
+
+        # Capture mutated messages related function calling / tools
+        for message_index in range(message_count, len(chat)):
+            message = chat[message_index]
+            message.name = self.name
+            history.add_message(message)
+
+        for message in messages:
+            message.name = self.name
+            yield message
+
+    @override
+    async def invoke_streaming(  # type: ignore
+        self, kernel: "Kernel", history: ChatHistory
+    ) -> AsyncGenerator[StreamingChatMessageContent, None]:
+        """Invoke the chat history handler in streaming mode."""
+        # Get the chat completion service
+        service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+
+        if not service:
+            raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
+
+        # Cast the service to the expected type
+        chat_completion_service = cast(ChatCompletionClientBase, service)
+
+        # To satisfy typechecker
+        if self.service_id is None:
+            self.service_id = DEFAULT_SERVICE_NAME  # pragma: no cover
+
+        settings = (
+            self.execution_settings
+            or kernel.get_prompt_execution_settings_from_service_id(self.service_id)
+            or chat_completion_service.instantiate_prompt_execution_settings(
+                service_id=self.service_id, extension_data={"ai_model_id": chat_completion_service.ai_model_id}
+            )
+        )
+
+        chat = self._setup_agent_chat_history(history)
+
+        message_count = len(chat)
+
+        logger.debug(f"[{type(self).__name__}] Invoking {type(chat_completion_service).__name__}.")
+
+        messages: AsyncGenerator[list[StreamingChatMessageContent], Any] = (
+            chat_completion_service.get_streaming_chat_message_contents(
+                chat_history=chat,
+                settings=settings,
+                kernel=kernel,
+                arguments=KernelArguments(),
+            )
+        )
+
+        logger.info(
+            f"[{type(self).__name__}] Invoked {type(chat_completion_service).__name__} "
+            f"with message count: {message_count}."
+        )
+
+        # Capture mutated messages related function calling / tools
+        for message_index in range(message_count, len(chat)):
+            message = chat[message_index]
+            message.name = self.name
+            history.add_message(message)
+
+        async for message_list in messages:
+            for message in message_list:
+                message.name = self.name
+                yield message
+
+    def _setup_agent_chat_history(self, history: ChatHistory) -> ChatHistory:
+        """Setup the agent chat history."""
+        chat = []
+
+        if self.instructions is not None:
+            chat.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=self.instructions, name=self.name))
+
+        chat.extend(history.messages if history.messages else [])
+
+        return ChatHistory(messages=chat)
