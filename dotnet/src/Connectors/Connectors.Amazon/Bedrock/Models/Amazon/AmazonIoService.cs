@@ -20,7 +20,7 @@ public class AmazonIoService : IBedrockModelIoService<IChatCompletionRequest, IC
 {
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {
-        double? temperature = .7;
+        double? temperature = 0.7;
         double? topP = 0.9;
         int? maxTokenCount = 512;
         List<string>? stopSequences = [];
@@ -50,18 +50,29 @@ public class AmazonIoService : IBedrockModelIoService<IChatCompletionRequest, IC
                 stopSequences
             }
         };
-        // var requestBody = new TitanRequest.TitanTextGenerationRequest
-        // {
-        //     InputText = prompt,
-        //     TextGenerationConfig = new TitanRequest.AmazonTitanTextGenerationConfig
-        //     {
-        //         Temperature = temperature,
-        //         TopP = topP,
-        //         MaxTokenCount = maxTokenCount,
-        //         StopSequences = stopSequences
-        //     }
-        // };
         return requestBody;
+    }
+
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    {
+        using (var memoryStream = new MemoryStream())
+        {
+            response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
+            memoryStream.Position = 0;
+            using (var reader = new StreamReader(memoryStream))
+            {
+                var responseBody = JsonSerializer.Deserialize<TitanTextResponse>(reader.ReadToEnd());
+                var textContents = new List<TextContent>();
+
+                if (responseBody?.Results != null && responseBody.Results.Count > 0)
+                {
+                    string outputText = responseBody.Results[0].OutputText;
+                    textContents.Add(new TextContent(outputText));
+                }
+
+                return textContents;
+            }
+        }
     }
 
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory)

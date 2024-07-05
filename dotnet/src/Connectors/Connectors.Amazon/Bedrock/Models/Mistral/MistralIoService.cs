@@ -17,6 +17,10 @@ public class MistralIoService : IBedrockModelIoService<IChatCompletionRequest, I
         throw new NotImplementedException();
     }
 
+    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    {
+        throw new NotImplementedException();
+    }
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory)
     {
         throw new NotImplementedException();
