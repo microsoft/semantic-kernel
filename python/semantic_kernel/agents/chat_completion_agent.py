@@ -32,6 +32,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class ChatCompletionAgent(ChatHistoryKernelAgent):
+    """A KernelAgent specialization based on ChatCompletionClientBase.
+
+    Note: enable `function_choice_behavior` on the PromptExecutionSettings to enable function
+    choice behavior which allows the kernel to utilize plugins and functions registered in
+    the kernel.
+    """
+
     service_id: str | None = Field(default=DEFAULT_SERVICE_NAME)
     execution_settings: PromptExecutionSettings | None = None
 
@@ -43,15 +50,34 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
         description: str | None = None,
         instructions: str | None = None,
         execution_settings: PromptExecutionSettings | None = None,
-    ):
-        """Initialize a new instance of ChatCompletionAgent."""
+    ) -> None:
+        """Initialize a new instance of ChatCompletionAgent.
+
+        Args:
+            service_id: The service id for the chat completion service. (optional) If not provided,
+                the default service name `default` will be used.
+            name: The name of the agent. (optional)
+            id: The unique identifier for the agent. (optional) If not provided,
+                a unique GUID will be generated.
+            description: The description of the agent. (optional)
+            instructions: The instructions for the agent. (optional)
+            execution_settings: The execution settings for the agent. (optional)
+        """
         super().__init__(name=name, instructions=instructions, id=id, description=description)
         self.service_id = service_id
         self.execution_settings = execution_settings
 
     @override
     async def invoke(self, kernel: "Kernel", history: ChatHistory) -> AsyncIterable[ChatMessageContent]:  # type: ignore
-        """Invoke the chat history handler."""
+        """Invoke the chat history handler.
+
+        Args:
+            kernel: The kernel instance.
+            history: The chat history.
+
+        Returns:
+            An async iterable of ChatMessageContent.
+        """
         # Get the chat completion service
         service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
 
@@ -105,7 +131,15 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
     async def invoke_streaming(  # type: ignore
         self, kernel: "Kernel", history: ChatHistory
     ) -> AsyncGenerator[StreamingChatMessageContent, None]:
-        """Invoke the chat history handler in streaming mode."""
+        """Invoke the chat history handler in streaming mode.
+
+        Args:
+            kernel: The kernel instance.
+            history: The chat history.
+
+        Returns:
+            An async generator of StreamingChatMessageContent.
+        """
         # Get the chat completion service
         service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
 

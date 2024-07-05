@@ -12,12 +12,20 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class ChatHistoryHandler(ABC, KernelBaseModel):
+    """Contract for an agent that utilizes a ChatHistoryChannel."""
+
     @abstractmethod
     async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
-        """Invoke the chat history handler."""
+        """Invoke the chat history handler.
+
+        Entry point for calling into an agent from a ChatHistoryChannel
+        """
         ...
 
     @abstractmethod
     async def invoke_streaming(self, history: ChatHistory) -> AsyncIterable[StreamingChatMessageContent]:
-        """Invoke the chat history handler in streaming mode."""
+        """Invoke the chat history handler in streaming mode.
+
+        Entry point for calling into an agent from a ChatHistoryChannel for streaming content.
+        """
         ...

@@ -15,12 +15,23 @@ if TYPE_CHECKING:
 
 @experimental_class
 class AgentChannel(ABC, BaseModel):
+    """Defines the communication protocol for a particular Agent type.
+
+    An agent provides it own AgentChannel via CreateChannel.
+    """
+
     @abstractmethod
     async def receive(
         self,
         history: list[ChatMessageContent],
     ) -> None:
-        """Receive the conversation messages."""
+        """Receive the conversation messages.
+
+        Used when joining a conversation and also during each agent interaction.
+
+        Args:
+            history: The history of messages in the conversation.
+        """
         pass
 
     @abstractmethod
@@ -28,12 +39,23 @@ class AgentChannel(ABC, BaseModel):
         self,
         agent: "Agent",
     ) -> AsyncIterable[ChatMessageContent]:
-        """Perform a discrete incremental interaction between a single Agent and AgentChat."""
+        """Perform a discrete incremental interaction between a single Agent and AgentChat.
+
+        Args:
+            agent: The agent to interact with.
+
+        Returns:
+            An async iterable of ChatMessageContent.
+        """
         pass
 
     @abstractmethod
     async def get_history(
         self,
     ) -> AsyncIterable[ChatMessageContent]:
-        """Retrieve the message history specific to this channel."""
+        """Retrieve the message history specific to this channel.
+
+        Returns:
+            An async iterable of ChatMessageContent.
+        """
         pass

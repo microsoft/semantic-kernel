@@ -16,6 +16,7 @@ The getting started with agents examples include:
 Example|Description
 ---|---
 [step1_agent](../agents/step1_agent.py)|How to create and use an agent.
+[step2_plugins](../agents/step2_plugins.py)|How to associate plugins with an agent.
 
 ## Configuring the Kernel
 

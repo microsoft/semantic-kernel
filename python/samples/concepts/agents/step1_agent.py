@@ -15,7 +15,7 @@ from semantic_kernel.kernel import Kernel
 ###################################################################
 
 # To toggle streaming or non-streaming mode, change the following boolean
-streaming = False
+streaming = True
 
 # Define the agent name and instructions
 PARROT_NAME = "Parrot"
