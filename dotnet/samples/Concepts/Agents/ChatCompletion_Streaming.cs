@@ -1,21 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace GettingStarted;
+namespace Agents;
 
 /// <summary>
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
-public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
+public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ParrotName = "Parrot";
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
     [Fact]
-    public async Task UseSingleChatCompletionAgentAsync()
+    public async Task UseStreamingChatCompletionAgentAsync()
     {
         // Define the agent
         ChatCompletionAgent agent =
@@ -26,7 +27,6 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
-        /// Create a chat for agent interaction. For more, <see cref="Step3_Chat"/>.
         ChatHistory chat = [];
 
         // Respond to user input
@@ -41,9 +41,28 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (ChatMessageContent content in agent.InvokeAsync(chat))
+            StringBuilder builder = new();
+            await foreach (StreamingChatMessageContent message in agent.InvokeStreamingAsync(chat))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                if (string.IsNullOrEmpty(message.Content))
+                {
+                    continue;
+                }
+
+                if (builder.Length == 0)
+                {
+                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}:");
+                }
+
+                Console.WriteLine($"\t > streamed: '{message.Content}'");
+                builder.Append(message.Content);
+            }
+
+            if (builder.Length > 0)
+            {
+                // Display full response and capture in chat history
+                Console.WriteLine($"\t > complete: '{builder}'");
+                chat.Add(new ChatMessageContent(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name });
             }
         }
     }
