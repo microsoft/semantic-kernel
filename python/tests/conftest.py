@@ -250,8 +250,8 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 
 
 @pytest.fixture()
-def google_palm_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
-    """Fixture to set environment variables for Google Palm."""
+def mistralai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for MistralAISettings."""
     if exclude_list is None:
         exclude_list = []
 
@@ -259,10 +259,8 @@ def google_palm_unit_test_env(monkeypatch, exclude_list, override_env_param_dict
         override_env_param_dict = {}
 
     env_vars = {
-        "GOOGLE_PALM_API_KEY": "test_api_key",
-        "OPENAI_CHAT_MODEL_ID": "test_chat_model_id",
-        "OPENAI_TEXT_MODEL_ID": "test_text_model_id",
-        "OPENAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
+        "MISTRALAI_CHAT_MODEL_ID": "test_chat_model_id",
+        "MISTRALAI_API_KEY": "test_api_key"
     }
 
     env_vars.update(override_env_param_dict)
