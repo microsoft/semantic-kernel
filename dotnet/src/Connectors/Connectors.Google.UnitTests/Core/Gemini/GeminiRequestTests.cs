@@ -15,7 +15,7 @@ namespace SemanticKernel.Connectors.Google.UnitTests.Core.Gemini;
 public sealed class GeminiRequestTests
 {
     [Fact]
-    public void FromPromptItReturnsGeminiRequestWithConfiguration()
+    public void FromPromptItReturnsWithConfiguration()
     {
         // Arrange
         var prompt = "prompt-example";
@@ -37,7 +37,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromPromptItReturnsGeminiRequestWithSafetySettings()
+    public void FromPromptItReturnsWithSafetySettings()
     {
         // Arrange
         var prompt = "prompt-example";
@@ -59,7 +59,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromPromptItReturnsGeminiRequestWithPrompt()
+    public void FromPromptItReturnsWithPrompt()
     {
         // Arrange
         var prompt = "prompt-example";
@@ -73,7 +73,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromChatHistoryItReturnsGeminiRequestWithConfiguration()
+    public void FromChatHistoryItReturnsWithConfiguration()
     {
         // Arrange
         ChatHistory chatHistory = [];
@@ -98,7 +98,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromChatHistoryItReturnsGeminiRequestWithSafetySettings()
+    public void FromChatHistoryItReturnsWithSafetySettings()
     {
         // Arrange
         ChatHistory chatHistory = [];
@@ -123,10 +123,11 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void FromChatHistoryItReturnsGeminiRequestWithChatHistory()
+    public void FromChatHistoryItReturnsWithChatHistory()
     {
         // Arrange
-        ChatHistory chatHistory = [];
+        string systemMessage = "system-message";
+        var chatHistory = new ChatHistory(systemMessage);
         chatHistory.AddUserMessage("user-message");
         chatHistory.AddAssistantMessage("assist-message");
         chatHistory.AddUserMessage("user-message2");
@@ -136,18 +137,41 @@ public sealed class GeminiRequestTests
         var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
 
         // Assert
+        Assert.NotNull(request.SystemInstruction?.Parts);
+        Assert.Single(request.SystemInstruction.Parts);
+        Assert.Equal(request.SystemInstruction.Parts[0].Text, systemMessage);
         Assert.Collection(request.Contents,
-            c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
             c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
-            c => Assert.Equal(chatHistory[2].Content, c.Parts![0].Text));
+            c => Assert.Equal(chatHistory[2].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[3].Content, c.Parts![0].Text));
         Assert.Collection(request.Contents,
-            c => Assert.Equal(chatHistory[0].Role, c.Role),
             c => Assert.Equal(chatHistory[1].Role, c.Role),
-            c => Assert.Equal(chatHistory[2].Role, c.Role));
+            c => Assert.Equal(chatHistory[2].Role, c.Role),
+            c => Assert.Equal(chatHistory[3].Role, c.Role));
     }
 
     [Fact]
-    public void FromChatHistoryTextAsTextContentItReturnsGeminiRequestWithChatHistory()
+    public void FromChatHistoryMultipleSystemMessagesItReturnsWithSystemMessages()
+    {
+        // Arrange
+        string[] systemMessages = ["system-message", "system-message2", "system-message3", "system-message4"];
+        var chatHistory = new ChatHistory(systemMessages[0]);
+        chatHistory.AddUserMessage("user-message");
+        chatHistory.AddSystemMessage(systemMessages[1]);
+        chatHistory.AddMessage(AuthorRole.System,
+            [new TextContent(systemMessages[2]), new TextContent(systemMessages[3])]);
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.SystemInstruction?.Parts);
+        Assert.All(systemMessages, msg => Assert.Contains(request.SystemInstruction.Parts, p => p.Text == msg));
+    }
+
+    [Fact]
+    public void FromChatHistoryTextAsTextContentItReturnsWithChatHistory()
     {
         // Arrange
         ChatHistory chatHistory = [];
@@ -163,11 +187,11 @@ public sealed class GeminiRequestTests
         Assert.Collection(request.Contents,
             c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
             c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
-            c => Assert.Equal(chatHistory[2].Items!.Cast<TextContent>().Single().Text, c.Parts![0].Text));
+            c => Assert.Equal(chatHistory[2].Items.Cast<TextContent>().Single().Text, c.Parts![0].Text));
     }
 
     [Fact]
-    public void FromChatHistoryImageAsImageContentItReturnsGeminiRequestWithChatHistory()
+    public void FromChatHistoryImageAsImageContentItReturnsWithChatHistory()
     {
         // Arrange
         ReadOnlyMemory<byte> imageAsBytes = new byte[] { 0x00, 0x01, 0x02, 0x03 };
@@ -187,7 +211,7 @@ public sealed class GeminiRequestTests
         Assert.Collection(request.Contents,
             c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
             c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
-            c => Assert.Equal(chatHistory[2].Items!.Cast<ImageContent>().Single().Uri,
+            c => Assert.Equal(chatHistory[2].Items.Cast<ImageContent>().Single().Uri,
                 c.Parts![0].FileData!.FileUri),
             c => Assert.True(imageAsBytes.ToArray()
                 .SequenceEqual(Convert.FromBase64String(c.Parts![0].InlineData!.InlineData))));
@@ -272,7 +296,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void AddFunctionItAddsFunctionToGeminiRequest()
+    public void AddFunctionToGeminiRequest()
     {
         // Arrange
         var request = new GeminiRequest();
@@ -287,7 +311,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void AddMultipleFunctionsItAddsFunctionsToGeminiRequest()
+    public void AddMultipleFunctionsToGeminiRequest()
     {
         // Arrange
         var request = new GeminiRequest();
@@ -308,7 +332,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void AddChatMessageToRequestItAddsChatMessageToGeminiRequest()
+    public void AddChatMessageToRequest()
     {
         // Arrange
         ChatHistory chat = [];
