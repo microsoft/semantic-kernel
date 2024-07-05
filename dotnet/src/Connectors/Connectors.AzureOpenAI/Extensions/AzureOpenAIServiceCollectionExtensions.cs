@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToImage;
 
 #pragma warning disable IDE0039 // Use local function
 
@@ -230,6 +231,109 @@ public static class AzureOpenAIServiceCollectionExtensions
                 modelId,
                 serviceProvider.GetService<ILoggerFactory>(),
                 dimensions));
+    }
+
+    #endregion
+
+    #region Images
+
+    /// <summary>
+    /// Add the Azure OpenAI text-to-image service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="apiVersion">Azure OpenAI API version</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAITextToImage(
+        this IServiceCollection services,
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        string? modelId = null,
+        string? serviceId = null,
+        string? apiVersion = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNull(credentials);
+
+        return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
+                deploymentName,
+                endpoint,
+                credentials,
+                modelId,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>(),
+                apiVersion));
+    }
+
+    /// <summary>
+    /// Add the Azure OpenAI text-to-image service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the text to image operation result.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAITextToImage(
+        this IServiceCollection services,
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        string? modelId = null,
+        int maxRetryCount = 5)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
+                deploymentName,
+                endpoint,
+                apiKey,
+                modelId,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
+    }
+
+    /// <summary>
+    /// Add the Azure OpenAI text-to-image service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAITextToImage(
+        this IServiceCollection services,
+        string deploymentName,
+        AzureOpenAIClient? openAIClient = null,
+        string? modelId = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+
+        return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextToImageService(
+                deploymentName,
+                openAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
+                modelId,
+                serviceProvider.GetService<ILoggerFactory>()));
     }
 
     #endregion
