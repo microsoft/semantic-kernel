@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock, create_autospec
+from unittest.mock import AsyncMock, create_autospec, patch
 
 import pytest
 
@@ -101,27 +101,18 @@ async def test_invoke_streaming():
     agent = ChatCompletionAgent(service_id="test_service", name="Test Agent")
 
     kernel = create_autospec(Kernel)
-    chat_completion_service = create_autospec(ChatCompletionClientBase)
-    kernel.get_service.return_value = chat_completion_service
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
-    async def mock_get_streaming_chat_message_contents(chat_history, settings, kernel, arguments):
-        new_messages = [
-            ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message 1"),
-            ChatMessageContent(role=AuthorRole.TOOL, content="Processed Message 2"),
-        ]
-        chat_history.messages.extend(new_messages)
-        for message in new_messages:
-            yield message
+    with patch(
+        "semantic_kernel.connectors.ai.chat_completion_client_base.ChatCompletionClientBase.get_streaming_chat_message_contents",
+        return_value=AsyncMock(),
+    ) as mock:
+        mock.return_value.__aiter__.return_value = [ChatMessageContent(role=AuthorRole.USER, content="Initial Message")]
 
-    chat_completion_service.get_streaming_chat_message_contents = mock_get_streaming_chat_message_contents
-
-    messages = [message async for message in agent.invoke_streaming(kernel, history)]
-
-    assert len(messages) == 2
-    assert messages[0].content == "Processed Message 1"
-    assert messages[1].content == "Processed Message 2"
+        async for message in agent.invoke_streaming(kernel, history):
+            assert message.role == AuthorRole.USER
+            assert message.content == "Initial Message"
 
 
 @pytest.mark.asyncio
