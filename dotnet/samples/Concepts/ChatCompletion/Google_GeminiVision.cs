@@ -14,7 +14,7 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
         Console.WriteLine("============= Google AI - Gemini Chat Completion with vision =============");
 
         string geminiApiKey = TestConfiguration.GoogleAI.ApiKey;
-        string geminiModelId = "gemini-pro-vision";
+        string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
 
         if (geminiApiKey is null)
         {
@@ -28,7 +28,7 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
                 apiKey: geminiApiKey)
             .Build();
 
-        var chatHistory = new ChatHistory();
+        var chatHistory = new ChatHistory("Your job is describing images.");
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Load the image from the resources
@@ -55,7 +55,7 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
         Console.WriteLine("============= Vertex AI - Gemini Chat Completion with vision =============");
 
         string geminiBearerKey = TestConfiguration.VertexAI.BearerKey;
-        string geminiModelId = "gemini-pro-vision";
+        string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
         string geminiLocation = TestConfiguration.VertexAI.Location;
         string geminiProject = TestConfiguration.VertexAI.ProjectId;
 
@@ -96,7 +96,7 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
         //         location: TestConfiguration.VertexAI.Location,
         //         projectId: TestConfiguration.VertexAI.ProjectId);
 
-        var chatHistory = new ChatHistory();
+        var chatHistory = new ChatHistory("Your job is describing images.");
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Load the image from the resources
