@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.ClientModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -20,9 +19,6 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 internal static class AssistantThreadActions
 {
-    /*AssistantsClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration*/
-    private const string FunctionDelimiter = "-";
-
     private static readonly HashSet<AuthorRole> s_messageRoles =
         [
             AuthorRole.User,
@@ -147,8 +143,6 @@ internal static class AssistantThreadActions
             throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");
         }
 
-        ToolDefinition[]? tools = [.. agent.Definition.Tools, .. agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimiter)))];
-
         logger.LogDebug("[{MethodName}] Creating run for agent/thrad: {AgentId}/{ThreadId}", nameof(InvokeAsync), agent.Id, threadId);
 
         RunCreationOptions options =
@@ -159,7 +153,7 @@ internal static class AssistantThreadActions
                 //ResponseFormat = %%%
             };
 
-        options.ToolsOverride.AddRange(tools);
+        options.ToolsOverride.AddRange(agent.Tools);
 
         // Create run
         ThreadRun run = await client.CreateRunAsync(threadId, agent.Id, options, cancellationToken).ConfigureAwait(false);
@@ -332,7 +326,7 @@ internal static class AssistantThreadActions
             {
                 foreach (RunStepToolCall toolCall in step.Details.ToolCalls)
                 {
-                    var nameParts = FunctionName.Parse(toolCall.FunctionName, FunctionDelimiter);
+                    var nameParts = FunctionName.Parse(toolCall.FunctionName);
 
                     KernelArguments functionArguments = [];
                     if (!string.IsNullOrWhiteSpace(toolCall.FunctionArguments))

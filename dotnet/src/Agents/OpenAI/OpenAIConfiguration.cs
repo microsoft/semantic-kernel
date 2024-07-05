@@ -20,11 +20,11 @@ public sealed class OpenAIConfiguration
     /// <summary>
     /// %%%
     /// </summary>
-    /// <param name="endpoint"></param>
     /// <param name="apiKey"></param>
+    /// <param name="endpoint"></param>
     /// <param name="httpClient"></param>
     /// <returns></returns>
-    public static OpenAIConfiguration ForAzureOpenAI(Uri endpoint, string apiKey, HttpClient? httpClient = null) =>
+    public static OpenAIConfiguration ForAzureOpenAI(string apiKey, Uri endpoint, HttpClient? httpClient = null) =>
         // %%% VERIFY
         new()
         {
@@ -37,11 +37,11 @@ public sealed class OpenAIConfiguration
     /// <summary>
     /// %%%
     /// </summary>
-    /// <param name="endpoint"></param>
     /// <param name="credentials"></param>
+    /// <param name="endpoint"></param>
     /// <param name="httpClient"></param>
     /// <returns></returns>
-    public static OpenAIConfiguration ForAzureOpenAI(Uri endpoint, TokenCredential credentials, HttpClient? httpClient = null) =>
+    public static OpenAIConfiguration ForAzureOpenAI(TokenCredential credentials, Uri endpoint, HttpClient? httpClient = null) =>
         // %%% VERIFY
         new()
         {
@@ -54,11 +54,11 @@ public sealed class OpenAIConfiguration
     /// <summary>
     /// %%%
     /// </summary>
-    /// <param name="endpoint"></param>
     /// <param name="apiKey"></param>
+    /// <param name="endpoint"></param>
     /// <param name="httpClient"></param>
     /// <returns></returns>
-    public static OpenAIConfiguration ForOpenAI(Uri endpoint, string apiKey, HttpClient? httpClient = null) =>
+    public static OpenAIConfiguration ForOpenAI(string apiKey, Uri? endpoint = null, HttpClient? httpClient = null) =>
         // %%% VERIFY
         new()
         {
@@ -71,12 +71,12 @@ public sealed class OpenAIConfiguration
     /// <summary>
     /// %%%
     /// </summary>
-    /// <param name="endpoint"></param>
     /// <param name="apiKey"></param>
     /// <param name="organizationId"></param>
+    /// <param name="endpoint"></param>
     /// <param name="httpClient"></param>
     /// <returns></returns>
-    public static OpenAIConfiguration ForOpenAI(Uri endpoint, string apiKey, string organizationId, HttpClient? httpClient = null) =>
+    public static OpenAIConfiguration ForOpenAI(string apiKey, string organizationId, Uri? endpoint = null, HttpClient? httpClient = null) =>
         // %%% VERIFY
         new()
         {

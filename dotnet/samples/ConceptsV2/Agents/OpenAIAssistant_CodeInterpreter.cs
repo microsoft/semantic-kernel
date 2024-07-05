@@ -11,7 +11,7 @@ namespace Agents;
 /// </summary>
 public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTest(output)
 {
-    protected override bool ForceOpenAI => true;
+    protected override bool ForceOpenAI => false;
 
     [Fact]
     public async Task UseCodeInterpreterToolWithOpenAIAssistantAgentAsync()
@@ -20,7 +20,7 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
+                config: OpenAIConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!)), // %%% MODE
                 new()
                 {
                     EnableCodeInterpreter = true, // Enable code-interpreter

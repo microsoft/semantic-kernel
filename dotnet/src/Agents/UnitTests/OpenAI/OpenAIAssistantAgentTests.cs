@@ -41,7 +41,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 this._emptyKernel,
-                this.CreateTestConfiguration(targetAzure: true, useVersion: true),
+                this.CreateTestConfiguration(targetAzure: true),
                 definition);
 
         Assert.NotNull(agent);
@@ -96,8 +96,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             {
                 Model = "testmodel",
                 EnableCodeInterpreter = true,
-                EnableFileSearch = true,
-                FileIds = ["#1", "#2"],
+                VectorStoreId = "#vs",
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
             };
 
@@ -112,9 +111,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.NotNull(agent);
         Assert.Equal(2, agent.Tools.Count);
         Assert.True(agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
-        //Assert.True(agent.Tools.OfType<RetrievalToolDefinition>().Any()); %%%
-        //Assert.NotEmpty(agent.FileIds); %%%
-        Assert.NotEmpty(agent.Metadata);
+        Assert.True(agent.Tools.OfType<FileSearchToolDefinition>().Any());
+        Assert.Equal("#vs", agent.Definition.VectorStoreId);
+        Assert.NotNull(agent.Definition.Metadata);
+        Assert.NotEmpty(agent.Definition.Metadata);
     }
 
     /// <summary>
@@ -381,14 +381,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 definition);
     }
 
-    private OpenAIAssistantConfiguration CreateTestConfiguration(bool targetAzure = false, bool useVersion = false)
-    {
-        return new(apiKey: "fakekey", endpoint: targetAzure ? "https://localhost" : null)
-        {
-            HttpClient = this._httpClient,
-            //Version = useVersion ? AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview : null, %%%
-        };
-    }
+    private OpenAIConfiguration CreateTestConfiguration(bool targetAzure = false)
+        => targetAzure ?
+            OpenAIConfiguration.ForAzureOpenAI(apiKey: "fakekey", endpoint: new Uri("https://localhost"), this._httpClient) :
+            OpenAIConfiguration.ForOpenAI(apiKey: "fakekey", endpoint: null, this._httpClient);
 
     private void SetupResponse(HttpStatusCode statusCode, string content)
     {
@@ -469,10 +465,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                   "type": "code_interpreter"
                 },
                 {
-                  "type": "retrieval"
+                  "type": "file_search"
                 }
               ],
-              "file_ids": ["#1", "#2"],
+              "tool_resources": {
+                "file_search": {
+                    "vector_store_ids": ["#vs"]
+                }
+              },
               "metadata": {"a": "1"}
             }
             """;
@@ -747,7 +747,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                   "model": "gpt-4-turbo",
                   "instructions": "You are a helpful assistant designed to make me better at coding!",
                   "tools": [],
-                  "file_ids": [],
                   "metadata": {}
                 },
                 {
@@ -759,7 +758,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                   "model": "gpt-4-turbo",
                   "instructions": "You are a helpful assistant designed to make me better at coding!",
                   "tools": [],
-                  "file_ids": [],
                   "metadata": {}
                 },
                 {
@@ -771,7 +769,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                   "model": "gpt-4-turbo",
                   "instructions": null,
                   "tools": [],
-                  "file_ids": [],
                   "metadata": {}
                 }
               ],
@@ -795,7 +792,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                   "model": "gpt-4-turbo",
                   "instructions": "You are a helpful assistant designed to make me better at coding!",
                   "tools": [],
-                  "file_ids": [],
                   "metadata": {}
                 }           
               ],

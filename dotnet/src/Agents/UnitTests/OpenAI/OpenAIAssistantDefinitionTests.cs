@@ -24,9 +24,8 @@ public class OpenAIAssistantDefinitionTests
         Assert.Null(definition.Instructions);
         Assert.Null(definition.Description);
         Assert.Null(definition.Metadata);
-        Assert.Null(definition.FileIds);
+        Assert.Null(definition.VectorStoreId);
         Assert.False(definition.EnableCodeInterpreter);
-        Assert.False(definition.EnableFileSearch);
     }
 
     /// <summary>
@@ -43,10 +42,9 @@ public class OpenAIAssistantDefinitionTests
                 Model = "testmodel",
                 Instructions = "testinstructions",
                 Description = "testdescription",
-                FileIds = ["id"],
+                VectorStoreId = "#vs",
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 EnableCodeInterpreter = true,
-                EnableFileSearch = true,
             };
 
         Assert.Equal("testid", definition.Id);
@@ -54,9 +52,8 @@ public class OpenAIAssistantDefinitionTests
         Assert.Equal("testmodel", definition.Model);
         Assert.Equal("testinstructions", definition.Instructions);
         Assert.Equal("testdescription", definition.Description);
+        Assert.Equal("#vs", definition.VectorStoreId);
         Assert.Single(definition.Metadata);
-        Assert.Single(definition.FileIds);
         Assert.True(definition.EnableCodeInterpreter);
-        Assert.True(definition.EnableFileSearch);
     }
 }

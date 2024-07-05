@@ -2,7 +2,7 @@
 using System.Linq;
 using Azure.Core;
 using Azure.Core.Pipeline;
-using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI.Azure;

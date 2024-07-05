@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -14,13 +15,14 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 public sealed class OpenAIAssistantAgent : KernelAgent
 {
+    private readonly Assistant _assistant;
     private readonly AssistantClient _client;
     private readonly string[] _channelKeys;
 
     /// <summary>
     /// %%%
     /// </summary>
-    public Assistant Definition { get; }
+    public OpenAIAssistantDefinition Definition { get; private init; }
 
     /// <summary>
     /// Set when the assistant has been deleted via <see cref="DeleteAsync(CancellationToken)"/>.
@@ -32,6 +34,11 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// %%%
     /// </summary>
     public RunPollingConfiguration Polling { get; } = new();
+
+    /// <summary>
+    /// Expose predefined tools merged with available kernel functions.
+    /// </summary>
+    internal IReadOnlyList<ToolDefinition> Tools => [.. this._assistant.Tools, .. this.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
 
     /// <summary>
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
@@ -73,14 +80,18 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="config">Configuration for accessing the Assistants API service, such as the api-key.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An list of <see cref="OpenAIAssistantDefinition"/> objects.</returns>
-    public static IAsyncEnumerable<Assistant> ListDefinitionsAsync(
+    public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListDefinitionsAsync(
         OpenAIConfiguration config,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Create the client
         AssistantClient client = CreateClient(config);
 
-        return client.GetAssistantsAsync(ListOrder.NewestFirst, cancellationToken);
+        // Query and enumerate assistant definitions
+        await foreach (Assistant model in client.GetAssistantsAsync(ListOrder.NewestFirst, cancellationToken).ConfigureAwait(false))
+        {
+            yield return CreateAssistantDefinition(model);
+        }
     }
 
     /// <summary>
@@ -234,24 +245,57 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Assistant model,
         IEnumerable<string> channelKeys)
     {
-        this.Definition = model;
+        this._assistant = model;
         this._client = client;
         this._channelKeys = channelKeys.ToArray();
 
-        this.Description = model.Description;
-        this.Id = model.Id;
-        this.Name = model.Name;
-        this.Instructions = model.Instructions;
+        this.Definition = CreateAssistantDefinition(model);
+
+        this.Description = this._assistant.Description;
+        this.Id = this._assistant.Id;
+        this.Name = this._assistant.Name;
+        this.Instructions = this._assistant.Instructions;
     }
+
+    private static OpenAIAssistantDefinition CreateAssistantDefinition(Assistant model)
+        =>
+            new()
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Description = model.Description,
+                Instructions = model.Instructions,
+                EnableCodeInterpreter = model.Tools.Any(t => t is CodeInterpreterToolDefinition),
+                VectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.Single(),
+                Metadata = model.Metadata,
+                Model = model.Model,
+            };
 
     private static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
     {
+        bool enableFileSearch = !string.IsNullOrWhiteSpace(definition.VectorStoreId);
+
+        ToolResources? toolResources = null;
+
+        if (enableFileSearch)
+        {
+            toolResources =
+                new ToolResources()
+                {
+                    FileSearch = new FileSearchToolResources()
+                    {
+                        VectorStoreIds = [definition.VectorStoreId!],
+                    }
+                };
+        }
+
         AssistantCreationOptions assistantCreationOptions =
             new()
             {
                 Description = definition.Description,
                 Instructions = definition.Instructions,
                 Name = definition.Name,
+                ToolResources = toolResources,
                 // %%% ResponseFormat =
                 // %%% Temperature =
                 // %%% NucleusSamplingFactor =
@@ -270,10 +314,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             assistantCreationOptions.Tools.Add(new CodeInterpreterToolDefinition());
         }
 
-        if (!string.IsNullOrWhiteSpace(definition.VectorStoreId))
+        if (enableFileSearch)
         {
             assistantCreationOptions.Tools.Add(new FileSearchToolDefinition());
-            assistantCreationOptions.ToolResources.FileSearch.VectorStoreIds.Add(definition.VectorStoreId);
         }
 
         return assistantCreationOptions;
