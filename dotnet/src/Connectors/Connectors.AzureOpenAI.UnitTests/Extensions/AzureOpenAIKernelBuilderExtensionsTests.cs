@@ -13,9 +13,9 @@ using Microsoft.SemanticKernel.TextGeneration;
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 
 /// <summary>
-/// Unit tests for the kernel builder extensions in the <see cref="AzureOpenAIServiceCollectionExtensions"/> class.
+/// Unit tests for the kernel builder extensions in the <see cref="AzureOpenAIKernelBuilderExtensions"/> class.
 /// </summary>
-public sealed class AzureOpenAIServiceKernelBuilderExtensionsTests
+public sealed class AzureOpenAIKernelBuilderExtensionsTests
 {
     #region Chat completion
 

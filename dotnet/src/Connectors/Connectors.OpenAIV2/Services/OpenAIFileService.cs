@@ -23,7 +23,7 @@ public sealed class OpenAIFileService
     private readonly ClientCore _client;
 
     /// <summary>
-    /// Create an instance of the OpenAI chat completion connector
+    /// Initializes a new instance of the <see cref="OpenAIFileService"/> class.
     /// </summary>
     /// <param name="endpoint">Non-default endpoint for the OpenAI API.</param>
     /// <param name="apiKey">API Key</param>
@@ -43,7 +43,7 @@ public sealed class OpenAIFileService
     }
 
     /// <summary>
-    /// Create an instance of the OpenAI chat completion connector
+    /// Initializes a new instance of the <see cref="OpenAIFileService"/> class.
     /// </summary>
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>

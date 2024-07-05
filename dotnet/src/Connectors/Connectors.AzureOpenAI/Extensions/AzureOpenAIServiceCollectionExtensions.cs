@@ -26,7 +26,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     #region Chat Completion
 
     /// <summary>
-    /// Adds the Azure OpenAI chat completion service to the list.
+    /// Adds the <see cref="AzureOpenAIChatCompletionService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -64,7 +64,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds the Azure OpenAI chat completion service to the list.
+    /// Adds the <see cref="AzureOpenAIChatCompletionService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -102,7 +102,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds the Azure OpenAI chat completion service to the list.
+    /// Adds the <see cref="AzureOpenAIChatCompletionService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -134,7 +134,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     #region Text Embedding
 
     /// <summary>
-    /// Adds an Azure OpenAI text embeddings service to the list.
+    /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -168,7 +168,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI text embeddings service to the list.
+    /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -203,7 +203,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an Azure OpenAI text embeddings service to the list.
+    /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
