@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
@@ -85,6 +86,25 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextEmbeddingGenerationService);
+    }
+
+    #endregion
+
+    #region Text to audio
+
+    [Fact]
+    public void ServiceCollectionAddAzureOpenAITextToAudioAddsValidService()
+    {
+        // Arrange
+        var sut = new ServiceCollection();
+
+        // Act
+        var service = sut.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key")
+            .BuildServiceProvider()
+            .GetRequiredService<ITextToAudioService>();
+
+        // Assert
+        Assert.IsType<AzureOpenAITextToAudioService>(service);
     }
 
     #endregion

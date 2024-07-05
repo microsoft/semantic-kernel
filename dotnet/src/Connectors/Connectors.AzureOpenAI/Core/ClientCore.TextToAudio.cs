@@ -19,24 +19,30 @@ internal partial class ClientCore
     /// </summary>
     /// <param name="prompt">Prompt to generate the image</param>
     /// <param name="executionSettings">Text to Audio execution settings for the prompt</param>
+    /// <param name="modelId">Azure OpenAI model id</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Url of the generated image</returns>
     internal async Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
         string prompt,
         PromptExecutionSettings? executionSettings,
+        string? modelId,
         CancellationToken cancellationToken)
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
-        OpenAITextToAudioExecutionSettings? audioExecutionSettings = OpenAITextToAudioExecutionSettings.FromExecutionSettings(executionSettings);
-        var (responseFormat, mimeType) = GetGeneratedSpeechFormatAndMimeType(audioExecutionSettings?.ResponseFormat);
+        AzureOpenAITextToAudioExecutionSettings audioExecutionSettings = AzureOpenAITextToAudioExecutionSettings.FromExecutionSettings(executionSettings);
+
+        var (responseFormat, mimeType) = GetGeneratedSpeechFormatAndMimeType(audioExecutionSettings.ResponseFormat);
+
         SpeechGenerationOptions options = new()
         {
             ResponseFormat = responseFormat,
-            Speed = audioExecutionSettings?.Speed,
+            Speed = audioExecutionSettings.Speed,
         };
 
-        ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client.GetAudioClient(this.ModelId).GenerateSpeechFromTextAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
+        var deploymentOrModel = this.GetModelId(audioExecutionSettings, modelId);
+
+        ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client.GetAudioClient(deploymentOrModel).GenerateSpeechFromTextAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
 
         return [new AudioContent(response.Value.ToArray(), mimeType)];
     }
@@ -64,4 +70,12 @@ internal partial class ClientCore
             "PCM" => (GeneratedSpeechFormat.Pcm, "audio/l16"),
             _ => throw new NotSupportedException($"The format '{format}' is not supported.")
         };
+
+    private string GetModelId(AzureOpenAITextToAudioExecutionSettings executionSettings, string? modelId)
+    {
+        return
+            !string.IsNullOrWhiteSpace(modelId) ? modelId! :
+            !string.IsNullOrWhiteSpace(executionSettings.ModelId) ? executionSettings.ModelId! :
+            this.DeploymentOrModelName;
+    }
 }
