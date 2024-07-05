@@ -283,4 +283,96 @@ public sealed class AnthropicChatCompletionTests(ITestOutputHelper output) : Tes
         this.Output.WriteLine($"FinishReason: {metadata.FinishReason}");
         Assert.Equal(AnthropicFinishReason.Stop, metadata.FinishReason);
     }
+
+    [RetryTheory]
+    [InlineData(ServiceType.Anthropic, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    public async Task ChatGenerationOnlyAssistantMessagesAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+        chatHistory.AddAssistantMessage("I'm very thirsty.");
+        chatHistory.AddAssistantMessage("Could you give me a glass of...");
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        string[] words = ["water", "juice", "milk", "soda", "tea", "coffee", "beer", "wine"];
+        this.Output.WriteLine(response.Content);
+        Assert.Contains(words, word => response.Content!.Contains(word, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.Anthropic, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    public async Task ChatStreamingOnlyAssistantMessagesAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+        chatHistory.AddAssistantMessage("I'm very thirsty.");
+        chatHistory.AddAssistantMessage("Could you give me a glass of...");
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var responses = await sut.GetStreamingChatMessageContentsAsync(chatHistory).ToListAsync();
+
+        // Assert
+        string[] words = ["water", "juice", "milk", "soda", "tea", "coffee", "beer", "wine"];
+        Assert.NotEmpty(responses);
+        var message = string.Concat(responses.Select(c => c.Content));
+        this.Output.WriteLine(message);
+        Assert.Contains(words, word => message.Contains(word, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.Anthropic, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    public async Task ChatGenerationOnlyUserMessagesAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("I'm very thirsty.");
+        chatHistory.AddUserMessage("Could you give me a glass of...");
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        string[] words = ["water", "juice", "milk", "soda", "tea", "coffee", "beer", "wine"];
+        this.Output.WriteLine(response.Content);
+        Assert.Contains(words, word => response.Content!.Contains(word, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.Anthropic, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    [InlineData(ServiceType.AmazonBedrock, Skip = "This can fail. Anthropic does not support this feature yet.")]
+    public async Task ChatStreamingOnlyUserMessagesAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("I'm very thirsty.");
+        chatHistory.AddUserMessage("Could you give me a glass of...");
+
+        var sut = this.GetChatService(serviceType);
+
+        // Act
+        var responses = await sut.GetStreamingChatMessageContentsAsync(chatHistory).ToListAsync();
+
+        // Assert
+        string[] words = ["water", "juice", "milk", "soda", "tea", "coffee", "beer", "wine"];
+        Assert.NotEmpty(responses);
+        var message = string.Concat(responses.Select(c => c.Content));
+        this.Output.WriteLine(message);
+        Assert.Contains(words, word => message.Contains(word, StringComparison.OrdinalIgnoreCase));
+    }
 }
