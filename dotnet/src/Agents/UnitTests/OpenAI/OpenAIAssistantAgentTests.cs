@@ -33,7 +33,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                Model = "testmodel",
+                ModelName = "testmodel",
             };
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentSimple);
@@ -62,7 +62,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                Model = "testmodel",
+                ModelName = "testmodel",
                 Name = "testname",
                 Description = "testdescription",
                 Instructions = "testinstructions",
@@ -94,7 +94,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                Model = "testmodel",
+                ModelName = "testmodel",
                 EnableCodeInterpreter = true,
                 VectorStoreId = "#vs",
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
@@ -369,7 +369,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                Model = "testmodel",
+                ModelName = "testmodel",
             };
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentSimple);

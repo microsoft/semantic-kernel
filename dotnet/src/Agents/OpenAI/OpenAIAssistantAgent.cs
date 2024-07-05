@@ -64,7 +64,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Create the assistant
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
-        Assistant model = await client.CreateAssistantAsync(definition.Model, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+        Assistant model = await client.CreateAssistantAsync(definition.ModelName, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
         return
@@ -112,7 +112,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantClient client = CreateClient(config);
 
         // Retrieve the assistant
-        Assistant model = await client.GetAssistantAsync(id).ConfigureAwait(false); // %%% CANCEL TOKEN
+        Assistant model = await client.GetAssistantAsync(id).ConfigureAwait(false); // %%% BUG CANCEL TOKEN
 
         // Instantiate the agent
         return
@@ -127,7 +127,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
-    public async Task<string> CreateThreadAsync(CancellationToken cancellationToken = default)
+    public async Task<string> CreateThreadAsync(CancellationToken cancellationToken = default) // %%% OPTIONS: MESSAGES / TOOL_RESOURCES
     {
         ThreadCreationOptions options = new(); // %%%
         AssistantThread thread = await this._client.CreateThreadAsync(options, cancellationToken).ConfigureAwait(false);
@@ -201,7 +201,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync( // %%% OPTIONS
         string threadId,
         CancellationToken cancellationToken = default)
     {
@@ -266,9 +266,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 Description = model.Description,
                 Instructions = model.Instructions,
                 EnableCodeInterpreter = model.Tools.Any(t => t is CodeInterpreterToolDefinition),
-                VectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.Single(),
                 Metadata = model.Metadata,
-                Model = model.Model,
+                ModelName = model.Model,
+                EnableJsonResponse = model.ResponseFormat == AssistantResponseFormat.JsonObject,
+                NucleusSamplingFactor = model.NucleusSamplingFactor,
+                Temperature = model.Temperature,
+                VectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.Single(),
             };
 
     private static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
@@ -296,9 +299,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 Instructions = definition.Instructions,
                 Name = definition.Name,
                 ToolResources = toolResources,
-                // %%% ResponseFormat =
-                // %%% Temperature =
-                // %%% NucleusSamplingFactor =
+                ResponseFormat = definition.EnableJsonResponse ? AssistantResponseFormat.JsonObject : AssistantResponseFormat.Auto,
+                Temperature = definition.Temperature,
+                NucleusSamplingFactor = definition.NucleusSamplingFactor,
             };
 
         if (definition.Metadata != null)

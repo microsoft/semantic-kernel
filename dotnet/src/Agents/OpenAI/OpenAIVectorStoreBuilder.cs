@@ -115,7 +115,7 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIConfiguration config)
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<VectorStore> CreateAsync(CancellationToken cancellationToken)
+    public async Task<VectorStore> CreateAsync(CancellationToken cancellationToken = default)
     {
         OpenAIClient openAIClient = OpenAIClientFactory.CreateClient(config);
         VectorStoreClient client = openAIClient.GetVectorStoreClient();

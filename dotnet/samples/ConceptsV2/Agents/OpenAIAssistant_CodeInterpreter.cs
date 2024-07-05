@@ -20,11 +20,11 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: OpenAIConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!)), // %%% MODE
+                config: GetOpenAIConfiguration(),
                 new()
                 {
                     EnableCodeInterpreter = true, // Enable code-interpreter
-                    Model = this.Model,
+                    ModelName = this.Model,
                 });
 
         // Create a chat for agent interaction.
@@ -53,4 +53,10 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
             }
         }
     }
+
+    private OpenAIConfiguration GetOpenAIConfiguration()
+        =>
+            this.UseOpenAIConfig ?
+                OpenAIConfiguration.ForOpenAI(this.ApiKey) :
+                OpenAIConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

@@ -85,7 +85,7 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
                 new()
                 {
                     Instructions = "Answer questions about the menu.",
-                    Model = modelName,
+                    ModelName = modelName,
                 });
 
         AgentGroupChat chat = new();

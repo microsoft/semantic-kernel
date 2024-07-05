@@ -82,7 +82,7 @@ public sealed class OpenAIAssistantAgentTests
                 new()
                 {
                     Instructions = "Answer questions about the menu.",
-                    Model = modelName,
+                    ModelName = modelName,
                 });
 
         AgentGroupChat chat = new();

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -54,7 +55,7 @@ internal static class AssistantThreadActions
             throw new KernelException($"Invalid message role: {message.Role}");
         }
 
-        if (string.IsNullOrWhiteSpace(message.Content))
+        if (message.Items.Count == 0)
         {
             return;
         }
@@ -62,14 +63,44 @@ internal static class AssistantThreadActions
         MessageCreationOptions options =
             new()
             {
-                //Role = message.Role.ToMessageRole(), // %%% BUG: ASSIGNABLE
+                //Role = message.Role.ToMessageRole(), // %%% BUG: ASSIGNABLE (Allow assistant or user)
             };
+
+        if (message.Metadata != null)
+        {
+            foreach (var metadata in message.Metadata)
+            {
+                options.Metadata.Add(metadata.Key, metadata.Value?.ToString() ?? string.Empty);
+            }
+        }
 
         await client.CreateMessageAsync(
             threadId,
-            [message.Content], // %%%
+            GetMessageContents(),
             options,
             cancellationToken).ConfigureAwait(false);
+
+        IEnumerable<MessageContent> GetMessageContents()
+        {
+            foreach (KernelContent content in message.Items)
+            {
+                if (content is TextContent textContent)
+                {
+                    yield return MessageContent.FromText(content.ToString());
+                }
+                else if (content is ImageContent imageContent)
+                {
+                    yield return MessageContent.FromImageUrl(
+                        imageContent.Uri != null ?
+                            imageContent.Uri :
+                            new Uri(Convert.ToBase64String(imageContent.Data?.ToArray() ?? []))); // %%% WUT A MESS - API BUG?
+                }
+                else if (content is FileReferenceContent fileContent)
+                {
+                    options.Attachments.Add(new MessageCreationAttachment(fileContent.FileId, [new CodeInterpreterToolDefinition()])); // %%% WUT A MESS - TOOLS?
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -91,7 +122,7 @@ internal static class AssistantThreadActions
             if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
                 !agentNames.TryGetValue(message.AssistantId, out assistantName))
             {
-                Assistant assistant = await client.GetAssistantAsync(message.AssistantId).ConfigureAwait(false); // %%% CANCEL TOKEN
+                Assistant assistant = await client.GetAssistantAsync(message.AssistantId).ConfigureAwait(false); // %%% BUG CANCEL TOKEN
                 if (!string.IsNullOrWhiteSpace(assistant.Name))
                 {
                     agentNames.Add(assistant.Id, assistant.Name);
@@ -148,9 +179,19 @@ internal static class AssistantThreadActions
         RunCreationOptions options =
             new()
             {
-                //InstructionsOverride = agent.Instructions,
-                //ParallelToolCallsEnabled = true, // %%%
-                //ResponseFormat = %%%
+                //AdditionalInstructions, // %%% NO ???
+                //AdditionalMessages // %%% NO ???
+                //InstructionsOverride = agent.Instructions, // %%% RUN OVERRIDE
+                //MaxCompletionTokens // %%% RUN OVERRIDE
+                //MaxPromptTokens // %%% RUN OVERRIDE
+                //ModelOverride, // %%% RUN OVERRIDE
+                //NucleusSamplingFactor // %%% RUN OVERRIDE
+                //ParallelToolCallsEnabled = true, // %%% RUN OVERRIDE + AGENT
+                //ResponseFormat = // %%% RUN OVERRIDE
+                //ToolConstraint // %%% RUN OVERRIDE + AGENT
+                //ToolsOverride // %%% RUN OVERRIDE
+                //Temperature = agent.Definition.Temperature, // %%% RUN OVERRIDE
+                //TruncationStrategy // %%% RUN OVERRIDE + AGENT
             };
 
         options.ToolsOverride.AddRange(agent.Tools);
@@ -198,7 +239,7 @@ internal static class AssistantThreadActions
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
 
-                    await client.SubmitToolOutputsToRunAsync(run, toolOutputs).ConfigureAwait(false); // %%% CANCEL TOKEN
+                    await client.SubmitToolOutputsToRunAsync(run, toolOutputs).ConfigureAwait(false); // %%% BUG CANCEL TOKEN
                 }
 
                 if (logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
@@ -255,7 +296,7 @@ internal static class AssistantThreadActions
 
                         foreach (MessageContent itemContent in message.Content)
                         {
-                            ChatMessageContent? content = null;
+                            ChatMessageContent? content = null; // %%% ITEMS
 
                             // Process text content
                             if (!string.IsNullOrEmpty(itemContent.Text))
@@ -384,11 +425,11 @@ internal static class AssistantThreadActions
     {
         string? fileId = null;
 
-        if (string.IsNullOrEmpty(annotation.OutputFileId))
+        if (!string.IsNullOrEmpty(annotation.OutputFileId))
         {
             fileId = annotation.OutputFileId;
         }
-        else if (string.IsNullOrEmpty(annotation.InputFileId))
+        else if (!string.IsNullOrEmpty(annotation.InputFileId))
         {
             fileId = annotation.InputFileId;
         }

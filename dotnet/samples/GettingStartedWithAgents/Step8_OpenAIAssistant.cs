@@ -31,7 +31,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
                 {
                     Instructions = HostInstructions,
                     Name = HostName,
-                    Model = this.Model,
+                    ModelName = this.Model,
                 });
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

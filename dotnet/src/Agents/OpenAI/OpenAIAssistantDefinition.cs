@@ -11,7 +11,7 @@ public sealed class OpenAIAssistantDefinition
     /// <summary>
     /// Identifies the AI model targeted by the agent.
     /// </summary>
-    public string? Model { get; init; }
+    public string? ModelName { get; init; }
 
     /// <summary>
     /// The description of the assistant.
@@ -39,13 +39,26 @@ public sealed class OpenAIAssistantDefinition
     public bool EnableCodeInterpreter { get; init; }
 
     /// <summary>
+    /// Set if json response-format is enabled.
+    /// </summary>
+    public bool EnableJsonResponse { get; init; }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public float? NucleusSamplingFactor { get; init; }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public float? Temperature { get; init; }
+
+    /// <summary>
     /// Enables file-serach if specified.
     /// </summary>
     public string? VectorStoreId { get; init; }
 
-    // %%% ResponseFormat
-    // %%% Temperature
-    // %%% NucleusSamplingFactor 
+    // %%% CODE INTERPRETER FILEIDS
 
     /// <summary>
     /// A set of up to 16 key/value pairs that can be attached to an agent, used for

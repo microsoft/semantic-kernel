@@ -12,8 +12,7 @@ public sealed class OpenAIConfiguration
 {
     internal enum OpenAIConfigurationType
     {
-        AzureOpenAIKey,
-        AzureOpenAICredential,
+        AzureOpenAI,
         OpenAI,
     }
 
@@ -31,24 +30,24 @@ public sealed class OpenAIConfiguration
             ApiKey = apiKey,
             Endpoint = endpoint,
             HttpClient = httpClient,
-            Type = OpenAIConfigurationType.AzureOpenAIKey,
+            Type = OpenAIConfigurationType.AzureOpenAI,
         };
 
     /// <summary>
     /// %%%
     /// </summary>
-    /// <param name="credentials"></param>
+    /// <param name="credential"></param>
     /// <param name="endpoint"></param>
     /// <param name="httpClient"></param>
     /// <returns></returns>
-    public static OpenAIConfiguration ForAzureOpenAI(TokenCredential credentials, Uri endpoint, HttpClient? httpClient = null) =>
+    public static OpenAIConfiguration ForAzureOpenAI(TokenCredential credential, Uri endpoint, HttpClient? httpClient = null) =>
         // %%% VERIFY
         new()
         {
-            Credentials = credentials,
+            Credential = credential,
             Endpoint = endpoint,
             HttpClient = httpClient,
-            Type = OpenAIConfigurationType.AzureOpenAICredential,
+            Type = OpenAIConfigurationType.AzureOpenAI,
         };
 
     /// <summary>
@@ -88,7 +87,7 @@ public sealed class OpenAIConfiguration
         };
 
     internal string? ApiKey { get; init; }
-    internal TokenCredential? Credentials { get; init; }
+    internal TokenCredential? Credential { get; init; }
     internal Uri? Endpoint { get; init; }
     internal HttpClient? HttpClient { get; init; }
     internal string? OrganizationId { get; init; }

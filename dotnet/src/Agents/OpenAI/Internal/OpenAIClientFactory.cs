@@ -22,34 +22,32 @@ internal static class OpenAIClientFactory
     /// <returns></returns>
     public static OpenAIClient CreateClient(OpenAIConfiguration config)
     {
-        OpenAIClient client;
-
         // Inspect options
         switch (config.Type)
         {
-            case OpenAIConfiguration.OpenAIConfigurationType.AzureOpenAIKey:
+            case OpenAIConfiguration.OpenAIConfigurationType.AzureOpenAI:
             {
                 AzureOpenAIClientOptions clientOptions = CreateAzureClientOptions(config);
-                client = new AzureOpenAIClient(config.Endpoint, config.ApiKey!, clientOptions);
-                break;
-            }
-            case OpenAIConfiguration.OpenAIConfigurationType.AzureOpenAICredential:
-            {
-                AzureOpenAIClientOptions clientOptions = CreateAzureClientOptions(config);
-                client = new AzureOpenAIClient(config.Endpoint, config.Credentials!, clientOptions);
-                break;
+
+                if (config.Credential is not null)
+                {
+                    return new AzureOpenAIClient(config.Endpoint, config.Credential, clientOptions);
+                }
+                if (!string.IsNullOrEmpty(config.ApiKey))
+                {
+                    return new AzureOpenAIClient(config.Endpoint, config.ApiKey!, clientOptions);
+                }
+
+                throw new KernelException($"Unsupported configuration type: {config.Type}");
             }
             case OpenAIConfiguration.OpenAIConfigurationType.OpenAI:
             {
                 OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(config);
-                client = new OpenAIClient(config.ApiKey ?? SingleSpaceKey, clientOptions);
-                break;
+                return new OpenAIClient(config.ApiKey ?? SingleSpaceKey, clientOptions);
             }
             default:
-                throw new KernelException($"Unsupported configuration type: {config.Type}");
+                throw new KernelException($"Unsupported configuration state: {config.Type}");
         }
-
-        return client;
     }
 
     private static AzureOpenAIClientOptions CreateAzureClientOptions(OpenAIConfiguration config)

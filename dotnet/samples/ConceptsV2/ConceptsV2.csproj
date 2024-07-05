@@ -74,7 +74,4 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Agents\" />
-  </ItemGroup>
 </Project>

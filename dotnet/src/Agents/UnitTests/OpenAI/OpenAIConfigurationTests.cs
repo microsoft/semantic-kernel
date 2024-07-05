@@ -7,9 +7,9 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 /// <summary>
-/// Unit testing of <see cref="OpenAIAssistantConfiguration"/>.
+/// Unit testing of <see cref="OpenAIConfiguration"/>.
 /// </summary>
-public class OpenAIAssistantConfigurationTests
+public class OpenAIConfigurationTests
 {
     /// <summary>
     /// Verify initial state.
@@ -39,4 +39,6 @@ public class OpenAIAssistantConfigurationTests
         Assert.Equal("https://localhost/", config.Endpoint.ToString());
         Assert.NotNull(config.HttpClient);
     }
+
+    // %%% MORE
 }
