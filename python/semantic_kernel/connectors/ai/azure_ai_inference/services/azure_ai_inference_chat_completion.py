@@ -2,9 +2,15 @@
 
 import asyncio
 import logging
+import sys
 from collections.abc import AsyncGenerator
 from functools import reduce
 from typing import Any
+
+if sys.version >= "3.12":
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from azure.ai.inference.aio import ChatCompletionsClient
 from azure.ai.inference.models import (
@@ -12,6 +18,7 @@ from azure.ai.inference.models import (
     ChatChoice,
     ChatCompletions,
     ChatCompletionsFunctionToolCall,
+    ChatRequestMessage,
     StreamingChatChoiceUpdate,
 )
 from azure.core.credentials import AzureKeyCredential
@@ -23,7 +30,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
 )
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_conversion_utils import (
-    format_chat_history,
+    MESSAGE_CONVERTERS,
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
@@ -161,7 +168,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     ) -> list[ChatMessageContent]:
         """Send a chat request to the Azure AI Inference service."""
         response: ChatCompletions = await self.client.complete(
-            messages=format_chat_history(chat_history),
+            messages=self._prepare_chat_history_for_request(chat_history),
             model_extras=settings.extra_parameters,
             **settings.prepare_settings_dict(),
         )
@@ -292,7 +299,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         """Send a streaming chat request to the Azure AI Inference service."""
         response: AsyncStreamingChatCompletions = await self.client.complete(
             stream=True,
-            messages=format_chat_history(chat_history),
+            messages=self._prepare_chat_history_for_request(chat_history),
             model_extras=settings.extra_parameters,
             **settings.prepare_settings_dict(),
         )
@@ -353,6 +360,26 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         )
 
     # endregion
+
+    @override
+    def _prepare_chat_history_for_request(
+        self,
+        chat_history: ChatHistory,
+        role_key: str = "role",
+        content_key: str = "content",
+    ) -> list[ChatRequestMessage]:
+        chat_request_messages: list[ChatRequestMessage] = []
+
+        for message in chat_history.messages:
+            if message.role not in MESSAGE_CONVERTERS:
+                logger.warning(
+                    "Unsupported author role in chat history while formatting for Azure AI Inference: {message.role}"
+                )
+                continue
+
+            chat_request_messages.append(MESSAGE_CONVERTERS[message.role](message))
+
+        return chat_request_messages
 
     def _get_metadata_from_response(self, response: ChatCompletions | AsyncStreamingChatCompletions) -> dict[str, Any]:
         """Get metadata from the response.

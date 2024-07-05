@@ -17,13 +17,14 @@ from azure.ai.inference.models import (
     UserMessage,
 )
 
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _format_system_message(message: ChatMessageContent) -> SystemMessage:
@@ -126,34 +127,9 @@ def _format_tool_message(message: ChatMessageContent) -> ToolMessage:
     return ToolMessage(content=str(message.items[0].result), tool_call_id=message.items[0].id)
 
 
-_MESSAGE_CONVERTER: dict[AuthorRole, Callable[[ChatMessageContent], ChatRequestMessage]] = {
+MESSAGE_CONVERTERS: dict[AuthorRole, Callable[[ChatMessageContent], ChatRequestMessage]] = {
     AuthorRole.SYSTEM: _format_system_message,
     AuthorRole.USER: _format_user_message,
     AuthorRole.ASSISTANT: _format_assistant_message,
     AuthorRole.TOOL: _format_tool_message,
 }
-
-logger: logging.Logger = logging.getLogger(__name__)
-
-
-def format_chat_history(chat_history: ChatHistory) -> list[ChatRequestMessage]:
-    """Format the chat history to the expected objects for the client.
-
-    Args:
-        chat_history: The chat history.
-
-    Returns:
-        A list of formatted chat history.
-    """
-    chat_request_messages: list[ChatRequestMessage] = []
-
-    for message in chat_history.messages:
-        if message.role not in _MESSAGE_CONVERTER:
-            logger.warning(
-                "Unsupported author role in chat history while formatting for Azure AI Inference: {message.role}"
-            )
-            continue
-
-        chat_request_messages.append(_MESSAGE_CONVERTER[message.role](message))
-
-    return chat_request_messages
