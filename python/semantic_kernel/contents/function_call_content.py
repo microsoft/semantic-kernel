@@ -2,11 +2,11 @@
 
 import json
 import logging
-from functools import cached_property
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field
+from typing_extensions import deprecated
 
 from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
@@ -29,20 +29,54 @@ class FunctionCallContent(KernelContent):
     tag: ClassVar[str] = FUNCTION_CALL_CONTENT_TAG
     id: str | None
     index: int | None = None
-    name: str | None = None
-    arguments: str | None = None
+    name: str
+    function_name: str
+    plugin_name: str | None = None
+    arguments: str | dict[str, Any] | None = None
 
     EMPTY_VALUES: ClassVar[list[str | None]] = ["", "{}", None]
 
-    @cached_property
-    def function_name(self) -> str:
-        """Get the function name."""
-        return self.split_name()[1]
+    def __init__(
+        self,
+        id: str | None = None,
+        index: int | None = None,
+        name: str | None = None,
+        function_name: str | None = None,
+        plugin_name: str | None = None,
+        arguments: str | dict[str, Any] | None = None,
+    ) -> None:
+        """Create function call content.
 
-    @cached_property
-    def plugin_name(self) -> str | None:
-        """Get the plugin name."""
-        return self.split_name()[0]
+        Args:
+            id (str | None): The id of the function call.
+            index (int | None): The index of the function call.
+            name (str | None): The name of the function call.
+                When not supplied function_name and plugin_name should be supplied.
+            function_name (str | None): The function name.
+                Not used when 'name' is supplied.
+            plugin_name (str | None): The plugin name.
+                Not used when 'name' is supplied.
+            arguments (str | dict[str, Any] | None): The arguments of the function call.
+        """
+        if function_name and plugin_name and not name:
+            name = f"{plugin_name}-{function_name}"
+        if not name:
+            raise FunctionCallInvalidNameException(
+                "Name is not set, should be supplied as name, or with both function_name and plugin_name."
+            )
+        if not function_name and not plugin_name:
+            if "-" in name:
+                plugin_name, function_name = name.split("-", maxsplit=1)
+            else:
+                function_name = name
+        super().__init__(
+            id=id,
+            index=index,
+            name=name,
+            arguments=arguments,
+            function_name=function_name,
+            plugin_name=plugin_name,
+        )
 
     def __str__(self) -> str:
         """Return the function call as a string."""
@@ -63,8 +97,18 @@ class FunctionCallContent(KernelContent):
             arguments=self.combine_arguments(self.arguments, other.arguments),
         )
 
-    def combine_arguments(self, arg1: str | None, arg2: str | None) -> str:
+    def combine_arguments(
+        self, arg1: str | dict[str, Any] | None, arg2: str | dict[str, Any] | None
+    ) -> str | dict[str, Any]:
         """Combine two arguments."""
+        if isinstance(arg1, dict) and isinstance(arg2, dict):
+            return {**arg1, **arg2}
+        # when one of the two is a dict, the other should be a string
+        # we then treat both as strings as they might be malformed at this time
+        if isinstance(arg1, dict):
+            arg1 = json.dumps(arg1)
+        if isinstance(arg2, dict):
+            arg2 = json.dumps(arg2)
         if arg1 in self.EMPTY_VALUES and arg2 in self.EMPTY_VALUES:
             return "{}"
         if arg1 in self.EMPTY_VALUES:
@@ -77,6 +121,8 @@ class FunctionCallContent(KernelContent):
         """Parse the arguments into a dictionary."""
         if not self.arguments:
             return None
+        if isinstance(self.arguments, dict):
+            return self.arguments
         try:
             return json.loads(self.arguments)
         except json.JSONDecodeError as exc:
@@ -91,18 +137,15 @@ class FunctionCallContent(KernelContent):
             return KernelArguments()
         return KernelArguments(**args)
 
-    def split_name(self) -> list[str]:
+    @deprecated("The function_name and plugin_name properties should be used instead.")
+    def split_name(self) -> list[str | None]:
         """Split the name into a plugin and function name."""
-        if not self.name:
-            raise FunctionCallInvalidNameException("Name is not set.")
-        if "-" not in self.name:
-            return ["", self.name]
-        return self.name.split("-", maxsplit=1)
+        return [self.plugin_name, self.function_name]
 
+    @deprecated("The function_name and plugin_name properties should be used instead.")
     def split_name_dict(self) -> dict:
         """Split the name into a plugin and function name."""
-        parts = self.split_name()
-        return {"plugin_name": parts[0], "function_name": parts[1]}
+        return {"plugin_name": self.plugin_name, "function_name": self.function_name}
 
     def to_element(self) -> Element:
         """Convert the function call to an Element."""
@@ -112,7 +155,7 @@ class FunctionCallContent(KernelContent):
         if self.name:
             element.set("name", self.name)
         if self.arguments:
-            element.text = self.arguments
+            element.text = json.dumps(self.arguments) if isinstance(self.arguments, dict) else self.arguments
         return element
 
     @classmethod
@@ -125,4 +168,5 @@ class FunctionCallContent(KernelContent):
 
     def to_dict(self) -> dict[str, str | Any]:
         """Convert the instance to a dictionary."""
-        return {"id": self.id, "type": "function", "function": {"name": self.name, "arguments": self.arguments}}
+        args = json.dumps(self.arguments) if isinstance(self.arguments, dict) else self.arguments
+        return {"id": self.id, "type": "function", "function": {"name": self.name, "arguments": args}}
