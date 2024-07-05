@@ -22,7 +22,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Core\ClientCore.AudioToText.cs" />
+    <Compile Remove="Services\AzureOpenAIAudioToTextService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureOpenAI.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Core\ClientCore.AudioToText.cs" />
+    <None Include="Services\AzureOpenAIAudioToTextService.cs" />
   </ItemGroup>
 
   <ItemGroup>
