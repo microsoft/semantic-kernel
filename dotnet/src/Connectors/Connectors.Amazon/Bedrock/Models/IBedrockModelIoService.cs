@@ -10,6 +10,6 @@ namespace Connectors.Amazon.Models;
 
 public interface IBedrockModelIoService<TRequest, TResponse>
 {
-    ITextGenerationRequest GetInvokeModelRequestBody(string text, PromptExecutionSettings settings);
+    object GetInvokeModelRequestBody(string text, PromptExecutionSettings settings);
     ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory);
 }

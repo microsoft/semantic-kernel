@@ -18,26 +18,50 @@ namespace Connectors.Amazon.Models.Amazon;
 public class AmazonIoService : IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIoService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public ITextGenerationRequest GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
+    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {
-        var textGenerationConfig = new TitanRequest.TitanTextGenerationRequest
+        double? temperature = .7;
+        double? topP = 0.9;
+        int? maxTokenCount = 512;
+        List<string>? stopSequences = [];
+
+        if (executionSettings != null && executionSettings.ExtensionData != null)
         {
-            InputText = prompt,
-            TextGenerationConfig = new TitanRequest.AmazonTitanTextGenerationConfig
+            executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
+            temperature = temperatureValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("top_p", out var topPValue);
+            topP = topPValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("max_tokens", out var maxTokensValue);
+            maxTokenCount = maxTokensValue as int?;
+
+            executionSettings.ExtensionData.TryGetValue("stop_sequences", out var stopSequencesValue);
+            stopSequences = stopSequencesValue as List<string>;
+        }
+        var requestBody = new
+        {
+            inputText = prompt,
+            textGenerationConfig = new
             {
-                Temperature = (double)executionSettings.ExtensionData?["temperature"],
-                TopP = (double)executionSettings.ExtensionData?["topP"],
-                MaxTokenCount = (int)executionSettings.ExtensionData?["maxTokenCount"],
-                StopSequences = (IList<string>)executionSettings.ExtensionData?["stopSequences"]
+                temperature,
+                topP,
+                maxTokenCount,
+                stopSequences
             }
         };
-        if (executionSettings.ExtensionData == null)
-        {
-            executionSettings.ExtensionData = new Dictionary<string, object>();
-        }
-        executionSettings.ExtensionData["textGenerationConfig"] = textGenerationConfig.TextGenerationConfig;
-
-        return textGenerationConfig;
+        // var requestBody = new TitanRequest.TitanTextGenerationRequest
+        // {
+        //     InputText = prompt,
+        //     TextGenerationConfig = new TitanRequest.AmazonTitanTextGenerationConfig
+        //     {
+        //         Temperature = temperature,
+        //         TopP = topP,
+        //         MaxTokenCount = maxTokenCount,
+        //         StopSequences = stopSequences
+        //     }
+        // };
+        return requestBody;
     }
 
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory)

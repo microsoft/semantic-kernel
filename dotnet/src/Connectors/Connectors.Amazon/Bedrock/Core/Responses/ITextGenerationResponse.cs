@@ -7,5 +7,4 @@ namespace Connectors.Amazon.Core.Responses;
 
 public interface ITextGenerationResponse
 {
-    IReadOnlyList<TextContent> GetResults();
 }

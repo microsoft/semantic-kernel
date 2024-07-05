@@ -56,7 +56,23 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
             Body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(requestBody))
         };
         var response = await this._bedrockApi.InvokeModelAsync(invokeRequest, cancellationToken).ConfigureAwait(true);
-        var responseBody = JsonSerializer.Deserialize<TResponse>(response.Body);
-        return responseBody?.GetResults() ?? new List<TextContent>();
+        using (var memoryStream = new MemoryStream())
+        {
+            await response.Body.CopyToAsync(memoryStream).ConfigureAwait(true);
+            memoryStream.Position = 0;
+            using (var reader = new StreamReader(memoryStream))
+            {
+                var responseBody = JsonSerializer.Deserialize<TitanTextResponse>(reader.ReadToEnd());
+                var textContents = new List<TextContent>();
+
+                if (responseBody?.Results != null && responseBody.Results.Count > 0)
+                {
+                    string outputText = responseBody.Results[0].OutputText;
+                    textContents.Add(new TextContent(outputText));
+                }
+
+                return textContents;
+            }
+        }
     }
 }

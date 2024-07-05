@@ -12,7 +12,7 @@ namespace Connectors.Amazon.Models.Mistral;
 public class MistralIoService : IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIoService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public ITextGenerationRequest GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
+    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {
         throw new NotImplementedException();
     }
