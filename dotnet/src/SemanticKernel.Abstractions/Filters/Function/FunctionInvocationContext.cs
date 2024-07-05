@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading;
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
