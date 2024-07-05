@@ -2,7 +2,27 @@
 
 from typing import Any
 
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+
+
+def update_settings_from_function_call_configuration(
+    function_choice_configuration: FunctionCallChoiceConfiguration,
+    settings: PromptExecutionSettings,
+    type: str,
+) -> None:
+    """Update the settings from a FunctionChoiceConfiguration."""
+    if (
+        function_choice_configuration.available_functions
+        and hasattr(settings, "tool_choice")
+        and hasattr(settings, "tools")
+    ):
+        settings.tool_choice = type
+        settings.tools = [
+            kernel_function_metadata_to_function_call_format(f)
+            for f in function_choice_configuration.available_functions
+        ]
 
 
 def kernel_function_metadata_to_function_call_format(

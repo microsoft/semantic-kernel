@@ -14,11 +14,8 @@ from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
-from semantic_kernel.connectors.ai.function_choice_behavior import (
-    FunctionCallChoiceConfiguration,
-    FunctionChoiceBehavior,
-)
+from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
@@ -414,25 +411,11 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         kernel: "Kernel | None" = None,
     ) -> None:
         """Update the settings with the chat history."""
-
-        def _config_call_back(
-            function_choice_configuration: FunctionCallChoiceConfiguration,
-            settings: OpenAIChatPromptExecutionSettings,
-            type: str,
-        ):
-            """Update the settings from a FunctionChoiceConfiguration."""
-            if function_choice_configuration.available_functions:
-                settings.tool_choice = type
-                settings.tools = [
-                    kernel_function_metadata_to_function_call_format(f)
-                    for f in function_choice_configuration.available_functions
-                ]
-
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         if settings.function_choice_behavior and kernel:
             settings.function_choice_behavior.configure(
                 kernel=kernel,
-                update_settings_callback=_config_call_back,
+                update_settings_callback=update_settings_from_function_call_configuration,
                 settings=settings,
             )
 

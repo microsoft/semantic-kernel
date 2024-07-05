@@ -7,6 +7,8 @@ from collections.abc import AsyncGenerator
 from functools import reduce
 from typing import Any
 
+from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
+
 if sys.version >= "3.12":
     from typing import override  # pragma: no cover
 else:
@@ -33,11 +35,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
     MESSAGE_CONVERTERS,
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
-from semantic_kernel.connectors.ai.function_choice_behavior import (
-    FunctionCallChoiceConfiguration,
-    FunctionChoiceBehavior,
-)
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -421,24 +419,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         self, settings: AzureAIInferenceChatPromptExecutionSettings, kernel: Kernel
     ):
         """Configure the function choice behavior to include the kernel functions."""
-
-        def _config_call_back(
-            function_choice_configuration: FunctionCallChoiceConfiguration,
-            settings: AzureAIInferenceChatPromptExecutionSettings,
-            type: str,
-        ):
-            """Update the settings from a FunctionChoiceConfiguration."""
-            if function_choice_configuration.available_functions:
-                settings.tool_choice = type
-                # The list of tool objects will be initialized with the JSON string returned by
-                # `kernel_function_metadata_to_function_call_format`.
-                settings.tools = [
-                    kernel_function_metadata_to_function_call_format(f)
-                    for f in function_choice_configuration.available_functions
-                ]
-
         settings.function_choice_behavior.configure(
-            kernel=kernel, update_settings_callback=_config_call_back, settings=settings
+            kernel=kernel, update_settings_callback=update_settings_from_function_call_configuration, settings=settings
         )
 
     async def _process_function_calls(
