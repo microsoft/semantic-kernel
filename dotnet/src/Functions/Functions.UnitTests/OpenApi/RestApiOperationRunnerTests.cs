@@ -1211,7 +1211,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     {
         // Arrange
         this._httpMessageHandlerStub.ExceptionToThrow = new OperationCanceledException();
-        //this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "fake/type");
 
         var operation = new RestApiOperation(
             "fake-id",
@@ -1335,7 +1334,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         public HttpResponseMessage ResponseToReturn { get; set; }
 
-        public Exception ExceptionToThrow { get; set; }
+        public Exception? ExceptionToThrow { get; set; }
 
         public HttpMessageHandlerStub()
         {
