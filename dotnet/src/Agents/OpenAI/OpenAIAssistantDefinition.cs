@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 public sealed class OpenAIAssistantDefinition
 {
     /// <summary>
-    /// Identifies the AI model (OpenAI) or deployment (AzureOAI) this agent targets.
+    /// Identifies the AI model targeted by the agent.
     /// </summary>
     public string? Model { get; init; }
 
@@ -39,14 +39,13 @@ public sealed class OpenAIAssistantDefinition
     public bool EnableCodeInterpreter { get; init; }
 
     /// <summary>
-    /// Set if retrieval is enabled.
+    /// Enables file-serach if specified.
     /// </summary>
-    public bool EnableFileSearch { get; init; }
+    public string? VectorStoreId { get; init; }
 
-    /// <summary>
-    /// A list of previously uploaded file IDs to attach to the assistant.
-    /// </summary>
-    public IEnumerable<string>? FileIds { get; init; }
+    // %%% ResponseFormat
+    // %%% Temperature
+    // %%% NucleusSamplingFactor 
 
     /// <summary>
     /// A set of up to 16 key/value pairs that can be attached to an agent, used for

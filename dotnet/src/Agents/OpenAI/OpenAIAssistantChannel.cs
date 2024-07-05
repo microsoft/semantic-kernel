@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-internal sealed class OpenAIAssistantChannel(AssistantClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration)
+internal sealed class OpenAIAssistantChannel(AssistantClient client, string threadId)
     : AgentChannel<OpenAIAssistantAgent>
 {
     private readonly AssistantClient _client = client;
@@ -31,7 +31,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     {
         agent.ThrowIfDeleted();
 
-        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, pollingConfiguration, this.Logger, cancellationToken);
+        return AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, this.Logger, cancellationToken);
     }
 
     /// <inheritdoc/>

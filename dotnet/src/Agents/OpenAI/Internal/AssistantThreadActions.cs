@@ -132,7 +132,6 @@ internal static class AssistantThreadActions
     /// <param name="agent">The assistant agent to interact with the thread.</param>
     /// <param name="client">The assistant client</param>
     /// <param name="threadId">The thread identifier</param>
-    /// <param name="pollingConfiguration">Config to utilize when polling for run state.</param>
     /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
@@ -140,7 +139,6 @@ internal static class AssistantThreadActions
         OpenAIAssistantAgent agent,
         AssistantClient client,
         string threadId,
-        OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration,
         ILogger logger,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -149,7 +147,7 @@ internal static class AssistantThreadActions
             throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");
         }
 
-        ToolDefinition[]? tools = [.. agent.Tools, .. agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimiter)))];
+        ToolDefinition[]? tools = [.. agent.Definition.Tools, .. agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimiter)))];
 
         logger.LogDebug("[{MethodName}] Creating run for agent/thrad: {AgentId}/{ThreadId}", nameof(InvokeAsync), agent.Id, threadId);
 
@@ -161,10 +159,7 @@ internal static class AssistantThreadActions
                 //ResponseFormat = %%%
             };
 
-        foreach (ToolDefinition tool in tools) // %%%
-        {
-            options.ToolsOverride.Add(tool);
-        }
+        options.ToolsOverride.AddRange(tools);
 
         // Create run
         ThreadRun run = await client.CreateRunAsync(threadId, agent.Id, options, cancellationToken).ConfigureAwait(false);
@@ -311,7 +306,7 @@ internal static class AssistantThreadActions
             do
             {
                 // Reduce polling frequency after a couple attempts
-                await Task.Delay(count >= 2 ? pollingConfiguration.RunPollingInterval : pollingConfiguration.RunPollingBackoff, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(count >= 2 ? agent.Polling.RunPollingInterval : agent.Polling.RunPollingBackoff, cancellationToken).ConfigureAwait(false);
                 ++count;
 
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -380,7 +375,7 @@ internal static class AssistantThreadActions
 
                 if (retry)
                 {
-                    await Task.Delay(pollingConfiguration.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(agent.Polling.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
                 }
 
                 ++count;
