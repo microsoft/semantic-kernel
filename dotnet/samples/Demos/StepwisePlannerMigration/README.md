@@ -10,6 +10,8 @@ The new approach produces the results more reliably and uses fewer tokens compar
 
 ```powershell
 # OpenAI
+# Make sure to use the model which supports function calling capability.
+# Supported models: https://platform.openai.com/docs/guides/function-calling/supported-models
 dotnet user-secrets set "OpenAI:ChatModelId" "... your model ..."
 dotnet user-secrets set "OpenAI:ApiKey" "... your api key ... "
 ```
