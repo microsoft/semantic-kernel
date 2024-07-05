@@ -182,9 +182,12 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     def _get_tool_message_from_chat_choice(self, choice: Choice | ChunkChoice) -> str | None:
         """Get the tool message from a choice."""
         content = choice.message if isinstance(choice, Choice) else choice.delta
-        if content.model_extra is not None and "context" in content.model_extra:
+        if (
+            content
+            and content.model_extra is not None
+            and "context" in content.model_extra
+        ):
             return json.dumps(content.model_extra["context"])
-
         return None
 
     @staticmethod
