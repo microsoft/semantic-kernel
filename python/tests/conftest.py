@@ -260,7 +260,8 @@ def mistralai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 
     env_vars = {
         "MISTRALAI_CHAT_MODEL_ID": "test_chat_model_id",
-        "MISTRALAI_API_KEY": "test_api_key"
+        "MISTRALAI_API_KEY": "test_api_key",
+        "MISTRALAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
     }
 
     env_vars.update(override_env_param_dict)
