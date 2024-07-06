@@ -42,6 +42,7 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
 
     private sealed class CustomHttpClientHandler : HttpClientHandler
     {
+        private readonly JsonSerializerOptions _jsonOptions = new();
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // Log the request URI
@@ -59,10 +60,10 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
 
             // For example, modify the response content
             Stream originalContent = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            List<List<List<ReadOnlyMemory<float>>>> modifiedContent = (await JsonSerializer.DeserializeAsync<List<List<List<ReadOnlyMemory<float>>>>>(originalContent, new JsonSerializerOptions(), cancellationToken).ConfigureAwait(false))!;
+            List<List<List<ReadOnlyMemory<float>>>> modifiedContent = (await JsonSerializer.DeserializeAsync<List<List<List<ReadOnlyMemory<float>>>>>(originalContent, _jsonOptions, cancellationToken).ConfigureAwait(false))!;
 
             Stream modifiedStream = new MemoryStream();
-            await JsonSerializer.SerializeAsync(modifiedStream, modifiedContent[0][0].ToList(), new JsonSerializerOptions(), cancellationToken).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(modifiedStream, modifiedContent[0][0].ToList(), _jsonOptions, cancellationToken).ConfigureAwait(false);
             response.Content = new StreamContent(modifiedStream);
 
             // Return the modified response
