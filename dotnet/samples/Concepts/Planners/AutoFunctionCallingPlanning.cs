@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -44,6 +45,11 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 
         Console.WriteLine($"Planner execution result: {plannerResult.FinalAnswer}");
         Console.WriteLine($"Chat history containing the planning process: {JsonSerializer.Serialize(plannerResult.ChatHistory, _jsonSerializerOptions)}");
+        Console.WriteLine($"Planner execution tokens: {GetChatHistoryTokens(plannerResult.ChatHistory)}");
+
+        // Output:
+        // Planner execution result: The current UTC time is Sat, 06 Jul 2024 02:11:10 GMT and the weather in Boston is 61 and rainy.
+        // Planner execution tokens: 1380
 
         // 1.2 Plan execution using Auto Function Calling.
         var functionCallingChatHistory = new ChatHistory();
@@ -56,6 +62,11 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 
         Console.WriteLine($"Auto Function Calling execution result: {functionCallingResult.Content}");
         Console.WriteLine($"Chat history containing the planning process: {JsonSerializer.Serialize(functionCallingChatHistory, _jsonSerializerOptions)}");
+        Console.WriteLine($"Auto Function Calling execution tokens: {GetChatHistoryTokens(functionCallingChatHistory)}");
+
+        // Output:
+        // Auto Function Calling execution result: The current UTC time is Sat, 06 Jul 2024 02:11:16 GMT.The weather right now in Boston is 61 degrees and rainy.
+        // Auto Function Calling execution tokens: 243
 
         // 2.1 Plan re-execution using FunctionCallingStepwisePlanner.
         // ChatHistory (plan) should be passed without 2 last messages from previously generated ChatHistory.
@@ -302,6 +313,29 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
         kernel.ImportPluginFromType<WeatherPlugin>();
 
         return kernel;
+    }
+
+    private int GetChatHistoryTokens(ChatHistory? chatHistory)
+    {
+        var tokens = 0;
+
+        if (chatHistory is null)
+        {
+            return tokens;
+        }
+
+        foreach (var message in chatHistory)
+        {
+            if (message.Metadata is not null &&
+                message.Metadata.TryGetValue("Usage", out object? usage) &&
+                usage is CompletionsUsage completionsUsage &&
+                completionsUsage is not null)
+            {
+                tokens += completionsUsage.TotalTokens;
+            }
+        }
+
+        return tokens;
     }
 
     private async Task<ChatMessageContent> ExecuteWithStopwatchAsync(Func<Task<ChatMessageContent>> action)
