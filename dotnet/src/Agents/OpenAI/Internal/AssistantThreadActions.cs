@@ -91,9 +91,7 @@ internal static class AssistantThreadActions
                 else if (content is ImageContent imageContent)
                 {
                     yield return MessageContent.FromImageUrl(
-                        imageContent.Uri != null ?
-                            imageContent.Uri :
-                            new Uri(Convert.ToBase64String(imageContent.Data?.ToArray() ?? []))); // %%% WUT A MESS - API BUG?
+                        imageContent.Uri ?? new Uri(Convert.ToBase64String(imageContent.Data?.ToArray() ?? []))); // %%% WUT A MESS - API BUG?
                 }
                 else if (content is FileReferenceContent fileContent)
                 {
@@ -159,6 +157,7 @@ internal static class AssistantThreadActions
     /// <param name="agent">The assistant agent to interact with the thread.</param>
     /// <param name="client">The assistant client</param>
     /// <param name="threadId">The thread identifier</param>
+    /// <param name="invocationSettings">Optional settings to utilize for the invocation</param>
     /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
@@ -166,6 +165,7 @@ internal static class AssistantThreadActions
         OpenAIAssistantAgent agent,
         AssistantClient client,
         string threadId,
+        OpenAIAssistantInvocationSettings? invocationSettings,
         ILogger logger,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -174,29 +174,10 @@ internal static class AssistantThreadActions
             throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");
         }
 
+        // Create run
         logger.LogDebug("[{MethodName}] Creating run for agent/thrad: {AgentId}/{ThreadId}", nameof(InvokeAsync), agent.Id, threadId);
 
-        RunCreationOptions options =
-            new()
-            {
-                //AdditionalInstructions, // %%% NO ???
-                //AdditionalMessages // %%% NO ???
-                //InstructionsOverride = agent.Instructions, // %%% RUN OVERRIDE
-                //MaxCompletionTokens // %%% RUN OVERRIDE
-                //MaxPromptTokens // %%% RUN OVERRIDE
-                //ModelOverride, // %%% RUN OVERRIDE
-                //NucleusSamplingFactor // %%% RUN OVERRIDE
-                //ParallelToolCallsEnabled = true, // %%% RUN OVERRIDE + AGENT
-                //ResponseFormat = // %%% RUN OVERRIDE
-                //ToolConstraint // %%% RUN OVERRIDE + AGENT
-                //ToolsOverride // %%% RUN OVERRIDE
-                //Temperature = agent.Definition.Temperature, // %%% RUN OVERRIDE
-                //TruncationStrategy // %%% RUN OVERRIDE + AGENT
-            };
-
-        options.ToolsOverride.AddRange(agent.Tools);
-
-        // Create run
+        RunCreationOptions options = GenerateRunCreationOptions(agent, invocationSettings);
         ThreadRun run = await client.CreateRunAsync(threadId, agent.Id, options, cancellationToken).ConfigureAwait(false);
 
         logger.LogInformation("[{MethodName}] Created run: {RunId}", nameof(InvokeAsync), run.Id);
@@ -554,4 +535,41 @@ internal static class AssistantThreadActions
 
         return toolOutputs;
     }
+
+    private static RunCreationOptions GenerateRunCreationOptions(OpenAIAssistantAgent agent, OpenAIAssistantInvocationSettings? invocationSettings)
+    {
+        int? truncationMessageCount = ResolveExecutionSetting(invocationSettings?.TruncationMessageCount, agent.Definition.ExecutionSettings?.TruncationMessageCount);
+
+        RunCreationOptions options =
+            new()
+            {
+                MaxCompletionTokens = ResolveExecutionSetting(invocationSettings?.MaxCompletionTokens, agent.Definition.ExecutionSettings?.MaxCompletionTokens),
+                MaxPromptTokens = ResolveExecutionSetting(invocationSettings?.MaxPromptTokens, agent.Definition.ExecutionSettings?.MaxPromptTokens),
+                ModelOverride = invocationSettings?.ModelName,
+                NucleusSamplingFactor = ResolveExecutionSetting(invocationSettings?.TopP, agent.Definition.TopP),
+                ParallelToolCallsEnabled = ResolveExecutionSetting(invocationSettings?.ParallelToolCallsEnabled, agent.Definition.ExecutionSettings?.ParallelToolCallsEnabled),
+                ResponseFormat = ResolveExecutionSetting(invocationSettings?.EnableJsonResponse, agent.Definition.EnableJsonResponse) ?? false ? AssistantResponseFormat.JsonObject : null,
+                Temperature = ResolveExecutionSetting(invocationSettings?.Temperature, agent.Definition.Temperature),
+                //ToolConstraint // %%% RUN OVERRIDE + AGENT
+                TruncationStrategy = truncationMessageCount.HasValue ? RunTruncationStrategy.CreateLastMessagesStrategy(truncationMessageCount.Value) : null,
+            };
+
+        options.ToolsOverride.AddRange(agent.Tools); // %%%
+
+        if (invocationSettings?.Metadata != null)
+        {
+            foreach (var metadata in invocationSettings.Metadata)
+            {
+                options.Metadata.Add(metadata.Key, metadata.Value ?? string.Empty);
+            }
+        }
+
+        return options;
+    }
+
+    private static TValue? ResolveExecutionSetting<TValue>(TValue? setting, TValue? agentSetting) where TValue : struct
+        =>
+            setting.HasValue && (!agentSetting.HasValue || !EqualityComparer<TValue>.Default.Equals(setting.Value, agentSetting.Value)) ?
+                setting.Value :
+                null;
 }

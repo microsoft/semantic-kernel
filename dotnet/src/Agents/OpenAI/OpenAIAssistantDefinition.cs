@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// The data associated with an assistant's definition.
+/// Defines an assistant.
 /// </summary>
 public sealed class OpenAIAssistantDefinition
 {
@@ -44,14 +44,21 @@ public sealed class OpenAIAssistantDefinition
     public bool EnableJsonResponse { get; init; }
 
     /// <summary>
-    /// %%%
+    /// A set of up to 16 key/value pairs that can be attached to an agent, used for
+    /// storing additional information about that object in a structured format.Keys
+    /// may be up to 64 characters in length and values may be up to 512 characters in length.
     /// </summary>
-    public float? NucleusSamplingFactor { get; init; }
+    public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
     /// <summary>
     /// %%%
     /// </summary>
     public float? Temperature { get; init; }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public float? TopP { get; init; }
 
     /// <summary>
     /// Enables file-serach if specified.
@@ -61,9 +68,7 @@ public sealed class OpenAIAssistantDefinition
     // %%% CODE INTERPRETER FILEIDS
 
     /// <summary>
-    /// A set of up to 16 key/value pairs that can be attached to an agent, used for
-    /// storing additional information about that object in a structured format.Keys
-    /// may be up to 64 characters in length and values may be up to 512 characters in length.
+    /// %%%
     /// </summary>
-    public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    public OpenAIAssistantExecutionSettings? ExecutionSettings { get; init; }
 }

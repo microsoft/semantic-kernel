@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,8 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 public sealed class OpenAIAssistantAgent : KernelAgent
 {
+    private const string SettingsMetadataKey = "__settings";
+
     private readonly Assistant _assistant;
     private readonly AssistantClient _client;
     private readonly string[] _channelKeys;
@@ -201,13 +204,26 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync( // %%% OPTIONS
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
+        CancellationToken cancellationToken = default)
+            => this.InvokeAsync(threadId, settings: null, cancellationToken);
+
+    /// <summary>
+    /// Invoke the assistant on the specified thread.
+    /// </summary>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="settings">%%%</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        string threadId,
+        OpenAIAssistantInvocationSettings? settings,
         CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
-        return AssistantThreadActions.InvokeAsync(this, this._client, threadId, this.Logger, cancellationToken);
+        return AssistantThreadActions.InvokeAsync(this, this._client, threadId, settings, this.Logger, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -258,7 +274,15 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
     private static OpenAIAssistantDefinition CreateAssistantDefinition(Assistant model)
-        =>
+    {
+        OpenAIAssistantExecutionSettings? settings = null;
+
+        if (model.Metadata.TryGetValue(SettingsMetadataKey, out string? settingsJson))
+        {
+            settings = JsonSerializer.Deserialize<OpenAIAssistantExecutionSettings>(settingsJson);
+        }
+
+        return
             new()
             {
                 Id = model.Id,
@@ -268,11 +292,13 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 EnableCodeInterpreter = model.Tools.Any(t => t is CodeInterpreterToolDefinition),
                 Metadata = model.Metadata,
                 ModelName = model.Model,
-                EnableJsonResponse = model.ResponseFormat == AssistantResponseFormat.JsonObject,
-                NucleusSamplingFactor = model.NucleusSamplingFactor,
+                EnableJsonResponse = model.ResponseFormat is not null && model.ResponseFormat == AssistantResponseFormat.JsonObject,
+                TopP = model.NucleusSamplingFactor,
                 Temperature = model.Temperature,
                 VectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.Single(),
+                ExecutionSettings = settings,
             };
+    }
 
     private static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
     {
@@ -301,7 +327,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 ToolResources = toolResources,
                 ResponseFormat = definition.EnableJsonResponse ? AssistantResponseFormat.JsonObject : AssistantResponseFormat.Auto,
                 Temperature = definition.Temperature,
-                NucleusSamplingFactor = definition.NucleusSamplingFactor,
+                NucleusSamplingFactor = definition.TopP,
             };
 
         if (definition.Metadata != null)
@@ -310,6 +336,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             {
                 assistantCreationOptions.Metadata[item.Key] = item.Value;
             }
+        }
+
+        if (definition.ExecutionSettings != null)
+        {
+            string settingsJson = JsonSerializer.Serialize(definition.ExecutionSettings);
+            assistantCreationOptions.Metadata[SettingsMetadataKey] = settingsJson;
         }
 
         if (definition.EnableCodeInterpreter)
