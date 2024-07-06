@@ -310,7 +310,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         this.SetupResponses(
             HttpStatusCode.OK,
             ResponseContent.ListAgentsPageMore,
-            ResponseContent.ListAgentsPageMore);
+            ResponseContent.ListAgentsPageFinal);
 
         messages =
             await OpenAIAssistantAgent.ListDefinitionsAsync(
