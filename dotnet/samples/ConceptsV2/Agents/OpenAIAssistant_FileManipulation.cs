@@ -35,6 +35,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
                 config: GetOpenAIConfiguration(),
                 new()
                 {
+                    CodeInterpterFileIds = [uploadFile.Id],
                     EnableCodeInterpreter = true, // Enable code-interpreter
                     ModelName = this.Model,
                 });
@@ -58,11 +59,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(
-                new(AuthorRole.User, content: null)
-                {
-                    Items = [new TextContent(input), new FileReferenceContent(uploadFile.Id)]
-                });
+            chat.AddChatMessage(new(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
