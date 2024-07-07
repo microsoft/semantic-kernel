@@ -131,19 +131,9 @@ internal static class AssistantThreadActions
 
             foreach (MessageContent itemContent in message.Content)
             {
-                ChatMessageContent? content = null;
+                ChatMessageContent content = GenerateMessageContent(role, assistantName, itemContent);
 
-                if (!string.IsNullOrEmpty(itemContent.Text))
-                {
-                    content = GenerateTextMessageContent(assistantName, role, itemContent);
-                }
-                // Process image content
-                else if (itemContent.ImageFileId != null)
-                {
-                    content = GenerateImageFileContent(assistantName, role, itemContent);
-                }
-
-                if (content is not null)
+                if (content.Items.Count > 0)
                 {
                     yield return content;
                 }
@@ -277,20 +267,9 @@ internal static class AssistantThreadActions
 
                         foreach (MessageContent itemContent in message.Content)
                         {
-                            ChatMessageContent? content = null; // %%% ITEMS
+                            ChatMessageContent content = GenerateMessageContent(role, agent.Name, itemContent);
 
-                            // Process text content
-                            if (!string.IsNullOrEmpty(itemContent.Text))
-                            {
-                                content = GenerateTextMessageContent(agent.GetName(), role, itemContent);
-                            }
-                            // Process image content
-                            else if (itemContent.ImageFileId != null)
-                            {
-                                content = GenerateImageFileContent(agent.GetName(), role, itemContent);
-                            }
-
-                            if (content is not null)
+                            if (content.Items.Count > 0)
                             {
                                 ++messageCount;
 
@@ -425,42 +404,6 @@ internal static class AssistantThreadActions
             };
     }
 
-    private static ChatMessageContent GenerateImageFileContent(string agentName, AuthorRole role, MessageContent contentImage)
-    {
-        return
-            new ChatMessageContent(
-                role,
-                [
-                    new FileReferenceContent(contentImage.ImageFileId)
-                ])
-            {
-                AuthorName = agentName,
-            };
-    }
-
-    private static ChatMessageContent? GenerateTextMessageContent(string agentName, AuthorRole role, MessageContent contentMessage)
-    {
-        ChatMessageContent? messageContent = null;
-
-        string textContent = contentMessage.Text.Trim();
-
-        if (!string.IsNullOrWhiteSpace(textContent))
-        {
-            messageContent =
-                new(role, textContent)
-                {
-                    AuthorName = agentName
-                };
-
-            foreach (TextAnnotation annotation in contentMessage.TextAnnotations)
-            {
-                messageContent.Items.Add(GenerateAnnotationContent(annotation));
-            }
-        }
-
-        return messageContent;
-    }
-
     private static ChatMessageContent GenerateCodeInterpreterContent(string agentName, string code)
     {
         return
@@ -501,6 +444,31 @@ internal static class AssistantThreadActions
                 result));
 
         return functionCallContent;
+    }
+
+    private static ChatMessageContent GenerateMessageContent(AuthorRole role, string? assistantName, MessageContent itemContent)
+    {
+        ChatMessageContent content =
+            new(role, content: null)
+            {
+                AuthorName = assistantName,
+            };
+
+        if (!string.IsNullOrEmpty(itemContent.Text))
+        {
+            content.Items.Add(new TextContent(itemContent.Text.Trim()));
+            foreach (TextAnnotation annotation in itemContent.TextAnnotations)
+            {
+                content.Items.Add(GenerateAnnotationContent(annotation));
+            }
+        }
+        // Process image content
+        else if (itemContent.ImageFileId != null)
+        {
+            content.Items.Add(new FileReferenceContent(itemContent.ImageFileId));
+        }
+
+        return content;
     }
 
     private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionSteps, CancellationToken cancellationToken)
