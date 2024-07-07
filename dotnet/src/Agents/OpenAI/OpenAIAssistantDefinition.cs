@@ -34,7 +34,7 @@ public sealed class OpenAIAssistantDefinition
     public string? Name { get; init; }
 
     /// <summary>
-    /// Optional file-ids made available to the code_interpreter tool.
+    /// Optional file-ids made available to the code_interpreter tool, if enabled.
     /// </summary>
     public IReadOnlyList<string>? CodeInterpterFileIds { get; init; }
 
