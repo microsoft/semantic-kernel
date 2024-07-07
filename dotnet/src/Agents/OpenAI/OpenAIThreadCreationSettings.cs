@@ -24,7 +24,7 @@ public sealed class OpenAIThreadCreationSettings
     public IReadOnlyList<ChatMessageContent>? Messages { get; init; }
 
     /// <summary>
-    /// Enables file-serach if specified.
+    /// Enables file-search if specified.
     /// </summary>
     public string? VectorStoreId { get; init; }
 

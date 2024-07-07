@@ -71,7 +71,7 @@ public sealed class OpenAIAssistantDefinition
     public float? TopP { get; init; }
 
     /// <summary>
-    /// Enables file-serach if specified.
+    /// Enables file-search if specified.
     /// </summary>
     public string? VectorStoreId { get; init; }
 
