@@ -3,10 +3,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Files;
-using OpenAI;
-using Resources;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.VectorStores;
+using Resources;
 
 namespace Agents;
 
@@ -23,27 +22,17 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task UseRetrievalToolWithOpenAIAssistantAgentAsync()
     {
-        OpenAIClient rootClient = OpenAIClientFactory.CreateClient(GetOpenAIConfiguration()); // %%% HACK
-        FileClient fileClient = rootClient.GetFileClient();
-
-        Stream fileStream = EmbeddedResource.ReadStream("travelinfo.txt")!; // %%% USING
-        OpenAIFileInfo fileInfo =
-            await fileClient.UploadFileAsync(
-                    fileStream,
-                    "travelinfo.txt",
-                    FileUploadPurpose.Assistants);
+        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
+        OpenAIFileReference uploadFile =
+            await fileService.UploadContentAsync(new BinaryContent(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!, "text/plain"),
+                new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
         VectorStore vectorStore =
             await new OpenAIVectorStoreBuilder(GetOpenAIConfiguration())
-                .AddFile(fileInfo.Id)
+                .AddFile(uploadFile.Id)
                 .CreateAsync();
 
         OpenAIVectorStore openAIStore = new(vectorStore.Id, GetOpenAIConfiguration());
-
-        //OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey); // %%% USE THIS
-        //OpenAIFileReference uploadFile =
-        //    await fileService.UploadContentAsync(new BinaryContent(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!, "text/plain"),
-        //        new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -70,6 +59,7 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
         {
             await agent.DeleteAsync();
             await openAIStore.DeleteAsync();
+            await fileService.DeleteFileAsync(uploadFile.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

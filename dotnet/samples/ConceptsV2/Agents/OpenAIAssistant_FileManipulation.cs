@@ -4,8 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI;
-using OpenAI.Files;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Resources;
 
 namespace Agents;
@@ -23,21 +22,11 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
     [Fact]
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
-        OpenAIClient rootClient = OpenAIClientFactory.CreateClient(GetOpenAIConfiguration()); // %%% HACK
-        FileClient fileClient = rootClient.GetFileClient();
-
-        await using Stream fileStream = EmbeddedResource.ReadStream("sales.csv")!;
-        OpenAIFileInfo fileInfo =
-            await fileClient.UploadFileAsync(
-                    fileStream,
-                    "sales.csv",
-                    FileUploadPurpose.Assistants);
-
-        //OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey); // %%% USE THIS
-        //OpenAIFileReference uploadFile =
-        //    await fileService.UploadContentAsync(
-        //        new BinaryContent(await EmbeddedResource.ReadAllAsync("sales.csv"), mimeType: "text/plain"),
-        //        new OpenAIFileUploadExecutionSettings("sales.csv", OpenAIFilePurpose.Assistants));
+        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
+        OpenAIFileReference uploadFile =
+            await fileService.UploadContentAsync(
+                new BinaryContent(await EmbeddedResource.ReadAllAsync("sales.csv"), mimeType: "text/plain"),
+                new OpenAIFileUploadExecutionSettings("sales.csv", OpenAIFilePurpose.Assistants));
 
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -63,8 +52,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
         finally
         {
             await agent.DeleteAsync();
-            //await fileService.DeleteFileAsync(uploadFile.Id); // %%% USE THIS
-            await fileClient.DeleteFileAsync(fileInfo.Id); // %%% HACK
+            await fileService.DeleteFileAsync(uploadFile.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -73,7 +61,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
             chat.AddChatMessage(
                 new(AuthorRole.User, content: null)
                 {
-                    Items = [new TextContent(input), new FileReferenceContent(fileInfo.Id)]
+                    Items = [new TextContent(input), new FileReferenceContent(uploadFile.Id)]
                 });
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
@@ -84,12 +72,10 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
 
                 foreach (AnnotationContent annotation in message.Items.OfType<AnnotationContent>())
                 {
-                    Console.WriteLine($"\n* '{annotation.Quote}' => {annotation.FileId}"); // %%% HACK
-                    BinaryData fileData = await fileClient.DownloadFileAsync(annotation.FileId!);
-                    Console.WriteLine(Encoding.Default.GetString(fileData.ToArray()));
-                    //BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!); // %%% USE THIS
-                    //byte[] byteContent = fileContent.Data?.ToArray() ?? [];
-                    //Console.WriteLine(Encoding.Default.GetString(byteContent));
+                    Console.WriteLine($"\n* '{annotation.Quote}' => {annotation.FileId}");
+                    BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!);
+                    byte[] byteContent = fileContent.Data?.ToArray() ?? [];
+                    Console.WriteLine(Encoding.Default.GetString(byteContent));
                 }
             }
         }
