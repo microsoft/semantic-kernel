@@ -38,7 +38,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
 
         if (this.UseOpenAIConfig)
         {
-            //serviceContainer.AddOpenAIChatCompletion( %%%
+            //serviceContainer.AddOpenAIChatCompletion( // %%% CONNECTOR IMPL
             //    TestConfiguration.OpenAI.ChatModelId,
             //    TestConfiguration.OpenAI.ApiKey);
         }

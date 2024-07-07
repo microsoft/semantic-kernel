@@ -51,13 +51,18 @@ public sealed class OpenAIAssistantDefinition
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
     /// <summary>
-    /// %%%
+    /// The sampling temperature to use, between 0 and 2.
     /// </summary>
     public float? Temperature { get; init; }
 
     /// <summary>
-    /// %%%
+    /// An alternative to sampling with temperature, called nucleus sampling, where the model
+    /// considers the results of the tokens with top_p probability mass.
+    /// So 0.1 means only the tokens comprising the top 10% probability mass are considered.
     /// </summary>
+    /// <remarks>
+    /// Recommended to set this or temperature but not both.
+    /// </remarks>
     public float? TopP { get; init; }
 
     /// <summary>
@@ -68,7 +73,7 @@ public sealed class OpenAIAssistantDefinition
     // %%% CODE INTERPRETER FILEIDS
 
     /// <summary>
-    /// %%%
+    /// Default execution settings for each agent invocation.
     /// </summary>
     public OpenAIAssistantExecutionSettings? ExecutionSettings { get; init; }
 }

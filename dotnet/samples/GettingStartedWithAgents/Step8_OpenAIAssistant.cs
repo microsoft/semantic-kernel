@@ -26,7 +26,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: OpenAIConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!)), // %%% MODES
+                config: GetOpenAIConfiguration(),
                 new()
                 {
                     Instructions = HostInstructions,
@@ -71,6 +71,12 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
             }
         }
     }
+
+    private OpenAIConfiguration GetOpenAIConfiguration()
+        =>
+            this.UseOpenAIConfig ?
+                OpenAIConfiguration.ForOpenAI(this.ApiKey) :
+                OpenAIConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 
     private sealed class MenuPlugin
     {

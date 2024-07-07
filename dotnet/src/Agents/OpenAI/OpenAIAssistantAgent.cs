@@ -23,7 +23,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     private readonly string[] _channelKeys;
 
     /// <summary>
-    /// %%%
+    /// The assistant definition.
     /// </summary>
     public OpenAIAssistantDefinition Definition { get; private init; }
 
@@ -34,7 +34,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     public bool IsDeleted { get; private set; }
 
     /// <summary>
-    /// %%%
+    /// Defines polling behavior for run processing
     /// </summary>
     public RunPollingConfiguration Polling { get; } = new();
 
@@ -213,7 +213,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Invoke the assistant on the specified thread.
     /// </summary>
     /// <param name="threadId">The thread identifier</param>
-    /// <param name="settings">%%%</param>
+    /// <param name="settings">Optional invocation settings</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(

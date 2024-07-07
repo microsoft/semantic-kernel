@@ -23,7 +23,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
     [Fact]
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
-        OpenAIClient rootClient = OpenAIClientFactory.CreateClient(GetOpenAIConfiguration());
+        OpenAIClient rootClient = OpenAIClientFactory.CreateClient(GetOpenAIConfiguration()); // %%% HACK
         FileClient fileClient = rootClient.GetFileClient();
 
         await using Stream fileStream = EmbeddedResource.ReadStream("sales.csv")!;
@@ -33,7 +33,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
                     "sales.csv",
                     FileUploadPurpose.Assistants);
 
-        //OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey); %%%
+        //OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey); // %%% USE THIS
         //OpenAIFileReference uploadFile =
         //    await fileService.UploadContentAsync(
         //        new BinaryContent(await EmbeddedResource.ReadAllAsync("sales.csv"), mimeType: "text/plain"),
@@ -63,8 +63,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
         finally
         {
             await agent.DeleteAsync();
-            //await fileService.DeleteFileAsync(uploadFile.Id); %%%
-            await fileClient.DeleteFileAsync(fileInfo.Id);
+            //await fileService.DeleteFileAsync(uploadFile.Id); // %%% USE THIS
+            await fileClient.DeleteFileAsync(fileInfo.Id); // %%% HACK
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -84,10 +84,10 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
 
                 foreach (AnnotationContent annotation in message.Items.OfType<AnnotationContent>())
                 {
-                    Console.WriteLine($"\n* '{annotation.Quote}' => {annotation.FileId}");
+                    Console.WriteLine($"\n* '{annotation.Quote}' => {annotation.FileId}"); // %%% HACK
                     BinaryData fileData = await fileClient.DownloadFileAsync(annotation.FileId!);
                     Console.WriteLine(Encoding.Default.GetString(fileData.ToArray()));
-                    //BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!); %%%
+                    //BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!); // %%% USE THIS
                     //byte[] byteContent = fileContent.Data?.ToArray() ?? [];
                     //Console.WriteLine(Encoding.Default.GetString(byteContent));
                 }

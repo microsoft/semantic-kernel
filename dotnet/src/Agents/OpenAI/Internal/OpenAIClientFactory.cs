@@ -16,10 +16,10 @@ internal static class OpenAIClientFactory
     private const string SingleSpaceKey = " ";
 
     /// <summary>
-    /// %%%
+    /// Creates an OpenAI client based on the provided configuration.
     /// </summary>
-    /// <param name="config"></param>
-    /// <returns></returns>
+    /// <param name="config">Configuration required to target a specific Open AI service</param>
+    /// <returns>An initialized Open AI client</returns>
     public static OpenAIClient CreateClient(OpenAIConfiguration config)
     {
         // Inspect options

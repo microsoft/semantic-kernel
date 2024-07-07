@@ -550,11 +550,11 @@ internal static class AssistantThreadActions
                 ParallelToolCallsEnabled = ResolveExecutionSetting(invocationSettings?.ParallelToolCallsEnabled, agent.Definition.ExecutionSettings?.ParallelToolCallsEnabled),
                 ResponseFormat = ResolveExecutionSetting(invocationSettings?.EnableJsonResponse, agent.Definition.EnableJsonResponse) ?? false ? AssistantResponseFormat.JsonObject : null,
                 Temperature = ResolveExecutionSetting(invocationSettings?.Temperature, agent.Definition.Temperature),
-                //ToolConstraint // %%% RUN OVERRIDE + AGENT
+                //ToolConstraint // %%% TODO
                 TruncationStrategy = truncationMessageCount.HasValue ? RunTruncationStrategy.CreateLastMessagesStrategy(truncationMessageCount.Value) : null,
             };
 
-        options.ToolsOverride.AddRange(agent.Tools); // %%%
+        options.ToolsOverride.AddRange(agent.Tools);
 
         if (invocationSettings?.Metadata != null)
         {

@@ -73,7 +73,7 @@ public sealed class OpenAIVectorStore
     /// <returns></returns>
     public async IAsyncEnumerable<string> GetFilesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (VectorStoreFileAssociation file in this._client.GetFileAssociationsAsync(this.VectorStoreId, ListOrder.NewestFirst, filter: null, cancellationToken).ConfigureAwait(false)) // %%% FILTER
+        await foreach (VectorStoreFileAssociation file in this._client.GetFileAssociationsAsync(this.VectorStoreId, ListOrder.NewestFirst, filter: null, cancellationToken).ConfigureAwait(false))
         {
             yield return file.FileId;
         }
