@@ -2,7 +2,7 @@
 	"image": "mcr.microsoft.com/devcontainers/universal:2",
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
-		"ghcr.io/devcontainers/features/dotnet:1": {
+		"ghcr.io/devcontainers/features/dotnet:2.0.6": {
 			"version": "8"
 		},
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
@@ -12,7 +12,8 @@
 			"extensions": [
 				"ms-dotnettools.dotnet-interactive-vscode",
 				"ms-semantic-kernel.semantic-kernel",
-				"esbenp.prettier-vscode"
+				"esbenp.prettier-vscode",
+				"ms-dotnettools.csdevkit"
 			]
 		}
 	},

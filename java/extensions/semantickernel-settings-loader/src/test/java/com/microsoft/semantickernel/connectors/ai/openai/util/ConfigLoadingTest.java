@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.util;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,9 +8,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
+
+/**
+ * This class contains unit tests for loading configurations in the OpenAIAsyncClient.
+ */
+/**
+ * This class contains unit tests for loading configurations in the OpenAIAsyncClient.
+ */
 public class ConfigLoadingTest {
 
     @Test
@@ -45,14 +53,13 @@ public class ConfigLoadingTest {
         File props = Files.createTempFile(dir, "a", ".properties").toFile();
 
         try (FileWriter fos = new FileWriter(props)) {
-            entries.forEach(
-                    e -> {
-                        try {
-                            fos.write(e + System.lineSeparator());
-                        } catch (IOException ioException) {
-                            ioException.printStackTrace();
-                        }
-                    });
+            entries.forEach((String e) -> {
+                try {
+                    fos.write(e + System.lineSeparator());
+                } catch (IOException ioException) {
+                    throw new RuntimeException(ioException);
+                }
+            });
         }
         return props;
     }
