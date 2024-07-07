@@ -6,7 +6,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Defines per invocation execution settings.
 /// </summary>
-public sealed class OpenAIAssistantInvocationSettings : OpenAIAssistantExecutionSettings
+public sealed class OpenAIAssistantInvocationSettings
 {
     /// <summary>
     /// Identifies the AI model targeted by the agent.
@@ -28,6 +28,28 @@ public sealed class OpenAIAssistantInvocationSettings : OpenAIAssistantExecution
     /// </summary>
     public bool? EnableJsonResponse { get; init; }
 
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public int? MaxCompletionTokens { get; init; }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public int? MaxPromptTokens { get; init; }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public bool? ParallelToolCallsEnabled { get; init; }
+
+    //public ToolConstraint? RequiredTool { get; init; } %%% ENUM ???
+    //public KernelFunction? RequiredToolFunction { get; init; } %%% PLUGIN ???
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public int? TruncationMessageCount { get; init; }
     /// <summary>
     /// %%%
     /// </summary>

@@ -4,7 +4,10 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Defines agent execution settings.
 /// </summary>
-public class OpenAIAssistantExecutionSettings
+/// <remarks>
+/// %%%
+/// </remarks>
+public sealed class OpenAIAssistantExecutionSettings
 {
     /// <summary>
     /// %%%
@@ -21,7 +24,8 @@ public class OpenAIAssistantExecutionSettings
     /// </summary>
     public bool? ParallelToolCallsEnabled { get; init; }
 
-    //ToolConstraint // %%%
+    //public ToolConstraint? RequiredTool { get; init; } %%% ENUM ???
+    //public KernelFunction? RequiredToolFunction { get; init; } %%% PLUGIN ???
 
     /// <summary>
     /// %%%
