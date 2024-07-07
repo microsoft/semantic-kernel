@@ -26,7 +26,7 @@ public static class OpenAIKernelBuilderExtensions
 {
     #region Text Embedding
     /// <summary>
-    /// Adds the OpenAI text embeddings service to the list.
+    /// Adds <see cref="OpenAITextEmbeddingGenerationService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -64,7 +64,7 @@ public static class OpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds the OpenAI text embeddings service to the list.
+    /// Adds the <see cref="OpenAITextEmbeddingGenerationService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -95,7 +95,7 @@ public static class OpenAIKernelBuilderExtensions
 
     #region Text to Image
     /// <summary>
-    /// Add the OpenAI text-to-image service to the list
+    /// Adds the <see cref="OpenAITextToImageService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -121,7 +121,7 @@ public static class OpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Add the OpenAI text-to-image service to the list
+    /// Adds the <see cref="OpenAITextToImageService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">The model to use for image generation.</param>
@@ -159,7 +159,7 @@ public static class OpenAIKernelBuilderExtensions
     #region Text to Audio
 
     /// <summary>
-    /// Adds the OpenAI text-to-audio service to the list.
+    /// Adds the <see cref="OpenAITextToAudioService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -194,7 +194,7 @@ public static class OpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Add the OpenAI text-to-audio service to the list
+    /// Adds the <see cref="OpenAITextToAudioService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -224,7 +224,7 @@ public static class OpenAIKernelBuilderExtensions
     #region Audio-to-Text
 
     /// <summary>
-    /// Adds the OpenAI audio-to-text service to the list.
+    /// Adds the <see cref="OpenAIAudioToTextService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -260,7 +260,7 @@ public static class OpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds the OpenAI audio-to-text service to the list.
+    /// Adds the <see cref="OpenAIAudioToTextService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model id</param>
@@ -282,6 +282,40 @@ public static class OpenAIKernelBuilderExtensions
                 serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, (Func<IServiceProvider, object?, OpenAIAudioToTextService>)Factory);
+
+        return builder;
+    }
+
+    #endregion
+
+    #region Files
+
+    /// <summary>
+    /// Adds the <see cref="OpenAIFileService"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddOpenAIFiles(
+        this IKernelBuilder builder,
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        builder.Services.AddKeyedSingleton(serviceId, (serviceProvider, _) =>
+            new OpenAIFileService(
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
     }

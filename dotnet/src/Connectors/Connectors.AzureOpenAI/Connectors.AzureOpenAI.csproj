@@ -22,8 +22,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Core\ClientCore.TextToImage.cs" />
-    <Compile Remove="Services\AzureOpenAITextToImageService.cs" />
+    <Compile Remove="Core\ClientCore.AudioToText.cs" />
+    <Compile Remove="Services\AzureOpenAIAudioToTextService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Core\ClientCore.TextToImage.cs" />
-    <None Include="Services\AzureOpenAITextToImageService.cs" />
+    <None Include="Core\ClientCore.AudioToText.cs" />
+    <None Include="Services\AzureOpenAIAudioToTextService.cs" />
   </ItemGroup>
 
   <ItemGroup>

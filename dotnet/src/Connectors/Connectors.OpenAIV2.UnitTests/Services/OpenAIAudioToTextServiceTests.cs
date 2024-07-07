@@ -45,6 +45,18 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
         Assert.Equal("model-id", service.Attributes["ModelId"]);
     }
 
+    [Fact]
+    public void ItThrowsIfModelIdIsNotProvided()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => new OpenAIAudioToTextService(" ", "apikey"));
+        Assert.Throws<ArgumentException>(() => new OpenAIAudioToTextService(" ", openAIClient: new("apikey")));
+        Assert.Throws<ArgumentException>(() => new OpenAIAudioToTextService("", "apikey"));
+        Assert.Throws<ArgumentException>(() => new OpenAIAudioToTextService("", openAIClient: new("apikey")));
+        Assert.Throws<ArgumentNullException>(() => new OpenAIAudioToTextService(null!, "apikey"));
+        Assert.Throws<ArgumentNullException>(() => new OpenAIAudioToTextService(null!, openAIClient: new("apikey")));
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

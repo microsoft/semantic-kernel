@@ -24,7 +24,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     private readonly int? _dimensions;
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client instance using API Key auth.
+    /// Initializes a new instance of the <see cref="AzureOpenAITextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -50,7 +50,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client instance supporting AAD auth.
+    /// Initializes a new instance of the <see cref="AzureOpenAITextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -76,21 +76,21 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     }
 
     /// <summary>
-    /// Creates a new <see cref="AzureOpenAITextEmbeddingGenerationService"/> client.
+    /// Initializes a new instance of the <see cref="AzureOpenAITextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="openAIClient">Custom <see cref="AzureOpenAIClient"/> for HTTP requests.</param>
+    /// <param name="azureOpenAIClient">Custom <see cref="AzureOpenAIClient"/> for HTTP requests.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
-        AzureOpenAIClient openAIClient,
+        AzureOpenAIClient azureOpenAIClient,
         string? modelId = null,
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
     {
-        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
+        this._core = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
 

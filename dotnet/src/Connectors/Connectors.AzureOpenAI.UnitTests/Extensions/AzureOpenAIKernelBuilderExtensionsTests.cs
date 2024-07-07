@@ -9,21 +9,23 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToAudio;
+using Microsoft.SemanticKernel.TextToImage;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 
 /// <summary>
-/// Unit tests for the kernel builder extensions in the <see cref="AzureOpenAIServiceCollectionExtensions"/> class.
+/// Unit tests for the kernel builder extensions in the <see cref="AzureOpenAIKernelBuilderExtensions"/> class.
 /// </summary>
-public sealed class AzureOpenAIServiceKernelBuilderExtensionsTests
+public sealed class AzureOpenAIKernelBuilderExtensionsTests
 {
     #region Chat completion
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
-    [InlineData(InitializationType.OpenAIClientInline)]
-    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
     public void KernelBuilderAddAzureOpenAIChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
@@ -38,8 +40,8 @@ public sealed class AzureOpenAIServiceKernelBuilderExtensionsTests
         {
             InitializationType.ApiKey => builder.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key"),
             InitializationType.TokenCredential => builder.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint", credentials),
-            InitializationType.OpenAIClientInline => builder.AddAzureOpenAIChatCompletion("deployment-name", client),
-            InitializationType.OpenAIClientInServiceProvider => builder.AddAzureOpenAIChatCompletion("deployment-name"),
+            InitializationType.ClientInline => builder.AddAzureOpenAIChatCompletion("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIChatCompletion("deployment-name"),
             _ => builder
         };
 
@@ -58,8 +60,8 @@ public sealed class AzureOpenAIServiceKernelBuilderExtensionsTests
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
-    [InlineData(InitializationType.OpenAIClientInline)]
-    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
     public void KernelBuilderAddAzureOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
     {
         // Arrange
@@ -74,8 +76,8 @@ public sealed class AzureOpenAIServiceKernelBuilderExtensionsTests
         {
             InitializationType.ApiKey => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", "api-key"),
             InitializationType.TokenCredential => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", "https://endpoint", credentials),
-            InitializationType.OpenAIClientInline => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
-            InitializationType.OpenAIClientInServiceProvider => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
+            InitializationType.ClientInline => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAITextEmbeddingGeneration("deployment-name"),
             _ => builder
         };
 
@@ -88,12 +90,65 @@ public sealed class AzureOpenAIServiceKernelBuilderExtensionsTests
 
     #endregion
 
+    #region Text to audio
+
+    [Fact]
+    public void KernelBuilderAddAzureOpenAITextToAudioAddsValidService()
+    {
+        // Arrange
+        var sut = Kernel.CreateBuilder();
+
+        // Act
+        var service = sut.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key")
+            .Build()
+            .GetRequiredService<ITextToAudioService>();
+
+        // Assert
+        Assert.IsType<AzureOpenAITextToAudioService>(service);
+    }
+
+    #endregion
+
+    #region Text to image
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.TokenCredential)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
+    public void KernelBuilderExtensionsAddAzureOpenAITextToImageService(InitializationType type)
+    {
+        // Arrange
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+        var client = new AzureOpenAIClient(new Uri("http://localhost"), "key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<AzureOpenAIClient>(client);
+
+        // Act
+        builder = type switch
+        {
+            InitializationType.ApiKey => builder.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials),
+            InitializationType.ClientInline => builder.AddAzureOpenAITextToImage("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAITextToImage("deployment-name"),
+            _ => builder
+        };
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToImageService>();
+
+        Assert.True(service is AzureOpenAITextToImageService);
+    }
+
+    #endregion
+
     public enum InitializationType
     {
         ApiKey,
         TokenCredential,
-        OpenAIClientInline,
-        OpenAIClientInServiceProvider,
-        OpenAIClientEndpoint,
+        ClientInline,
+        ClientInServiceProvider,
+        ClientEndpoint,
     }
 }

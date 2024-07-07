@@ -29,7 +29,7 @@ public static class OpenAIServiceCollectionExtensions
 {
     #region Text Embedding
     /// <summary>
-    /// Adds the OpenAI text embeddings service to the list.
+    /// Adds the <see cref="OpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -63,7 +63,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds the OpenAI text embeddings service to the list.
+    /// Adds the <see cref="OpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">The OpenAI model id.</param>
@@ -91,7 +91,7 @@ public static class OpenAIServiceCollectionExtensions
 
     #region Text to Image
     /// <summary>
-    /// Add the OpenAI text-to-image service to the list
+    /// Adds the <see cref="OpenAITextToImageService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">The model to use for image generation.</param>
@@ -121,7 +121,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds the OpenAI text embeddings service to the list.
+    /// Adds the <see cref="OpenAITextToImageService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">The OpenAI model id.</param>
@@ -149,7 +149,7 @@ public static class OpenAIServiceCollectionExtensions
     #region Text to Audio
 
     /// <summary>
-    /// Adds the OpenAI text-to-audio service to the list.
+    /// Adds the <see cref="OpenAITextToAudioService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -180,7 +180,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds the OpenAI text-to-audio service to the list.
+    /// Adds the <see cref="OpenAITextToAudioService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -208,7 +208,7 @@ public static class OpenAIServiceCollectionExtensions
     #region Audio-to-Text
 
     /// <summary>
-    /// Adds the OpenAI audio-to-text service to the list.
+    /// Adds the <see cref="OpenAIAudioToTextService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -242,7 +242,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds the OpenAI audio-to-text service to the list.
+    /// Adds the <see cref="OpenAIAudioToTextService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model id</param>
@@ -265,5 +265,37 @@ public static class OpenAIServiceCollectionExtensions
 
         return services;
     }
+    #endregion
+
+    #region Files
+
+    /// <summary>
+    /// Adds the <see cref="OpenAIFileService"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddOpenAIFiles(
+        this IServiceCollection services,
+        string apiKey,
+        string? orgId = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        services.AddKeyedSingleton(serviceId, (serviceProvider, _) =>
+            new OpenAIFileService(
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
+
+        return services;
+    }
+
     #endregion
 }

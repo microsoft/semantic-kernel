@@ -1,28 +1,32 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
-/// Azure OpenAI chat completion service.
+/// Azure OpenAI audio-to-text service.
 /// </summary>
-public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, ITextGenerationService
+[Experimental("SKEXP0001")]
+public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
 {
-    /// <summary>Core implementation shared by Azure OpenAI clients.</summary>
-    private readonly ClientCore _core;
+    /// <summary>Core implementation shared by Azure OpenAI services.</summary>
+    private readonly AzureOpenAIClientCore _core;
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionService"/> class.
+    /// Creates an instance of the <see cref="AzureOpenAIAudioToTextService"/> with API key auth.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -30,7 +34,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAIChatCompletionService(
+    public AzureOpenAIAudioToTextService(
         string deploymentName,
         string endpoint,
         string apiKey,
@@ -38,13 +42,12 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
-
+        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIAudioToTextService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionService"/> class.
+    /// Creates an instance of the <see cref="AzureOpenAIAudioToTextService"/> with AAD auth.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -52,7 +55,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAIChatCompletionService(
+    public AzureOpenAIAudioToTextService(
         string deploymentName,
         string endpoint,
         TokenCredential credentials,
@@ -60,43 +63,32 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._core = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIAudioToTextService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionService"/> class.
+    /// Creates an instance of the <see cref="AzureOpenAIAudioToTextService"/> using the specified <see cref="OpenAIClient"/>.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="azureOpenAIClient">Custom <see cref="AzureOpenAIClient"/>.</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureOpenAIChatCompletionService(
+    public AzureOpenAIAudioToTextService(
         string deploymentName,
-        AzureOpenAIClient azureOpenAIClient,
+        OpenAIClient openAIClient,
         string? modelId = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIAudioToTextService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatAsTextStreamingContentsAsync(prompt, executionSettings, kernel, cancellationToken);
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+        AudioContent content,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+        => this._core.GetTextContentFromAudioAsync(content, executionSettings, cancellationToken);
 }
