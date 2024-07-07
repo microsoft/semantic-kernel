@@ -34,6 +34,11 @@ public sealed class OpenAIAssistantDefinition
     public string? Name { get; init; }
 
     /// <summary>
+    /// Optional file-ids made available to the code_interpreter tool.
+    /// </summary>
+    public IReadOnlyList<string>? CodeInterpterFileIds { get; init; }
+
+    /// <summary>
     /// Set if code-interpreter is enabled.
     /// </summary>
     public bool EnableCodeInterpreter { get; init; }
@@ -69,8 +74,6 @@ public sealed class OpenAIAssistantDefinition
     /// Enables file-serach if specified.
     /// </summary>
     public string? VectorStoreId { get; init; }
-
-    // %%% CODE INTERPRETER FILEIDS
 
     /// <summary>
     /// Default execution settings for each agent invocation.

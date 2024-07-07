@@ -289,6 +289,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 Name = model.Name,
                 Description = model.Description,
                 Instructions = model.Instructions,
+                CodeInterpterFileIds = (IReadOnlyList<string>?)(model.ToolResources?.CodeInterpreter?.FileIds),
                 EnableCodeInterpreter = model.Tools.Any(t => t is CodeInterpreterToolDefinition),
                 Metadata = model.Metadata,
                 ModelName = model.Model,
@@ -303,18 +304,29 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     private static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
     {
         bool enableFileSearch = !string.IsNullOrWhiteSpace(definition.VectorStoreId);
+        bool hasCodeInterpreterFiles = (definition.CodeInterpterFileIds?.Count ?? 0) > 0;
 
         ToolResources? toolResources = null;
 
-        if (enableFileSearch)
+        if (enableFileSearch || hasCodeInterpreterFiles)
         {
             toolResources =
                 new ToolResources()
                 {
-                    FileSearch = new FileSearchToolResources()
-                    {
-                        VectorStoreIds = [definition.VectorStoreId!],
-                    }
+                    FileSearch =
+                        enableFileSearch ?
+                            new FileSearchToolResources()
+                            {
+                                VectorStoreIds = [definition.VectorStoreId!],
+                            } :
+                            null,
+                    CodeInterpreter =
+                        hasCodeInterpreterFiles ?
+                            new CodeInterpreterToolResources()
+                            {
+                                FileIds = (IList<string>)definition.CodeInterpterFileIds!,
+                            } :
+                            null,
                 };
         }
 
