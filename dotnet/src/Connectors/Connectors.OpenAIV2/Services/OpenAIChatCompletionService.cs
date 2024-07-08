@@ -78,7 +78,6 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         var providedEndpoint = endpoint ?? httpClient?.BaseAddress;
         if (providedEndpoint is not null)
         {
-
             // If the provided endpoint does provide path, we add a version base path for compatibility
             if (providedEndpoint.PathAndQuery.Length == 0 || providedEndpoint.PathAndQuery == "/")
             {
