@@ -12,4 +12,5 @@ internal sealed class OpenAIConfiguration(string serviceId, string modelId, stri
     public string ModelId { get; set; } = modelId;
     public string? ChatModelId { get; set; } = chatModelId;
     public string ApiKey { get; set; } = apiKey;
+    public string? Endpoint { get; set; }
 }
