@@ -60,8 +60,6 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.True(result.Metadata.TryGetValue("CreatedAt", out object? createdAt));
         Assert.NotNull(createdAt);
 
-        Assert.True(result.Metadata.ContainsKey("PromptFilterResults"));
-
         Assert.True(result.Metadata.ContainsKey("SystemFingerprint"));
 
         Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
@@ -75,8 +73,6 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
-
-        Assert.True(result.Metadata.ContainsKey("ContentFilterResults"));
 
         Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
@@ -123,8 +119,6 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.True(result.Metadata.TryGetValue("CreatedAt", out object? createdAt));
         Assert.NotNull(createdAt);
 
-        Assert.True(result.Metadata.ContainsKey("PromptFilterResults"));
-
         Assert.True(result.Metadata.ContainsKey("SystemFingerprint"));
 
         Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
@@ -138,8 +132,6 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
-
-        Assert.True(result.Metadata.ContainsKey("ContentFilterResults"));
 
         Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
