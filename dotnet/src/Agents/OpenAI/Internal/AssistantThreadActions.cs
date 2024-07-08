@@ -88,14 +88,14 @@ internal static class AssistantThreadActions
                 {
                     yield return MessageContent.FromText(content.ToString());
                 }
-                else if (content is ImageContent imageContent)
+                else if (content is ImageContent imageContent && imageContent.Data.HasValue)
                 {
                     yield return MessageContent.FromImageUrl(
-                        imageContent.Uri ?? new Uri(Convert.ToBase64String(imageContent.Data?.ToArray() ?? []))); // %%% WUT A MESS - API BUG?
+                        imageContent.Uri ?? new Uri(Convert.ToBase64String(imageContent.Data.Value.ToArray())));
                 }
                 else if (content is FileReferenceContent fileContent)
                 {
-                    options.Attachments.Add(new MessageCreationAttachment(fileContent.FileId, [new CodeInterpreterToolDefinition()])); // %%% WUT A MESS - TOOLS?
+                    options.Attachments.Add(new MessageCreationAttachment(fileContent.FileId, [new CodeInterpreterToolDefinition()]));
                 }
             }
         }
@@ -210,7 +210,7 @@ internal static class AssistantThreadActions
                     // Process tool output
                     ToolOutput[] toolOutputs = GenerateToolOutputs(functionResults);
 
-                    await client.SubmitToolOutputsToRunAsync(run, toolOutputs).ConfigureAwait(false); // %%% BUG CANCEL TOKEN
+                    await client.SubmitToolOutputsToRunAsync(threadId, run.Id, toolOutputs, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
