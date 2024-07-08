@@ -8,6 +8,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
@@ -375,6 +376,114 @@ public static class AzureOpenAIServiceCollectionExtensions
                 openAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
                 modelId,
                 serviceProvider.GetService<ILoggerFactory>()));
+    }
+
+    #endregion
+
+    #region Audio-to-Text
+
+    /// <summary>
+    /// Adds the <see cref="AzureOpenAIAudioToTextService"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAIAudioToText(
+        this IServiceCollection services,
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        string? modelId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (serviceProvider, _) =>
+        {
+            AzureOpenAIClient client = CreateAzureOpenAIClient(
+                endpoint,
+                new AzureKeyCredential(apiKey),
+                HttpClientProvider.GetHttpClient(serviceProvider));
+            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+        };
+
+        services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the <see cref="AzureOpenAIAudioToTextService"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAIAudioToText(
+        this IServiceCollection services,
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        string? serviceId = null,
+        string? modelId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNull(credentials);
+
+        Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (serviceProvider, _) =>
+        {
+            AzureOpenAIClient client = CreateAzureOpenAIClient(
+                endpoint,
+                credentials,
+                HttpClientProvider.GetHttpClient(serviceProvider));
+            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+        };
+
+        services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the <see cref="AzureOpenAIAudioToTextService"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAIAudioToText(
+        this IServiceCollection services,
+        string deploymentName,
+        AzureOpenAIClient? openAIClient = null,
+        string? serviceId = null,
+        string? modelId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+
+        Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (serviceProvider, _) =>
+            new(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
+
+        services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
+
+        return services;
     }
 
     #endregion
