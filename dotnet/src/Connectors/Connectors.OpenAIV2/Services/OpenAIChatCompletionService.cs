@@ -11,10 +11,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 using OpenAI;
 
-/* Phase 06
-
-*/
-
 #pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 #pragma warning disable RCS1155 // Use StringComparison when comparing strings
 
