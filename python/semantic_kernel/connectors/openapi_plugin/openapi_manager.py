@@ -47,8 +47,7 @@ def create_functions_from_openapi(
         list[KernelFunctionFromMethod]: the operations as functions
     """
     parser = OpenApiParser()
-    parsed_doc = parser.parse(openapi_document_path)
-    if parsed_doc is None:
+    if (parsed_doc := parser.parse(openapi_document_path)) is None:
         raise FunctionExecutionException(f"Error parsing OpenAPI document: {openapi_document_path}")
     operations = parser.create_rest_api_operations(parsed_doc, execution_settings=execution_settings)
 

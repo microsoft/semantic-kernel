@@ -64,7 +64,7 @@ class RestApiOperation:
         self.path = path
         self.summary = summary
         self.description = description
-        self.parameters = params
+        self.parameters = params if params else []
         self.request_body = request_body
         self.responses = responses
 
@@ -79,21 +79,20 @@ class RestApiOperation:
         """Build the headers for the operation."""
         headers = {}
 
-        if self.parameters is not None:
-            parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.HEADER]
+        parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.HEADER]
 
-            for parameter in parameters:
-                argument = arguments.get(parameter.name)
+        for parameter in parameters:
+            argument = arguments.get(parameter.name)
 
-                if argument is None:
-                    if parameter.is_required:
-                        raise FunctionExecutionException(
-                            f"No argument is provided for the `{parameter.name}` "
-                            f"required parameter of the operation - `{self.id}`."
-                        )
-                    continue
+            if argument is None:
+                if parameter.is_required:
+                    raise FunctionExecutionException(
+                        f"No argument is provided for the `{parameter.name}` "
+                        f"required parameter of the operation - `{self.id}`."
+                    )
+                continue
 
-                headers[parameter.name] = str(argument)
+            headers[parameter.name] = str(argument)
 
         return headers
 
@@ -122,38 +121,35 @@ class RestApiOperation:
 
         return urlparse(server_url_string)
 
-    def build_path(self, path_template: str, arguments: dict[str, Any]) -> str | None:
+    def build_path(self, path_template: str, arguments: dict[str, Any]) -> str:
         """Build the path for the operation."""
-        if self.parameters is not None:
-            parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.PATH]
-            for parameter in parameters:
-                argument = arguments.get(parameter.name)
-                if argument is None:
-                    if parameter.is_required:
-                        raise FunctionExecutionException(
-                            f"No argument is provided for the `{parameter.name}` "
-                            f"required parameter of the operation - `{self.id}`."
-                        )
-                    continue
-                path_template = path_template.replace(f"{{{parameter.name}}}", str(argument))
-            return path_template
-        return None
+        parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.PATH]
+        for parameter in parameters:
+            argument = arguments.get(parameter.name)
+            if argument is None:
+                if parameter.is_required:
+                    raise FunctionExecutionException(
+                        f"No argument is provided for the `{parameter.name}` "
+                        f"required parameter of the operation - `{self.id}`."
+                    )
+                continue
+            path_template = path_template.replace(f"{{{parameter.name}}}", str(argument))
+        return path_template
 
     def build_query_string(self, arguments: dict[str, Any]) -> str:
         """Build the query string for the operation."""
         segments = []
-        if self.parameters is not None:
-            parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.QUERY]
-            for parameter in parameters:
-                argument = arguments.get(parameter.name)
-                if argument is None:
-                    if parameter.is_required:
-                        raise FunctionExecutionException(
-                            f"No argument or value is provided for the `{parameter.name}` "
-                            f"required parameter of the operation - `{self.id}`."
-                        )
-                    continue
-                segments.append((parameter.name, argument))
+        parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.QUERY]
+        for parameter in parameters:
+            argument = arguments.get(parameter.name)
+            if argument is None:
+                if parameter.is_required:
+                    raise FunctionExecutionException(
+                        f"No argument or value is provided for the `{parameter.name}` "
+                        f"required parameter of the operation - `{self.id}`."
+                    )
+                continue
+            segments.append((parameter.name, argument))
         return urlencode(segments)
 
     def replace_invalid_symbols(self, parameter_name):
