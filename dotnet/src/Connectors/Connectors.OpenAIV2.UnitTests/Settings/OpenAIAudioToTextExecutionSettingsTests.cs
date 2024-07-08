@@ -28,7 +28,7 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
             ModelId = "model_id",
             Language = "en",
             Prompt = "prompt",
-            ResponseFormat = "text",
+            ResponseFormat = OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
             Temperature = 0.2f
         };
 
@@ -49,7 +49,7 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
             "language": "en",
             "filename": "file.mp3",
             "prompt": "prompt",
-            "response_format": "text",
+            "response_format": "verbose",
             "temperature": 0.2
         }
         """;
@@ -65,7 +65,7 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         Assert.Equal("en", settings.Language);
         Assert.Equal("file.mp3", settings.Filename);
         Assert.Equal("prompt", settings.Prompt);
-        Assert.Equal("text", settings.ResponseFormat);
+        Assert.Equal(OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose, settings.ResponseFormat);
         Assert.Equal(0.2f, settings.Temperature);
     }
 
@@ -77,7 +77,7 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
             ModelId = "model_id",
             Language = "en",
             Prompt = "prompt",
-            ResponseFormat = "text",
+            ResponseFormat = OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
             Temperature = 0.2f,
             Filename = "something.mp3",
         };
@@ -88,7 +88,7 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         Assert.Equal("model_id", clone.ModelId);
         Assert.Equal("en", clone.Language);
         Assert.Equal("prompt", clone.Prompt);
-        Assert.Equal("text", clone.ResponseFormat);
+        Assert.Equal(OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple, clone.ResponseFormat);
         Assert.Equal(0.2f, clone.Temperature);
         Assert.Equal("something.mp3", clone.Filename);
     }
@@ -101,7 +101,7 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
             ModelId = "model_id",
             Language = "en",
             Prompt = "prompt",
-            ResponseFormat = "text",
+            ResponseFormat = OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
             Temperature = 0.2f,
             Filename = "something.mp3",
         };
@@ -112,7 +112,7 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => settings.ModelId = "new_model");
         Assert.Throws<InvalidOperationException>(() => settings.Language = "some_format");
         Assert.Throws<InvalidOperationException>(() => settings.Prompt = "prompt");
-        Assert.Throws<InvalidOperationException>(() => settings.ResponseFormat = "something");
+        Assert.Throws<InvalidOperationException>(() => settings.ResponseFormat = OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple);
         Assert.Throws<InvalidOperationException>(() => settings.Temperature = 0.2f);
         Assert.Throws<InvalidOperationException>(() => settings.Filename = "something");
 
