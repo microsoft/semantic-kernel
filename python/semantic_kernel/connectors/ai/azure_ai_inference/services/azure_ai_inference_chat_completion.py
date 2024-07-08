@@ -7,8 +7,6 @@ from collections.abc import AsyncGenerator
 from functools import reduce
 from typing import Any
 
-from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
-
 if sys.version >= "3.12":
     from typing import override  # pragma: no cover
 else:
@@ -31,10 +29,9 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceSettings,
 )
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
-from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_conversion_utils import (
-    MESSAGE_CONVERTERS,
-)
+from semantic_kernel.connectors.ai.azure_ai_inference.services.utils import MESSAGE_CONVERTERS
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
