@@ -13,6 +13,7 @@ using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
 using Connectors.Amazon.Models;
 using Connectors.Amazon.Models.Amazon;
+using Connectors.Amazon.Models.Anthropic;
 using Connectors.Amazon.Models.Mistral;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -45,6 +46,11 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
             case "mistral":
                 this._ioService = new MistralIoService();
                 break;
+            case "anthropic":
+                this._ioService = new AnthropicIoService();
+                break;
+            default:
+                throw new ArgumentException($"Unsupported model provider: {modelProvider}");
         }
     }
     internal async Task<ConverseResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
@@ -58,8 +64,8 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        for (int requestIndex = 1; ; requestIndex++)
-        {
+        // for (int requestIndex = 1; ; requestIndex++)
+        // {
             ConverseResponse response;
             using (var activity = ModelDiagnostics.StartCompletionActivity(
                        this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings))
@@ -74,10 +80,14 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                     throw;
                 }
                 IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
+                foreach (var message in chat)
+                {
+                    chatHistory.AddMessage(AuthorRole.Assistant, message.Content);
+                }
                 activity?.SetCompletionResponse(chat);
                 return chat.ToList();
             }
-        }
+        // }
     }
 
     public static IEnumerable<ChatMessageContent> ConvertToMessageContent(ConverseResponse response)

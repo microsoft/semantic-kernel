@@ -33,13 +33,16 @@ do
         chatHistory.AddMessage(AuthorRole.User, userInput);
         Console.WriteLine($"Chat Completion Question: {userInput}");
 
-        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build();
+        // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
+        // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-sonnet-20240229-v1:0").Build();
+
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
         var result = await chatCompletionService.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(false);
 
         foreach (var message in result)
         {
-            chatHistory.AddMessage(AuthorRole.Assistant, message.Content);
+            // chatHistory.AddMessage(AuthorRole.Assistant, message.Content); //put this in GenerateChatMessageAsync in chatClient
             Console.WriteLine($"Chat Completion Answer: {message.Content}");
             Console.WriteLine();
         }

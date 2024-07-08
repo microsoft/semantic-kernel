@@ -82,7 +82,7 @@ public class AmazonIoService : IBedrockModelIoService<IChatCompletionRequest, IC
         {
             Messages = chatHistory.Select(m => new Message
             {
-                Role = ConversationRole.User,
+                Role = MapRole(m.Role),
                 Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
@@ -109,9 +109,18 @@ public class AmazonIoService : IBedrockModelIoService<IChatCompletionRequest, IC
         return converseRequest;
     }
 
-    private static ConversationRole MapRole(string role)
+    private static ConversationRole MapRole(AuthorRole role)
     {
-        return role.ToLowerInvariant() switch
+        string roleStr;
+        if (role == AuthorRole.User)
+        {
+            roleStr = "user";
+        }
+        else
+        {
+            roleStr = "assistant";
+        }
+        return roleStr switch
         {
             "user" => ConversationRole.User,
             "assistant" => ConversationRole.Assistant,
