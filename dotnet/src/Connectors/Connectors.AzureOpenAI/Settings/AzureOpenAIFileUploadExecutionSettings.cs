@@ -15,7 +15,7 @@ public sealed class AzureOpenAIFileUploadExecutionSettings
     /// </summary>
     /// <param name="fileName">The file name</param>
     /// <param name="purpose">The file purpose</param>
-    public OpenAIFileUploadExecutionSettings(string fileName, OpenAIFilePurpose purpose)
+    public AzureOpenAIFileUploadExecutionSettings(string fileName, OpenAIFilePurpose purpose)
     {
         Verify.NotNull(fileName, nameof(fileName));
 
