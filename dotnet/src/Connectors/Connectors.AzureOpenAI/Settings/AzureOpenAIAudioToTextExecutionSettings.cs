@@ -65,6 +65,7 @@ public sealed class AzureOpenAIAudioToTextExecutionSettings : PromptExecutionSet
     /// The format of the transcript output, in one of these options: Text, Simple, Verbose, Sttor vtt. Default is 'json'.
     /// </summary>
     [JsonPropertyName("response_format")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public AudioTranscriptionFormat? ResponseFormat
     {
         get => this._responseFormat;
