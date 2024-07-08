@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
@@ -54,10 +53,6 @@ def create_functions_from_openapi(
     auth_callback = None
     if execution_settings and execution_settings.auth_callback:
         auth_callback = execution_settings.auth_callback
-
-    # For type chceker, ensure that parsed_doc is a Mapping[str, str]
-    if isinstance(parsed_doc, Mapping):
-        parsed_doc = {k: str(v) for k, v in parsed_doc.items()}
 
     openapi_runner = OpenApiRunner(
         parsed_openapi_document=parsed_doc,
