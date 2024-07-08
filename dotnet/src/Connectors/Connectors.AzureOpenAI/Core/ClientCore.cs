@@ -27,9 +27,9 @@ internal partial class ClientCore
     internal static string DeploymentNameKey => "DeploymentName";
 
     /// <summary>
-    /// Deployment name or model Id.
+    /// Deployment name.
     /// </summary>
-    internal string DeploymentNameOrModelId { get; set; } = string.Empty;
+    internal string DeploymentName { get; set; } = string.Empty;
 
     /// <summary>
     /// Azure OpenAI Client
@@ -74,7 +74,7 @@ internal partial class ClientCore
         var options = GetAzureOpenAIClientOptions(httpClient);
 
         this.Logger = logger ?? NullLogger.Instance;
-        this.DeploymentNameOrModelId = deploymentName;
+        this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, apiKey, options);
 
@@ -103,7 +103,7 @@ internal partial class ClientCore
         var options = GetAzureOpenAIClientOptions(httpClient);
 
         this.Logger = logger ?? NullLogger.Instance;
-        this.DeploymentNameOrModelId = deploymentName;
+        this.DeploymentName = deploymentName;
         this.Endpoint = new Uri(endpoint);
         this.Client = new AzureOpenAIClient(this.Endpoint, credential, options);
 
@@ -127,7 +127,7 @@ internal partial class ClientCore
         Verify.NotNull(openAIClient);
 
         this.Logger = logger ?? NullLogger.Instance;
-        this.DeploymentNameOrModelId = deploymentName;
+        this.DeploymentName = deploymentName;
         this.Client = openAIClient;
 
         this.AddAttribute(DeploymentNameKey, deploymentName);

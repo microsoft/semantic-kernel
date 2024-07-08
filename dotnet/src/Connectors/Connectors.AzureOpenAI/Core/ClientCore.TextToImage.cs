@@ -36,7 +36,7 @@ internal partial class ClientCore
             ResponseFormat = GeneratedImageFormat.Uri
         };
 
-        ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client.GetImageClient(this.DeploymentNameOrModelId).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
+        ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client.GetImageClient(this.DeploymentName).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
 
         return response.Value.ImageUri?.ToString() ?? throw new KernelException("The generated image is not in url format");
     }

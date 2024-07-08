@@ -160,11 +160,11 @@ internal partial class ClientCore
             // Make the request.
             OpenAIChatCompletion? chatCompletion = null;
             AzureOpenAIChatMessageContent chatMessageContent;
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentNameOrModelId, ModelProvider, chat, chatExecutionSettings))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentName, ModelProvider, chat, chatExecutionSettings))
             {
                 try
                 {
-                    chatCompletion = (await RunRequestAsync(() => this.Client.GetChatClient(this.DeploymentNameOrModelId).CompleteChatAsync(chatForRequest, chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
+                    chatCompletion = (await RunRequestAsync(() => this.Client.GetChatClient(this.DeploymentName).CompleteChatAsync(chatForRequest, chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
 
                     this.LogUsage(chatCompletion.Usage);
                 }
@@ -369,13 +369,13 @@ internal partial class ClientCore
             ChatToolCall[]? toolCalls = null;
             FunctionCallContent[]? functionCallContents = null;
 
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentNameOrModelId, ModelProvider, chat, chatExecutionSettings))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentName, ModelProvider, chat, chatExecutionSettings))
             {
                 // Make the request.
                 AsyncResultCollection<StreamingChatCompletionUpdate> response;
                 try
                 {
-                    response = RunRequest(() => this.Client.GetChatClient(this.DeploymentNameOrModelId).CompleteChatStreamingAsync(chatForRequest, chatOptions, cancellationToken));
+                    response = RunRequest(() => this.Client.GetChatClient(this.DeploymentName).CompleteChatStreamingAsync(chatForRequest, chatOptions, cancellationToken));
                 }
                 catch (Exception ex) when (activity is not null)
                 {
@@ -422,7 +422,7 @@ internal partial class ClientCore
                             AzureOpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                         }
 
-                        var openAIStreamingChatMessageContent = new AzureOpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, this.DeploymentNameOrModelId, metadata);
+                        var openAIStreamingChatMessageContent = new AzureOpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, this.DeploymentName, metadata);
 
                         foreach (var functionCallUpdate in chatCompletionUpdate.ToolCallUpdates)
                         {
@@ -919,7 +919,7 @@ internal partial class ClientCore
 
     private AzureOpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion)
     {
-        var message = new AzureOpenAIChatMessageContent(completion, this.DeploymentNameOrModelId, GetChatCompletionMetadata(completion));
+        var message = new AzureOpenAIChatMessageContent(completion, this.DeploymentName, GetChatCompletionMetadata(completion));
 
         message.Items.AddRange(this.GetFunctionCallContents(completion.ToolCalls));
 
@@ -928,7 +928,7 @@ internal partial class ClientCore
 
     private AzureOpenAIChatMessageContent CreateChatMessageContent(ChatMessageRole chatRole, string content, ChatToolCall[] toolCalls, FunctionCallContent[]? functionCalls, IReadOnlyDictionary<string, object?>? metadata, string? authorName)
     {
-        var message = new AzureOpenAIChatMessageContent(chatRole, content, this.DeploymentNameOrModelId, toolCalls, metadata)
+        var message = new AzureOpenAIChatMessageContent(chatRole, content, this.DeploymentName, toolCalls, metadata)
         {
             AuthorName = authorName,
         };
