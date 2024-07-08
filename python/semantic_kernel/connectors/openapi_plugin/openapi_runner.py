@@ -35,7 +35,7 @@ class OpenApiRunner:
     def __init__(
         self,
         parsed_openapi_document: Mapping[str, str],
-        auth_callback: Callable[[dict[str, str]], dict[str, str] | Awaitable[dict[str, str]]] | None = None,
+        auth_callback: Callable[..., dict[str, str] | Awaitable[dict[str, str]]] | None = None,
         http_client: httpx.AsyncClient | None = None,
         enable_dynamic_payload: bool = True,
         enable_payload_namespacing: bool = False,
@@ -145,7 +145,7 @@ class OpenApiRunner:
         payload, _ = self.build_operation_payload(operation=operation, arguments=arguments)
 
         if self.auth_callback:
-            headers_update = self.auth_callback(headers)
+            headers_update = self.auth_callback(**headers)
             if isawaitable(headers_update):
                 headers_update = await headers_update
             # at this point, headers_update is a valid dictionary
