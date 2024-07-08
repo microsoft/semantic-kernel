@@ -49,7 +49,7 @@ public sealed class AzureOpenAIFileService
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAIFileService(
+    public AzureOpenAIFileService(
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
