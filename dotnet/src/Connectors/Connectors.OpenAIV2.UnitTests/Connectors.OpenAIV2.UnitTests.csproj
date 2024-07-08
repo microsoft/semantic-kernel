@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Connectors.OpenAI.UnitTests</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFrameworks>net8.0;net462</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -21,9 +21,6 @@
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageReference Include="xunit.runner.visualstudio">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

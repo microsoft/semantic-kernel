@@ -239,6 +239,7 @@ internal partial class ClientCore
             throw e.ToHttpOperationException();
         }
     }
+
     private static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
     {
         return new GenericActionPipelinePolicy((message) =>

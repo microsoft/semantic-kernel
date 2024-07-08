@@ -4,9 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-#if NETSTANDARD2_0
-using System.Text.RegularExpressions;
-#endif
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -78,24 +75,25 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         var providedEndpoint = endpoint ?? httpClient?.BaseAddress;
         if (providedEndpoint is not null)
         {
-            // If the provided endpoint does provide path, we add a version base path for compatibility
+            // If the provided endpoint does not provide a path, we add a version to the base path for compatibility
             if (providedEndpoint.PathAndQuery.Length == 0 || providedEndpoint.PathAndQuery == "/")
             {
                 internalClientEndpoint = new Uri(providedEndpoint, "/v1/");
             }
             else
             {
-                // If the provided endpoint includes path to chatcompletions endpoint, we need to remove it
+                // As OpenAI Client automatically adds the chatcompletions endpoint, we remove it to avoid duplication.
                 const string PathAndQueryPattern = "/chat/completions";
-#if NET
-                internalClientEndpoint = providedEndpoint.PathAndQuery.Contains(PathAndQueryPattern, StringComparison.OrdinalIgnoreCase)
-                    ? new Uri(providedEndpoint.ToString().Replace(PathAndQueryPattern, string.Empty, StringComparison.OrdinalIgnoreCase))
-                    : providedEndpoint;
-#else
-                internalClientEndpoint = providedEndpoint.PathAndQuery.IndexOf(PathAndQueryPattern, StringComparison.InvariantCultureIgnoreCase) >= 0
-                    ? new Uri(Regex.Replace(providedEndpoint.ToString(), PathAndQueryPattern, string.Empty, RegexOptions.IgnoreCase))
-                    : providedEndpoint;
-#endif
+                var providedEndpointText = providedEndpoint.ToString();
+                int index = providedEndpointText.IndexOf(PathAndQueryPattern, StringComparison.OrdinalIgnoreCase);
+                if (index >= 0)
+                {
+                    internalClientEndpoint = new Uri($"{providedEndpointText.Substring(0, index)}{providedEndpointText.Substring(index + PathAndQueryPattern.Length)}");
+                }
+                else
+                {
+                    internalClientEndpoint = providedEndpoint;
+                }
             }
         }
 

@@ -41,19 +41,11 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         this.Method = request.Method;
         this.RequestUri = request.RequestUri;
         this.RequestHeaders = request.Headers;
-        this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(
-#if NET 
-            cancellationToken
-#endif
-        );
+        this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
 
         if (request.Content is MultipartContent multipartContent)
         {
-            this.FirstMultipartContent = await multipartContent.First().ReadAsByteArrayAsync(
-#if NET
-                cancellationToken
-#endif
-            );
+            this.FirstMultipartContent = await multipartContent.First().ReadAsByteArrayAsync(cancellationToken);
         }
 
         this.ContentHeaders = request.Content?.Headers;
