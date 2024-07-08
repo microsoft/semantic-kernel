@@ -7,10 +7,11 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
-const string UserPrompt = "What is the color of the sky?";
+const string UserPrompt = "What AI model and model provider am I?";
 Console.WriteLine($"Chat Completion Question: {UserPrompt}");
 
-var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
+// var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
+var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build();
 var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 var chatHistory = new ChatHistory(UserPrompt);
 var result = await chatCompletionService.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(false);

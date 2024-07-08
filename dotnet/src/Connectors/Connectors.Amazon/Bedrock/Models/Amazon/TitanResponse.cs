@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel;
 
 namespace Connectors.Amazon.Models.Amazon;
 
-public class TitanResponse
+public class TitanChatResponse
 {
     [JsonPropertyName("inputTextTokenCount")]
     public int InputTextTokenCount { get; set; }

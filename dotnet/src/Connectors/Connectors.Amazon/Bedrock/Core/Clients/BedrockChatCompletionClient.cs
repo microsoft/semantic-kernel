@@ -47,9 +47,9 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                 break;
         }
     }
-    internal async Task<ConverseResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings executionSettings, CancellationToken cancellationToken = default)
+    internal async Task<ConverseResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
     {
-        var converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory);
+        var converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory, executionSettings);
         return await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(true);
     }
     internal async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(

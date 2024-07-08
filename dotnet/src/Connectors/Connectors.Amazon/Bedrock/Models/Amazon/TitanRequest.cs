@@ -66,7 +66,7 @@ public class TitanRequest
         public IList<string>? StopSequences { get; set; } = new List<string>();
     }
 
-    public class TitanChatGenerationRequest : IChatCompletionRequest
+    public class TitanChatCompletionRequest : IChatCompletionRequest
     {
         public List<Message> Messages { get; set; }
         public List<SystemContentBlock> System { get; set; }
@@ -74,5 +74,7 @@ public class TitanRequest
         public Document AdditionalModelRequestFields { get; set; }
         public List<string> AdditionalModelResponseFieldPaths { get; set; }
         public GuardrailConfiguration GuardrailConfig { get; set; }
+        public string ModelId { get; set; }
+        public ToolConfiguration ToolConfig { get; set; }
     }
 }

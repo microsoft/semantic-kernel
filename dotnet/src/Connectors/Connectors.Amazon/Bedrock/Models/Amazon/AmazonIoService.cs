@@ -75,9 +75,10 @@ public class AmazonIoService : IBedrockModelIoService<IChatCompletionRequest, IC
         }
     }
 
-    public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory)
+    //NOT ACCOUNTING FOR SETTINGS - HARD CODED
+    public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
-        var titanRequest = new TitanRequest.TitanChatGenerationRequest
+        var titanRequest = new TitanRequest.TitanChatCompletionRequest
         {
             Messages = chatHistory.Select(m => new Message
             {
