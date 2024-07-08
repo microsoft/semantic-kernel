@@ -19,9 +19,6 @@ New-Item -ItemType Directory -Force -Path $reportOutputPath
 # Find tests for projects ending with 'UnitTests.csproj'
 $testProjects = Get-ChildItem $scriptPath -Filter "*UnitTests.csproj" -Recurse
 
-# removes the OpenAI.csproj from the list of test projects
-$testProjects = $testProjects | Where-Object { $_.FullName -notlike "*OpenAI.csproj" }
-
 foreach ($project in $testProjects) {
     $testProjectPath = $project.FullName
     Write-Host "Running tests for project: $($testProjectPath)"
