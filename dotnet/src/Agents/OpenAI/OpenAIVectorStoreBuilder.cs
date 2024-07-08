@@ -9,8 +9,9 @@ using OpenAI.VectorStores;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// %%%
+/// Fluent builder for creating a new <see cref="VectorStore"/>.
 /// </summary>
+/// <param name="config">Configuration for accessing the vector-store service.</param>
 public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
 {
     private string? _name;
@@ -20,7 +21,7 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     private Dictionary<string, string>? _metadata;
 
     /// <summary>
-    /// %%%
+    /// Added a file (by identifier) to the vector store.
     /// </summary>
     /// <param name="fileId"></param>
     public OpenAIVectorStoreBuilder AddFile(string fileId)
@@ -32,10 +33,10 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     }
 
     /// <summary>
-    /// %%%
+    /// Added files (by identifier) to the vector store.
     /// </summary>
     /// <param name="fileIds"></param>
-    public OpenAIVectorStoreBuilder AddFile(string[] fileIds)
+    public OpenAIVectorStoreBuilder AddFiles(string[] fileIds)
     {
         this._fileIds ??= [];
         this._fileIds.AddRange(fileIds);
@@ -44,10 +45,10 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     }
 
     /// <summary>
-    /// %%%
+    /// Define the vector store chunking strategy (if not default).
     /// </summary>
-    /// <param name="maxTokensPerChunk"></param>
-    /// <param name="overlappingTokenCount"></param>
+    /// <param name="maxTokensPerChunk">The maximum number of tokens in each chunk. </param>
+    /// <param name="overlappingTokenCount">The number of tokens that overlap between chunks.</param>
     public OpenAIVectorStoreBuilder WithChunkingStrategy(int maxTokensPerChunk, int overlappingTokenCount)
     {
         this._chunkingStrategy = FileChunkingStrategy.CreateStaticStrategy(maxTokensPerChunk, overlappingTokenCount);
@@ -56,9 +57,9 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     }
 
     /// <summary>
-    /// %%%
+    /// The number of days of from the last use until vector store will expire.
     /// </summary>
-    /// <param name="duration"></param>
+    /// <param name="duration">The duration (in days) from the last usage.</param>
     public OpenAIVectorStoreBuilder WithExpiration(TimeSpan duration)
     {
         this._expirationPolicy = new VectorStoreExpirationPolicy(VectorStoreExpirationAnchor.LastActiveAt, duration.Days);
@@ -67,11 +68,15 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     }
 
     /// <summary>
-    /// %%%
+    /// Adds a single key/value pair to the metadata.
     /// </summary>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
+    /// <param name="key">The metadata key</param>
+    /// <param name="value">The metadata value</param>
+    /// <remarks>
+    /// The metadata is a set of up to 16 key/value pairs that can be attached to an agent, used for
+    /// storing additional information about that object in a structured format.Keys
+    /// may be up to 64 characters in length and values may be up to 512 characters in length.
+    /// </remarks>>
     public OpenAIVectorStoreBuilder WithMetadata(string key, string value)
     {
         this._metadata ??= [];
@@ -82,10 +87,11 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     }
 
     /// <summary>
-    /// %%%
+    /// A set of up to 16 key/value pairs that can be attached to an agent, used for
+    /// storing additional information about that object in a structured format.Keys
+    /// may be up to 64 characters in length and values may be up to 512 characters in length.
     /// </summary>
-    /// <param name="metadata"></param>
-    /// <returns></returns>
+    /// <param name="metadata">The metadata</param>
     public OpenAIVectorStoreBuilder WithMetadata(IDictionary<string, string> metadata)
     {
         this._metadata ??= [];
@@ -99,10 +105,9 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     }
 
     /// <summary>
-    /// %%%
+    /// Defines the name of the vector store when not anonymous.
     /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
+    /// <param name="name">The store name.</param>
     public OpenAIVectorStoreBuilder WithName(string name)
     {
         this._name = name;
@@ -111,10 +116,9 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     }
 
     /// <summary>
-    /// %%%
+    /// Creates a <see cref="VectorStore"/> as defined.
     /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public async Task<VectorStore> CreateAsync(CancellationToken cancellationToken = default)
     {
         OpenAIClient openAIClient = OpenAIClientFactory.CreateClient(config);
