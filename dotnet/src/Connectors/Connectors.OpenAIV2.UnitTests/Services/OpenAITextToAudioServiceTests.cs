@@ -63,7 +63,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
     {
         // Arrange
         var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
-        await using var stream = new MemoryStream([0x00, 0x00, 0xFF, 0x7F]);
+        using var stream = new MemoryStream([0x00, 0x00, 0xFF, 0x7F]);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -85,7 +85,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         byte[] expectedByteArray = [0x00, 0x00, 0xFF, 0x7F];
 
         var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
-        await using var stream = new MemoryStream(expectedByteArray);
+        using var stream = new MemoryStream(expectedByteArray);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -113,7 +113,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         byte[] expectedByteArray = [0x00, 0x00, 0xFF, 0x7F];
 
         var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
-        await using var stream = new MemoryStream(expectedByteArray);
+        using var stream = new MemoryStream(expectedByteArray);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -170,7 +170,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         }
 
         var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
-        await using var stream = new MemoryStream(expectedByteArray);
+        using var stream = new MemoryStream(expectedByteArray);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {

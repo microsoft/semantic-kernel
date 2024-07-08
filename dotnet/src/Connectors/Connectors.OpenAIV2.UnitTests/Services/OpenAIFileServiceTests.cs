@@ -227,12 +227,10 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         var settings = new OpenAIFileUploadExecutionSettings("test.txt", OpenAIFilePurpose.Assistants);
 
-        await using var stream = new MemoryStream();
-        await using (var writer = new StreamWriter(stream, leaveOpen: true))
-        {
-            await writer.WriteLineAsync("test");
-            await writer.FlushAsync();
-        }
+        var stream = new MemoryStream();
+        var writer = new StreamWriter(stream);
+        await writer.WriteLineAsync("test");
+        await writer.FlushAsync();
 
         stream.Position = 0;
 
@@ -245,6 +243,9 @@ public sealed class OpenAIFileServiceTests : IDisposable
         Assert.NotEqual(string.Empty, file.FileName);
         Assert.NotEqual(DateTime.MinValue, file.CreatedTimestamp);
         Assert.NotEqual(0, file.SizeInBytes);
+
+        writer.Dispose();
+        stream.Dispose();
     }
 
     [Theory]
@@ -260,12 +261,10 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         var settings = new OpenAIFileUploadExecutionSettings("test.txt", OpenAIFilePurpose.Assistants);
 
-        await using var stream = new MemoryStream();
-        await using (var writer = new StreamWriter(stream, leaveOpen: true))
-        {
-            await writer.WriteLineAsync("test");
-            await writer.FlushAsync();
-        }
+        var stream = new MemoryStream();
+        var writer = new StreamWriter(stream);
+        await writer.WriteLineAsync("test");
+        await writer.FlushAsync();
 
         stream.Position = 0;
 
@@ -273,6 +272,9 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpOperationException>(() => service.UploadContentAsync(content, settings));
+
+        writer.Dispose();
+        stream.Dispose();
     }
 
     private OpenAIFileService CreateFileService(bool isCustomEndpoint = false)
