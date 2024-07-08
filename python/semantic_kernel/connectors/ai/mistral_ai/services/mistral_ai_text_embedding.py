@@ -57,7 +57,7 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
         except ValidationError as e:
             raise ServiceInitializationError(f"Failed to validate Mistral AI settings: {e}") from e
 
-        if not mistralai_settings.chat_model_id:
+        if not mistralai_settings.embedding_model_id:
             raise ServiceInitializationError("The MistralAI embedding model ID is required.")
 
         if not client:

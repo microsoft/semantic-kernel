@@ -13,7 +13,7 @@ from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 
 mistral_ai_setup: bool = False
 try:
-    if os.environ["MISTRALAI_API_KEY"] and os.environ["MISTRALAI_CHAT_MODEL_ID"]:
+    if os.environ["MISTRALAI_API_KEY"] and os.environ["MISTRALAI_EMBEDDING_MODEL_ID"]:
         mistral_ai_setup = True
 except KeyError:
     mistral_ai_setup = False
