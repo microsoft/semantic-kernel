@@ -64,10 +64,8 @@ public sealed class OpenAIServiceConfiguration
     /// <param name="apiKey">The API key</param>
     /// <param name="endpoint">An optional endpoint</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    public static OpenAIServiceConfiguration ForOpenAI(string apiKey, Uri? endpoint = null, HttpClient? httpClient = null)
+    public static OpenAIServiceConfiguration ForOpenAI(string? apiKey, Uri? endpoint = null, HttpClient? httpClient = null)
     {
-        Verify.NotNullOrWhiteSpace(apiKey, nameof(apiKey));
-
         return
             new()
             {

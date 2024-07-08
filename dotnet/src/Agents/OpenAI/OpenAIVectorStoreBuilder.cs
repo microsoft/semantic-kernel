@@ -17,8 +17,8 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     private string? _name;
     private FileChunkingStrategy? _chunkingStrategy;
     private VectorStoreExpirationPolicy? _expirationPolicy;
-    private List<string>? _fileIds;
-    private Dictionary<string, string>? _metadata;
+    private readonly List<string> _fileIds = [];
+    private readonly Dictionary<string, string> _metadata = [];
 
     /// <summary>
     /// Added a file (by identifier) to the vector store.
@@ -26,7 +26,6 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     /// <param name="fileId"></param>
     public OpenAIVectorStoreBuilder AddFile(string fileId)
     {
-        this._fileIds ??= [];
         this._fileIds.Add(fileId);
 
         return this;
@@ -38,7 +37,6 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     /// <param name="fileIds"></param>
     public OpenAIVectorStoreBuilder AddFiles(string[] fileIds)
     {
-        this._fileIds ??= [];
         this._fileIds.AddRange(fileIds);
 
         return this;
@@ -79,8 +77,6 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     /// </remarks>>
     public OpenAIVectorStoreBuilder WithMetadata(string key, string value)
     {
-        this._metadata ??= [];
-
         this._metadata[key] = value;
 
         return this;
@@ -94,8 +90,6 @@ public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
     /// <param name="metadata">The metadata</param>
     public OpenAIVectorStoreBuilder WithMetadata(IDictionary<string, string> metadata)
     {
-        this._metadata ??= [];
-
         foreach (KeyValuePair<string, string> item in this._metadata)
         {
             this._metadata[item.Key] = item.Value;
