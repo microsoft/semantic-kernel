@@ -306,6 +306,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             settings = JsonSerializer.Deserialize<OpenAIAssistantExecutionSettings>(settingsJson);
         }
 
+        IReadOnlyList<string>? fileIds = (IReadOnlyList<string>?)model.ToolResources?.CodeInterpreter?.FileIds;
+        string? vectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.Single();
+        bool enableJsonResponse = model.ResponseFormat is not null && model.ResponseFormat == AssistantResponseFormat.JsonObject;
+
         return
             new()
             {
@@ -313,14 +317,14 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 Name = model.Name,
                 Description = model.Description,
                 Instructions = model.Instructions,
-                CodeInterpterFileIds = (IReadOnlyList<string>?)(model.ToolResources?.CodeInterpreter?.FileIds),
+                CodeInterpterFileIds = fileIds,
                 EnableCodeInterpreter = model.Tools.Any(t => t is CodeInterpreterToolDefinition),
                 Metadata = model.Metadata,
                 ModelName = model.Model,
-                EnableJsonResponse = model.ResponseFormat is not null && model.ResponseFormat == AssistantResponseFormat.JsonObject,
+                EnableJsonResponse = enableJsonResponse,
                 TopP = model.NucleusSamplingFactor,
                 Temperature = model.Temperature,
-                VectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.Single(),
+                VectorStoreId = vectorStoreId,
                 ExecutionSettings = settings,
             };
     }

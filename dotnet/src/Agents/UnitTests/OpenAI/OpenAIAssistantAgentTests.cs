@@ -85,11 +85,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent that has all properties defined..
+    /// %%%
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationEverythingAsync()
+    public async Task VerifyOpenAIAssistantAgentCreationEverythingAsync() // %%% NAME
     {
         OpenAIAssistantDefinition definition =
             new()
@@ -113,6 +112,75 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.True(agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
         Assert.True(agent.Tools.OfType<FileSearchToolDefinition>().Any());
         Assert.Equal("#vs", agent.Definition.VectorStoreId);
+        Assert.Null(agent.Definition.CodeInterpterFileIds);
+        Assert.NotNull(agent.Definition.Metadata);
+        Assert.NotEmpty(agent.Definition.Metadata);
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationEverything2Async() // %%% NAME
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelName = "testmodel",
+                EnableCodeInterpreter = true,
+                CodeInterpterFileIds = ["file1", "file2"],
+                Metadata = new Dictionary<string, string>() { { "a", "1" } },
+            };
+
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentWithEverything);
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                this._emptyKernel,
+                this.CreateTestConfiguration(),
+                definition);
+
+        Assert.NotNull(agent);
+        Assert.Equal(2, agent.Tools.Count);
+        Assert.True(agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
+        Assert.True(agent.Tools.OfType<FileSearchToolDefinition>().Any());
+        //Assert.Null(agent.Definition.VectorStoreId); // %%% SETUP
+        //Assert.Null(agent.Definition.CodeInterpterFileIds); // %%% SETUP
+        Assert.NotNull(agent.Definition.Metadata);
+        Assert.NotEmpty(agent.Definition.Metadata);
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationEverything3Async() // %%% NAME
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelName = "testmodel",
+                EnableCodeInterpreter = false,
+                EnableJsonResponse = true,
+                CodeInterpterFileIds = ["file1", "file2"],
+                Metadata = new Dictionary<string, string>() { { "a", "1" } },
+                ExecutionSettings = new(),
+            };
+
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentWithEverything);
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                this._emptyKernel,
+                this.CreateTestConfiguration(),
+                definition);
+
+        Assert.NotNull(agent);
+        Assert.Equal(2, agent.Tools.Count);
+        Assert.True(agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
+        Assert.True(agent.Tools.OfType<FileSearchToolDefinition>().Any());
+        //Assert.Null(agent.Definition.VectorStoreId); // %%% SETUP
+        //Assert.Null(agent.Definition.CodeInterpterFileIds); // %%% SETUP
         Assert.NotNull(agent.Definition.Metadata);
         Assert.NotEmpty(agent.Definition.Metadata);
     }
