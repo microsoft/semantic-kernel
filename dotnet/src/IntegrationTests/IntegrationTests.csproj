@@ -17,7 +17,6 @@
     <None Remove="Planners\StepwisePlanner\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Agents\OpenAIAssistantAgentTests.cs" />
     <Compile Remove="Planners\PlanTests.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -156,9 +155,5 @@
     <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Agents\" />
   </ItemGroup>
 </Project>
