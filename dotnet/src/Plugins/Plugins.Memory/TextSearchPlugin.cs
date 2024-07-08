@@ -17,9 +17,9 @@ namespace Microsoft.SemanticKernel.Plugins;
 /// Initializes a new instance of the <see cref="TextSearchPlugin{T}"/> class.
 /// </remarks>
 /// <param name="service">The text search service instance to use.</param>
-public sealed class TextSearchPlugin<T>(ITextSearchService service) where T : class
+public sealed class TextSearchPlugin<T>(ITextSearchService<T> service) where T : class
 {
-    private readonly ITextSearchService _service = service;
+    private readonly ITextSearchService<T> _service = service;
 
     /// <summary>
     /// The usage of JavaScriptEncoder.UnsafeRelaxedJsonEscaping here is considered safe in this context
@@ -45,7 +45,7 @@ public sealed class TextSearchPlugin<T>(ITextSearchService service) where T : cl
         [Description("Number of results to skip")] int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        var results = await this._service.SearchAsync<T>(query, new() { Count = count, Offset = offset }, null, cancellationToken).ConfigureAwait(false);
+        var results = await this._service.SearchAsync(query, new() { Count = count, Offset = offset }, null, cancellationToken).ConfigureAwait(false);
         var resultList = await results.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
         if (resultList.Count == 0)
         {

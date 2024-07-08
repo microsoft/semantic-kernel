@@ -44,7 +44,7 @@ public sealed class GoogleTextSearchService : ITextSearchService<TextSearchResul
     public GoogleTextSearchService(
         BaseClientService.Initializer initializer,
         string searchEngineId,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory)
     {
         Verify.NotNull(initializer);
         Verify.NotNullOrWhiteSpace(searchEngineId);
@@ -59,7 +59,7 @@ public sealed class GoogleTextSearchService : ITextSearchService<TextSearchResul
     }
 
     /// <inheritdoc/>
-    async Task<KernelSearchResults<TextSearchResult>> ITextSearchService<TextSearchResult>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    async Task<KernelSearchResults<TextSearchResult>> ITextSearchService<TextSearchResult>.SearchAsync(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken)
     {
         var searchResponse = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
 
@@ -67,7 +67,7 @@ public sealed class GoogleTextSearchService : ITextSearchService<TextSearchResul
     }
 
     /// <inheritdoc/>
-    async Task<KernelSearchResults<global::Google.Apis.CustomSearchAPI.v1.Data.Result>> ITextSearchService<global::Google.Apis.CustomSearchAPI.v1.Data.Result>.SearchAsync(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    async Task<KernelSearchResults<global::Google.Apis.CustomSearchAPI.v1.Data.Result>> ITextSearchService<global::Google.Apis.CustomSearchAPI.v1.Data.Result>.SearchAsync(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken)
     {
         var searchResponse = await this.ExecuteSearchAsync(query, searchSettings, cancellationToken).ConfigureAwait(false);
 
@@ -97,7 +97,7 @@ public sealed class GoogleTextSearchService : ITextSearchService<TextSearchResul
     /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    private async Task<global::Google.Apis.CustomSearchAPI.v1.Data.Search> ExecuteSearchAsync(string query, SearchExecutionSettings? searchSettings = null, CancellationToken cancellationToken = default)
+    private async Task<global::Google.Apis.CustomSearchAPI.v1.Data.Search> ExecuteSearchAsync(string query, SearchExecutionSettings? searchSettings, CancellationToken cancellationToken)
     {
         searchSettings ??= new SearchExecutionSettings();
         var count = searchSettings.Count;

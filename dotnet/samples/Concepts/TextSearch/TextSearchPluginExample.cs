@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Microsoft.SemanticKernel.Search;
 
 namespace TextSearch;
 
@@ -14,7 +15,7 @@ public sealed class TextSearchPluginExample(ITestOutputHelper output) : BaseTest
     /// Show how to create a <see cref="TextSearchPlugin{T}"/> and use it to perform a text search.
     /// </summary>
     [Fact]
-    public async Task SearchAsync()
+    public async Task UseTextSearchPluginWithBingTextSearchAsync()
     {
         // Create a search service with Bing search service
         var searchService = new BingTextSearchService(
@@ -23,20 +24,20 @@ public sealed class TextSearchPluginExample(ITestOutputHelper output) : BaseTest
 
         // Build a kernel with Bing search service and add a text search plugin
         Kernel kernel = new();
-        var stringPlugin = new TextSearchPlugin<string>(searchService);
-        kernel.ImportPluginFromObject(stringPlugin, "StringSearch");
-        var pagePlugin = new TextSearchPlugin<BingWebPage>(searchService);
-        kernel.ImportPluginFromObject(pagePlugin, "PageSearch");
+        var textSearchResultPlugin = new TextSearchPlugin<TextSearchResult>(searchService);
+        kernel.ImportPluginFromObject(textSearchResultPlugin, "TextSearch");
+        var bingWebPagePlugin = new TextSearchPlugin<BingWebPage>(searchService);
+        kernel.ImportPluginFromObject(bingWebPagePlugin, "BingSearch");
 
         // Invoke the plugin to perform a text search and return string values
         var question = "What is the Semantic Kernel?";
-        var function = kernel.Plugins["StringSearch"]["Search"];
+        var function = kernel.Plugins["TextSearch"]["Search"];
         var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
         Console.WriteLine(result);
 
         // Invoke the plugin to perform a text search and return BingWebPage values
-        function = kernel.Plugins["PageSearch"]["Search"];
+        function = kernel.Plugins["BingSearch"]["Search"];
         result = await kernel.InvokeAsync(function, new() { ["query"] = question, ["count"] = 2 });
 
         Console.WriteLine(result);

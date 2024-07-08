@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <summary>
 /// An Azure Search service that creates and recalls memories associated with text.
 /// </summary>
-public sealed class AzureAITextSearchService : ITextSearchService
+public sealed class AzureAITextSearchService : ITextSearchService<TextSearchResult>, ITextSearchService<SearchDocument>
 {
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes { get; }
@@ -62,7 +62,30 @@ public sealed class AzureAITextSearchService : ITextSearchService
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings? searchSettings, Kernel? kernel = null, CancellationToken cancellationToken = default) where T : class
+    async Task<KernelSearchResults<TextSearchResult>> ITextSearchService<TextSearchResult>.SearchAsync(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken)
+    {
+        return await this.ExecuteSearchAsync<TextSearchResult>(query, searchSettings, kernel, cancellationToken).ConfigureAwait(true);
+    }
+
+    /// <inheritdoc/>
+    async Task<KernelSearchResults<SearchDocument>> ITextSearchService<SearchDocument>.SearchAsync(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken)
+    {
+        return await this.ExecuteSearchAsync<SearchDocument>(query, searchSettings, kernel, cancellationToken).ConfigureAwait(true);
+    }
+
+    #region private
+
+    private readonly SearchIndexClient _searchIndexClient;
+    private readonly string? _index;
+
+    /// <summary>
+    /// Perform a search for content related to the specified query.
+    /// </summary>
+    /// <param name="query">What to search for</param>
+    /// <param name="searchSettings">Option search execution settings</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    private async Task<KernelSearchResults<T>> ExecuteSearchAsync<T>(string query, SearchExecutionSettings? searchSettings, Kernel? kernel, CancellationToken cancellationToken) where T : class
     {
         Verify.NotNullOrWhiteSpace(query);
         Verify.NotNull(searchSettings);
@@ -78,22 +101,15 @@ public sealed class AzureAITextSearchService : ITextSearchService
         //SearchResults<T>? searchResults = null;
         try
         {
-            if (typeof(T) == typeof(string))
-            {
-                var response = await searchClient.SearchAsync<SearchDocument>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
-                SearchResults<SearchDocument>? searchResults = response.Value;
-                return new KernelSearchResults<T>(searchResults, this.GetResultsAsync<T>(searchResults, azureSearchSettings.ValueField, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
-            }
+            var response = await searchClient.SearchAsync<SearchDocument>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
+            SearchResults<SearchDocument>? searchResults = response.Value;
             if (typeof(T) == typeof(TextSearchResult))
             {
-                var response = await searchClient.SearchAsync<SearchDocument>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
-                SearchResults<SearchDocument>? searchResults = response.Value;
-                return new KernelSearchResults<T>(searchResults, this.GetResultsAsync<T>(searchResults, azureSearchSettings.NameField, azureSearchSettings.ValueField, azureSearchSettings.LinkField, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
+                return new KernelSearchResults<T>(searchResults, (IAsyncEnumerable<T>)this.GetResultsAsync(searchResults, azureSearchSettings.NameField, azureSearchSettings.ValueField, azureSearchSettings.LinkField, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
             }
-            else
+            if (typeof(T) == typeof(SearchDocument))
             {
-                SearchResults<T>? searchResults = await searchClient.SearchAsync<T>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
-                return new KernelSearchResults<T>(searchResults, this.GetResultsAsync(searchResults, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
+                return new KernelSearchResults<T>(searchResults, (IAsyncEnumerable<T>)this.GetResultsAsync(searchResults, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
             }
         }
         catch (HttpOperationException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -104,65 +120,50 @@ public sealed class AzureAITextSearchService : ITextSearchService
         return new KernelSearchResults<T>(null, AsyncEnumerable.Empty<T>(), 0, null);
     }
 
-    #region private
-
-    private readonly SearchIndexClient _searchIndexClient;
-    private readonly string? _index;
-
     /// <summary>
     /// Return the search results.
     /// </summary>
-    /// <typeparam name="T">The .NET type that maps to the index schema. Instances of this type
-    /// can be retrieved as documents from the index.</typeparam>
     /// <param name="searchResults">Response containing the documents matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<T> GetResultsAsync<T>(SearchResults<T>? searchResults, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
+    private async IAsyncEnumerable<SearchDocument> GetResultsAsync(SearchResults<SearchDocument>? searchResults, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (searchResults == null)
         {
             yield break;
         }
 
-        await foreach (SearchResult<T> searchResult in searchResults.GetResultsAsync().ConfigureAwait(false))
+        await foreach (SearchResult<SearchDocument> searchResult in searchResults.GetResultsAsync().ConfigureAwait(false))
         {
             yield return searchResult.Document;
         }
     }
 
-    private async IAsyncEnumerable<T> GetResultsAsync<T>(SearchResults<SearchDocument>? searchResults, string? snippetField, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
+    /// <summary>
+    /// Return the search results.
+    /// </summary>
+    /// <param name="searchResults">Response containing the documents matching the query.</param>
+    /// <param name="nameField">Name of the field that contains the name to return.</param>
+    /// <param name="valueField">Name of the field that contains the snippet of text to return.</param>
+    /// <param name="linkField">Name of the field that contains the link to return.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    private async IAsyncEnumerable<TextSearchResult> GetResultsAsync(SearchResults<SearchDocument>? searchResults, string? nameField, string? valueField, string? linkField, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        Verify.NotNull(snippetField);
-
         if (searchResults is null)
         {
             yield break;
         }
 
-        await foreach (SearchResult<SearchDocument> searchResult in searchResults.GetResultsAsync().ConfigureAwait(false))
-        {
-            if (searchResult.Document.GetString(snippetField!) is T snippetValue)
-            {
-                yield return snippetValue;
-            }
-        }
-    }
-
-    private async IAsyncEnumerable<T> GetResultsAsync<T>(SearchResults<SearchDocument>? searchResults, string? nameField, string? snippetField, string? linkField, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
-    {
-        Verify.NotNull(snippetField);
-
-        if (searchResults is null)
-        {
-            yield break;
-        }
+        Verify.NotNullOrWhiteSpace(nameField, nameof(nameField));
+        Verify.NotNullOrWhiteSpace(valueField, nameof(valueField));
+        Verify.NotNullOrWhiteSpace(linkField, nameof(nameField));
 
         await foreach (SearchResult<SearchDocument> searchResult in searchResults.GetResultsAsync().ConfigureAwait(false))
         {
             var name = searchResult.Document.GetString(nameField!);
-            var snippet = searchResult.Document.GetString(snippetField!);
+            var snippet = searchResult.Document.GetString(valueField!);
             var link = searchResult.Document.GetString(linkField!);
 
-            yield return (T)(object)new TextSearchResult(name, snippet, link, searchResult.Document);
+            yield return new TextSearchResult(name, snippet, link, searchResult.Document);
         }
     }
 

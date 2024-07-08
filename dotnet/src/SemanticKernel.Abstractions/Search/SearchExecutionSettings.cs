@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Search;
 /// Provides execution settings for a search request.
 /// </summary>
 /// <remarks>
-/// Implementors of <see cref="ITextSearchService"/> can extend this
+/// Implementors of <see cref="ITextSearchService{T}"/> can extend this
 /// if the service they are calling supports additional properties.
 /// </remarks>
 [Experimental("SKEXP0001")]
