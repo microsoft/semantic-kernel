@@ -1,15 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 import logging
 from collections.abc import AsyncGenerator
 from typing import Any
 
-import aiohttp
-from pydantic import HttpUrl
+from ollama import AsyncClient
 
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
-from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -21,14 +18,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
     """Initializes a new instance of the OllamaTextCompletion class.
 
     Make sure to have the ollama service running either locally or remotely.
-
-    Args:
-        ai_model_id (str): Ollama model name, see https://ollama.ai/library
-        url (Optional[Union[str, HttpUrl]]): URL of the Ollama server, defaults to http://localhost:11434/api/generate
     """
-
-    url: HttpUrl = "http://localhost:11434/api/generate"
-    session: aiohttp.ClientSession | None = None
 
     async def get_text_contents(
         self,
@@ -44,18 +34,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
         Returns:
             List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
         """
-        if not settings.ai_model_id:
-            settings.ai_model_id = self.ai_model_id
-        settings.prompt = prompt
-        settings.stream = False
-        async with (
-            AsyncSession(self.session) as session,
-            session.post(self.url, json=settings.prepare_settings_dict()) as response,
-        ):
-            response.raise_for_status()
-            inner_content = await response.json()
-            text = inner_content["response"]
-            return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
+        response_object = await AsyncClient().generate(model=self.ai_model_id, prompt=prompt, stream=False)
+
+        inner_content = response_object
+        text = inner_content["response"]
+        return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
 
     async def get_streaming_text_contents(
         self,
@@ -74,26 +57,14 @@ class OllamaTextCompletion(TextCompletionClientBase):
         Yields:
             List[StreamingTextContent]: Completion result.
         """
-        if not settings.ai_model_id:
-            settings.ai_model_id = self.ai_model_id
-        settings.prompt = prompt
-        settings.stream = True
-        async with (
-            AsyncSession(self.session) as session,
-            session.post(self.url, json=settings.prepare_settings_dict()) as response,
-        ):
-            response.raise_for_status()
-            async for line in response.content:
-                body = json.loads(line)
-                if body.get("done") and body.get("response") is None:
-                    break
-                yield [
-                    StreamingTextContent(
-                        choice_index=0, inner_content=body, ai_model_id=self.ai_model_id, text=body.get("response")
-                    )
-                ]
-                if body.get("done"):
-                    break
+        response_object = await AsyncClient().generate(model=self.ai_model_id, prompt=prompt, stream=True)
+
+        async for part in response_object:
+            yield [
+                StreamingTextContent(
+                    choice_index=0, inner_content=part, ai_model_id=self.ai_model_id, text=part.get("response")
+                )
+            ]
 
     def get_prompt_execution_settings_class(self) -> "OllamaTextPromptExecutionSettings":
         """Get the request settings class."""
