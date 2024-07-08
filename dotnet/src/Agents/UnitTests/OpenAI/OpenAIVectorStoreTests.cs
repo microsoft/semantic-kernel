@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using OpenAI.VectorStores;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -22,10 +24,77 @@ public sealed class OpenAIVectorStoreTests : IDisposable
     [Fact]
     public void VerifyOpenAIVectorStoreInitialization()
     {
-        //this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentSimple);
-
         OpenAIVectorStore store = new("#vs1", this.CreateTestConfiguration());
         Assert.Equal("#vs1", store.VectorStoreId);
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIVectorStoreDeleteAsync()
+    {
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.DeleteStore);
+
+        OpenAIVectorStore store = new("#vs1", this.CreateTestConfiguration());
+        bool isDeleted = await store.DeleteAsync();
+
+        Assert.True(isDeleted);
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIVectorStoreListAsync()
+    {
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.ListStores);
+
+        VectorStore[] stores = await OpenAIVectorStore.GetVectorStoresAsync(this.CreateTestConfiguration()).ToArrayAsync();
+
+        Assert.Equal(2, stores.Length);
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIVectorStoreAddFileAsync()
+    {
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.AddFile);
+
+        OpenAIVectorStore store = new("#vs1", this.CreateTestConfiguration());
+        await store.AddFileAsync("#file_1");
+
+        // %%% VERIFY
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIVectorStoreRemoveFileAsync()
+    {
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.DeleteFile);
+
+        OpenAIVectorStore store = new("#vs1", this.CreateTestConfiguration());
+        bool isDeleted = await store.RemoveFileAsync("#file_1");
+
+        Assert.True(isDeleted);
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIVectorStoreGetFilesAsync()
+    {
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.ListFiles);
+
+        OpenAIVectorStore store = new("#vs1", this.CreateTestConfiguration());
+        string[] files = await store.GetFilesAsync().ToArrayAsync();
+
+        Assert.Equal(2, files.Length);
     }
 
     /// <inheritdoc/>
@@ -74,473 +143,99 @@ public sealed class OpenAIVectorStoreTests : IDisposable
 
     private static class ResponseContent
     {
-        public const string CreateAgentSimple =
+        public const string AddFile =
             """
             {
-              "id": "asst_abc123",
-              "object": "assistant",
-              "created_at": 1698984975,
-              "name": null,
-              "description": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {}
+              "id": "#file_1",
+              "object": "vector_store.file",
+              "created_at": 1699061776,
+              "usage_bytes": 1234,
+              "vector_store_id": "vs_abcd",
+              "status": "completed",
+              "last_error": null
             }
             """;
 
-        public const string CreateAgentFull =
+        public const string DeleteFile =
             """
             {
-              "id": "asst_abc123",
-              "object": "assistant",
-              "created_at": 1698984975,
-              "name": "testname",
-              "description": "testdescription",
-              "model": "gpt-4-turbo",
-              "instructions": "testinstructions",
-              "tools": [],
-              "file_ids": [],
-              "metadata": {}
-            }
-            """;
-
-        public const string CreateAgentWithEverything =
-            """
-            {
-              "id": "asst_abc123",
-              "object": "assistant",
-              "created_at": 1698984975,
-              "name": null,
-              "description": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [
-                {
-                  "type": "code_interpreter"
-                },
-                {
-                  "type": "file_search"
-                }
-              ],
-              "tool_resources": {
-                "file_search": {
-                    "vector_store_ids": ["#vs"]
-                }
-              },
-              "metadata": {"a": "1"}
-            }
-            """;
-
-        public const string DeleteAgent =
-          """
-            {
-              "id": "asst_abc123",
-              "object": "assistant.deleted",
+              "id": "#file_1",
+              "object": "vector_store.file.deleted",
               "deleted": true
             }
             """;
 
-        public const string CreateThread =
+        public const string DeleteStore =
             """
             {
-              "id": "thread_abc123",
-              "object": "thread",
-              "created_at": 1699012949,
-              "metadata": {}
+              "id": "vs_abc123",
+              "object": "vector_store.deleted",
+              "deleted": true
             }
             """;
 
-        public const string CreateRun =
-            """
-            {
-              "id": "run_abc123",
-              "object": "thread.run",
-              "created_at": 1699063290,
-              "assistant_id": "asst_abc123",
-              "thread_id": "thread_abc123",
-              "status": "queued",
-              "started_at": 1699063290,
-              "expires_at": null,
-              "cancelled_at": null,
-              "failed_at": null,
-              "completed_at": 1699063291,
-              "last_error": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {},
-              "usage": null,
-              "temperature": 1
-            }
-            """;
-
-        public const string PendingRun =
-            """
-            {
-              "id": "run_abc123",
-              "object": "thread.run",
-              "created_at": 1699063290,
-              "assistant_id": "asst_abc123",
-              "thread_id": "thread_abc123",
-              "status": "requires_action",
-              "started_at": 1699063290,
-              "expires_at": null,
-              "cancelled_at": null,
-              "failed_at": null,
-              "completed_at": 1699063291,
-              "last_error": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {},
-              "usage": null,
-              "temperature": 1
-            }
-            """;
-
-        public const string CompletedRun =
-            """
-            {
-              "id": "run_abc123",
-              "object": "thread.run",
-              "created_at": 1699063290,
-              "assistant_id": "asst_abc123",
-              "thread_id": "thread_abc123",
-              "status": "completed",
-              "started_at": 1699063290,
-              "expires_at": null,
-              "cancelled_at": null,
-              "failed_at": null,
-              "completed_at": 1699063291,
-              "last_error": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {},
-              "usage": null,
-              "temperature": 1
-            }
-            """;
-
-        public const string MessageSteps =
+        public const string ListFiles =
             """
             {
               "object": "list",
               "data": [
                 {
-                  "id": "step_abc123",
-                  "object": "thread.run.step",
-                  "created_at": 1699063291,
-                  "run_id": "run_abc123",
-                  "assistant_id": "asst_abc123",
-                  "thread_id": "thread_abc123",
-                  "type": "message_creation",
-                  "status": "completed",
-                  "cancelled_at": null,
-                  "completed_at": 1699063291,
-                  "expired_at": null,
-                  "failed_at": null,
-                  "last_error": null,
-                  "step_details": {
-                    "type": "message_creation",
-                    "message_creation": {
-                      "message_id": "msg_abc123"
-                    }
-                  },
-                  "usage": {
-                    "prompt_tokens": 123,
-                    "completion_tokens": 456,
-                    "total_tokens": 579
-                  }
-                }
-              ],
-              "first_id": "step_abc123",
-              "last_id": "step_abc456",
-              "has_more": false
-            }
-            """;
-
-        public const string ToolSteps =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "step_abc987",
-                  "object": "thread.run.step",
-                  "created_at": 1699063291,
-                  "run_id": "run_abc123",
-                  "assistant_id": "asst_abc123",
-                  "thread_id": "thread_abc123",
-                  "type": "tool_calls",
-                  "status": "in_progress",
-                  "cancelled_at": null,
-                  "completed_at": 1699063291,
-                  "expired_at": null,
-                  "failed_at": null,
-                  "last_error": null,
-                  "step_details": {
-                    "type": "tool_calls",
-                    "tool_calls": [
-                     {
-                        "id": "tool_1",
-                        "type": "function",
-                        "function": {
-                            "name": "MyPlugin-MyFunction",
-                            "arguments": "{ \"index\": 3 }",
-                            "output": "test"
-                        }
-                     }
-                    ]
-                  },
-                  "usage": {
-                    "prompt_tokens": 123,
-                    "completion_tokens": 456,
-                    "total_tokens": 579
-                  }
-                }
-              ],
-              "first_id": "step_abc123",
-              "last_id": "step_abc456",
-              "has_more": false
-            }
-            """;
-
-        public const string ToolResponse = "{ }";
-
-        public const string GetImageMessage =
-            """
-            {
-              "id": "msg_abc123",
-              "object": "thread.message",
-              "created_at": 1699017614,
-              "thread_id": "thread_abc123",
-              "role": "user",
-              "content": [
-                {
-                  "type": "image_file",
-                  "image_file": {
-                    "file_id": "file_123"
-                  }
-                }
-              ],
-              "assistant_id": "asst_abc123",
-              "run_id": "run_abc123"
-            }
-            """;
-
-        public const string GetTextMessage =
-            """
-            {
-              "id": "msg_abc123",
-              "object": "thread.message",
-              "created_at": 1699017614,
-              "thread_id": "thread_abc123",
-              "role": "user",
-              "content": [
-                {
-                  "type": "text",
-                  "text": {
-                    "value": "How does AI work? Explain it in simple terms.",
-                    "annotations": []
-                  }
-                }
-              ],
-              "assistant_id": "asst_abc123",
-              "run_id": "run_abc123"
-            }
-            """;
-
-        public const string GetTextMessageWithAnnotation =
-            """
-            {
-              "id": "msg_abc123",
-              "object": "thread.message",
-              "created_at": 1699017614,
-              "thread_id": "thread_abc123",
-              "role": "user",
-              "content": [
-                {
-                  "type": "text",
-                  "text": {
-                    "value": "How does AI work? Explain it in simple terms.**f1",
-                    "annotations": [
-                        {
-                            "type": "file_citation",
-                            "text": "**f1",
-                            "file_citation": {
-                                "file_id": "file_123",
-                                "quote": "does"
-                            },
-                            "start_index": 3,
-                            "end_index": 6
-                        }
-                    ]
-                  }
-                }
-              ],
-              "assistant_id": "asst_abc123",
-              "run_id": "run_abc123"
-            }
-            """;
-
-        public const string ListAgentsPageMore =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "asst_abc123",
-                  "object": "assistant",
-                  "created_at": 1698982736,
-                  "name": "Coding Tutor",
-                  "description": null,
-                  "model": "gpt-4-turbo",
-                  "instructions": "You are a helpful assistant designed to make me better at coding!",
-                  "tools": [],
-                  "metadata": {}
+                  "id": "file-abc123",
+                  "object": "vector_store.file",
+                  "created_at": 1699061776,
+                  "vector_store_id": "vs_abc123"
                 },
                 {
-                  "id": "asst_abc456",
-                  "object": "assistant",
-                  "created_at": 1698982718,
-                  "name": "My Assistant",
-                  "description": null,
-                  "model": "gpt-4-turbo",
-                  "instructions": "You are a helpful assistant designed to make me better at coding!",
-                  "tools": [],
-                  "metadata": {}
+                  "id": "file-abc456",
+                  "object": "vector_store.file",
+                  "created_at": 1699061776,
+                  "vector_store_id": "vs_abc123"
+                }
+              ],
+              "first_id": "file-abc123",
+              "last_id": "file-abc456",
+              "has_more": false
+            }            
+            """;
+
+        public const string ListStores =
+            """
+            {
+              "object": "list",
+              "data": [
+                {
+                  "id": "vs_abc123",
+                  "object": "vector_store",
+                  "created_at": 1699061776,
+                  "name": "Support FAQ",
+                  "bytes": 139920,
+                  "file_counts": {
+                    "in_progress": 0,
+                    "completed": 3,
+                    "failed": 0,
+                    "cancelled": 0,
+                    "total": 3
+                  }
                 },
                 {
-                  "id": "asst_abc789",
-                  "object": "assistant",
-                  "created_at": 1698982643,
-                  "name": null,
-                  "description": null,
-                  "model": "gpt-4-turbo",
-                  "instructions": null,
-                  "tools": [],
-                  "metadata": {}
+                  "id": "vs_abc456",
+                  "object": "vector_store",
+                  "created_at": 1699061776,
+                  "name": "Support FAQ v2",
+                  "bytes": 139920,
+                  "file_counts": {
+                    "in_progress": 0,
+                    "completed": 3,
+                    "failed": 0,
+                    "cancelled": 0,
+                    "total": 3
+                  }
                 }
               ],
-              "first_id": "asst_abc123",
-              "last_id": "asst_abc789",
-              "has_more": true
-            }
-            """;
-
-        public const string ListAgentsPageFinal =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "asst_abc789",
-                  "object": "assistant",
-                  "created_at": 1698982736,
-                  "name": "Coding Tutor",
-                  "description": null,
-                  "model": "gpt-4-turbo",
-                  "instructions": "You are a helpful assistant designed to make me better at coding!",
-                  "tools": [],
-                  "metadata": {}
-                }           
-              ],
-              "first_id": "asst_abc789",
-              "last_id": "asst_abc789",
+              "first_id": "vs_abc123",
+              "last_id": "vs_abc456",
               "has_more": false
-            }
-            """;
-
-        public const string ListMessagesPageMore =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "msg_abc123",
-                  "object": "thread.message",
-                  "created_at": 1699016383,
-                  "thread_id": "thread_abc123",
-                  "role": "user",
-                  "content": [
-                    {
-                      "type": "text",
-                      "text": {
-                        "value": "How does AI work? Explain it in simple terms.",
-                        "annotations": []
-                      }
-                    }
-                  ],
-                  "file_ids": [],
-                  "assistant_id": null,
-                  "run_id": null,
-                  "metadata": {}
-                },
-                {
-                  "id": "msg_abc456",
-                  "object": "thread.message",
-                  "created_at": 1699016383,
-                  "thread_id": "thread_abc123",
-                  "role": "user",
-                  "content": [
-                    {
-                      "type": "text",
-                      "text": {
-                        "value": "Hello, what is AI?",
-                        "annotations": []
-                      }
-                    }
-                  ],
-                  "file_ids": [
-                    "file-abc123"
-                  ],
-                  "assistant_id": null,
-                  "run_id": null,
-                  "metadata": {}
-                }
-              ],
-              "first_id": "msg_abc123",
-              "last_id": "msg_abc456",
-              "has_more": true
-            }
-            """;
-
-        public const string ListMessagesPageFinal =
-            """
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "msg_abc789",
-                  "object": "thread.message",
-                  "created_at": 1699016383,
-                  "thread_id": "thread_abc123",
-                  "role": "user",
-                  "content": [
-                    {
-                      "type": "text",
-                      "text": {
-                        "value": "How does AI work? Explain it in simple terms.",
-                        "annotations": []
-                      }
-                    }
-                  ],
-                  "file_ids": [],
-                  "assistant_id": null,
-                  "run_id": null,
-                  "metadata": {}
-                }
-              ],
-              "first_id": "msg_abc789",
-              "last_id": "msg_abc789",
-              "has_more": false
-            }
+            }            
             """;
     }
 }
