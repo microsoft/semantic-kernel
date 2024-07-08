@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 /// <summary>
-/// Execution settings for OpenAI audio-to-text request.
+/// Execution settings for Azure OpenAI audio-to-text request.
 /// </summary>
 [Experimental("SKEXP0010")]
-public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
+public sealed class AzureOpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// Filename or identifier associated with audio data.
@@ -101,18 +102,18 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     public IReadOnlyList<TimeStampGranularities>? Granularities { get; set; }
 
     /// <summary>
-    /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class with default filename - "file.mp3".
+    /// Creates an instance of <see cref="AzureOpenAIAudioToTextExecutionSettings"/> class with default filename - "file.mp3".
     /// </summary>
-    public OpenAIAudioToTextExecutionSettings()
+    public AzureOpenAIAudioToTextExecutionSettings()
         : this(DefaultFilename)
     {
     }
 
     /// <summary>
-    /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class.
+    /// Creates an instance of <see cref="AzureOpenAIAudioToTextExecutionSettings"/> class.
     /// </summary>
     /// <param name="filename">Filename or identifier associated with audio data. Should be in format {filename}.{extension}</param>
-    public OpenAIAudioToTextExecutionSettings(string filename)
+    public AzureOpenAIAudioToTextExecutionSettings(string filename)
     {
         this._filename = filename;
     }
@@ -120,7 +121,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
-        return new OpenAIAudioToTextExecutionSettings(this.Filename)
+        return new AzureOpenAIAudioToTextExecutionSettings(this.Filename)
         {
             ModelId = this.ModelId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
@@ -132,27 +133,32 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// Converts <see cref="PromptExecutionSettings"/> to derived <see cref="OpenAIAudioToTextExecutionSettings"/> type.
+    /// Converts <see cref="PromptExecutionSettings"/> to derived <see cref="AzureOpenAIAudioToTextExecutionSettings"/> type.
     /// </summary>
     /// <param name="executionSettings">Instance of <see cref="PromptExecutionSettings"/>.</param>
-    /// <returns>Instance of <see cref="OpenAIAudioToTextExecutionSettings"/>.</returns>
-    public static OpenAIAudioToTextExecutionSettings? FromExecutionSettings(PromptExecutionSettings? executionSettings)
+    /// <returns>Instance of <see cref="AzureOpenAIAudioToTextExecutionSettings"/>.</returns>
+    public static AzureOpenAIAudioToTextExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         if (executionSettings is null)
         {
-            return new OpenAIAudioToTextExecutionSettings();
+            return new AzureOpenAIAudioToTextExecutionSettings();
         }
 
-        if (executionSettings is OpenAIAudioToTextExecutionSettings settings)
+        if (executionSettings is AzureOpenAIAudioToTextExecutionSettings settings)
         {
             return settings;
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
 
-        var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIAudioToTextExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
+        var openAIExecutionSettings = JsonSerializer.Deserialize<AzureOpenAIAudioToTextExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
-        return openAIExecutionSettings!;
+        if (openAIExecutionSettings is not null)
+        {
+            return openAIExecutionSettings;
+        }
+
+        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureOpenAIAudioToTextExecutionSettings)}", nameof(executionSettings));
     }
 
     /// <summary>

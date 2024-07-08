@@ -3,37 +3,36 @@
 using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Xunit;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
-namespace SemanticKernel.Connectors.OpenAI.UniTests.Settings;
+namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Settings;
 
 /// <summary>
-/// Unit tests for <see cref="OpenAIAudioToTextExecutionSettings"/> class.
+/// Unit tests for <see cref="AzureOpenAIAudioToTextExecutionSettings"/> class.
 /// </summary>
-public sealed class OpenAIAudioToTextExecutionSettingsTests
+public sealed class AzureOpenAIAudioToTextExecutionSettingsTests
 {
     [Fact]
     public void ItReturnsDefaultSettingsWhenSettingsAreNull()
     {
-        Assert.NotNull(OpenAIAudioToTextExecutionSettings.FromExecutionSettings(null));
+        Assert.NotNull(AzureOpenAIAudioToTextExecutionSettings.FromExecutionSettings(null));
     }
 
     [Fact]
     public void ItReturnsValidOpenAIAudioToTextExecutionSettings()
     {
         // Arrange
-        var audioToTextSettings = new OpenAIAudioToTextExecutionSettings("file.mp3")
+        var audioToTextSettings = new AzureOpenAIAudioToTextExecutionSettings("file.mp3")
         {
             ModelId = "model_id",
             Language = "en",
             Prompt = "prompt",
-            ResponseFormat = OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
+            ResponseFormat = AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
             Temperature = 0.2f
         };
 
         // Act
-        var settings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(audioToTextSettings);
+        var settings = AzureOpenAIAudioToTextExecutionSettings.FromExecutionSettings(audioToTextSettings);
 
         // Assert
         Assert.Same(audioToTextSettings, settings);
@@ -57,7 +56,7 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
-        var settings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
+        var settings = AzureOpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
 
         // Assert
         Assert.NotNull(settings);
@@ -65,30 +64,30 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         Assert.Equal("en", settings.Language);
         Assert.Equal("file.mp3", settings.Filename);
         Assert.Equal("prompt", settings.Prompt);
-        Assert.Equal(OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose, settings.ResponseFormat);
+        Assert.Equal(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose, settings.ResponseFormat);
         Assert.Equal(0.2f, settings.Temperature);
     }
 
     [Fact]
     public void ItClonesAllProperties()
     {
-        var settings = new OpenAIAudioToTextExecutionSettings()
+        var settings = new AzureOpenAIAudioToTextExecutionSettings()
         {
             ModelId = "model_id",
             Language = "en",
             Prompt = "prompt",
-            ResponseFormat = OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
+            ResponseFormat = AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
             Temperature = 0.2f,
             Filename = "something.mp3",
         };
 
-        var clone = (OpenAIAudioToTextExecutionSettings)settings.Clone();
+        var clone = (AzureOpenAIAudioToTextExecutionSettings)settings.Clone();
         Assert.NotSame(settings, clone);
 
         Assert.Equal("model_id", clone.ModelId);
         Assert.Equal("en", clone.Language);
         Assert.Equal("prompt", clone.Prompt);
-        Assert.Equal(OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple, clone.ResponseFormat);
+        Assert.Equal(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple, clone.ResponseFormat);
         Assert.Equal(0.2f, clone.Temperature);
         Assert.Equal("something.mp3", clone.Filename);
     }
@@ -96,12 +95,12 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
     [Fact]
     public void ItFreezesAndPreventsMutation()
     {
-        var settings = new OpenAIAudioToTextExecutionSettings()
+        var settings = new AzureOpenAIAudioToTextExecutionSettings()
         {
             ModelId = "model_id",
             Language = "en",
             Prompt = "prompt",
-            ResponseFormat = OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
+            ResponseFormat = AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
             Temperature = 0.2f,
             Filename = "something.mp3",
         };
@@ -112,7 +111,7 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => settings.ModelId = "new_model");
         Assert.Throws<InvalidOperationException>(() => settings.Language = "some_format");
         Assert.Throws<InvalidOperationException>(() => settings.Prompt = "prompt");
-        Assert.Throws<InvalidOperationException>(() => settings.ResponseFormat = OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple);
+        Assert.Throws<InvalidOperationException>(() => settings.ResponseFormat = AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple);
         Assert.Throws<InvalidOperationException>(() => settings.Temperature = 0.2f);
         Assert.Throws<InvalidOperationException>(() => settings.Filename = "something");
 

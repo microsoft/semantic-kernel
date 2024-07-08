@@ -5,6 +5,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
@@ -139,6 +140,40 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         var service = builder.Build().GetRequiredService<ITextToImageService>();
 
         Assert.True(service is AzureOpenAITextToImageService);
+    }
+
+    #endregion
+
+    #region Audio to text
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.TokenCredential)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
+    public void KernelBuilderAddAzureOpenAIAudioToTextAddsValidService(InitializationType type)
+    {
+        // Arrange
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+        var client = new AzureOpenAIClient(new Uri("https://endpoint"), "key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<AzureOpenAIClient>(client);
+
+        // Act
+        builder = type switch
+        {
+            InitializationType.ApiKey => builder.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", credentials),
+            InitializationType.ClientInline => builder.AddAzureOpenAIAudioToText("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIAudioToText("deployment-name"),
+            _ => builder
+        };
+
+        // Assert
+        var service = builder.Build().GetRequiredService<IAudioToTextService>();
+
+        Assert.IsType<AzureOpenAIAudioToTextService>(service);
     }
 
     #endregion

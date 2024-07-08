@@ -31,33 +31,34 @@ internal partial class ClientCore
             throw new ArgumentException("The input audio content is not readable.", nameof(input));
         }
 
-        OpenAIAudioToTextExecutionSettings audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings)!;
-        AudioTranscriptionOptions? audioOptions = AudioOptionsFromExecutionSettings(audioExecutionSettings);
+        AzureOpenAIAudioToTextExecutionSettings audioExecutionSettings = AzureOpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings)!;
+        AudioTranscriptionOptions audioOptions = AudioOptionsFromExecutionSettings(audioExecutionSettings);
 
         Verify.ValidFilename(audioExecutionSettings?.Filename);
 
         using var memoryStream = new MemoryStream(input.Data!.Value.ToArray());
 
-        AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioClient(this.ModelId).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
+        AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioClient(this.DeploymentName).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
 
-        return [new(responseData.Text, this.ModelId, metadata: GetResponseMetadata(responseData))];
+        return [new(responseData.Text, this.DeploymentName, metadata: GetResponseMetadata(responseData))];
     }
 
     /// <summary>
-    /// Converts <see cref="PromptExecutionSettings"/> to <see cref="AudioTranscriptionOptions"/> type.
+    /// Converts <see cref="AzureOpenAIAudioToTextExecutionSettings"/> to <see cref="AudioTranscriptionOptions"/> type.
     /// </summary>
-    /// <param name="executionSettings">Instance of <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="executionSettings">Instance of <see cref="AzureOpenAIAudioToTextExecutionSettings"/>.</param>
     /// <returns>Instance of <see cref="AudioTranscriptionOptions"/>.</returns>
-    private static AudioTranscriptionOptions? AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
+    private static AudioTranscriptionOptions AudioOptionsFromExecutionSettings(AzureOpenAIAudioToTextExecutionSettings executionSettings)
         => new()
         {
             Granularities = ConvertToAudioTimestampGranularities(executionSettings!.Granularities),
             Language = executionSettings.Language,
             Prompt = executionSettings.Prompt,
-            Temperature = executionSettings.Temperature
+            Temperature = executionSettings.Temperature,
+            ResponseFormat = ConvertResponseFormat(executionSettings.ResponseFormat)
         };
 
-    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(IEnumerable<OpenAIAudioToTextExecutionSettings.TimeStampGranularities>? granularities)
+    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(IEnumerable<AzureOpenAIAudioToTextExecutionSettings.TimeStampGranularities>? granularities)
     {
         AudioTimestampGranularities result = AudioTimestampGranularities.Default;
 
@@ -67,8 +68,8 @@ internal partial class ClientCore
             {
                 var openAIGranularity = granularity switch
                 {
-                    OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Word => AudioTimestampGranularities.Word,
-                    OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Segment => AudioTimestampGranularities.Segment,
+                    AzureOpenAIAudioToTextExecutionSettings.TimeStampGranularities.Word => AudioTimestampGranularities.Word,
+                    AzureOpenAIAudioToTextExecutionSettings.TimeStampGranularities.Segment => AudioTimestampGranularities.Segment,
                     _ => AudioTimestampGranularities.Default
                 };
 
@@ -86,4 +87,21 @@ internal partial class ClientCore
             [nameof(audioTranscription.Duration)] = audioTranscription.Duration,
             [nameof(audioTranscription.Segments)] = audioTranscription.Segments
         };
+
+    private static AudioTranscriptionFormat? ConvertResponseFormat(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat? responseFormat)
+    {
+        if (responseFormat is null)
+        {
+            return null;
+        }
+
+        return responseFormat switch
+        {
+            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple => AudioTranscriptionFormat.Simple,
+            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose => AudioTranscriptionFormat.Verbose,
+            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Vtt => AudioTranscriptionFormat.Vtt,
+            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Srt => AudioTranscriptionFormat.Srt,
+            _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
+        };
+    }
 }

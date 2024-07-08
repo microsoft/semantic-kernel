@@ -16,17 +16,17 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// <summary>
 /// Azure OpenAI audio-to-text service.
 /// </summary>
-[Experimental("SKEXP0001")]
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
 {
     /// <summary>Core implementation shared by Azure OpenAI services.</summary>
-    private readonly AzureOpenAIClientCore _core;
+    private readonly ClientCore _core;
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
     /// <summary>
-    /// Creates an instance of the <see cref="AzureOpenAIAudioToTextService"/> with API key auth.
+    /// Initializes a new instance of the <see cref="AzureOpenAIAudioToTextService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -47,7 +47,7 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
     }
 
     /// <summary>
-    /// Creates an instance of the <see cref="AzureOpenAIAudioToTextService"/> with AAD auth.
+    /// Initializes a new instance of the <see cref="AzureOpenAIAudioToTextService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -68,19 +68,19 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
     }
 
     /// <summary>
-    /// Creates an instance of the <see cref="AzureOpenAIAudioToTextService"/> using the specified <see cref="OpenAIClient"/>.
+    /// Initializes a new instance of the <see cref="AzureOpenAIAudioToTextService"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="azureOpenAIClient">Custom <see cref="AzureOpenAIClient"/>.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAIAudioToTextService(
         string deploymentName,
-        OpenAIClient openAIClient,
+        AzureOpenAIClient azureOpenAIClient,
         string? modelId = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIAudioToTextService)));
+        this._core = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIAudioToTextService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
@@ -90,5 +90,5 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._core.GetTextContentFromAudioAsync(content, executionSettings, cancellationToken);
+        => this._core.GetTextFromAudioContentsAsync(content, executionSettings, cancellationToken);
 }
