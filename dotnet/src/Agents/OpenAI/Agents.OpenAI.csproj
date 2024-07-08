@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/OpenAI/Policies/GeneratedActionPipelinePolicy.cs" Link="%(RecursiveDir)OpenAI/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/openai/Policies/GeneratedActionPipelinePolicy.cs" Link="%(RecursiveDir)OpenAI/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/*" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/*" Link="%(RecursiveDir)Http/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/*" Link="%(RecursiveDir)Text/%(Filename)%(Extension)" />
