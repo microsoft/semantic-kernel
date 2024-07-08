@@ -76,6 +76,6 @@ internal partial class ClientCore
         return
             !string.IsNullOrWhiteSpace(modelId) ? modelId! :
             !string.IsNullOrWhiteSpace(executionSettings.ModelId) ? executionSettings.ModelId! :
-            this.DeploymentOrModelId;
+            this.DeploymentNameOrModelId;
     }
 }
