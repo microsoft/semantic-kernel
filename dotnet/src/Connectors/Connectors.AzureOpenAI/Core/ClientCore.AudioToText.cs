@@ -38,9 +38,9 @@ internal partial class ClientCore
 
         using var memoryStream = new MemoryStream(input.Data!.Value.ToArray());
 
-        AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioClient(this.DeploymentOrModelName).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
+        AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioClient(this.DeploymentName).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
 
-        return [new(responseData.Text, this.DeploymentOrModelName, metadata: GetResponseMetadata(responseData))];
+        return [new(responseData.Text, this.DeploymentName, metadata: GetResponseMetadata(responseData))];
     }
 
     /// <summary>
