@@ -16,7 +16,7 @@ public sealed class OpenAIVectorStore
     private readonly VectorStoreClient _client;
 
     /// <summary>
-    /// The identifier of the targeted vectore store
+    /// The identifier of the targeted vector store
     /// </summary>
     public string VectorStoreId { get; }
 
@@ -37,7 +37,7 @@ public sealed class OpenAIVectorStore
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIVectorStore"/> class.
     /// </summary>
-    /// <param name="vectorStoreId">The identifier of the targeted vectore store</param>
+    /// <param name="vectorStoreId">The identifier of the targeted vector store</param>
     /// <param name="config">Configuration for accessing the vector-store service.</param>
     public OpenAIVectorStore(string vectorStoreId, OpenAIServiceConfiguration config)
     {
