@@ -104,6 +104,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Agents\ChatCompletion_Streaming.cs" />
     <Compile Remove="Agents\ComplexChat_NestedShopper.cs" />
     <Compile Remove="Agents\MixedChat_Agents.cs" />
     <Compile Remove="Agents\OpenAIAssistant_ChartMaker.cs" />
