@@ -76,9 +76,9 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
         }
     }
 
-    private OpenAIConfiguration GetOpenAIConfiguration()
+    private OpenAIServiceConfiguration GetOpenAIConfiguration()
         =>
             this.UseOpenAIConfig ?
-                OpenAIConfiguration.ForOpenAI(this.ApiKey) :
-                OpenAIConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
+                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
+                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

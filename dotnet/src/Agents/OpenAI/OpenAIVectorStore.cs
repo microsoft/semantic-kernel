@@ -26,7 +26,7 @@ public sealed class OpenAIVectorStore
     /// <param name="config"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static IAsyncEnumerable<VectorStore> GetVectorStoresAsync(OpenAIConfiguration config, CancellationToken cancellationToken = default)
+    public static IAsyncEnumerable<VectorStore> GetVectorStoresAsync(OpenAIServiceConfiguration config, CancellationToken cancellationToken = default)
     {
         OpenAIClient openAIClient = OpenAIClientFactory.CreateClient(config);
         VectorStoreClient client = openAIClient.GetVectorStoreClient();
@@ -39,7 +39,7 @@ public sealed class OpenAIVectorStore
     /// </summary>
     /// <param name="vectorStoreId"></param>
     /// <param name="config"></param>
-    public OpenAIVectorStore(string vectorStoreId, OpenAIConfiguration config)
+    public OpenAIVectorStore(string vectorStoreId, OpenAIServiceConfiguration config)
     {
         OpenAIClient openAIClient = OpenAIClientFactory.CreateClient(config);
         this._client = openAIClient.GetVectorStoreClient();

@@ -20,12 +20,12 @@ internal static class OpenAIClientFactory
     /// </summary>
     /// <param name="config">Configuration required to target a specific Open AI service</param>
     /// <returns>An initialized Open AI client</returns>
-    public static OpenAIClient CreateClient(OpenAIConfiguration config)
+    public static OpenAIClient CreateClient(OpenAIServiceConfiguration config)
     {
         // Inspect options
         switch (config.Type)
         {
-            case OpenAIConfiguration.OpenAIConfigurationType.AzureOpenAI:
+            case OpenAIServiceConfiguration.OpenAIServiceType.AzureOpenAI:
             {
                 AzureOpenAIClientOptions clientOptions = CreateAzureClientOptions(config);
 
@@ -40,7 +40,7 @@ internal static class OpenAIClientFactory
 
                 throw new KernelException($"Unsupported configuration type: {config.Type}");
             }
-            case OpenAIConfiguration.OpenAIConfigurationType.OpenAI:
+            case OpenAIServiceConfiguration.OpenAIServiceType.OpenAI:
             {
                 OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(config);
                 return new OpenAIClient(config.ApiKey ?? SingleSpaceKey, clientOptions);
@@ -50,7 +50,7 @@ internal static class OpenAIClientFactory
         }
     }
 
-    private static AzureOpenAIClientOptions CreateAzureClientOptions(OpenAIConfiguration config)
+    private static AzureOpenAIClientOptions CreateAzureClientOptions(OpenAIServiceConfiguration config)
     {
         AzureOpenAIClientOptions options =
             new()
@@ -64,7 +64,7 @@ internal static class OpenAIClientFactory
         return options;
     }
 
-    private static OpenAIClientOptions CreateOpenAIClientOptions(OpenAIConfiguration config)
+    private static OpenAIClientOptions CreateOpenAIClientOptions(OpenAIServiceConfiguration config)
     {
         OpenAIClientOptions options =
             new()

@@ -53,7 +53,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> CreateAsync(
         Kernel kernel,
-        OpenAIConfiguration config,
+        OpenAIServiceConfiguration config,
         OpenAIAssistantDefinition definition,
         CancellationToken cancellationToken = default)
     {
@@ -84,7 +84,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An list of <see cref="OpenAIAssistantDefinition"/> objects.</returns>
     public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListDefinitionsAsync(
-        OpenAIConfiguration config,
+        OpenAIServiceConfiguration config,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Create the client
@@ -107,7 +107,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> RetrieveAsync(
         Kernel kernel,
-        OpenAIConfiguration config,
+        OpenAIServiceConfiguration config,
         string id,
         CancellationToken cancellationToken = default)
     {
@@ -398,13 +398,13 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         return toolResources;
     }
 
-    private static AssistantClient CreateClient(OpenAIConfiguration config)
+    private static AssistantClient CreateClient(OpenAIServiceConfiguration config)
     {
         OpenAIClient openAIClient = OpenAIClientFactory.CreateClient(config);
         return openAIClient.GetAssistantClient();
     }
 
-    private static IEnumerable<string> DefineChannelKeys(OpenAIConfiguration config)
+    private static IEnumerable<string> DefineChannelKeys(OpenAIServiceConfiguration config)
     {
         // Distinguish from other channel types.
         yield return typeof(AgentChannel<OpenAIAssistantAgent>).FullName!;

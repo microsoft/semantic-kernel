@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// %%%
 /// </summary>
-public sealed class OpenAIVectorStoreBuilder(OpenAIConfiguration config)
+public sealed class OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
 {
     private string? _name;
     private FileChunkingStrategy? _chunkingStrategy;

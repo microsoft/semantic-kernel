@@ -8,9 +8,9 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Configuration to target a specific Open AI service.
 /// </summary>
-public sealed class OpenAIConfiguration
+public sealed class OpenAIServiceConfiguration
 {
-    internal enum OpenAIConfigurationType
+    internal enum OpenAIServiceType
     {
         AzureOpenAI,
         OpenAI,
@@ -23,7 +23,7 @@ public sealed class OpenAIConfiguration
     /// <param name="endpoint"></param>
     /// <param name="httpClient"></param>
     /// <returns></returns>
-    public static OpenAIConfiguration ForAzureOpenAI(string apiKey, Uri endpoint, HttpClient? httpClient = null)
+    public static OpenAIServiceConfiguration ForAzureOpenAI(string apiKey, Uri endpoint, HttpClient? httpClient = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey, nameof(apiKey));
         Verify.NotNull(endpoint, nameof(endpoint));
@@ -34,7 +34,7 @@ public sealed class OpenAIConfiguration
                 ApiKey = apiKey,
                 Endpoint = endpoint,
                 HttpClient = httpClient,
-                Type = OpenAIConfigurationType.AzureOpenAI,
+                Type = OpenAIServiceType.AzureOpenAI,
             };
     }
 
@@ -45,7 +45,7 @@ public sealed class OpenAIConfiguration
     /// <param name="endpoint"></param>
     /// <param name="httpClient"></param>
     /// <returns></returns>
-    public static OpenAIConfiguration ForAzureOpenAI(TokenCredential credential, Uri endpoint, HttpClient? httpClient = null)
+    public static OpenAIServiceConfiguration ForAzureOpenAI(TokenCredential credential, Uri endpoint, HttpClient? httpClient = null)
     {
         Verify.NotNull(credential, nameof(credential));
         Verify.NotNull(endpoint, nameof(endpoint));
@@ -56,7 +56,7 @@ public sealed class OpenAIConfiguration
                 Credential = credential,
                 Endpoint = endpoint,
                 HttpClient = httpClient,
-                Type = OpenAIConfigurationType.AzureOpenAI,
+                Type = OpenAIServiceType.AzureOpenAI,
             };
     }
 
@@ -67,7 +67,7 @@ public sealed class OpenAIConfiguration
     /// <param name="endpoint"></param>
     /// <param name="httpClient"></param>
     /// <returns></returns>
-    public static OpenAIConfiguration ForOpenAI(string apiKey, Uri? endpoint = null, HttpClient? httpClient = null)
+    public static OpenAIServiceConfiguration ForOpenAI(string apiKey, Uri? endpoint = null, HttpClient? httpClient = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey, nameof(apiKey));
 
@@ -77,7 +77,7 @@ public sealed class OpenAIConfiguration
                 ApiKey = apiKey,
                 Endpoint = endpoint,
                 HttpClient = httpClient,
-                Type = OpenAIConfigurationType.OpenAI,
+                Type = OpenAIServiceType.OpenAI,
             };
     }
     /// <summary>
@@ -88,7 +88,7 @@ public sealed class OpenAIConfiguration
     /// <param name="endpoint"></param>
     /// <param name="httpClient"></param>
     /// <returns></returns>
-    public static OpenAIConfiguration ForOpenAI(string apiKey, string organizationId, Uri? endpoint = null, HttpClient? httpClient = null)
+    public static OpenAIServiceConfiguration ForOpenAI(string apiKey, string organizationId, Uri? endpoint = null, HttpClient? httpClient = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey, nameof(apiKey));
         Verify.NotNullOrWhiteSpace(organizationId, nameof(organizationId));
@@ -101,7 +101,7 @@ public sealed class OpenAIConfiguration
                 Endpoint = endpoint,
                 HttpClient = httpClient,
                 OrganizationId = organizationId,
-                Type = OpenAIConfigurationType.OpenAI,
+                Type = OpenAIServiceType.OpenAI,
             };
     }
 
@@ -110,5 +110,5 @@ public sealed class OpenAIConfiguration
     internal Uri? Endpoint { get; init; }
     internal HttpClient? HttpClient { get; init; }
     internal string? OrganizationId { get; init; }
-    internal OpenAIConfigurationType Type { get; init; }
+    internal OpenAIServiceType Type { get; init; }
 }

@@ -7,7 +7,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 /// <summary>
-/// Unit testing of <see cref="OpenAIConfiguration"/>.
+/// Unit testing of <see cref="OpenAIServiceConfiguration"/>.
 /// </summary>
 public class OpenAIConfigurationTests
 {
@@ -17,7 +17,7 @@ public class OpenAIConfigurationTests
     [Fact]
     public void VerifyOpenAIAssistantConfigurationInitialState()
     {
-        OpenAIConfiguration config = OpenAIConfiguration.ForOpenAI(apiKey: "testkey");
+        OpenAIServiceConfiguration config = OpenAIServiceConfiguration.ForOpenAI(apiKey: "testkey");
 
         Assert.Equal("testkey", config.ApiKey);
         Assert.Null(config.Endpoint);
@@ -32,7 +32,7 @@ public class OpenAIConfigurationTests
     {
         using HttpClient client = new();
 
-        OpenAIConfiguration config = OpenAIConfiguration.ForOpenAI(apiKey: "testkey", endpoint: new Uri("https://localhost"), client);
+        OpenAIServiceConfiguration config = OpenAIServiceConfiguration.ForOpenAI(apiKey: "testkey", endpoint: new Uri("https://localhost"), client);
 
         Assert.Equal("testkey", config.ApiKey);
         Assert.NotNull(config.Endpoint);

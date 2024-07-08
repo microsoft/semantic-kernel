@@ -11,9 +11,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
-using OpenAIConfiguration = Microsoft.SemanticKernel.Agents.OpenAI.OpenAIConfiguration;
-using OpenAISettings = SemanticKernel.IntegrationTests.TestSettings.OpenAIConfiguration;
-
 namespace SemanticKernel.IntegrationTests.Agents.OpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
@@ -35,11 +32,11 @@ public sealed class OpenAIAssistantAgentTests
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task OpenAIAssistantAgentTestAsync(string input, string expectedAnswerContains)
     {
-        OpenAISettings openAISettings = this._configuration.GetSection("OpenAI").Get<OpenAISettings>()!;
+        OpenAIConfiguration openAISettings = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
         Assert.NotNull(openAISettings);
 
         await this.ExecuteAgentAsync(
-            OpenAIConfiguration.ForOpenAI(openAISettings.ApiKey),
+            OpenAIServiceConfiguration.ForOpenAI(openAISettings.ApiKey),
             openAISettings.ModelId,
             input,
             expectedAnswerContains);
@@ -57,14 +54,14 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(azureOpenAIConfiguration);
 
         await this.ExecuteAgentAsync(
-            OpenAIConfiguration.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
+            OpenAIServiceConfiguration.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
             expectedAnswerContains);
     }
 
     private async Task ExecuteAgentAsync(
-        OpenAIConfiguration config,
+        OpenAIServiceConfiguration config,
         string modelName,
         string input,
         string expected)
