@@ -73,11 +73,6 @@ internal static class OpenAIClientFactory
                 Endpoint = config.Endpoint ?? config.HttpClient?.BaseAddress,
             };
 
-        if (!string.IsNullOrWhiteSpace(config.OrganizationId))
-        {
-            options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.OpenAIOrganizationId, config.OrganizationId!), PipelinePosition.PerCall);
-        }
-
         ConfigureClientOptions(config.HttpClient, options);
 
         return options;

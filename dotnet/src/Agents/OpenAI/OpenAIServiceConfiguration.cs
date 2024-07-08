@@ -17,12 +17,11 @@ public sealed class OpenAIServiceConfiguration
     }
 
     /// <summary>
-    /// %%%
+    /// Produce a <see cref="OpenAIServiceConfiguration"/> that targets an Azure OpenAI endpoint using an API key.
     /// </summary>
-    /// <param name="apiKey"></param>
-    /// <param name="endpoint"></param>
-    /// <param name="httpClient"></param>
-    /// <returns></returns>
+    /// <param name="apiKey">The API key</param>
+    /// <param name="endpoint">The service endpoint</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     public static OpenAIServiceConfiguration ForAzureOpenAI(string apiKey, Uri endpoint, HttpClient? httpClient = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey, nameof(apiKey));
@@ -39,12 +38,11 @@ public sealed class OpenAIServiceConfiguration
     }
 
     /// <summary>
-    /// %%%
+    /// Produce a <see cref="OpenAIServiceConfiguration"/> that targets an Azure OpenAI endpoint using an token credentials.
     /// </summary>
-    /// <param name="credential"></param>
-    /// <param name="endpoint"></param>
-    /// <param name="httpClient"></param>
-    /// <returns></returns>
+    /// <param name="credential">The credentials</param>
+    /// <param name="endpoint">The service endpoint</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     public static OpenAIServiceConfiguration ForAzureOpenAI(TokenCredential credential, Uri endpoint, HttpClient? httpClient = null)
     {
         Verify.NotNull(credential, nameof(credential));
@@ -61,12 +59,11 @@ public sealed class OpenAIServiceConfiguration
     }
 
     /// <summary>
-    /// %%%
+    /// Produce a <see cref="OpenAIServiceConfiguration"/> that targets OpenAI services using an API key.
     /// </summary>
-    /// <param name="apiKey"></param>
-    /// <param name="endpoint"></param>
-    /// <param name="httpClient"></param>
-    /// <returns></returns>
+    /// <param name="apiKey">The API key</param>
+    /// <param name="endpoint">An optional endpoint</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     public static OpenAIServiceConfiguration ForOpenAI(string apiKey, Uri? endpoint = null, HttpClient? httpClient = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey, nameof(apiKey));
@@ -80,35 +77,10 @@ public sealed class OpenAIServiceConfiguration
                 Type = OpenAIServiceType.OpenAI,
             };
     }
-    /// <summary>
-    /// %%%
-    /// </summary>
-    /// <param name="apiKey"></param>
-    /// <param name="organizationId"></param>
-    /// <param name="endpoint"></param>
-    /// <param name="httpClient"></param>
-    /// <returns></returns>
-    public static OpenAIServiceConfiguration ForOpenAI(string apiKey, string organizationId, Uri? endpoint = null, HttpClient? httpClient = null)
-    {
-        Verify.NotNullOrWhiteSpace(apiKey, nameof(apiKey));
-        Verify.NotNullOrWhiteSpace(organizationId, nameof(organizationId));
-        Verify.NotNull(endpoint, nameof(endpoint));
-
-        return
-            new()
-            {
-                ApiKey = apiKey,
-                Endpoint = endpoint,
-                HttpClient = httpClient,
-                OrganizationId = organizationId,
-                Type = OpenAIServiceType.OpenAI,
-            };
-    }
 
     internal string? ApiKey { get; init; }
     internal TokenCredential? Credential { get; init; }
     internal Uri? Endpoint { get; init; }
     internal HttpClient? HttpClient { get; init; }
-    internal string? OrganizationId { get; init; }
     internal OpenAIServiceType Type { get; init; }
 }
