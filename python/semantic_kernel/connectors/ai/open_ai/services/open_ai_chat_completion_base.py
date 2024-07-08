@@ -68,7 +68,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Create a request settings object."""
         return OpenAIChatPromptExecutionSettings
 
-    @trace_chat_completion("openai")
+    @trace_chat_completion(MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
