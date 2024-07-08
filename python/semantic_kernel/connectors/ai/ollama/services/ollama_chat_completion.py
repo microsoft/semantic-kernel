@@ -23,7 +23,13 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
     """Initializes a new instance of the OllamaChatCompletion class.
 
     Make sure to have the ollama service running either locally or remotely.
+
+    Args:
+        host (Optional[str]): URL of the Ollama server, defaults to None and
+            will use the default Ollama service address: http://127.0.0.1:11434
     """
+
+    host: str | None = None
 
     async def get_chat_message_contents(
         self,
@@ -44,7 +50,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         """
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
-        response_object = await AsyncClient().chat(model=self.ai_model_id, messages=prepared_chat_history, stream=False)
+        response_object = await AsyncClient(host=self.host).chat(
+            model=self.ai_model_id, messages=prepared_chat_history, options=settings.options, stream=False
+        )
         return [
             ChatMessageContent(
                 inner_content=response_object,
@@ -75,7 +83,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         """
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
-        response_object = await AsyncClient().chat(model=self.ai_model_id, messages=prepared_chat_history, stream=True)
+        response_object = await AsyncClient(host=self.host).chat(
+            model=self.ai_model_id, messages=prepared_chat_history, options=settings.options, stream=True
+        )
         async for part in response_object:
             yield [
                 StreamingChatMessageContent(
@@ -103,7 +113,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         """
         prepared_chat_history = [{"role": AuthorRole.USER, "content": prompt}]
 
-        response_object = await AsyncClient().chat(model=self.ai_model_id, messages=prepared_chat_history, stream=False)
+        response_object = await AsyncClient(host=self.host).chat(
+            model=self.ai_model_id, messages=prepared_chat_history, options=settings.options, stream=False
+        )
         return [
             TextContent(
                 inner_content=response_object,
@@ -130,7 +142,9 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         """
         prepared_chat_history = [{"role": AuthorRole.USER, "content": prompt}]
 
-        response_object = await AsyncClient().chat(model=self.ai_model_id, messages=prepared_chat_history, stream=True)
+        response_object = await AsyncClient(host=self.host).chat(
+            model=self.ai_model_id, messages=prepared_chat_history, options=settings.options, stream=True
+        )
         async for part in response_object:
             yield [
                 StreamingTextContent(

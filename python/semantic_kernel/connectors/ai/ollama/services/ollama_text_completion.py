@@ -18,7 +18,13 @@ class OllamaTextCompletion(TextCompletionClientBase):
     """Initializes a new instance of the OllamaTextCompletion class.
 
     Make sure to have the ollama service running either locally or remotely.
+
+    Args:
+        host (Optional[str]): URL of the Ollama server, defaults to None and
+            will use the default Ollama service address: http://127.0.0.1:11434
     """
+
+    host: str | None = None
 
     async def get_text_contents(
         self,
@@ -34,7 +40,9 @@ class OllamaTextCompletion(TextCompletionClientBase):
         Returns:
             List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
         """
-        response_object = await AsyncClient().generate(model=self.ai_model_id, prompt=prompt, stream=False)
+        response_object = await AsyncClient(host=self.host).generate(
+            model=self.ai_model_id, prompt=prompt, options=settings.options, stream=False
+        )
 
         inner_content = response_object
         text = inner_content["response"]
@@ -57,7 +65,9 @@ class OllamaTextCompletion(TextCompletionClientBase):
         Yields:
             List[StreamingTextContent]: Completion result.
         """
-        response_object = await AsyncClient().generate(model=self.ai_model_id, prompt=prompt, stream=True)
+        response_object = await AsyncClient(host=self.host).generate(
+            model=self.ai_model_id, prompt=prompt, options=settings.options, stream=True
+        )
 
         async for part in response_object:
             yield [

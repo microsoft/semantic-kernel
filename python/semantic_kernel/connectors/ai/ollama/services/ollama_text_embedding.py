@@ -24,13 +24,19 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
     """Ollama embeddings client.
 
     Make sure to have the ollama service running either locally or remotely.
+
+    Args:
+        host (Optional[str]): URL of the Ollama server, defaults to None and
+            will use the default Ollama service address: http://127.0.0.1:11434
     """
+
+    host: str | None = None
 
     @override
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         result = []
         for text in texts:
-            response_object = await AsyncClient().embeddings(model=self.ai_model_id, prompt=text)
+            response_object = await AsyncClient(host=self.host).embeddings(model=self.ai_model_id, prompt=text)
             result.append(response_object["embedding"])
 
         return array(result)
