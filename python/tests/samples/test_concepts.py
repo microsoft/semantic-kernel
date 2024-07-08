@@ -1,5 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import copy
+
+import pytest
 from pytest import mark, param
 
 from samples.concepts.auto_function_calling.azure_python_code_interpreter_function_calling import (
@@ -23,6 +26,9 @@ from samples.concepts.filtering.function_invocation_filters_stream import main a
 from samples.concepts.filtering.prompt_filters import main as prompt_filters
 from samples.concepts.functions.kernel_arguments import main as kernel_arguments
 from samples.concepts.grounding.grounded import main as grounded
+from samples.concepts.local_models.lm_studio_chat_completion import main as lm_studio_chat_completion
+from samples.concepts.local_models.lm_studio_text_embedding import main as lm_studio_text_embedding
+from samples.concepts.local_models.ollama_chat_completion import main as ollama_chat_completion
 from samples.concepts.memory.azure_cognitive_search_memory import main as azure_cognitive_search_memory
 from samples.concepts.memory.memory import main as memory
 from samples.concepts.planners.azure_openai_function_calling_stepwise_planner import (
@@ -89,11 +95,35 @@ concepts = [
     param(custom_service_selector, [], id="custom_service_selector"),
     param(function_defined_in_json_prompt, ["What is 3+3?", "exit"], id="function_defined_in_json_prompt"),
     param(function_defined_in_yaml_prompt, ["What is 3+3?", "exit"], id="function_defined_in_yaml_prompt"),
+    param(
+        ollama_chat_completion,
+        ["Why is the sky blue?", "exit"],
+        id="ollama_chat_completion",
+        marks=pytest.mark.skip(reason="Need to set up Ollama locally. Check out the module for more details."),
+    ),
+    param(
+        lm_studio_chat_completion,
+        ["Why is the sky blue?", "exit"],
+        id="lm_studio_chat_completion",
+        marks=pytest.mark.skip(reason="Need to set up LM Studio locally. Check out the module for more details."),
+    ),
+    param(
+        lm_studio_text_embedding,
+        [],
+        id="lm_studio_text_embedding",
+        marks=pytest.mark.skip(reason="Need to set up LM Studio locally. Check out the module for more details."),
+    ),
 ]
 
 
 @mark.asyncio
 @mark.parametrize("func, responses", concepts)
 async def test_concepts(func, responses, monkeypatch):
+    saved_responses = copy.deepcopy(responses)
+
+    def reset():
+        responses.clear()
+        responses.extend(saved_responses)
+
     monkeypatch.setattr("builtins.input", lambda _: responses.pop(0))
-    await retry(lambda: func())
+    await retry(lambda: func(), reset=reset)
