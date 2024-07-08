@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
 using Xunit;
 
-namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Core;
+namespace SemanticKernel.Connectors.OpenAI.UnitTests.Core;
 
 /// <summary>
 /// Unit tests for <see cref="OpenAIChatMessageContent"/> class.

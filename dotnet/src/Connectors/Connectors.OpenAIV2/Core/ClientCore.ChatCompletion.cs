@@ -22,7 +22,7 @@ using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Base class for AI clients that provides common functionality for interacting with Azure OpenAI services.
+/// Base class for AI clients that provides common functionality for interacting with OpenAI services.
 /// </summary>
 internal partial class ClientCore
 {
@@ -227,10 +227,10 @@ internal partial class ClientCore
                 }
 
                 // Parse the function call arguments.
-                OpenAIFunctionToolCall? azureOpenAIFunctionToolCall;
+                OpenAIFunctionToolCall? openAIFunctionToolCall;
                 try
                 {
-                    azureOpenAIFunctionToolCall = new(functionToolCall);
+                    openAIFunctionToolCall = new(functionToolCall);
                 }
                 catch (JsonException)
                 {
@@ -242,14 +242,14 @@ internal partial class ClientCore
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
                 if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
-                    !IsRequestableTool(chatOptions, azureOpenAIFunctionToolCall))
+                    !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
                     AddResponseMessage(chatForRequest, chat, result: null, "Error: Function call request for a function that wasn't defined.", functionToolCall, this.Logger);
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
-                if (!kernel!.Plugins.TryGetOpenAIFunctionAndArguments(azureOpenAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
+                if (!kernel!.Plugins.TryGetOpenAIFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
                     AddResponseMessage(chatForRequest, chat, result: null, "Error: Requested function could not be found.", functionToolCall, this.Logger);
                     continue;
@@ -1152,7 +1152,7 @@ internal partial class ClientCore
         switch (executionSettings.ResponseFormat)
         {
             case ChatResponseFormat formatObject:
-                // If the response format is an Azure SDK ChatCompletionsResponseFormat, just pass it along.
+                // If the response format is an OpenAI SDK ChatCompletionsResponseFormat, just pass it along.
                 return formatObject;
             case string formatString:
                 // If the response format is a string, map the ones we know about, and ignore the rest.

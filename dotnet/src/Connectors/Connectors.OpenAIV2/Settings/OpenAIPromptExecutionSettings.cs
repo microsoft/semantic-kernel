@@ -12,8 +12,12 @@ using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
+/* Phase 06 
+- Drop FromExecutionSettingsWithData Azure specific method
+*/
+
 /// <summary>
-/// Execution settings for an AzureOpenAI completion request.
+/// Execution settings for an OpenAI completion request.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
@@ -350,27 +354,6 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
 
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(executionSettings));
-    }
-
-    /// <summary>
-    /// Create a new settings object with the values from another settings object.
-    /// </summary>
-    /// <param name="executionSettings">Template configuration</param>
-    /// <param name="defaultMaxTokens">Default max tokens</param>
-    /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    [Obsolete("This method is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
-    public static OpenAIPromptExecutionSettings FromExecutionSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
-    {
-        var settings = FromExecutionSettings(executionSettings, defaultMaxTokens);
-
-        if (settings.StopSequences?.Count == 0)
-        {
-            // Azure OpenAI WithData API does not allow to send empty array of stop sequences
-            // Gives back "Validation error at #/stop/str: Input should be a valid string\nValidation error at #/stop/list[str]: List should have at least 1 item after validation, not 0"
-            settings.StopSequences = null;
-        }
-
-        return settings;
     }
 
     #region private ================================================================================

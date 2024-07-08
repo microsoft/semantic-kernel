@@ -8,7 +8,7 @@ using OpenAI.Chat;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Azure OpenAI specialized streaming chat message content.
+/// OpenAI specialized streaming chat message content.
 /// </summary>
 /// <remarks>
 /// Represents a chat message content chunk that was streamed from the remote model.
@@ -23,7 +23,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
     /// </summary>
-    /// <param name="chatUpdate">Internal Azure SDK Message update representation</param>
+    /// <param name="chatUpdate">Internal OpenAI SDK Message update representation</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>

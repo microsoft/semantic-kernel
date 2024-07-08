@@ -9,7 +9,7 @@ using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// AzureOpenAI specialized chat message content
+/// OpenAI specialized chat message content
 /// </summary>
 public sealed class OpenAIChatMessageContent : ChatMessageContent
 {

@@ -7,7 +7,7 @@ using OpenAI.Chat;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Represents a function parameter that can be passed to an AzureOpenAI function tool call.
+/// Represents a function parameter that can be passed to an OpenAI function tool call.
 /// </summary>
 public sealed class OpenAIFunctionParameter
 {
@@ -37,7 +37,7 @@ public sealed class OpenAIFunctionParameter
 }
 
 /// <summary>
-/// Represents a function return parameter that can be returned by a tool call to AzureOpenAI.
+/// Represents a function return parameter that can be returned by a tool call to OpenAI.
 /// </summary>
 public sealed class OpenAIFunctionReturnParameter
 {
@@ -59,7 +59,7 @@ public sealed class OpenAIFunctionReturnParameter
 }
 
 /// <summary>
-/// Represents a function that can be passed to the AzureOpenAI API
+/// Represents a function that can be passed to the OpenAI API
 /// </summary>
 public sealed class OpenAIFunction
 {
@@ -123,7 +123,7 @@ public sealed class OpenAIFunction
     public OpenAIFunctionReturnParameter? ReturnParameter { get; }
 
     /// <summary>
-    /// Converts the <see cref="OpenAIFunction"/> representation to the Azure SDK's
+    /// Converts the <see cref="OpenAIFunction"/> representation to the OpenAI SDK's
     /// <see cref="ChatTool"/> representation.
     /// </summary>
     /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>

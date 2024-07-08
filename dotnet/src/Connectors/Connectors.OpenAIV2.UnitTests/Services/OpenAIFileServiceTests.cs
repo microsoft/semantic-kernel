@@ -44,7 +44,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ConstructorWorksCorrectlyForAzure(bool includeLoggerFactory)
+    public void ConstructorWorksCorrectlyForCustomEndpoint(bool includeLoggerFactory)
     {
         // Arrange & Act
         var service = includeLoggerFactory ?

@@ -154,7 +154,7 @@ public class KernelBuilderExtensionsTests
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.OpenAIClientInline)]
     [InlineData(InitializationType.OpenAIClientInServiceProvider)]
-    public void KernelBuilderAddAzureOpenAIChatCompletionAddsValidService(InitializationType type)
+    public void KernelBuilderAddOpenAIChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
         var client = new OpenAIClient("key");

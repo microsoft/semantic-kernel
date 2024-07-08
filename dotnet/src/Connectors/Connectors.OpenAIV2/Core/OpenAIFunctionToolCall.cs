@@ -10,7 +10,7 @@ using OpenAI.Chat;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Represents an AzureOpenAI function tool call with deserialized function name and arguments.
+/// Represents an OpenAI function tool call with deserialized function name and arguments.
 /// </summary>
 public sealed class OpenAIFunctionToolCall
 {

@@ -10,7 +10,7 @@ using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/// <summary>Represents a behavior for Azure OpenAI tool calls.</summary>
+/// <summary>Represents a behavior for OpenAI tool calls.</summary>
 public abstract class ToolCallBehavior
 {
     // NOTE: Right now, the only tools that are available are for function calling. In the future,

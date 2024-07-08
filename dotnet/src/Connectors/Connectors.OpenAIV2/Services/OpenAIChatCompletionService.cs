@@ -17,11 +17,11 @@ using OpenAI;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Azure OpenAI chat completion service.
+/// OpenAI chat completion service.
 /// </summary>
 public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextGenerationService
 {
-    /// <summary>Core implementation shared by Azure OpenAI clients.</summary>
+    /// <summary>Core implementation shared by OpenAI clients.</summary>
     private readonly ClientCore _core;
 
     /// <summary>

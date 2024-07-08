@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Extensions for <see cref="KernelFunctionMetadata"/> specific to the AzureOpenAI connector.
+/// Extensions for <see cref="KernelFunctionMetadata"/> specific to the OpenAI connector.
 /// </summary>
 public static class OpenAIKernelFunctionMetadataExtensions
 {
