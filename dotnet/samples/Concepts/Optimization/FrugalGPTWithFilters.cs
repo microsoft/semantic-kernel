@@ -15,7 +15,7 @@ namespace Optimization;
 /// This example shows how to use FrugalGPT techniques to reduce cost and improve LLM-related task performance.
 /// More information here: https://arxiv.org/abs/2305.05176.
 /// </summary>
-public sealed class FrugalGPT(ITestOutputHelper output) : BaseTest(output)
+public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// One of the FrugalGPT techniques is to reduce prompt size when using few-shot prompts.
