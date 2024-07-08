@@ -162,15 +162,91 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             };
     }
 
-    /// <inheritdoc/>
-    public async Task DeleteAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Create a new assistant thread.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The thread identifier</returns>
+    public async Task<string> CreateThreadAsync(CancellationToken cancellationToken = default)
     {
-        if (this.IsDeleted)
+        AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
+
+        return thread.Id;
+    }
+
+    /// <summary>
+    /// Create a new assistant thread.
+    /// </summary>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The thread identifier</returns>
+    public async Task<bool> DeleteThreadAsync(
+        string threadId,
+        CancellationToken cancellationToken = default)
+    {
+        // Validate input
+        Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
+
+        return await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Adds a message to the specified thread.
+    /// </summary>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="message">A non-system message with which to append to the conversation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public Task AddChatMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
+    {
+        this.ThrowIfDeleted();
+
+        return AssistantThreadActions.CreateMessageAsync(this._client, threadId, message, cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets messages for a specified thread.
+    /// </summary>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
+    {
+        this.ThrowIfDeleted();
+
+        return AssistantThreadActions.GetMessagesAsync(this._client, threadId, cancellationToken);
+    }
+
+    /// <summary>
+    /// Delete the assistant definition.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns>True if assistant definition has been deleted</returns>
+    /// <remarks>
+    /// Assistant based agent will not be useable after deletion.
+    /// </remarks>
+    public async Task<bool> DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        if (!this.IsDeleted)
         {
-            return;
+            this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
         }
 
-        this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
+        return this.IsDeleted;
+    }
+
+    /// <summary>
+    /// Invoke the assistant on the specified thread.
+    /// </summary>
+    /// <param name="threadId">The thread identifier</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        string threadId,
+        CancellationToken cancellationToken = default)
+    {
+        this.ThrowIfDeleted();
+
+        return AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -212,7 +288,19 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
         this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
-        return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
+        return
+            new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling)
+            {
+                Logger = this.LoggerFactory.CreateLogger<OpenAIAssistantChannel>()
+            };
+    }
+
+    internal void ThrowIfDeleted()
+    {
+        if (this.IsDeleted)
+        {
+            throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {this.Id}.");
+        }
     }
 
     /// <summary>
