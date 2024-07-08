@@ -35,7 +35,7 @@ public class MistralIoService : IBedrockModelIoService<IChatCompletionRequest, I
             ModelId = modelId,
             Messages = request.Messages.Select(m => new Message
             {
-                Role = ConversationRole.User,
+                Role = m.Role,
                 Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),

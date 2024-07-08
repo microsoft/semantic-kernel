@@ -58,22 +58,26 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        ConverseResponse response;
-        var activity = ModelDiagnostics.StartCompletionActivity(
-            this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings);
-        try
+        for (int requestIndex = 1; ; requestIndex++)
         {
-            response = await this.ConverseBedrockModelAsync(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
+            ConverseResponse response;
+            using (var activity = ModelDiagnostics.StartCompletionActivity(
+                       this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings))
+            {
+                try
+                {
+                    response = await this.ConverseBedrockModelAsync(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+                    throw;
+                }
+                IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
+                activity?.SetCompletionResponse(chat);
+                return chat.ToList();
+            }
         }
-        catch (Exception ex) when (activity is not null)
-        {
-            activity.SetError(ex);
-            throw;
-        }
-
-        IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
-        activity?.SetCompletionResponse(chat);
-        return chat.ToList();
     }
 
     public static IEnumerable<ChatMessageContent> ConvertToMessageContent(ConverseResponse response)
