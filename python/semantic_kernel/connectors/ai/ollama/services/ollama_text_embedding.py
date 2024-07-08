@@ -6,6 +6,8 @@ from typing import Any
 
 from ollama import AsyncClient
 
+from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -20,17 +22,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class OllamaTextEmbedding(EmbeddingGeneratorBase):
+class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
     """Ollama embeddings client.
 
     Make sure to have the ollama service running either locally or remotely.
-
-    Args:
-        host (Optional[str]): URL of the Ollama server, defaults to None and
-            will use the default Ollama service address: http://127.0.0.1:11434
     """
-
-    host: str | None = None
 
     @override
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:

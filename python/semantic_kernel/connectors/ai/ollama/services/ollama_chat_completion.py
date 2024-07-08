@@ -8,6 +8,7 @@ from ollama import AsyncClient
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -19,17 +20,11 @@ from semantic_kernel.contents.text_content import TextContent
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
+class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionClientBase):
     """Initializes a new instance of the OllamaChatCompletion class.
 
     Make sure to have the ollama service running either locally or remotely.
-
-    Args:
-        host (Optional[str]): URL of the Ollama server, defaults to None and
-            will use the default Ollama service address: http://127.0.0.1:11434
     """
-
-    host: str | None = None
 
     async def get_chat_message_contents(
         self,

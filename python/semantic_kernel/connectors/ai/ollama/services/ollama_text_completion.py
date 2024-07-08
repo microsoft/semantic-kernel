@@ -7,6 +7,7 @@ from typing import Any
 from ollama import AsyncClient
 
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -14,17 +15,11 @@ from semantic_kernel.contents.text_content import TextContent
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OllamaTextCompletion(TextCompletionClientBase):
+class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
     """Initializes a new instance of the OllamaTextCompletion class.
 
     Make sure to have the ollama service running either locally or remotely.
-
-    Args:
-        host (Optional[str]): URL of the Ollama server, defaults to None and
-            will use the default Ollama service address: http://127.0.0.1:11434
     """
-
-    host: str | None = None
 
     async def get_text_contents(
         self,
