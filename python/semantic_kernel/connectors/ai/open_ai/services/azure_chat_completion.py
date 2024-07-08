@@ -3,7 +3,7 @@ import json
 import logging
 from collections.abc import Mapping
 from copy import deepcopy
-from typing import Any
+from typing import Any, TypeVar
 from uuid import uuid4
 
 from openai import AsyncAzureOpenAI
@@ -32,6 +32,8 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+TChatMessageContent = TypeVar("TChatMessageContent", ChatMessageContent, StreamingChatMessageContent)
 
 
 class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
@@ -111,11 +113,11 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.CHAT,
-            async_client=async_client,
+            client=async_client,
         )
 
     @classmethod
-    def from_dict(cls, settings: dict[str, str]) -> "AzureChatCompletion":
+    def from_dict(cls, settings: dict[str, Any]) -> "AzureChatCompletion":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
         Args:
@@ -136,7 +138,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             env_file_path=settings.get("env_file_path"),
         )
 
-    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         """Create a request settings object."""
         return AzureChatPromptExecutionSettings
 
@@ -155,11 +157,14 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     ) -> "StreamingChatMessageContent":
         """Create an Azure streaming chat message content object from a choice."""
         content = super()._create_streaming_chat_message_content(chunk, choice, chunk_metadata)
+        assert isinstance(content, StreamingChatMessageContent) and isinstance(choice, ChunkChoice)  # nosec
         return self._add_tool_message_to_chat_message_content(content, choice)
 
     def _add_tool_message_to_chat_message_content(
-        self, content: ChatMessageContent | StreamingChatMessageContent, choice: Choice
-    ) -> "ChatMessageContent | StreamingChatMessageContent":
+        self,
+        content: TChatMessageContent,
+        choice: Choice | ChunkChoice,
+    ) -> TChatMessageContent:
         if tool_message := self._get_tool_message_from_chat_choice(choice=choice):
             try:
                 tool_message_dict = json.loads(tool_message)

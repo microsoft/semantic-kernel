@@ -1,17 +1,29 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from openai import AsyncAzureOpenAI
 from openai.resources.completions import AsyncCompletions
+from openai.types import Completion
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError
+
+
+@pytest.fixture
+def mock_text_completion_response() -> Mock:
+    mock_response = Mock(spec=Completion)
+    mock_response.id = "test_id"
+    mock_response.created = "time"
+    mock_response.usage = None
+    mock_response.choices = []
+    return mock_response
 
 
 def test_azure_text_completion_init(azure_openai_unit_test_env) -> None:
@@ -75,7 +87,18 @@ def test_azure_text_completion_init_with_invalid_endpoint(azure_openai_unit_test
 
 @pytest.mark.asyncio
 @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
-async def test_azure_text_completion_call_with_parameters(mock_create, azure_openai_unit_test_env) -> None:
+@patch(
+    "semantic_kernel.connectors.ai.open_ai.services.azure_text_completion.AzureTextCompletion._get_metadata_from_text_response",
+    return_value={"test": "test"},
+)
+@patch(
+    "semantic_kernel.connectors.ai.open_ai.services.azure_text_completion.AzureTextCompletion._create_text_content",
+    return_value=Mock(spec=TextContent),
+)
+async def test_azure_text_completion_call_with_parameters(
+    mock_text_content, mock_metadata, mock_create, azure_openai_unit_test_env, mock_text_completion_response
+) -> None:
+    mock_create.return_value = mock_text_completion_response
     prompt = "hello world"
     complete_prompt_execution_settings = OpenAITextPromptExecutionSettings()
     azure_text_completion = AzureTextCompletion()
@@ -92,10 +115,18 @@ async def test_azure_text_completion_call_with_parameters(mock_create, azure_ope
 
 @pytest.mark.asyncio
 @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
+@patch(
+    "semantic_kernel.connectors.ai.open_ai.services.azure_text_completion.AzureTextCompletion._get_metadata_from_text_response",
+    return_value={"test": "test"},
+)
+@patch(
+    "semantic_kernel.connectors.ai.open_ai.services.azure_text_completion.AzureTextCompletion._create_text_content",
+    return_value=Mock(spec=TextContent),
+)
 async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
-    mock_create,
-    azure_openai_unit_test_env,
+    mock_text_content, mock_metadata, mock_create, azure_openai_unit_test_env, mock_text_completion_response
 ) -> None:
+    mock_create.return_value = mock_text_completion_response
     prompt = "hello world"
     complete_prompt_execution_settings = OpenAITextPromptExecutionSettings()
 

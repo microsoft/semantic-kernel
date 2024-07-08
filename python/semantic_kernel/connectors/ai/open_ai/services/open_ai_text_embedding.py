@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Mapping
+from typing import Any
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -67,11 +68,11 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             org_id=openai_settings.org_id,
             service_id=service_id,
             default_headers=default_headers,
-            async_client=async_client,
+            client=async_client,
         )
 
     @classmethod
-    def from_dict(cls, settings: dict[str, str]) -> "OpenAITextEmbedding":
+    def from_dict(cls, settings: dict[str, Any]) -> "OpenAITextEmbedding":
         """Initialize an Open AI service from a dictionary of settings.
 
         Args:

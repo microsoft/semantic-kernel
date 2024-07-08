@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Mapping
+from typing import Any
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -91,11 +92,11 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.EMBEDDING,
-            async_client=async_client,
+            client=async_client,
         )
 
     @classmethod
-    def from_dict(cls, settings: dict[str, str]) -> "AzureTextEmbedding":
+    def from_dict(cls, settings: dict[str, Any]) -> "AzureTextEmbedding":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
         Args:

@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Mapping
+from copy import copy
 
 from openai import AsyncOpenAI
 from pydantic import ConfigDict, Field, validate_call
@@ -16,6 +17,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAIConfigBase(OpenAIHandler):
+    """Internal class for configuring a connection to an OpenAI service."""
+
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def __init__(
         self,
@@ -25,7 +28,7 @@ class OpenAIConfigBase(OpenAIHandler):
         org_id: str | None = None,
         service_id: str | None = None,
         default_headers: Mapping[str, str] | None = None,
-        async_client: AsyncOpenAI | None = None,
+        client: AsyncOpenAI | None = None,
     ) -> None:
         """Initialize a client for OpenAI services.
 
@@ -35,35 +38,35 @@ class OpenAIConfigBase(OpenAIHandler):
         Args:
             ai_model_id (str): OpenAI model identifier. Must be non-empty.
                 Default to a preset value.
-            api_key (Optional[str]): OpenAI API key for authentication.
+            api_key (str): OpenAI API key for authentication.
                 Must be non-empty. (Optional)
-            ai_model_type (Optional[OpenAIModelTypes]): The type of OpenAI
+            ai_model_type (OpenAIModelTypes): The type of OpenAI
                 model to interact with. Defaults to CHAT.
-            org_id (Optional[str]): OpenAI organization ID. This is optional
+            org_id (str): OpenAI organization ID. This is optional
                 unless the account belongs to multiple organizations.
-            service_id (Optional[str]): OpenAI service ID. This is optional.
-            default_headers (Optional[Mapping[str, str]]): Default headers
+            service_id (str): OpenAI service ID. This is optional.
+            default_headers (Mapping[str, str]): Default headers
                 for HTTP requests. (Optional)
-            async_client (Optional[AsyncOpenAI]): An existing OpenAI client
+            client (AsyncOpenAI): An existing OpenAI client, optional.
 
         """
         # Merge APP_INFO into the headers if it exists
-        merged_headers = default_headers.copy() if default_headers else {}
+        merged_headers = dict(copy(default_headers)) if default_headers else {}
         if APP_INFO:
             merged_headers.update(APP_INFO)
             merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
-        if not async_client:
+        if not client:
             if not api_key:
                 raise ServiceInitializationError("Please provide an api_key")
-            async_client = AsyncOpenAI(
+            client = AsyncOpenAI(
                 api_key=api_key,
                 organization=org_id,
                 default_headers=merged_headers,
             )
         args = {
             "ai_model_id": ai_model_id,
-            "client": async_client,
+            "client": client,
             "ai_model_type": ai_model_type,
         }
         if service_id:

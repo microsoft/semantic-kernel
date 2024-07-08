@@ -14,10 +14,7 @@ _T = TypeVar("_T", bound="TextContent")
 
 
 class TextContent(KernelContent):
-    """This is the base class for text response content.
-
-    All Text Completion Services should return an instance of this class as response.
-    Or they can implement their own subclass of this class and return an instance.
+    """This represents text response content.
 
     Args:
         inner_content: Any - The inner content of the response,
