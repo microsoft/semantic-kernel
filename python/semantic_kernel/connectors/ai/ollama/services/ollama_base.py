@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 from abc import ABC
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
