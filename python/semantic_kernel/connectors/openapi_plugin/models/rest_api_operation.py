@@ -2,7 +2,7 @@
 
 import re
 from typing import Any, Final
-from urllib.parse import urlencode, urljoin, urlparse, urlunparse
+from urllib.parse import ParseResult, urlencode, urljoin, urlparse, urlunparse
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_expected_response import (
     RestApiOperationExpectedResponse,
@@ -49,7 +49,7 @@ class RestApiOperation:
         self,
         id: str,
         method: str,
-        server_url: str,
+        server_url: str | ParseResult,
         path: str,
         summary: str | None = None,
         description: str | None = None,
@@ -60,7 +60,7 @@ class RestApiOperation:
         """Initialize the RestApiOperation."""
         self.id = id
         self.method = method.upper()
-        self.server_url = server_url
+        self.server_url = urlparse(server_url) if isinstance(server_url, str) else server_url
         self.path = path
         self.summary = summary
         self.description = description
@@ -79,20 +79,21 @@ class RestApiOperation:
         """Build the headers for the operation."""
         headers = {}
 
-        parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.HEADER]
+        if self.parameters is not None:
+            parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.HEADER]
 
-        for parameter in parameters:
-            argument = arguments.get(parameter.name)
+            for parameter in parameters:
+                argument = arguments.get(parameter.name)
 
-            if argument is None:
-                if parameter.is_required:
-                    raise FunctionExecutionException(
-                        f"No argument is provided for the `{parameter.name}` "
-                        f"required parameter of the operation - `{self.id}`."
-                    )
-                continue
+                if argument is None:
+                    if parameter.is_required:
+                        raise FunctionExecutionException(
+                            f"No argument is provided for the `{parameter.name}` "
+                            f"required parameter of the operation - `{self.id}`."
+                        )
+                    continue
 
-            headers[parameter.name] = str(argument)
+                headers[parameter.name] = str(argument)
 
         return headers
 
@@ -121,35 +122,38 @@ class RestApiOperation:
 
         return urlparse(server_url_string)
 
-    def build_path(self, path_template: str, arguments: dict[str, Any]) -> str:
+    def build_path(self, path_template: str, arguments: dict[str, Any]) -> str | None:
         """Build the path for the operation."""
-        parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.PATH]
-        for parameter in parameters:
-            argument = arguments.get(parameter.name)
-            if argument is None:
-                if parameter.is_required:
-                    raise FunctionExecutionException(
-                        f"No argument is provided for the `{parameter.name}` "
-                        f"required parameter of the operation - `{self.id}`."
-                    )
-                continue
-            path_template = path_template.replace(f"{{{parameter.name}}}", str(argument))
-        return path_template
+        if self.parameters is not None:
+            parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.PATH]
+            for parameter in parameters:
+                argument = arguments.get(parameter.name)
+                if argument is None:
+                    if parameter.is_required:
+                        raise FunctionExecutionException(
+                            f"No argument is provided for the `{parameter.name}` "
+                            f"required parameter of the operation - `{self.id}`."
+                        )
+                    continue
+                path_template = path_template.replace(f"{{{parameter.name}}}", str(argument))
+            return path_template
+        return None
 
     def build_query_string(self, arguments: dict[str, Any]) -> str:
         """Build the query string for the operation."""
         segments = []
-        parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.QUERY]
-        for parameter in parameters:
-            argument = arguments.get(parameter.name)
-            if argument is None:
-                if parameter.is_required:
-                    raise FunctionExecutionException(
-                        f"No argument or value is provided for the `{parameter.name}` "
-                        f"required parameter of the operation - `{self.id}`."
-                    )
-                continue
-            segments.append((parameter.name, argument))
+        if self.parameters is not None:
+            parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.QUERY]
+            for parameter in parameters:
+                argument = arguments.get(parameter.name)
+                if argument is None:
+                    if parameter.is_required:
+                        raise FunctionExecutionException(
+                            f"No argument or value is provided for the `{parameter.name}` "
+                            f"required parameter of the operation - `{self.id}`."
+                        )
+                    continue
+                segments.append((parameter.name, argument))
         return urlencode(segments)
 
     def replace_invalid_symbols(self, parameter_name):
@@ -163,7 +167,7 @@ class RestApiOperation:
         enable_payload_spacing: bool = False,
     ) -> list["RestApiOperationParameter"]:
         """Get the parameters for the operation."""
-        params = list(operation.parameters)
+        params = list(operation.parameters) if operation.parameters is not None else []
         if operation.request_body is not None:
             params.extend(
                 self.get_payload_parameters(
@@ -221,8 +225,8 @@ class RestApiOperation:
     ) -> list["RestApiOperationParameter"]:
         parameters: list[RestApiOperationParameter] = []
         for property in properties:
-            parameter_name = self._get_property_name(property, root_property_name, enable_namespacing)
-            if not property.properties:
+            parameter_name = self._get_property_name(property, root_property_name or False, enable_namespacing)
+            if not hasattr(property, "properties") or not property.properties:
                 parameters.append(
                     RestApiOperationParameter(
                         name=parameter_name,
@@ -234,9 +238,16 @@ class RestApiOperation:
                         schema=property.schema,
                     )
                 )
-            parameters.extend(
-                self._get_parameters_from_payload_metadata(property.properties, enable_namespacing, parameter_name)
-            )
+            else:
+                # Handle property.properties as a single instance or a list
+                if isinstance(property.properties, RestApiOperationPayloadProperty):
+                    nested_properties = [property.properties]
+                else:
+                    nested_properties = property.properties
+
+                parameters.extend(
+                    self._get_parameters_from_payload_metadata(nested_properties, enable_namespacing, parameter_name)
+                )
         return parameters
 
     def get_payload_parameters(
@@ -246,7 +257,7 @@ class RestApiOperation:
         if use_parameters_from_metadata:
             if operation.request_body is None:
                 raise Exception(
-                    f"Payload parameters cannot be retrieved from the `{operation.Id}` "
+                    f"Payload parameters cannot be retrieved from the `{operation.id}` "
                     f"operation payload metadata because it is missing."
                 )
             if operation.request_body.media_type == RestApiOperation.MEDIA_TYPE_TEXT_PLAIN:
@@ -256,7 +267,7 @@ class RestApiOperation:
 
         return [
             self.create_payload_artificial_parameter(operation),
-            self.create_content_type_artificial_parameter(operation),
+            self.create_content_type_artificial_parameter(),
         ]
 
     def get_default_response(
@@ -276,14 +287,25 @@ class RestApiOperation:
         if preferred_responses is None:
             preferred_responses = self._preferred_responses
 
-        rest_operation_response = self.get_default_response(self.responses, preferred_responses)
+        responses = self.responses if self.responses is not None else {}
+
+        rest_operation_response = self.get_default_response(responses, preferred_responses)
+
+        schema_type = None
+        if rest_operation_response is not None and rest_operation_response.schema is not None:
+            schema_type = rest_operation_response.schema.get("type")
 
         if rest_operation_response:
             return KernelParameterMetadata(
                 name="return",
                 description=rest_operation_response.description,
-                type_=rest_operation_response.schema.get("type") if rest_operation_response.schema else None,
+                type_=schema_type,
                 schema_data=rest_operation_response.schema,
             )
 
-        return None
+        return KernelParameterMetadata(
+            name="return",
+            description="Default return parameter",
+            type_="string",
+            schema_data={"type": "string"},
+        )
