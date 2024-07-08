@@ -242,13 +242,14 @@ public class OpenAIPromptExecutionSettingsTests
     public void FromExecutionSettingsWithDataDoesNotIncludeEmptyStopSequences()
     {
         // Arrange
-        var executionSettings = new OpenAIPromptExecutionSettings { StopSequences = [] };
+        PromptExecutionSettings settings = new OpenAIPromptExecutionSettings { StopSequences = [] };
 
         // Act
-        var executionSettingsWithData = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
+        var executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(settings);
 
         // Assert
-        Assert.Null(executionSettingsWithData.StopSequences);
+        Assert.NotNull(executionSettings.StopSequences);
+        Assert.Empty(executionSettings.StopSequences);
     }
 
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)

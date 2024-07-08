@@ -348,12 +348,8 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         var json = JsonSerializer.Serialize(executionSettings);
 
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-        if (openAIExecutionSettings is not null)
-        {
-            return openAIExecutionSettings;
-        }
 
-        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(executionSettings));
+        return openAIExecutionSettings!;
     }
 
     #region private ================================================================================
