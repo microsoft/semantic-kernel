@@ -54,7 +54,8 @@ internal partial class ClientCore
             Granularities = ConvertToAudioTimestampGranularities(executionSettings!.Granularities),
             Language = executionSettings.Language,
             Prompt = executionSettings.Prompt,
-            Temperature = executionSettings.Temperature
+            Temperature = executionSettings.Temperature,
+            ResponseFormat = ConvertResponseFormat(executionSettings.ResponseFormat)
         };
 
     private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(IEnumerable<OpenAIAudioToTextExecutionSettings.TimeStampGranularities>? granularities)
@@ -77,6 +78,23 @@ internal partial class ClientCore
         }
 
         return result;
+    }
+
+    private static AudioTranscriptionFormat? ConvertResponseFormat(OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat? responseFormat)
+    {
+        if (responseFormat is null)
+        {
+            return null;
+        }
+
+        return responseFormat switch
+        {
+            OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple => AudioTranscriptionFormat.Simple,
+            OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose => AudioTranscriptionFormat.Verbose,
+            OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Vtt => AudioTranscriptionFormat.Vtt,
+            OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Srt => AudioTranscriptionFormat.Srt,
+            _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
+        };
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)
