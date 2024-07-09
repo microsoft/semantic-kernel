@@ -11,7 +11,7 @@ public interface IChatCompletionRequest
 {
     public List<Message> Messages { get; set; }
     public List<SystemContentBlock> System { get; set; }
-    public InferenceConfiguration InferenceConfig { get; set; }
+    public InferenceConfiguration InferenceConfig { get; set; } //base params: maxTokens, stopSeq, topP, temp
     public Document AdditionalModelRequestFields { get; set; }
     public List<string> AdditionalModelResponseFieldPaths { get; set; }
     public GuardrailConfiguration GuardrailConfig { get; set; }

@@ -37,9 +37,9 @@ public class AI21IoService : IBedrockModelIoService<IChatCompletionRequest, ICha
         {
             Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1),
             TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 1),
-            MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 4096)
+            MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 4096),
+            StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
         },
-        StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
         NumResponses = this.GetExtensionDataValue<int>(settings?.ExtensionData, "n", 1),
         FrequencyPenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "frequency_penalty", 0.0),
         PresencePenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "presence_penalty", 0.0)
@@ -53,7 +53,6 @@ public class AI21IoService : IBedrockModelIoService<IChatCompletionRequest, ICha
         InferenceConfig = ai21Request.InferenceConfig,
         AdditionalModelRequestFields = new Document
         {
-            // { "stop_sequences", new Document(ai21Request.StopSequences?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
             { "n", ai21Request.NumResponses },
             { "frequency_penalty", ai21Request.FrequencyPenalty },
             { "presence_penalty", ai21Request.PresencePenalty }
