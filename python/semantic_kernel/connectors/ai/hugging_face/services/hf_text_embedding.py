@@ -7,7 +7,7 @@ from typing import Any
 if sys.version_info >= (3, 12):
     from typing import override
 else:
-    from typing_extensions import override
+    from typing_extensions import override  # pragma: no cover
 
 import sentence_transformers
 import torch

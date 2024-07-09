@@ -9,7 +9,7 @@ from typing import Any, Literal
 if sys.version_info >= (3, 12):
     from typing import override
 else:
-    from typing_extensions import override
+    from typing_extensions import override  # pragma: no cover
 
 import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
@@ -97,7 +97,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             assert isinstance(settings, HuggingFacePromptExecutionSettings)  # nosec
             results = self.generator(prompt, **settings.prepare_settings_dict())
         except Exception as e:
-            raise ServiceResponseException("Hugging Face completion failed", e) from e
+            raise ServiceResponseException("Hugging Face completion failed") from e
         if isinstance(results, list):
             return [self._create_text_content(results, result) for result in results]
         return [self._create_text_content(results, results)]
@@ -150,9 +150,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 ]
 
             thread.join()
-
         except Exception as e:
-            raise ServiceResponseException("Hugging Face completion failed", e) from e
+            raise ServiceResponseException("Hugging Face completion failed") from e
 
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
