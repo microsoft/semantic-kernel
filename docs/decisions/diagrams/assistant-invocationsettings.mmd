@@ -1,0 +1,15 @@
+classDiagram
+
+    class OpenAIAssistantInvocationSettings {
+        string? ModelName
+        bool? EnableCodeInterpreter
+        bool? EnableFileSearch
+        bool? EnableJsonResponse
+        int? MaxCompletionTokens
+        int? MaxPromptTokens
+        bool? ParallelToolCallsEnabled
+        int? TruncationMessageCount
+        float? Temperature
+        float? TopP
+        Dictionary~string, string~? Metadata
+    }

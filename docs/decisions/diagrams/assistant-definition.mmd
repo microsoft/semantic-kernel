@@ -1,0 +1,25 @@
+classDiagram
+
+    OpenAIAssistantDefinition --> OpenAIAssistantExecutionSettings
+    class OpenAIAssistantDefinition {
+        string? ModelName
+        string? Description
+        string? Id
+        string? Instructions
+        string? Name
+        List~string~? CodeInterpterFileIds
+        bool EnableCodeInterpreter
+        bool EnableJsonResponse
+        Dictionary~string, string~? Metadata
+        float? Temperature
+        float? TopP
+        string? VectorStoreId
+        OpenAIAssistantExecutionSettings? ExecutionSettings
+    }
+
+    class OpenAIAssistantExecutionSettings {
+        int? MaxCompletionTokens
+        int? MaxPromptTokens
+        bool? ParallelToolCallsEnabled
+        int? TruncationMessageCount
+    }

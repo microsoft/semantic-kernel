@@ -1,0 +1,9 @@
+classDiagram
+
+    class OpenAIThreadCreationSettings {
+        List~string~? CodeInterpterFileIds
+        bool EnableCodeInterpreter
+        IReadOnlyList<ChatMessageContent>? Messages
+        string? VectorStoreId
+        Dictionary~string, string~? Metadata
+    }
