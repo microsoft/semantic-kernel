@@ -2377,6 +2377,22 @@ files = [
 ]
 
 [[package]]
+name = "mistralai"
+version = "0.4.1"
+description = ""
+optional = false
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "mistralai-0.4.1-py3-none-any.whl", hash = "sha256:c11d636093c9eec923f00ac9dff13e4619eb751d44d7a3fea5b665a0e8f99f93"},
+    {file = "mistralai-0.4.1.tar.gz", hash = "sha256:22a88c24b9e3176021b466c1d78e6582eef700688803460fd449254fb7647979"},
+]
+
+[package.dependencies]
+httpx = ">=0.25,<1"
+orjson = ">=3.9.10,<3.11"
+pydantic = ">=2.5.2,<3"
+
+[[package]]
 name = "mistune"
 version = "3.0.2"
 description = "A sane and fast Markdown parser with useful plugins and renderers"
@@ -6828,11 +6844,12 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-itertools", "pytest (>=6,!=8.1.*)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [extras]
-all = ["azure-ai-inference", "azure-core", "azure-cosmos", "azure-identity", "azure-search-documents", "chromadb", "ipykernel", "milvus", "motor", "pinecone-client", "psycopg", "pyarrow", "pymilvus", "qdrant-client", "redis", "sentence-transformers", "transformers", "usearch", "weaviate-client"]
+all = ["azure-ai-inference", "azure-core", "azure-cosmos", "azure-identity", "azure-search-documents", "chromadb", "ipykernel", "milvus", "mistralai", "motor", "pinecone-client", "psycopg", "pyarrow", "pymilvus", "qdrant-client", "redis", "sentence-transformers", "transformers", "usearch", "weaviate-client"]
 azure = ["azure-ai-inference", "azure-core", "azure-cosmos", "azure-identity", "azure-search-documents"]
 chromadb = ["chromadb"]
 hugging-face = ["sentence-transformers", "transformers"]
 milvus = ["milvus", "pymilvus"]
+mistralai = ["mistralai"]
 mongo = ["motor"]
 notebooks = ["ipykernel"]
 pinecone = ["pinecone-client"]
@@ -6845,4 +6862,4 @@ weaviate = ["weaviate-client"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "dbda04832ee7c4fb83b8a7b67725e39acd6a2049e89b1ced807898903a7b71e5"
+content-hash = "e8c6f1cee296a7e58fddb6822641685de019be647b813f550d704e3184b9cb08"

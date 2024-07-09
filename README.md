@@ -19,7 +19,7 @@ is an SDK that integrates Large Language Models (LLMs) like
 [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service),
 and [Hugging Face](https://huggingface.co/)
 with conventional programming languages like C#, Python, and Java. Semantic Kernel achieves this
-by allowing you to define [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
+by allowing you to define [plugins](https://learn.microsoft.com/en-us/semantic-kernel/concepts/plugins)
 that can be chained together
 in just a [few lines of code](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions?tabs=Csharp#using-the-runasync-method-to-simplify-your-code).
 
