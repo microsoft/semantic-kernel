@@ -69,23 +69,30 @@ the chat has not been restored.  The chat may continue to be utilized as the `Ag
 
 > Once restored, additional `Agent` instances may join the `AgentChat`, no different from any `AgentChat` instance.
 
+
 ## Analysis
 
 #### Relationships:
 
 The relationships between any `AgentChat`, the `Agent` instances participating in the conversation, and the associated `AgentChannel` conduits are illustrated in the following diagram:
 
-![AgentChat Relationships](diagrams/agentchat-relationships.png)
+<p align="center">
+<kbd><img src="diagrams/agentchat-relationships.png" style="width: 220pt;"></kbd>
+</p>
 
 While an `AgentChat` manages a primary `ChatHistory`, each `AgentChannel` manages how that history is adapted to the specific `Agent` modality.  For instance, an `AgentChannel` for an `Agent` based on the Open AI Assistant API tracks the associated _thread-id_.  Whereas a `ChatCompletionAgent` manages an adapted `ChatHistory` instance of its own.
 
 This implies that logically the `AgentChat` state must retain the primary `ChatHistory` in addition to the appropriate state for each `AgentChannel`:
 
+
 #### Logical State:
 
 These relationships translate into the following logical state definition:
 
-![AgentChat State](diagrams/agentchat-state.png)
+<p align="center">
+<kbd><img src="diagrams/agentchat-state.png" style="width: 220pt;"></kbd>
+</p>
+
 
 #### Serialized State:
 
@@ -116,6 +123,7 @@ These relationships translate into the following logical state definition:
     ]
 }
 ```
+
 
 ## Options
 
