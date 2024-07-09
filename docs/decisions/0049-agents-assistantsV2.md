@@ -5,9 +5,11 @@
 
 TBD
 
-## Configuration Classes
+## Design
 
-### Service Configuration
+### Configuration Classes
+
+#### Service Configuration
 
 TBD
 
@@ -15,7 +17,7 @@ TBD
 <kbd><img src="diagrams/assistant-serviceconfig.png"  style="width: 360pt;"></kbd>
 </p>
 
-### Assistant Definition
+#### Assistant Definition
 
 TBD
 
@@ -23,7 +25,7 @@ TBD
 <kbd><img src="diagrams/assistant-definition.png"  style="width: 360pt;"></kbd>
 </p>
 
-### Assistant Invocation Settings
+#### Assistant Invocation Settings
 
 TBD
 
@@ -32,7 +34,7 @@ TBD
 </p>
 
 
-### Thread Creation Settings
+#### Thread Creation Settings
 
 TBD
 
@@ -40,12 +42,12 @@ TBD
 <kbd><img src="diagrams/assistant-threadcreationsettings.png" style="width: 132pt;"></kbd>
 </p>
 
-## Agent Implementation
+### Agent Implementation
 
 TBD
 
 <p align="center">
-<kbd><img src="diagrams/assistant-agent.png"  style="width: 600pt;"></kbd>
+<kbd><img src="diagrams/assistant-agent.png"  style="width: 640pt;"></kbd>
 </p>
 
 TBD
@@ -65,16 +67,16 @@ GetChannelKeys|TBD
 CreateChannel|TBD
 
 
-## Vector Store Support
+### Vector Store Support
 
 TBD
 
 <p align="center">
-<kbd><img src="diagrams/assistant-vectorstore.png"  style="width: 600pt;"></kbd>
+<kbd><img src="diagrams/assistant-vectorstore.png"  style="width: 640pt;"></kbd>
 </p>
 
 
-## Class Inventory
+### Class Inventory
 TBD
 
 |Class Name|Description|
