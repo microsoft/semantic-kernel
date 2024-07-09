@@ -3,10 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
+using Amazon.Runtime.EventStreams;
+using Amazon.Runtime.EventStreams.Internal;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
 using Microsoft.Extensions.Azure;
@@ -126,5 +130,57 @@ public class AmazonIoService : IBedrockModelIoService<IChatCompletionRequest, IC
             "assistant" => ConversationRole.Assistant,
             _ => throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}")
         };
+    }
+    // public IEnumerable<StreamingTextContent> GetStreamingInvokeResponseBody(InvokeModelWithResponseStreamResponse response, string modelId)
+    // {
+    //     var streamingTextContents = new List<StreamingTextContent>();
+    //
+    //     using (var responseStream = response.Body)
+    //     {
+    //         responseStream.InitialResponseReceived += OnInitialResponseReceived;
+    //         responseStream.ChunkReceived += OnChunkReceived;
+    //
+    //         responseStream.StartProcessing();
+    //         Console.WriteLine("HERE0: " + response.ContentLength);
+    //
+    //         void OnInitialResponseReceived(object sender, EventStreamEventReceivedArgs<InitialResponseEvent> args)
+    //         {
+    //             // Handle the initial response event if needed
+    //         }
+    //
+    //         void OnChunkReceived(object sender, EventStreamEventReceivedArgs<PayloadPart> args)
+    //         {
+    //             var payloadPart = args.EventStreamEvent;
+    //             var decodedPayload = Encoding.UTF8.GetString(payloadPart.Bytes.GetBuffer());
+    //             var titanStreamResponse = JsonSerializer.Deserialize<TitanTextResponse.TitanStreamResponse>(decodedPayload);
+    //
+    //             if (titanStreamResponse != null && titanStreamResponse.Chunks != null)
+    //             {
+    //                 var decodedResponse = titanStreamResponse.GetDecodedResponse();
+    //                 streamingTextContents.Add(new StreamingTextContent(
+    //                     text: decodedResponse.OutputText,
+    //                     choiceIndex: 0, // Assuming a single choice
+    //                     modelId: modelId,
+    //                     innerContent: decodedResponse,
+    //                     metadata: new Dictionary<string, object?>
+    //                     {
+    //                         { "InputTextTokenCount", decodedResponse.InputTextTokenCount },
+    //                         { "TotalOutputTextTokenCount", decodedResponse.TotalOutputTextTokenCount },
+    //                         { "CompletionReason", decodedResponse.CompletionReason }
+    //                     }));
+    //             }
+    //             Console.WriteLine("HERE: " + streamingTextContents[0]);
+    //         }
+    //     }
+    //
+    //     return streamingTextContents;
+    // }
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    {
+        var text = chunk?["outputText"]?.ToString();
+        if (!string.IsNullOrEmpty(text))
+        {
+            yield return text;
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
@@ -253,5 +254,30 @@ public class CohereIoService : IBedrockModelIoService<IChatCompletionRequest, IC
         }
 
         return defaultValue;
+    }
+
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk) //FOR COMMAND ONLY NOT COMMAND R
+    {
+        var generations = chunk?["generations"]?.AsArray();
+        if (generations != null)
+        {
+            foreach (var generation in generations)
+            {
+                var text = generation?["text"]?.ToString();
+                if (!string.IsNullOrEmpty(text))
+                {
+                    yield return text;
+                }
+            }
+        }
+    }
+
+    public IEnumerable<string> GetTextStreamOutputForCommandR(JsonNode chunk) //FOR COMMAND R
+    {
+        var text = chunk?["text"]?.ToString();
+        if (!string.IsNullOrEmpty(text))
+        {
+            yield return text;
+        }
     }
 }

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
@@ -173,5 +175,84 @@ public class AI21IoService : IBedrockModelIoService<IChatCompletionRequest, ICha
         }
 
         return defaultValue;
+    }
+
+    // public IEnumerable<StreamingTextContent> GetStreamingInvokeResponseBody(InvokeModelWithResponseStreamResponse response, string modelId)
+    // {
+    //     using (var reader = new StreamReader(response.Body.ToString()))
+    //     {
+    //         string line;
+    //         AI21Response.AI21TextResponse responseBody = null;
+    //         StringBuilder contentBuilder = new StringBuilder();
+    //
+    //         while ((line = reader.ReadLine()) != null)
+    //         {
+    //             if (line.StartsWith("data: "))
+    //             {
+    //                 var data = line.Substring("data: ".Length);
+    //
+    //                 if (data == "[DONE]")
+    //                 {
+    //                     // Last message, yield the final content
+    //                     if (responseBody?.Choices != null && responseBody.Choices.Count > 0)
+    //                     {
+    //                         var choice = responseBody.Choices[0];
+    //                         if (choice.Message != null)
+    //                         {
+    //                             var content = choice.Message.Content + contentBuilder.ToString();
+    //                             yield return new StreamingTextContent(content);
+    //                         }
+    //                     }
+    //                 }
+    //                 else
+    //                 {
+    //                     // Process data
+    //                     var dataObject = JsonSerializer.Deserialize<Dictionary<string, object>>(data);
+    //
+    //                     if (dataObject.TryGetValue("choices", out var choicesObject))
+    //                     {
+    //                         var choices = choicesObject as List<object>;
+    //                         if (choices?.Count > 0)
+    //                         {
+    //                             var choice = choices[0] as Dictionary<string, object>;
+    //                             if (choice?.TryGetValue("delta", out var deltaObject) == true)
+    //                             {
+    //                                 var delta = deltaObject as Dictionary<string, object>;
+    //                                 if (delta?.TryGetValue("content", out var contentObject) == true)
+    //                                 {
+    //                                     var content = contentObject as string;
+    //                                     contentBuilder.Append(content);
+    //                                     yield return new StreamingTextContent(content);
+    //                                 }
+    //                             }
+    //                         }
+    //                     }
+    //
+    //                     if (dataObject.TryGetValue("id", out var idObject) &&
+    //                         dataObject.TryGetValue("usage", out var usageObject))
+    //                     {
+    //                         responseBody = new AI21Response.AI21TextResponse
+    //                         {
+    //                             Id = idObject as string,
+    //                             Use = usageObject as AI21Response.AI21TextResponse.Usage
+    //                         };
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk) // for ai21-jamba except said model is unsupported for streaming??
+    {
+        var buffer = new StringBuilder();
+        if (chunk?["choices"]?[0]?["delta"]?["content"] != null)
+        {
+            buffer.Append(chunk["choices"][0]["delta"]["content"].ToString());
+            yield return buffer.ToString();
+        }
+        else if (chunk?["data"]?.ToString() == "DONE")
+        {
+            yield break; // Stream is complete
+        }
     }
 }

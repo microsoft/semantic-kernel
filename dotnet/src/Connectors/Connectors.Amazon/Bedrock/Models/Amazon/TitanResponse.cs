@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
@@ -60,5 +62,49 @@ public class TitanTextResponse
 
         [JsonPropertyName("completionReason")]
         public string CompletionReason { get; set; }
+    }
+
+    public class TitanStreamResponse
+    {
+        [JsonPropertyName("chunk")]
+        public Chunk Chunks { get; set; }
+
+        public class Chunk
+        {
+            [JsonPropertyName("bytes")]
+            public string BytesBase64 { get; set; }
+
+            public byte[] Bytes
+            {
+                get
+                {
+                    return Convert.FromBase64String(BytesBase64);
+                }
+            }
+        }
+
+        public class DecodedResponse
+        {
+            [JsonPropertyName("index")]
+            public int Index { get; set; }
+
+            [JsonPropertyName("inputTextTokenCount")]
+            public int InputTextTokenCount { get; set; }
+
+            [JsonPropertyName("totalOutputTextTokenCount")]
+            public int TotalOutputTextTokenCount { get; set; }
+
+            [JsonPropertyName("outputText")]
+            public string OutputText { get; set; }
+
+            [JsonPropertyName("completionReason")]
+            public string CompletionReason { get; set; }
+        }
+
+        public DecodedResponse GetDecodedResponse()
+        {
+            string jsonString = Encoding.UTF8.GetString(Chunks.Bytes);
+            return JsonSerializer.Deserialize<DecodedResponse>(jsonString);
+        }
     }
 }

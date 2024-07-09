@@ -2,6 +2,7 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
@@ -153,5 +154,14 @@ public class LlamaIoService : IBedrockModelIoService<IChatCompletionRequest, ICh
         }
 
         return prompt.ToString();
+    }
+
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    {
+        var generation = chunk?["generation"]?.ToString();
+        if (!string.IsNullOrEmpty(generation))
+        {
+            yield return generation;
+        }
     }
 }

@@ -42,6 +42,5 @@ public class BedrockTextGenerationService : BedrockTextGenerationClient<ITextGen
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => throw new NotImplementedException();
-        // => StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+        => StreamTextAsync(prompt, executionSettings, kernel, cancellationToken);
 }

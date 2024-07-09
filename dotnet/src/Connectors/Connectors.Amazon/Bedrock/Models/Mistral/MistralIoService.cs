@@ -2,6 +2,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
@@ -210,5 +211,21 @@ public class MistralIoService : IBedrockModelIoService<IChatCompletionRequest, I
         // For more details about the polymorphic serialization, see the article at:
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
+    }
+
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    {
+        var outputs = chunk?["outputs"]?.AsArray();
+        if (outputs != null)
+        {
+            foreach (var output in outputs)
+            {
+                var text = output?["text"]?.ToString();
+                if (!string.IsNullOrEmpty(text))
+                {
+                    yield return text;
+                }
+            }
+        }
     }
 }
