@@ -20,6 +20,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using OpenAI;
+using OpenAI.Chat;
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
@@ -833,6 +834,48 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
         logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
         logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+    }
+
+    [Theory]
+    [InlineData("string", "json_object")]
+    [InlineData("string", "text")]
+    [InlineData("string", "random")]
+    [InlineData("JsonElement.String", "\"json_object\"")]
+    [InlineData("JsonElement.String", "\"text\"")]
+    [InlineData("JsonElement.String", "\"random\"")]
+    [InlineData("ChatResponseFormat", "json_object")]
+    [InlineData("ChatResponseFormat", "text")]
+    public async Task GetChatMessageInResponseFormatsAsync(string formatType, string formatValue)
+    {
+        // Assert
+        object? format = null;
+        switch (formatType)
+        {
+            case "string":
+                format = formatValue;
+                break;
+            case "JsonElement.String":
+                format = JsonSerializer.Deserialize<JsonElement>(formatValue);
+                break;
+            case "ChatResponseFormat":
+                format = formatValue == "text" ? ChatResponseFormat.Text : ChatResponseFormat.JsonObject;
+                break;
+        }
+
+        var modelId = "gpt-4o";
+        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient);
+        OpenAIPromptExecutionSettings executionSettings = new() { ResponseFormat = format };
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(this._chatHistoryForTest, executionSettings);
+
+        // Assert
+        Assert.NotNull(result);
     }
 
     [Fact]
