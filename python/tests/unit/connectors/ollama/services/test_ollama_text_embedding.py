@@ -6,6 +6,18 @@ import pytest
 from numpy import array
 
 from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import OllamaTextEmbedding
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+
+
+def test_init_empty_service_id(model_id):
+    ollama = OllamaTextEmbedding(ai_model_id=model_id)
+    assert ollama.service_id == model_id
+
+
+@pytest.mark.parametrize("exclude_list", [["OLLAMA_MODEL"]], indirect=True)
+def test_init_empty_model_id(ollama_unit_test_env):
+    with pytest.raises(ServiceInitializationError):
+        _ = OllamaTextEmbedding(env_file_path="fake_env_file_path.env")
 
 
 @pytest.mark.asyncio

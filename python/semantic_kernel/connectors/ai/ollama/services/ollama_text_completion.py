@@ -29,6 +29,8 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         service_id: str | None = None,
         ai_model_id: str | None = None,
         host: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initialize an OllamaChatCompletion service.
 
@@ -37,9 +39,16 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             ai_model_id (Optional[str]): The model name. (Optional)
             host (Optional[str]): URL of the Ollama server, defaults to None and
                 will use the default Ollama service address: http://127.0.0.1:11434. (Optional)
+            env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
+            env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
         """
         try:
-            ollama_settings = OllamaSettings.create(model=ai_model_id, host=host)
+            ollama_settings = OllamaSettings.create(
+                model=ai_model_id,
+                host=host,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Ollama settings.", ex) from ex
 

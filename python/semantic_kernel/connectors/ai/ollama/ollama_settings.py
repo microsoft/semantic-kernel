@@ -25,5 +25,5 @@ class OllamaSettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "OLLAMA_"
 
-    model: str | None = None
+    model: str
     host: str | None = None
