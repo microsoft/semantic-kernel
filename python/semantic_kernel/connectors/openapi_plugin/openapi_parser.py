@@ -118,13 +118,19 @@ class OpenApiParser:
 
     def _create_rest_api_operation_payload(
         self, operation_id: str, request_body: dict[str, Any]
-    ) -> RestApiOperationPayload:
+    ) -> RestApiOperationPayload | None:
         if request_body is None or request_body.get("content") is None:
             return None
-        media_type = next((mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in request_body.get("content")), None)
+
+        content = request_body.get("content")
+        if content is None:
+            return None
+
+        media_type = next((mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in content), None)
         if media_type is None:
             raise Exception(f"Neither of the media types of {operation_id} is supported.")
-        media_type_metadata = request_body.get("content")[media_type]
+
+        media_type_metadata = content[media_type]
         payload_properties = self._get_payload_properties(
             operation_id, media_type_metadata["schema"], media_type_metadata["schema"].get("required", set())
         )
