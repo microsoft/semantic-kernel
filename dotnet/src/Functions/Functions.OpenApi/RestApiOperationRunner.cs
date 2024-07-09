@@ -221,6 +221,14 @@ internal sealed class RestApiOperationRunner
 
             throw;
         }
+        catch (OperationCanceledException ex)
+        {
+            ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(HttpRequestBody, payload);
+
+            throw;
+        }
         catch (KernelException ex)
         {
             ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
