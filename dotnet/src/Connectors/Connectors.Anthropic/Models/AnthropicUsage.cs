@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 /// Under the hood, the API transforms requests into a format suitable for the model.
 /// The model's output then goes through a parsing stage before becoming an API response.
 /// As a result, the token counts in usage will not match one-to-one with the exact visible content of an API request or response.<br/>
-/// For example, OutputTokens will be non-zero, even for an empty string response from Claude.
+/// For example, OutputTokens will be non-zero, even for an empty string response from Anthropic.
 /// </summary>
 public sealed class AnthropicUsage
 {

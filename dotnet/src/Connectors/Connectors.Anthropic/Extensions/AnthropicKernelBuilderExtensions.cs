@@ -21,7 +21,7 @@ public static class AnthropicKernelBuilderExtensions
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for chat completion.</param>
-    /// <param name="apiKey">The API key for authentication Claude API.</param>
+    /// <param name="apiKey">The API key for authentication Anthropic API.</param>
     /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>

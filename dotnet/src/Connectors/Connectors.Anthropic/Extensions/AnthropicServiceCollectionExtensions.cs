@@ -19,9 +19,9 @@ public static class AnthropicServiceCollectionExtensions
     /// <summary>
     /// Add Anthropic Chat Completion and Text Generation services to the specified service collection.
     /// </summary>
-    /// <param name="services">The service collection to add the Claude Text Generation service to.</param>
+    /// <param name="services">The service collection to add the Anthropic Text Generation service to.</param>
     /// <param name="modelId">The model for chat completion.</param>
-    /// <param name="apiKey">The API key for authentication Claude API.</param>
+    /// <param name="apiKey">The API key for authentication Anthropic API.</param>
     /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
@@ -49,7 +49,7 @@ public static class AnthropicServiceCollectionExtensions
     /// <summary>
     /// Add Anthropic Chat Completion and Text Generation services to the specified service collection.
     /// </summary>
-    /// <param name="services">The service collection to add the Claude Text Generation service to.</param>
+    /// <param name="services">The service collection to add the Anthropic Text Generation service to.</param>
     /// <param name="modelId">The model for chat completion.</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>

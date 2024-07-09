@@ -34,7 +34,7 @@ internal sealed class AnthropicRequest
     public int MaxTokens { get; set; }
 
     /// <summary>
-    /// A system prompt is a way of providing context and instructions to Claude, such as specifying a particular goal or persona.
+    /// A system prompt is a way of providing context and instructions to Anthropic, such as specifying a particular goal or persona.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("system")]
@@ -84,7 +84,7 @@ internal sealed class AnthropicRequest
         Verify.NotNull(this.Messages);
         Verify.NotNull(message);
 
-        this.Messages.Add(CreateClaudeMessageFromChatMessage(message));
+        this.Messages.Add(CreateAnthropicMessageFromChatMessage(message));
     }
 
     /// <summary>
@@ -105,14 +105,14 @@ internal sealed class AnthropicRequest
     }
 
     private static void AddMessages(IEnumerable<ChatMessageContent> chatHistory, AnthropicRequest request)
-        => request.Messages = chatHistory.Select(CreateClaudeMessageFromChatMessage).ToList();
+        => request.Messages = chatHistory.Select(CreateAnthropicMessageFromChatMessage).ToList();
 
-    private static Message CreateClaudeMessageFromChatMessage(ChatMessageContent message)
+    private static Message CreateAnthropicMessageFromChatMessage(ChatMessageContent message)
     {
         return new Message
         {
             Role = message.Role,
-            Contents = CreateClaudeMessages(message)
+            Contents = CreateAnthropicMessages(message)
         };
     }
 
@@ -136,12 +136,12 @@ internal sealed class AnthropicRequest
         return request;
     }
 
-    private static List<AnthropicContent> CreateClaudeMessages(ChatMessageContent content)
+    private static List<AnthropicContent> CreateAnthropicMessages(ChatMessageContent content)
     {
-        return content.Items.Select(GetClaudeMessageFromKernelContent).ToList();
+        return content.Items.Select(GetAnthropicMessageFromKernelContent).ToList();
     }
 
-    private static AnthropicContent GetClaudeMessageFromKernelContent(KernelContent content) => content switch
+    private static AnthropicContent GetAnthropicMessageFromKernelContent(KernelContent content) => content switch
     {
         TextContent textContent => new AnthropicTextContent { Text = textContent.Text ?? string.Empty },
         ImageContent imageContent => CreateAnthropicImageContent(imageContent),

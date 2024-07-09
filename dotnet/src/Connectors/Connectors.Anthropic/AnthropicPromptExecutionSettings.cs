@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
 /// <summary>
-/// Represents the settings for executing a prompt with the Claude models.
+/// Represents the settings for executing a prompt with the Anthropic models.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class AnthropicPromptExecutionSettings : PromptExecutionSettings

@@ -8,7 +8,7 @@ using System.Linq;
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
 /// <summary>
-/// Represents the metadata associated with a Claude response.
+/// Represents the metadata associated with a Anthropic response.
 /// </summary>
 public sealed class AnthropicMetadata : ReadOnlyDictionary<string, object?>
 {

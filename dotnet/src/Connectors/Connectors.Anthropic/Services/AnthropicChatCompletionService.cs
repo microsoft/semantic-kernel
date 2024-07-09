@@ -27,7 +27,7 @@ public sealed class AnthropicChatCompletionService : IChatCompletionService
     /// <param name="modelId">The model for the chat completion service.</param>
     /// <param name="apiKey">The API key for authentication.</param>
     /// <param name="options">Optional options for the anthropic client</param>
-    /// <param name="httpClient">Optional HTTP client to be used for communication with the Claude API.</param>
+    /// <param name="httpClient">Optional HTTP client to be used for communication with the Anthropic API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public AnthropicChatCompletionService(
         string modelId,
@@ -57,7 +57,7 @@ public sealed class AnthropicChatCompletionService : IChatCompletionService
     /// <param name="endpoint">Endpoint for the chat completion model</param>
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
     /// <param name="options">Options for the anthropic client</param>
-    /// <param name="httpClient">Optional HTTP client to be used for communication with the Claude API.</param>
+    /// <param name="httpClient">Optional HTTP client to be used for communication with the Anthropic API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public AnthropicChatCompletionService(
         string modelId,
