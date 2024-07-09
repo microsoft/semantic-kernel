@@ -142,7 +142,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             if (fc_count := len(function_calls)) == 0:
                 return completions
 
-            results = await self._process_function_calls(
+            results = await self._invoke_function_calls(
                 function_calls=function_calls,
                 chat_history=chat_history,
                 kernel=kernel,
@@ -275,7 +275,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
 
-            results = await self._process_function_calls(
+            results = await self._invoke_function_calls(
                 function_calls=function_calls,
                 chat_history=chat_history,
                 kernel=kernel,
@@ -420,7 +420,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             kernel=kernel, update_settings_callback=update_settings_from_function_call_configuration, settings=settings
         )
 
-    async def _process_function_calls(
+    async def _invoke_function_calls(
         self,
         function_calls: list[FunctionCallContent],
         chat_history: ChatHistory,
@@ -430,7 +430,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         request_index: int,
         function_behavior: FunctionChoiceBehavior,
     ):
-        """Process function calls."""
+        """Invoke function calls."""
         logger.info(f"processing {function_call_count} tool calls in parallel.")
 
         return await asyncio.gather(
