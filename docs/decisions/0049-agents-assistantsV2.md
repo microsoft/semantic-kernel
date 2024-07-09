@@ -32,7 +32,7 @@ TBD
 TBD
 
 <p align="center">
-<kbd><img src="diagrams/assistant-threadcreationsettings.png" style="width: 120pt;"></kbd>
+<kbd><img src="diagrams/assistant-threadcreationsettings.png" style="width: 132pt;"></kbd>
 </p>
 
 ## Agent Implementation
