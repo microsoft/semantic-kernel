@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json.Serialization;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
@@ -35,5 +36,41 @@ public class ClaudeRequest
             public string Type { get; set; }
             public string Name { get; set; }
         }
+    }
+
+    public class ClaudeTextGenerationRequest : ITextGenerationRequest
+    {
+        [JsonPropertyName("prompt")]
+        public required string Prompt { get; set; }
+
+        [JsonPropertyName("max_tokens_to_sample")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? MaxTokensToSample { get; set; }
+
+        [JsonPropertyName("stop_sequences")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public IList<string>? StopSequences { get; set; }
+
+        [JsonPropertyName("temperature")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? Temperature { get; set; }
+
+        [JsonPropertyName("top_p")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? TopP { get; set; }
+
+        [JsonPropertyName("top_k")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? TopK { get; set; }
+
+        string ITextGenerationRequest.InputText => Prompt;
+
+        double? ITextGenerationRequest.TopP => TopP;
+
+        double? ITextGenerationRequest.Temperature => Temperature;
+
+        int? ITextGenerationRequest.MaxTokens => MaxTokensToSample;
+
+        IList<string>? ITextGenerationRequest.StopSequences => StopSequences;
     }
 }

@@ -13,6 +13,7 @@ using Connectors.Amazon.Core.Responses;
 using Connectors.Amazon.Models;
 using Connectors.Amazon.Models.AI21;
 using Connectors.Amazon.Models.Amazon;
+using Connectors.Amazon.Models.Anthropic;
 using Connectors.Amazon.Models.Mistral;
 using Microsoft.SemanticKernel;
 
@@ -42,6 +43,9 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
                 break;
             case "ai21":
                 this._ioService = new AI21IoService();
+                break;
+            case "anthropic":
+                this._ioService = new AnthropicIoService();
                 break;
             default:
                 throw new Exception("Error: model not found");

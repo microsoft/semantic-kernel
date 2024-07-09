@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
@@ -15,12 +16,61 @@ public class AnthropicIoService : IBedrockModelIoService<IChatCompletionRequest,
 {
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {
-        throw new NotImplementedException();
+        double? temperature = 1.0; // Claude default
+        double? topP = 1.0; // Claude default
+        int? maxTokensToSample = 200; // Claude default
+        List<string>? stopSequences = new List<string> { "\n\nHuman:" }; // Claude default
+
+        if (executionSettings != null && executionSettings.ExtensionData != null)
+        {
+            executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
+            temperature = temperatureValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("top_p", out var topPValue);
+            topP = topPValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("max_tokens_to_sample", out var maxTokensToSampleValue);
+            maxTokensToSample = maxTokensToSampleValue as int?;
+
+            executionSettings.ExtensionData.TryGetValue("stop_sequences", out var stopSequencesValue);
+            stopSequences = stopSequencesValue as List<string>;
+
+            executionSettings.ExtensionData.TryGetValue("top_k", out var topKV);
+            int? topK = topKV as int?;
+        }
+
+        var requestBody = new ClaudeRequest.ClaudeTextGenerationRequest()
+        {
+            Prompt = $"\n\nHuman: {prompt}\n\nAssistant:",
+            MaxTokensToSample = maxTokensToSample,
+            StopSequences = stopSequences,
+            Temperature = temperature,
+            TopP = topP,
+            TopK = executionSettings?.ExtensionData?.TryGetValue("top_k", out var topKValue) == true ? topKValue as int? : null
+        };
+
+        return requestBody;
     }
 
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
-        throw new NotImplementedException();
+        using (var memoryStream = new MemoryStream())
+        {
+            response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
+            memoryStream.Position = 0;
+            using (var reader = new StreamReader(memoryStream))
+            {
+                var responseBody = JsonSerializer.Deserialize<ClaudeResponse>(reader.ReadToEnd());
+                var textContents = new List<TextContent>();
+
+                if (!string.IsNullOrEmpty(responseBody?.Completion))
+                {
+                    textContents.Add(new TextContent(responseBody.Completion));
+                }
+
+                return textContents;
+            }
+        }
     }
 
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
