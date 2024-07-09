@@ -97,8 +97,8 @@ These relationships translate into the following logical state definition:
         { "role": "assistant", "name": "John", "items": [ /* ... */ ] },
         // ...
     ],
-     // Serialized AgentReference
-    "agents": [
+     // Serialized Particpants
+    "participants": [
         {
             "id": "01b6a120-7fef-45e2-aafb-81cf4a90d931",
             "name": "John",
@@ -192,8 +192,8 @@ class AgentChatSerializer
     // Reads chat state from the provided stream and returns serializer
     static async Task<AgentChatSerializer> DeserializeAsync(AgentChat chat, Stream stream)
 
-    // Provides list of agent references
-    IReadOnlyList<AgentReference> GetAgentReferences();
+    // Provides list of participants
+    IReadOnlyList<ChatParticipant> GetParticipants();
 
     // Restores the chat state
     Task RestoreAsync(AgentChat chat);
@@ -214,8 +214,8 @@ class AgentChatSerializer:
     async def deserialize(chat: AgentChat, stream) -> AgentChatSerializer:
         pass
 
-    # Provides list of agent references
-    def get_agent_references(self) -> list[AgentReference]:
+    # Provides list of participants
+    def get_participants(self) -> list[ChatParticipant]:
         pass
 
     # Restores the chat state
@@ -228,7 +228,7 @@ class AgentChatSerializer:
 - Support any `AgentChat` and `AgentChannel` subclass.
 - Ability to support post processing when restoring chat (e.g. channel synchronization).
 - Allows any `AgentChat` to be properly initialized prior to deserialization.
-- Allows for inspection of `AgentReference` metadata.
+- Allows for inspection of `ChatParticipant` metadata.
 
 **Con:**
 - Require knowledge of a serialization pattern specific to the _Agent Framework_.
@@ -296,9 +296,9 @@ AgentChatSerializer serializer = AgentChatSerializer.Deserialize(stream);
 AgentGroupChat chat = new();
 
 // Restore agents
-foreach (AgentReference agentRef in serializer.GetAgentReferences())
+foreach (ChatParticipant participant in serializer.GetParticipants())
 {
-    chat.AddAgent(agents[agentRef.Id]);
+    chat.AddAgent(agents[participant.Id]);
 }
 
 // Restore chat
@@ -327,8 +327,8 @@ serializer = await AgentChatSerializer.serialize(stream)
 chat = AgentGroupChat(agent1, agent2)
 
 # Restore agents
-for agent_ref in serializer.get_agent_references():
-    chat.add_agent(agents[agent_ref.id])
+for participant in serializer.get_participants():
+    chat.add_agent(agents[participant.id])
     
 # Restore agent-chat
 await serializer.deserialize(chat)
@@ -352,7 +352,7 @@ This option is identical to the second option; however, each discrete state is b
 ```javascript
 {
     "history": "VGhpcyBpcyB0aGUgcHJpbWFyeSBjaGF0IGhpc3Rvcnkg...",
-    "agents": [
+    "participants": [
         {
             "aId37EnWT9BS+kkCkEgFCg9uHvHNw1+hXMA4sgNMKs4...",
             // ...
