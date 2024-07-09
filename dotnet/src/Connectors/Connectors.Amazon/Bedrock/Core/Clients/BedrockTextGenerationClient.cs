@@ -14,6 +14,7 @@ using Connectors.Amazon.Models;
 using Connectors.Amazon.Models.AI21;
 using Connectors.Amazon.Models.Amazon;
 using Connectors.Amazon.Models.Anthropic;
+using Connectors.Amazon.Models.Cohere;
 using Connectors.Amazon.Models.Mistral;
 using Microsoft.SemanticKernel;
 
@@ -46,6 +47,9 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
                 break;
             case "anthropic":
                 this._ioService = new AnthropicIoService();
+                break;
+            case "cohere":
+                this._ioService = new CohereIoService();
                 break;
             default:
                 throw new Exception("Error: model not found");
