@@ -7,7 +7,7 @@ from threading import Thread
 from typing import Any, Literal
 
 if sys.version_info >= (3, 12):
-    from typing import override
+    from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
@@ -91,10 +91,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         Returns:
             List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
         """
+        if not isinstance(settings, HuggingFacePromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, HuggingFacePromptExecutionSettings)  # nosec
+
         try:
-            if not isinstance(settings, HuggingFacePromptExecutionSettings):
-                settings = self.get_prompt_execution_settings_from_settings(settings)
-            assert isinstance(settings, HuggingFacePromptExecutionSettings)  # nosec
             results = self.generator(prompt, **settings.prepare_settings_dict())
         except Exception as e:
             raise ServiceResponseException("Hugging Face completion failed") from e
