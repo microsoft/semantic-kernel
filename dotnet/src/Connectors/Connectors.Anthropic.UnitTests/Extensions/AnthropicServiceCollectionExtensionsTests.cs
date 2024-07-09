@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -55,8 +54,7 @@ public sealed class AnthropicServiceCollectionExtensionsTests
 
         // Act
         kernelBuilder.AddAnthropicChatCompletion(
-            "modelId", new Uri("https://example.com"),
-            _ => ValueTask.CompletedTask, new AnthropicClientOptions());
+            "modelId", new Uri("https://example.com"), new AnthropicClientOptions());
         var kernel = kernelBuilder.Build();
 
         // Assert
@@ -73,8 +71,7 @@ public sealed class AnthropicServiceCollectionExtensionsTests
 
         // Act
         services.AddAnthropicChatCompletion(
-            "modelId", new Uri("https://example.com"),
-            _ => ValueTask.CompletedTask, new AnthropicClientOptions());
+            "modelId", new Uri("https://example.com"), new AnthropicClientOptions());
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert

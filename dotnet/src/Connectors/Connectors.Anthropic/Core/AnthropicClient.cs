@@ -39,7 +39,6 @@ internal sealed class AnthropicClient
     private readonly string _modelId;
     private readonly string? _apiKey;
     private readonly Uri _endpoint;
-    private readonly Func<HttpRequestMessage, ValueTask>? _customRequestHandler;
     private readonly ClientOptions _options;
 
     private static readonly string s_namespace = typeof(AnthropicChatCompletionService).Namespace!;
@@ -109,28 +108,24 @@ internal sealed class AnthropicClient
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
-    /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
     /// <param name="options">Options for the client</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public AnthropicClient(
         HttpClient httpClient,
         string modelId,
         Uri endpoint,
-        Func<HttpRequestMessage, ValueTask> requestHandler,
         ClientOptions options,
         ILogger? logger = null)
     {
         Verify.NotNull(httpClient);
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(endpoint);
-        Verify.NotNull(requestHandler);
         Verify.NotNull(options);
 
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
         this._modelId = modelId;
         this._endpoint = endpoint;
-        this._customRequestHandler = requestHandler;
         this._options = options;
     }
 
@@ -211,19 +206,22 @@ internal sealed class AnthropicClient
             throw new NotSupportedException($"Content type {content.GetType()} is not supported yet.");
         }
 
-        return new AnthropicChatMessageContent(
-            role: response.Role,
-            items: [new TextContent(textContent.Text ?? string.Empty)],
-            modelId: response.ModelId ?? this._modelId,
-            innerContent: response,
-            metadata: GetResponseMetadata(response));
+        return new AnthropicChatMessageContent
+        {
+            Role = response.Role,
+            Items = [new TextContent(textContent.Text ?? string.Empty)],
+            ModelId = response.ModelId ?? this._modelId,
+            InnerContent = response,
+            Metadata = GetResponseMetadata(response),
+            Encoding = Encoding.UTF8
+        };
     }
 
     private static AnthropicMetadata GetResponseMetadata(AnthropicResponse response)
         => new()
         {
             MessageId = response.Id,
-            FinishReason = response.FinishReason,
+            FinishReason = response.StopReason,
             StopSequence = response.StopSequence,
             InputTokenCount = response.Usage?.InputTokens ?? 0,
             OutputTokenCount = response.Usage?.OutputTokens ?? 0
@@ -266,7 +264,7 @@ internal sealed class AnthropicClient
 
         var filteredChatHistory = new ChatHistory(chatHistory.Where(IsAssistantOrUserOrSystem));
         var anthropicRequest = AnthropicRequest.FromChatHistoryAndExecutionSettings(filteredChatHistory, anthropicExecutionSettings);
-        if (this._customRequestHandler != null)
+        if (this._options is not AnthropicClientOptions)
         {
             anthropicRequest.Version = this._options.Version;
         }
@@ -361,11 +359,7 @@ internal sealed class AnthropicClient
         httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AnthropicClient)));
 
-        if (this._customRequestHandler != null)
-        {
-            await this._customRequestHandler(httpRequestMessage).ConfigureAwait(false);
-        }
-        else
+        if (this._options is AnthropicClientOptions)
         {
             httpRequestMessage.Headers.Add("anthropic-version", this._options.Version);
             httpRequestMessage.Headers.Add("x-api-key", this._apiKey);

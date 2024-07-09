@@ -89,7 +89,7 @@ internal sealed class PolymorphicJsonConverter<T> : JsonConverter<T>
     public override bool CanConvert(Type typeToConvert) => typeof(T) == typeToConvert;
 
     public override T Read(
-        ref Utf8JsonReader reader, Type objectType, JsonSerializerOptions options)
+        ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var reader2 = reader;
         using var doc = JsonDocument.ParseValue(ref reader2);

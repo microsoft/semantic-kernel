@@ -26,10 +26,10 @@ public sealed class AnthropicClientOptions : ClientOptions
     public enum ServiceVersion
     {
         /// <summary> Service version "2023-01-01". </summary>
-        V2023_01_01 = 1,
+        V2023_01_01 = 0,
 
         /// <summary> Service version "2023-06-01". </summary>
-        V2023_06_01 = 2,
+        V2023_06_01 = 1,
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public sealed class AnthropicClientOptions : ClientOptions
         {
             ServiceVersion.V2023_01_01 => "2023-01-01",
             ServiceVersion.V2023_06_01 => "2023-06-01",
-            _ => throw new NotSupportedException("Unsupported service version")
+            _ => throw new ArgumentOutOfRangeException(version.ToString())
         };
     }
 }
@@ -62,7 +62,7 @@ public sealed class VertexAIAnthropicClientOptions : ClientOptions
     public enum ServiceVersion
     {
         /// <summary> Service version "vertex-2023-10-16". </summary>
-        V2023_10_16 = 1,
+        V2023_10_16 = 0,
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ public sealed class VertexAIAnthropicClientOptions : ClientOptions
         this.Version = version switch
         {
             ServiceVersion.V2023_10_16 => "vertex-2023-10-16",
-            _ => throw new NotSupportedException("Unsupported service version")
+            _ => throw new ArgumentOutOfRangeException(version.ToString())
         };
     }
 }
@@ -94,7 +94,7 @@ public sealed class AmazonBedrockAnthropicClientOptions : ClientOptions
     public enum ServiceVersion
     {
         /// <summary> Service version "bedrock-2023-05-31". </summary>
-        V2023_05_31 = 1,
+        V2023_05_31 = 0,
     }
 
     /// <summary>
@@ -110,7 +110,7 @@ public sealed class AmazonBedrockAnthropicClientOptions : ClientOptions
         this.Version = version switch
         {
             ServiceVersion.V2023_05_31 => "bedrock-2023-05-31",
-            _ => throw new NotSupportedException("Unsupported service version")
+            _ => throw new ArgumentOutOfRangeException(version.ToString())
         };
     }
 }

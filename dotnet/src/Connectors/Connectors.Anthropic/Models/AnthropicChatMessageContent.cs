@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
@@ -18,30 +16,11 @@ public sealed class AnthropicChatMessageContent : ChatMessageContent
     internal AnthropicChatMessageContent() { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AnthropicChatMessageContent"/> class.
-    /// </summary>
-    /// <param name="role">Role of the author of the message</param>
-    /// <param name="items">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="innerContent">Inner content object reference</param>
-    /// <param name="metadata">Additional metadata</param>
-    internal AnthropicChatMessageContent(
-        AuthorRole role,
-        ChatMessageContentItemCollection items,
-        string modelId,
-        object? innerContent = null,
-        AnthropicMetadata? metadata = null)
-        : base(
-            role: role,
-            items: items,
-            modelId: modelId,
-            innerContent: innerContent,
-            encoding: Encoding.UTF8,
-            metadata: metadata)
-    { }
-
-    /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    public new AnthropicMetadata? Metadata => (AnthropicMetadata?)base.Metadata;
+    public new AnthropicMetadata? Metadata
+    {
+        get => base.Metadata as AnthropicMetadata;
+        init => base.Metadata = value;
+    }
 }

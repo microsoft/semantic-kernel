@@ -103,7 +103,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata as AnthropicMetadata;
         Assert.NotNull(metadata);
-        Assert.Equal(response.FinishReason, metadata.FinishReason);
+        Assert.Equal(response.StopReason, metadata.FinishReason);
         Assert.Equal(response.Id, metadata.MessageId);
         Assert.Equal(response.StopSequence, metadata.StopSequence);
         Assert.Equal(response.Usage.InputTokens, metadata.InputTokenCount);
@@ -127,7 +127,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata;
         Assert.NotNull(metadata);
-        Assert.Equal(response.FinishReason, metadata[nameof(AnthropicMetadata.FinishReason)]);
+        Assert.Equal(response.StopReason, metadata[nameof(AnthropicMetadata.FinishReason)]);
         Assert.Equal(response.Id, metadata[nameof(AnthropicMetadata.MessageId)]);
         Assert.Equal(response.StopSequence, metadata[nameof(AnthropicMetadata.StopSequence)]);
         Assert.Equal(response.Usage.InputTokens, metadata[nameof(AnthropicMetadata.InputTokenCount)]);
@@ -231,8 +231,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
             httpClient: this._httpClient,
             modelId: "fake-model",
             options: new AnthropicClientOptions(),
-            endpoint: new Uri("https://fake-uri.com"),
-            requestHandler: _ => ValueTask.CompletedTask);
+            endpoint: new Uri("https://fake-uri.com"));
         var chatHistory = CreateSampleChatHistory();
 
         // Act
@@ -374,17 +373,13 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         // Arrange
         Uri uri = new("https://fake-uri.com");
         (string headerName, string headerValue) = ("custom-header", "custom-value");
-        ValueTask RequestHandler(HttpRequestMessage arg)
-        {
-            arg.Headers.Add(headerName, headerValue);
-            return ValueTask.CompletedTask;
-        }
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add(headerName, headerValue);
         var client = new AnthropicClient(
-            httpClient: this._httpClient,
+            httpClient: httpClient,
             modelId: "fake-model",
             options: new AnthropicClientOptions(),
-            endpoint: uri,
-            requestHandler: RequestHandler);
+            endpoint: uri);
 
         var chatHistory = CreateSampleChatHistory();
 

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Anthropic;
@@ -202,7 +203,13 @@ public sealed class AnthropicRequestTests
         // Arrange
         ChatHistory chat = [];
         var request = AnthropicRequest.FromChatHistoryAndExecutionSettings(chat, new AnthropicPromptExecutionSettings { ModelId = "model-id", MaxTokens = 128 });
-        var message = new AnthropicChatMessageContent(AuthorRole.User, [new TextContent("user-message")], "model-id");
+        var message = new AnthropicChatMessageContent
+        {
+            Role = AuthorRole.User,
+            Items = [new TextContent("user-message")],
+            ModelId = "model-id",
+            Encoding = Encoding.UTF8
+        };
 
         // Act
         request.AddChatMessage(message);

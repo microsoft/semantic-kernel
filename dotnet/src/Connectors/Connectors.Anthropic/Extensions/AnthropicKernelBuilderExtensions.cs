@@ -2,7 +2,6 @@
 
 using System;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -54,7 +53,6 @@ public static class AnthropicKernelBuilderExtensions
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for chat completion.</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
-    /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
     /// <param name="options">Options for the anthropic client</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
@@ -63,7 +61,6 @@ public static class AnthropicKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         Uri endpoint,
-        Func<HttpRequestMessage, ValueTask> requestHandler,
         ClientOptions options,
         string? serviceId = null,
         HttpClient? httpClient = null)
@@ -72,13 +69,11 @@ public static class AnthropicKernelBuilderExtensions
         Verify.NotNull(modelId);
         Verify.NotNull(endpoint);
         Verify.NotNull(options);
-        Verify.NotNull(requestHandler);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new AnthropicChatCompletionService(
                 modelId: modelId,
                 endpoint: endpoint,
-                requestHandler: requestHandler,
                 options: options,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));

@@ -25,7 +25,7 @@ internal sealed class AnthropicRequest
     /// from the content in that message. This can be used to constrain part of the model's response.
     /// </summary>
     [JsonPropertyName("messages")]
-    public IList<Message> Messages { get; set; } = null!;
+    public IList<Message> Messages { get; } = new List<Message>();
 
     [JsonPropertyName("model")]
     public string ModelId { get; set; } = null!;
@@ -79,6 +79,8 @@ internal sealed class AnthropicRequest
     [JsonPropertyName("top_k")]
     public int? TopK { get; set; }
 
+    private AnthropicRequest() { }
+
     public void AddChatMessage(ChatMessageContent message)
     {
         Verify.NotNull(this.Messages);
@@ -105,7 +107,7 @@ internal sealed class AnthropicRequest
     }
 
     private static void AddMessages(IEnumerable<ChatMessageContent> chatHistory, AnthropicRequest request)
-        => request.Messages = chatHistory.Select(CreateAnthropicMessageFromChatMessage).ToList();
+        => request.Messages.AddRange(chatHistory.Select(CreateAnthropicMessageFromChatMessage));
 
     private static Message CreateAnthropicMessageFromChatMessage(ChatMessageContent message)
     {
