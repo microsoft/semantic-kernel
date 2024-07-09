@@ -126,7 +126,7 @@ jobs:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
           reporttypes: "JsonSummary"
-          assemblyfilters: "+Microsoft.SemanticKernel.Abstractions;+Microsoft.SemanticKernel.Core;+Microsoft.SemanticKernel.PromptTemplates.Handlebars;+Microsoft.SemanticKernel.Connectors.OpenAI;+Microsoft.SemanticKernel.Yaml;+Microsoft.SemanticKernel.Agents.Abstractions;+Microsoft.SemanticKernel.Agents.Core;+Microsoft.SemanticKernel.Agents.OpenAI"
+          assemblyfilters: "+Microsoft.SemanticKernel.Abstractions;+Microsoft.SemanticKernel.Core;+Microsoft.SemanticKernel.PromptTemplates.Handlebars;+Microsoft.SemanticKernel.Connectors.OpenAI;+Microsoft.SemanticKernel.Connectors.OpenAIV2;+Microsoft.SemanticKernel.Connectors.AzureOpenAI;+Microsoft.SemanticKernel.Yaml;+Microsoft.SemanticKernel.Agents.Abstractions;+Microsoft.SemanticKernel.Agents.Core;+Microsoft.SemanticKernel.Agents.OpenAI"
 
       - name: Check coverage
         shell: pwsh

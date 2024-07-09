@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using OpenAI;
@@ -781,6 +783,69 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("tool", assistantMessage2.GetProperty("role").GetString());
         Assert.Equal("sunny", assistantMessage2.GetProperty("content").GetString());
         Assert.Equal("2", assistantMessage2.GetProperty("tool_call_id").GetString());
+    }
+
+    [Fact]
+    public async Task GetAllContentsDoesLogActionAsync()
+    {
+        // Assert
+        var modelId = "gpt-4o";
+        var logger = new Mock<ILogger<OpenAIChatCompletionService>>();
+        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+
+        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
+
+        // Arrange
+        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () => { await sut.GetChatMessageContentsAsync(this._chatHistoryForTest); });
+        await Assert.ThrowsAnyAsync<Exception>(async () => { await sut.GetStreamingChatMessageContentsAsync(this._chatHistoryForTest).GetAsyncEnumerator().MoveNextAsync(); });
+        await Assert.ThrowsAnyAsync<Exception>(async () => { await sut.GetTextContentsAsync("test"); });
+        await Assert.ThrowsAnyAsync<Exception>(async () => { await sut.GetStreamingTextContentsAsync("test").GetAsyncEnumerator().MoveNextAsync(); });
+
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+    }
+
+    [Fact(Skip = "Not working running in the console")]
+    public async Task GetInvalidResponseThrowsExceptionAndIsCapturedByDiagnosticsAsync()
+    {
+        // Arrange
+        bool startedChatCompletionsActivity = false;
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent("Invalid JSON") };
+
+        var sut = new OpenAIChatCompletionService("model-id", "api-key", httpClient: this._httpClient);
+
+        // Enable ModelDiagnostics
+        using var listener = new ActivityListener() {
+            ShouldListenTo = (activitySource) => true, //activitySource.Name == typeof(ModelDiagnostics).Namespace!,
+            ActivityStarted = (activity) =>
+            {
+                if (activity.OperationName == "chat.completions model-id")
+                {
+                    startedChatCompletionsActivity = true;
+                }
+            },
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllData,
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        Environment.SetEnvironmentVariable("SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS", "true");
+        Environment.SetEnvironmentVariable("SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE", "true");
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () => { await sut.GetChatMessageContentsAsync(this._chatHistoryForTest); });
+
+        Assert.True(ModelDiagnostics.HasListeners());
+        Assert.True(ModelDiagnostics.IsSensitiveEventsEnabled());
+        Assert.True(ModelDiagnostics.IsModelDiagnosticsEnabled());
+        Assert.True(startedChatCompletionsActivity);
     }
 
     public void Dispose()
