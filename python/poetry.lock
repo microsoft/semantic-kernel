@@ -343,25 +343,6 @@ msal = ">=1.24.0"
 msal-extensions = ">=0.3.0"
 
 [[package]]
-name = "azure-monitor-opentelemetry-exporter"
-version = "1.0.0b27"
-description = "Microsoft Azure Monitor Opentelemetry Exporter Client Library for Python"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "azure-monitor-opentelemetry-exporter-1.0.0b27.tar.gz", hash = "sha256:ee5eb0bb37c29da800cc479084f42181a98d7ad192a27a9b2fdd9cb9957320ad"},
-    {file = "azure_monitor_opentelemetry_exporter-1.0.0b27-py2.py3-none-any.whl", hash = "sha256:92f222e11415c6606588be0166b02ba4970159c6bf016160a2023b3713db9f31"},
-]
-
-[package.dependencies]
-azure-core = ">=1.28.0,<2.0.0"
-fixedint = "0.1.6"
-msrest = ">=0.6.10"
-opentelemetry-api = ">=1.21,<2.0"
-opentelemetry-sdk = ">=1.21,<2.0"
-psutil = ">=5.9,<6.0"
-
-[[package]]
 name = "azure-search-documents"
 version = "11.6.0b4"
 description = "Microsoft Azure Cognitive Search Client Library for Python"
@@ -1220,18 +1201,6 @@ files = [
 docs = ["furo (>=2023.9.10)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.25.2)"]
 testing = ["covdefaults (>=2.3)", "coverage (>=7.3.2)", "diff-cover (>=8.0.1)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)", "pytest-timeout (>=2.2)"]
 typing = ["typing-extensions (>=4.8)"]
-
-[[package]]
-name = "fixedint"
-version = "0.1.6"
-description = "simple fixed-width integers"
-optional = false
-python-versions = "*"
-files = [
-    {file = "fixedint-0.1.6-py2-none-any.whl", hash = "sha256:41953193f08cbe984f584d8513c38fe5eea5fbd392257433b2210391c8a21ead"},
-    {file = "fixedint-0.1.6-py3-none-any.whl", hash = "sha256:b8cf9f913735d2904deadda7a6daa9f57100599da1de57a7448ea1be75ae8c9c"},
-    {file = "fixedint-0.1.6.tar.gz", hash = "sha256:703005d090499d41ce7ce2ee7eae8f7a5589a81acdc6b79f1728a56495f2c799"},
-]
 
 [[package]]
 name = "flatbuffers"
@@ -2690,27 +2659,6 @@ msgraph-core = ">=1.0.0"
 dev = ["bumpver", "isort", "mypy", "pylint", "pytest", "yapf"]
 
 [[package]]
-name = "msrest"
-version = "0.7.1"
-description = "AutoRest swagger generator Python client runtime."
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "msrest-0.7.1-py3-none-any.whl", hash = "sha256:21120a810e1233e5e6cc7fe40b474eeb4ec6f757a15d7cf86702c369f9567c32"},
-    {file = "msrest-0.7.1.zip", hash = "sha256:6e7661f46f3afd88b75667b7187a92829924446c7ea1d169be8c4bb7eeb788b9"},
-]
-
-[package.dependencies]
-azure-core = ">=1.24.0"
-certifi = ">=2017.4.17"
-isodate = ">=0.6.0"
-requests = ">=2.16,<3.0"
-requests-oauthlib = ">=0.5.0"
-
-[package.extras]
-async = ["aiodns", "aiohttp (>=3.0)"]
-
-[[package]]
 name = "multidict"
 version = "6.0.5"
 description = "multidict implementation"
@@ -3338,21 +3286,6 @@ deprecated = ">=1.2.6"
 importlib-metadata = ">=6.0,<=7.1"
 
 [[package]]
-name = "opentelemetry-exporter-otlp"
-version = "1.25.0"
-description = "OpenTelemetry Collector Exporters"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "opentelemetry_exporter_otlp-1.25.0-py3-none-any.whl", hash = "sha256:d67a831757014a3bc3174e4cd629ae1493b7ba8d189e8a007003cacb9f1a6b60"},
-    {file = "opentelemetry_exporter_otlp-1.25.0.tar.gz", hash = "sha256:ce03199c1680a845f82e12c0a6a8f61036048c07ec7a0bd943142aca8fa6ced0"},
-]
-
-[package.dependencies]
-opentelemetry-exporter-otlp-proto-grpc = "1.25.0"
-opentelemetry-exporter-otlp-proto-http = "1.25.0"
-
-[[package]]
 name = "opentelemetry-exporter-otlp-proto-common"
 version = "1.25.0"
 description = "OpenTelemetry Protobuf encoding"
@@ -3385,26 +3318,6 @@ opentelemetry-api = ">=1.15,<2.0"
 opentelemetry-exporter-otlp-proto-common = "1.25.0"
 opentelemetry-proto = "1.25.0"
 opentelemetry-sdk = ">=1.25.0,<1.26.0"
-
-[[package]]
-name = "opentelemetry-exporter-otlp-proto-http"
-version = "1.25.0"
-description = "OpenTelemetry Collector Protobuf over HTTP Exporter"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "opentelemetry_exporter_otlp_proto_http-1.25.0-py3-none-any.whl", hash = "sha256:2eca686ee11b27acd28198b3ea5e5863a53d1266b91cda47c839d95d5e0541a6"},
-    {file = "opentelemetry_exporter_otlp_proto_http-1.25.0.tar.gz", hash = "sha256:9f8723859e37c75183ea7afa73a3542f01d0fd274a5b97487ea24cb683d7d684"},
-]
-
-[package.dependencies]
-deprecated = ">=1.2.6"
-googleapis-common-protos = ">=1.52,<2.0"
-opentelemetry-api = ">=1.15,<2.0"
-opentelemetry-exporter-otlp-proto-common = "1.25.0"
-opentelemetry-proto = "1.25.0"
-opentelemetry-sdk = ">=1.25.0,<1.26.0"
-requests = ">=2.7,<3.0"
 
 [[package]]
 name = "opentelemetry-instrumentation"
@@ -6948,4 +6861,4 @@ weaviate = ["weaviate-client"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "a110f00488b7ecd31915d16e4805b9d18086ad3618f2f4e166c7ce44b48a9e47"
+content-hash = "c7d9bfca776ec892535b6300af4b3ac49032b6d5a251e1ffe50bd7b7afce0a44"

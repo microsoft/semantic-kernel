@@ -36,7 +36,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
-    ) -> list[TextContent]:
+    ) -> list["TextContent"]:
         """Executes a completion request and returns the result.
 
         Args:

@@ -94,13 +94,9 @@ def trace_chat_completion(model_provider: str) -> Callable:
                 with trace.use_span(span, end_on_exit=True):
                     if completions:
                         first_completion = completions[0]
-                        response_id = first_completion.metadata.get("id", None)
-                        if not response_id:
-                            response_id = (
-                                first_completion.inner_content.get("id", None)
-                                if first_completion.inner_content
-                                else None
-                            )
+                        response_id = first_completion.metadata.get("id") or (first_completion.inner_content or {}).get(
+                            "id"
+                        )
                         usage = first_completion.metadata.get("usage", None)
                         prompt_tokens = usage.prompt_tokens if hasattr(usage, "prompt_tokens") else None
                         completion_tokens = usage.completion_tokens if hasattr(usage, "completion_tokens") else None
@@ -122,14 +118,14 @@ def _start_completion_activity(
     if not are_model_diagnostics_enabled():
         return None
 
-    operation_name: str = "chat.completions"
+    OPERATION_NAME: str = "chat.completions"
 
-    span = tracer.start_span(f"{operation_name} {model_name}")
+    span = tracer.start_span(f"{OPERATION_NAME} {model_name}")
 
     # Set attributes on the span
     span.set_attributes(
         {
-            OPERATION: operation_name,
+            OPERATION: OPERATION_NAME,
             SYSTEM: model_provider,
             MODEL: model_name,
         }

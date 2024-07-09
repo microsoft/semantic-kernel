@@ -30,8 +30,6 @@ openapi_core = ">=0.18,<0.20"
 # OpenTelemetry
 opentelemetry-api = "^1.25.0"
 opentelemetry-sdk = "^1.25.0"
-opentelemetry-exporter-otlp = "^1.25.0"
-azure-monitor-opentelemetry-exporter = {version = "^1.0.0b27", allow-prereleases = true}
 
 prance = "^23.6.21.0"
 
