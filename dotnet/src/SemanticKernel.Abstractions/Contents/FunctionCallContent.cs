@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a function call requested by LLM.
 /// </summary>
-[Experimental("SKEXP0001")]
+// [Experimental("SKEXP0001")]
 public sealed class FunctionCallContent : KernelContent
 {
     /// <summary>

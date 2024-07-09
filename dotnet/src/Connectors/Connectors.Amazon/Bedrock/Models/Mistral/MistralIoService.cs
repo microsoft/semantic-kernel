@@ -18,12 +18,64 @@ public class MistralIoService : IBedrockModelIoService<IChatCompletionRequest, I
 {
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {
-        throw new NotImplementedException();
+        double? temperature = 0.5; // Mistral default
+        double? topP = 0.9; // Mistral default
+        int? maxTokens = 512; // Mistral default
+        List<string>? stop = null;
+        int? topK = 50; // Mistral default
+
+        if (executionSettings != null && executionSettings.ExtensionData != null)
+        {
+            executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
+            temperature = temperatureValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("top_p", out var topPValue);
+            topP = topPValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("max_tokens", out var maxTokensValue);
+            maxTokens = maxTokensValue as int?;
+
+            executionSettings.ExtensionData.TryGetValue("stop", out var stopValue);
+            stop = stopValue as List<string>;
+
+            executionSettings.ExtensionData.TryGetValue("top_k", out var topKValue);
+            topK = topKValue as int?;
+        }
+
+        var requestBody = new
+        {
+            prompt,
+            max_tokens = maxTokens,
+            stop,
+            temperature,
+            top_p = topP,
+            top_k = topK
+        };
+
+        return requestBody;
     }
 
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
-        throw new NotImplementedException();
+        using (var memoryStream = new MemoryStream())
+        {
+            response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
+            memoryStream.Position = 0;
+            using (var reader = new StreamReader(memoryStream))
+            {
+                var responseBody = JsonSerializer.Deserialize<MistralRequest.MistralTextResponse>(reader.ReadToEnd());
+                var textContents = new List<TextContent>();
+
+                if (responseBody?.Outputs != null && responseBody.Outputs.Count > 0)
+                {
+                    foreach (var output in responseBody.Outputs)
+                    {
+                        textContents.Add(new TextContent(output.Text));
+                    }
+                }
+                return textContents;
+            }
+        }
     }
 
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)

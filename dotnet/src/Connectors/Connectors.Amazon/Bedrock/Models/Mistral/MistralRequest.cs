@@ -143,4 +143,20 @@ public class MistralRequest
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public MistralFunction? Function { get; set; }
     }
+
+    [Serializable]
+    public class MistralTextResponse
+    {
+        [JsonPropertyName("outputs")]
+        public List<Output> Outputs { get; set; }
+
+        public class Output
+        {
+            [JsonPropertyName("text")]
+            public string Text { get; set; }
+
+            [JsonPropertyName("stop_reason")]
+            public string StopReason { get; set; }
+        }
+    }
 }

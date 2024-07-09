@@ -40,7 +40,8 @@ do
 
 const string UserPrompt2 = "What is 2 + 2?";
 Console.WriteLine($"Text Generation Question: {UserPrompt2}");
-var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
+// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
+var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("mistral.mistral-7b-instruct-v0:2").Build();
 var textGenerationService = kernel2.GetRequiredService<ITextGenerationService>();
 var textGeneration = await textGenerationService.GetTextContentsAsync(UserPrompt2).ConfigureAwait(false);
 if (textGeneration.Count > 0)
