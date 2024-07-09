@@ -97,7 +97,7 @@ These relationships translate into the following logical state definition:
         { "role": "assistant", "name": "John", "items": [ /* ... */ ] },
         // ...
     ],
-     // Serialized Particpants
+     // Serialized Participants
     "participants": [
         {
             "id": "01b6a120-7fef-45e2-aafb-81cf4a90d931",
