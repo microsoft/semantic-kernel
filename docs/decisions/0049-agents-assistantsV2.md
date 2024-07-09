@@ -112,10 +112,10 @@ This `Run` processing is implemented as internal logic within the _OpenAI Agent 
 
 Initiate processing using: 
 
-- `agent` -> OpenAIAssistantAgent
-- `client` -> AssistantClient
-- `threadid` -> string
-- `settings` -> OpenAIAssistantInvocationSettings (optional)
+- `agent` -> `OpenAIAssistantAgent`
+- `client` -> `AssistantClient`
+- `threadid` -> `string`
+- `settings` -> `OpenAIAssistantInvocationSettings` (optional)
 
 
 Perform processing:
@@ -134,7 +134,7 @@ Perform processing:
     - if `run` status is _requires-action_
         
         - process function `steps`
-        
+
         - post function results
 
     - foreach (`step` is completed)
