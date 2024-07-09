@@ -323,3 +323,53 @@ def azure_ai_search_unit_test_env(monkeypatch, exclude_list, override_env_param_
             monkeypatch.delenv(key, raising=False)
 
     return env_vars
+
+
+@pytest.fixture()
+def bing_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for BingConnector."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "BING_API_KEY": "test_api_key",
+        "BING_CUSTOM_CONFIG": "test_org_id",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@pytest.fixture()
+def google_search_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for the Google Search Connector."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "GOOGLE_SEARCH_API_KEY": "test_api_key",
+        "GOOGLE_SEARCH_ENGINE_ID": "test_id",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
