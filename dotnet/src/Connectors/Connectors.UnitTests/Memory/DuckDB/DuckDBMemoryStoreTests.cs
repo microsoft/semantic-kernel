@@ -57,7 +57,7 @@ public class DuckDBMemoryStoreTests
     [Fact]
     public async Task InitializeDbConnectionSucceedsAsync()
     {
-        using var db = await DuckDBMemoryStore.ConnectAsync(1);
+        using var db = await DuckDBMemoryStore.ConnectAsync();
         // Assert
         Assert.NotNull(db);
     }
@@ -66,7 +66,7 @@ public class DuckDBMemoryStoreTests
     public async Task ItCanCreateAndGetCollectionAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync(1);
+        using var db = await DuckDBMemoryStore.ConnectAsync();
         string collection = this.GetTestCollectionName();
 
         // Act
@@ -82,7 +82,7 @@ public class DuckDBMemoryStoreTests
     public async Task ItCanCheckIfCollectionExistsAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync(1);
+        using var db = await DuckDBMemoryStore.ConnectAsync();
         string collection = "my_collection+++";
 
         // Act
@@ -97,7 +97,7 @@ public class DuckDBMemoryStoreTests
     public async Task CreatingDuplicateCollectionDoesNothingAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync(1);
+        using var db = await DuckDBMemoryStore.ConnectAsync();
         string collection = this.GetTestCollectionName();
 
         // Act
@@ -114,7 +114,7 @@ public class DuckDBMemoryStoreTests
     public async Task CollectionsCanBeDeletedAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync(1);
+        using var db = await DuckDBMemoryStore.ConnectAsync();
         string collection = this.GetTestCollectionName();
 
         await db.CreateCollectionAsync(collection);
@@ -307,7 +307,7 @@ public class DuckDBMemoryStoreTests
     public async Task RemovingNonExistingRecordDoesNothingAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync(1);
+        using var db = await DuckDBMemoryStore.ConnectAsync();
         string collection = "test_collection_for_record_deletion";
 
         // Act
@@ -323,7 +323,7 @@ public class DuckDBMemoryStoreTests
     public async Task ItCanListAllDatabaseCollectionsAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync(1);
+        using var db = await DuckDBMemoryStore.ConnectAsync();
         string[] testCollections = { "random_collection1", "random_collection2", "random_collection3" };
 
         await db.CreateCollectionAsync(testCollections[0]);

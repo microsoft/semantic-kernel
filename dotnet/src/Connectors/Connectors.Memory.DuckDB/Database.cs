@@ -23,10 +23,8 @@ internal struct DatabaseEntry
     public float Score { get; set; }
 }
 
-internal sealed class Database(int vectorSize)
+internal sealed class Database(int? vectorSize)
 {
-    private readonly int _vectorSize = vectorSize;
-
     private const string TableName = "SKMemoryTable";
 
     public async Task CreateTableAsync(DuckDBConnection conn, CancellationToken cancellationToken = default)
@@ -37,7 +35,7 @@ internal sealed class Database(int vectorSize)
                 collection TEXT,
                 key TEXT,
                 metadata TEXT,
-                embedding FLOAT[{this._vectorSize}],
+                embedding FLOAT[{vectorSize.ToString()}],
                 timestamp TEXT,
                 PRIMARY KEY(collection, key))";
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);

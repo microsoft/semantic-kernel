@@ -24,6 +24,18 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// Connect a DuckDB database
     /// </summary>
     /// <param name="filename">Path to the database file. If file does not exist, it will be created.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task<DuckDBMemoryStore> ConnectAsync(string filename,
+        CancellationToken cancellationToken = default)
+    {
+        var memoryStore = new DuckDBMemoryStore(filename, null);
+        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Connect a DuckDB database
+    /// </summary>
+    /// <param name="filename">Path to the database file. If file does not exist, it will be created.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static async Task<DuckDBMemoryStore> ConnectAsync(string filename, int vectorSize,
@@ -36,12 +48,34 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Connect an in memory DuckDB database
     /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static Task<DuckDBMemoryStore> ConnectAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return ConnectAsync(":memory:", cancellationToken);
+    }
+
+    /// <summary>
+    /// Connect an in memory DuckDB database
+    /// </summary>
     /// <param name="vectorSize">Embedding vector size.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static Task<DuckDBMemoryStore> ConnectAsync(int vectorSize,
         CancellationToken cancellationToken = default)
     {
         return ConnectAsync(":memory:", vectorSize, cancellationToken);
+    }
+
+    /// <summary>
+    /// Connect an in memory DuckDB database
+    /// </summary>
+    /// <param name="connection">An already established connection.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task<DuckDBMemoryStore> ConnectAsync(DuckDBConnection connection,
+        CancellationToken cancellationToken = default)
+    {
+        var memoryStore = new DuckDBMemoryStore(connection, null);
+        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -211,7 +245,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="filename">DuckDB db filename.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
-    private DuckDBMemoryStore(string filename, int vectorSize)
+    private DuckDBMemoryStore(string filename, int? vectorSize)
     {
         this._dbConnector = new Database(vectorSize);
         this._dbConnection = new DuckDBConnection($"Data Source={filename};");
@@ -223,7 +257,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="connection"></param>
     /// <param name="vectorSize">Embedding vector size.</param>
-    private DuckDBMemoryStore(DuckDBConnection connection, int vectorSize)
+    private DuckDBMemoryStore(DuckDBConnection connection, int? vectorSize)
     {
         this._dbConnector = new Database(vectorSize);
         this._dbConnection = connection;
