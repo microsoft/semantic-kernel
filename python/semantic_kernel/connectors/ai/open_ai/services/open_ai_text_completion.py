@@ -56,7 +56,8 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
-        except ValidationError as ex:
+        # currently really difficult to trigger since all are optional
+        except ValidationError as ex:  # pragma: no cover
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
         if not openai_settings.text_model_id:
             raise ServiceInitializationError("The OpenAI text model ID is required.")

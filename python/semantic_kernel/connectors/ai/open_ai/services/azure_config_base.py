@@ -66,27 +66,18 @@ class AzureOpenAIConfigBase(OpenAIHandler):
                 raise ServiceInitializationError(
                     "Please provide either api_key, ad_token or ad_token_provider or a client."
                 )
-            if base_url:
-                client = AsyncAzureOpenAI(
-                    base_url=str(base_url),
-                    api_version=api_version,
-                    api_key=api_key,
-                    azure_ad_token=ad_token,
-                    azure_ad_token_provider=ad_token_provider,
-                    default_headers=merged_headers,
-                )
-            else:
+            if not base_url:
                 if not endpoint:
-                    raise ServiceInitializationError("Please provide either base_url or endpoint")
-                client = AsyncAzureOpenAI(
-                    azure_endpoint=str(endpoint).rstrip("/"),
-                    azure_deployment=deployment_name,
-                    api_version=api_version,
-                    api_key=api_key,
-                    azure_ad_token=ad_token,
-                    azure_ad_token_provider=ad_token_provider,
-                    default_headers=merged_headers,
-                )
+                    raise ServiceInitializationError("Please provide an endpoint or a base_url")
+                base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}")
+            client = AsyncAzureOpenAI(
+                base_url=str(base_url),
+                api_version=api_version,
+                api_key=api_key,
+                azure_ad_token=ad_token,
+                azure_ad_token_provider=ad_token_provider,
+                default_headers=merged_headers,
+            )
         args = {
             "ai_model_id": deployment_name,
             "client": client,

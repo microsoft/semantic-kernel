@@ -13,7 +13,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -72,14 +71,6 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
         if not azure_openai_settings.embedding_deployment_name:
             raise ServiceInitializationError("The Azure OpenAI embedding deployment name is required.")
-
-        if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
-            raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
-
-        if azure_openai_settings.endpoint and azure_openai_settings.embedding_deployment_name:
-            azure_openai_settings.base_url = HttpsUrl(
-                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.embedding_deployment_name}"
-            )
 
         super().__init__(
             deployment_name=azure_openai_settings.embedding_deployment_name,

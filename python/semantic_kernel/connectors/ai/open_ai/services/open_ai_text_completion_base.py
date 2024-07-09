@@ -6,9 +6,9 @@ from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
 
 if sys.version_info >= (3, 12):
-    from typing import override
+    from typing import override  # pragma: no cover
 else:
-    from typing_extensions import override
+    from typing_extensions import override  # pragma: no cover
 
 from openai import AsyncStream
 from openai.types import Completion as TextCompletion

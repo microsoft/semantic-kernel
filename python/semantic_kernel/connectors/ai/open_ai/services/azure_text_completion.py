@@ -13,7 +13,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -70,12 +69,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             raise ServiceInitializationError(f"Invalid settings: {ex}") from ex
         if not azure_openai_settings.text_deployment_name:
             raise ServiceInitializationError("The Azure Text deployment name is required.")
-        if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
-            raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
-        if azure_openai_settings.endpoint and azure_openai_settings.text_deployment_name:
-            azure_openai_settings.base_url = HttpsUrl(
-                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.text_deployment_name}"
-            )
+
         super().__init__(
             deployment_name=azure_openai_settings.text_deployment_name,
             endpoint=azure_openai_settings.endpoint,

@@ -56,7 +56,8 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
-        except ValidationError as ex:
+        # currently really difficult to trigger since all are optional
+        except ValidationError as ex:  # pragma: no cover
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
 
         if not async_client and not openai_settings.api_key:

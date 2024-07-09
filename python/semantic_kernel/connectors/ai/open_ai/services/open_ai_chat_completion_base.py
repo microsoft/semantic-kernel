@@ -8,9 +8,9 @@ from functools import reduce
 from typing import TYPE_CHECKING, Any
 
 if sys.version_info >= (3, 12):
-    from typing import override
+    from typing import override  # pragma: no cover
 else:
-    from typing_extensions import override
+    from typing_extensions import override  # pragma: no cover
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
@@ -417,7 +417,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         function_call_behavior: FunctionChoiceBehavior | FunctionCallBehavior,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the tool calls in the result and update the chat history."""
-        if isinstance(function_call_behavior, FunctionCallBehavior):
+        # deprecated and might not even be used anymore, hard to trigger directly
+        if isinstance(function_call_behavior, FunctionCallBehavior):  # pragma: no cover
             # We need to still support a `FunctionCallBehavior` input so it doesn't break current
             # customers. Map from `FunctionCallBehavior` -> `FunctionChoiceBehavior`
             function_call_behavior = FunctionChoiceBehavior.from_function_call_behavior(function_call_behavior)
