@@ -3,7 +3,7 @@
 
 ## Context and Problem Statement
 
-TBD
+Open AI has release the _Assistants V2_ API.  This builds on top of the V1 _assistant_ concept, but also invalidates certain V1 features.  In addition, the _dotnet_ API that supports _Assistant V2_ features is entirely divergent on the `Azure.AI.OpenAI.Assistants` SDK.
 
 ### Open Issues
 - **Tool Constraints:** In Progress
@@ -11,6 +11,8 @@ TBD
 - **Polling:** Associate with execution settings?
 
 ## Design
+
+TBD - Breaking
 
 ### Configuration Classes
 
@@ -96,3 +98,50 @@ This section provides an overview / inventory of all the public surface area des
 **OpenAIServiceConfiguration**|Describes the service connection and used to create the `OpenAIClient`
 **OpenAIVectorStore**|Used to query and manipulate a vector-store.  Also supports listing available vector-stores (static).
 **OpenAIVectorStoreBuilder**|Supports creation of an vector-store.
+
+### Run Processing
+
+The heart of supporting an _assistant_ agent is creating and processing a `Run`.
+
+A `Run` is effectively a discrete _assistant_ interaction on a `Thread` (or conversation).
+
+- https://platform.openai.com/docs/api-reference/runs
+- https://platform.openai.com/docs/api-reference/run-steps
+
+This `Run` processing is implemented as internal logic within the _OpenAI Agent Framework_ that is outlined here:
+
+Initiate processing using: 
+
+- `agent` -> OpenAIAssistantAgent
+- `client` -> AssistantClient
+- `threadid` -> string
+- `settings` -> OpenAIAssistantInvocationSettings (optional)
+
+
+Perform processing:
+
+- Verify `agent` not deleted
+- Define `RunCreationOptions`
+- Create the `run` (based on `threadid` and `agent.Id`)
+- Process the run:
+
+    do
+
+    - Poll `run` status until is not _queued_, _in-progress_, or _cancelling_
+    - Throw if `run` status is _expired_, _failed_, or _cancelled_
+    - Query `steps` for `run`
+
+    - if `run` status is _requires-action_
+        
+        - process function `steps`
+        
+        - post function results
+
+    - foreach (`step` is completed)
+
+        - if (`step` is tool-call) generate and yield tool content
+
+        - if (`step` is message) generate and yield message content
+
+    while (`run` status is not completed)
+
