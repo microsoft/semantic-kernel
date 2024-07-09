@@ -5,9 +5,16 @@
 
 TBD
 
+### Open Issues
+- **Tool Constraints:** In Progress
+- **Streaming:** To be addressed as a discrete feature
+- **Polling:** Associate with execution settings?
+
 ## Design
 
 ### Configuration Classes
+
+TBD
 
 #### Service Configuration
 
