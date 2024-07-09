@@ -1,0 +1,31 @@
+classDiagram
+
+    class VectorStore {
+        <<OpenAI>>
+    }
+
+    OpenAIVectorStore ..> VectorStore
+    OpenAIVectorStore ..> OpenAIServiceConfiguration
+    class OpenAIVectorStore {
+        +string VectorStoreId
+        +OpenAIVectorStore(string vectorStoreId, OpenAIServiceConfiguration config)
+        +AsyncEnumerable~VectorStore~ GetVectorStores(OpenAIServiceConfiguration config)$
+        +Task~bool~ AddFile(string fileId)
+        +Task~bool~ Delete()
+        +AsyncEnumerable~string~ GetFiles()
+        +Task~bool~ RemoveFile(string fileId)
+    }
+
+    OpenAIVectorStoreBuilder ..> VectorStore
+    OpenAIVectorStoreBuilder ..> OpenAIServiceConfiguration
+    class OpenAIVectorStoreBuilder {
+        +OpenAIVectorStoreBuilder(OpenAIServiceConfiguration config)
+        +OpenAIVectorStoreBuilder AddFile(string fileId)
+        +OpenAIVectorStoreBuilder AddFiles(string[] fileIds)
+        +OpenAIVectorStoreBuilder WithChunkingStrategy(int maxTokensPerChunk, int overlappingTokenCount)
+        +OpenAIVectorStoreBuilder WithExpiration(TimeSpan duration)
+        +OpenAIVectorStoreBuilder WithMetadata(string key, string value)
+        +OpenAIVectorStoreBuilder WithMetadata(Dictionary~string, string~ metadata)
+        +OpenAIVectorStoreBuilder WithName(string name)
+        +Task~VectorStore~ Create()
+    }

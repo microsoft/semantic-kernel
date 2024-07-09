@@ -1,4 +1,9 @@
 
+# Agent Framework - Assistant V2 Migration
+
+## Context and Problem Statement
+
+TBD
 
 ## Configuration Classes
 
@@ -40,8 +45,34 @@ TBD
 TBD
 
 <p align="center">
-<kbd><img src="diagrams/assistant-agent.png"  style="min-width: 600pt;"></kbd>
+<kbd><img src="diagrams/assistant-agent.png"  style="width: 600pt;"></kbd>
 </p>
+
+TBD
+
+|Method Name|Description|
+---|---
+Create|TBD
+ListDefinitions|TBD
+Retrieve|TBD
+CreateThread|TBD
+DeleteThread|TBD
+AddChatMessage|TBD
+GetThreadMessages|TBD
+Delete|TBD
+Invoke|TBD
+GetChannelKeys|TBD
+CreateChannel|TBD
+
+
+## Vector Store Support
+
+TBD
+
+<p align="center">
+<kbd><img src="diagrams/assistant-vectorstore.png"  style="width: 600pt;"></kbd>
+</p>
+
 
 ## Class Inventory
 TBD
