@@ -70,6 +70,13 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           cd python
           poetry install --with tests
+      - name: Install Ollama docker
+        run: |
+          docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+          docker exec ollama ollama pull ${{ vars.OLLAMA_MODEL }}
+      - name: Display downloaded Ollama models
+        run: |
+          docker exec ollama ollama list
       - name: Run Integration Tests
         id: run_tests
         shell: bash
@@ -98,6 +105,7 @@ jobs:
           ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
           MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
           MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
+          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }} # phi3
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
@@ -139,6 +147,15 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           cd python && poetry install --with tests
 
+      - name: Install Ollama docker
+        run: |
+          docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+          docker exec ollama ollama pull ${{ vars.OLLAMA_MODEL }}
+
+      - name: Display downloaded Ollama models
+        run: |
+          docker exec ollama ollama list
+
       - name: Run Integration Tests
         id: run_tests
         shell: bash
@@ -167,6 +184,7 @@ jobs:
           ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
           MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
           MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
+          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }} # phi3
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest

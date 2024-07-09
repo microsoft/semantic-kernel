@@ -50,6 +50,13 @@ try:
 except KeyError:
     mistral_ai_setup = False
 
+ollama_setup: bool = False
+try:
+    if os.environ["OLLAMA_MODEL"]:
+        ollama_setup = True
+except KeyError:
+    ollama_setup = False
+
 
 def setup(
     kernel: Kernel,
@@ -469,7 +476,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             ["Hello", "well"],
-            marks=pytest.mark.skip(reason="Need local Ollama setup"),
+            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
         ),
     ],
