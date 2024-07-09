@@ -986,7 +986,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var sut = new OpenAIChatCompletionService("model-id", "api-key", httpClient: this._httpClient);
 
         // Enable ModelDiagnostics
-        using var listener = new ActivityListener() {
+        using var listener = new ActivityListener()
+        {
             ShouldListenTo = (activitySource) => true, //activitySource.Name == typeof(ModelDiagnostics).Namespace!,
             ActivityStarted = (activity) =>
             {

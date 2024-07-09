@@ -1,18 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http;
-using System.Net;
-using System.Text.Json;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using OpenAI.Chat;
-using Xunit;
-using System.IO;
-using OpenAI;
 using System.ClientModel.Primitives;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI;
+using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Core;
 
@@ -61,7 +59,7 @@ public sealed class OpenAIStreamingChatMessageContentTests
             choiceIndex: 0,
             modelId: "testModel",
             toolCallUpdates: [],
-            metadata: new Dictionary<string, object?>() { ["test-index"] = "test-value"});
+            metadata: new Dictionary<string, object?>() { ["test-index"] = "test-value" });
 
         // Assert
         Assert.Equal("test message", content.Content);
