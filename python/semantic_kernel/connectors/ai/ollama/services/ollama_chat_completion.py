@@ -74,7 +74,10 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
         response_object = await AsyncClient(host=self.host).chat(
-            model=self.ai_model_id, messages=prepared_chat_history, options=settings.options, stream=False
+            model=self.ai_model_id,
+            messages=prepared_chat_history,
+            stream=False,
+            **settings.prepare_settings_dict(),
         )
         return [
             ChatMessageContent(
@@ -107,7 +110,10 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
         response_object = await AsyncClient(host=self.host).chat(
-            model=self.ai_model_id, messages=prepared_chat_history, options=settings.options, stream=True
+            model=self.ai_model_id,
+            messages=prepared_chat_history,
+            stream=True,
+            **settings.prepare_settings_dict(),
         )
         async for part in response_object:
             yield [
@@ -137,7 +143,10 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         prepared_chat_history = [{"role": AuthorRole.USER, "content": prompt}]
 
         response_object = await AsyncClient(host=self.host).chat(
-            model=self.ai_model_id, messages=prepared_chat_history, options=settings.options, stream=False
+            model=self.ai_model_id,
+            messages=prepared_chat_history,
+            stream=False,
+            **settings.prepare_settings_dict(),
         )
         return [
             TextContent(
@@ -166,7 +175,10 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         prepared_chat_history = [{"role": AuthorRole.USER, "content": prompt}]
 
         response_object = await AsyncClient(host=self.host).chat(
-            model=self.ai_model_id, messages=prepared_chat_history, options=settings.options, stream=True
+            model=self.ai_model_id,
+            messages=prepared_chat_history,
+            stream=True,
+            **settings.prepare_settings_dict(),
         )
         async for part in response_object:
             yield [

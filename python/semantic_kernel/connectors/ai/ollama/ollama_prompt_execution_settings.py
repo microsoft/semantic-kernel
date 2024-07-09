@@ -6,18 +6,24 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 
 
 class OllamaPromptExecutionSettings(PromptExecutionSettings):
+    """Settings for Ollama prompt execution."""
+
     format: Literal["json"] | None = None
     options: dict[str, Any] | None = None
-    stream: bool = False
 
 
 class OllamaTextPromptExecutionSettings(OllamaPromptExecutionSettings):
-    prompt: str | None = None
-    context: str | None = None
+    """Settings for Ollama text prompt execution."""
+
     system: str | None = None
     template: str | None = None
-    raw: bool = False
+    context: str | None = None
+    raw: bool | None = None
 
 
 class OllamaChatPromptExecutionSettings(OllamaPromptExecutionSettings):
-    messages: list[dict[str, str]] | None = None
+    """Settings for Ollama chat prompt execution."""
+
+
+class OllamaEmbeddingPromptExecutionSettings(OllamaPromptExecutionSettings):
+    """Settings for Ollama embedding prompt execution."""

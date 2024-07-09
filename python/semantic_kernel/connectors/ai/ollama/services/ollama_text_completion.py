@@ -64,7 +64,10 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
         """
         response_object = await AsyncClient(host=self.host).generate(
-            model=self.ai_model_id, prompt=prompt, options=settings.options, stream=False
+            model=self.ai_model_id,
+            prompt=prompt,
+            stream=False,
+            **settings.prepare_settings_dict(),
         )
 
         inner_content = response_object
@@ -89,7 +92,10 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             List[StreamingTextContent]: Completion result.
         """
         response_object = await AsyncClient(host=self.host).generate(
-            model=self.ai_model_id, prompt=prompt, options=settings.options, stream=True
+            model=self.ai_model_id,
+            prompt=prompt,
+            stream=True,
+            **settings.prepare_settings_dict(),
         )
 
         async for part in response_object:

@@ -7,6 +7,7 @@ from typing import Any
 from ollama import AsyncClient
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaEmbeddingPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
@@ -58,9 +59,18 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
 
     @override
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
+        settings: OllamaEmbeddingPromptExecutionSettings = kwargs.get(
+            "settings",
+            OllamaEmbeddingPromptExecutionSettings(),
+        )
+
         result = []
         for text in texts:
-            response_object = await AsyncClient(host=self.host).embeddings(model=self.ai_model_id, prompt=text)
+            response_object = await AsyncClient(host=self.host).embeddings(
+                model=self.ai_model_id,
+                prompt=text,
+                **settings.prepare_settings_dict(),
+            )
             result.append(response_object["embedding"])
 
         return array(result)
