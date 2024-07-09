@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using System.Text.Json;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
@@ -16,11 +17,51 @@ public class LlamaIoService : IBedrockModelIoService<IChatCompletionRequest, ICh
 {
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {
-        throw new NotImplementedException();
+        double? temperature = 0.5; // Llama default
+        double? topP = 0.9; // Llama default
+        int? maxGenLen = 512; // Llama default
+
+        if (executionSettings != null && executionSettings.ExtensionData != null)
+        {
+            executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
+            temperature = temperatureValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("top_p", out var topPValue);
+            topP = topPValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("max_gen_len", out var maxGenLenValue);
+            maxGenLen = maxGenLenValue as int?;
+        }
+
+        var requestBody = new LlamaTextRequest.LlamaTextGenerationRequest
+        {
+            Prompt = prompt,
+            Temperature = temperature,
+            TopP = topP,
+            MaxGenLen = maxGenLen
+        };
+
+        return requestBody;
     }
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
-        throw new NotImplementedException();
+        using (var memoryStream = new MemoryStream())
+        {
+            response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
+            memoryStream.Position = 0;
+            using (var reader = new StreamReader(memoryStream))
+            {
+                var responseBody = JsonSerializer.Deserialize<LlamaTextResponse>(reader.ReadToEnd());
+                var textContents = new List<TextContent>();
+
+                if (!string.IsNullOrEmpty(responseBody?.Generation))
+                {
+                    textContents.Add(new TextContent(responseBody.Generation));
+                }
+
+                return textContents;
+            }
+        }
     }
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
