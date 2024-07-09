@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 using OpenAI;
@@ -143,5 +146,46 @@ public class KernelBuilderExtensionsTests
         // Act
         var service = sut.AddOpenAIFiles("key").Build()
             .GetRequiredService<OpenAIFileService>();
+    }
+
+    #region Chat completion
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
+    public void KernelBuilderAddOpenAIChatCompletionAddsValidService(InitializationType type)
+    {
+        // Arrange
+        var client = new OpenAIClient("key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton(client);
+
+        // Act
+        builder = type switch
+        {
+            InitializationType.ApiKey => builder.AddOpenAIChatCompletion("model-id", "api-key"),
+            InitializationType.OpenAIClientInline => builder.AddOpenAIChatCompletion("model-id", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddOpenAIChatCompletion("model-id"),
+            _ => builder
+        };
+
+        // Assert
+        var chatCompletionService = builder.Build().GetRequiredService<IChatCompletionService>();
+        Assert.True(chatCompletionService is OpenAIChatCompletionService);
+
+        var textGenerationService = builder.Build().GetRequiredService<ITextGenerationService>();
+        Assert.True(textGenerationService is OpenAIChatCompletionService);
+    }
+
+    #endregion
+
+    public enum InitializationType
+    {
+        ApiKey,
+        OpenAIClientInline,
+        OpenAIClientInServiceProvider,
+        OpenAIClientEndpoint,
     }
 }

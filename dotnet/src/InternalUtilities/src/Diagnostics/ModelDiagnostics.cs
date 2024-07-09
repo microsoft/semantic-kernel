@@ -131,6 +131,8 @@ internal static class ModelDiagnostics
     /// </summary>
     public static bool IsSensitiveEventsEnabled() => s_enableSensitiveEvents && s_activitySource.HasListeners();
 
+    internal static bool HasListeners() => s_activitySource.HasListeners();
+
     #region Private
     private static void AddOptionalTags<TPromptExecutionSettings>(Activity? activity, TPromptExecutionSettings? executionSettings)
         where TPromptExecutionSettings : PromptExecutionSettings

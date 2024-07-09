@@ -222,6 +222,24 @@ internal partial class ClientCore
         }
     }
 
+    /// <summary>
+    /// Invokes the specified request and handles exceptions.
+    /// </summary>
+    /// <typeparam name="T">Type of the response.</typeparam>
+    /// <param name="request">Request to invoke.</param>
+    /// <returns>Returns the response.</returns>
+    private static T RunRequest<T>(Func<T> request)
+    {
+        try
+        {
+            return request.Invoke();
+        }
+        catch (ClientResultException e)
+        {
+            throw e.ToHttpOperationException();
+        }
+    }
+
     private static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
     {
         return new GenericActionPipelinePolicy((message) =>
