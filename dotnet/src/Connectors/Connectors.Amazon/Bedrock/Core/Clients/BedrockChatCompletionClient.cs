@@ -15,6 +15,7 @@ using Connectors.Amazon.Models;
 using Connectors.Amazon.Models.AI21;
 using Connectors.Amazon.Models.Amazon;
 using Connectors.Amazon.Models.Anthropic;
+using Connectors.Amazon.Models.Cohere;
 using Connectors.Amazon.Models.Mistral;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -52,6 +53,9 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                 break;
             case "ai21":
                 this._ioService = new AI21IoService();
+                break;
+            case "cohere":
+                this._ioService = new CohereIoService();
                 break;
             default:
                 throw new ArgumentException($"Unsupported model provider: {modelProvider}");
