@@ -345,7 +345,7 @@ async def test_cmc_run_out_of_auto_invoke_loop(
         kernel=kernel,
         arguments=KernelArguments(),
     )
-    # call count is the default number of auto_invoke attemps, plus the final completion
+    # call count is the default number of auto_invoke attempts, plus the final completion
     # when there has not been a answer.
     mock_create.call_count == 6
 
@@ -641,7 +641,7 @@ async def test_scmc_run_out_of_auto_invoke_loop(
             arguments=KernelArguments(),
         )
     ]
-    # call count is the default number of auto_invoke attemps, plus the final completion
+    # call count is the default number of auto_invoke attempts, plus the final completion
     # when there has not been a answer.
     mock_create.call_count == 6
 
