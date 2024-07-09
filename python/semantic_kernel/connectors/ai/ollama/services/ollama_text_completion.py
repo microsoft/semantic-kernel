@@ -1,8 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncGenerator
+import sys
+from collections.abc import AsyncGenerator, AsyncIterator, Mapping
 from typing import Any
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from ollama import AsyncClient
 from pydantic import ValidationError
@@ -10,6 +16,7 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -61,7 +68,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
     async def get_text_contents(
         self,
         prompt: str,
-        settings: OllamaTextPromptExecutionSettings,
+        settings: PromptExecutionSettings,
     ) -> list[TextContent]:
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -72,6 +79,9 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         Returns:
             List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
         """
+        settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OllamaTextPromptExecutionSettings)  # nosec
+
         response_object = await AsyncClient(host=self.host).generate(
             model=self.ai_model_id,
             prompt=prompt,
@@ -79,6 +89,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             **settings.prepare_settings_dict(),
         )
 
+        assert isinstance(response_object, Mapping)  # nosec
         inner_content = response_object
         text = inner_content["response"]
         return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
@@ -86,7 +97,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
     async def get_streaming_text_contents(
         self,
         prompt: str,
-        settings: OllamaTextPromptExecutionSettings,
+        settings: PromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """Streams a text completion using an Ollama model.
 
@@ -100,6 +111,9 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
         Yields:
             List[StreamingTextContent]: Completion result.
         """
+        settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, OllamaTextPromptExecutionSettings)  # nosec
+
         response_object = await AsyncClient(host=self.host).generate(
             model=self.ai_model_id,
             prompt=prompt,
@@ -107,6 +121,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             **settings.prepare_settings_dict(),
         )
 
+        assert isinstance(response_object, AsyncIterator)  # nosec
         async for part in response_object:
             yield [
                 StreamingTextContent(
@@ -114,6 +129,7 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
                 )
             ]
 
-    def get_prompt_execution_settings_class(self) -> "OllamaTextPromptExecutionSettings":
+    @override
+    def get_prompt_execution_settings_class(self) -> type[PromptExecutionSettings]:
         """Get the request settings class."""
         return OllamaTextPromptExecutionSettings
