@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
 using Azure;
 using Azure.AI.OpenAI;
@@ -510,6 +511,64 @@ public static class AzureOpenAIKernelBuilderExtensions
             new(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
+
+        return builder;
+    }
+
+    #endregion
+
+    #region Files
+
+    /// <summary>
+    /// Adds the <see cref="AzureOpenAIFileService"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAIFiles(
+        this IKernelBuilder builder,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        builder.Services.AddKeyedSingleton(serviceId, (serviceProvider, _) =>
+            new AzureOpenAIFileService(
+                new Uri(endpoint),
+                apiKey,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the <see cref="AzureOpenAIFileService"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="openAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAIFiles(
+        this IKernelBuilder builder,
+        AzureOpenAIClient? openAIClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddKeyedSingleton(serviceId, (serviceProvider, _) =>
+            new AzureOpenAIFileService(
+                openAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
+                serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
     }

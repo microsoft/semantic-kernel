@@ -29,7 +29,7 @@ public sealed class AzureOpenAIFileReference
     /// <summary>
     /// Describes the associated purpose of the file.
     /// </summary>
-    public OpenAIFilePurpose Purpose { get; set; }
+    public AzureOpenAIFilePurpose Purpose { get; set; }
 
     /// <summary>
     /// The file size, in bytes.

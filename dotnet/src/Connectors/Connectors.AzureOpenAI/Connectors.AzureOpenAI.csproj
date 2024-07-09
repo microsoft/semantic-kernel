@@ -22,23 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Core\ClientCore.File.cs" />
-    <Compile Remove="Model\AzureOpenAIFilePurpose.cs" />
-    <Compile Remove="Model\AzureOpenAIFileReference.cs" />
-    <Compile Remove="Services\AzureOpenAIFileService.cs" />
-    <Compile Remove="Settings\AzureOpenAIFileUploadExecutionSettings.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureOpenAI.UnitTests" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Core\ClientCore.File.cs" />
-    <None Include="Model\AzureOpenAIFilePurpose.cs" />
-    <None Include="Model\AzureOpenAIFileReference.cs" />
-    <None Include="Services\AzureOpenAIFileService.cs" />
-    <None Include="Settings\AzureOpenAIFileUploadExecutionSettings.cs" />
   </ItemGroup>
 
   <ItemGroup>

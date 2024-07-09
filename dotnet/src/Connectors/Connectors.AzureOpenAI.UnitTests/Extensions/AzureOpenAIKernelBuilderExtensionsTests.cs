@@ -178,6 +178,35 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
 
     #endregion
 
+    #region Files
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
+    public void KernelBuilderAddAzureOpenAIFileService(InitializationType type)
+    {
+        // Arrange
+        var client = new AzureOpenAIClient(new Uri("https://endpoint"), "key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<AzureOpenAIClient>(client);
+
+        // Act
+        builder = type switch
+        {
+            InitializationType.ApiKey => builder.AddAzureOpenAIFiles("https://endpoint", "api-key"),
+            InitializationType.ClientInline => builder.AddAzureOpenAIFiles(client),
+            InitializationType.ClientInServiceProvider => builder.AddAzureOpenAIFiles(),
+            _ => builder
+        };
+
+        // Assert
+        var _ = builder.Build().GetRequiredService<AzureOpenAIFileService>();
+    }
+
+    #endregion
+
     public enum InitializationType
     {
         ApiKey,

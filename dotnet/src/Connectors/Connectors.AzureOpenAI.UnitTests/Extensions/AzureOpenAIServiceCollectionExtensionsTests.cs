@@ -178,6 +178,35 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests
 
     #endregion
 
+    #region File
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
+    public void ServiceCollectionAddAzureOpenAIFileService(InitializationType type)
+    {
+        // Arrange
+        var client = new AzureOpenAIClient(new Uri("https://endpoint"), "key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<AzureOpenAIClient>(client);
+
+        // Act
+        IServiceCollection collection = type switch
+        {
+            InitializationType.ApiKey => builder.Services.AddAzureOpenAIFiles("https://endpoint", "api-key"),
+            InitializationType.ClientInline => builder.Services.AddAzureOpenAIFiles(client),
+            InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAIFiles(),
+            _ => builder.Services
+        };
+
+        // Assert
+        var _ = builder.Build().GetRequiredService<AzureOpenAIFileService>();
+    }
+
+    #endregion
+
     public enum InitializationType
     {
         ApiKey,

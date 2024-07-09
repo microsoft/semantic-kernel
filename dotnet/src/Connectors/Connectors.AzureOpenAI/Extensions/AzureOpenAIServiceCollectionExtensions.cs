@@ -488,6 +488,62 @@ public static class AzureOpenAIServiceCollectionExtensions
 
     #endregion
 
+    #region Files
+
+    /// <summary>
+    /// Adds the <see cref="AzureOpenAIFileService"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAIFiles(
+        this IServiceCollection services,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        services.AddKeyedSingleton(serviceId, (serviceProvider, _) =>
+            new AzureOpenAIFileService(
+                new Uri(endpoint),
+                apiKey,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the <see cref="AzureOpenAIFileService"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="openAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAIFiles(
+        this IServiceCollection services,
+        AzureOpenAIClient? openAIClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+
+        services.AddKeyedSingleton(serviceId, (serviceProvider, _) =>
+            new AzureOpenAIFileService(
+                openAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
+                serviceProvider.GetService<ILoggerFactory>()));
+
+        return services;
+    }
+
+    #endregion
+
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
         new(new Uri(endpoint), credentials, ClientCore.GetAzureOpenAIClientOptions(httpClient));
 
