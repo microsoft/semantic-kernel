@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using OpenAI.Chat;
@@ -94,6 +95,7 @@ public abstract class ToolCallBehavior
     /// Options to control tool call result serialization behavior.
     /// </summary>
     [Obsolete("This property is deprecated in favor of Kernel.SerializerOptions that will be introduced in one of the following releases.")]
+    [ExcludeFromCodeCoverage]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public virtual JsonSerializerOptions? ToolCallResultSerializerOptions { get; set; }
 

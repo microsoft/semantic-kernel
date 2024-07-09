@@ -24,6 +24,7 @@ public sealed class ToolCallBehaviorTests
         // Assert
         Assert.IsType<KernelFunctions>(behavior);
         Assert.Equal(0, behavior.MaximumAutoInvokeAttempts);
+        Assert.Equal($"{nameof(KernelFunctions)}(autoInvoke:{behavior.MaximumAutoInvokeAttempts != 0})", behavior.ToString());
     }
 
     [Fact]
@@ -47,6 +48,7 @@ public sealed class ToolCallBehaviorTests
 
         // Assert
         Assert.IsType<EnabledFunctions>(behavior);
+        Assert.Contains($"{nameof(EnabledFunctions)}(autoInvoke:{behavior.MaximumAutoInvokeAttempts != 0})", behavior.ToString());
     }
 
     [Fact]
@@ -57,6 +59,7 @@ public sealed class ToolCallBehaviorTests
 
         // Assert
         Assert.IsType<RequiredFunction>(behavior);
+        Assert.Contains($"{nameof(RequiredFunction)}(autoInvoke:{behavior.MaximumAutoInvokeAttempts != 0})", behavior.ToString());
     }
 
     [Fact]

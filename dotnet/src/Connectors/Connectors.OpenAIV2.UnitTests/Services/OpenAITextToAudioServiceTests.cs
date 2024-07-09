@@ -43,6 +43,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         // Assert
         Assert.NotNull(service);
         Assert.Equal("model-id", service.Attributes["ModelId"]);
+        Assert.Equal("Organization", OpenAITextToAudioService.OrganizationKey);
     }
 
     [Fact]

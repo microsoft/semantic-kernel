@@ -58,6 +58,7 @@ public class OpenAIPromptExecutionSettingsTests
         // Assert
         Assert.NotNull(executionSettings);
         Assert.Equal(actualSettings, executionSettings);
+        Assert.Equal(256, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
     }
 
     [Fact]

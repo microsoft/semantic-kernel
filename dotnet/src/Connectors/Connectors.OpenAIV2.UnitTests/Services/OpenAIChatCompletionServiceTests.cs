@@ -80,9 +80,34 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     [InlineData("http://localhost:1234", "http://localhost:1234/v1/chat/completions")]
     [InlineData("http://localhost:8080", "http://localhost:8080/v1/chat/completions")]
     [InlineData("https://something:8080", "https://something:8080/v1/chat/completions")] // Accepts TLS Secured endpoints
-    public async Task ItUsesCustomEndpointsWhenProvidedAsync(string endpointProvided, string expectedEndpoint)
+    [InlineData("http://localhost:1234/v2", "http://localhost:1234/v2/chat/completions")]
+    [InlineData("http://localhost:8080/v2", "http://localhost:8080/v2/chat/completions")]
+    public async Task ItUsesCustomEndpointsWhenProvidedDirectlyAsync(string endpointProvided, string expectedEndpoint)
     {
         // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: null, httpClient: this._httpClient, endpoint: new Uri(endpointProvided));
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(this._chatHistoryForTest, this._executionSettings);
+
+        // Assert
+        Assert.Equal(expectedEndpoint, this._messageHandlerStub.RequestUri!.ToString());
+    }
+
+    [Theory]
+    [InlineData("http://localhost:1234/chat/completions", "http://localhost:1234/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234/v2/chat/completions", "http://localhost:1234/v2/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234", "http://localhost:1234/v1/chat/completions")]
+    [InlineData("http://localhost:8080", "http://localhost:8080/v1/chat/completions")]
+    [InlineData("https://something:8080", "https://something:8080/v1/chat/completions")] // Accepts TLS Secured endpoints
+    [InlineData("http://localhost:1234/v2", "http://localhost:1234/v2/chat/completions")]
+    [InlineData("http://localhost:8080/v2", "http://localhost:8080/v2/chat/completions")]
+    public async Task ItUsesCustomEndpointsWhenProvidedAsBaseAddressAsync(string endpointProvided, string expectedEndpoint)
+    {
+        // Arrange
+        this._httpClient.BaseAddress = new Uri(endpointProvided);
         var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: null, httpClient: this._httpClient, endpoint: new Uri(endpointProvided));
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
@@ -807,6 +832,102 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
         logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
         logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsLogsAsExpected()
+    {
+        // Assert
+        var modelId = "gpt-4o";
+        var logger = new Mock<ILogger<OpenAIChatCompletionService>>();
+        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+
+        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
+
+        // Act
+        await sut.GetChatMessageContentsAsync(this._chatHistoryForTest);
+
+        // Arrange
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+    }
+
+    [Fact]
+    public async Task GetStreamingChatMessageContentsLogsAsExpected()
+    {
+        // Assert
+        var modelId = "gpt-4o";
+        var logger = new Mock<ILogger<OpenAIChatCompletionService>>();
+        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+
+        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt"))
+        };
+
+        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
+
+        // Act
+        await sut.GetStreamingChatMessageContentsAsync(this._chatHistoryForTest).GetAsyncEnumerator().MoveNextAsync();
+
+        // Arrange
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+    }
+
+    [Fact]
+    public async Task GetTextContentsLogsAsExpected()
+    {
+        // Assert
+        var modelId = "gpt-4o";
+        var logger = new Mock<ILogger<OpenAIChatCompletionService>>();
+        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+
+        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
+        };
+
+        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
+
+        // Act
+        await sut.GetTextContentAsync("test");
+
+        // Arrange
+        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+    }
+
+    [Fact]
+    public async Task GetStreamingTextContentsLogsAsExpected()
+    {
+        // Assert
+        var modelId = "gpt-4o";
+        var logger = new Mock<ILogger<OpenAIChatCompletionService>>();
+        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+
+        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt"))
+        };
+
+        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
+
+        // Act
+        await sut.GetStreamingTextContentsAsync("test").GetAsyncEnumerator().MoveNextAsync();
+
+        // Arrange
         logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
     }
 
