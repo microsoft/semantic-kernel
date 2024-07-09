@@ -523,20 +523,20 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// Adds the <see cref="AzureOpenAIFileService"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="openAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="azureOpenAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIFiles(
         this IServiceCollection services,
-        AzureOpenAIClient? openAIClient = null,
+        AzureOpenAIClient? azureOpenAIClient = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
 
         services.AddKeyedSingleton(serviceId, (serviceProvider, _) =>
             new AzureOpenAIFileService(
-                openAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
+                azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
                 serviceProvider.GetService<ILoggerFactory>()));
 
         return services;

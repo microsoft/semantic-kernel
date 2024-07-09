@@ -554,20 +554,20 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// Adds the <see cref="AzureOpenAIFileService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
-    /// <param name="openAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="azureOpenAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIFiles(
         this IKernelBuilder builder,
-        AzureOpenAIClient? openAIClient = null,
+        AzureOpenAIClient? azureOpenAIClient = null,
         string? serviceId = null)
     {
         Verify.NotNull(builder);
 
         builder.Services.AddKeyedSingleton(serviceId, (serviceProvider, _) =>
             new AzureOpenAIFileService(
-                openAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
+                azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
                 serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;

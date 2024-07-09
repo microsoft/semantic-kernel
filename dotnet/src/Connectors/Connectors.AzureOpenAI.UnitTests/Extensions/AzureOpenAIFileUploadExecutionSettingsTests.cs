@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
-namespace SemanticKernel.Connectors.OpenAI.UnitTests.Extensions;
+namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 
 public class AzureOpenAIFileUploadExecutionSettingsTests
 {

@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Moq;
 
-namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
+namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAIFileService"/> class.
@@ -44,7 +44,7 @@ public sealed class AzureOpenAIFileServiceTests : IDisposable
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ConstructorWithOpenAIClientWorksCorrectly(bool includeLoggerFactory)
+    public void ConstructorWithAzureOpenAIClientWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
         var client = new AzureOpenAIClient(new Uri("http://host"), "key");
