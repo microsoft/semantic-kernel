@@ -1,5 +1,7 @@
 
 
+## Configuration Classes
+
 ### Service Configuration
 
 TBD
@@ -13,7 +15,7 @@ TBD
 TBD
 
 <p align="center">
-<kbd><img src="diagrams/assistant-definition.png"  style="width: 360pt; margin-left: 48pt; border: 3 solid red;"></kbd>
+<kbd><img src="diagrams/assistant-definition.png"  style="width: 360pt;"></kbd>
 </p>
 
 ### Assistant Invocation Settings
@@ -21,7 +23,7 @@ TBD
 TBD
 
 <p align="center">
-<kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 220pt; margin-left: 48pt; border: 3pt solid black"></kbd>
+<kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 220pt;"></kbd>
 </p>
 
 
@@ -30,7 +32,27 @@ TBD
 TBD
 
 <p align="center">
-<kbd><img src="diagrams/assistant-threadcreationsettings.png" style="width: 120pt; margin-left: 48pt; border: 3pt solid black"></kbd>
+<kbd><img src="diagrams/assistant-threadcreationsettings.png" style="width: 120pt;"></kbd>
 </p>
 
+## Agent Implementation
 
+TBD
+
+<p align="center">
+<kbd><img src="diagrams/assistant-agent.png"  style="min-width: 600pt;"></kbd>
+</p>
+
+## Class Inventory
+TBD
+
+|Class Name|Description|
+---|---
+OpenAIAssistantAgent|TBD
+OpenAIAssistantChannel|TBD
+OpenAIAssistantDefinition|TBD
+OpenAIAssistantExecutionSettings|TBD
+OpenAIAssistantInvocationSettings|TBD
+OpenAIServiceConfiguration|TBD
+OpenAIVectorStore|TBD
+OpenAIVectorStoreBuilder|TBD
