@@ -47,7 +47,7 @@ TBD
 TBD
 
 <p align="center">
-<kbd><img src="diagrams/assistant-agent.png"  style="width: 640pt;"></kbd>
+<kbd><img src="diagrams/assistant-agent.png"  style="width: 720pt;"></kbd>
 </p>
 
 TBD
@@ -72,7 +72,7 @@ CreateChannel|TBD
 TBD
 
 <p align="center">
-<kbd><img src="diagrams/assistant-vectorstore.png"  style="width: 640pt;"></kbd>
+<kbd><img src="diagrams/assistant-vectorstore.png"  style="width: 720pt;"></kbd>
 </p>
 
 
