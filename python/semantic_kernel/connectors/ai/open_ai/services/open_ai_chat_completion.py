@@ -57,8 +57,13 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             )
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
-        if not openai_settings.chat_model_id:
-            raise ServiceInitializationError("The OpenAI chat model ID is required.")
+
+        if not async_client:
+            if not openai_settings.api_key:
+                raise ServiceInitializationError("The OpenAI API key is required.")
+            if not openai_settings.chat_model_id:
+                raise ServiceInitializationError("The OpenAI chat model ID is required.")
+
         super().__init__(
             ai_model_id=openai_settings.chat_model_id,
             api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,

@@ -132,7 +132,6 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public IList<IFunctionInvocationFilter> FunctionInvocationFilters =>
         this._functionInvocationFilters ??
         Interlocked.CompareExchange(ref this._functionInvocationFilters, [], null) ??
@@ -141,7 +140,6 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public IList<IPromptRenderFilter> PromptRenderFilters =>
         this._promptRenderFilters ??
         Interlocked.CompareExchange(ref this._promptRenderFilters, [], null) ??
@@ -309,7 +307,6 @@ public sealed class Kernel
         }
     }
 
-    [Experimental("SKEXP0001")]
     internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
         KernelFunction function,
         KernelArguments arguments,
@@ -351,7 +348,6 @@ public sealed class Kernel
         }
     }
 
-    [Experimental("SKEXP0001")]
     internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,
