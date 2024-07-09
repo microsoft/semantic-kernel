@@ -3,11 +3,12 @@
 import logging
 import urllib
 
-import aiohttp
+from httpx import AsyncClient, HTTPStatusError, RequestError
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
-from semantic_kernel.exceptions import ServiceInvalidRequestError
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -35,12 +36,15 @@ class BingConnector(ConnectorBase):
                 the settings are read from this file path location.
             env_file_encoding (str | None): The optional encoding of the .env file.
         """
-        self._settings = BingSettings.create(
-            api_key=api_key,
-            custom_config=custom_config,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
+        try:
+            self._settings = BingSettings.create(
+                api_key=api_key,
+                custom_config=custom_config,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError("Failed to create Bing settings.") from ex
 
     async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
         """Returns the search results of the query provided by pinging the Bing web search API."""
@@ -60,38 +64,33 @@ class BingConnector(ConnectorBase):
                 params:\nquery: {query}\nnum_results: {num_results}\noffset: {offset}"
         )
 
-        _base_url = (
+        base_url = (
             "https://api.bing.microsoft.com/v7.0/custom/search"
             if self._settings.custom_config
             else "https://api.bing.microsoft.com/v7.0/search"
         )
-        _request_url = (
-            f"{_base_url}?q={urllib.parse.quote_plus(query)}&count={num_results}&offset={offset}"
-            + (
-                f"&customConfig={self._settings.custom_config}"
-                if self._settings.custom_config
-                else ""
-            )
+        request_url = f"{base_url}?q={urllib.parse.quote_plus(query)}&count={num_results}&offset={offset}" + (
+            f"&customConfig={self._settings.custom_config}" if self._settings.custom_config else ""
         )
 
-        logger.info(f"Sending GET request to {_request_url}")
+        logger.info(f"Sending GET request to {request_url}")
 
-        headers = {"Ocp-Apim-Subscription-Key": self._settings.api_key.get_secret_value()}
+        if self._settings.api_key is not None:
+            headers = {"Ocp-Apim-Subscription-Key": self._settings.api_key.get_secret_value()}
 
         try:
-            async with aiohttp.ClientSession() as session, session.get(_request_url, headers=headers) as response:
+            async with AsyncClient() as client:
+                response = await client.get(request_url, headers=headers)
                 response.raise_for_status()
-                if response.status == 200:
-                    data = await response.json()
-                    pages = data.get("webPages", {}).get("value")
-                    if pages:
-                        return list(map(lambda x: x["snippet"], pages)) or []
-                    return None
+                data = response.json()
+                pages = data.get("webPages", {}).get("value")
+                if pages:
+                    return [page["snippet"] for page in pages]
                 return []
-        except aiohttp.ClientResponseError as ex:
+        except HTTPStatusError as ex:
             logger.error(f"Failed to get search results: {ex}")
             raise ServiceInvalidRequestError("Failed to get search results.") from ex
-        except aiohttp.ClientError as ex:
+        except RequestError as ex:
             logger.error(f"Client error occurred: {ex}")
             raise ServiceInvalidRequestError("A client error occurred while getting search results.") from ex
         except Exception as ex:
