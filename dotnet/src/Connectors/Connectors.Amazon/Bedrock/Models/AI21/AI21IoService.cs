@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
@@ -15,12 +16,87 @@ public class AI21IoService : IBedrockModelIoService<IChatCompletionRequest, ICha
 {
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {
-        throw new NotImplementedException();
+        List<AI21Request.Msg> messages = new List<AI21Request.Msg>
+        {
+            new AI21Request.Msg
+            {
+                Role = "user",
+                Content = prompt
+            }
+        };
+
+        double? temperature = 1.0; // AI21 default
+        double? topP = 0.9; // AI21 default
+        int? maxTokens = 4096; // AI21 default
+        List<string>? stop = null;
+        int? numberOfResponses = 1; // AI21 default
+        double? frequencyPenalty = null;
+        double? presencePenalty = null;
+
+        if (executionSettings != null && executionSettings.ExtensionData != null)
+        {
+            executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
+            temperature = temperatureValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("top_p", out var topPValue);
+            topP = topPValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("max_tokens", out var maxTokensValue);
+            maxTokens = maxTokensValue as int?;
+
+            executionSettings.ExtensionData.TryGetValue("stop", out var stopValue);
+            stop = stopValue as List<string>;
+
+            executionSettings.ExtensionData.TryGetValue("n", out var numberOfResponsesValue);
+            numberOfResponses = numberOfResponsesValue as int?;
+
+            executionSettings.ExtensionData.TryGetValue("frequency_penalty", out var frequencyPenaltyValue);
+            frequencyPenalty = frequencyPenaltyValue as double?;
+
+            executionSettings.ExtensionData.TryGetValue("presence_penalty", out var presencePenaltyValue);
+            presencePenalty = presencePenaltyValue as double?;
+        }
+
+        var requestBody = new AI21Request.AI21TextGenerationRequest
+        {
+            Messages = messages,
+            Temperature = temperature,
+            TopP = topP,
+            MaxTokens = maxTokens,
+            Stop = stop,
+            NumberOfResponses = numberOfResponses,
+            FrequencyPenalty = frequencyPenalty,
+            PresencePenalty = presencePenalty
+        };
+
+        return requestBody;
     }
 
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
-        throw new NotImplementedException();
+        using (var memoryStream = new MemoryStream())
+        {
+            response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
+            memoryStream.Position = 0;
+            using (var reader = new StreamReader(memoryStream))
+            {
+                var responseBody = JsonSerializer.Deserialize<AI21Response.AI21TextResponse>(reader.ReadToEnd());
+                var textContents = new List<TextContent>();
+
+                if (responseBody?.Choices != null && responseBody.Choices.Count > 0)
+                {
+                    foreach (var choice in responseBody.Choices)
+                    {
+                        if (choice.Message != null)
+                        {
+                            textContents.Add(new TextContent(choice.Message.Content));
+                        }
+                    }
+                }
+
+                return textContents;
+            }
+        }
     }
 
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
