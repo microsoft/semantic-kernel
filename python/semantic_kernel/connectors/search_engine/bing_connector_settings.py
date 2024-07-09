@@ -23,5 +23,5 @@ class BingSettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "BING_"
 
-    api_key: SecretStr | None = None
+    api_key: SecretStr
     custom_config: str | None = None
