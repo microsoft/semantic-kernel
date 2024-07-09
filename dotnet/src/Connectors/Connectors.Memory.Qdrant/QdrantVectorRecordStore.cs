@@ -32,6 +32,9 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
     private readonly MockableQdrantClient _qdrantClient;
 
+    /// <summary>The name of the collection that this <see cref="QdrantVectorRecordStore{TRecord}"/> will access.</summary>
+    private readonly string _collectionName;
+
     /// <summary>Optional configuration options for this class.</summary>
     private readonly QdrantVectorRecordStoreOptions<TRecord> _options;
 
@@ -42,11 +45,12 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     /// Initializes a new instance of the <see cref="QdrantVectorRecordStore{TRecord}"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorRecordStore{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    public QdrantVectorRecordStore(QdrantClient qdrantClient, QdrantVectorRecordStoreOptions<TRecord>? options = null)
-        : this(new MockableQdrantClient(qdrantClient), options)
+    public QdrantVectorRecordStore(QdrantClient qdrantClient, string collectionName, QdrantVectorRecordStoreOptions<TRecord>? options = null)
+        : this(new MockableQdrantClient(qdrantClient), collectionName, options)
     {
     }
 
@@ -54,16 +58,19 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     /// Initializes a new instance of the <see cref="QdrantVectorRecordStore{TRecord}"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorRecordStore{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    internal QdrantVectorRecordStore(MockableQdrantClient qdrantClient, QdrantVectorRecordStoreOptions<TRecord>? options = null)
+    internal QdrantVectorRecordStore(MockableQdrantClient qdrantClient, string collectionName, QdrantVectorRecordStoreOptions<TRecord>? options = null)
     {
         // Verify.
         Verify.NotNull(qdrantClient);
+        Verify.NotNullOrWhiteSpace(collectionName);
 
         // Assign.
         this._qdrantClient = qdrantClient;
+        this._collectionName = collectionName;
         this._options = options ?? new QdrantVectorRecordStoreOptions<TRecord>();
 
         // Assign Mapper.
@@ -123,12 +130,10 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     {
         Verify.NotNull(key);
 
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-        return RunOperationAsync(
-            collectionName,
+        return this.RunOperationAsync(
             DeleteName,
             () => this._qdrantClient.DeleteAsync(
-                collectionName,
+                this._collectionName,
                 key,
                 wait: true,
                 cancellationToken: cancellationToken));
@@ -139,12 +144,10 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     {
         Verify.NotNull(key);
 
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-        return RunOperationAsync(
-            collectionName,
+        return this.RunOperationAsync(
             DeleteName,
             () => this._qdrantClient.DeleteAsync(
-                collectionName,
+                this._collectionName,
                 key,
                 wait: true,
                 cancellationToken: cancellationToken));
@@ -155,12 +158,10 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     {
         Verify.NotNull(keys);
 
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-        return RunOperationAsync(
-            collectionName,
+        return this.RunOperationAsync(
             DeleteName,
             () => this._qdrantClient.DeleteAsync(
-                collectionName,
+                this._collectionName,
                 keys.ToList(),
                 wait: true,
                 cancellationToken: cancellationToken));
@@ -171,12 +172,10 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     {
         Verify.NotNull(keys);
 
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-        return RunOperationAsync(
-            collectionName,
+        return this.RunOperationAsync(
             DeleteName,
             () => this._qdrantClient.DeleteAsync(
-                collectionName,
+                this._collectionName,
                 keys.ToList(),
                 wait: true,
                 cancellationToken: cancellationToken));
@@ -187,21 +186,17 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     {
         Verify.NotNull(record);
 
-        // Create options.
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-
         // Create point from record.
         var pointStruct = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
-            collectionName,
+            this._collectionName,
             UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
 
         // Upsert.
-        await RunOperationAsync(
-            collectionName,
+        await this.RunOperationAsync(
             UpsertName,
-            () => this._qdrantClient.UpsertAsync(collectionName, [pointStruct], true, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this._qdrantClient.UpsertAsync(this._collectionName, [pointStruct], true, cancellationToken: cancellationToken)).ConfigureAwait(false);
         return pointStruct.Id.Num;
     }
 
@@ -210,21 +205,17 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     {
         Verify.NotNull(record);
 
-        // Create options.
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-
         // Create point from record.
         var pointStruct = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
-            collectionName,
+            this._collectionName,
             UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
 
         // Upsert.
-        await RunOperationAsync(
-            collectionName,
+        await this.RunOperationAsync(
             UpsertName,
-            () => this._qdrantClient.UpsertAsync(collectionName, [pointStruct], true, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this._qdrantClient.UpsertAsync(this._collectionName, [pointStruct], true, cancellationToken: cancellationToken)).ConfigureAwait(false);
         return Guid.Parse(pointStruct.Id.Uuid);
     }
 
@@ -233,21 +224,17 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     {
         Verify.NotNull(records);
 
-        // Create Options
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
-            collectionName,
+            this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
 
         // Upsert.
-        await RunOperationAsync(
-            collectionName,
+        await this.RunOperationAsync(
             UpsertName,
-            () => this._qdrantClient.UpsertAsync(collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this._qdrantClient.UpsertAsync(this._collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         foreach (var pointStruct in pointStructs)
         {
@@ -260,21 +247,17 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     {
         Verify.NotNull(records);
 
-        // Create Options
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
-            collectionName,
+            this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
 
         // Upsert.
-        await RunOperationAsync(
-            collectionName,
+        await this.RunOperationAsync(
             UpsertName,
-            () => this._qdrantClient.UpsertAsync(collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this._qdrantClient.UpsertAsync(this._collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         foreach (var pointStruct in pointStructs)
         {
@@ -300,15 +283,13 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         Verify.NotNull(keys);
 
         // Create options.
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
         var pointsIds = keys.Select(key => keyConverter(key)).ToArray();
         var includeVectors = options?.IncludeVectors ?? false;
 
         // Retrieve data points.
-        var retrievedPoints = await RunOperationAsync(
-            collectionName,
+        var retrievedPoints = await this.RunOperationAsync(
             OperationName,
-            () => this._qdrantClient.RetrieveAsync(collectionName, pointsIds, true, includeVectors, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this._qdrantClient.RetrieveAsync(this._collectionName, pointsIds, true, includeVectors, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         // Convert the retrieved points to the target data model.
         foreach (var retrievedPoint in retrievedPoints)
@@ -327,40 +308,20 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
 
             yield return VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
-                collectionName,
+                this._collectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
         }
     }
 
     /// <summary>
-    /// Choose the right collection name to use for the operation by using the one provided
-    /// as part of the operation options, or the default one provided at construction time.
-    /// </summary>
-    /// <param name="operationCollectionName">The collection name provided on the operation options.</param>
-    /// <returns>The collection name to use.</returns>
-    private string ChooseCollectionName(string? operationCollectionName)
-    {
-        var collectionName = operationCollectionName ?? this._options.DefaultCollectionName;
-        if (collectionName is null)
-        {
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly
-            throw new ArgumentException("Collection name must be provided in the operation options, since no default was provided at construction time.", "options");
-#pragma warning restore CA2208 // Instantiate argument exceptions correctly
-        }
-
-        return collectionName;
-    }
-
-    /// <summary>
     /// Run the given operation and wrap any <see cref="RpcException"/> with <see cref="VectorStoreOperationException"/>."/>
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
-    /// <param name="collectionName">The name of the collection the operation is being run on.</param>
     /// <param name="operationName">The type of database operation being run.</param>
     /// <param name="operation">The operation to run.</param>
     /// <returns>The result of the operation.</returns>
-    private static async Task<T> RunOperationAsync<T>(string collectionName, string operationName, Func<Task<T>> operation)
+    private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
     {
         try
         {
@@ -371,7 +332,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
                 VectorStoreType = DatabaseName,
-                CollectionName = collectionName,
+                CollectionName = this._collectionName,
                 OperationName = operationName
             };
         }

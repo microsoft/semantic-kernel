@@ -44,6 +44,9 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
 
+    /// <summary>The name of the collection that this <see cref="RedisVectorRecordStore{TRecord}"/> will access.</summary>
+    private readonly string _collectionName;
+
     /// <summary>Optional configuration options for this class.</summary>
     private readonly RedisVectorRecordStoreOptions<TRecord> _options;
 
@@ -66,15 +69,18 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     /// Initializes a new instance of the <see cref="RedisVectorRecordStore{TRecord}"/> class.
     /// </summary>
     /// <param name="database">The Redis database to read/write records from.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="RedisVectorRecordStore{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
-    public RedisVectorRecordStore(IDatabase database, RedisVectorRecordStoreOptions<TRecord>? options = null)
+    public RedisVectorRecordStore(IDatabase database, string collectionName, RedisVectorRecordStoreOptions<TRecord>? options = null)
     {
         // Verify.
         Verify.NotNull(database);
+        Verify.NotNullOrWhiteSpace(collectionName);
 
         // Assign.
         this._database = database;
+        this._collectionName = collectionName;
         this._options = options ?? new RedisVectorRecordStoreOptions<TRecord>();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
 
@@ -123,13 +129,11 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         Verify.NotNullOrWhiteSpace(key);
 
         // Create Options
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-        var maybePrefixedKey = this.PrefixKeyIfNeeded(key, collectionName);
+        var maybePrefixedKey = this.PrefixKeyIfNeeded(key);
         var includeVectors = options?.IncludeVectors ?? false;
 
         // Get the Redis value.
-        var redisResult = await RunOperationAsync(
-            collectionName,
+        var redisResult = await this.RunOperationAsync(
             "GET",
             () => options?.IncludeVectors is true ?
                 this._database
@@ -155,7 +159,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         // Convert to the caller's data model.
         return VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
-            collectionName,
+            this._collectionName,
             "GET",
             () =>
             {
@@ -171,14 +175,12 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         var keysList = keys.ToList();
 
         // Create Options
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-        var maybePrefixedKeys = keysList.Select(key => this.PrefixKeyIfNeeded(key, collectionName));
+        var maybePrefixedKeys = keysList.Select(key => this.PrefixKeyIfNeeded(key));
         var redisKeys = maybePrefixedKeys.Select(x => new RedisKey(x)).ToArray();
         var includeVectors = options?.IncludeVectors ?? false;
 
         // Get the list of Redis results.
-        var redisResults = await RunOperationAsync(
-            collectionName,
+        var redisResults = await this.RunOperationAsync(
             "MGET",
             () => this._database
                 .JSON()
@@ -206,7 +208,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             // Convert to the caller's data model.
             yield return VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
-                collectionName,
+                this._collectionName,
                 "MGET",
                 () =>
                 {
@@ -222,12 +224,10 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         Verify.NotNullOrWhiteSpace(key);
 
         // Create Options
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-        var maybePrefixedKey = this.PrefixKeyIfNeeded(key, collectionName);
+        var maybePrefixedKey = this.PrefixKeyIfNeeded(key);
 
         // Remove.
-        return RunOperationAsync(
-            collectionName,
+        return this.RunOperationAsync(
             "DEL",
             () => this._database
                 .JSON()
@@ -249,13 +249,10 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     {
         Verify.NotNull(record);
 
-        // Create Options
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-
         // Map.
         var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
-            collectionName,
+            this._collectionName,
             "SET",
                 () =>
                 {
@@ -265,9 +262,8 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
                 });
 
         // Upsert.
-        var maybePrefixedKey = this.PrefixKeyIfNeeded(redisJsonRecord.Key, collectionName);
-        await RunOperationAsync(
-            collectionName,
+        var maybePrefixedKey = this.PrefixKeyIfNeeded(redisJsonRecord.Key);
+        await this.RunOperationAsync(
             "SET",
             () => this._database
                 .JSON()
@@ -284,16 +280,13 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     {
         Verify.NotNull(records);
 
-        // Create Options
-        var collectionName = this.ChooseCollectionName(options?.CollectionName);
-
         // Map.
         var redisRecords = new List<(string maybePrefixedKey, string originalKey, string serializedRecord)>();
         foreach (var record in records)
         {
             var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
-                collectionName,
+                this._collectionName,
                 "MSET",
                 () =>
                 {
@@ -302,14 +295,13 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
                     return new { Key = mapResult.Key, SerializedRecord = serializedRecord };
                 });
 
-            var maybePrefixedKey = this.PrefixKeyIfNeeded(redisJsonRecord.Key, collectionName);
+            var maybePrefixedKey = this.PrefixKeyIfNeeded(redisJsonRecord.Key);
             redisRecords.Add((maybePrefixedKey, redisJsonRecord.Key, redisJsonRecord.SerializedRecord));
         }
 
         // Upsert.
         var keyPathValues = redisRecords.Select(x => new KeyPathValue(x.maybePrefixedKey, "$", x.serializedRecord)).ToArray();
-        await RunOperationAsync(
-            collectionName,
+        await this.RunOperationAsync(
             "MSET",
             () => this._database
                 .JSON()
@@ -326,46 +318,25 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     /// Prefix the key with the collection name if the option is set.
     /// </summary>
     /// <param name="key">The key to prefix.</param>
-    /// <param name="collectionName">The collection name that was provided as part of an operation to override the default or the default if not.</param>
     /// <returns>The updated key if updating is required, otherwise the input key.</returns>
-    private string PrefixKeyIfNeeded(string key, string? collectionName)
+    private string PrefixKeyIfNeeded(string key)
     {
         if (this._options.PrefixCollectionNameToKeyNames)
         {
-            return $"{collectionName}:{key}";
+            return $"{this._collectionName}:{key}";
         }
 
         return key;
     }
 
     /// <summary>
-    /// Choose the right collection name to use for the operation by using the one provided
-    /// as part of the operation options, or the default one provided at construction time.
-    /// </summary>
-    /// <param name="operationCollectionName">The collection name provided on the operation options.</param>
-    /// <returns>The collection name to use.</returns>
-    private string ChooseCollectionName(string? operationCollectionName)
-    {
-        var collectionName = operationCollectionName ?? this._options.DefaultCollectionName;
-        if (collectionName is null)
-        {
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly
-            throw new ArgumentException("Collection name must be provided in the operation options, since no default was provided at construction time.", "options");
-#pragma warning restore CA2208 // Instantiate argument exceptions correctly
-        }
-
-        return collectionName;
-    }
-
-    /// <summary>
     /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreOperationException"/>."/>
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
-    /// <param name="collectionName">The name of the collection the operation is being run on.</param>
     /// <param name="operationName">The type of database operation being run.</param>
     /// <param name="operation">The operation to run.</param>
     /// <returns>The result of the operation.</returns>
-    private static async Task<T> RunOperationAsync<T>(string collectionName, string operationName, Func<Task<T>> operation)
+    private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
     {
         try
         {
@@ -376,7 +347,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
                 VectorStoreType = DatabaseName,
-                CollectionName = collectionName,
+                CollectionName = this._collectionName,
                 OperationName = operationName
             };
         }
