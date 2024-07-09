@@ -21,7 +21,7 @@ namespace Optimization;
 /// It also helps to handle the scenario with a general purpose chat experience for a large enterprise,
 /// where there are so many plugins, that it's impossible to share all of them with AI model in a single request.
 /// </summary>
-public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
+public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// This method shows how to select best functions to share with AI using vector similarity search.
@@ -37,7 +37,7 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
             .AddOpenAITextEmbeddingGeneration("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
 
         // Add logging.
-        var logger = this.LoggerFactory.CreateLogger<PluginSelection>();
+        var logger = this.LoggerFactory.CreateLogger<PluginSelectionWithFilters>();
         builder.Services.AddSingleton<ILogger>(logger);
 
         // Add memory store to keep functions and search for the most relevant ones for specific request.
@@ -111,7 +111,7 @@ public sealed class PluginSelection(ITestOutputHelper output) : BaseTest(output)
             .AddOpenAITextEmbeddingGeneration("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
 
         // Add logging.
-        var logger = this.LoggerFactory.CreateLogger<PluginSelection>();
+        var logger = this.LoggerFactory.CreateLogger<PluginSelectionWithFilters>();
         builder.Services.AddSingleton<ILogger>(logger);
 
         // Add memory store to keep functions and search for the most relevant ones for specific request.
