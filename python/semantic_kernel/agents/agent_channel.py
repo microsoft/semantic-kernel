@@ -10,7 +10,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
-    from semantic_kernel.agents.agent import Agent
+    from semantic_kernel.agents.agent_base import AgentBase
 
 
 @experimental_class
@@ -32,12 +32,12 @@ class AgentChannel(ABC, BaseModel):
         Args:
             history: The history of messages in the conversation.
         """
-        pass
+        ...
 
     @abstractmethod
     async def invoke(
         self,
-        agent: "Agent",
+        agent: "AgentBase",
     ) -> AsyncIterable[ChatMessageContent]:
         """Perform a discrete incremental interaction between a single Agent and AgentChat.
 
@@ -47,7 +47,7 @@ class AgentChannel(ABC, BaseModel):
         Returns:
             An async iterable of ChatMessageContent.
         """
-        pass
+        ...
 
     @abstractmethod
     async def get_history(

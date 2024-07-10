@@ -28,6 +28,7 @@ class ChatHistoryKernelAgent(KernelAgent, ChatHistoryHandler, ABC):
 
     def __init__(
         self,
+        service_id: str,
         name: str | None = None,
         instructions: str | None = None,
         id: str | None = None,
@@ -36,12 +37,14 @@ class ChatHistoryKernelAgent(KernelAgent, ChatHistoryHandler, ABC):
         """Initialize the ChatHistoryKernelAgent.
 
         Args:
+            service_id: The service id for the chat completion service.
             name: The name of the agent.
             instructions: The instructions for the agent.
             id: The unique identifier for the agent.
             description: The description of the agent.
         """
         super().__init__(
+            service_id=service_id,
             name=name,
             instructions=instructions,
             id=id,
@@ -79,7 +82,7 @@ class ChatHistoryKernelAgent(KernelAgent, ChatHistoryHandler, ABC):
         ...
 
     @abstractmethod
-    async def invoke_streaming(self, history: ChatHistory) -> AsyncIterable[StreamingChatMessageContent]:
+    async def invoke_stream(self, history: ChatHistory) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke the chat history handler in streaming mode.
 
         Args:

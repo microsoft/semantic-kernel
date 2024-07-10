@@ -23,7 +23,7 @@ class ChatHistoryHandler(ABC, KernelBaseModel):
         ...
 
     @abstractmethod
-    async def invoke_streaming(self, history: ChatHistory) -> AsyncIterable[StreamingChatMessageContent]:
+    async def invoke_stream(self, history: ChatHistory) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke the chat history handler in streaming mode.
 
         Entry point for calling into an agent from a ChatHistoryChannel for streaming content.

@@ -32,6 +32,22 @@ async def test_initialization():
 
 
 @pytest.mark.asyncio
+async def test_initialization_no_service_id():
+    agent = ChatCompletionAgent(
+        name="Test Agent",
+        id="test_id",
+        description="Test Description",
+        instructions="Test Instructions",
+    )
+
+    assert agent.service_id == "default"
+    assert agent.name == "Test Agent"
+    assert agent.id == "test_id"
+    assert agent.description == "Test Description"
+    assert agent.instructions == "Test Instructions"
+
+
+@pytest.mark.asyncio
 async def test_invoke():
     agent = ChatCompletionAgent(service_id="test_service", name="Test Agent", instructions="Test Instructions")
 
@@ -101,6 +117,7 @@ async def test_invoke_streaming():
     agent = ChatCompletionAgent(service_id="test_service", name="Test Agent")
 
     kernel = create_autospec(Kernel)
+    kernel.get_service.return_value = create_autospec(ChatCompletionClientBase)
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
@@ -110,7 +127,7 @@ async def test_invoke_streaming():
     ) as mock:
         mock.return_value.__aiter__.return_value = [ChatMessageContent(role=AuthorRole.USER, content="Initial Message")]
 
-        async for message in agent.invoke_streaming(kernel, history):
+        async for message in agent.invoke_stream(kernel, history):
             assert message.role == AuthorRole.USER
             assert message.content == "Initial Message"
 
@@ -125,7 +142,7 @@ async def test_invoke_streaming_no_service_throws():
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
     with pytest.raises(KernelServiceNotFoundError):
-        async for _ in agent.invoke_streaming(kernel, history):
+        async for _ in agent.invoke_stream(kernel, history):
             pass
 
 

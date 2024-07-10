@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents.agent_base import AgentBase
 from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -15,7 +15,7 @@ class MockAgentChannel(AgentChannel):
     async def receive(self, history: list[ChatMessageContent]) -> None:
         pass
 
-    async def invoke(self, agent: "Agent") -> AsyncIterable[ChatMessageContent]:
+    async def invoke(self, agent: "AgentBase") -> AsyncIterable[ChatMessageContent]:
         yield ChatMessageContent(role=AuthorRole.SYSTEM, content="test message")
 
     async def get_history(self) -> AsyncIterable[ChatMessageContent]:

@@ -3,14 +3,13 @@
 import logging
 import sys
 from collections.abc import AsyncGenerator, AsyncIterable
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 if sys.version_info >= (3, 12):
-    from typing import override
+    from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from pydantic import Field
 
 from semantic_kernel.agents.chat_history_kernel_agent import ChatHistoryKernelAgent
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -39,7 +38,6 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
     the kernel.
     """
 
-    service_id: str | None = Field(default=DEFAULT_SERVICE_NAME)
     execution_settings: PromptExecutionSettings | None = None
 
     def __init__(
@@ -63,8 +61,9 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
             instructions: The instructions for the agent. (optional)
             execution_settings: The execution settings for the agent. (optional)
         """
-        super().__init__(name=name, instructions=instructions, id=id, description=description)
-        self.service_id = service_id
+        if not service_id:
+            service_id = DEFAULT_SERVICE_NAME
+        super().__init__(service_id=service_id, name=name, instructions=instructions, id=id, description=description)
         self.execution_settings = execution_settings
 
     @override
@@ -79,17 +78,12 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
             An async iterable of ChatMessageContent.
         """
         # Get the chat completion service
-        service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+        chat_completion_service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
 
-        if not service:
+        if not chat_completion_service:
             raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
 
-        # Cast the service to the expected type - satisfy type checking
-        chat_completion_service = cast(ChatCompletionClientBase, service)
-
-        # To satisfy typechecker
-        if self.service_id is None:
-            self.service_id = DEFAULT_SERVICE_NAME  # pragma: no cover
+        assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
 
         settings = (
             self.execution_settings
@@ -128,7 +122,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
             yield message
 
     @override
-    async def invoke_streaming(  # type: ignore
+    async def invoke_stream(  # type: ignore
         self, kernel: "Kernel", history: ChatHistory
     ) -> AsyncGenerator[StreamingChatMessageContent, None]:
         """Invoke the chat history handler in streaming mode.
@@ -141,17 +135,12 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
             An async generator of StreamingChatMessageContent.
         """
         # Get the chat completion service
-        service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+        chat_completion_service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
 
-        if not service:
+        if not chat_completion_service:
             raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
 
-        # Cast the service to the expected type
-        chat_completion_service = cast(ChatCompletionClientBase, service)
-
-        # To satisfy typechecker
-        if self.service_id is None:
-            self.service_id = DEFAULT_SERVICE_NAME  # pragma: no cover
+        assert isinstance(chat_completion_service, ChatCompletionClientBase)  # nosec
 
         settings = (
             self.execution_settings

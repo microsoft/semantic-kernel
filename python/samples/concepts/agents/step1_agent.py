@@ -31,7 +31,7 @@ async def invoke_agent(agent: ChatCompletionAgent, input: str, kernel: Kernel, c
     if streaming:
         contents = []
         content_name = ""
-        async for content in agent.invoke_streaming(kernel, chat):
+        async for content in agent.invoke_stream(kernel, chat):
             content_name = content.name
             contents.append(content)
         print(f"# {content.role} - {content_name or '*'}: '{''.join([content.content for content in contents])}'")

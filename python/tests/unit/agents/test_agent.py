@@ -5,11 +5,20 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents.agent_base import AgentBase
 from semantic_kernel.agents.agent_channel import AgentChannel
 
 
-class MockAgent(Agent):
+class MockAgent(AgentBase):
+    def __init__(
+        self,
+        service_id: str = "test_service",
+        name: str = "Test Agent",
+        description: str = "A test agent",
+        id: str = None,
+    ):
+        super().__init__(service_id=service_id, name=name, description=description, id=id)
+
     def get_channel_keys(self) -> list[str]:
         return ["key1", "key2"]
 
@@ -22,8 +31,9 @@ async def test_agent_initialization():
     name = "Test Agent"
     description = "A test agent"
     id_value = str(uuid.uuid4())
+    service_id = "test_service"
 
-    agent = MockAgent(name=name, description=description, id=id_value)
+    agent = MockAgent(service_id=service_id, name=name, description=description, id=id_value)
 
     assert agent.name == name
     assert agent.description == description

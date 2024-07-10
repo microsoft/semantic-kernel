@@ -11,11 +11,21 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 
 
 class MockChatHistoryKernelAgent(ChatHistoryKernelAgent):
+    def __init__(
+        self,
+        service_id: str = "test_service",
+        name: str = "Test Agent",
+        instructions: str = "Test Instructions",
+        id: str = None,
+        description: str = "Test Description",
+    ):
+        super().__init__(service_id=service_id, name=name, instructions=instructions, id=id, description=description)
+
     async def invoke(self, history: list[ChatMessageContent]) -> AsyncIterable[ChatMessageContent]:
         for message in history:
             yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
 
-    async def invoke_streaming(self, history: list[ChatMessageContent]) -> AsyncIterable[StreamingChatMessageContent]:
+    async def invoke_stream(self, history: list[ChatMessageContent]) -> AsyncIterable[StreamingChatMessageContent]:
         pass
 
 

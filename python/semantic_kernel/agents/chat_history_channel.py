@@ -1,10 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from collections.abc import AsyncIterable
 
 from pydantic import Field
 
-from semantic_kernel.agents.agent import Agent
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+from semantic_kernel.agents.agent_base import AgentBase
 from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.agents.chat_history_handler import ChatHistoryHandler
 from semantic_kernel.contents import ChatMessageContent
@@ -15,15 +21,16 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class ChatHistoryChannel(AgentChannel):
     """An AgentChannel specialization for that acts upon a ChatHistoryHandler."""
 
-    history: list[ChatMessageContent] = Field(default_factory=list, alias="history")
+    history: list[ChatMessageContent] = Field(default_factory=list)
 
     def __init__(self) -> None:
         """Initialize the ChatHistoryChannel."""
         super().__init__()
 
+    @override
     async def invoke(  # type: ignore
         self,
-        agent: Agent,
+        agent: AgentBase,
     ) -> AsyncIterable[ChatMessageContent]:
         """Perform a discrete incremental interaction between a single Agent and AgentChat.
 
@@ -40,6 +47,7 @@ class ChatHistoryChannel(AgentChannel):
             self.history.append(message)
             yield message
 
+    @override
     async def receive(
         self,
         history: list[ChatMessageContent],
@@ -51,6 +59,7 @@ class ChatHistoryChannel(AgentChannel):
         """
         self.history.extend(history)
 
+    @override
     async def get_history(  # type: ignore
         self,
     ) -> AsyncIterable[ChatMessageContent]:

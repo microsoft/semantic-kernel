@@ -18,7 +18,7 @@ class MockChatHistoryHandler(ChatHistoryHandler):
         for message in history:
             yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
 
-    async def invoke_streaming(self, history: list[ChatMessageContent]) -> AsyncIterable["StreamingChatMessageContent"]:
+    async def invoke_stream(self, history: list[ChatMessageContent]) -> AsyncIterable["StreamingChatMessageContent"]:
         pass
 
 
