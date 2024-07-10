@@ -111,8 +111,8 @@ public sealed class AzureOpenAIFileServiceTests : IDisposable
         var file = await service.GetFileAsync("file-id");
         Assert.NotNull(file);
         Assert.NotEqual(string.Empty, file.Id);
-        Assert.NotEqual(string.Empty, file.FileName);
-        Assert.NotEqual(DateTime.MinValue, file.CreatedTimestamp);
+        Assert.NotEqual(string.Empty, file.Filename);
+        Assert.NotEqual(DateTime.MinValue, file.CreatedAt);
         Assert.NotEqual(0, file.SizeInBytes);
     }
 
@@ -228,8 +228,8 @@ public sealed class AzureOpenAIFileServiceTests : IDisposable
         var file = await service.UploadContentAsync(content, settings);
         Assert.NotNull(file);
         Assert.NotEqual(string.Empty, file.Id);
-        Assert.NotEqual(string.Empty, file.FileName);
-        Assert.NotEqual(DateTime.MinValue, file.CreatedTimestamp);
+        Assert.NotEqual(string.Empty, file.Filename);
+        Assert.NotEqual(DateTime.MinValue, file.CreatedAt);
         Assert.NotEqual(0, file.SizeInBytes);
     }
 

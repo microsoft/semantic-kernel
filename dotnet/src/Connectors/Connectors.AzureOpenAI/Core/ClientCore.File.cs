@@ -4,7 +4,6 @@ using System;
 using System.ClientModel;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenAI.Files;
@@ -24,14 +23,14 @@ internal partial class ClientCore
     /// <param name="purpose">Purpose of the file</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Uploaded file information</returns>
-    internal async Task<AzureOpenAIFileReference> UploadFileAsync(
+    internal async Task<OpenAIFileInfo> UploadFileAsync(
         string fileName,
         Stream fileContent,
         FileUploadPurpose purpose,
         CancellationToken cancellationToken)
     {
         ClientResult<OpenAIFileInfo> response = await RunRequestAsync(() => this.Client.GetFileClient().UploadFileAsync(fileContent, fileName, purpose, cancellationToken)).ConfigureAwait(false);
-        return ConvertToFileReference(response.Value);
+        return response.Value;
     }
 
     /// <summary>
@@ -52,12 +51,12 @@ internal partial class ClientCore
     /// <param name="fileId">The uploaded file identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The metadata associated with the specified file identifier.</returns>
-    internal async Task<AzureOpenAIFileReference> GetFileAsync(
+    internal async Task<OpenAIFileInfo> GetFileAsync(
         string fileId,
         CancellationToken cancellationToken)
     {
         ClientResult<OpenAIFileInfo> response = await RunRequestAsync(() => this.Client.GetFileClient().GetFileAsync(fileId, cancellationToken)).ConfigureAwait(false);
-        return ConvertToFileReference(response.Value);
+        return response.Value;
     }
 
     /// <summary>
@@ -65,10 +64,10 @@ internal partial class ClientCore
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The metadata of all uploaded files.</returns>
-    internal async Task<IEnumerable<AzureOpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken)
+    internal async Task<IEnumerable<OpenAIFileInfo>> GetFilesAsync(CancellationToken cancellationToken)
     {
         ClientResult<OpenAIFileInfoCollection> response = await RunRequestAsync(() => this.Client.GetFileClient().GetFilesAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
-        return response.Value.Select(ConvertToFileReference);
+        return response.Value;
     }
 
     /// <summary>
@@ -77,10 +76,10 @@ internal partial class ClientCore
     /// <param name="filePurpose">The purpose of the files by which to filter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The metadata of all uploaded files.</returns>
-    internal async Task<IEnumerable<AzureOpenAIFileReference>> GetFilesAsync(OpenAIFilePurpose? filePurpose, CancellationToken cancellationToken)
+    internal async Task<IEnumerable<OpenAIFileInfo>> GetFilesAsync(OpenAIFilePurpose? filePurpose, CancellationToken cancellationToken)
     {
         ClientResult<OpenAIFileInfoCollection> response = await RunRequestAsync(() => this.Client.GetFileClient().GetFilesAsync(filePurpose, cancellationToken: cancellationToken)).ConfigureAwait(false);
-        return response.Value.Select(ConvertToFileReference);
+        return response.Value;
     }
 
     /// <summary>
@@ -99,14 +98,4 @@ internal partial class ClientCore
         ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client.GetFileClient().DownloadFileAsync(fileId, cancellationToken)).ConfigureAwait(false);
         return response.Value.ToArray();
     }
-
-    private static AzureOpenAIFileReference ConvertToFileReference(OpenAIFileInfo fileInfo)
-        => new()
-        {
-            Id = fileInfo.Id,
-            CreatedTimestamp = fileInfo.CreatedAt.DateTime,
-            FileName = fileInfo.Filename,
-            SizeInBytes = (int)(fileInfo.SizeInBytes ?? 0),
-            Purpose = fileInfo.Purpose,
-        };
 }

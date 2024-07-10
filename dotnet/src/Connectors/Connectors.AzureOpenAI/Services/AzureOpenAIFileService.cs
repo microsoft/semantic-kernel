@@ -90,7 +90,7 @@ public sealed class AzureOpenAIFileService
     /// <param name="id">The uploaded file identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The metadata associated with the specified file identifier.</returns>
-    public Task<AzureOpenAIFileReference> GetFileAsync(string id, CancellationToken cancellationToken = default)
+    public Task<OpenAIFileInfo> GetFileAsync(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
         return this._client.GetFileAsync(id, cancellationToken);
@@ -101,7 +101,7 @@ public sealed class AzureOpenAIFileService
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The metadata of all uploaded files.</returns>
-    public async Task<IEnumerable<AzureOpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<OpenAIFileInfo>> GetFilesAsync(CancellationToken cancellationToken = default)
         => await this._client.GetFilesAsync(cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -110,7 +110,7 @@ public sealed class AzureOpenAIFileService
     /// <param name="filePurpose">The purpose of the files by which to filter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The metadata of all uploaded files.</returns>
-    public async Task<IEnumerable<AzureOpenAIFileReference>> GetFilesAsync(OpenAIFilePurpose? filePurpose, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<OpenAIFileInfo>> GetFilesAsync(OpenAIFilePurpose? filePurpose, CancellationToken cancellationToken = default)
         => await this._client.GetFilesAsync(filePurpose, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -120,7 +120,7 @@ public sealed class AzureOpenAIFileService
     /// <param name="settings">The upload settings</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The file metadata.</returns>
-    public async Task<AzureOpenAIFileReference> UploadContentAsync(BinaryContent fileContent, AzureOpenAIFileUploadExecutionSettings settings, CancellationToken cancellationToken = default)
+    public async Task<OpenAIFileInfo> UploadContentAsync(BinaryContent fileContent, AzureOpenAIFileUploadExecutionSettings settings, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(settings, nameof(settings));
         Verify.NotNull(fileContent.Data, nameof(fileContent.Data));

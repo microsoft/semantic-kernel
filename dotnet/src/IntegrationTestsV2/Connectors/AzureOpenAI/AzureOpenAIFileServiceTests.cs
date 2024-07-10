@@ -37,13 +37,13 @@ public sealed class AzureOpenAIFileServiceTests()
         BinaryContent sourceContent = new(sourceData.ToArray(), mimeType);
 
         // Upload file
-        AzureOpenAIFileReference fileReference = await fileService.UploadContentAsync(sourceContent, new(fileName, FileUploadPurpose.Assistants));
+        OpenAIFileInfo fileReference = await fileService.UploadContentAsync(sourceContent, new(fileName, FileUploadPurpose.Assistants));
         try
         {
             AssertFileReferenceEquals(fileReference, fileName, sourceData.Length, OpenAIFilePurpose.Assistants);
 
             // Retrieve files by different purpose
-            Dictionary<string, AzureOpenAIFileReference> fileMap = await GetFilesAsync(fileService, OpenAIFilePurpose.FineTune);
+            Dictionary<string, OpenAIFileInfo> fileMap = await GetFilesAsync(fileService, OpenAIFilePurpose.FineTune);
             Assert.DoesNotContain(fileReference.Id, fileMap.Keys);
 
             // Retrieve files by expected purpose
@@ -57,7 +57,7 @@ public sealed class AzureOpenAIFileServiceTests()
             AssertFileReferenceEquals(fileMap[fileReference.Id], fileName, sourceData.Length, OpenAIFilePurpose.Assistants);
 
             // Retrieve file by id
-            AzureOpenAIFileReference file = await fileService.GetFileAsync(fileReference.Id);
+            OpenAIFileInfo file = await fileService.GetFileAsync(fileReference.Id);
             AssertFileReferenceEquals(file, fileName, sourceData.Length, OpenAIFilePurpose.Assistants);
 
             // Retrieve file content
@@ -75,17 +75,17 @@ public sealed class AzureOpenAIFileServiceTests()
         }
     }
 
-    private static void AssertFileReferenceEquals(AzureOpenAIFileReference fileReference, string expectedFileName, int expectedSize, OpenAIFilePurpose expectedPurpose)
+    private static void AssertFileReferenceEquals(OpenAIFileInfo fileReference, string expectedFileName, int expectedSize, OpenAIFilePurpose expectedPurpose)
     {
-        Assert.Equal(expectedFileName, fileReference.FileName);
+        Assert.Equal(expectedFileName, fileReference.Filename);
         Assert.Equal(expectedPurpose, fileReference.Purpose);
         Assert.Equal(expectedSize, fileReference.SizeInBytes);
     }
 
-    private static async Task<Dictionary<string, AzureOpenAIFileReference>> GetFilesAsync(AzureOpenAIFileService fileService, OpenAIFilePurpose? purpose = null)
+    private static async Task<Dictionary<string, OpenAIFileInfo>> GetFilesAsync(AzureOpenAIFileService fileService, OpenAIFilePurpose? purpose = null)
     {
-        IEnumerable<AzureOpenAIFileReference> files = await fileService.GetFilesAsync(purpose);
-        Dictionary<string, AzureOpenAIFileReference> fileIds = files.DistinctBy(f => f.Id).ToDictionary(f => f.Id);
+        IEnumerable<OpenAIFileInfo> files = await fileService.GetFilesAsync(purpose);
+        Dictionary<string, OpenAIFileInfo> fileIds = files.DistinctBy(f => f.Id).ToDictionary(f => f.Id);
         return fileIds;
     }
 
