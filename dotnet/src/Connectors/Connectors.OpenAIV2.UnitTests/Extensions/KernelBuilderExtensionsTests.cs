@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -138,6 +139,7 @@ public class KernelBuilderExtensionsTests
     }
 
     [Fact]
+    [Obsolete("Obsoleted")]
     public void ItCanAddFileService()
     {
         // Arrange

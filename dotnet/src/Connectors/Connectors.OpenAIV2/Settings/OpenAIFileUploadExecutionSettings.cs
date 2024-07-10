@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
-using OpenAI.Files;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Execution settings associated with Open AI file upload <see cref="OpenAIFileService.UploadContentAsync"/>.
+/// Execution serttings associated with Open AI file upload <see cref="OpenAIFileService.UploadContentAsync"/>.
 /// </summary>
 [Experimental("SKEXP0010")]
+[Obsolete("Use OpenAI SDK or AzureOpenAI SDK clients for file operations.")]
+[ExcludeFromCodeCoverage]
 public sealed class OpenAIFileUploadExecutionSettings
 {
     /// <summary>
@@ -16,7 +18,7 @@ public sealed class OpenAIFileUploadExecutionSettings
     /// </summary>
     /// <param name="fileName">The file name</param>
     /// <param name="purpose">The file purpose</param>
-    public OpenAIFileUploadExecutionSettings(string fileName, FileUploadPurpose purpose)
+    public OpenAIFileUploadExecutionSettings(string fileName, OpenAIFilePurpose purpose)
     {
         Verify.NotNull(fileName, nameof(fileName));
 
@@ -32,5 +34,5 @@ public sealed class OpenAIFileUploadExecutionSettings
     /// <summary>
     /// The file purpose.
     /// </summary>
-    public FileUploadPurpose Purpose { get; }
+    public OpenAIFilePurpose Purpose { get; }
 }
