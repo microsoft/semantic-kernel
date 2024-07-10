@@ -14,12 +14,8 @@ from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    update_settings_from_function_call_configuration,
-)
-from semantic_kernel.connectors.ai.function_choice_behavior import (
-    FunctionChoiceBehavior,
-)
+from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
@@ -33,10 +29,7 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions import (
-    ServiceInvalidExecutionSettingsError,
-    ServiceInvalidResponseError,
-)
+from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceInvalidResponseError
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
