@@ -139,7 +139,7 @@ public class KernelBuilderExtensionsTests
     }
 
     [Fact]
-    [Obsolete("This method is deprecated and will be removed in a future version.")]
+    [Obsolete("This test is deprecated and will be removed in a future version.")]
     public void ItCanAddFileService()
     {
         // Arrange
