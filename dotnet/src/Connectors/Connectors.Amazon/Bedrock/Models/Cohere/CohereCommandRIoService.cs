@@ -12,21 +12,24 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Cohere;
 
-public class CohereIoService : IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse>,
+public class CohereCommandRIoService : IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIoService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
+    public object GetInvokeModelRequestBody(string text, PromptExecutionSettings executionSettings)
     {
-        double? temperature = 0.9; // Cohere default
+        double? temperature = 0.3; // Cohere default
         double? topP = 0.75; // Cohere default
-        int? maxTokens = 20; // Cohere default
+        int? maxTokens = null; // Cohere default
         List<string>? stopSequences = null;
         double? topK = 0; // Cohere default
-        string returnLikelihoods = "NONE"; // Cohere default
-        bool? stream = false; // Cohere default
-        int? numGenerations = 1; // Cohere default
-        Dictionary<int, double> logitBias = null;
-        string truncate = "END"; // Cohere default
+        string promptTruncation = "OFF"; // Cohere default
+        double? frequencyPenalty = 0; // Cohere default
+        double? presencePenalty = 0; // Cohere default
+        int? seed = null;
+        bool? returnPrompt = false; // Cohere default
+        List<CommandRTextRequest.Tool>? tools = null;
+        List<CommandRTextRequest.ToolResult>? toolResults = null;
+        bool? rawPrompting = false; // Cohere default
 
         if (executionSettings != null && executionSettings.ExtensionData != null)
         {
@@ -45,35 +48,47 @@ public class CohereIoService : IBedrockModelIoService<IChatCompletionRequest, IC
             executionSettings.ExtensionData.TryGetValue("stop_sequences", out var stopSequencesValue);
             stopSequences = stopSequencesValue as List<string>;
 
-            executionSettings.ExtensionData.TryGetValue("return_likelihoods", out var returnLikelihoodsValue);
-            returnLikelihoods = returnLikelihoodsValue as string;
+            executionSettings.ExtensionData.TryGetValue("prompt_truncation", out var promptTruncationValue);
+            promptTruncation = promptTruncationValue as string;
 
-            executionSettings.ExtensionData.TryGetValue("stream", out var streamValue);
-            stream = streamValue as bool?;
+            executionSettings.ExtensionData.TryGetValue("frequency_penalty", out var frequencyPenaltyValue);
+            frequencyPenalty = frequencyPenaltyValue as double?;
 
-            executionSettings.ExtensionData.TryGetValue("num_generations", out var numGenerationsValue);
-            numGenerations = numGenerationsValue as int?;
+            executionSettings.ExtensionData.TryGetValue("presence_penalty", out var presencePenaltyValue);
+            presencePenalty = presencePenaltyValue as double?;
 
-            executionSettings.ExtensionData.TryGetValue("logit_bias", out var logitBiasValue);
-            logitBias = logitBiasValue as Dictionary<int, double>;
+            executionSettings.ExtensionData.TryGetValue("seed", out var seedValue);
+            seed = seedValue as int?;
 
-            executionSettings.ExtensionData.TryGetValue("truncate", out var truncateValue);
-            truncate = truncateValue as string;
+            executionSettings.ExtensionData.TryGetValue("return_prompt", out var returnPromptValue);
+            returnPrompt = returnPromptValue as bool?;
+
+            executionSettings.ExtensionData.TryGetValue("tools", out var toolsValue);
+            tools = toolsValue as List<CommandRTextRequest.Tool>;
+
+            executionSettings.ExtensionData.TryGetValue("tool_results", out var toolResultsValue);
+            toolResults = toolResultsValue as List<CommandRTextRequest.ToolResult>;
+
+            executionSettings.ExtensionData.TryGetValue("raw_prompting", out var rawPromptingValue);
+            rawPrompting = rawPromptingValue as bool?;
         }
 
-        var requestBody = new CommandTextRequest.CohereCommandTextGenerationRequest
+        var requestBody = new CommandRTextRequest.CommandRTextGenerationRequest
         {
-            Prompt = prompt,
+            Message = text,
             Temperature = temperature,
             TopP = topP,
             TopK = topK,
             MaxTokens = maxTokens,
             StopSequences = stopSequences,
-            ReturnLikelihoods = returnLikelihoods,
-            Stream = stream,
-            NumGenerations = numGenerations,
-            LogitBias = logitBias,
-            Truncate = truncate
+            PromptTruncation = promptTruncation,
+            FrequencyPenalty = frequencyPenalty,
+            PresencePenalty = presencePenalty,
+            Seed = seed,
+            ReturnPrompt = returnPrompt,
+            Tools = tools,
+            ToolResults = toolResults,
+            RawPrompting = rawPrompting
         };
 
         return requestBody;
@@ -87,25 +102,18 @@ public class CohereIoService : IBedrockModelIoService<IChatCompletionRequest, IC
             memoryStream.Position = 0;
             using (var reader = new StreamReader(memoryStream))
             {
-                var responseBody = JsonSerializer.Deserialize<CommandTextResponse>(reader.ReadToEnd());
+                var responseBody = JsonSerializer.Deserialize<CommandRTextResponse>(reader.ReadToEnd());
                 var textContents = new List<TextContent>();
 
-                if (responseBody?.Generations != null && responseBody.Generations.Count > 0)
+                if (!string.IsNullOrEmpty(responseBody?.Text))
                 {
-                    foreach (var generation in responseBody.Generations)
-                    {
-                        if (!string.IsNullOrEmpty(generation.Text))
-                        {
-                            textContents.Add(new TextContent(generation.Text));
-                        }
-                    }
+                    textContents.Add(new TextContent(responseBody.Text));
                 }
+
                 return textContents;
             }
         }
     }
-
-    //FOR COMMAND R (command has different converse request body)
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         var cohereRequest = new CohereCommandRequest
@@ -257,23 +265,7 @@ public class CohereIoService : IBedrockModelIoService<IChatCompletionRequest, IC
         return defaultValue;
     }
 
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk) //FOR COMMAND ONLY NOT COMMAND R
-    {
-        var generations = chunk?["generations"]?.AsArray();
-        if (generations != null)
-        {
-            foreach (var generation in generations)
-            {
-                var text = generation?["text"]?.ToString();
-                if (!string.IsNullOrEmpty(text))
-                {
-                    yield return text;
-                }
-            }
-        }
-    }
-
-    public IEnumerable<string> GetTextStreamOutputForCommandR(JsonNode chunk) //FOR COMMAND R
+    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         var text = chunk?["text"]?.ToString();
         if (!string.IsNullOrEmpty(text))

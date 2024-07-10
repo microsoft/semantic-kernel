@@ -57,7 +57,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                 this._ioService = new AI21IoService();
                 break;
             case "cohere":
-                this._ioService = new CohereIoService();
+                this._ioService = new CohereCommandRIoService();
                 break;
             case "meta":
                 this._ioService = new LlamaIoService();

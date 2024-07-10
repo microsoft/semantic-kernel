@@ -53,7 +53,18 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
                 this._ioService = new AnthropicIoService();
                 break;
             case "cohere":
-                this._ioService = new CohereIoService(); //FIX: need to differentiate between command and command r since request & response bodies are diff
+                if (modelId.Contains("command-r"))
+                {
+                    this._ioService = new CohereCommandRIoService();
+                }
+                else if (modelId.Contains("command"))
+                {
+                    this._ioService = new CohereCommandIoService();
+                }
+                else
+                {
+                    throw new ArgumentException($"Unsupported Cohere model: {modelId}");
+                }
                 break;
             case "meta":
                 this._ioService = new LlamaIoService();
