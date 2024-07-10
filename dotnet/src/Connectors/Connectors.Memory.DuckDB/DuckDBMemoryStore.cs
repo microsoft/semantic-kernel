@@ -245,7 +245,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="filename">DuckDB db filename.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
-    private DuckDBMemoryStore(string filename, int? vectorSize)
+    private DuckDBMemoryStore(string filename, int? vectorSize = null)
     {
         this._dbConnector = new Database(vectorSize);
         this._dbConnection = new DuckDBConnection($"Data Source={filename};");
