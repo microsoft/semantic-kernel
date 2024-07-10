@@ -27,6 +27,7 @@ internal sealed class Database(int? vectorSize)
 {
     private const string TableName = "SKMemoryTable";
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "The vectorSize user input is int and cannot be used for injection")]
     public async Task CreateTableAsync(DuckDBConnection conn, CancellationToken cancellationToken = default)
     {
         using var cmd = conn.CreateCommand();
