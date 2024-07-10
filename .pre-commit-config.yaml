@@ -37,7 +37,11 @@ repos:
     - id: pyupgrade
       args: [--py310-plus]
   - repo: https://github.com/astral-sh/ruff-pre-commit
+<<<<<<< HEAD
     rev: v0.5.2
+=======
+    rev: v0.5.1
+>>>>>>> 5e333d31d (Python: Bump ruff to 0.5.1 (#7180))
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]

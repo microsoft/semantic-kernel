@@ -109,7 +109,11 @@ redis = { version = "^4.6.0", optional = true}
 usearch = { version = "^2.9", optional = true}
 pyarrow = { version = ">=12.0.1,<18.0.0", optional = true}
 weaviate-client = { version = ">=3.18,<5.0", optional = true}
+<<<<<<< HEAD
 ruff = "0.5.2"
+=======
+ruff = "0.5.1"
+>>>>>>> 5e333d31d (Python: Bump ruff to 0.5.1 (#7180))
 
 [tool.poetry.group.dev.dependencies]
 <<<<<<< main
