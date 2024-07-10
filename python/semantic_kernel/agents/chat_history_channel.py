@@ -36,8 +36,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         """
         if not isinstance(agent, ChatHistoryHandler):
             raise ServiceInvalidTypeError(
-                f"Invalid channel binding for agent: "
-                f"{agent.id if hasattr(agent, "id") else ""} ({type(agent).__name__})"
+                f"Invalid channel binding for agent: {agent.id if hasattr(agent, "id") else ""} ({type(agent).__name__})"  # noqa: E501
             )
 
         async for message in agent.invoke(self.messages):
