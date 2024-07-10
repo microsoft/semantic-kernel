@@ -35,7 +35,7 @@ internal sealed class Database(int? vectorSize)
                 collection TEXT,
                 key TEXT,
                 metadata TEXT,
-                embedding FLOAT[{vectorSize.ToString()}],
+                embedding FLOAT[{vectorSize}],
                 timestamp TEXT,
                 PRIMARY KEY(collection, key))";
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
