@@ -59,8 +59,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
-        # currently really difficult to trigger since all are optional
-        except ValidationError as ex:  # pragma: no cover
+        except ValidationError as ex:
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
         if not openai_settings.embedding_model_id:
             raise ServiceInitializationError("The OpenAI embedding model ID is required.")

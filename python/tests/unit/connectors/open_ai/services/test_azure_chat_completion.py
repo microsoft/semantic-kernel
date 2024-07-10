@@ -48,7 +48,7 @@ def test_init(azure_openai_unit_test_env) -> None:
     assert azure_chat_completion.get_prompt_execution_settings_class() == AzureChatPromptExecutionSettings
 
 
-def test_init_client() -> None:
+def test_init_client(azure_openai_unit_test_env) -> None:
     # Test successful initialization with client
     client = MagicMock(spec=AsyncAzureOpenAI)
     azure_chat_completion = AzureChatCompletion(async_client=client)

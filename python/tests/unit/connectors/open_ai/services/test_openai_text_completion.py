@@ -51,6 +51,11 @@ def test_init_with_default_header(openai_unit_test_env) -> None:
         assert open_ai_text_completion.client.default_headers[key] == value
 
 
+def test_init_validation_fail() -> None:
+    with pytest.raises(ServiceInitializationError):
+        OpenAITextCompletion(api_key="34523", ai_model_id={"test": "dict"})
+
+
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
 def test_init_with_empty_api_key(openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):

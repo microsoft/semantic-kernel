@@ -23,6 +23,11 @@ def test_init(openai_unit_test_env):
     assert openai_text_embedding.get_prompt_execution_settings_class() == OpenAIEmbeddingPromptExecutionSettings
 
 
+def test_init_validation_fail() -> None:
+    with pytest.raises(ServiceInitializationError):
+        OpenAITextEmbedding(api_key="34523", ai_model_id={"test": "dict"})
+
+
 def test_init_to_from_dict(openai_unit_test_env):
     default_headers = {"X-Unit-Test": "test-guid"}
 
