@@ -17,7 +17,7 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_ai_search.utils import get_search_index_async_client
 from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
+from semantic_kernel.data.vector_store_collection_base import VectorStoreCollectionBase
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -28,7 +28,7 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
+class AzureAISearchVectorRecordStore(VectorStoreCollectionBase[str, TModel]):
     def __init__(
         self,
         data_model_type: type[TModel],

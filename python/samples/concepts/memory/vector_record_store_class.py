@@ -13,8 +13,8 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_vector_store import (
-    AzureAISearchVectorStore,
+from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_vector_store_collection import (
+    AzureAISearchVectorStoreCollection,
 )
 from semantic_kernel.connectors.memory.qdrant.qdrant_vector_record_store import QdrantVectorRecordStore
 from semantic_kernel.connectors.memory.redis.redis_vector_record_store import RedisVectorRecordStore
@@ -55,7 +55,7 @@ kernel = Kernel()
 
 
 stores = {
-    "ai_search": AzureAISearchVectorStore[MyDataModel](
+    "ai_search": AzureAISearchVectorStoreCollection[MyDataModel](
         data_model_type=MyDataModel,
         kernel=kernel,
     ),

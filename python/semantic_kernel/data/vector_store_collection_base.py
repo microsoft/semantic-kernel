@@ -38,17 +38,18 @@ logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
+class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
     def __init__(
         self,
+        collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
-        collection_name: str | None = None,
         kernel: Kernel | None = None,
     ):
         """Create a VectorStoreBase instance.
 
         Args:
+            collection_name (str): The collection name.
             data_model_type (type[TModel]): The data model type.
             data_model_definition (VectorStoreRecordDefinition):
                 The model fields when supplied, can be a VectorStoreRecordDefinition or VectorStoreContainerDefinition.
@@ -56,7 +57,6 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
                 When a container style data model is used, for instance a pandas DataFrame,
                 the VectorStoreContainerDefinition must be used.
                 This field supplied directly takes precedence over the fields defined in the item_type.
-            collection_name (str, optional): The collection name. Defaults to None.
             kernel (Kernel, optional): The kernel, used if embeddings need to be created.
 
         Raises:
@@ -98,14 +98,12 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
     async def _inner_upsert(
         self,
         records: list[Any],
-        collection_name: str | None = None,
         **kwargs: Any,
     ) -> list[TKey]:
         """Upsert the records, this should be overridden by the child class.
 
         Args:
             records (list[Any]): The records, the format is specific to the store.
-            collection_name (str): The collection name. Defaults to None.
             **kwargs (Any): Additional arguments, to be passed to the store.
 
         Returns:
@@ -114,14 +112,11 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         ...
 
     @abstractmethod
-    async def _inner_get(
-        self, keys: list[TKey], collection_name: str | None = None, **kwargs: Any
-    ) -> OneOrMany[Any] | None:
+    async def _inner_get(self, keys: list[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
         """Get the records, this should be overridden by the child class.
 
         Args:
             keys (list[TKey]): The keys to get.
-            collection_name (str): The collection name. Defaults to None.
             **kwargs (Any): Additional arguments.
 
         Returns:
@@ -130,12 +125,11 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         ...
 
     @abstractmethod
-    async def _inner_delete(self, keys: list[TKey], collection_name: str | None = None, **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: list[TKey], **kwargs: Any) -> None:
         """Delete the records, this should be overridden by the child class.
 
         Args:
             keys (list[TKey]): The keys.
-            collection_name (str): The collection name. Defaults to None.
             **kwargs (Any): Additional arguments.
         """
         ...
@@ -194,7 +188,6 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
     async def upsert(
         self,
         record: TModel,
-        collection_name: str | None = None,
         generate_embeddings: bool = False,
         **kwargs: Any,
     ) -> OneOrMany[TKey] | None:
@@ -202,7 +195,6 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
 
         Args:
             record (TModel): The record.
-            collection_name (str): The collection name. Defaults to None.
             generate_embeddings (bool): Whether to generate vectors. Defaults to True.
                 If there are no vector fields in the model or the vectors are created
                 by the service, this is ignored, defaults to False.
@@ -217,7 +209,7 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         if not isinstance(data, list):
             data = [data]
         try:
-            results = await self._inner_upsert(data, collection_name, **kwargs)
+            results = await self._inner_upsert(data, **kwargs)
         except Exception as exc:
             raise MemoryConnectorException(f"Error upserting record: {exc}") from exc
         if self._container_mode:
@@ -227,7 +219,6 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
     async def upsert_batch(
         self,
         records: OneOrMany[TModel],
-        collection_name: str | None = None,
         generate_embeddings: bool = False,
         **kwargs: Any,
     ) -> list[TKey]:
@@ -235,7 +226,6 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
 
         Args:
             records (list[TModel] | TModel): The records to upsert, can be a list of records, or a single container.
-            collection_name (str, optional): The collection name. Defaults to None.
             generate_embeddings (bool): Whether to generate vectors. Defaults to True.
                 If there are no vector fields in the model or the vectors are created
                 by the service, this is ignored, defaults to False.
@@ -249,23 +239,22 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
             await self._add_vector_to_records(records)
         data = self.serialize(records)
         try:
-            return await self._inner_upsert(data, collection_name, **kwargs)  # type: ignore
+            return await self._inner_upsert(data, **kwargs)  # type: ignore
         except Exception as exc:
             raise MemoryConnectorException(f"Error upserting records: {exc}") from exc
 
-    async def get(self, key: TKey, collection_name: str | None = None, **kwargs: Any) -> TModel | None:
+    async def get(self, key: TKey, **kwargs: Any) -> TModel | None:
         """Get a record.
 
         Args:
             key (TKey): The key.
-            collection_name (str, optional): The collection name. Defaults to None.
             **kwargs (Any): Additional arguments.
 
         Returns:
             TModel: The record.
         """
         try:
-            records = await self._inner_get([key], collection_name)
+            records = await self._inner_get([key])
         except Exception as exc:
             raise MemoryConnectorException(f"Error getting record: {exc}") from exc
         if not records:
@@ -278,21 +267,18 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         except Exception as exc:
             raise MemoryConnectorException(f"Error deserializing record: {exc}") from exc
 
-    async def get_batch(
-        self, keys: list[TKey], collection_name: str | None = None, **kwargs: Any
-    ) -> OneOrMany[TModel] | None:
+    async def get_batch(self, keys: list[TKey], **kwargs: Any) -> OneOrMany[TModel] | None:
         """Get a batch of records.
 
         Args:
             keys (list[TKey]): The keys.
-            collection_name (str, optional): The collection name. Defaults to None.
             **kwargs (Any): Additional arguments.
 
         Returns:
             The records, either a list of TModel or the container type.
         """
         try:
-            records = await self._inner_get(keys, collection_name)
+            records = await self._inner_get(keys)
         except Exception as exc:
             raise MemoryConnectorException(f"Error getting record: {exc}") from exc
         if not records:
@@ -302,31 +288,29 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         except Exception as exc:
             raise MemoryConnectorException(f"Error deserializing record: {exc}") from exc
 
-    async def delete(self, key: TKey, collection_name: str | None = None, **kwargs: Any) -> None:
+    async def delete(self, key: TKey, **kwargs: Any) -> None:
         """Delete a record.
 
         Args:
             key (TKey): The key.
-            collection_name (str, optional): The collection name. Defaults to None.
             **kwargs (Any): Additional arguments.
 
         """
         try:
-            await self._inner_delete([key], collection_name, **kwargs)
+            await self._inner_delete([key], **kwargs)
         except Exception as exc:
             raise MemoryConnectorException(f"Error deleting record: {exc}") from exc
 
-    async def delete_batch(self, keys: list[TKey], collection_name: str | None = None, **kwargs: Any) -> None:
+    async def delete_batch(self, keys: list[TKey], **kwargs: Any) -> None:
         """Delete a batch of records.
 
         Args:
             keys (list[TKey]): The keys.
-            collection_name (str, optional): The collection name. Defaults to None.
             **kwargs (Any): Additional arguments.
 
         """
         try:
-            await self._inner_delete(keys, collection_name, **kwargs)
+            await self._inner_delete(keys, **kwargs)
         except Exception as exc:
             raise MemoryConnectorException(f"Error deleting records: {exc}") from exc
 
@@ -512,16 +496,6 @@ class VectorRecordStoreBase(ABC, Generic[TKey, TModel]):
         """Delete the instance."""
         with contextlib.suppress(Exception):
             asyncio.get_running_loop().create_task(self.close())
-
-    def _get_collection_name(self, collection_name: str | None = None) -> str:
-        """Gets the collection name, ensuring it is lower case.
-
-        First tries the supplied argument, then self.
-        """
-        collection_name = collection_name or self.collection_name or None
-        if not collection_name:
-            raise MemoryConnectorException("Error: collection_name not set.")
-        return collection_name
 
     async def _add_vector_to_records(self, records: OneOrMany[TModel], **kwargs) -> OneOrMany[TModel]:
         """Vectorize the vector record."""

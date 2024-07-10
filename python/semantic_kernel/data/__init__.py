@@ -9,10 +9,10 @@ from semantic_kernel.data.models.vector_store_record_fields import (
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
+from semantic_kernel.data.vector_store_collection_base import VectorStoreCollectionBase
 
 __all__ = [
-    "VectorRecordStoreBase",
+    "VectorStoreCollectionBase",
     "VectorStoreRecordDataField",
     "VectorStoreRecordDefinition",
     "VectorStoreRecordKeyField",

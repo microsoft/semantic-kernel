@@ -15,7 +15,7 @@ else:
 from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
+from semantic_kernel.data.vector_store_collection_base import VectorStoreCollectionBase
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.kernel import Kernel
@@ -29,7 +29,7 @@ TKey = TypeVar("TKey", str, int)
 
 
 @experimental_class
-class QdrantVectorRecordStore(VectorRecordStoreBase[str | int, TModel]):
+class QdrantVectorRecordStore(VectorStoreCollectionBase[str | int, TModel]):
     def __init__(
         self,
         data_model_type: type[TModel],
@@ -118,7 +118,7 @@ class QdrantVectorRecordStore(VectorRecordStoreBase[str | int, TModel]):
         **kwargs: Any,
     ) -> list[TKey]:
         result = await self._qdrant_client.upsert(
-            collection_name=self._get_collection_name(collection_name),
+            collection_name=self.collection_name,
             points=records,
             **kwargs,
         )
@@ -127,21 +127,19 @@ class QdrantVectorRecordStore(VectorRecordStoreBase[str | int, TModel]):
         raise ServiceResponseException("Upsert failed")
 
     @override
-    async def _inner_get(
-        self, keys: list[TKey], collection_name: str | None = None, **kwargs: Any
-    ) -> OneOrMany[Any] | None:
+    async def _inner_get(self, keys: list[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
         if "with_vectors" not in kwargs:
             kwargs["with_vectors"] = True
         return await self._qdrant_client.retrieve(
-            collection_name=self._get_collection_name(collection_name),
+            collection_name=self.collection_name,
             ids=keys,
             **kwargs,
         )
 
     @override
-    async def _inner_delete(self, keys: list[TKey], collection_name: str | None = None, **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: list[TKey], **kwargs: Any) -> None:
         result = await self._qdrant_client.delete(
-            collection_name=self._get_collection_name(collection_name),
+            collection_name=self.collection_name,
             points_selector=keys,
             **kwargs,
         )
@@ -157,7 +155,7 @@ class QdrantVectorRecordStore(VectorRecordStoreBase[str | int, TModel]):
         return [
             PointStruct(
                 id=record.pop(self._key_field),
-                # TODO: deal with non-named vectors
+                # TODO (eavanvalkenburg): deal with non-named vectors
                 vector={field: record.pop(field) for field in self._data_model_definition.vector_fields},
                 payload=record,
             )
