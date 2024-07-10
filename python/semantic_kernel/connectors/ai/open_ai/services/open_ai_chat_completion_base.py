@@ -327,8 +327,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         items: list[Any] = self._get_tool_calls_from_chat_choice(choice)
         items.extend(self._get_function_call_from_chat_choice(choice))
-        if choice.delta.content is not None:
+        if choice.delta and choice.delta.content is not None:
             items.append(StreamingTextContent(choice_index=choice.index, text=choice.delta.content))
+        if not items:
+            return None
         return StreamingChatMessageContent(
             choice_index=choice.index,
             inner_content=chunk,
@@ -365,7 +367,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     def _get_tool_calls_from_chat_choice(self, choice: Choice | ChunkChoice) -> list[FunctionCallContent]:
         """Get tool calls from a chat choice."""
         content = choice.message if isinstance(choice, Choice) else choice.delta
-        if content.tool_calls is None:
+        if not content or content.tool_calls is None:
             return []
         return [
             FunctionCallContent(
@@ -380,7 +382,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     def _get_function_call_from_chat_choice(self, choice: Choice | ChunkChoice) -> list[FunctionCallContent]:
         """Get a function call from a chat choice."""
         content = choice.message if isinstance(choice, Choice) else choice.delta
-        if content.function_call is None:
+        if not content or content.function_call is None:
             return []
         return [
             FunctionCallContent(
