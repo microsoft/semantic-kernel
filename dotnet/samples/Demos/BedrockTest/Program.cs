@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 
+// ----------------------------CHAT COMPLETION----------------------------
 // string userInput;
 // ChatHistory chatHistory = new ChatHistory();
 // do
@@ -37,7 +38,11 @@ using Microsoft.SemanticKernel.TextGeneration;
 //         }
 //     }
 // } while (userInput.ToLower() != "exit");
-//
+
+
+
+
+// ----------------------------TEXT GENERATION----------------------------
 // const string UserPrompt2 = "What is 2 + 2?";
 // Console.WriteLine($"Text Generation Question: {UserPrompt2}");
 // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
@@ -66,6 +71,11 @@ using Microsoft.SemanticKernel.TextGeneration;
 //     Console.WriteLine("Text Generation Answer: (No output text)");
 // }
 
+
+
+
+
+// ----------------------------STREAM TEXT GENERATION----------------------------
 // const string UserPrompt3 = "Who are you?";
 // Console.WriteLine($"Stream Text Generation Question: {UserPrompt3}");
 // // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
@@ -83,25 +93,17 @@ using Microsoft.SemanticKernel.TextGeneration;
 //     Console.Write(textContent.Text);
 // }
 
-// const string UserPrompt4 = "Who are you?";
-// Console.WriteLine($"Stream Chat Generation Question: {UserPrompt4}");
-// var chat = new ChatHistory();
-// chat.AddMessage(AuthorRole.User, UserPrompt4);
-// // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
-// var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build();
-//
-// var streamChatCompletionService = kernel4.GetRequiredService<IChatCompletionService>();
-// var streamChatCompletion = streamChatCompletionService.GetStreamingChatMessageContentsAsync(chat).ConfigureAwait(true);
-// await foreach (var chatContent in streamChatCompletion)
-// {
-//     Console.Write(chatContent.Content);
-// }
 
+
+
+
+
+// ----------------------------STREAM CHAT COMPLETION----------------------------
 string userInput;
 ChatHistory chatHistory = new ChatHistory();
 do
 {
-    Console.WriteLine("Enter a prompt (or 'exit' to quit): ");
+    Console.Write("Enter a prompt (or 'exit' to quit): ");
     userInput = Console.ReadLine();
 
     if (userInput.ToLower() != "exit")
@@ -110,7 +112,12 @@ do
         Console.WriteLine($"Stream Chat Completion Question: {userInput}");
 
         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build();
-        var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
+        // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
+        // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-v2").Build();
+        // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-sonnet-20240229-v1:0").Build();
+        // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("cohere.command-r-plus-v1:0").Build();
+        var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("meta.llama3-8b-instruct-v1:0").Build();
+
 
         var chatCompletionService = kernel4.GetRequiredService<IChatCompletionService>();
         var result = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory).ConfigureAwait(false);

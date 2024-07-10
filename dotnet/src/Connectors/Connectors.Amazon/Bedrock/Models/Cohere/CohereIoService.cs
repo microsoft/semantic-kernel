@@ -105,6 +105,7 @@ public class CohereIoService : IBedrockModelIoService<IChatCompletionRequest, IC
         }
     }
 
+    //FOR COMMAND R (command has different converse request body)
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         var cohereRequest = new CohereCommandRequest
@@ -281,8 +282,71 @@ public class CohereIoService : IBedrockModelIoService<IChatCompletionRequest, IC
         }
     }
 
+    //FOR COMMAND R ONLY (command does not support chat streaming)
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
-        throw new NotImplementedException(); //Only command r supports converse stream.
+        var cohereRequest = new CohereCommandRequest
+    {
+        // Message = chatHistory.Any() ? chatHistory[^1].Content : string.Empty,
+        ChatHistory = chatHistory.Select(m => new CohereCommandRequest.CohereMessage
+        {
+            Role = MapRole(m.Role),
+            Message = m.Content
+        }).ToList(),
+        Messages = chatHistory.Select(m => new Message
+        {
+            Role = MapRole(m.Role),
+            Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+        }).ToList(),
+        Temperature = this.GetExtensionDataValue<double>(settings?.ExtensionData, "temperature", 0.3),
+        TopP = this.GetExtensionDataValue<double>(settings?.ExtensionData, "p", 0.75),
+        TopK = this.GetExtensionDataValue<double>(settings?.ExtensionData, "k", 0.0),
+        MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 512),
+        PromptTruncation = this.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", "OFF"),
+        FrequencyPenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "frequency_penalty", 0.0),
+        PresencePenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "presence_penalty", 0.0),
+        Seed = this.GetExtensionDataValue<int>(settings?.ExtensionData, "seed", 0),
+        ReturnPrompt = this.GetExtensionDataValue<bool>(settings?.ExtensionData, "return_prompt", false),
+        Tools = this.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", null),
+        ToolResults = this.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", null),
+        StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
+        RawPrompting = this.GetExtensionDataValue<bool>(settings?.ExtensionData, "raw_prompting", false)
+    };
+    var converseStreamRequest = new ConverseStreamRequest
+    {
+        ModelId = modelId,
+        Messages = cohereRequest.Messages,
+        System = cohereRequest.System,
+        InferenceConfig = new InferenceConfiguration
+        {
+            Temperature = (float)cohereRequest.Temperature,
+            TopP = (float)cohereRequest.TopP,
+            MaxTokens = cohereRequest.MaxTokens
+        },
+        AdditionalModelRequestFields = new Document
+        {
+            { "message", cohereRequest.Message },
+            { "documents", new Document(cohereRequest.Documents?.Select(d => new Document
+            {
+                { "title", d.Title },
+                { "snippet", d.Snippet }
+            }).ToList() ?? new List<Document>()) },
+            { "search_queries_only", cohereRequest.SearchQueriesOnly },
+            { "preamble", cohereRequest.Preamble },
+            { "k", cohereRequest.TopK },
+            { "prompt_truncation", cohereRequest.PromptTruncation },
+            { "frequency_penalty", cohereRequest.FrequencyPenalty },
+            { "presence_penalty", cohereRequest.PresencePenalty },
+            { "seed", cohereRequest.Seed },
+            { "return_prompt", cohereRequest.ReturnPrompt },
+            { "stop_sequences", new Document(cohereRequest.StopSequences?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
+            { "raw_prompting", cohereRequest.RawPrompting }
+        },
+        AdditionalModelResponseFieldPaths = new List<string>(),
+        GuardrailConfig = null,
+        ToolConfig = null
+    };
+
+    return converseStreamRequest;
     }
 }

@@ -176,6 +176,57 @@ public class AnthropicIoService : IBedrockModelIoService<IChatCompletionRequest,
 
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
-        throw new NotImplementedException();
+        var claudeRequest = new ClaudeRequest.ClaudeChatCompletionRequest
+        {
+            Messages = chatHistory.Select(m => new Message
+            {
+                Role = MapRole(m.Role),
+                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+            }).ToList(),
+            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
+            InferenceConfig = new InferenceConfiguration
+            {
+                Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1f),
+                TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 0.999f),
+                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 512) //different for diff models need to change
+            },
+            // AnthropicVersion = "bedrock-2023-05-31",
+            Tools = this.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
+            ToolChoice = this.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null)
+        };
+
+        var converseStreamRequest = new ConverseStreamRequest()
+        {
+            ModelId = modelId,
+            Messages = claudeRequest.Messages,
+            System = claudeRequest.System,
+            InferenceConfig = claudeRequest.InferenceConfig,
+            AdditionalModelRequestFields = new Document
+            {
+                { "anthropic_version", claudeRequest.AnthropicVersion },
+                {
+                    "tools", new Document(claudeRequest.Tools?.Select(t => new Document
+                    {
+                        { "name", t.Name },
+                        { "description", t.Description },
+                        { "input_schema", t.InputSchema }
+                    }).ToList() ?? new List<Document>())
+                },
+                {
+                    "tool_choice", claudeRequest.ToolChoice != null
+                        ? new Document
+                        {
+                            { "type", claudeRequest.ToolChoice.Type },
+                            { "name", claudeRequest.ToolChoice.Name }
+                        }
+                        : new Document()
+                }
+            },
+            AdditionalModelResponseFieldPaths = new List<string>(),
+            GuardrailConfig = null, // Set if needed
+            ToolConfig = null // Set if needed
+        };
+
+        return converseStreamRequest;
     }
 }

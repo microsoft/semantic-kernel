@@ -167,6 +167,34 @@ public class LlamaIoService : IBedrockModelIoService<IChatCompletionRequest, ICh
 
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
-        throw new NotImplementedException();
+        var llamaRequest = new LlamaRequest
+        {
+            Messages = chatHistory.Select(m => new Message
+            {
+                Role = MapRole(m.Role),
+                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+            }).ToList(),
+            System = new List<SystemContentBlock>(),
+            Temperature = this.GetExtensionDataValue<double>(settings?.ExtensionData, "temperature", 0.5),
+            TopP = this.GetExtensionDataValue<double>(settings?.ExtensionData, "top_p", 0.9),
+            MaxGenLen = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_gen_len", 512)
+        };
+        var converseStreamRequest = new ConverseStreamRequest
+        {
+            ModelId = modelId,
+            Messages = llamaRequest.Messages,
+            System = llamaRequest.System,
+            InferenceConfig = new InferenceConfiguration
+            {
+                Temperature = (float)llamaRequest.Temperature,
+                TopP = (float)llamaRequest.TopP,
+                MaxTokens = llamaRequest.MaxGenLen
+            },
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>(),
+            GuardrailConfig = null,
+            ToolConfig = null
+        };
+        return converseStreamRequest;
     }
 }
