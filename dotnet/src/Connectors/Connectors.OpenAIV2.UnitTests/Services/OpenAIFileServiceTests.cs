@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -10,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
+using OpenAI.Files;
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
@@ -115,8 +118,8 @@ public sealed class OpenAIFileServiceTests : IDisposable
         var file = await service.GetFileAsync("file-id");
         Assert.NotNull(file);
         Assert.NotEqual(string.Empty, file.Id);
-        Assert.NotEqual(string.Empty, file.FileName);
-        Assert.NotEqual(DateTime.MinValue, file.CreatedTimestamp);
+        Assert.NotEqual(string.Empty, file.Filename);
+        Assert.NotEqual(DateTime.MinValue, file.CreatedAt);
         Assert.NotEqual(0, file.SizeInBytes);
     }
 
@@ -167,6 +170,54 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         // Act & Assert
         var files = (await service.GetFilesAsync()).ToArray();
+        Assert.NotNull(files);
+        Assert.NotEmpty(files);
+    }
+
+    public static TheoryData<OpenAIFilePurpose?> FilePurposes => new()
+    {
+        { null },
+        { OpenAIFilePurpose.FineTune },
+        { OpenAIFilePurpose.Assistants },
+        { OpenAIFilePurpose.Vision },
+        { OpenAIFilePurpose.FineTuneResults },
+        { OpenAIFilePurpose.AssistantsOutput },
+        { OpenAIFilePurpose.Batch },
+        { OpenAIFilePurpose.BatchOutput },
+    };
+
+    [Theory]
+    [MemberData(nameof(FilePurposes))]
+    public async Task GetFilesWithPurposeWorksCorrectlyAsync(OpenAIFilePurpose? purpose)
+    {
+        // Arrange
+        var service = new OpenAIFileService("api-key", httpClient: this._httpClient);
+        using var response = this.CreateSuccessResponse(
+                    """
+                    {
+                        "data": [
+                            {
+                                "id": "123",
+                                "filename": "file1.txt",
+                                "purpose": "assistants",
+                                "bytes": 120000,
+                                "created_at": 1677610602
+                            },
+                            {
+                                "id": "456",
+                                "filename": "file2.txt",
+                                "purpose": "assistants",
+                                "bytes": 999,
+                                "created_at": 1677610606
+                            }
+                        ]
+                    }
+                    """);
+
+        this._messageHandlerStub.ResponseToReturn = response;
+
+        // Act & Assert
+        var files = (await service.GetFilesAsync(purpose)).ToArray();
         Assert.NotNull(files);
         Assert.NotEmpty(files);
     }
@@ -225,7 +276,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         this._messageHandlerStub.ResponseToReturn = response;
 
-        var settings = new OpenAIFileUploadExecutionSettings("test.txt", OpenAIFilePurpose.Assistants);
+        var settings = new OpenAIFileUploadExecutionSettings("test.txt", FileUploadPurpose.Assistants);
 
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
@@ -240,8 +291,8 @@ public sealed class OpenAIFileServiceTests : IDisposable
         var file = await service.UploadContentAsync(content, settings);
         Assert.NotNull(file);
         Assert.NotEqual(string.Empty, file.Id);
-        Assert.NotEqual(string.Empty, file.FileName);
-        Assert.NotEqual(DateTime.MinValue, file.CreatedTimestamp);
+        Assert.NotEqual(string.Empty, file.Filename);
+        Assert.NotEqual(DateTime.MinValue, file.CreatedAt);
         Assert.NotEqual(0, file.SizeInBytes);
 
         writer.Dispose();
@@ -259,7 +310,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         this._messageHandlerStub.ResponseToReturn = response;
 
-        var settings = new OpenAIFileUploadExecutionSettings("test.txt", OpenAIFilePurpose.Assistants);
+        var settings = new OpenAIFileUploadExecutionSettings("test.txt", FileUploadPurpose.Assistants);
 
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);

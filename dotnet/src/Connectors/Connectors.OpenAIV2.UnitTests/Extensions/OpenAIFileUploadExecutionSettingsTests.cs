@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Files;
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Extensions;
@@ -12,7 +13,7 @@ public class OpenAIFileUploadExecutionSettingsTests
     {
         // Arrange
         var fileName = "file.txt";
-        var purpose = OpenAIFilePurpose.FineTune;
+        var purpose = FileUploadPurpose.FineTune;
 
         // Act
         var settings = new OpenAIFileUploadExecutionSettings(fileName, purpose);
