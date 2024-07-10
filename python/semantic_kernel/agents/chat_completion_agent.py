@@ -138,7 +138,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
     @override
     async def invoke_stream(  # type: ignore
         self, history: ChatHistory
-    ) -> AsyncGenerator[StreamingChatMessageContent, None]:
+    ) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke the chat history handler in streaming mode.
 
         Args:

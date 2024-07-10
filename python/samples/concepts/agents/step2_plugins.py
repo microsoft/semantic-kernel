@@ -17,6 +17,9 @@ from semantic_kernel.kernel import Kernel
 # the Kernel.                                                     #
 ###################################################################
 
+# This sample allows for a streaming response verus a non-streaming response
+streaming = True
+
 # Define the agent name and instructions
 HOST_NAME = "Host"
 HOST_INSTRUCTIONS = "Answer questions about the menu."
@@ -48,8 +51,18 @@ async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory
 
     print(f"# {AuthorRole.USER}: '{input}'")
 
-    async for content in agent.invoke(chat):
-        print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+    if streaming:
+        contents = []
+        content_name = ""
+        async for content in agent.invoke_stream(chat):
+            content_name = content.name
+            contents.append(content)
+        message_content = "".join([content.content for content in contents])
+        print(f"# {content.role} - {content_name or '*'}: '{message_content}'")
+        chat.add_assistant_message(message_content)
+    else:
+        async for content in agent.invoke(chat):
+            print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
 
 
 async def main():
