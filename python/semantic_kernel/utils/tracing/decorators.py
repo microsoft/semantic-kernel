@@ -206,7 +206,7 @@ def _start_completion_activity(
         if attribute:
             span.set_attribute(TOP_P, attribute)
 
-    if are_sensitive_events_enabled():
+    if are_sensitive_events_enabled() and prompt:
         span.add_event(PROMPT_EVENT, {PROMPT_EVENT_PROMPT: prompt})
 
     return span
@@ -214,7 +214,7 @@ def _start_completion_activity(
 
 def _set_completion_response(
     span: Span,
-    completion_text: str,
+    completion_text: str | None,
     finish_reasons: list[str] | None,
     response_id: str,
     prompt_tokens: int | None = None,
