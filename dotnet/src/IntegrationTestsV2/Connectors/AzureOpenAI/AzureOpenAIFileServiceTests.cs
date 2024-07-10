@@ -42,7 +42,7 @@ public sealed class AzureOpenAIFileServiceTests()
             AssertFileReferenceEquals(fileReference, fileName, sourceData.Length, AzureOpenAIFilePurpose.Assistants);
 
             // Retrieve files by different purpose
-            Dictionary<string, AzureOpenAIFileReference> fileMap = await GetFilesAsync(fileService, AzureOpenAIFilePurpose.Vision);
+            Dictionary<string, AzureOpenAIFileReference> fileMap = await GetFilesAsync(fileService, AzureOpenAIFilePurpose.FineTune);
             Assert.DoesNotContain(fileReference.Id, fileMap.Keys);
 
             // Retrieve files by expected purpose
