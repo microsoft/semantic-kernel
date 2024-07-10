@@ -35,8 +35,9 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             An async iterable of ChatMessageContent.
         """
         if not isinstance(agent, ChatHistoryHandler):
+            id = agent.id if hasattr(agent, "id") else ""
             raise ServiceInvalidTypeError(
-                f"Invalid channel binding for agent: {agent.id if hasattr(agent, "id") else ""} ({type(agent).__name__})"  # noqa: E501
+                f"Invalid channel binding for agent with id: `{id}` with name: ({type(agent).__name__})"
             )
 
         async for message in agent.invoke(self.messages):
