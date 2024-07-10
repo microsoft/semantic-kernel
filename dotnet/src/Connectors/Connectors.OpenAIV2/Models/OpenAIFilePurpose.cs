@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// https://platform.openai.com/docs/api-reference/files/object#files/object-purpose
 /// </summary>
 [Experimental("SKEXP0010")]
-[Obsolete("Use OpenAI SDK or AzureOpenAI SDK clients for file operations.")]
+[Obsolete("Use OpenAI SDK or AzureOpenAI SDK clients for file operations. This class is deprecated and will be removed in a future version.")]
 [ExcludeFromCodeCoverage]
 public readonly struct OpenAIFilePurpose : IEquatable<OpenAIFilePurpose>
 {

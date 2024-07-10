@@ -172,7 +172,7 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    [Obsolete("Obsoleted")]
+    [Obsolete("This test is deprecated and will be removed in a future version.")]
     public void ItCanAddFileService()
     {
         // Arrange

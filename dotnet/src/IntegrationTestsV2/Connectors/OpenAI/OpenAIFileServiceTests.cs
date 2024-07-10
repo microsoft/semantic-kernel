@@ -15,7 +15,7 @@ namespace SemanticKernel.IntegrationTestsV2.Connectors.OpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-[Obsolete("Obsoleted")]
+[Obsolete("This class is deprecated and will be removed in a future version.")]
 public sealed class OpenAIFileServiceTests
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()

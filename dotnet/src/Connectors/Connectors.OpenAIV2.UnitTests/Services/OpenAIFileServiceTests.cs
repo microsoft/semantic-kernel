@@ -12,12 +12,12 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.Files;
+namespace SemanticKernel.Connectors.OpenAI.UnitTests.Files;
 
 /// <summary>
 /// Unit tests for <see cref="OpenAITextToImageService"/> class.
 /// </summary>
-[Obsolete("Obsoleted")]
+[Obsolete("This class is deprecated and will be removed in a future version.")]
 public sealed class OpenAIFileServiceTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;

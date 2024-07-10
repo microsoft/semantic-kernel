@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// File service access for OpenAI: https://api.openai.com/v1/files
 /// </summary>
 [Experimental("SKEXP0010")]
-[Obsolete("Use OpenAI SDK or AzureOpenAI SDK clients for file operations.")]
+[Obsolete("Use OpenAI SDK or AzureOpenAI SDK clients for file operations. This class is deprecated and will be removed in a future version.")]
 [ExcludeFromCodeCoverage]
 public sealed class OpenAIFileService
 {
