@@ -12,13 +12,12 @@ import os
 from collections.abc import Callable
 from typing import Any
 
-from opentelemetry import trace
-from opentelemetry.trace import Span, StatusCode
+from opentelemetry.trace import Span, StatusCode, get_tracer, use_span
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.utils.tracing.const import (
     COMPLETION_EVENT,
     COMPLETION_EVENT_COMPLETION,
@@ -45,7 +44,7 @@ _enable_diagnostics = os.getenv(OTEL_ENABLED_ENV_VAR, "false").lower() in ("true
 _enable_sensitive_events = os.getenv(OTEL_SENSITIVE_ENABLED_ENV_VAR, "false").lower() in ("true", "1", "t")
 
 # Creates a tracer from the global tracer provider
-tracer = trace.get_tracer(__name__)
+tracer = get_tracer(__name__)
 
 
 def are_model_diagnostics_enabled() -> bool:
@@ -70,17 +69,17 @@ def trace_chat_completion(model_provider: str) -> Callable:
     def inner_trace_chat_completion(completion_func: Callable) -> Callable:
         @functools.wraps(completion_func)
         async def wrapper_decorator(*args: Any, **kwargs: Any) -> list[ChatMessageContent]:
+            OPERATION_NAME: str = "chat.completions"
+
             chat_history: ChatHistory = kwargs["chat_history"]
             settings: PromptExecutionSettings = kwargs["settings"]
 
-            if hasattr(settings, "ai_model_id") and settings.ai_model_id:
-                model_name = settings.ai_model_id
-            elif hasattr(args[0], "ai_model_id") and args[0].ai_model_id:
-                model_name = args[0].ai_model_id
-            else:
-                model_name = "unknown"
+            model_name = getattr(settings, "ai_model_id", None) or getattr(args[0], "ai_model_id", None) or "unknown"
 
-            span = _start_completion_activity(model_name, model_provider, chat_history, settings)
+            formatted_messages = (
+                _messages_to_openai_format(chat_history.messages) if are_sensitive_events_enabled() else None
+            )
+            span = _start_completion_activity(OPERATION_NAME, model_name, model_provider, formatted_messages, settings)
 
             try:
                 completions: list[ChatMessageContent] = await completion_func(*args, **kwargs)
@@ -90,18 +89,29 @@ def trace_chat_completion(model_provider: str) -> Callable:
                     span.end()
                 raise
 
-            if span:
-                with trace.use_span(span, end_on_exit=True):
-                    if completions:
-                        first_completion = completions[0]
-                        response_id = first_completion.metadata.get("id") or (first_completion.inner_content or {}).get(
-                            "id"
-                        )
-                        usage = first_completion.metadata.get("usage", None)
-                        prompt_tokens = usage.prompt_tokens if hasattr(usage, "prompt_tokens") else None
-                        completion_tokens = usage.completion_tokens if hasattr(usage, "completion_tokens") else None
+            if span and completions:
+                with use_span(span, end_on_exit=True):
+                    first_completion = completions[0]
+                    response_id = first_completion.metadata.get("id") or (first_completion.inner_content or {}).get(
+                        "id"
+                    )
+                    usage = first_completion.metadata.get("usage", None)
+                    prompt_tokens = getattr(usage, "prompt_tokens", None)
+                    completion_tokens = getattr(usage, "completion_tokens", None)
+
+                    completion_text: str | None = (
+                        _messages_to_openai_format(completions) if are_sensitive_events_enabled() else None
+                    )
+
+                    finish_reasons: list[str] = [str(completion.finish_reason) for completion in completions]
+
                     _set_completion_response(
-                        span, completions, response_id or "unknown", prompt_tokens, completion_tokens
+                        span,
+                        completion_text,
+                        finish_reasons,
+                        response_id or "unknown",
+                        prompt_tokens,
+                        completion_tokens,
                     )
 
             return completions
@@ -111,21 +121,73 @@ def trace_chat_completion(model_provider: str) -> Callable:
     return inner_trace_chat_completion
 
 
+def trace_text_completion(model_provider: str) -> Callable:
+    """Decorator to trace text completion activities."""
+
+    def inner_trace_text_completion(completion_func: Callable) -> Callable:
+        @functools.wraps(completion_func)
+        async def wrapper_decorator(*args: Any, **kwargs: Any) -> list[TextContent]:
+            OPERATION_NAME: str = "text.completions"
+
+            prompt: str = kwargs["prompt"]
+            settings: PromptExecutionSettings = kwargs["settings"]
+
+            model_name = getattr(settings, "ai_model_id", None) or getattr(args[0], "ai_model_id", None) or "unknown"
+
+            span = _start_completion_activity(OPERATION_NAME, model_name, model_provider, prompt, settings)
+
+            try:
+                completions: list[TextContent] = await completion_func(*args, **kwargs)
+            except Exception as exception:
+                if span:
+                    _set_completion_error(span, exception)
+                    span.end()
+                raise
+
+            if span and completions:
+                with use_span(span, end_on_exit=True):
+                    first_completion = completions[0]
+                    response_id = first_completion.metadata.get("id") or (first_completion.inner_content or {}).get(
+                        "id"
+                    )
+                    usage = first_completion.metadata.get("usage", None)
+                    prompt_tokens = getattr(usage, "prompt_tokens", None)
+                    completion_tokens = getattr(usage, "completion_tokens", None)
+
+                    completion_text: str | None = (
+                        json.dumps([completion.text for completion in completions])
+                        if are_sensitive_events_enabled()
+                        else None
+                    )
+
+                    _set_completion_response(
+                        span, completion_text, None, response_id or "unknown", prompt_tokens, completion_tokens
+                    )
+
+            return completions
+
+        return wrapper_decorator
+
+    return inner_trace_text_completion
+
+
 def _start_completion_activity(
-    model_name: str, model_provider: str, chat_history: ChatHistory, execution_settings: PromptExecutionSettings | None
+    operation_name: str,
+    model_name: str,
+    model_provider: str,
+    prompt: str | None,
+    execution_settings: PromptExecutionSettings | None,
 ) -> Span | None:
     """Start a text or chat completion activity for a given model."""
     if not are_model_diagnostics_enabled():
         return None
 
-    OPERATION_NAME: str = "chat.completions"
-
-    span = tracer.start_span(f"{OPERATION_NAME} {model_name}")
+    span = tracer.start_span(f"{operation_name} {model_name}")
 
     # Set attributes on the span
     span.set_attributes(
         {
-            OPERATION: OPERATION_NAME,
+            OPERATION: operation_name,
             SYSTEM: model_provider,
             MODEL: model_name,
         }
@@ -145,15 +207,15 @@ def _start_completion_activity(
             span.set_attribute(TOP_P, attribute)
 
     if are_sensitive_events_enabled():
-        formatted_messages = _messages_to_openai_format(chat_history.messages)
-        span.add_event(PROMPT_EVENT, {PROMPT_EVENT_PROMPT: formatted_messages})
+        span.add_event(PROMPT_EVENT, {PROMPT_EVENT_PROMPT: prompt})
 
     return span
 
 
 def _set_completion_response(
     span: Span,
-    completions: list[ChatMessageContent],
+    completion_text: str,
+    finish_reasons: list[str] | None,
     response_id: str,
     prompt_tokens: int | None = None,
     completion_tokens: int | None = None,
@@ -164,17 +226,17 @@ def _set_completion_response(
 
     span.set_attribute(RESPONSE_ID, response_id)
 
-    finish_reasons: list[str] = [str(content.finish_reason) for content in completions]
-    span.set_attribute(FINISH_REASON, ",".join(finish_reasons))
-
-    if are_sensitive_events_enabled() and completions:
-        span.add_event(COMPLETION_EVENT, {COMPLETION_EVENT_COMPLETION: _messages_to_openai_format(completions)})
+    if finish_reasons:
+        span.set_attribute(FINISH_REASON, ",".join(finish_reasons))
 
     if prompt_tokens:
         span.set_attribute(PROMPT_TOKEN, prompt_tokens)
 
     if completion_tokens:
         span.set_attribute(COMPLETION_TOKEN, completion_tokens)
+
+    if are_sensitive_events_enabled() and completion_text:
+        span.add_event(COMPLETION_EVENT, {COMPLETION_EVENT_COMPLETION: completion_text})
 
 
 def _set_completion_error(span: Span, error: Exception) -> None:
@@ -193,37 +255,4 @@ def _messages_to_openai_format(messages: list[ChatMessageContent]) -> str:
     OpenTelemetry recommends formatting the messages in the OpenAI format
     regardless of the actual model being used.
     """
-    formatted_messages = [
-        json.dumps(
-            {
-                "role": message.role,
-                "content": json.dumps(message.content),
-                **(
-                    {"tool_calls": _tool_calls_to_openai_format(message.items)}
-                    if any(isinstance(item, FunctionCallContent) for item in message.items)
-                    else {}
-                ),
-            }
-        )
-        for message in messages
-    ]
-
-    return "[{}]".format(", \n".join(formatted_messages))
-
-
-def _tool_calls_to_openai_format(items: list[ITEM_TYPES]) -> str:
-    """Convert a list of FunctionCallContent to a string in the OpenAI format.
-
-    OpenTelemetry recommends formatting the messages in the OpenAI format
-    regardless of the actual model being used.
-    """
-    tool_calls: list[str] = []
-    for item in items:
-        if isinstance(item, FunctionCallContent):
-            tool_call = {
-                "id": item.id,
-                "function": {"arguments": json.dumps(item.arguments), "name": item.function_name},
-                "type": "function",
-            }
-            tool_calls.append(json.dumps(tool_call))
-    return f"[{', '.join(tool_calls)}]"
+    return json.dumps([message.to_dict() for message in messages])

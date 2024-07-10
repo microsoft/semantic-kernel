@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from openai import AsyncStream
 from openai.types import Completion, CompletionChoice
@@ -18,6 +18,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidResponseError
+from semantic_kernel.utils.tracing.decorators import trace_text_completion
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -32,6 +33,9 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         """Create a request settings object."""
         return OpenAITextPromptExecutionSettings
 
+    MODEL_PROVIDER_NAME: ClassVar[str] = "openai"
+
+    @trace_text_completion(MODEL_PROVIDER_NAME)
     async def get_text_contents(
         self,
         prompt: str,
