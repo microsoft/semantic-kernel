@@ -133,6 +133,47 @@ internal partial class ClientCore
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ClientCore"/> class.
+    /// </summary>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    internal ClientCore(
+        string endpoint,
+        string apiKey,
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
+    {
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        var options = GetAzureOpenAIClientOptions(httpClient);
+
+        this.Logger = logger ?? NullLogger.Instance;
+        this.Endpoint = new Uri(endpoint);
+        this.Client = new AzureOpenAIClient(this.Endpoint, apiKey, options);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ClientCore"/> class.
+    /// Note: instances created this way might not have the default diagnostics settings,
+    /// it's up to the caller to configure the client.
+    /// </summary>
+    /// <param name="openAIClient">Custom <see cref="AzureOpenAIClient"/>.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
+    internal ClientCore(
+        AzureOpenAIClient openAIClient,
+        ILogger? logger = null)
+    {
+        Verify.NotNull(openAIClient);
+
+        this.Logger = logger ?? NullLogger.Instance;
+        this.Client = openAIClient;
+    }
+
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="serviceVersion">Optional API version.</param>
