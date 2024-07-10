@@ -5,7 +5,7 @@ import logging
 import sys
 from typing import Any, TypeVar
 
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from pydantic import ValidationError
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -14,8 +14,10 @@ else:
 
 from azure.search.documents.aio import SearchClient
 
+from semantic_kernel.connectors.memory.azure_ai_search.utils import get_search_index_async_client
 from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_record_store_base import VectorRecordStoreBase
+from semantic_kernel.data.vector_store_collection_base import VectorStoreCollectionBase
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -24,13 +26,13 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
+class AzureAISearchVectorStoreCollection(VectorStoreCollectionBase[str, TModel]):
     def __init__(
         self,
-        search_client: SearchClient,
-        collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        search_client: SearchClient | None = None,
+        collection_name: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
@@ -40,14 +42,59 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
                 await memory.<...>
 
         Args:
-            search_client (SearchClient): The search client for interacting with Azure AI Search.
-            collection_name (str): The name of the collection, optional.
             data_model_type (type[TModel]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
-            **kwargs: Additional keyword arguments.
+            search_client (SearchClient): The search client for interacting with Azure AI Search.
+            collection_name (str): The name of the collection, optional.
+            **kwargs: Additional keyword arguments, including:
+            The first set are the same keyword arguments used for AzureAISeachVectorStore.
+                search_endpoint: str | None = None,
+                api_key: str | None = None,
+                azure_credentials: AzureKeyCredential | None = None,
+                token_credentials: TokenCredential | None = None,
+                search_index_client: SearchIndexClient | None = None,
+                env_file_path: str | None = None,
+                env_file_encoding: str | None = None,
                 kernel: Kernel to use for embedding generation.
 
         """
+        if not search_client:
+            search_index_client = kwargs.get("search_index_client", None)
+            if not search_index_client:
+                from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_settings import (
+                    AzureAISearchSettings,
+                )
+
+                try:
+                    azure_ai_search_settings = AzureAISearchSettings.create(
+                        env_file_path=kwargs.get("env_file_path", None),
+                        endpoint=kwargs.get("search_endpoint", None),
+                        api_key=kwargs.get("api_key", None),
+                        env_file_encoding=kwargs.get("env_file_encoding", None),
+                        index_name=collection_name,
+                    )
+                except ValidationError as exc:
+                    raise MemoryConnectorInitializationError(
+                        "Failed to create Azure Cognitive Search settings."
+                    ) from exc
+                self._search_index_client = get_search_index_async_client(
+                    azure_ai_search_settings=azure_ai_search_settings,
+                    azure_credential=kwargs.get("azure_credentials", None),
+                    token_credential=kwargs.get("token_credentials", None),
+                )
+            else:
+                self._search_index_client = search_index_client
+            if not collection_name:
+                raise MemoryConnectorInitializationError("Collection name is required.")
+            search_client = self._search_index_client.get_search_client(index_name=collection_name)
+        else:
+            if not collection_name:
+                collection_name = search_client._index_name
+            if search_client._index_name != self.collection_name:
+                raise MemoryConnectorInitializationError(
+                    f"Collection name '{collection_name}' does not match the index name '{search_client._index_name}'."
+                )
+
         super().__init__(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
@@ -55,13 +102,11 @@ class AzureAISearchVectorRecordStore(VectorRecordStoreBase[str, TModel]):
             kernel=kwargs.get("kernel", None),
         )
         self._search_client = search_client
-        if self._search_client._index_name != self.collection_name:
-            raise MemoryConnectorInitializationError(
-                f"Collection name '{collection_name}' does not match the index name '{self._search_client._index_name}'."
-            )
 
     async def close(self):
         """Async close connection, invoked by MemoryStoreBase.__aexit__()."""
+        if self._search_index_client:
+            await self._search_index_client.close()
         await self._search_client.close()
 
     @override

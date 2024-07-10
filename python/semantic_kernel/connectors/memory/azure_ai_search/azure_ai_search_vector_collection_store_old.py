@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import Any, TypeVar
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
+from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
     ExhaustiveKnnAlgorithmConfiguration,
@@ -21,8 +22,8 @@ from azure.search.documents.indexes.models import (
 )
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_vector_record_store_2 import (
-    AzureAISearchVectorRecordStore,
+from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_vector_store_collection import (
+    AzureAISearchVectorStoreCollection,
 )
 from semantic_kernel.connectors.memory.azure_ai_search.utils import get_search_index_async_client
 from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
@@ -35,10 +36,8 @@ from semantic_kernel.data.models.vector_store_record_fields import (
 )
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
-
-if TYPE_CHECKING:
-    pass
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -78,10 +77,13 @@ TYPE_MAPPER_VECTOR = {
 
 
 @experimental_class
-class AzureAISearchClient:
+class AzureAISearchVectorStore(AzureAISearchVectorStoreCollection):
     def __init__(
         self,
+        data_model_type: type[TModel],
+        data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
+        kernel: Kernel | None = None,
         search_endpoint: str | None = None,
         api_key: str | None = None,
         azure_credentials: AzureKeyCredential | None = None,
@@ -128,46 +130,40 @@ class AzureAISearchClient:
         except ValidationError as exc:
             raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
 
+        super().__init__(
+            data_model_type=data_model_type,
+            data_model_definition=data_model_definition,
+            collection_name=azure_ai_search_settings.index_name,
+            kernel=kernel,
+        )
         self._search_index_client = search_index_client or get_search_index_async_client(
             azure_ai_search_settings=azure_ai_search_settings,
             azure_credential=azure_credentials,
             token_credential=token_credentials,
         )
-        self._collection_name = azure_ai_search_settings.index_name
-        self._vector_stores = {}
+        if self.collection_name:
+            self._search_clients: dict[str, SearchClient] = {
+                self.collection_name: self._search_index_client.get_search_client(self.collection_name)
+            }
+        else:
+            self._search_clients = {}
 
-    def get_vector_record_store(
-        self,
-        data_model_type: type[TModel],
-        definition: VectorStoreRecordDefinition | None = None,
-        collection_name: str | None = None,
-        vector_store_kwargs: dict[str, Any] = {},
-        **kwargs: Any,
-    ) -> AzureAISearchVectorRecordStore:
-        """Get a vector record store for the collection.
+    async def list_collection_names(self, **kwargs: Any) -> list[str]:
+        """Get the names of all collections."""
+        if "params" not in kwargs:
+            kwargs["params"] = {"select": ["name"]}
+        return [index async for index in self._search_index_client.list_index_names(**kwargs)]
 
-        Args:
-            data_model_type (type[TModel]): The type of the data model.
-            definition (VectorStoreRecordDefinition | None): The model fields, optional.
-            collection_name (str): The name of the collection,
-                when None the collection_name set in the constructor is used.
-            vector_store_kwargs (dict[str, Any]): Additional keyword arguments,
-                passed to the vector store as kwargs.
-            **kwargs: Additional keyword arguments, passed to the search client constructor.
-        """
-        collection_name = self._get_collection_name(collection_name)
-        if collection_name not in self._vector_stores:
-            self._vector_stores[collection_name] = AzureAISearchVectorRecordStore[data_model_type](
-                search_client=self._search_index_client.get_search_client(collection_name, **kwargs),
-                collection_name=collection_name,
-                data_model_type=data_model_type,
-                data_model_definition=definition,
-                **vector_store_kwargs,
-            )
-        return self._vector_stores[collection_name]
+    async def collection_exists(self, collection_name: str | None = None, **kwargs) -> bool:
+        """Check if a collection with the name exists."""
+        return self._get_collection_name(collection_name) in await self.list_collection_names(**kwargs)
+
+    async def delete_collection(self, collection_name: str | None = None, **kwargs) -> None:
+        """Delete a collection."""
+        await self._search_index_client.delete_index(index=self._get_collection_name(collection_name), **kwargs)
 
     async def create_collection(
-        self, definition: VectorStoreRecordDefinition, collection_name: str | None = None, **kwargs
+        self, collection_name: str | None = None, definition: VectorStoreRecordDefinition | None = None, **kwargs
     ) -> SearchIndex:
         """Create a new collection in Azure AI Search.
 
@@ -186,9 +182,11 @@ class AzureAISearchClient:
             if isinstance(index, SearchIndex):
                 return await self._search_index_client.create_index(index=index, **kwargs)
             raise MemoryConnectorException("Invalid index type.")
+        if not definition and not self._data_model_definition:
+            raise MemoryConnectorInitializationError("Definition is required to create a collection.")
         index = self._data_model_to_index(
             collection_name=self._get_collection_name(collection_name),
-            definition=definition,
+            definition=definition or self._data_model_definition,
             encryption_key=kwargs.pop("encryption_key", None),
         )
         return await self._search_index_client.create_index(index=index, **kwargs)
@@ -269,27 +267,3 @@ class AzureAISearchClient:
             vector_search=VectorSearch(profiles=search_profiles, algorithms=search_algos),
             encryption_key=encryption_key,
         )
-
-    def _get_collection_name(self, collection_name: str | None = None) -> str:
-        """Gets the collection name, ensuring it is lower case.
-
-        First tries the supplied argument, then self.
-        """
-        collection_name = collection_name or self._collection_name or None
-        if not collection_name:
-            raise MemoryConnectorException("Error: collection_name not set.")
-        return collection_name
-
-    async def list_collection_names(self, **kwargs: Any) -> list[str]:
-        """Get the names of all collections."""
-        if "params" not in kwargs:
-            kwargs["params"] = {"select": ["name"]}
-        return [index async for index in self._search_index_client.list_index_names(**kwargs)]
-
-    async def collection_exists(self, collection_name: str | None = None, **kwargs) -> bool:
-        """Check if a collection with the name exists."""
-        return self._get_collection_name(collection_name) in await self.list_collection_names(**kwargs)
-
-    async def delete_collection(self, collection_name: str | None = None, **kwargs) -> None:
-        """Delete a collection."""
-        await self._search_index_client.delete_index(index=self._get_collection_name(collection_name), **kwargs)
