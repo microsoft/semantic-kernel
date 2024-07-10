@@ -3,7 +3,7 @@
 
 ## Context and Problem Statement
 
-Open AI has release the _Assistants V2_ API.  This builds on top of the V1 _assistant_ concept, but also invalidates certain V1 features.  In addition, the _dotnet_ API that supports _Assistant V2_ features is entirely divergent on the `Azure.AI.OpenAI.Assistants` SDK.
+Open AI has release the _Assistants V2_ API.  This builds on top of the V1 _assistant_ concept, but also invalidates certain V1 features.  In addition, the _dotnet_ API that supports _Assistant V2_ features is entirely divergent on the `Azure.AI.OpenAI.Assistants` SDK that is currently in use.
 
 ### Open Issues
 - **Tool Constraints:** In Progress
@@ -141,7 +141,7 @@ Perform processing:
 
         - if (`step` is tool-call) generate and yield tool content
 
-        - if (`step` is message) generate and yield message content
+        - else if (`step` is message) generate and yield message content
 
     while (`run` status is not completed)
 
