@@ -255,4 +255,9 @@ public class AI21IoService : IBedrockModelIoService<IChatCompletionRequest, ICha
             yield break; // Stream is complete
         }
     }
+
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    {
+        throw new NotImplementedException(); //AI21 does not support converse stream.
+    }
 }

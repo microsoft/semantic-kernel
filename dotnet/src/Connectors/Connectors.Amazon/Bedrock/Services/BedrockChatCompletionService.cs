@@ -45,6 +45,6 @@ public class BedrockChatCompletionService : BedrockChatCompletionClient<IChatCom
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return StreamChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 }

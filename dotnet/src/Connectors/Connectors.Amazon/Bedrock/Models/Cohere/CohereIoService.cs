@@ -280,4 +280,9 @@ public class CohereIoService : IBedrockModelIoService<IChatCompletionRequest, IC
             yield return text;
         }
     }
+
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    {
+        throw new NotImplementedException(); //Only command r supports converse stream.
+    }
 }

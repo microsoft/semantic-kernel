@@ -183,4 +183,39 @@ public class AmazonIoService : IBedrockModelIoService<IChatCompletionRequest, IC
             yield return text;
         }
     }
+
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    {
+        var titanRequest = new TitanRequest.TitanChatCompletionRequest
+        {
+            Messages = chatHistory.Select(m => new Message
+            {
+                Role = MapRole(m.Role),
+                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+            }).ToList(),
+            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
+            InferenceConfig = new InferenceConfiguration
+            {
+                Temperature = 0.7f, // Default value
+                TopP = 0.9f, // Default value
+                MaxTokens = 512 // Default value
+            },
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>()
+        };
+
+        var converseStreamRequest = new ConverseStreamRequest
+        {
+            ModelId = modelId,
+            Messages = titanRequest.Messages,
+            System = titanRequest.System,
+            InferenceConfig = titanRequest.InferenceConfig,
+            AdditionalModelRequestFields = titanRequest.AdditionalModelRequestFields,
+            AdditionalModelResponseFieldPaths = titanRequest.AdditionalModelResponseFieldPaths,
+            GuardrailConfig = null, // Set if needed
+            ToolConfig = null // Set if needed
+        };
+
+        return converseStreamRequest;
+    }
 }

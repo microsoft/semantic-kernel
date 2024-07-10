@@ -164,4 +164,9 @@ public class LlamaIoService : IBedrockModelIoService<IChatCompletionRequest, ICh
             yield return generation;
         }
     }
+
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -228,4 +228,29 @@ public class MistralIoService : IBedrockModelIoService<IChatCompletionRequest, I
             }
         }
     }
+
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    {
+        var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(settings);
+        var request = this.CreateChatCompletionRequest(modelId, false, chatHistory, mistralExecutionSettings, new Kernel());
+        var converseStreamRequest = new ConverseStreamRequest()
+        {
+            ModelId = modelId,
+            Messages = request.Messages.Select(m => new Message
+            {
+                Role = m.Role,
+                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+            }).ToList(),
+            System = new List<SystemContentBlock>(),
+            InferenceConfig = new InferenceConfiguration
+            {
+                Temperature = (float)request.Temperature,
+                TopP = (float)request.TopP,
+                MaxTokens = (int)request.MaxTokens
+            },
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>()
+        };
+        return converseStreamRequest;
+    }
 }

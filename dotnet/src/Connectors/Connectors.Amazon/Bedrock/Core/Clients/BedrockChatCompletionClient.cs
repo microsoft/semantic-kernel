@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,7 +66,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                 throw new ArgumentException($"Unsupported model provider: {modelProvider}");
         }
     }
-    internal async Task<ConverseResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+    private async Task<ConverseResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
     {
         var converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory, executionSettings);
         return await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(true);
@@ -92,10 +93,10 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                     throw;
                 }
                 IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
-                foreach (var message in chat)
-                {
-                    chatHistory.AddMessage(AuthorRole.Assistant, message.Content);
-                }
+                // foreach (var message in chat)
+                // {
+                //     chatHistory.AddMessage(AuthorRole.Assistant, message.Content);
+                // }
                 activity?.SetCompletionResponse(chat);
                 return chat.ToList();
             }
@@ -136,5 +137,56 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
             itemCollection.Add(new TextContent(contentBlock.Text));
         }
         return itemCollection;
+    }
+
+    internal async IAsyncEnumerable<StreamingChatMessageContent> StreamChatMessageAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        // start completion activity
+        // call converse stream async (bedrock API)
+        // convert output to Sk's StreamingChatMessageContent
+        // yield return the streamed contents
+        // activity end streaming
+        ConverseStreamResponse response;
+        using var activity = ModelDiagnostics.StartCompletionActivity(
+            this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings);
+        try
+        {
+            try
+            {
+                response = await this.StreamConverseBedrockModel(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
+            }
+            catch (AmazonBedrockRuntimeException e)
+            {
+                Console.WriteLine($"ERROR: Can't invoke '{this._modelId}'. Reason: {e.Message}");
+                throw;
+            }
+        }
+        catch (Exception ex) when (activity is not null)
+        {
+            activity.SetError(ex);
+            throw;
+        }
+
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+        foreach (var chunk in response.Stream.AsEnumerable())
+        {
+            if (chunk is ContentBlockDeltaEvent)
+            {
+                var c = (chunk as ContentBlockDeltaEvent).Delta.Text;
+                var content = new StreamingChatMessageContent(AuthorRole.Assistant, c);
+                streamedContents?.Add(content);
+                yield return content;
+            }
+        }
+        activity?.EndStreaming(streamedContents);
+    }
+    private async Task<ConverseStreamResponse> StreamConverseBedrockModel(ChatHistory chatHistory, PromptExecutionSettings executionSettings, CancellationToken cancellationToken)
+    {
+        var converseRequest = this._ioService.GetConverseStreamRequest(this._modelId, chatHistory, executionSettings);
+        return await this._bedrockApi.ConverseStreamAsync(converseRequest, cancellationToken).ConfigureAwait(true);
     }
 }

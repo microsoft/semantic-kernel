@@ -173,4 +173,9 @@ public class AnthropicIoService : IBedrockModelIoService<IChatCompletionRequest,
             yield return text;
         }
     }
+
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    {
+        throw new NotImplementedException();
+    }
 }

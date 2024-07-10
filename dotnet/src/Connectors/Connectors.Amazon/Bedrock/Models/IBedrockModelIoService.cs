@@ -15,4 +15,5 @@ public interface IBedrockModelIoService<TRequest, TResponse>
     IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response);
     ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null);
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk);
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings);
 }
