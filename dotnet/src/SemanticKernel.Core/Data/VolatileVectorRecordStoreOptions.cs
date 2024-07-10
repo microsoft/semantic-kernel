@@ -11,12 +11,6 @@ namespace Microsoft.SemanticKernel.Data;
 public sealed class VolatileVectorRecordStoreOptions
 {
     /// <summary>
-    /// Gets or sets the default collection name to use.
-    /// If not provided here, the collection name will need to be provided for each operation or the operation will throw.
-    /// </summary>
-    public string? DefaultCollectionName { get; init; } = null;
-
-    /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>
     /// <remarks>

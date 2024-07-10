@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Optional options when calling <see cref="IVectorRecordStore{TKey, TDataModel}.UpsertAsync"/>.
+/// Reserved for future use.
 /// </summary>
 [Experimental("SKEXP0001")]
 public class UpsertRecordOptions
@@ -23,11 +24,5 @@ public class UpsertRecordOptions
     /// <param name="source">The options to clone</param>
     public UpsertRecordOptions(UpsertRecordOptions source)
     {
-        this.CollectionName = source.CollectionName;
     }
-
-    /// <summary>
-    /// Get or sets an optional collection name to use for this operation that is different to the default.
-    /// </summary>
-    public string? CollectionName { get; init; }
 }
