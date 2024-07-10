@@ -221,13 +221,14 @@ public abstract class AgentChat
 
                 // Add to primary history
                 this.History.Add(message);
-                messages.Add(message);
 
-                // Don't expose function-call and function-result messages to caller.
-                if (message.Items.All(i => i is FunctionCallContent || i is FunctionResultContent))
+                // Don't expose function-call or function-result messages to caller.
+                if (message.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
                 {
                     continue;
                 }
+
+                messages.Add(message);
 
                 // Yield message to caller
                 yield return message;
@@ -262,7 +263,10 @@ public abstract class AgentChat
 
                 if (this.History.Count > 0)
                 {
-                    await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
+                    // Sync channel with existing history (user and assistant messages only / no function content)
+                    await channel.ReceiveAsync(
+                        this.History.Where(m => m.Role != AuthorRole.Tool && !m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent)),
+                        cancellationToken).ConfigureAwait(false);
                 }
 
                 this.Logger.LogInformation("[{MethodName}] Created channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);

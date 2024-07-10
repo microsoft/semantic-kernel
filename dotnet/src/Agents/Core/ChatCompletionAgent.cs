@@ -55,6 +55,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             message.AuthorName = this.Name;
 
             history.Add(message);
+
+            yield return message;
         }
 
         foreach (ChatMessageContent message in messages ?? [])
@@ -91,6 +93,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             this.Logger.LogInformation("[{MethodName}] Invoked {ServiceType} with streaming messages.", nameof(InvokeAsync), chatCompletionService.GetType());
         }
 
+        await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
+        {
+            // TODO: MESSAGE SOURCE - ISSUE #5731
+            message.AuthorName = this.Name;
+
+            yield return message;
+        }
+
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
         {
@@ -99,14 +109,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             message.AuthorName = this.Name;
 
             history.Add(message);
-        }
-
-        await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
-        {
-            // TODO: MESSAGE SOURCE - ISSUE #5731
-            message.AuthorName = this.Name;
-
-            yield return message;
         }
     }
 

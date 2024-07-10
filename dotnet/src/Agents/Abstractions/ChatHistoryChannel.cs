@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,16 +27,26 @@ public class ChatHistoryChannel : AgentChannel
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
+        int messageCount = this._history.Count;
+
         await foreach (ChatMessageContent message in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
         {
-            this._history.Add(message);
+            // Don't append messages already added to the history.
+            if (messageCount < this._history.Count)
+            {
+                messageCount = this._history.Count;
+            }
+            else
+            {
+                this._history.Add(message);
+            }
 
             yield return message;
         }
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected internal sealed override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._history.AddRange(history);
 

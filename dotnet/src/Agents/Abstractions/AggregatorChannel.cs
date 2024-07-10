@@ -47,7 +47,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
         }
     }
 
-    protected internal override Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // Always receive the initial history from the owning chat.
         this._chat.AddChatMessages([.. history]);
