@@ -6,7 +6,6 @@ from semantic_kernel.agents.chat_completion_agent import ChatCompletionAgent
 from semantic_kernel.agents.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.agents.chat_history_handler import ChatHistoryHandler
 from semantic_kernel.agents.chat_history_kernel_agent import ChatHistoryKernelAgent
-from semantic_kernel.agents.kernel_agent import KernelAgent
 
 __all__ = [
     "AgentBase",
@@ -15,5 +14,4 @@ __all__ = [
     "ChatHistoryChannel",
     "ChatHistoryHandler",
     "ChatHistoryKernelAgent",
-    "KernelAgent",
 ]

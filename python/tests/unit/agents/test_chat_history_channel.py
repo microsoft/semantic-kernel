@@ -34,7 +34,7 @@ async def test_invoke():
     agent = MockChatHistoryHandler()
 
     initial_message = ChatMessageContent(role=AuthorRole.USER, content="Initial message")
-    channel.history.append(initial_message)
+    channel.messages.append(initial_message)
 
     received_messages = []
     async for message in channel.invoke(agent):
@@ -65,11 +65,11 @@ async def test_receive():
 
     await channel.receive(history)
 
-    assert len(channel.history) == 2
-    assert channel.history[0].content == "test message 1"
-    assert channel.history[0].role == AuthorRole.SYSTEM
-    assert channel.history[1].content == "test message 2"
-    assert channel.history[1].role == AuthorRole.USER
+    assert len(channel.messages) == 2
+    assert channel.messages[0].content == "test message 1"
+    assert channel.messages[0].role == AuthorRole.SYSTEM
+    assert channel.messages[1].content == "test message 2"
+    assert channel.messages[1].role == AuthorRole.USER
 
 
 @pytest.mark.asyncio
@@ -79,7 +79,7 @@ async def test_get_history():
         ChatMessageContent(role=AuthorRole.SYSTEM, content="test message 1"),
         ChatMessageContent(role=AuthorRole.USER, content="test message 2"),
     ]
-    channel.history.extend(history)
+    channel.messages.extend(history)
 
     messages = [message async for message in channel.get_history()]
 

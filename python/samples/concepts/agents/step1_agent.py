@@ -22,7 +22,7 @@ PARROT_NAME = "Parrot"
 PARROT_INSTRUCTIONS = "Repeat the user message in the voice of a pirate and then end with a parrot sound."
 
 
-async def invoke_agent(agent: ChatCompletionAgent, input: str, kernel: Kernel, chat: ChatHistory):
+async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory):
     """Invoke the agent with the user input."""
     chat.add_user_message(input)
 
@@ -31,12 +31,12 @@ async def invoke_agent(agent: ChatCompletionAgent, input: str, kernel: Kernel, c
     if streaming:
         contents = []
         content_name = ""
-        async for content in agent.invoke_stream(kernel, chat):
+        async for content in agent.invoke_stream(chat):
             content_name = content.name
             contents.append(content)
         print(f"# {content.role} - {content_name or '*'}: '{''.join([content.content for content in contents])}'")
     else:
-        async for content in agent.invoke(kernel, chat):
+        async for content in agent.invoke(chat):
             print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
 
 
@@ -48,15 +48,15 @@ async def main():
     kernel.add_service(AzureChatCompletion(service_id="agent"))
 
     # Create the agent
-    agent = ChatCompletionAgent(service_id="agent", name=PARROT_NAME, instructions=PARROT_INSTRUCTIONS)
+    agent = ChatCompletionAgent(service_id="agent", kernel=kernel, name=PARROT_NAME, instructions=PARROT_INSTRUCTIONS)
 
     # Define the chat history
     chat = ChatHistory()
 
     # Respond to user input
-    await invoke_agent(agent, "Fortune favors the bold.", kernel, chat)
-    await invoke_agent(agent, "I came, I saw, I conquered.", kernel, chat)
-    await invoke_agent(agent, "Practice makes perfect.", kernel, chat)
+    await invoke_agent(agent, "Fortune favors the bold.", chat)
+    await invoke_agent(agent, "I came, I saw, I conquered.", chat)
+    await invoke_agent(agent, "Practice makes perfect.", chat)
 
 
 if __name__ == "__main__":

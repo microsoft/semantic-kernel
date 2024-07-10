@@ -42,13 +42,13 @@ class MenuPlugin:
 
 
 # A helper method to invoke the agent with the user input
-async def invoke_agent(agent: ChatCompletionAgent, input: str, kernel: Kernel, chat: ChatHistory) -> None:
+async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory) -> None:
     """Invoke the agent with the user input."""
     chat.add_user_message(input)
 
     print(f"# {AuthorRole.USER}: '{input}'")
 
-    async for content in agent.invoke(kernel, chat):
+    async for content in agent.invoke(chat):
         print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
 
 
@@ -64,21 +64,21 @@ async def main():
     # Configure the function choice behavior to auto invoke kernel functions
     settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
+    kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
+
     # Create the agent
     agent = ChatCompletionAgent(
-        service_id="agent", name=HOST_NAME, instructions=HOST_INSTRUCTIONS, execution_settings=settings
+        service_id="agent", kernel=kernel, name=HOST_NAME, instructions=HOST_INSTRUCTIONS, execution_settings=settings
     )
-
-    kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
 
     # Define the chat history
     chat = ChatHistory()
 
     # Respond to user input
-    await invoke_agent(agent, "Hello", kernel, chat)
-    await invoke_agent(agent, "What is the special soup?", kernel, chat)
-    await invoke_agent(agent, "What is the special drink?", kernel, chat)
-    await invoke_agent(agent, "Thank you", kernel, chat)
+    await invoke_agent(agent, "Hello", chat)
+    await invoke_agent(agent, "What is the special soup?", chat)
+    await invoke_agent(agent, "What is the special drink?", chat)
+    await invoke_agent(agent, "Thank you", chat)
 
 
 if __name__ == "__main__":

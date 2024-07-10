@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from pydantic import Field
 
 from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -24,11 +25,14 @@ class AgentBase(ABC, KernelBaseModel):
         description: The description of the agent (optional).
         id: The unique identifier of the agent (optional). If no id is provided,
             a new UUID will be generated.
+        instructions: The instructions for the agent (optional
     """
 
-    id: str | None = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     description: str | None = None
     name: str | None = None
+    instructions: str | None = None
+    kernel: Kernel = Field(default_factory=Kernel)
 
     @abstractmethod
     def get_channel_keys(self) -> list[str]:

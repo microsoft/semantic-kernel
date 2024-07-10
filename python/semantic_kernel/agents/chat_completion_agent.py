@@ -44,6 +44,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
     def __init__(
         self,
         service_id: str | None = None,
+        kernel: "Kernel | None" = None,
         name: str | None = None,
         id: str | None = None,
         description: str | None = None,
@@ -55,6 +56,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
         Args:
             service_id: The service id for the chat completion service. (optional) If not provided,
                 the default service name `default` will be used.
+            kernel: The kernel instance. (optional)
             name: The name of the agent. (optional)
             id: The unique identifier for the agent. (optional) If not provided,
                 a unique GUID will be generated.
@@ -74,10 +76,12 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
         }
         if id is not None:
             args["id"] = id
+        if kernel is not None:
+            args["kernel"] = kernel  # type: ignore
         super().__init__(**args)
 
     @override
-    async def invoke(self, kernel: "Kernel", history: ChatHistory) -> AsyncIterable[ChatMessageContent]:  # type: ignore
+    async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:  # type: ignore
         """Invoke the chat history handler.
 
         Args:
@@ -88,7 +92,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
             An async iterable of ChatMessageContent.
         """
         # Get the chat completion service
-        chat_completion_service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+        chat_completion_service = self.kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
 
         if not chat_completion_service:
             raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
@@ -97,7 +101,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
 
         settings = (
             self.execution_settings
-            or kernel.get_prompt_execution_settings_from_service_id(self.service_id)
+            or self.kernel.get_prompt_execution_settings_from_service_id(self.service_id)
             or chat_completion_service.instantiate_prompt_execution_settings(
                 service_id=self.service_id, extension_data={"ai_model_id": chat_completion_service.ai_model_id}
             )
@@ -112,7 +116,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
         messages = await chat_completion_service.get_chat_message_contents(
             chat_history=chat,
             settings=settings,
-            kernel=kernel,
+            kernel=self.kernel,
             arguments=KernelArguments(),
         )
 
@@ -133,7 +137,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
 
     @override
     async def invoke_stream(  # type: ignore
-        self, kernel: "Kernel", history: ChatHistory
+        self, history: ChatHistory
     ) -> AsyncGenerator[StreamingChatMessageContent, None]:
         """Invoke the chat history handler in streaming mode.
 
@@ -145,7 +149,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
             An async generator of StreamingChatMessageContent.
         """
         # Get the chat completion service
-        chat_completion_service = kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
+        chat_completion_service = self.kernel.get_service(service_id=self.service_id, type=ChatCompletionClientBase)
 
         if not chat_completion_service:
             raise KernelServiceNotFoundError(f"Chat completion service not found with service_id: {self.service_id}")
@@ -154,7 +158,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
 
         settings = (
             self.execution_settings
-            or kernel.get_prompt_execution_settings_from_service_id(self.service_id)
+            or self.kernel.get_prompt_execution_settings_from_service_id(self.service_id)
             or chat_completion_service.instantiate_prompt_execution_settings(
                 service_id=self.service_id, extension_data={"ai_model_id": chat_completion_service.ai_model_id}
             )
@@ -170,7 +174,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
             chat_completion_service.get_streaming_chat_message_contents(
                 chat_history=chat,
                 settings=settings,
-                kernel=kernel,
+                kernel=self.kernel,
                 arguments=KernelArguments(),
             )
         )

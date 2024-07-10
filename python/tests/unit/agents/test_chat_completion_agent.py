@@ -41,6 +41,25 @@ async def test_initialization_no_service_id():
     )
 
     assert agent.service_id == "default"
+    assert agent.kernel is not None
+    assert agent.name == "Test Agent"
+    assert agent.id == "test_id"
+    assert agent.description == "Test Description"
+    assert agent.instructions == "Test Instructions"
+
+
+@pytest.mark.asyncio
+async def test_initialization_with_kernel(kernel: Kernel):
+    agent = ChatCompletionAgent(
+        kernel=kernel,
+        name="Test Agent",
+        id="test_id",
+        description="Test Description",
+        instructions="Test Instructions",
+    )
+
+    assert agent.service_id == "default"
+    assert kernel == agent.kernel
     assert agent.name == "Test Agent"
     assert agent.id == "test_id"
     assert agent.description == "Test Description"
@@ -49,17 +68,18 @@ async def test_initialization_no_service_id():
 
 @pytest.mark.asyncio
 async def test_invoke():
-    agent = ChatCompletionAgent(service_id="test_service", name="Test Agent", instructions="Test Instructions")
-
     kernel = create_autospec(Kernel)
     kernel.get_service.return_value = create_autospec(ChatCompletionClientBase)
     kernel.get_service.return_value.get_chat_message_contents = AsyncMock(
         return_value=[ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message")]
     )
+    agent = ChatCompletionAgent(
+        kernel=kernel, service_id="test_service", name="Test Agent", instructions="Test Instructions"
+    )
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
-    messages = [message async for message in agent.invoke(kernel, history)]
+    messages = [message async for message in agent.invoke(history)]
 
     assert len(messages) == 1
     assert messages[0].content == "Processed Message"
@@ -67,11 +87,10 @@ async def test_invoke():
 
 @pytest.mark.asyncio
 async def test_invoke_tool_call_added():
-    agent = ChatCompletionAgent(service_id="test_service", name="Test Agent")
-
     kernel = create_autospec(Kernel)
     chat_completion_service = create_autospec(ChatCompletionClientBase)
     kernel.get_service.return_value = chat_completion_service
+    agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="Test Agent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
@@ -85,7 +104,7 @@ async def test_invoke_tool_call_added():
 
     chat_completion_service.get_chat_message_contents = AsyncMock(side_effect=mock_get_chat_message_contents)
 
-    messages = [message async for message in agent.invoke(kernel, history)]
+    messages = [message async for message in agent.invoke(history)]
 
     assert len(messages) == 2
     assert messages[0].content == "Processed Message 1"
@@ -100,24 +119,23 @@ async def test_invoke_tool_call_added():
 
 @pytest.mark.asyncio
 async def test_invoke_no_service_throws():
-    agent = ChatCompletionAgent(service_id="test_service", name="Test Agent")
-
     kernel = create_autospec(Kernel)
     kernel.get_service.return_value = None
+    agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="Test Agent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
     with pytest.raises(KernelServiceNotFoundError):
-        async for _ in agent.invoke(kernel, history):
+        async for _ in agent.invoke(history):
             pass
 
 
 @pytest.mark.asyncio
 async def test_invoke_stream():
-    agent = ChatCompletionAgent(service_id="test_service", name="Test Agent")
-
     kernel = create_autospec(Kernel)
     kernel.get_service.return_value = create_autospec(ChatCompletionClientBase)
+
+    agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="Test Agent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
@@ -129,22 +147,21 @@ async def test_invoke_stream():
             [ChatMessageContent(role=AuthorRole.USER, content="Initial Message")]
         ]
 
-        async for message in agent.invoke_stream(kernel, history):
+        async for message in agent.invoke_stream(history):
             assert message.role == AuthorRole.USER
             assert message.content == "Initial Message"
 
 
 @pytest.mark.asyncio
 async def test_invoke_stream_no_service_throws():
-    agent = ChatCompletionAgent(service_id="test_service", name="Test Agent")
-
     kernel = create_autospec(Kernel)
     kernel.get_service.return_value = None
+    agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="Test Agent")
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
     with pytest.raises(KernelServiceNotFoundError):
-        async for _ in agent.invoke_stream(kernel, history):
+        async for _ in agent.invoke_stream(history):
             pass
 
 

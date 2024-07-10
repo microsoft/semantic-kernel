@@ -10,10 +10,10 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+from semantic_kernel.agents.agent_base import AgentBase
 from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.agents.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.agents.chat_history_handler import ChatHistoryHandler
-from semantic_kernel.agents.kernel_agent import KernelAgent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -23,7 +23,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class ChatHistoryKernelAgent(KernelAgent, ChatHistoryHandler, ABC):
+class ChatHistoryKernelAgent(AgentBase, ChatHistoryHandler, ABC):
     """A KernelAgent specialization bound to a ChatHistoryChannel."""
 
     @override
@@ -42,7 +42,7 @@ class ChatHistoryKernelAgent(KernelAgent, ChatHistoryHandler, ABC):
         Returns:
             An instance of AgentChannel.
         """
-        return ChatHistoryChannel()
+        return ChatHistoryChannel(messages=[])
 
     @abstractmethod
     async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
