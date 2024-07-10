@@ -13,9 +13,9 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTestsV2.Connectors.OpenAI;
 
-#pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
+[Obsolete("Obsoleted")]
 public sealed class OpenAIFileServiceTests
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
