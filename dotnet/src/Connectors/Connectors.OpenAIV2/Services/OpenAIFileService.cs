@@ -64,46 +64,46 @@ public sealed class OpenAIFileService
     /// <summary>
     /// Remove a previously uploaded file.
     /// </summary>
-    /// <param name="fileId">The uploaded file identifier.</param>
+    /// <param name="id">The uploaded file identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public Task DeleteFileAsync(string fileId, CancellationToken cancellationToken = default)
+    public Task DeleteFileAsync(string id, CancellationToken cancellationToken = default)
     {
         this._client.LogActionDetails();
-        Verify.NotNull(fileId, nameof(fileId));
+        Verify.NotNull(id, nameof(id));
 
-        return this._client.DeleteFileAsync(fileId, cancellationToken);
+        return this._client.DeleteFileAsync(id, cancellationToken);
     }
 
     /// <summary>
     /// Retrieve the file content from a previously uploaded file.
     /// </summary>
-    /// <param name="fileId">The uploaded file identifier.</param>
+    /// <param name="id">The uploaded file identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The file content as <see cref="BinaryContent"/></returns>
     /// <remarks>
     /// Files uploaded with <see cref="OpenAIFilePurpose.Assistants"/> do not support content retrieval.
     /// </remarks>
-    public async Task<BinaryContent> GetFileContentAsync(string fileId, CancellationToken cancellationToken = default)
+    public async Task<BinaryContent> GetFileContentAsync(string id, CancellationToken cancellationToken = default)
     {
         this._client.LogActionDetails();
-        Verify.NotNull(fileId, nameof(fileId));
-        var bytes = await this._client.GetFileContentAsync(fileId, cancellationToken).ConfigureAwait(false);
+        Verify.NotNull(id, nameof(id));
+        var bytes = await this._client.GetFileContentAsync(id, cancellationToken).ConfigureAwait(false);
 
         // The mime type of the downloaded file is not provided by the OpenAI API.
-        return new(bytes, null) { Metadata = new Dictionary<string, object?>() { ["fileId"] = fileId } };
+        return new(bytes, null) { Metadata = new Dictionary<string, object?>() { ["fileId"] = id } };
     }
 
     /// <summary>
     /// Retrieve metadata for a previously uploaded file.
     /// </summary>
-    /// <param name="fileId">The uploaded file identifier.</param>
+    /// <param name="id">The uploaded file identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The metadata associated with the specified file identifier.</returns>
-    public Task<OpenAIFileInfo> GetFileAsync(string fileId, CancellationToken cancellationToken = default)
+    public Task<OpenAIFileInfo> GetFileAsync(string id, CancellationToken cancellationToken = default)
     {
         this._client.LogActionDetails();
-        Verify.NotNull(fileId, nameof(fileId));
-        return this._client.GetFileAsync(fileId, cancellationToken);
+        Verify.NotNull(id, nameof(id));
+        return this._client.GetFileAsync(id, cancellationToken);
     }
 
     /// <summary>
