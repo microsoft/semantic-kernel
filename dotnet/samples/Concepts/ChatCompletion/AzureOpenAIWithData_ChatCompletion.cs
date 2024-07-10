@@ -22,9 +22,9 @@ namespace ChatCompletion;
 /// potentially reshape our understanding of climate change.
 /// </para>
 /// 2. Set your secrets:
-/// <para> dotnet user-secrets set "AzureAISearchExample:Endpoint" "https://... .search.windows.net"</para>
-/// <para> dotnet user-secrets set "AzureAISearchExample:ApiKey" "{Key from your Search service resource}"</para>
-/// <para> dotnet user-secrets set "AzureAISearchExample:IndexName" "..."</para>
+/// <para> dotnet user-secrets set "AzureAISearch:Endpoint" "https://... .search.windows.net"</para>
+/// <para> dotnet user-secrets set "AzureAISearch:ApiKey" "{Key from your Search service resource}"</para>
+/// <para> dotnet user-secrets set "AzureAISearch:IndexName" "..."</para>
 /// </value>
 public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
