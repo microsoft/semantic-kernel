@@ -113,7 +113,7 @@ async def test_invoke_no_service_throws():
 
 
 @pytest.mark.asyncio
-async def test_invoke_streaming():
+async def test_invoke_stream():
     agent = ChatCompletionAgent(service_id="test_service", name="Test Agent")
 
     kernel = create_autospec(Kernel)
@@ -125,7 +125,9 @@ async def test_invoke_streaming():
         "semantic_kernel.connectors.ai.chat_completion_client_base.ChatCompletionClientBase.get_streaming_chat_message_contents",
         return_value=AsyncMock(),
     ) as mock:
-        mock.return_value.__aiter__.return_value = [ChatMessageContent(role=AuthorRole.USER, content="Initial Message")]
+        mock.return_value.__aiter__.return_value = [
+            [ChatMessageContent(role=AuthorRole.USER, content="Initial Message")]
+        ]
 
         async for message in agent.invoke_stream(kernel, history):
             assert message.role == AuthorRole.USER
@@ -133,7 +135,7 @@ async def test_invoke_streaming():
 
 
 @pytest.mark.asyncio
-async def test_invoke_streaming_no_service_throws():
+async def test_invoke_stream_no_service_throws():
     agent = ChatCompletionAgent(service_id="test_service", name="Test Agent")
 
     kernel = create_autospec(Kernel)

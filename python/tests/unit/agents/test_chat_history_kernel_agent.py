@@ -11,6 +11,8 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 
 
 class MockChatHistoryKernelAgent(ChatHistoryKernelAgent):
+    """A mock ChatHistoryKernelAgent for testing purposes."""
+
     def __init__(
         self,
         service_id: str = "test_service",
@@ -19,7 +21,15 @@ class MockChatHistoryKernelAgent(ChatHistoryKernelAgent):
         id: str = None,
         description: str = "Test Description",
     ):
-        super().__init__(service_id=service_id, name=name, instructions=instructions, id=id, description=description)
+        args = {
+            "service_id": service_id,
+            "name": name,
+            "instructions": instructions,
+            "description": description,
+        }
+        if id is not None:
+            args["id"] = id
+        super().__init__(**args)
 
     async def invoke(self, history: list[ChatMessageContent]) -> AsyncIterable[ChatMessageContent]:
         for message in history:

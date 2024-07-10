@@ -10,14 +10,16 @@ from semantic_kernel.agents.agent_channel import AgentChannel
 
 
 class MockAgent(AgentBase):
-    def __init__(
-        self,
-        service_id: str = "test_service",
-        name: str = "Test Agent",
-        description: str = "A test agent",
-        id: str = None,
-    ):
-        super().__init__(service_id=service_id, name=name, description=description, id=id)
+    """A mock agent for testing purposes."""
+
+    def __init__(self, name: str = "Test Agent", description: str = "A test agent", id: str = None):
+        args = {
+            "name": name,
+            "description": description,
+        }
+        if id is not None:
+            args["id"] = id
+        super().__init__(**args)
 
     def get_channel_keys(self) -> list[str]:
         return ["key1", "key2"]
@@ -31,9 +33,8 @@ async def test_agent_initialization():
     name = "Test Agent"
     description = "A test agent"
     id_value = str(uuid.uuid4())
-    service_id = "test_service"
 
-    agent = MockAgent(service_id=service_id, name=name, description=description, id=id_value)
+    agent = MockAgent(name=name, description=description, id=id_value)
 
     assert agent.name == name
     assert agent.description == description

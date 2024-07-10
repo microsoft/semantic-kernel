@@ -26,31 +26,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 class ChatHistoryKernelAgent(KernelAgent, ChatHistoryHandler, ABC):
     """A KernelAgent specialization bound to a ChatHistoryChannel."""
 
-    def __init__(
-        self,
-        service_id: str,
-        name: str | None = None,
-        instructions: str | None = None,
-        id: str | None = None,
-        description: str | None = None,
-    ) -> None:
-        """Initialize the ChatHistoryKernelAgent.
-
-        Args:
-            service_id: The service id for the chat completion service.
-            name: The name of the agent.
-            instructions: The instructions for the agent.
-            id: The unique identifier for the agent.
-            description: The description of the agent.
-        """
-        super().__init__(
-            service_id=service_id,
-            name=name,
-            instructions=instructions,
-            id=id,
-            description=description,
-        )
-
     @override
     def get_channel_keys(self) -> list[str]:
         """Get the channel keys.

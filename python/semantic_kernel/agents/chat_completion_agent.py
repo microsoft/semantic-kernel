@@ -38,6 +38,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
     the kernel.
     """
 
+    service_id: str
     execution_settings: PromptExecutionSettings | None = None
 
     def __init__(
@@ -63,8 +64,17 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
         """
         if not service_id:
             service_id = DEFAULT_SERVICE_NAME
-        super().__init__(service_id=service_id, name=name, instructions=instructions, id=id, description=description)
-        self.execution_settings = execution_settings
+
+        args = {
+            "service_id": service_id,
+            "name": name,
+            "description": description,
+            "instructions": instructions,
+            "execution_settings": execution_settings,
+        }
+        if id is not None:
+            args["id"] = id
+        super().__init__(**args)
 
     @override
     async def invoke(self, kernel: "Kernel", history: ChatHistory) -> AsyncIterable[ChatMessageContent]:  # type: ignore
