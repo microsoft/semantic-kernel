@@ -25,8 +25,6 @@ public class RedisVectorRecordStoreTests
 
     private readonly Mock<IDatabase> _redisDatabaseMock;
 
-    private readonly CancellationToken _testCancellationToken = new(false);
-
     public RedisVectorRecordStoreTests()
     {
         this._redisDatabaseMock = new Mock<IDatabase>(MockBehavior.Strict);
@@ -48,11 +46,7 @@ public class RedisVectorRecordStoreTests
         // Act
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new()
-            {
-                IncludeVectors = true
-            },
-            this._testCancellationToken);
+            new() { IncludeVectors = true });
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1 };
@@ -82,11 +76,7 @@ public class RedisVectorRecordStoreTests
         // Act
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new()
-            {
-                IncludeVectors = false
-            },
-            this._testCancellationToken);
+            new() { IncludeVectors = false });
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1, "Data" };
@@ -117,11 +107,7 @@ public class RedisVectorRecordStoreTests
         // Act
         var actual = await sut.GetBatchAsync(
             [TestRecordKey1, TestRecordKey2],
-            new()
-            {
-                IncludeVectors = true
-            },
-            this._testCancellationToken).ToListAsync();
+            new() { IncludeVectors = true }).ToListAsync();
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1, TestRecordKey2, "$" };
@@ -168,8 +154,7 @@ public class RedisVectorRecordStoreTests
         // Act
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new() { IncludeVectors = true },
-            this._testCancellationToken);
+            new() { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(actual);
@@ -195,9 +180,7 @@ public class RedisVectorRecordStoreTests
         var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
-        await sut.DeleteAsync(
-            TestRecordKey1,
-            cancellationToken: this._testCancellationToken);
+        await sut.DeleteAsync(TestRecordKey1);
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1 };
@@ -219,9 +202,7 @@ public class RedisVectorRecordStoreTests
         var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
-        await sut.DeleteBatchAsync(
-            [TestRecordKey1, TestRecordKey2],
-            cancellationToken: this._testCancellationToken);
+        await sut.DeleteBatchAsync([TestRecordKey1, TestRecordKey2]);
 
         // Assert
         var expectedArgs1 = new object[] { TestRecordKey1 };
@@ -251,9 +232,7 @@ public class RedisVectorRecordStoreTests
         var model = CreateModel(TestRecordKey1, true);
 
         // Act
-        await sut.UpsertAsync(
-            model,
-            cancellationToken: this._testCancellationToken);
+        await sut.UpsertAsync(model);
 
         // Assert
         // TODO: Fix issue where NotAnnotated is being included in the JSON.
@@ -279,9 +258,7 @@ public class RedisVectorRecordStoreTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertBatchAsync(
-            [model1, model2],
-            cancellationToken: this._testCancellationToken).ToListAsync();
+        var actual = await sut.UpsertBatchAsync([model1, model2]).ToListAsync();
 
         // Assert
         Assert.NotNull(actual);
@@ -325,10 +302,7 @@ public class RedisVectorRecordStoreTests
         var model = CreateModel(TestRecordKey1, true);
 
         // Act
-        await sut.UpsertAsync(
-            model,
-            null,
-            this._testCancellationToken);
+        await sut.UpsertAsync(model);
 
         // Assert
         mapperMock

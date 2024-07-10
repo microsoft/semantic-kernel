@@ -45,7 +45,7 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     public VolatileVectorRecordStore(string collectionName, VolatileVectorRecordStoreOptions? options = default)
     {
         // Verify.
-        Verify.NotNull(collectionName);
+        Verify.NotNullOrWhiteSpace(collectionName);
 
         // Assign.
         this._collectionName = collectionName;

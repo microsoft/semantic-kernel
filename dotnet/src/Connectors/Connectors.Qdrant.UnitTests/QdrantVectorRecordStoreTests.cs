@@ -45,10 +45,7 @@ public class QdrantVectorRecordStoreTests
         // Act.
         var actual = await sut.GetAsync(
             testRecordKey,
-            new()
-            {
-                IncludeVectors = true
-            },
+            new() { IncludeVectors = true },
             this._testCancellationToken);
 
         // Assert.
@@ -82,10 +79,7 @@ public class QdrantVectorRecordStoreTests
         // Act.
         var actual = await sut.GetAsync(
             testRecordKey,
-            new()
-            {
-                IncludeVectors = false
-            },
+            new() { IncludeVectors = false },
             this._testCancellationToken);
 
         // Assert.
@@ -120,10 +114,7 @@ public class QdrantVectorRecordStoreTests
         // Act.
         var actual = await sut.GetBatchAsync(
             testRecordKeys,
-            new()
-            {
-                IncludeVectors = true
-            },
+            new() { IncludeVectors = true },
             this._testCancellationToken).ToListAsync();
 
         // Assert.

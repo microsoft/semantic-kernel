@@ -57,10 +57,7 @@ public class AzureAISearchVectorRecordStoreTests
         // Act.
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new()
-            {
-                IncludeVectors = true,
-            },
+            new() { IncludeVectors = true },
             this._testCancellationToken);
 
         // Assert.
@@ -90,10 +87,7 @@ public class AzureAISearchVectorRecordStoreTests
         // Act.
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new()
-            {
-                IncludeVectors = false
-            },
+            new() { IncludeVectors = false },
             this._testCancellationToken);
 
         // Assert.
@@ -123,10 +117,7 @@ public class AzureAISearchVectorRecordStoreTests
         // Act.
         var actual = await sut.GetBatchAsync(
             [TestRecordKey1, TestRecordKey2],
-            new()
-            {
-                IncludeVectors = true
-            },
+            new() { IncludeVectors = true },
             this._testCancellationToken).ToListAsync();
 
         // Assert.
