@@ -9,6 +9,7 @@ from semantic_kernel.agents.chat_history_handler import ChatHistoryHandler
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions import ServiceInvalidTypeError
 
 
 class MockChatHistoryHandler(ChatHistoryHandler):
@@ -50,7 +51,7 @@ async def test_invoke_incorrect_instance_throws():
     channel = ChatHistoryChannel()
     agent = MockNonChatHistoryHandler()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ServiceInvalidTypeError):
         async for _ in channel.invoke(agent):
             pass
 

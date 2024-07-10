@@ -10,7 +10,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-
 from semantic_kernel.agents.chat_history_kernel_agent import ChatHistoryKernelAgent
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -184,16 +183,16 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
             f"with message count: {message_count}."
         )
 
-        # Capture mutated messages related function calling / tools
-        for message_index in range(message_count, len(chat)):
-            message = chat[message_index]
-            message.name = self.name
-            history.add_message(message)
-
         async for message_list in messages:
             for message in message_list:
                 message.name = self.name
                 yield message
+
+        # Capture mutated messages related function calling / tools
+        for message_index in range(message_count, len(chat)):
+            message = chat[message_index]  # type: ignore
+            message.name = self.name
+            history.add_message(message)
 
     def _setup_agent_chat_history(self, history: ChatHistory) -> ChatHistory:
         """Setup the agent chat history."""

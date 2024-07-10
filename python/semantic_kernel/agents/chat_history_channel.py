@@ -13,6 +13,7 @@ from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.agents.chat_history_handler import ChatHistoryHandler
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.exceptions import ServiceInvalidTypeError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
@@ -34,7 +35,10 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             An async iterable of ChatMessageContent.
         """
         if not isinstance(agent, ChatHistoryHandler):
-            raise ValueError(f"Invalid channel binding for agent: {agent.id} ({type(agent).__name__})")
+            raise ServiceInvalidTypeError(
+                f"Invalid channel binding for agent: "
+                f"{agent.id if hasattr(agent, "id") else ""} ({type(agent).__name__})"
+            )
 
         async for message in agent.invoke(self.messages):
             self.messages.append(message)

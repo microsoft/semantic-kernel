@@ -14,6 +14,21 @@ from semantic_kernel.exceptions import KernelServiceNotFoundError
 from semantic_kernel.kernel import Kernel
 
 
+@pytest.fixture
+def mock_streaming_chat_completion_response() -> AsyncMock:
+    """A fixture that returns a mock response for a streaming chat completion response."""
+
+    async def mock_response(chat_history, settings, kernel, arguments):
+        content1 = ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message 1")
+        content2 = ChatMessageContent(role=AuthorRole.TOOL, content="Processed Message 2")
+        chat_history.messages.append(content1)
+        chat_history.messages.append(content2)
+        yield [content1]
+        yield [content2]
+
+    return mock_response
+
+
 @pytest.mark.asyncio
 async def test_initialization():
     agent = ChatCompletionAgent(
@@ -150,6 +165,25 @@ async def test_invoke_stream():
         async for message in agent.invoke_stream(history):
             assert message.role == AuthorRole.USER
             assert message.content == "Initial Message"
+
+
+@pytest.mark.asyncio
+async def test_invoke_stream_tool_call_added(mock_streaming_chat_completion_response):
+    kernel = create_autospec(Kernel)
+    chat_completion_service = create_autospec(ChatCompletionClientBase)
+    kernel.get_service.return_value = chat_completion_service
+    agent = ChatCompletionAgent(kernel=kernel, service_id="test_service", name="Test Agent")
+
+    history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
+
+    chat_completion_service.get_streaming_chat_message_contents = mock_streaming_chat_completion_response
+
+    async for message in agent.invoke_stream(history):
+        print(f"Message role: {message.role}, content: {message.content}")
+        assert message.role in [AuthorRole.SYSTEM, AuthorRole.TOOL]
+        assert message.content in ["Processed Message 1", "Processed Message 2"]
+
+    assert len(history.messages) == 3
 
 
 @pytest.mark.asyncio
