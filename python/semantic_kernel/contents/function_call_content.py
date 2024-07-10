@@ -38,16 +38,21 @@ class FunctionCallContent(KernelContent):
 
     def __init__(
         self,
+        inner_content: Any | None = None,
+        ai_model_id: str | None = None,
         id: str | None = None,
         index: int | None = None,
         name: str | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
         arguments: str | dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Create function call content.
 
         Args:
+            inner_content (Any | None): The inner content.
+            ai_model_id (str | None): The id of the AI model.
             id (str | None): The id of the function call.
             index (int | None): The index of the function call.
             name (str | None): The name of the function call.
@@ -57,6 +62,7 @@ class FunctionCallContent(KernelContent):
             plugin_name (str | None): The plugin name.
                 Not used when 'name' is supplied.
             arguments (str | dict[str, Any] | None): The arguments of the function call.
+            metadata (dict[str, Any] | None): The metadata of the function call.
         """
         if function_name and plugin_name and not name:
             name = f"{plugin_name}-{function_name}"
@@ -66,12 +72,15 @@ class FunctionCallContent(KernelContent):
             else:
                 function_name = name
         super().__init__(
+            inner_content=inner_content,
+            ai_model_id=ai_model_id,
             id=id,
             index=index,
             name=name,
             arguments=arguments,
             function_name=function_name or "",
             plugin_name=plugin_name,
+            metadata=metadata,
         )
 
     def __str__(self) -> str:
