@@ -302,6 +302,8 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use OpenAI SDK or AzureOpenAI SDK clients for file operations.")]
+    [ExcludeFromCodeCoverage]
     public static IKernelBuilder AddOpenAIFiles(
         this IKernelBuilder builder,
         string apiKey,

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -171,6 +172,7 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
+    [Obsolete("This test is deprecated and will be removed in a future version.")]
     public void ItCanAddFileService()
     {
         // Arrange

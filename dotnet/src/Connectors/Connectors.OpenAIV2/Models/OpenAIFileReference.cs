@@ -9,6 +9,8 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// References an uploaded file by id.
 /// </summary>
 [Experimental("SKEXP0010")]
+[Obsolete("Use OpenAI SDK or AzureOpenAI SDK clients for file operations. This class is deprecated and will be removed in a future version.")]
+[ExcludeFromCodeCoverage]
 public sealed class OpenAIFileReference
 {
     /// <summary>

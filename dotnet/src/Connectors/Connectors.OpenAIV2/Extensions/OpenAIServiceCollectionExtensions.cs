@@ -280,6 +280,8 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use OpenAI SDK or AzureOpenAI SDK clients for file operations.")]
+    [ExcludeFromCodeCoverage]
     public static IServiceCollection AddOpenAIFiles(
         this IServiceCollection services,
         string apiKey,
