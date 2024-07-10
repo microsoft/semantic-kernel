@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Final, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field
@@ -10,8 +10,12 @@ from typing_extensions import deprecated
 
 from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException
-from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
+from semantic_kernel.exceptions import (
+    ContentAdditionException,
+    ContentInitializationError,
+    FunctionCallInvalidArgumentsException,
+    FunctionCallInvalidNameException,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -20,6 +24,8 @@ logger = logging.getLogger(__name__)
 
 
 _T = TypeVar("_T", bound="FunctionCallContent")
+
+EMPTY_VALUES: Final[list[str | None]] = ["", "{}", None]
 
 
 class FunctionCallContent(KernelContent):
@@ -34,10 +40,9 @@ class FunctionCallContent(KernelContent):
     plugin_name: str | None = None
     arguments: str | dict[str, Any] | None = None
 
-    EMPTY_VALUES: ClassVar[list[str | None]] = ["", "{}", None]
-
     def __init__(
         self,
+        content_type: Literal[ContentTypes.FUNCTION_CALL_CONTENT] = FUNCTION_CALL_CONTENT_TAG,  # type: ignore
         inner_content: Any | None = None,
         ai_model_id: str | None = None,
         id: str | None = None,
@@ -47,10 +52,12 @@ class FunctionCallContent(KernelContent):
         plugin_name: str | None = None,
         arguments: str | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
+        **kwargs: Any,
     ) -> None:
         """Create function call content.
 
         Args:
+            content_type: The content type.
             inner_content (Any | None): The inner content.
             ai_model_id (str | None): The id of the AI model.
             id (str | None): The id of the function call.
@@ -63,6 +70,7 @@ class FunctionCallContent(KernelContent):
                 Not used when 'name' is supplied.
             arguments (str | dict[str, Any] | None): The arguments of the function call.
             metadata (dict[str, Any] | None): The metadata of the function call.
+            kwargs (Any): Additional arguments.
         """
         if function_name and plugin_name and not name:
             name = f"{plugin_name}-{function_name}"
@@ -71,30 +79,43 @@ class FunctionCallContent(KernelContent):
                 plugin_name, function_name = name.split("-", maxsplit=1)
             else:
                 function_name = name
-        super().__init__(
-            inner_content=inner_content,
-            ai_model_id=ai_model_id,
-            id=id,
-            index=index,
-            name=name,
-            arguments=arguments,
-            function_name=function_name or "",
-            plugin_name=plugin_name,
-            metadata=metadata,
-        )
+        args = {
+            "content_type": content_type,
+            "inner_content": inner_content,
+            "ai_model_id": ai_model_id,
+            "id": id,
+            "index": index,
+            "name": name,
+            "function_name": function_name or "",
+            "plugin_name": plugin_name,
+            "arguments": arguments,
+        }
+        if metadata:
+            args["metadata"] = metadata
+
+        super().__init__(**args)
 
     def __str__(self) -> str:
         """Return the function call as a string."""
+        if isinstance(self.arguments, dict):
+            return f"{self.name}({json.dumps(self.arguments)})"
         return f"{self.name}({self.arguments})"
 
     def __add__(self, other: "FunctionCallContent | None") -> "FunctionCallContent":
-        """Add two function calls together, combines the arguments, ignores the name."""
+        """Add two function calls together, combines the arguments, ignores the name.
+
+        When both function calls have a dict as arguments, the arguments are merged,
+        which means that the arguments of the second function call
+        will overwrite the arguments of the first function call if the same key is present.
+
+        When one of the two arguments are a dict and the other a string, we raise a ContentAdditionException.
+        """
         if not other:
             return self
         if self.id and other.id and self.id != other.id:
-            raise ValueError("Function calls have different ids.")
+            raise ContentAdditionException("Function calls have different ids.")
         if self.index != other.index:
-            raise ValueError("Function calls have different indexes.")
+            raise ContentAdditionException("Function calls have different indexes.")
         return FunctionCallContent(
             id=self.id or other.id,
             index=self.index or other.index,
@@ -108,17 +129,14 @@ class FunctionCallContent(KernelContent):
         """Combine two arguments."""
         if isinstance(arg1, dict) and isinstance(arg2, dict):
             return {**arg1, **arg2}
-        # when one of the two is a dict, the other should be a string
-        # we then treat both as strings as they might be malformed at this time
-        if isinstance(arg1, dict):
-            arg1 = json.dumps(arg1)
-        if isinstance(arg2, dict):
-            arg2 = json.dumps(arg2)
-        if arg1 in self.EMPTY_VALUES and arg2 in self.EMPTY_VALUES:
+        # when one of the two is a dict, and the other isn't, we raise.
+        if isinstance(arg1, dict) or isinstance(arg2, dict):
+            raise ContentAdditionException("Cannot combine a dict with a string.")
+        if arg1 in EMPTY_VALUES and arg2 in EMPTY_VALUES:
             return "{}"
-        if arg1 in self.EMPTY_VALUES:
+        if arg1 in EMPTY_VALUES:
             return arg2 or "{}"
-        if arg2 in self.EMPTY_VALUES:
+        if arg2 in EMPTY_VALUES:
             return arg1 or "{}"
         return (arg1 or "") + (arg2 or "")
 
@@ -145,7 +163,9 @@ class FunctionCallContent(KernelContent):
     @deprecated("The function_name and plugin_name properties should be used instead.")
     def split_name(self) -> list[str | None]:
         """Split the name into a plugin and function name."""
-        return [self.plugin_name, self.function_name]
+        if not self.function_name:
+            raise FunctionCallInvalidNameException("Function name is not set.")
+        return [self.plugin_name or "", self.function_name]
 
     @deprecated("The function_name and plugin_name properties should be used instead.")
     def split_name_dict(self) -> dict:
@@ -167,7 +187,7 @@ class FunctionCallContent(KernelContent):
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != cls.tag:
-            raise ContentInitializationError(f"Element tag is not {cls.tag}")
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
 
         return cls(name=element.get("name"), id=element.get("id"), arguments=element.text or "")
 
