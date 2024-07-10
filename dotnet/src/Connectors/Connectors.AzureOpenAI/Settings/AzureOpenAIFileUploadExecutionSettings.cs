@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using OpenAI.Files;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -15,7 +16,7 @@ public sealed class AzureOpenAIFileUploadExecutionSettings
     /// </summary>
     /// <param name="fileName">The file name</param>
     /// <param name="purpose">The file purpose</param>
-    public AzureOpenAIFileUploadExecutionSettings(string fileName, AzureOpenAIFileUploadPurpose purpose)
+    public AzureOpenAIFileUploadExecutionSettings(string fileName, FileUploadPurpose purpose)
     {
         Verify.NotNull(fileName, nameof(fileName));
 
@@ -31,5 +32,5 @@ public sealed class AzureOpenAIFileUploadExecutionSettings
     /// <summary>
     /// The file purpose.
     /// </summary>
-    public AzureOpenAIFileUploadPurpose Purpose { get; }
+    public FileUploadPurpose Purpose { get; }
 }

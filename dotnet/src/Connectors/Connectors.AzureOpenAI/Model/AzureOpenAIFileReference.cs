@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using OpenAI.Files;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -29,7 +30,7 @@ public sealed class AzureOpenAIFileReference
     /// <summary>
     /// Describes the associated purpose of the file.
     /// </summary>
-    public AzureOpenAIFilePurpose Purpose { get; set; }
+    public OpenAIFilePurpose Purpose { get; set; }
 
     /// <summary>
     /// The file size, in bytes.

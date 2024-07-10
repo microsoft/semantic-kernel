@@ -27,10 +27,10 @@ internal partial class ClientCore
     internal async Task<AzureOpenAIFileReference> UploadFileAsync(
         string fileName,
         Stream fileContent,
-        AzureOpenAIFileUploadPurpose purpose,
+        FileUploadPurpose purpose,
         CancellationToken cancellationToken)
     {
-        ClientResult<OpenAIFileInfo> response = await RunRequestAsync(() => this.Client.GetFileClient().UploadFileAsync(fileContent, fileName, ConvertToOpenAIFileUploadPurpose(purpose), cancellationToken)).ConfigureAwait(false);
+        ClientResult<OpenAIFileInfo> response = await RunRequestAsync(() => this.Client.GetFileClient().UploadFileAsync(fileContent, fileName, purpose, cancellationToken)).ConfigureAwait(false);
         return ConvertToFileReference(response.Value);
     }
 
@@ -77,10 +77,9 @@ internal partial class ClientCore
     /// <param name="filePurpose">The purpose of the files by which to filter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The metadata of all uploaded files.</returns>
-    internal async Task<IEnumerable<AzureOpenAIFileReference>> GetFilesAsync(AzureOpenAIFilePurpose? filePurpose, CancellationToken cancellationToken)
+    internal async Task<IEnumerable<AzureOpenAIFileReference>> GetFilesAsync(OpenAIFilePurpose? filePurpose, CancellationToken cancellationToken)
     {
-        OpenAIFilePurpose? purpose = filePurpose.HasValue ? ConvertToOpenAIFilePurpose(filePurpose.Value) : null;
-        ClientResult<OpenAIFileInfoCollection> response = await RunRequestAsync(() => this.Client.GetFileClient().GetFilesAsync(purpose, cancellationToken: cancellationToken)).ConfigureAwait(false);
+        ClientResult<OpenAIFileInfoCollection> response = await RunRequestAsync(() => this.Client.GetFileClient().GetFilesAsync(filePurpose, cancellationToken: cancellationToken)).ConfigureAwait(false);
         return response.Value.Select(ConvertToFileReference);
     }
 
@@ -108,42 +107,6 @@ internal partial class ClientCore
             CreatedTimestamp = fileInfo.CreatedAt.DateTime,
             FileName = fileInfo.Filename,
             SizeInBytes = (int)(fileInfo.SizeInBytes ?? 0),
-            Purpose = ConvertToAzureOpenAIFilePurpose(fileInfo.Purpose),
+            Purpose = fileInfo.Purpose,
         };
-
-    private static FileUploadPurpose ConvertToOpenAIFileUploadPurpose(AzureOpenAIFileUploadPurpose purpose)
-    {
-        if (purpose == AzureOpenAIFileUploadPurpose.Assistants) { return FileUploadPurpose.Assistants; }
-        if (purpose == AzureOpenAIFileUploadPurpose.FineTune) { return FileUploadPurpose.FineTune; }
-        if (purpose == AzureOpenAIFileUploadPurpose.Vision) { return FileUploadPurpose.Vision; }
-        if (purpose == AzureOpenAIFileUploadPurpose.Batch) { return FileUploadPurpose.Batch; }
-
-        throw new KernelException($"Unknown {nameof(AzureOpenAIFileUploadPurpose)}: {purpose}.");
-    }
-
-    private static OpenAIFilePurpose ConvertToOpenAIFilePurpose(AzureOpenAIFilePurpose purpose)
-    {
-        if (purpose == AzureOpenAIFilePurpose.Assistants) { return OpenAIFilePurpose.Assistants; }
-        if (purpose == AzureOpenAIFilePurpose.FineTune) { return OpenAIFilePurpose.FineTune; }
-        if (purpose == AzureOpenAIFilePurpose.AssistantsOutput) { return OpenAIFilePurpose.AssistantsOutput; }
-        if (purpose == AzureOpenAIFilePurpose.FineTuneResults) { return OpenAIFilePurpose.FineTuneResults; }
-        if (purpose == AzureOpenAIFilePurpose.Vision) { return OpenAIFilePurpose.Vision; }
-        if (purpose == AzureOpenAIFilePurpose.Batch) { return OpenAIFilePurpose.Batch; }
-        if (purpose == AzureOpenAIFilePurpose.BatchOutput) { return OpenAIFilePurpose.BatchOutput; }
-
-        throw new KernelException($"Unknown {nameof(AzureOpenAIFilePurpose)}: {purpose}.");
-    }
-
-    private static AzureOpenAIFilePurpose ConvertToAzureOpenAIFilePurpose(OpenAIFilePurpose purpose)
-    {
-        if (purpose == OpenAIFilePurpose.Assistants) { return AzureOpenAIFilePurpose.Assistants; }
-        if (purpose == OpenAIFilePurpose.FineTune) { return AzureOpenAIFilePurpose.FineTune; }
-        if (purpose == OpenAIFilePurpose.AssistantsOutput) { return AzureOpenAIFilePurpose.AssistantsOutput; }
-        if (purpose == OpenAIFilePurpose.FineTuneResults) { return AzureOpenAIFilePurpose.FineTuneResults; }
-        if (purpose == OpenAIFilePurpose.Vision) { return AzureOpenAIFilePurpose.Vision; }
-        if (purpose == OpenAIFilePurpose.Batch) { return AzureOpenAIFilePurpose.Batch; }
-        if (purpose == OpenAIFilePurpose.BatchOutput) { return AzureOpenAIFilePurpose.BatchOutput; }
-
-        throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}.");
-    }
 }

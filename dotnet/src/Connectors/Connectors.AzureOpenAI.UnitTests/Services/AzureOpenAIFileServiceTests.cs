@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Moq;
+using OpenAI.Files;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
@@ -210,7 +211,7 @@ public sealed class AzureOpenAIFileServiceTests : IDisposable
 
         this._messageHandlerStub.ResponseToReturn = response;
 
-        var settings = new AzureOpenAIFileUploadExecutionSettings("test.txt", AzureOpenAIFileUploadPurpose.Assistants);
+        var settings = new AzureOpenAIFileUploadExecutionSettings("test.txt", FileUploadPurpose.Assistants);
 
         await using var stream = new MemoryStream();
         await using (var writer = new StreamWriter(stream, leaveOpen: true))
@@ -242,7 +243,7 @@ public sealed class AzureOpenAIFileServiceTests : IDisposable
 
         this._messageHandlerStub.ResponseToReturn = response;
 
-        var settings = new AzureOpenAIFileUploadExecutionSettings("test.txt", AzureOpenAIFileUploadPurpose.Assistants);
+        var settings = new AzureOpenAIFileUploadExecutionSettings("test.txt", FileUploadPurpose.Assistants);
 
         await using var stream = new MemoryStream();
         await using (var writer = new StreamWriter(stream, leaveOpen: true))

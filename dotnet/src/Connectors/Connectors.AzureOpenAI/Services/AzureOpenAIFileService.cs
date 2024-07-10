@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
+using OpenAI.Files;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -72,7 +73,7 @@ public sealed class AzureOpenAIFileService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The file content as <see cref="BinaryContent"/></returns>
     /// <remarks>
-    /// Files uploaded with <see cref="AzureOpenAIFilePurpose.Assistants"/> do not support content retrieval.
+    /// Files uploaded with <see cref="OpenAIFilePurpose.Assistants"/> do not support content retrieval.
     /// </remarks>
     public async Task<BinaryContent> GetFileContentAsync(string id, CancellationToken cancellationToken = default)
     {
@@ -109,7 +110,7 @@ public sealed class AzureOpenAIFileService
     /// <param name="filePurpose">The purpose of the files by which to filter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The metadata of all uploaded files.</returns>
-    public async Task<IEnumerable<AzureOpenAIFileReference>> GetFilesAsync(AzureOpenAIFilePurpose? filePurpose, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<AzureOpenAIFileReference>> GetFilesAsync(OpenAIFilePurpose? filePurpose, CancellationToken cancellationToken = default)
         => await this._client.GetFilesAsync(filePurpose, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
