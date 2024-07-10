@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Data;
 using Moq;
@@ -25,8 +24,6 @@ public class RedisVectorRecordStoreTests
 
     private readonly Mock<IDatabase> _redisDatabaseMock;
 
-    private readonly CancellationToken _testCancellationToken = new(false);
-
     public RedisVectorRecordStoreTests()
     {
         this._redisDatabaseMock = new Mock<IDatabase>(MockBehavior.Strict);
@@ -36,26 +33,19 @@ public class RedisVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanGetRecordWithVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanGetRecordWithVectorsAsync(bool useDefinition)
     {
         // Arrange
         var redisResultString = """{ "Data": "data 1", "Vector": [1, 2, 3, 4] }""";
         SetupExecuteMock(this._redisDatabaseMock, redisResultString);
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new()
-            {
-                IncludeVectors = true,
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken);
+            new() { IncludeVectors = true });
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1 };
@@ -73,26 +63,19 @@ public class RedisVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanGetRecordWithoutVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanGetRecordWithoutVectorsAsync(bool useDefinition)
     {
         // Arrange
         var redisResultString = """{ "Data": "data 1" }""";
         SetupExecuteMock(this._redisDatabaseMock, redisResultString);
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new()
-            {
-                IncludeVectors = false,
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken);
+            new() { IncludeVectors = false });
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1, "Data" };
@@ -110,27 +93,20 @@ public class RedisVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanGetManyRecordsWithVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanGetManyRecordsWithVectorsAsync(bool useDefinition)
     {
         // Arrange
         var redisResultString1 = """{ "Data": "data 1", "Vector": [1, 2, 3, 4] }""";
         var redisResultString2 = """{ "Data": "data 2", "Vector": [5, 6, 7, 8] }""";
         SetupExecuteMock(this._redisDatabaseMock, [redisResultString1, redisResultString2]);
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
         var actual = await sut.GetBatchAsync(
             [TestRecordKey1, TestRecordKey2],
-            new()
-            {
-                IncludeVectors = true,
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken).ToListAsync();
+            new() { IncludeVectors = true }).ToListAsync();
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1, TestRecordKey2, "$" };
@@ -167,9 +143,9 @@ public class RedisVectorRecordStoreTests
         // Arrange target with custom mapper.
         var sut = new RedisVectorRecordStore<SinglePropsModel>(
             this._redisDatabaseMock.Object,
+            TestCollectionName,
             new()
             {
-                DefaultCollectionName = TestCollectionName,
                 MapperType = RedisRecordMapperType.JsonNodeCustomMapper,
                 JsonNodeCustomMapper = mapperMock.Object
             });
@@ -177,8 +153,7 @@ public class RedisVectorRecordStoreTests
         // Act
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new() { IncludeVectors = true },
-            this._testCancellationToken);
+            new() { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(actual);
@@ -195,24 +170,16 @@ public class RedisVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanDeleteRecordAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanDeleteRecordAsync(bool useDefinition)
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "200");
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
-        await sut.DeleteAsync(
-            TestRecordKey1,
-            new()
-            {
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken);
+        await sut.DeleteAsync(TestRecordKey1);
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1 };
@@ -225,24 +192,16 @@ public class RedisVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanDeleteManyRecordsWithVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanDeleteManyRecordsWithVectorsAsync(bool useDefinition)
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "200");
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
-        await sut.DeleteBatchAsync(
-            [TestRecordKey1, TestRecordKey2],
-            new()
-            {
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken);
+        await sut.DeleteBatchAsync([TestRecordKey1, TestRecordKey2]);
 
         // Assert
         var expectedArgs1 = new object[] { TestRecordKey1 };
@@ -262,25 +221,17 @@ public class RedisVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanUpsertRecordAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanUpsertRecordAsync(bool useDefinition)
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "OK");
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
         var model = CreateModel(TestRecordKey1, true);
 
         // Act
-        await sut.UpsertAsync(
-            model,
-            new()
-            {
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken);
+        await sut.UpsertAsync(model);
 
         // Assert
         // TODO: Fix issue where NotAnnotated is being included in the JSON.
@@ -294,27 +245,19 @@ public class RedisVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanUpsertManyRecordsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanUpsertManyRecordsAsync(bool useDefinition)
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "OK");
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         var model1 = CreateModel(TestRecordKey1, true);
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertBatchAsync(
-            [model1, model2],
-            new()
-            {
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken).ToListAsync();
+        var actual = await sut.UpsertBatchAsync([model1, model2]).ToListAsync();
 
         // Assert
         Assert.NotNull(actual);
@@ -348,9 +291,9 @@ public class RedisVectorRecordStoreTests
         // Arrange target with custom mapper.
         var sut = new RedisVectorRecordStore<SinglePropsModel>(
             this._redisDatabaseMock.Object,
+            TestCollectionName,
             new()
             {
-                DefaultCollectionName = TestCollectionName,
                 MapperType = RedisRecordMapperType.JsonNodeCustomMapper,
                 JsonNodeCustomMapper = mapperMock.Object
             });
@@ -358,10 +301,7 @@ public class RedisVectorRecordStoreTests
         var model = CreateModel(TestRecordKey1, true);
 
         // Act
-        await sut.UpsertAsync(
-            model,
-            null,
-            this._testCancellationToken);
+        await sut.UpsertAsync(model);
 
         // Assert
         mapperMock
@@ -370,13 +310,13 @@ public class RedisVectorRecordStoreTests
                 Times.Once);
     }
 
-    private RedisVectorRecordStore<SinglePropsModel> CreateVectorRecordStore(bool useDefinition, bool passCollectionToMethod)
+    private RedisVectorRecordStore<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
     {
         return new RedisVectorRecordStore<SinglePropsModel>(
             this._redisDatabaseMock.Object,
+            TestCollectionName,
             new()
             {
-                DefaultCollectionName = passCollectionToMethod ? null : TestCollectionName,
                 VectorStoreRecordDefinition = useDefinition ? this._singlePropsDefinition : null
             });
     }

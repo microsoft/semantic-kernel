@@ -40,11 +40,9 @@ public class AzureAISearchVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanGetRecordWithVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanGetRecordWithVectorsAsync(bool useDefinition)
     {
         // Arrange.
         this._searchClientMock.Setup(
@@ -54,16 +52,12 @@ public class AzureAISearchVectorRecordStoreTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(CreateModel(TestRecordKey1, true), Mock.Of<Response>()));
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act.
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new()
-            {
-                IncludeVectors = true,
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
+            new() { IncludeVectors = true },
             this._testCancellationToken);
 
         // Assert.
@@ -74,11 +68,9 @@ public class AzureAISearchVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanGetRecordWithoutVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanGetRecordWithoutVectorsAsync(bool useDefinition)
     {
         // Arrange.
         var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, false))!.AsObject();
@@ -90,16 +82,12 @@ public class AzureAISearchVectorRecordStoreTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(CreateModel(TestRecordKey1, true), Mock.Of<Response>()));
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act.
         var actual = await sut.GetAsync(
             TestRecordKey1,
-            new()
-            {
-                IncludeVectors = false,
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
+            new() { IncludeVectors = false },
             this._testCancellationToken);
 
         // Assert.
@@ -109,11 +97,9 @@ public class AzureAISearchVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanGetManyRecordsWithVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanGetManyRecordsWithVectorsAsync(bool useDefinition)
     {
         // Arrange.
         this._searchClientMock.Setup(
@@ -126,16 +112,12 @@ public class AzureAISearchVectorRecordStoreTests
                 return Response.FromValue(CreateModel(id, true), Mock.Of<Response>());
             });
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act.
         var actual = await sut.GetBatchAsync(
             [TestRecordKey1, TestRecordKey2],
-            new()
-            {
-                IncludeVectors = true,
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
+            new() { IncludeVectors = true },
             this._testCancellationToken).ToListAsync();
 
         // Assert.
@@ -170,9 +152,9 @@ public class AzureAISearchVectorRecordStoreTests
         // Arrange target with custom mapper.
         var sut = new AzureAISearchVectorRecordStore<SinglePropsModel>(
             this._searchIndexClientMock.Object,
+            TestCollectionName,
             new()
             {
-                DefaultCollectionName = TestCollectionName,
                 MapperType = AzureAISearchRecordMapperType.JsonObjectCustomMapper,
                 JsonObjectCustomMapper = mapperMock.Object
             });
@@ -188,11 +170,9 @@ public class AzureAISearchVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanDeleteRecordAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanDeleteRecordAsync(bool useDefinition)
     {
         // Arrange.
 #pragma warning disable Moq1002 // Moq: No matching constructor
@@ -207,13 +187,12 @@ public class AzureAISearchVectorRecordStoreTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act.
         await sut.DeleteAsync(
             TestRecordKey1,
-            new() { CollectionName = passCollectionToMethod ? TestCollectionName : null },
-            this._testCancellationToken);
+            cancellationToken: this._testCancellationToken);
 
         // Assert.
         this._searchClientMock.Verify(
@@ -226,11 +205,9 @@ public class AzureAISearchVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanDeleteManyRecordsWithVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanDeleteManyRecordsWithVectorsAsync(bool useDefinition)
     {
         // Arrange.
 #pragma warning disable Moq1002 // Moq: No matching constructor
@@ -245,13 +222,12 @@ public class AzureAISearchVectorRecordStoreTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act.
         await sut.DeleteBatchAsync(
             [TestRecordKey1, TestRecordKey2],
-            new() { CollectionName = passCollectionToMethod ? TestCollectionName : null },
-            this._testCancellationToken);
+            cancellationToken: this._testCancellationToken);
 
         // Assert.
         this._searchClientMock.Verify(
@@ -264,11 +240,9 @@ public class AzureAISearchVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanUpsertRecordAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanUpsertRecordAsync(bool useDefinition)
     {
         // Arrange upload result object.
 #pragma warning disable Moq1002 // Moq: No matching constructor
@@ -287,15 +261,14 @@ public class AzureAISearchVectorRecordStoreTests
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
         // Arrange sut.
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         var model = CreateModel(TestRecordKey1, true);
 
         // Act.
         var actual = await sut.UpsertAsync(
             model,
-            new() { CollectionName = passCollectionToMethod ? TestCollectionName : null },
-            this._testCancellationToken);
+            cancellationToken: this._testCancellationToken);
 
         // Assert.
         Assert.NotNull(actual);
@@ -309,11 +282,9 @@ public class AzureAISearchVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanUpsertManyRecordsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanUpsertManyRecordsAsync(bool useDefinition)
     {
         // Arrange upload result object.
 #pragma warning disable Moq1002 // Moq: No matching constructor
@@ -335,7 +306,7 @@ public class AzureAISearchVectorRecordStoreTests
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
         // Arrange sut.
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         var model1 = CreateModel(TestRecordKey1, true);
         var model2 = CreateModel(TestRecordKey2, true);
@@ -343,8 +314,7 @@ public class AzureAISearchVectorRecordStoreTests
         // Act.
         var actual = await sut.UpsertBatchAsync(
             [model1, model2],
-            new() { CollectionName = passCollectionToMethod ? TestCollectionName : null },
-            this._testCancellationToken).ToListAsync();
+            cancellationToken: this._testCancellationToken).ToListAsync();
 
         // Assert.
         Assert.NotNull(actual);
@@ -396,9 +366,9 @@ public class AzureAISearchVectorRecordStoreTests
         // Arrange target with custom mapper.
         var sut = new AzureAISearchVectorRecordStore<SinglePropsModel>(
             this._searchIndexClientMock.Object,
+            TestCollectionName,
             new()
             {
-                DefaultCollectionName = TestCollectionName,
                 MapperType = AzureAISearchRecordMapperType.JsonObjectCustomMapper,
                 JsonObjectCustomMapper = mapperMock.Object
             });
@@ -416,13 +386,13 @@ public class AzureAISearchVectorRecordStoreTests
                 Times.Once);
     }
 
-    private AzureAISearchVectorRecordStore<SinglePropsModel> CreateVectorRecordStore(bool useDefinition, bool passCollectionToMethod)
+    private AzureAISearchVectorRecordStore<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
     {
         return new AzureAISearchVectorRecordStore<SinglePropsModel>(
             this._searchIndexClientMock.Object,
+            TestCollectionName,
             new()
             {
-                DefaultCollectionName = passCollectionToMethod ? null : TestCollectionName,
                 VectorStoreRecordDefinition = useDefinition ? this._singlePropsDefinition : null
             });
     }

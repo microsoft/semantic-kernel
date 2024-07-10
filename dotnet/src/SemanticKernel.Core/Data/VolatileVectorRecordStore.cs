@@ -25,6 +25,9 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     /// <summary>Optional configuration options for this class.</summary>
     private readonly VolatileVectorRecordStoreOptions _options;
 
+    /// <summary>The name of the collection that this <see cref="VolatileVectorRecordStore{TRecord}"/> will access.</summary>
+    private readonly string _collectionName;
+
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =
     [
@@ -37,10 +40,15 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     /// <summary>
     /// Initializes a new instance of the <see cref="VolatileVectorRecordStore{TRecord}"/> class.
     /// </summary>
+    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorRecordStore{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public VolatileVectorRecordStore(VolatileVectorRecordStoreOptions? options = default)
+    public VolatileVectorRecordStore(string collectionName, VolatileVectorRecordStoreOptions? options = default)
     {
+        // Verify.
+        Verify.NotNullOrWhiteSpace(collectionName);
+
         // Assign.
+        this._collectionName = collectionName;
         this._internalCollection = new();
         this._options = options ?? new VolatileVectorRecordStoreOptions();
 
@@ -64,9 +72,10 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     /// Initializes a new instance of the <see cref="VolatileVectorRecordStore{TRecord}"/> class.
     /// </summary>
     /// <param name="internalCollection">Allows passing in the dictionary used for storage, for testing purposes.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorRecordStore{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    internal VolatileVectorRecordStore(ConcurrentDictionary<string, ConcurrentDictionary<string, TRecord>> internalCollection, VolatileVectorRecordStoreOptions? options = default)
-        : this(options)
+    internal VolatileVectorRecordStore(ConcurrentDictionary<string, ConcurrentDictionary<string, TRecord>> internalCollection, string collectionName, VolatileVectorRecordStoreOptions? options = default)
+        : this(collectionName, options)
     {
         this._internalCollection = internalCollection;
     }
@@ -74,7 +83,7 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     /// <inheritdoc />
     public Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var collectionDictionary = this.GetCollectionDictionary(options?.CollectionName);
+        var collectionDictionary = this.GetCollectionDictionary();
 
         if (collectionDictionary.TryGetValue(key, out var record))
         {
@@ -101,7 +110,7 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     /// <inheritdoc />
     public Task DeleteAsync(string key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var collectionDictionary = this.GetCollectionDictionary(options?.CollectionName);
+        var collectionDictionary = this.GetCollectionDictionary();
 
         collectionDictionary.TryRemove(key, out _);
         return Task.CompletedTask;
@@ -110,7 +119,7 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     /// <inheritdoc />
     public Task DeleteBatchAsync(IEnumerable<string> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var collectionDictionary = this.GetCollectionDictionary(options?.CollectionName);
+        var collectionDictionary = this.GetCollectionDictionary();
 
         foreach (var key in keys)
         {
@@ -123,7 +132,7 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     /// <inheritdoc />
     public Task<string> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var collectionDictionary = this.GetCollectionDictionary(options?.CollectionName);
+        var collectionDictionary = this.GetCollectionDictionary();
 
         var key = this._keyPropertyInfo.GetValue(record) as string;
         collectionDictionary.AddOrUpdate(key!, record, (key, currentValue) => record);
@@ -141,30 +150,16 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     }
 
     /// <summary>
-    /// Get a collection dictionary from the internal storage, creating it if it does not exist.
-    /// Use the provided collection name if not null, and fall back to the default collection name otherwise.
+    /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>
-    /// <param name="collectionName">The collection name passed to the operation.</param>
     /// <returns>The retrieved collection dictionary.</returns>
-    private ConcurrentDictionary<string, TRecord> GetCollectionDictionary(string? collectionName)
+    private ConcurrentDictionary<string, TRecord> GetCollectionDictionary()
     {
-        string? chosenCollectionName = null;
-
-        if (collectionName is not null)
+        if (!this._internalCollection.TryGetValue(this._collectionName, out var collectionDictionary))
         {
-            chosenCollectionName = collectionName;
-        }
-        else if (this._options.DefaultCollectionName is not null)
-        {
-            chosenCollectionName = this._options.DefaultCollectionName;
-        }
-        else
-        {
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly
-            throw new ArgumentException("Collection name must be provided in the operation options, since no default was provided at construction time.", "options");
-#pragma warning restore CA2208 // Instantiate argument exceptions correctly
+            throw new VectorStoreOperationException($"Call to vector store failed. Collection '{this._collectionName}' does not exist.");
         }
 
-        return this._internalCollection.GetOrAdd(chosenCollectionName, _ => new());
+        return collectionDictionary;
     }
 }

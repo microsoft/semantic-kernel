@@ -29,11 +29,9 @@ public class VolatileVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanGetRecordWithVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanGetRecordWithVectorsAsync(bool useDefinition)
     {
         // Arrange
         var record = CreateModel(TestRecordKey1, withVectors: true);
@@ -41,15 +39,14 @@ public class VolatileVectorRecordStoreTests
         collection.TryAdd(TestRecordKey1, record);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
             TestRecordKey1,
             new()
             {
-                IncludeVectors = true,
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
+                IncludeVectors = true
             },
             this._testCancellationToken);
 
@@ -63,11 +60,9 @@ public class VolatileVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanGetManyRecordsWithVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanGetManyRecordsWithVectorsAsync(bool useDefinition)
     {
         // Arrange
         var record1 = CreateModel(TestRecordKey1, withVectors: true);
@@ -77,15 +72,14 @@ public class VolatileVectorRecordStoreTests
         collection.TryAdd(TestRecordKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
         var actual = await sut.GetBatchAsync(
             [TestRecordKey1, TestRecordKey2],
             new()
             {
-                IncludeVectors = true,
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
+                IncludeVectors = true
             },
             this._testCancellationToken).ToListAsync();
 
@@ -99,11 +93,9 @@ public class VolatileVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanDeleteRecordAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanDeleteRecordAsync(bool useDefinition)
     {
         // Arrange
         var record1 = CreateModel(TestRecordKey1, withVectors: true);
@@ -113,16 +105,12 @@ public class VolatileVectorRecordStoreTests
         collection.TryAdd(TestRecordKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
         await sut.DeleteAsync(
             TestRecordKey1,
-            new()
-            {
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken);
+            cancellationToken: this._testCancellationToken);
 
         // Assert
         Assert.False(collection.ContainsKey(TestRecordKey1));
@@ -130,11 +118,9 @@ public class VolatileVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanDeleteManyRecordsWithVectorsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanDeleteManyRecordsWithVectorsAsync(bool useDefinition)
     {
         // Arrange
         var record1 = CreateModel(TestRecordKey1, withVectors: true);
@@ -144,16 +130,12 @@ public class VolatileVectorRecordStoreTests
         collection.TryAdd(TestRecordKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
         await sut.DeleteBatchAsync(
             [TestRecordKey1, TestRecordKey2],
-            new()
-            {
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken);
+            cancellationToken: this._testCancellationToken);
 
         // Assert
         Assert.False(collection.ContainsKey(TestRecordKey1));
@@ -161,27 +143,21 @@ public class VolatileVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanUpsertRecordAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanUpsertRecordAsync(bool useDefinition)
     {
         // Arrange
         var record1 = CreateModel(TestRecordKey1, withVectors: true);
         var collection = new ConcurrentDictionary<string, SinglePropsModel>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
         var upsertResult = await sut.UpsertAsync(
             record1,
-            new()
-            {
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken);
+            cancellationToken: this._testCancellationToken);
 
         // Assert
         Assert.Equal(TestRecordKey1, upsertResult);
@@ -190,11 +166,9 @@ public class VolatileVectorRecordStoreTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CanUpsertManyRecordsAsync(bool useDefinition, bool passCollectionToMethod)
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanUpsertManyRecordsAsync(bool useDefinition)
     {
         // Arrange
         var record1 = CreateModel(TestRecordKey1, withVectors: true);
@@ -203,16 +177,12 @@ public class VolatileVectorRecordStoreTests
         var collection = new ConcurrentDictionary<string, SinglePropsModel>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition, passCollectionToMethod);
+        var sut = this.CreateVectorRecordStore(useDefinition);
 
         // Act
         var actual = await sut.UpsertBatchAsync(
             [record1, record2],
-            new()
-            {
-                CollectionName = passCollectionToMethod ? TestCollectionName : null
-            },
-            this._testCancellationToken).ToListAsync();
+            cancellationToken: this._testCancellationToken).ToListAsync();
 
         // Assert
         Assert.NotNull(actual);
@@ -235,13 +205,13 @@ public class VolatileVectorRecordStoreTests
         };
     }
 
-    private VolatileVectorRecordStore<SinglePropsModel> CreateVectorRecordStore(bool useDefinition, bool passCollectionToMethod)
+    private VolatileVectorRecordStore<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
     {
         return new VolatileVectorRecordStore<SinglePropsModel>(
             this._collectionStore,
+            TestCollectionName,
             new()
             {
-                DefaultCollectionName = passCollectionToMethod ? null : TestCollectionName,
                 VectorStoreRecordDefinition = useDefinition ? this._singlePropsDefinition : null
             });
     }
