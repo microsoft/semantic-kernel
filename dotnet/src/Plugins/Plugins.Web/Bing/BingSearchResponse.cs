@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 
+#pragma warning disable CA1812 // Instantiated by reflection
 /// <summary>
 /// Bing search response.
 /// </summary>
@@ -33,7 +34,6 @@ internal sealed class BingSearchResponse<T>
 /// <summary>
 /// The query string that Bing used for the request.
 /// </summary>
-#pragma warning disable CA1812 // Instantiated by reflection
 internal sealed class BingQueryContext
 {
     /// <summary>
@@ -52,7 +52,6 @@ internal sealed class BingQueryContext
     [JsonPropertyName("alteredQuery")]
     public string? AlteredQuery { get; set; }
 }
-#pragma warning restore CA1812
 
 /// <summary>
 /// A list of webpages that are relevant to the search query.
@@ -94,3 +93,4 @@ internal sealed class BingWebPages<T>
     [JsonPropertyName("value")]
     public IList<T>? Value { get; set; }
 }
+#pragma warning restore CA1812

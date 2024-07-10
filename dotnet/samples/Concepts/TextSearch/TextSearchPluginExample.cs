@@ -18,9 +18,7 @@ public sealed class TextSearchPluginExample(ITestOutputHelper output) : BaseTest
     public async Task UseTextSearchPluginWithBingTextSearchAsync()
     {
         // Create a search service with Bing search service
-        var searchService = new BingTextSearchService(
-            endpoint: TestConfiguration.Bing.Endpoint,
-            apiKey: TestConfiguration.Bing.ApiKey);
+        var searchService = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a kernel with Bing search service and add a text search plugin
         Kernel kernel = new();

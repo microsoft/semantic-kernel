@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Search;
 
 /// <summary>
-/// Represents the search results returned from a <see cref="ITextSearchService{T}" /> service.
+/// Represents the search results returned from a <see cref="ITextSearch{T}" /> service.
 /// </summary>
 [Experimental("SKEXP0001")]
 public class KernelSearchResults<T>

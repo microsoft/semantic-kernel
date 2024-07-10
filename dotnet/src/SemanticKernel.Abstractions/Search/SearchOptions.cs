@@ -7,15 +7,21 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Search;
 
 /// <summary>
-/// Provides execution settings for a search request.
+/// Optional options when calling <see cref="ITextSearch{T}.SearchAsync"/>.
 /// </summary>
 /// <remarks>
-/// Implementors of <see cref="ITextSearchService{T}"/> can extend this
+/// Implementors of <see cref="ITextSearch{T}"/> can extend this
 /// if the service they are calling supports additional properties.
 /// </remarks>
 [Experimental("SKEXP0001")]
-public class SearchExecutionSettings
+public class SearchOptions
+
 {
+    /// <summary>
+    /// The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.
+    /// </summary>
+    public Kernel? Kernel { get; set; }
+
     /// <summary>
     /// The name of the search index.
     /// </summary>
@@ -44,7 +50,7 @@ public class SearchExecutionSettings
     /// Extra properties that may be included in the serialized execution settings.
     /// </summary>
     /// <remarks>
-    /// Avoid using this property if possible. Instead, use one of the classes that extends <see cref="SearchExecutionSettings"/>.
+    /// Avoid using this property if possible. Instead, use one of the classes that extends <see cref="SearchOptions"/>.
     /// </remarks>
     [JsonExtensionData]
     public IDictionary<string, object>? ExtensionData { get; set; }
