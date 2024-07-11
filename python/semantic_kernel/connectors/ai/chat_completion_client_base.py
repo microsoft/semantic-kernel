@@ -38,7 +38,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
 
     async def get_chat_message_content(
         self, chat_history: "ChatHistory", settings: "PromptExecutionSettings", **kwargs: Any
-    ) -> "ChatMessageContent":
+    ) -> "ChatMessageContent | None":
         """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Args:
@@ -50,7 +50,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             A string or list of strings representing the response(s) from the LLM.
         """
-        return (await self.get_chat_message_contents(chat_history, settings, **kwargs))[0]
+        results = await self.get_chat_message_contents(chat_history, settings, **kwargs)
+        if results:
+            return results[0]
+        return None
 
     @abstractmethod
     def get_streaming_chat_message_contents(
@@ -77,7 +80,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
         **kwargs: Any,
-    ) -> AsyncGenerator["StreamingChatMessageContent", Any]:
+    ) -> AsyncGenerator["StreamingChatMessageContent | None", Any]:
         """This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
 
         Args:
@@ -92,10 +95,10 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         async for streaming_chat_message_contents in self.get_streaming_chat_message_contents(
             chat_history, settings, **kwargs
         ):
-            if isinstance(streaming_chat_message_contents, list):
+            if streaming_chat_message_contents:
                 yield streaming_chat_message_contents[0]
             else:
-                yield streaming_chat_message_contents
+                yield None
 
     def _prepare_chat_history_for_request(
         self,

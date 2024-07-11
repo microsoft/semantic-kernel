@@ -30,7 +30,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             list[TextContent]: A string or list of strings representing the response(s) from the LLM.
         """
 
-    async def get_text_content(self, prompt: str, settings: "PromptExecutionSettings") -> "TextContent":
+    async def get_text_content(self, prompt: str, settings: "PromptExecutionSettings") -> "TextContent | None":
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
         Args:
@@ -40,7 +40,10 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             TextContent: A string or list of strings representing the response(s) from the LLM.
         """
-        return (await self.get_text_contents(prompt, settings))[0]
+        results = await self.get_text_contents(prompt, settings)
+        if results:
+            return results[0]
+        return None
 
     @abstractmethod
     def get_streaming_text_contents(
@@ -61,7 +64,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
 
     async def get_streaming_text_content(
         self, prompt: str, settings: "PromptExecutionSettings"
-    ) -> "StreamingTextContent | Any":
+    ) -> AsyncGenerator["StreamingTextContent | None", Any]:
         """This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 
         Args:
@@ -72,7 +75,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             StreamingTextContent: A stream representing the response(s) from the LLM.
         """
         async for contents in self.get_streaming_text_contents(prompt, settings):
-            if isinstance(contents, list):
+            if contents:
                 yield contents[0]
             else:
-                yield contents
+                yield None
