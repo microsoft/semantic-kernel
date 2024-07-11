@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -24,8 +25,6 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
-
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
