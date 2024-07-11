@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Agents;
 
@@ -23,6 +25,8 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
+        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
+
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
@@ -37,7 +41,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
                 });
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input
         try
@@ -68,14 +72,14 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var message in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
             {
                 if (!string.IsNullOrWhiteSpace(message.Content))
                 {
                     Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
                 }
 
-                foreach (var fileReference in message.Items.OfType<FileReferenceContent>())
+                foreach (FileReferenceContent fileReference in message.Items.OfType<FileReferenceContent>())
                 {
                     Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: @{fileReference.FileId}");
                 }
