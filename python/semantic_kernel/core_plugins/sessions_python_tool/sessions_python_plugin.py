@@ -289,7 +289,7 @@ class SessionsPythonTool(KernelBaseModel):
         Returns:
             BufferedReader: The data of the downloaded file.
         """
-        auth_token = await self.auth_callback()
+        auth_token = await self._ensure_auth_token()
         self.http_client.headers.update(
             {
                 "Authorization": f"Bearer {auth_token}",
