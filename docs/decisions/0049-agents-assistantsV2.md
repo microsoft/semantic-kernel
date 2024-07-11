@@ -43,7 +43,7 @@ This includes optional _execution_settings_ for defining default _run_ behavior.
 
 #### Assistant Invocation Settings
 
-When invoking an `OpenAIAssistantAgent` directly (no-chat), settings that only apply to a dicrete run may be specified.  These settings are defined as `OpenAIAssistantInvocationSettings`.
+When invoking an `OpenAIAssistantAgent` directly (no-chat), settings that only apply to a discrete run may be specified.  These settings are defined as `OpenAIAssistantInvocationSettings`.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 220pt;"></kbd>
