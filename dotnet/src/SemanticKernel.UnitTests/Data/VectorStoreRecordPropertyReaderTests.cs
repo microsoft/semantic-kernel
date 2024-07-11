@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -181,6 +183,16 @@ public class VectorStoreRecordPropertyReaderTests
     }
 
     [Fact]
+    public void VerifyPropertyTypesPassForAllowedEnumerableTypes()
+    {
+        // Arrange.
+        var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(EnumerablePropsModel), true);
+
+        // Act.
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, [typeof(string)], "Data", supportEnumerable: true);
+    }
+
+    [Fact]
     public void VerifyPropertyTypesFailsForDisallowedTypes()
     {
         // Arrange.
@@ -338,5 +350,25 @@ public class VectorStoreRecordPropertyReaderTests
             new VectorStoreRecordVectorProperty("Vector2")
         ]
     };
+
+    private sealed class EnumerablePropsModel
+    {
+        [VectorStoreRecordKey]
+        public string Key { get; set; } = string.Empty;
+
+        [VectorStoreRecordData]
+        public IEnumerable<string> EnumerableData { get; set; } = new List<string>();
+
+        [VectorStoreRecordData]
+        public string[] ArrayData { get; set; } = Array.Empty<string>();
+
+        [VectorStoreRecordData]
+        public List<string> ListData { get; set; } = new List<string>();
+
+        [VectorStoreRecordVector]
+        public ReadOnlyMemory<float> Vector { get; set; }
+
+        public string NotAnnotated { get; set; } = string.Empty;
+    }
 #pragma warning restore CA1812 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }
