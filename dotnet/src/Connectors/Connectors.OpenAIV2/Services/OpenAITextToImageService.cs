@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.TextToImage;
-using OpenAI;
 
 /* Phase 02
 - Breaking the current constructor parameter order to follow the same order as the other services.
@@ -18,6 +17,9 @@ using OpenAI;
 - "modelId" parameter is now required in the constructor.
 
 - Added OpenAIClient breaking glass constructor.
+
+Phase 08
+- Removed OpenAIClient breaking glass constructor
 */
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -52,21 +54,6 @@ public class OpenAITextToImageService : ITextToImageService
     {
         Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
         this._client = new(modelId, apiKey, organizationId, endpoint, httpClient, loggerFactory?.CreateLogger(this.GetType()));
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAITextToImageService"/> class.
-    /// </summary>
-    /// <param name="modelId">Model name</param>
-    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextToImageService(
-        string modelId,
-        OpenAIClient openAIClient,
-        ILoggerFactory? loggerFactory = null)
-    {
-        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
-        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextToImageService)));
     }
 
     /// <inheritdoc/>

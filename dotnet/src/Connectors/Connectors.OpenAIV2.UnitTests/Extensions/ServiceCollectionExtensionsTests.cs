@@ -97,21 +97,6 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void ItCanAddImageToTextServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = new ServiceCollection();
-
-        // Act
-        var service = sut.AddOpenAITextToImage("model", new OpenAIClient("key"))
-            .BuildServiceProvider()
-            .GetRequiredService<ITextToImageService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
     public void ItCanAddTextToAudioService()
     {
         // Arrange

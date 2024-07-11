@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using Moq;
-using OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
@@ -52,22 +51,8 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new OpenAITextToImageService(" ", "apikey"));
-        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService(" ", openAIClient: new("apikey")));
         Assert.Throws<ArgumentException>(() => new OpenAITextToImageService("", "apikey"));
-        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService("", openAIClient: new("apikey")));
         Assert.Throws<ArgumentNullException>(() => new OpenAITextToImageService(null!, "apikey"));
-        Assert.Throws<ArgumentNullException>(() => new OpenAITextToImageService(null!, openAIClient: new("apikey")));
-    }
-
-    [Fact]
-    public void OpenAIClientConstructorWorksCorrectly()
-    {
-        // Arrange
-        var sut = new OpenAITextToImageService("model", new OpenAIClient("apikey"));
-
-        // Assert
-        Assert.NotNull(sut);
-        Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 
     [Theory]

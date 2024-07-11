@@ -99,32 +99,6 @@ public static class OpenAIKernelBuilderExtensions
     /// <summary>
     /// Adds the <see cref="OpenAITextToImageService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
-    /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
-    /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0010")]
-    public static IKernelBuilder AddOpenAITextToImage(
-        this IKernelBuilder builder,
-        string modelId,
-        OpenAIClient? openAIClient = null,
-        string? serviceId = null)
-    {
-        Verify.NotNull(builder);
-
-        builder.Services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
-            new OpenAITextToImageService(
-                modelId,
-                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
-                serviceProvider.GetService<ILoggerFactory>()));
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Adds the <see cref="OpenAITextToImageService"/> to the <see cref="IKernelBuilder.Services"/>.
-    /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">The model to use for image generation.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
