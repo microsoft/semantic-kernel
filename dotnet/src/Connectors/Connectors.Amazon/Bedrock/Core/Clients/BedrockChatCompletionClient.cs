@@ -69,7 +69,14 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
 
                 break;
             case "cohere":
-                this._ioService = new CohereCommandRIOService();
+                if (modelId.Contains("command-r"))
+                {
+                    this._ioService = new CohereCommandRIOService();
+                }
+                else
+                {
+                    throw new ArgumentException($"Unsupported Cohere model: {modelId}");
+                }
                 break;
             case "meta":
                 this._ioService = new MetaIOService();
@@ -89,30 +96,28 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        // for (int requestIndex = 1; ; requestIndex++)
-        // {
-            ConverseResponse response;
-            using (var activity = ModelDiagnostics.StartCompletionActivity(
-                       this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings))
+        ConverseResponse response;
+        using (var activity = ModelDiagnostics.StartCompletionActivity(
+                   this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings))
+        {
+            try
             {
-                try
-                {
-                    response = await this.ConverseBedrockModelAsync(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex) when (activity is not null)
-                {
-                    activity.SetError(ex);
-                    throw;
-                }
-                IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
-                // foreach (var message in chat)
-                // {
-                //     chatHistory.AddMessage(AuthorRole.Assistant, message.Content);
-                // }
-                activity?.SetCompletionResponse(chat);
-                return chat.ToList();
+                response = await this.ConverseBedrockModelAsync(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
             }
-        // }
+            catch (Exception ex) when (activity is not null)
+            {
+                activity.SetError(ex);
+                throw;
+            }
+            IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
+            // Per other sample Connector demos, we are letting the user add the response to the ChatHistory. Otherwise, it could be done as below:
+            // foreach (var message in chat)
+            // {
+            //     chatHistory.AddMessage(AuthorRole.Assistant, message.Content);
+            // }
+            activity?.SetCompletionResponse(chat);
+            return chat.ToList();
+        }
     }
 
     public static IEnumerable<ChatMessageContent> ConvertToMessageContent(ConverseResponse response)
@@ -151,17 +156,18 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         return itemCollection;
     }
 
+    // Order of operations:
+    // 1. Start completion activity with semantic kernel
+    // 2. Call converse stream async with bedrock API
+    // 3. Convert output to semantic kernel's StreamingChatMessageContent
+    // 4. Yield return the streamed contents
+    // 5. End streaming activity with kernel
     internal async IAsyncEnumerable<StreamingChatMessageContent> StreamChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        // start completion activity
-        // call converse stream async (bedrock API)
-        // convert output to Sk's StreamingChatMessageContent
-        // yield return the streamed contents
-        // activity end streaming
         ConverseStreamResponse response;
         using var activity = ModelDiagnostics.StartCompletionActivity(
             this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings);

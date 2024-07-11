@@ -10,7 +10,7 @@ namespace Connectors.Amazon.Models.AI21;
 
 public class AI21JambaRequest
 {
-    public class AI21ChatCompletionRequest : IChatCompletionRequest //for jamba
+    public class AI21ChatCompletionRequest : IChatCompletionRequest
     {
         public List<Message> Messages { get; set; }
         public double Temperature { get; set; } = 1.0;
@@ -31,7 +31,7 @@ public class AI21JambaRequest
     }
 
     [Serializable]
-    public class AI21TextGenerationRequest : ITextGenerationRequest //for jamba
+    public class AI21TextGenerationRequest : ITextGenerationRequest
     {
         [JsonIgnore]
         public string InputText

@@ -78,8 +78,6 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
             }
         }
     }
-
-    //NOT ACCOUNTING FOR SETTINGS - HARD CODED
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
         var titanRequest = new TitanRequest.TitanChatCompletionRequest
@@ -92,9 +90,9 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
             System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = 0.7f, // Default value
-                TopP = 0.9f, // Default value
-                MaxTokens = 512 // Default value
+                Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 0.7f),
+                TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "topP", 0.9f),
+                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "maxTokenCount", 512),
             },
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()
@@ -111,6 +109,21 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
             ToolConfig = null // Set if needed
         };
         return converseRequest;
+    }
+
+    private TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
+    {
+        if (extensionData == null || !extensionData.TryGetValue(key, out object? value))
+        {
+            return defaultValue;
+        }
+
+        if (value is TValue typedValue)
+        {
+            return typedValue;
+        }
+
+        return defaultValue;
     }
 
     private static ConversationRole MapRole(AuthorRole role)
@@ -131,50 +144,6 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
             _ => throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}")
         };
     }
-    // public IEnumerable<StreamingTextContent> GetStreamingInvokeResponseBody(InvokeModelWithResponseStreamResponse response, string modelId)
-    // {
-    //     var streamingTextContents = new List<StreamingTextContent>();
-    //
-    //     using (var responseStream = response.Body)
-    //     {
-    //         responseStream.InitialResponseReceived += OnInitialResponseReceived;
-    //         responseStream.ChunkReceived += OnChunkReceived;
-    //
-    //         responseStream.StartProcessing();
-    //         Console.WriteLine("HERE0: " + response.ContentLength);
-    //
-    //         void OnInitialResponseReceived(object sender, EventStreamEventReceivedArgs<InitialResponseEvent> args)
-    //         {
-    //             // Handle the initial response event if needed
-    //         }
-    //
-    //         void OnChunkReceived(object sender, EventStreamEventReceivedArgs<PayloadPart> args)
-    //         {
-    //             var payloadPart = args.EventStreamEvent;
-    //             var decodedPayload = Encoding.UTF8.GetString(payloadPart.Bytes.GetBuffer());
-    //             var titanStreamResponse = JsonSerializer.Deserialize<TitanTextResponse.TitanStreamResponse>(decodedPayload);
-    //
-    //             if (titanStreamResponse != null && titanStreamResponse.Chunks != null)
-    //             {
-    //                 var decodedResponse = titanStreamResponse.GetDecodedResponse();
-    //                 streamingTextContents.Add(new StreamingTextContent(
-    //                     text: decodedResponse.OutputText,
-    //                     choiceIndex: 0, // Assuming a single choice
-    //                     modelId: modelId,
-    //                     innerContent: decodedResponse,
-    //                     metadata: new Dictionary<string, object?>
-    //                     {
-    //                         { "InputTextTokenCount", decodedResponse.InputTextTokenCount },
-    //                         { "TotalOutputTextTokenCount", decodedResponse.TotalOutputTextTokenCount },
-    //                         { "CompletionReason", decodedResponse.CompletionReason }
-    //                     }));
-    //             }
-    //             Console.WriteLine("HERE: " + streamingTextContents[0]);
-    //         }
-    //     }
-    //
-    //     return streamingTextContents;
-    // }
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         var text = chunk?["outputText"]?.ToString();
@@ -196,9 +165,9 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
             System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = 0.7f, // Default value
-                TopP = 0.9f, // Default value
-                MaxTokens = 512 // Default value
+                Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 0.7f),
+                TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "topP", 0.9f),
+                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "maxTokenCount", 512),
             },
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Connectors.Amazon.Models.Cohere;
 
-public class CommandTextResponse //FOR COHERE COMMAND NOT COMMAND R
+public class CommandTextResponse
 {
     [JsonPropertyName("generations")]
     public List<Generation> Generations { get; set; }

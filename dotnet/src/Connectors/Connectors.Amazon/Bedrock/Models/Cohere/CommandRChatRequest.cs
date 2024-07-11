@@ -14,13 +14,6 @@ public class CohereCommandRequest : IChatCompletionRequest
     public string Message { get; set; }
 
     public List<Message> Messages { get; set; }
-    // List<Message> IChatCompletionRequest.Messages { get; set; }
-
-    // List<Message> IChatCompletionRequest.Messages
-    // {
-    //     get => BedrockMessages;
-    //     set => Messages = value;
-    // }
 
     [JsonPropertyName("chat_history")]
     public List<CohereMessage> ChatHistory { get; set; }
@@ -72,30 +65,6 @@ public class CohereCommandRequest : IChatCompletionRequest
 
     [JsonPropertyName("raw_prompting")]
     public bool RawPrompting { get; set; } = false;
-
-    // public List<Message> BedrockMessages
-    // {
-    //     get
-    //     {
-    //         var messages = new List<Message>();
-    //         if (ChatHistory != null)
-    //         {
-    //             messages.AddRange(ChatHistory.Select(m => new Message
-    //             {
-    //                 Role = MapRole(m.Role),
-    //                 Content = new List<ContentBlock> { new ContentBlock { Text = m.Message } }
-    //             }));
-    //         }
-    //         messages.Add(new Message
-    //         {
-    //             Role = ConversationRole.User,
-    //             Content = new List<ContentBlock> { new ContentBlock { Text = Message } }
-    //         });
-    //         return messages;
-    //     }
-    // }
-
-    public List<Message> BedrockMessages { get; set; }
 
     public List<SystemContentBlock> System { get; set; }
     public InferenceConfiguration InferenceConfig { get; set; }

@@ -118,7 +118,6 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
     {
         var cohereRequest = new CohereCommandRequest
     {
-        // Message = chatHistory.Any() ? chatHistory[^1].Content : string.Empty,
         ChatHistory = chatHistory.Select(m => new CohereCommandRequest.CohereMessage
         {
             Role = MapRole(m.Role),
@@ -157,11 +156,6 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
         AdditionalModelRequestFields = new Document
         {
             { "message", cohereRequest.Message },
-            // { "chat_history", new Document(cohereRequest.ChatHistory.Select(m => new Document
-            // {
-            //     { "role", m.Role.ToUpper() },
-            //     { "message", m.Message }
-            // }).ToList()) },
             { "documents", new Document(cohereRequest.Documents?.Select(d => new Document
             {
                 { "title", d.Title },
@@ -181,6 +175,7 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
         AdditionalModelResponseFieldPaths = new List<string>(),
         GuardrailConfig = null,
         ToolConfig = null
+        // Below is buggy attempt at trying to configure tool calling.
         // ToolConfig = new ToolConfiguration
         // {
         //     Tools = new List<Tool>(cohereRequest.Tools.Select(t => new Tool
@@ -273,13 +268,10 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
             yield return text;
         }
     }
-
-    //FOR COMMAND R ONLY (command does not support chat streaming)
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
         var cohereRequest = new CohereCommandRequest
     {
-        // Message = chatHistory.Any() ? chatHistory[^1].Content : string.Empty,
         ChatHistory = chatHistory.Select(m => new CohereCommandRequest.CohereMessage
         {
             Role = MapRole(m.Role),

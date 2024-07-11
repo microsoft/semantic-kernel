@@ -73,7 +73,7 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
             }
         }
     }
-
+    // NOTE: default max_tokens differs between different Claude versions. Will need to address differentiation.
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         var claudeRequest = new ClaudeRequest.ClaudeChatCompletionRequest
@@ -83,14 +83,14 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
                 Role = MapRole(m.Role),
                 Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
             }).ToList(),
-            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
+            System = this.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
             InferenceConfig = new InferenceConfiguration
             {
                 Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1f),
                 TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 0.999f),
-                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 512) //different for diff models need to change
+                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 512)
             },
-            // AnthropicVersion = "bedrock-2023-05-31",
+            // AnthropicVersion = "bedrock-2023-05-31", // NOTE: documentation states anthropic_version required and value must be 'bedrock-2023-05-31' but BedrockRuntime ValidationException with this field present.
             Tools = this.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
             ToolChoice = this.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null)
         };
@@ -174,6 +174,7 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
         }
     }
 
+    // NOTE: default max_tokens differs between different Claude versions. Will need to address differentiation.
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
         var claudeRequest = new ClaudeRequest.ClaudeChatCompletionRequest
@@ -183,12 +184,12 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
                 Role = MapRole(m.Role),
                 Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
             }).ToList(),
-            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
+            System = this.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
             InferenceConfig = new InferenceConfiguration
             {
                 Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1f),
                 TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 0.999f),
-                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 512) //different for diff models need to change
+                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 512)
             },
             // AnthropicVersion = "bedrock-2023-05-31",
             Tools = this.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),

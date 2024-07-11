@@ -19,11 +19,11 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
 {
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {
-        double? temperature = 0.5; // Mistral default
+        double? temperature = 0.5; // Mistral default [0.7 for the non-instruct versions. need to fix]
         double? topP = 0.9; // Mistral default
-        int? maxTokens = 512; // Mistral default
+        int? maxTokens = 512; // Mistral default [8192 for the non-instruct versions. need to fix]
         List<string>? stop = null;
-        int? topK = 50; // Mistral default
+        int? topK = 50; // Mistral default [disabled for non-instruct. likely just ignored since still functional]
 
         if (executionSettings != null && executionSettings.ExtensionData != null)
         {
@@ -98,12 +98,6 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
                 TopP = (float)request.TopP,
                 MaxTokens = (int)request.MaxTokens
             },
-            // InferenceConfig = new InferenceConfiguration
-            // {
-            //     Temperature = 0.7f, // Default value
-            //     TopP = 0.9f, // Default value
-            //     MaxTokens = 512 // Default value
-            // },
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()
         };

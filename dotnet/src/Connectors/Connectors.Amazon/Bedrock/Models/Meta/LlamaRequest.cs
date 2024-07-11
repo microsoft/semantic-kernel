@@ -11,9 +11,9 @@ namespace Connectors.Amazon.Models.Meta;
 public class LlamaRequest : IChatCompletionRequest
 {
     public string Prompt { get; set; }
-    public double Temperature { get; set; } = 0.5;
-    public double TopP { get; set; } = 0.9;
-    public int MaxGenLen { get; set; } = 512;
+    public double Temperature { get; set; }
+    public double TopP { get; set; }
+    public int MaxGenLen { get; set; }
     private List<Message> _messages;
     public List<Message> Messages
     {

@@ -5,7 +5,7 @@ using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.Cohere;
 
-public class CommandTextRequest //FOR COHERE COMMAND NOT COMMAND R
+public class CommandTextRequest
 {
     [Serializable]
     public class CohereCommandTextGenerationRequest : ITextGenerationRequest
