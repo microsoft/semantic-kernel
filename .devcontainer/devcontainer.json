@@ -13,7 +13,10 @@
 				"ms-dotnettools.dotnet-interactive-vscode",
 				"ms-semantic-kernel.semantic-kernel",
 				"esbenp.prettier-vscode",
-				"vscjava.vscode-gradle"
+				"vscjava.vscode-gradle",
+				"GitHub.copilot-chat",
+				"GitHub.copilot",
+				"franneck94.c-cpp-runner"
 			]
 		}
 	},
