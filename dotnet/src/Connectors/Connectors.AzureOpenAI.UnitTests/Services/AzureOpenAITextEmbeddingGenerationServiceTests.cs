@@ -8,9 +8,11 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Services;
+using Moq;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
@@ -19,12 +21,23 @@ namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 /// </summary>
 public class AzureOpenAITextEmbeddingGenerationServiceTests
 {
-    [Fact]
-    public void ItCanBeInstantiatedAndPropertiesSetAsExpected()
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory;
+
+    public AzureOpenAITextEmbeddingGenerationServiceTests()
+    {
+        this._mockLoggerFactory = new Mock<ILoggerFactory>();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ItCanBeInstantiatedAndPropertiesSetAsExpected(bool includeLoggerFactory)
     {
         // Arrange
-        var sut = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", modelId: "model", dimensions: 2);
-        var sutWithAzureOpenAIClient = new AzureOpenAITextEmbeddingGenerationService("deployment-name", new AzureOpenAIClient(new Uri("https://endpoint"), new ApiKeyCredential("apiKey")), modelId: "model", dimensions: 2);
+        var sut = includeLoggerFactory ?
+            new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", modelId: "model", dimensions: 2, loggerFactory: this._mockLoggerFactory.Object) :
+            new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", modelId: "model", dimensions: 2);
+        var sutWithAzureOpenAIClient = new AzureOpenAITextEmbeddingGenerationService("deployment-name", new AzureOpenAIClient(new Uri("https://endpoint"), new ApiKeyCredential("apiKey")), modelId: "model", dimensions: 2, loggerFactory: this._mockLoggerFactory.Object);
 
         // Assert
         Assert.NotNull(sut);

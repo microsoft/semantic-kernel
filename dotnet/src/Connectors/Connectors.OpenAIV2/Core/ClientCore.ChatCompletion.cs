@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
-    private const string LogProbabilityInfoMetadataKey = "LogProbabilityInfo";
+    private const string ContentTokenLogProbabilitiesKey = "ContentTokenLogProbabilities";
     private const string ModelProvider = "openai";
     private record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
 
@@ -88,7 +88,7 @@ internal partial class ClientCore
 
     private static Dictionary<string, object?> GetChatCompletionMetadata(OpenAIChatCompletion completions)
     {
-        return new Dictionary<string, object?>(8)
+        return new Dictionary<string, object?>
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.CreatedAt), completions.CreatedAt },
@@ -97,13 +97,13 @@ internal partial class ClientCore
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason.ToString() },
-            { LogProbabilityInfoMetadataKey, completions.ContentTokenLogProbabilities },
+            { ContentTokenLogProbabilitiesKey, completions.ContentTokenLogProbabilities },
         };
     }
 
     private static Dictionary<string, object?> GetChatCompletionMetadata(StreamingChatCompletionUpdate completionUpdate)
     {
-        return new Dictionary<string, object?>(4)
+        return new Dictionary<string, object?>
         {
             { nameof(completionUpdate.Id), completionUpdate.Id },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },

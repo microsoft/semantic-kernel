@@ -27,9 +27,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// </summary>
 internal partial class ClientCore
 {
-    private const string PromptFilterResultsMetadataKey = "PromptFilterResults";
-    private const string ContentFilterResultsMetadataKey = "ContentFilterResults";
-    private const string LogProbabilityInfoMetadataKey = "LogProbabilityInfo";
+    private const string ContentFilterResultForPromptKey = "ContentFilterResultForPrompt";
+    private const string ContentFilterResultForResponseKey = "ContentFilterResultForResponse";
+    private const string ContentTokenLogProbabilitiesKey = "ContentTokenLogProbabilities";
     private const string ModelProvider = "openai";
     private record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
 
@@ -92,25 +92,25 @@ internal partial class ClientCore
     private static Dictionary<string, object?> GetChatCompletionMetadata(OpenAIChatCompletion completions)
     {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        return new Dictionary<string, object?>(8)
+        return new Dictionary<string, object?>
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.CreatedAt), completions.CreatedAt },
-            { PromptFilterResultsMetadataKey, completions.GetContentFilterResultForPrompt() },
+            { ContentFilterResultForPromptKey, completions.GetContentFilterResultForPrompt() },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
-            { ContentFilterResultsMetadataKey, completions.GetContentFilterResultForResponse() },
+            { ContentFilterResultForResponseKey, completions.GetContentFilterResultForResponse() },
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason.ToString() },
-            { LogProbabilityInfoMetadataKey, completions.ContentTokenLogProbabilities },
+            { ContentTokenLogProbabilitiesKey, completions.ContentTokenLogProbabilities },
         };
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     private static Dictionary<string, object?> GetChatCompletionMetadata(StreamingChatCompletionUpdate completionUpdate)
     {
-        return new Dictionary<string, object?>(4)
+        return new Dictionary<string, object?>
         {
             { nameof(completionUpdate.Id), completionUpdate.Id },
             { nameof(completionUpdate.CreatedAt), completionUpdate.CreatedAt },
