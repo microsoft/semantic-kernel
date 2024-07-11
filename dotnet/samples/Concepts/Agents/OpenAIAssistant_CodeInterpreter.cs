@@ -28,7 +28,7 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
                 });
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input
         try

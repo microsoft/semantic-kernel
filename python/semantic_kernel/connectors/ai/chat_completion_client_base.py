@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
+    """Base class for chat completion AI services."""
+
     @abstractmethod
     async def get_chat_message_contents(
         self,
@@ -21,16 +23,16 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         settings: "PromptExecutionSettings",
         **kwargs: Any,
     ) -> list["ChatMessageContent"]:
-        """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
+        """Create chat message contents, in the number specified by the settings.
 
         Args:
             chat_history (ChatHistory): A list of chats in a chat_history object, that can be
                 rendered into messages from system, user, assistant and tools.
             settings (PromptExecutionSettings): Settings for the request.
-            kwargs (Dict[str, Any]): The optional arguments.
+            **kwargs (Any): The optional arguments.
 
         Returns:
-            Union[str, List[str]]: A string or list of strings representing the response(s) from the LLM.
+            A list of chat message contents representing the response(s) from the LLM.
         """
         pass
 
@@ -41,7 +43,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         settings: "PromptExecutionSettings",
         **kwargs: Any,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
-        """This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
+        """Create streaming chat message contents, in the number specified by the settings.
 
         Args:
             chat_history (ChatHistory): A list of chat chat_history, that can be rendered into a
