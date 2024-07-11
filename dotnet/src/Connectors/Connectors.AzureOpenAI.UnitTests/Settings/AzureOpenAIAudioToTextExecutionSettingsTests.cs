@@ -27,7 +27,7 @@ public sealed class AzureOpenAIAudioToTextExecutionSettingsTests
             ModelId = "model_id",
             Language = "en",
             Prompt = "prompt",
-            ResponseFormat = AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
+            ResponseFormat = "json",
             Temperature = 0.2f
         };
 
@@ -48,7 +48,7 @@ public sealed class AzureOpenAIAudioToTextExecutionSettingsTests
             "language": "en",
             "filename": "file.mp3",
             "prompt": "prompt",
-            "response_format": "verbose",
+            "response_format": "verbose_json",
             "temperature": 0.2
         }
         """;
@@ -64,7 +64,7 @@ public sealed class AzureOpenAIAudioToTextExecutionSettingsTests
         Assert.Equal("en", settings.Language);
         Assert.Equal("file.mp3", settings.Filename);
         Assert.Equal("prompt", settings.Prompt);
-        Assert.Equal(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose, settings.ResponseFormat);
+        Assert.Equal("verbose_json", settings.ResponseFormat);
         Assert.Equal(0.2f, settings.Temperature);
     }
 
@@ -76,7 +76,7 @@ public sealed class AzureOpenAIAudioToTextExecutionSettingsTests
             ModelId = "model_id",
             Language = "en",
             Prompt = "prompt",
-            ResponseFormat = AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
+            ResponseFormat = "vtt",
             Temperature = 0.2f,
             Filename = "something.mp3",
         };
@@ -87,7 +87,7 @@ public sealed class AzureOpenAIAudioToTextExecutionSettingsTests
         Assert.Equal("model_id", clone.ModelId);
         Assert.Equal("en", clone.Language);
         Assert.Equal("prompt", clone.Prompt);
-        Assert.Equal(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple, clone.ResponseFormat);
+        Assert.Equal("vtt", clone.ResponseFormat);
         Assert.Equal(0.2f, clone.Temperature);
         Assert.Equal("something.mp3", clone.Filename);
     }
@@ -100,7 +100,7 @@ public sealed class AzureOpenAIAudioToTextExecutionSettingsTests
             ModelId = "model_id",
             Language = "en",
             Prompt = "prompt",
-            ResponseFormat = AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple,
+            ResponseFormat = "srt",
             Temperature = 0.2f,
             Filename = "something.mp3",
         };
@@ -111,7 +111,7 @@ public sealed class AzureOpenAIAudioToTextExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => settings.ModelId = "new_model");
         Assert.Throws<InvalidOperationException>(() => settings.Language = "some_format");
         Assert.Throws<InvalidOperationException>(() => settings.Prompt = "prompt");
-        Assert.Throws<InvalidOperationException>(() => settings.ResponseFormat = AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple);
+        Assert.Throws<InvalidOperationException>(() => settings.ResponseFormat = "srt");
         Assert.Throws<InvalidOperationException>(() => settings.Temperature = 0.2f);
         Assert.Throws<InvalidOperationException>(() => settings.Filename = "something");
 

@@ -147,11 +147,11 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose, "verbose_json")]
-    [InlineData(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple, "json")]
-    [InlineData(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Vtt, "vtt")]
-    [InlineData(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Srt, "srt")]
-    public async Task ItRespectResultFormatExecutionSettingAsync(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat responseFormat, string expectedFormat)
+    [InlineData("verbose_json")]
+    [InlineData("json")]
+    [InlineData("vtt")]
+    [InlineData("srt")]
+    public async Task ItRespectResultFormatExecutionSettingAsync(string format)
     {
         // Arrange
         var service = new AzureOpenAIAudioToTextService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient);
@@ -161,7 +161,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var settings = new AzureOpenAIAudioToTextExecutionSettings("file.mp3") { ResponseFormat = responseFormat };
+        var settings = new AzureOpenAIAudioToTextExecutionSettings("file.mp3") { ResponseFormat = format };
         var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), settings);
 
         // Assert
@@ -171,7 +171,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         var multiPartData = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         var multiPartBreak = multiPartData.Substring(0, multiPartData.IndexOf("\r\n", StringComparison.OrdinalIgnoreCase));
 
-        Assert.Contains($"{expectedFormat}\r\n{multiPartBreak}", multiPartData);
+        Assert.Contains($"{format}\r\n{multiPartBreak}", multiPartData);
     }
 
     [Fact]

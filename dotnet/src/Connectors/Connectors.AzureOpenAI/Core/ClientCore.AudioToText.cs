@@ -88,19 +88,14 @@ internal partial class ClientCore
             [nameof(audioTranscription.Segments)] = audioTranscription.Segments
         };
 
-    private static AudioTranscriptionFormat? ConvertResponseFormat(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat? responseFormat)
+    private static AudioTranscriptionFormat ConvertResponseFormat(string responseFormat)
     {
-        if (responseFormat is null)
-        {
-            return null;
-        }
-
         return responseFormat switch
         {
-            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple => AudioTranscriptionFormat.Simple,
-            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose => AudioTranscriptionFormat.Verbose,
-            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Vtt => AudioTranscriptionFormat.Vtt,
-            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Srt => AudioTranscriptionFormat.Srt,
+            "json" => AudioTranscriptionFormat.Simple,
+            "verbose_json" => AudioTranscriptionFormat.Verbose,
+            "vtt" => AudioTranscriptionFormat.Vtt,
+            "srt" => AudioTranscriptionFormat.Srt,
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
         };
     }
