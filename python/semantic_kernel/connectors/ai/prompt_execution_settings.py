@@ -36,17 +36,15 @@ class PromptExecutionSettings(KernelBaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def parse_function_choice_behavior(cls, data: dict[str, Any]) -> dict[str, Any] | None:
+    def parse_function_choice_behavior(cls, data: dict[str, Any]) -> dict[str, Any]:
         """Parse the function choice behavior data."""
-        if data:
-            function_choice_behavior_data = data.get("function_choice_behavior")
-            if function_choice_behavior_data:
-                if isinstance(function_choice_behavior_data, str):
-                    data["function_choice_behavior"] = FunctionChoiceBehavior.from_string(function_choice_behavior_data)
-                elif isinstance(function_choice_behavior_data, dict):
-                    data["function_choice_behavior"] = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
-            return data
-        return None
+        function_choice_behavior_data = data.get("function_choice_behavior")
+        if function_choice_behavior_data:
+            if isinstance(function_choice_behavior_data, str):
+                data["function_choice_behavior"] = FunctionChoiceBehavior.from_string(function_choice_behavior_data)
+            elif isinstance(function_choice_behavior_data, dict):
+                data["function_choice_behavior"] = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
+        return data
 
     def __init__(self, service_id: str | None = None, **kwargs: Any):
         """Initialize the prompt execution settings.
