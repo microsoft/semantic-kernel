@@ -6,7 +6,6 @@ import pytest
 from semantic_kernel import Kernel
 from semantic_kernel.core_skills.file_io_skill import FileIOSkill
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
 
 
 def test_can_be_instantiated():
@@ -49,7 +48,7 @@ async def test_cannot_read_async():
 
 
 @pytest.mark.asyncio
-async def test_can_write():
+async def test_can_write(context_factory):
     skill = FileIOSkill()
     fp = None
     try:
@@ -59,7 +58,7 @@ async def test_can_write():
             context_variables.set("path", fp.name)
             context_variables.set("content", "Hello, world!")
 
-            context = SKContext(context_variables, None, None, None)
+            context = context_factory(context_variables)
 
             await skill.write_async(context)
 
@@ -72,7 +71,7 @@ async def test_can_write():
 
 
 @pytest.mark.asyncio
-async def test_cannot_write():
+async def test_cannot_write(context_factory):
     skill = FileIOSkill()
     fp = None
     try:
@@ -84,7 +83,7 @@ async def test_cannot_write():
             context_variables.set("path", fp.name)
             context_variables.set("content", "Hello, world!")
 
-            context = SKContext(context_variables, None, None, None)
+            context = context_factory(context_variables)
 
             with pytest.raises(PermissionError):
                 await skill.write_async(context)

@@ -73,6 +73,7 @@ public static class ImportSemanticSkillFromDirectoryExtension
 
         var skill = new Dictionary<string, ISKFunction>();
 
+        ILogger? logger = null;
         foreach (string skillDirectoryName in skillDirectoryNames)
         {
             Verify.ValidSkillName(skillDirectoryName);
@@ -96,14 +97,22 @@ public static class ImportSemanticSkillFromDirectoryExtension
                     config = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
                 }
 
-                kernel.Logger.LogTrace("Config {0}: {1}", functionName, config.ToJson());
+                logger ??= kernel.LoggerFactory.CreateLogger(typeof(IKernel));
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    logger.LogTrace("Config {0}: {1}", functionName, config.ToJson());
+                }
 
                 // Load prompt template
                 var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngine);
 
                 var functionConfig = new SemanticFunctionConfig(config, template);
 
-                kernel.Logger.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    logger.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);
+                }
+
                 skill[functionName] = kernel.RegisterSemanticFunction(skillDirectoryName, functionName, functionConfig);
             }
         }

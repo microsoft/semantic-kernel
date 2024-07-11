@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -349,7 +350,7 @@ public sealed class PlanTests
             new ContextVariables(stepOutput)
         );
 
-        returnContext.Fail("Error description", new ArgumentException("Error message"));
+        returnContext.LastException = new ArgumentException("Error message");
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -359,7 +360,7 @@ public sealed class PlanTests
 
         // Act
         var cv = new ContextVariables(planInput);
-        await Assert.ThrowsAsync<KernelException>(async () => await kernel.Object.StepAsync(cv, plan));
+        await Assert.ThrowsAsync<SKException>(async () => await kernel.Object.StepAsync(cv, plan));
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -378,7 +379,7 @@ public sealed class PlanTests
 
         var returnContext = new SKContext();
 
-        returnContext.Fail("Error description", new ArgumentException("Error message"));
+        returnContext.LastException = new ArgumentException("Error message");
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -388,7 +389,7 @@ public sealed class PlanTests
 
         // Act
         var cv = new ContextVariables(planInput);
-        await Assert.ThrowsAsync<KernelException>(async () => await kernel.Object.StepAsync(cv, plan));
+        await Assert.ThrowsAsync<SKException>(async () => await kernel.Object.StepAsync(cv, plan));
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 

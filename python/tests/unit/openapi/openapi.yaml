@@ -1,0 +1,128 @@
+openapi: 3.0.0
+info:
+  title: Test API
+  version: 1.0.0
+servers:
+  - url: http://example.com
+paths:
+  /todos:
+    get:
+      summary: Get all todos
+      operationId: getTodos
+      responses:
+        '200':
+          description: OK
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            description: The authorization token
+    post:
+      summary: Add a new todo
+      operationId: addTodo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The title of the todo
+                  example: Buy milk
+                completed:
+                  type: boolean
+                  description: Whether the todo is completed or not
+                  example: false
+      responses:
+        '201':
+          description: Created
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            description: The authorization token
+  /todos/{id}:
+    get:
+      summary: Get a todo by ID
+      operationId: getTodoById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            description: The authorization token
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: Update a todo by ID
+      operationId: updateTodoById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            description: The authorization token
+        - name: completed
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: Whether the todo is completed or not
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The title of the todo
+                  example: Buy milk
+                completed:
+                  type: boolean
+                  description: Whether the todo is completed or not
+                  example: false
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete a todo by ID
+      operationId: deleteTodoById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            description: The authorization token
+      responses:
+        '204':
+          description: No Content

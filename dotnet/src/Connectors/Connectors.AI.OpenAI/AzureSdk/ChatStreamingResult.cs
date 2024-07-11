@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -37,7 +36,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
 
         if (chatMessage is null)
         {
-            throw new AIException(AIException.ErrorCodes.UnknownError, "Unable to get chat message from stream");
+            throw new SKException("Unable to get chat message from stream");
         }
 
         return new SKChatMessage(chatMessage);

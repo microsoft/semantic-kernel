@@ -4,7 +4,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Models;
 using Moq;
@@ -191,8 +191,7 @@ public class CalendarSkillTests
 
         // Assert
         Assert.True(context.ErrorOccurred);
-        KernelException e = Assert.IsType<KernelException>(context.LastException);
-        Assert.Equal(KernelException.ErrorCodes.FunctionInvokeError, e.ErrorCode);
+        Assert.IsType<SKException>(context.LastException);
     }
 
     [Fact]
@@ -219,8 +218,7 @@ public class CalendarSkillTests
 
         // Assert
         Assert.True(context.ErrorOccurred);
-        KernelException e = Assert.IsType<KernelException>(context.LastException);
-        Assert.Equal(KernelException.ErrorCodes.FunctionInvokeError, e.ErrorCode);
+        Assert.IsType<SKException>(context.LastException);
     }
 
     [Fact]

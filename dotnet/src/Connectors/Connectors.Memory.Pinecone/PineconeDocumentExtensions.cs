@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
@@ -50,7 +49,7 @@ public static class PineconeDocumentExtensions
         }
 
         return PineconeDocument
-            .Create(key, memoryRecord.Embedding.Vector)
+            .Create(key, memoryRecord.Embedding)
             .WithMetadata(metadata);
     }
 
@@ -70,7 +69,7 @@ public static class PineconeDocumentExtensions
     /// <returns>Instance of <see cref="MemoryRecord"/>.</returns>
     internal static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument, bool transferVectorOwnership)
     {
-        Embedding<float> embedding = new(pineconeDocument.Values, transferVectorOwnership);
+        ReadOnlyMemory<float> embedding = pineconeDocument.Values;
 
         string additionalMetadataJson = pineconeDocument.GetSerializedMetadata();
 

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -60,6 +61,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.NotNull(valueProperty);
         Assert.True(valueProperty.IsRequired);
         Assert.Equal("The value of the secret.", valueProperty.Description);
+        Assert.Equal("string", valueProperty.Type);
         Assert.NotNull(valueProperty.Properties);
         Assert.False(valueProperty.Properties.Any());
 
@@ -67,6 +69,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.NotNull(attributesProperty);
         Assert.False(attributesProperty.IsRequired);
         Assert.Equal("attributes", attributesProperty.Description);
+        Assert.Equal("object", attributesProperty.Type);
         Assert.NotNull(attributesProperty.Properties);
         Assert.True(attributesProperty.Properties.Any());
 
@@ -74,8 +77,8 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.NotNull(enabledProperty);
         Assert.False(enabledProperty.IsRequired);
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Description);
-        Assert.NotNull(enabledProperty.Properties);
-        Assert.False(enabledProperty.Properties.Any());
+        Assert.Equal("boolean", enabledProperty.Type);
+        Assert.False(enabledProperty.Properties?.Any());
     }
 
     [Fact]
@@ -125,6 +128,21 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal(RestApiOperationParameterLocation.Body, contentTypeParameter.Location);
         Assert.Null(contentTypeParameter.DefaultValue);
         Assert.Equal("Content type of REST API request body.", contentTypeParameter.Description);
+    }
+
+    [Fact]
+    public async Task ItCanUseOperationSummaryAsync()
+    {
+        // Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        Assert.NotNull(operations);
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == "Excuses");
+        Assert.NotNull(operation);
+        Assert.Equal("Turn a scenario into a creative or humorous excuse to send your boss", operation.Description);
     }
 
     [Fact]
@@ -216,6 +234,58 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var properties = payload.Properties;
         Assert.NotNull(properties);
         Assert.Equal(0, properties.Count);
+    }
+
+    [Fact]
+    public async Task ItCanWorkWithDocumentsWithoutServersAttributeAsync()
+    {
+        //Arrange
+        using var stream = ModifyOpenApiDocument(this._openApiDocument, (yaml) =>
+        {
+            yaml.Remove("servers");
+        });
+
+        //Act
+        var operations = await this._sut.ParseAsync(stream);
+
+        //Assert
+        Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
+    }
+
+    [Fact]
+    public async Task ItCanWorkWithDocumentsWithEmptyServersAttributeAsync()
+    {
+        //Arrange
+        using var stream = ModifyOpenApiDocument(this._openApiDocument, (yaml) =>
+        {
+            yaml["servers"] = Array.Empty<string>();
+        });
+
+        //Act
+        var operations = await this._sut.ParseAsync(stream);
+
+        //Assert
+        Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
+    }
+
+    private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)
+    {
+        var serializer = new SharpYaml.Serialization.Serializer();
+
+        //Deserialize yaml
+        var yaml = serializer.Deserialize<ExpandoObject>(openApiDocument);
+
+        //Modify yaml
+        transformer(yaml!);
+
+        //Serialize yaml
+        var stream = new MemoryStream();
+
+        serializer.Serialize(stream, yaml);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        return stream;
     }
 
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId, RestApiOperationParameterLocation location, string name)

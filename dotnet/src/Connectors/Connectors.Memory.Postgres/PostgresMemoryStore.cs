@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
@@ -135,7 +136,7 @@ public class PostgresMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -150,7 +151,7 @@ public class PostgresMemoryStore : IMemoryStore
 
         IAsyncEnumerable<(PostgresMemoryEntry, double)> results = this._postgresDbClient.GetNearestMatchesAsync(
             tableName: collectionName,
-            embedding: new Vector(embedding.Vector.ToArray()),
+            embedding: new Vector(GetOrCreateArray(embedding)),
             limit: limit,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbeddings,
@@ -163,7 +164,7 @@ public class PostgresMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -187,7 +188,7 @@ public class PostgresMemoryStore : IMemoryStore
             tableName: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: new Vector(record.Embedding.Vector.ToArray()),
+            embedding: new Vector(GetOrCreateArray(record.Embedding)),
             timestamp: record.Timestamp?.UtcDateTime,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -198,10 +199,16 @@ public class PostgresMemoryStore : IMemoryStore
     {
         return MemoryRecord.FromJsonMetadata(
             json: entry.MetadataString,
-            embedding: entry.Embedding != null ? new Embedding<float>(entry.Embedding!.ToArray()) : Embedding<float>.Empty,
+            embedding: entry.Embedding?.ToArray() ?? ReadOnlyMemory<float>.Empty,
             key: entry.Key,
             timestamp: entry.Timestamp?.ToLocalTime());
     }
+
+    private static float[] GetOrCreateArray(ReadOnlyMemory<float> memory) =>
+        MemoryMarshal.TryGetArray(memory, out ArraySegment<float> array) &&
+        array.Count == array.Array!.Length ?
+            array.Array :
+            memory.ToArray();
 
     #endregion
 }

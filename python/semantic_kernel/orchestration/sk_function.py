@@ -6,7 +6,7 @@ import sys
 import threading
 from enum import Enum
 from logging import Logger
-from typing import Any, Callable, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, cast
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -25,7 +25,6 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
@@ -37,6 +36,9 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
 from semantic_kernel.utils.null_logger import NullLogger
+
+if TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_context import SKContext
 
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -79,7 +81,11 @@ class SKFunction(SKFunctionBase):
                     )
                 )
 
-        if hasattr(method, "__sk_function_input_description__"):
+        if (
+            hasattr(method, "__sk_function_input_description__")
+            and method.__sk_function_input_description__ is not None
+            and method.__sk_function_input_description__ != ""
+        ):
             input_param = ParameterView(
                 "input",
                 method.__sk_function_input_description__,
@@ -90,6 +96,7 @@ class SKFunction(SKFunctionBase):
         return SKFunction(
             delegate_type=DelegateInference.infer_delegate_type(method),
             delegate_function=method,
+            delegate_stream_function=method,
             parameters=parameters,
             description=method.__sk_function_description__,
             skill_name=skill_name,
@@ -144,9 +151,53 @@ class SKFunction(SKFunctionBase):
 
             return context
 
+        async def _local_stream_func(client, request_settings, context):
+            if client is None:
+                raise ValueError("AI LLM service cannot be `None`")
+
+            try:
+                if function_config.has_chat_prompt:
+                    as_chat_prompt = cast(
+                        ChatPromptTemplate, function_config.prompt_template
+                    )
+
+                    # Similar to non-chat, render prompt (which renders to a
+                    # list of <role, content> messages)
+                    completion = ""
+                    messages = await as_chat_prompt.render_messages_async(context)
+                    async for steam_message in client.complete_chat_stream_async(
+                        messages, request_settings
+                    ):
+                        completion += steam_message
+                        yield steam_message
+
+                    # Add the last message from the rendered chat prompt
+                    # (which will be the user message) and the response
+                    # from the model (the assistant message)
+                    _, content = messages[-1]
+                    as_chat_prompt.add_user_message(content)
+                    as_chat_prompt.add_assistant_message(completion)
+
+                    # Update context
+                    context.variables.update(completion)
+                else:
+                    prompt = await function_config.prompt_template.render_async(context)
+
+                    completion = ""
+                    async for stream_message in client.complete_stream_async(
+                        prompt, request_settings
+                    ):
+                        completion += stream_message
+                        yield stream_message
+                    context.variables.update(completion)
+            except Exception as e:
+                # TODO: "critical exceptions"
+                context.fail(str(e), e)
+
         return SKFunction(
             delegate_type=DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
             delegate_function=_local_func,
+            delegate_stream_function=_local_stream_func,
             parameters=function_config.prompt_template.get_parameters(),
             description=function_config.prompt_template_config.description,
             skill_name=skill_name,
@@ -193,6 +244,7 @@ class SKFunction(SKFunctionBase):
         function_name: str,
         is_semantic: bool,
         log: Optional[Logger] = None,
+        delegate_stream_function: Optional[Callable[..., Any]] = None,
     ) -> None:
         self._delegate_type = delegate_type
         self._function = delegate_function
@@ -202,6 +254,7 @@ class SKFunction(SKFunctionBase):
         self._name = function_name
         self._is_semantic = is_semantic
         self._log = log if log is not None else NullLogger()
+        self._stream_function = delegate_stream_function
         self._skill_collection = None
         self._ai_service = None
         self._ai_request_settings = CompleteRequestSettings()
@@ -259,11 +312,11 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional[SKContext] = None,
+        context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
-    ) -> SKContext:
+    ) -> "SKContext":
         return self.invoke(
             input=input,
             variables=variables,
@@ -277,11 +330,13 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional[SKContext] = None,
+        context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
-    ) -> SKContext:
+    ) -> "SKContext":
+        from semantic_kernel.orchestration.sk_context import SKContext
+
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
@@ -292,11 +347,11 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context._variables = variables.merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = variables.merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
             if memory is not None:
-                context._memory = memory
+                context.memory = memory
 
         if input is not None:
             context.variables.update(input)
@@ -323,11 +378,13 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional[SKContext] = None,
+        context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
-    ) -> SKContext:
+    ) -> "SKContext":
+        from semantic_kernel.orchestration.sk_context import SKContext
+
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
@@ -338,11 +395,11 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context._variables = variables.merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = variables.merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
             if memory is not None:
-                context._memory = memory
+                context.memory = memory
 
         if input is not None:
             context.variables.update(input)
@@ -411,6 +468,80 @@ class SKFunction(SKFunctionBase):
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a native function",
         )
+
+    async def invoke_stream_async(
+        self,
+        input: Optional[str] = None,
+        variables: ContextVariables = None,
+        context: Optional["SKContext"] = None,
+        memory: Optional[SemanticTextMemoryBase] = None,
+        settings: Optional[CompleteRequestSettings] = None,
+        log: Optional[Logger] = None,
+    ):
+        from semantic_kernel.orchestration.sk_context import SKContext
+
+        if context is None:
+            context = SKContext(
+                variables=ContextVariables("") if variables is None else variables,
+                skill_collection=self._skill_collection,
+                memory=memory if memory is not None else NullMemory.instance,
+                logger=log if log is not None else self._log,
+            )
+        else:
+            # If context is passed, we need to merge the variables
+            if variables is not None:
+                context.variables = variables.merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
+                )
+            if memory is not None:
+                context._memory = memory
+
+        if input is not None:
+            context.variables.update(input)
+
+        try:
+            if self.is_semantic:
+                async for stream_msg in self._invoke_semantic_stream_async(
+                    context, settings
+                ):
+                    yield stream_msg
+            else:
+                async for stream_msg in self._invoke_native_stream_async(context):
+                    yield stream_msg
+        except Exception as e:
+            context.fail(str(e), e)
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionInvokeError,
+                "Error occurred while invoking stream function",
+            )
+
+    async def _invoke_semantic_stream_async(self, context, settings):
+        self._verify_is_semantic()
+
+        self._ensure_context_has_skills(context)
+
+        if settings is None:
+            if self._ai_service is not None:
+                settings = self._ai_request_settings
+            elif self._chat_service is not None:
+                settings = self._chat_request_settings
+            else:
+                raise KernelException(
+                    KernelException.ErrorCodes.UnknownError,
+                    "Semantic functions must have either an AI service or Chat service",
+                )
+
+        service = (
+            self._ai_service if self._ai_service is not None else self._chat_service
+        )
+
+        async for stream_msg in self._stream_function(service, settings, context):
+            yield stream_msg
+
+    async def _invoke_native_stream_async(self, context):
+        result = await self._invoke_native_async(context)
+
+        yield result
 
     def _ensure_context_has_skills(self, context) -> None:
         if context.skills is not None:

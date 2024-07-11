@@ -12,13 +12,13 @@ using Skills;
 // ReSharper disable once InconsistentNaming
 public static class Example03_Variables
 {
-    private static readonly ILogger s_logger = ConsoleLogger.Logger;
+    private static readonly ILoggerFactory s_loggerFactory = ConsoleLogger.LoggerFactory;
 
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Variables ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(s_logger).Build();
+        IKernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
         var text = kernel.ImportSkill(new StaticTextSkill(), "text");
 
         var variables = new ContextVariables("Today is: ");

@@ -10,26 +10,27 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Reliability;
 
+[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated.\nCheck KernelSyntaxExamples.Example42_KernelBuilder.cs for alternatives")]
 public sealed class DefaultHttpRetryHandler : DelegatingHandler
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHttpRetryHandler"/> class.
     /// </summary>
     /// <param name="config">The retry configuration.</param>
-    /// <param name="logger">The logger.</param>
-    public DefaultHttpRetryHandler(HttpRetryConfig? config = null, ILogger? logger = null)
-        : this(config ?? new HttpRetryConfig(), logger, null, null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public DefaultHttpRetryHandler(HttpRetryConfig? config = null, ILoggerFactory? loggerFactory = null)
+        : this(config ?? new HttpRetryConfig(), loggerFactory, null, null)
     {
     }
 
     internal DefaultHttpRetryHandler(
         HttpRetryConfig config,
-        ILogger? logger = null,
+        ILoggerFactory? loggerFactory = null,
         IDelayProvider? delayProvider = null,
         ITimeProvider? timeProvider = null)
     {
         this._config = config;
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(DefaultHttpRetryHandler)) : NullLogger.Instance;
         this._delayProvider = delayProvider ?? new TaskDelayProvider();
         this._timeProvider = timeProvider ?? new DefaultTimeProvider();
     }

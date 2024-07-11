@@ -52,7 +52,9 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
 
-    async def generate_embeddings_async(self, texts: List[str]) -> ndarray:
+    async def generate_embeddings_async(
+        self, texts: List[str], batch_size: Optional[int] = None
+    ) -> ndarray:
         model_args = {}
         if self._api_type in ["azure", "azure_ad"]:
             model_args["engine"] = self._model_id
@@ -60,18 +62,21 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
             model_args["model"] = self._model_id
 
         try:
-            response: Any = await openai.Embedding.acreate(
-                **model_args,
-                api_key=self._api_key,
-                api_type=self._api_type,
-                api_base=self._endpoint,
-                api_version=self._api_version,
-                organization=self._org_id,
-                input=texts,
-            )
-
-            # make numpy arrays from the response
-            raw_embeddings = [array(x["embedding"]) for x in response["data"]]
+            raw_embeddings = []
+            batch_size = batch_size or len(texts)
+            for i in range(0, len(texts), batch_size):
+                batch = texts[i : i + batch_size]
+                response: Any = await openai.Embedding.acreate(
+                    **model_args,
+                    api_key=self._api_key,
+                    api_type=self._api_type,
+                    api_base=self._endpoint,
+                    api_version=self._api_version,
+                    organization=self._org_id,
+                    input=batch,
+                )
+                # make numpy arrays from the response
+                raw_embeddings.extend([array(x["embedding"]) for x in response["data"]])
             return array(raw_embeddings)
         except Exception as ex:
             raise AIException(

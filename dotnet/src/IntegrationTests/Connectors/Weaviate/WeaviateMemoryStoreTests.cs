@@ -4,9 +4,8 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Diagnostics;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
@@ -42,7 +41,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         var conflictingCollectionName = $"___{collectionName}";
-        await Assert.ThrowsAsync<WeaviateMemoryException>(async () =>
+        await Assert.ThrowsAsync<SKException>(async () =>
             await this.weaviateMemoryStore.CreateCollectionAsync(conflictingCollectionName));
     }
 
@@ -55,7 +54,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         var conflictingCollectionName = $"___{collectionName}";
-        await Assert.ThrowsAsync<WeaviateMemoryException>(async () =>
+        await Assert.ThrowsAsync<SKException>(async () =>
             await this.weaviateMemoryStore.DoesCollectionExistAsync(conflictingCollectionName));
     }
 
@@ -68,7 +67,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         var conflictingCollectionName = $"___{collectionName}";
-        await Assert.ThrowsAsync<WeaviateMemoryException>(async () =>
+        await Assert.ThrowsAsync<SKException>(async () =>
             await this.weaviateMemoryStore.DeleteCollectionAsync(conflictingCollectionName));
     }
 
@@ -125,7 +124,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         var id = Guid.NewGuid().ToString();
         var collectionName = "SK" + Guid.NewGuid();
         var timestamp = new DateTimeOffset(2023, 1, 1, 1, 1, 1, new(0));
-        var embedding = new Embedding<float>(new[] { 1f, 1f, 1f });
+        var embedding = new[] { 1f, 1f, 1f };
 
         var memoryRecord = MemoryRecord.LocalRecord(
             id: id,
@@ -148,7 +147,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
 
         Assert.Equal(id, memoryRecordResultNoVector.Key);
         Assert.Equal(timestamp, memoryRecordResultNoVector.Timestamp);
-        Assert.Equal(Array.Empty<float>(), memoryRecordResultNoVector.Embedding.Vector);
+        Assert.True(memoryRecordResultNoVector.Embedding.IsEmpty);
         Assert.True(memoryRecordResultNoVector.HasTimestamp);
         Assert.Equal(memoryRecordResultNoVector.Metadata.Id, memoryRecordResultNoVector.Metadata.Id);
         Assert.Equal(memoryRecordResultNoVector.Metadata.AdditionalMetadata, memoryRecordResultNoVector.Metadata.AdditionalMetadata);
@@ -165,7 +164,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
 
         Assert.Equal(id, memoryRecordResultWithVector.Key);
         Assert.Equal(timestamp, memoryRecordResultWithVector.Timestamp);
-        Assert.Equal(memoryRecord.Embedding.Vector, memoryRecordResultWithVector.Embedding.Vector);
+        Assert.True(memoryRecord.Embedding.Span.SequenceEqual(memoryRecordResultWithVector.Embedding.Span));
         Assert.True(memoryRecordResultWithVector.HasTimestamp);
         Assert.Equal(memoryRecordResultNoVector.Metadata.Id, memoryRecordResultWithVector.Metadata.Id);
         Assert.Equal(memoryRecordResultNoVector.Metadata.AdditionalMetadata, memoryRecordResultWithVector.Metadata.AdditionalMetadata);
@@ -189,15 +188,15 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
 
         var id1 = Guid.NewGuid().ToString();
         var timestamp1 = new DateTimeOffset(2023, 1, 1, 1, 1, 1, new(0));
-        var embedding1 = new Embedding<float>(new[] { 1f, 1f, 1f });
+        var embedding1 = new[] { 1f, 1f, 1f };
 
         var id2 = Guid.NewGuid().ToString();
         var timestamp2 = new DateTimeOffset(2023, 1, 1, 1, 1, 1, new(0));
-        var embedding2 = new Embedding<float>(new[] { 2f, 2f, 2f });
+        var embedding2 = new[] { 2f, 2f, 2f };
 
         var id3 = Guid.NewGuid().ToString();
         var timestamp3 = new DateTimeOffset(2023, 1, 1, 1, 1, 1, new(0));
-        var embedding3 = new Embedding<float>(new[] { 3f, 3f, 3f });
+        var embedding3 = new[] { 3f, 3f, 3f };
 
         var memoryRecord1 = MemoryRecord.LocalRecord(
             id: id1,
@@ -239,7 +238,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
 
         Assert.Equal(id3, first.Item1.Key);
         Assert.Equal(memoryRecord3.Timestamp, first.Item1.Timestamp);
-        Assert.Equal(memoryRecord3.Embedding.Vector, first.Item1.Embedding.Vector);
+        Assert.True(memoryRecord3.Embedding.Span.SequenceEqual(first.Item1.Embedding.Span));
         Assert.True(first.Item1.HasTimestamp);
         Assert.Equal(memoryRecord3.Metadata.Id, first.Item1.Metadata.Id);
         Assert.Equal(memoryRecord3.Metadata.AdditionalMetadata, first.Item1.Metadata.AdditionalMetadata);
@@ -250,7 +249,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
 
         Assert.Equal(id2, second.Item1.Key);
         Assert.Equal(memoryRecord2.Timestamp, second.Item1.Timestamp);
-        Assert.Equal(memoryRecord2.Embedding.Vector, second.Item1.Embedding.Vector);
+        Assert.True(memoryRecord2.Embedding.Span.SequenceEqual(second.Item1.Embedding.Span));
         Assert.True(second.Item1.HasTimestamp);
         Assert.Equal(memoryRecord2.Metadata.Id, second.Item1.Metadata.Id);
         Assert.Equal(memoryRecord2.Metadata.AdditionalMetadata, second.Item1.Metadata.AdditionalMetadata);
@@ -262,7 +261,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         var closest = await this.weaviateMemoryStore.GetNearestMatchAsync(collectionName, embedding1, 0.8, true);
         Assert.Equal(id3, closest!.Value.Item1.Key);
         Assert.Equal(memoryRecord3.Timestamp, closest.Value.Item1.Timestamp);
-        Assert.Equal(memoryRecord3.Embedding.Vector, closest.Value.Item1.Embedding.Vector);
+        Assert.True(memoryRecord3.Embedding.Span.SequenceEqual(closest.Value.Item1.Embedding.Span));
         Assert.True(closest.Value.Item1.HasTimestamp);
         Assert.Equal(memoryRecord3.Metadata.Id, closest.Value.Item1.Metadata.Id);
         Assert.Equal(memoryRecord3.Metadata.AdditionalMetadata, closest.Value.Item1.Metadata.AdditionalMetadata);

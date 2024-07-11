@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
@@ -272,7 +271,7 @@ public class PostgresMemoryStoreTests
     private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
     {
         Assert.Equal(expectedRecord.Key, actualRecord.Key);
-        Assert.Equal(expectedRecord.Embedding.Vector, actualRecord.Embedding.Vector);
+        Assert.True(expectedRecord.Embedding.Span.SequenceEqual(actualRecord.Embedding.Span));
         Assert.Equal(expectedRecord.Metadata.Id, actualRecord.Metadata.Id);
         Assert.Equal(expectedRecord.Metadata.Text, actualRecord.Metadata.Text);
         Assert.Equal(expectedRecord.Metadata.Description, actualRecord.Metadata.Description);
@@ -281,10 +280,10 @@ public class PostgresMemoryStoreTests
         Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
     }
 
-    private MemoryRecord GetRandomMemoryRecord(Embedding<float>? embedding = null)
+    private MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
     {
         var id = Guid.NewGuid().ToString();
-        var memoryEmbedding = embedding ?? new Embedding<float>(new[] { 1f, 3f, 5f });
+        var memoryEmbedding = embedding ?? new[] { 1f, 3f, 5f };
 
         return MemoryRecord.LocalRecord(
             id: id,
@@ -301,7 +300,7 @@ public class PostgresMemoryStoreTests
         return new PostgresMemoryEntry()
         {
             Key = memoryRecord.Key,
-            Embedding = new Pgvector.Vector(memoryRecord.Embedding.Vector.ToArray()),
+            Embedding = new Pgvector.Vector(memoryRecord.Embedding.ToArray()),
             MetadataString = memoryRecord.GetSerializedMetadata(),
             Timestamp = memoryRecord.Timestamp?.UtcDateTime
         };

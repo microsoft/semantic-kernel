@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
@@ -28,7 +30,8 @@ public sealed class Query
     /// <summary>
     /// Vector dense data. This should be the same length as the dimension of the index being queried.
     /// </summary>
-    public IEnumerable<float>? Vector { get; set; }
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+    public ReadOnlyMemory<float> Vector { get; set; }
 
     /// <summary>
     /// The unique ID of a vector
@@ -56,7 +59,7 @@ public sealed class Query
     /// Sets vector for <see cref="Query"/> instance.
     /// </summary>
     /// <param name="vector">Vector dense data. This should be the same length as the dimension of the index being queried.</param>
-    public Query WithVector(IEnumerable<float>? vector)
+    public Query WithVector(ReadOnlyMemory<float> vector)
     {
         this.Vector = vector;
         return this;

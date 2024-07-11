@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
@@ -25,7 +26,7 @@ internal sealed class UpdateVectorRequest
     /// Vector dense data. This should be the same length as the dimension of the index being queried.
     /// </summary>
     [JsonPropertyName("values")]
-    public IEnumerable<float>? Values { get; set; }
+    public ReadOnlyMemory<float> Values { get; set; }
 
     /// <summary>
     ///  The sparse vector data
@@ -77,7 +78,7 @@ internal sealed class UpdateVectorRequest
         return this;
     }
 
-    public UpdateVectorRequest UpdateValues(IEnumerable<float>? values)
+    public UpdateVectorRequest UpdateValues(ReadOnlyMemory<float> values)
     {
         this.Values = values;
         return this;
@@ -99,7 +100,7 @@ internal sealed class UpdateVectorRequest
     /// Initializes a new instance of the <see cref="UpdateVectorRequest" /> class.
     /// </summary>
     [JsonConstructor]
-    private UpdateVectorRequest(string id, IEnumerable<float>? values = default)
+    private UpdateVectorRequest(string id, ReadOnlyMemory<float> values = default)
     {
         this.Id = id;
         this.Values = values;

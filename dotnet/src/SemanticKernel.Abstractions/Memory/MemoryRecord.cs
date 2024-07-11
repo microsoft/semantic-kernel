@@ -3,7 +3,8 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -16,7 +17,8 @@ public class MemoryRecord : DataEntryBase
     /// Source content embeddings.
     /// </summary>
     [JsonPropertyName("embedding")]
-    public Embedding<float> Embedding { get; }
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+    public ReadOnlyMemory<float> Embedding { get; }
 
     /// <summary>
     /// Metadata associated with a Semantic Kernel memory.
@@ -30,7 +32,7 @@ public class MemoryRecord : DataEntryBase
     [JsonConstructor]
     public MemoryRecord(
         MemoryRecordMetadata metadata,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         string? key,
         DateTimeOffset? timestamp = null) : base(key, timestamp)
     {
@@ -54,7 +56,7 @@ public class MemoryRecord : DataEntryBase
         string externalId,
         string sourceName,
         string? description,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         string? additionalMetadata = null,
         string? key = null,
         DateTimeOffset? timestamp = null)
@@ -90,7 +92,7 @@ public class MemoryRecord : DataEntryBase
         string id,
         string text,
         string? description,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         string? additionalMetadata = null,
         string? key = null,
         DateTimeOffset? timestamp = null)
@@ -120,19 +122,17 @@ public class MemoryRecord : DataEntryBase
     /// <param name="key">Optional existing database key.</param>
     /// <param name="timestamp">optional timestamp.</param>
     /// <returns>Memory record</returns>
-    /// <exception cref="MemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public static MemoryRecord FromJsonMetadata(
         string json,
-        Embedding<float>? embedding,
+        ReadOnlyMemory<float> embedding,
         string? key = null,
         DateTimeOffset? timestamp = null)
     {
         var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
         return metadata != null
-            ? new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp)
-            : throw new MemoryException(
-                MemoryException.ErrorCodes.UnableToDeserializeMetadata,
-                "Unable to create memory record from serialized metadata");
+            ? new MemoryRecord(metadata, embedding, key, timestamp)
+            : throw new SKException("Unable to create memory record from serialized metadata");
     }
 
     /// <summary>
@@ -145,11 +145,11 @@ public class MemoryRecord : DataEntryBase
     /// <returns>Memory record</returns>
     public static MemoryRecord FromMetadata(
         MemoryRecordMetadata metadata,
-        Embedding<float>? embedding,
+        ReadOnlyMemory<float> embedding,
         string? key = null,
         DateTimeOffset? timestamp = null)
     {
-        return new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp);
+        return new MemoryRecord(metadata, embedding, key, timestamp);
     }
 
     /// <summary>

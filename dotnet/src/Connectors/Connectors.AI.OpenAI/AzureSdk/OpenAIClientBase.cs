@@ -24,20 +24,20 @@ public abstract class OpenAIClientBase : ClientBase
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     private protected OpenAIClientBase(
         string modelId,
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null) : base(logger)
+        ILoggerFactory? loggerFactory = null) : base(loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         this.ModelId = modelId;
 
-        var options = new OpenAIClientOptions();
+        var options = GetClientOptions();
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);
@@ -52,11 +52,46 @@ public abstract class OpenAIClientBase : ClientBase
     }
 
     /// <summary>
+    /// Creates a new OpenAI client instance using the specified OpenAIClient
+    /// Note: instances created this way might not have the default diagnostics settings,
+    /// it's up to the caller to configure the client.
+    /// </summary>
+    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    private protected OpenAIClientBase(
+        string modelId,
+        OpenAIClient openAIClient,
+        ILoggerFactory? loggerFactory = null) : base(loggerFactory)
+    {
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(openAIClient);
+
+        this.ModelId = modelId;
+        this.Client = openAIClient;
+    }
+
+    /// <summary>
     /// Logs OpenAI action details.
     /// </summary>
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
         this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelId);
+    }
+
+    /// <summary>
+    /// Options used by the OpenAI client, e.g. User Agent.
+    /// </summary>
+    private static OpenAIClientOptions GetClientOptions()
+    {
+        return new OpenAIClientOptions
+        {
+            Diagnostics =
+            {
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
+                ApplicationId = Telemetry.HttpUserAgent,
+            }
+        };
     }
 }

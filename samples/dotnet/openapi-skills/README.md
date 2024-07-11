@@ -1,7 +1,8 @@
 ﻿# Open API Skills Example
-The chat example below is meant to demonstrate the use of an OpenAPI-based skill (e.g., GitHub), a planner (e.g., ActionPlanner) and chat completions to create a conversational experience with additional information from a skill when needed.
+The chat example below is meant to demonstrate the use of an OpenAPI-based skill (e.g., GitHub), a planner (e.g., ActionPlanner)
+and chat completions to create a conversational experience with additional information from a skill when needed.
 
-The GitHub OpenAPI specific used is a reduced definition supporting viewing of pull requests. 
+The specific GitHub OpenAPI used is a reduced definition supporting viewing of pull requests. 
 
 ## Preparing your environment
 Before you get started, make sure you have the following requirements in place:

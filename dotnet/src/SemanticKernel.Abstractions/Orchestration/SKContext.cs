@@ -2,11 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -55,42 +57,24 @@ public sealed class SKContext
     public IReadOnlySkillCollection Skills { get; }
 
     /// <summary>
-    /// Access registered functions by skill + name. Not case sensitive.
-    /// The function might be native or semantic, it's up to the caller handling it.
-    /// </summary>
-    /// <param name="skillName">Skill name</param>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Delegate to execute the function</returns>
-    public ISKFunction Func(string skillName, string functionName)
-    {
-        return this.Skills.GetFunction(skillName, functionName);
-    }
-
-    /// <summary>
-    /// App logger (obsolete - use 'Logger' instead).
-    /// </summary>
-    [Obsolete("Use SKContext.Logger instead. This will be removed in a future release.")]
-    public ILogger Log => this.Logger;
-
-    /// <summary>
     /// App logger
     /// </summary>
-    public ILogger Logger { get; }
+    public ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
     /// Constructor for the context.
     /// </summary>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="skills">Skills to include in context.</param>
-    /// <param name="logger">Logger for operations in context.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public SKContext(
         ContextVariables? variables = null,
         IReadOnlySkillCollection? skills = null,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.Variables = variables ?? new();
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
-        this.Logger = logger ?? NullLogger.Instance;
+        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = CultureInfo.CurrentCulture;
     }
 
@@ -101,7 +85,7 @@ public sealed class SKContext
     /// <returns>Processed input, aka result, or last exception message if any</returns>
     public override string ToString()
     {
-        return this.ErrorOccurred ? $"Error: {this.LastErrorDescription}" : this.Result;
+        return this.ErrorOccurred ? $"Error: {this.LastException?.Message}" : this.Result;
     }
 
     /// <summary>
@@ -114,12 +98,10 @@ public sealed class SKContext
         return new SKContext(
             variables: this.Variables.Clone(),
             skills: this.Skills,
-            logger: this.Logger)
+            loggerFactory: this.LoggerFactory)
         {
             Culture = this.Culture,
-            ErrorOccurred = this.ErrorOccurred,
-            LastErrorDescription = this.LastErrorDescription,
-            LastException = this.LastException,
+            LastException = this.LastException
         };
     }
 
@@ -130,7 +112,7 @@ public sealed class SKContext
         {
             if (this.ErrorOccurred)
             {
-                return $"Error: {this.LastErrorDescription}";
+                return $"Error: {this.LastException?.Message}";
             }
 
             string display = this.Variables.DebuggerDisplay;
@@ -151,17 +133,59 @@ public sealed class SKContext
     /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
     /// </summary>
-    public bool ErrorOccurred { get; private set; }
-
-    /// <summary>
-    /// Error details.
-    /// </summary>
-    public string LastErrorDescription { get; private set; } = string.Empty;
+    public bool ErrorOccurred => this.LastException != null;
 
     /// <summary>
     /// When an error occurs, this is the most recent exception.
     /// </summary>
-    public Exception? LastException { get; private set; }
+    public Exception? LastException { get; internal set; }
+
+    #endregion
+
+    #region Obsolete
+    /// <summary>
+    /// Shortcut into user data, access variables by name
+    /// </summary>
+    /// <param name="name">Variable name</param>
+    [Obsolete("Use SKContext.Variables instead. This property will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string this[string name]
+    {
+        get => this.Variables[name];
+        set => this.Variables[name] = value;
+    }
+
+    /// <summary>
+    /// App logger (obsolete - use 'Logger' instead).
+    /// </summary>
+    [Obsolete("Use SKContext.Logger instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ILogger Log => this.LoggerFactory.CreateLogger<SKContext>();
+
+    /// <summary>
+    /// The token to monitor for cancellation requests.
+    /// </summary>
+    [Obsolete("Add a CancellationToken param to SKFunction method signatures instead of retrieving it from SKContext.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public CancellationToken CancellationToken { get; } = default;
+
+    /// <summary>
+    /// Semantic memory
+    /// </summary>
+    [Obsolete("Memory no longer passed through SKContext. Instead, initialize your skill class with the memory provider it needs.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISemanticTextMemory Memory
+    {
+        get => throw new InvalidOperationException(
+            "Memory no longer passed through SKContext. Instead, initialize your skill class with the memory provider it needs.");
+    }
+
+    /// <summary>
+    /// Error details.
+    /// </summary>
+    [Obsolete("Use LastException.Message instead. This property will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string? LastErrorDescription => this.LastException?.Message;
 
     /// <summary>
     /// Call this method to signal when an error occurs.
@@ -170,41 +194,29 @@ public sealed class SKContext
     /// <param name="errorDescription">Error description</param>
     /// <param name="exception">If available, the exception occurred</param>
     /// <returns>The current instance</returns>
+    [Obsolete("Throw exception from SKFunction implementation instead. The Kernel will set the failure properties. " +
+        "This method will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public SKContext Fail(string errorDescription, Exception? exception = null)
     {
-        this.ErrorOccurred = true;
-        this.LastErrorDescription = errorDescription;
-        this.LastException = exception;
+        // Temporary workaround: if no exception is provided, create a new one.
+        this.LastException = exception ?? new SKException(errorDescription);
         return this;
     }
-    #endregion
 
-    #region Obsolete
     /// <summary>
-    /// Shortcut into user data, access variables by name
+    /// Access registered functions by skill + name. Not case sensitive.
+    /// The function might be native or semantic, it's up to the caller handling it.
     /// </summary>
-    /// <param name="name">Variable name</param>
-    [Obsolete("Use SKContext.Variables instead. The SKContext[...] indexer will be removed in a future release.")]
-    public string this[string name]
+    /// <param name="skillName">Skill name</param>
+    /// <param name="functionName">Function name</param>
+    /// <returns>Delegate to execute the function</returns>
+    [Obsolete("Use SKContext.Skills.GetFunction(skillName, functionName) instead. " +
+    "This method will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction Func(string skillName, string functionName)
     {
-        get => this.Variables[name];
-        set => this.Variables[name] = value;
-    }
-
-    /// <summary>
-    /// The token to monitor for cancellation requests.
-    /// </summary>
-    [Obsolete("Add a CancellationToken param to SKFunction method signatures instead of retrieving it from SKContext.")]
-    public CancellationToken CancellationToken { get; } = default;
-
-    /// <summary>
-    /// Semantic memory
-    /// </summary>
-    [Obsolete("Memory no longer passed through SKContext. Instead, initialize your skill class with the memory provider it needs.")]
-    public ISemanticTextMemory Memory
-    {
-        get => throw new InvalidOperationException(
-            "Memory no longer passed through SKContext. Instead, initialize your skill class with the memory provider it needs.");
+        return this.Skills.GetFunction(skillName, functionName);
     }
     #endregion
 }

@@ -12,7 +12,7 @@ public static class Example05_InlineFunctionDefinition
     {
         Console.WriteLine("======== Inline Function Definition ========");
 
-        string openAIModelId = TestConfiguration.OpenAI.ModelId;
+        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
@@ -28,8 +28,8 @@ public static class Example05_InlineFunctionDefinition
          */
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAITextCompletionService(
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();

@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
@@ -41,7 +39,8 @@ public class AzureCognitiveSearchMemoryRecord
     /// Content embedding
     /// </summary>
     [JsonPropertyName(EmbeddingField)]
-    public List<float> Embedding { get; set; } = Array.Empty<float>().ToList();
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+    public ReadOnlyMemory<float> Embedding { get; set; }
 
     /// <summary>
     /// Optional description of the content, e.g. a title. This can be useful when
@@ -87,13 +86,13 @@ public class AzureCognitiveSearchMemoryRecord
         string text,
         string externalSourceName,
         bool isReference,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         string? description = null,
         string? additionalMetadata = null)
     {
         this.Id = EncodeId(id);
         this.IsReference = isReference;
-        this.Embedding = embedding.Vector.ToList();
+        this.Embedding = embedding;
         this.Text = text;
         this.ExternalSourceName = externalSourceName;
         this.Description = description;
@@ -128,7 +127,7 @@ public class AzureCognitiveSearchMemoryRecord
     {
         return new MemoryRecord(
             metadata: this.ToMemoryRecordMetadata(),
-            embedding: new Embedding<float>(withEmbeddings ? this.Embedding : Array.Empty<float>()),
+            embedding: withEmbeddings ? this.Embedding : default,
             key: this.Id);
     }
 

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -23,13 +24,13 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureTextEmbeddingGeneration(
         string modelId,
         string endpoint,
         string apiKey,
         HttpClient? httpClient = null,
-        ILogger? logger = null) : base(modelId, endpoint, apiKey, httpClient, logger)
+        ILoggerFactory? loggerFactory = null) : base(modelId, endpoint, apiKey, httpClient, loggerFactory)
     {
     }
 
@@ -40,13 +41,13 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureTextEmbeddingGeneration(
         string modelId,
         string endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null,
-        ILogger? logger = null) : base(modelId, endpoint, credential, httpClient, logger)
+        ILoggerFactory? loggerFactory = null) : base(modelId, endpoint, credential, httpClient, loggerFactory)
     {
     }
 
@@ -56,7 +57,7 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
     /// <param name="data">List of strings to generate embeddings for</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
-    public Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(
+    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
         CancellationToken cancellationToken = default)
     {

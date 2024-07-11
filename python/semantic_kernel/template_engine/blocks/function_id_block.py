@@ -4,13 +4,17 @@ from logging import Logger
 from re import match as re_match
 from typing import Optional, Tuple
 
+import pydantic as pdt
+
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 
 
-class FunctionIdBlock(Block, TextRenderer):
+class FunctionIdBlock(Block):
+    _skill_name: str = pdt.PrivateAttr()
+    _function_name: str = pdt.PrivateAttr()
+
     def __init__(self, content: Optional[str] = None, log: Optional[Logger] = None):
         super().__init__(content=content and content.strip(), log=log)
 
@@ -23,15 +27,31 @@ class FunctionIdBlock(Block, TextRenderer):
             )
 
         if len(function_name_parts) == 2:
-            self.skill_name = function_name_parts[0]
-            self.function_name = function_name_parts[1]
+            self._skill_name = function_name_parts[0]
+            self._function_name = function_name_parts[1]
         else:
-            self.skill_name = ""
-            self.function_name = self.content
+            self._skill_name = ""
+            self._function_name = self.content
 
     @property
     def type(self) -> BlockTypes:
         return BlockTypes.FUNCTION_ID
+
+    @property
+    def skill_name(self) -> str:
+        return self._skill_name
+
+    @skill_name.setter
+    def skill_name(self, value: str) -> None:
+        self._skill_name = value
+
+    @property
+    def function_name(self) -> str:
+        return self._function_name
+
+    @function_name.setter
+    def function_name(self, value: str) -> None:
+        self._function_name = value
 
     def is_valid(self) -> Tuple[bool, str]:
         if self.content is None or len(self.content) == 0:

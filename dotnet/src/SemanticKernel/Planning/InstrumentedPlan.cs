@@ -37,13 +37,13 @@ public sealed class InstrumentedPlan : IPlan
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
     /// </summary>
     /// <param name="plan">Instance of <see cref="IPlan"/> to decorate.</param>
-    /// <param name="logger">Optional logger.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public InstrumentedPlan(
         IPlan plan,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._plan = plan;
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedPlan)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -60,17 +60,6 @@ public sealed class InstrumentedPlan : IPlan
     {
         return await this.InvokeWithInstrumentationAsync(() =>
             this._plan.InvokeAsync(context, settings, cancellationToken)).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
-        string? input = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        return await this.InvokeWithInstrumentationAsync(() =>
-            this._plan.InvokeAsync(input, settings, logger ?? this._logger, cancellationToken)).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -147,7 +136,7 @@ public sealed class InstrumentedPlan : IPlan
         if (result.ErrorOccurred)
         {
             this._logger.LogWarning("Plan execution status: {Status}", "Failed");
-            this._logger.LogError(result.LastException, "Plan execution exception details: {Message}", result.LastErrorDescription);
+            this._logger.LogError(result.LastException, "Plan execution exception details: {Message}", result.LastException?.Message);
 
             s_executionFailureCounter.Add(1);
         }

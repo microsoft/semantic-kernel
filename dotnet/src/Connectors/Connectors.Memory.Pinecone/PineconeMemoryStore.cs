@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
@@ -30,13 +30,13 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// Initializes a new instance of the <see cref="PineconeMemoryStore"/> class.
     /// </summary>
     /// <param name="pineconeClient">Instance of Pinecone client which implements <see cref="IPineconeClient"/> interface.</param>
-    /// <param name="logger">Instance of logger.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public PineconeMemoryStore(
         IPineconeClient pineconeClient,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._pineconeClient = pineconeClient;
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
     }
 
     /// <summary>
@@ -44,14 +44,14 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// </summary>
     /// <param name="pineconeEnvironment">Pinecone project environment, see https://docs.pinecone.io/docs/projects#project-environment.</param>
     /// <param name="apiKey">Pinecone API key.</param>
-    /// <param name="logger">Instance of logger.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public PineconeMemoryStore(
         string pineconeEnvironment,
         string apiKey,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
-        this._pineconeClient = new PineconeClient(pineconeEnvironment, apiKey, logger);
-        this._logger = logger ?? NullLogger.Instance;
+        this._pineconeClient = new PineconeClient(pineconeEnvironment, apiKey, loggerFactory);
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -65,9 +65,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         if (!await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.IndexNotReady,
-                "Index creation is not supported within memory store. " +
+            throw new SKException("Index creation is not supported within memory store. " +
                 $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}. " +
                 $"Ensure index state is {IndexState.Ready}.");
         }
@@ -128,12 +126,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             await request.ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
-                ex);
+            this._logger.LogError(ex, "Failed to upsert: {Message}", ex.Message);
+            throw;
         }
 
         return vectorData.Id;
@@ -211,12 +207,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
-                ex);
+            this._logger.LogError(ex, "Failed to upsert batch: {Message}", ex.Message);
+            throw;
         }
 
         foreach (PineconeDocument? v in vectorData)
@@ -259,19 +253,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 return record?.ToMemoryRecord(transferVectorOwnership: true);
             }
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Pinecone: {ex.Message}",
-                ex);
-        }
-        catch (MemoryException ex)
-        {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToConvertPineconeDocumentToMemoryRecord,
-                $"Failed deserialize Pinecone response to Memory Record: {ex.Message}",
-                ex);
+            this._logger.LogError(ex, "Failed to get vector data from Pinecone: {Message}", ex.Message);
+            throw;
         }
 
         return null;
@@ -323,7 +308,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
-    /// <exception cref="PineconeMemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdAsync(string indexName,
         string documentId,
         int limit = 3,
@@ -388,10 +373,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 .ToListAsync(cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException ex)
         {
-            this._logger.LogError(e, "Error getting batch with filter from Pinecone.");
-            yield break;
+            this._logger.LogError(ex, "Error getting batch with filter from Pinecone: {Message}", ex.Message);
+            throw;
         }
 
         foreach (PineconeDocument? record in vectorDataList)
@@ -421,12 +406,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 indexNamespace,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Pinecone {ex.Message}",
-                ex);
+            this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -461,12 +444,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 filter,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Pinecone {ex.Message}",
-                ex);
+            this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -478,7 +459,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
-    /// <exception cref="PineconeMemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public async Task RemoveWithDocumentIdAsync(string indexName, string documentId, string indexNamespace, CancellationToken cancellationToken = default)
     {
         try
@@ -488,12 +469,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 { "document_Id", documentId }
             }, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Pinecone {ex.Message}",
-                ex);
+            this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -505,7 +484,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
-    /// <exception cref="PineconeMemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public async Task RemoveWithDocumentIdBatchAsync(
         string indexName,
         IEnumerable<string> documentIds,
@@ -520,12 +499,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Error in batch removing data from Pinecone {ex.Message}",
-                ex);
+            this._logger.LogError(ex, "Error in batch removing data from Pinecone: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -538,7 +515,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken"></param>
     public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -558,7 +535,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesFromNamespaceAsync(
         string indexName,
         string indexNamespace,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -566,7 +543,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         IAsyncEnumerable<(PineconeDocument, double)> results = this._pineconeClient.GetMostRelevantAsync(
             indexName,
-            embedding.Vector,
+            embedding,
             minRelevanceScore,
             limit,
             withEmbeddings,
@@ -589,7 +566,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken"></param>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
@@ -607,7 +584,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     public async Task<(MemoryRecord, double)?> GetNearestMatchFromNamespaceAsync(
         string indexName,
         string indexNamespace,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
@@ -629,7 +606,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFilterAsync(
         string indexName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         Dictionary<string, object> filter,
         double minRelevanceScore = 0D,
@@ -639,7 +616,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         IAsyncEnumerable<(PineconeDocument, double)> results = this._pineconeClient.GetMostRelevantAsync(
             indexName,
-            embedding.Vector,
+            embedding,
             minRelevanceScore,
             limit,
             withEmbeddings,

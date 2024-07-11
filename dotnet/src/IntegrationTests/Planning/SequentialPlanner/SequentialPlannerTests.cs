@@ -19,7 +19,7 @@ public sealed class SequentialPlannerTests : IDisposable
 {
     public SequentialPlannerTests(ITestOutputHelper output)
     {
-        this._logger = NullLogger.Instance; //new XunitLogger<object>(output);
+        this._logger = NullLoggerFactory.Instance;
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
@@ -78,7 +78,7 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Write a poem or joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
+    [InlineData("Write a poem and a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
     public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
@@ -111,7 +111,7 @@ public sealed class SequentialPlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder.WithLogger(this._logger);
+        var builder = Kernel.Builder.WithLoggerFactory(this._logger);
 
         if (useChatModel)
         {
@@ -142,7 +142,7 @@ public sealed class SequentialPlannerTests : IDisposable
         return kernel;
     }
 
-    private readonly ILogger _logger;
+    private readonly ILoggerFactory _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 

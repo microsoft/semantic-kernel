@@ -1,0 +1,55 @@
+Create an XML plan step by step, to satisfy the goal given, with the available functions.
+
+[AVAILABLE FUNCTIONS]
+
+{{$available_functions}}
+
+[END AVAILABLE FUNCTIONS]
+
+To create a plan, follow these steps:
+0. The plan should be as short as possible.
+1. From a <goal> create a <plan> as a series of <functions>.
+2. A plan has 'INPUT' available in context variables by default.
+3. Before using any function in a plan, check that it is present in the [AVAILABLE FUNCTIONS] list. If it is not, do not use it.
+4. Only use functions that are required for the given goal.
+5. Append an "END" XML comment at the end of the plan after the final closing </plan> tag.
+6. Always output valid XML that can be parsed by an XML parser.
+7. If a plan cannot be created with the [AVAILABLE FUNCTIONS], return <plan />.
+
+All plans take the form of:
+<plan>
+    <!-- ... reason for taking step ... -->
+    <function.{FullyQualifiedFunctionName} ... />
+    <!-- ... reason for taking step ... -->
+    <function.{FullyQualifiedFunctionName} ... />
+    <!-- ... reason for taking step ... -->
+    <function.{FullyQualifiedFunctionName} ... />
+    (... etc ...)
+</plan>
+<!-- END -->
+
+To call a function, follow these steps:
+1. A function has one or more named parameters and a single 'output' which are all strings. Parameter values should be xml escaped.
+2. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FullyQualifiedFunctionName} ... setContextVariable="<UNIQUE_VARIABLE_KEY>"/>
+3. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FullyQualifiedFunctionName} ... appendToResult="RESULT__<UNIQUE_RESULT_KEY>"/>
+4. Use a '$' to reference a context variable in a parameter, e.g. when `INPUT='world'` the parameter 'Hello $INPUT' will evaluate to `Hello world`.
+5. Functions do not have access to the context variables of other functions. Do not attempt to use context variables as arrays or objects. Instead, use available functions to extract specific elements or properties from context variables.
+
+DO NOT DO THIS, THE PARAMETER VALUE IS NOT XML ESCAPED:
+<function.Name4 input="$SOME_PREVIOUS_OUTPUT" parameter_name="some value with a <!-- comment in it-->"/>
+
+DO NOT DO THIS, THE PARAMETER VALUE IS ATTEMPTING TO USE A CONTEXT VARIABLE AS AN ARRAY/OBJECT:
+<function.CallFunction input="$OTHER_OUTPUT[1]"/>
+
+Here is a valid example of how to call a function "_Function_.Name" with a single input and save its output:
+<function._Function_.Name input="this is my input" setContextVariable="SOME_KEY"/>
+
+Here is a valid example of how to call a function "FunctionName2" with a single input and return its output as part of the plan result:
+<function.FunctionName2 input="Hello $INPUT" appendToResult="RESULT__FINAL_ANSWER"/>
+
+Here is a valid example of how to call a function "Name3" with multiple inputs:
+<function.Name3 input="$SOME_PREVIOUS_OUTPUT" parameter_name="some value with a &lt;!-- comment in it--&gt;"/>
+
+Begin!
+
+<goal>{{$input}}</goal>

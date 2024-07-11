@@ -23,8 +23,8 @@ public static class Example10_DescribeAllSkillsAndFunctions
         Console.WriteLine("======== Describe all skills and functions ========");
 
         var kernel = Kernel.Builder
-            .WithOpenAITextCompletionService(
-                modelId: TestConfiguration.OpenAI.ModelId,
+            .WithOpenAIChatCompletionService(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 

@@ -69,6 +69,7 @@ dotnet user-secrets set "Apim:SubscriptionKey" "..."
 
 dotnet user-secrets set "Postgres:ConnectionString" "..."
 dotnet user-secrets set "Redis:Configuration" "..."
+dotnet user-secrets set "Kusto:ConnectionString" "..."
 ```
 
 To set your secrets with environment variables, use these names:

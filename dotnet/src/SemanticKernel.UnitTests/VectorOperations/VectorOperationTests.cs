@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Xunit;
 
@@ -16,18 +15,6 @@ public class VectorOperationTests
 
     private readonly double[] _doubleV1 = new double[] { 1.0, 2.0, -4.0, 10.0 };
     private readonly double[] _doubleV2 = new double[] { 3.0, -7.0, 1.0, 6.0 };
-
-    [Fact]
-    public void ItOnlySupportsFPDataTypes()
-    {
-        // Arrange
-        var target = Embedding.SupportedTypes;
-
-        // Assert
-        Assert.Equal(2, target.Count());
-        Assert.Contains(typeof(float), target);
-        Assert.Contains(typeof(double), target);
-    }
 
     [Fact]
     public void ItComputesCosineSimilarityFloat()

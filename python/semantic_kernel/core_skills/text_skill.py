@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.skill_definition import sk_function
 
 
-class TextSkill:
+class TextSkill(PydanticField):
     """
     TextSkill provides a set of functions to manipulate strings.
 

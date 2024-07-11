@@ -1,14 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+import typing as t
 
 import aiohttp
 
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
+if t.TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_context import SKContext
 
-class HttpSkill:
+
+class HttpSkill(PydanticField):
     """
     A skill that provides HTTP functionality.
 
@@ -42,7 +46,7 @@ class HttpSkill:
 
     @sk_function(description="Makes a POST request to a uri", name="postAsync")
     @sk_function_context_parameter(name="body", description="The body of the request")
-    async def post_async(self, url: str, context: SKContext) -> str:
+    async def post_async(self, url: str, context: "SKContext") -> str:
         """
         Sends an HTTP POST request to the specified URI and returns
         the response body as a string.
@@ -67,7 +71,7 @@ class HttpSkill:
 
     @sk_function(description="Makes a PUT request to a uri", name="putAsync")
     @sk_function_context_parameter(name="body", description="The body of the request")
-    async def put_async(self, url: str, context: SKContext) -> str:
+    async def put_async(self, url: str, context: "SKContext") -> str:
         """
         Sends an HTTP PUT request to the specified URI and returns
         the response body as a string.

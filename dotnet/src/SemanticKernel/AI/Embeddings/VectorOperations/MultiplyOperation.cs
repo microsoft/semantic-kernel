@@ -33,7 +33,7 @@ public static class MultiplyOperation
         }
         else
         {
-            EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
+            throw new NotSupportedException();
         }
     }
 

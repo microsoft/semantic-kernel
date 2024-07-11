@@ -145,7 +145,7 @@ public static class InlineFunctionsDefinitionExtension
             frequencyPenalty,
             stopSequences);
 
-        return skfunction.InvokeAsync();
+        return kernel.RunAsync(skfunction);
     }
 
     private static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");

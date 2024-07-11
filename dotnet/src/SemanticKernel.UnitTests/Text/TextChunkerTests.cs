@@ -478,4 +478,121 @@ public sealed class TextChunkerTests
         Assert.NotEmpty(paragraphs);
 #pragma warning restore CA5394
     }
+
+    [Fact]
+    public void CanSplitPlainTextLinesWithCustomTokenCounter()
+    {
+        const string Input = "This is a test of the emergency broadcast system. This is only a test.";
+        var expected = new[]
+        {
+            "This is a test of the emergency broadcast system.",
+            "This is only a test."
+        };
+
+        var result = TextChunker.SplitPlainTextLines(Input, 60, (input) => input.Length);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanSplitMarkdownParagraphsWithCustomTokenCounter()
+    {
+        List<string> input = new()
+        {
+            "This is a test of the emergency broadcast system. This is only a test.",
+            "We repeat, this is only a test. A unit test."
+        };
+        var expected = new[]
+        {
+            "This is a test of the emergency broadcast system.",
+            "This is only a test.",
+            "We repeat, this is only a test. A unit test."
+        };
+
+        var result = TextChunker.SplitMarkdownParagraphs(input, 52, tokenCounter: (input) => input.Length);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanSplitMarkdownParagraphsWithOverlapAndCustomTokenCounter()
+    {
+        List<string> input = new()
+        {
+            "This is a test of the emergency broadcast system. This is only a test.",
+            "We repeat, this is only a test. A unit test."
+        };
+
+        var expected = new[]
+        {
+            "This is a test of the emergency broadcast system.",
+            "emergency broadcast system. This is only a test.",
+            "This is only a test. We repeat, this is only a test.",
+            "We repeat, this is only a test. A unit test.",
+            "A unit test."
+        };
+
+        var result = TextChunker.SplitMarkdownParagraphs(input, 75, 40, (input) => input.Length);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanSplitTextParagraphsWithCustomTokenCounter()
+    {
+        List<string> input = new()
+        {
+            "This is a test of the emergency broadcast system. This is only a test.",
+            "We repeat, this is only a test. A unit test."
+        };
+
+        var expected = new[]
+        {
+            "This is a test of the emergency broadcast system.",
+            "This is only a test.",
+            "We repeat, this is only a test. A unit test."
+        };
+
+        var result = TextChunker.SplitPlainTextParagraphs(input, 52, tokenCounter: (input) => input.Length);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanSplitTextParagraphsWithOverlapAndCustomTokenCounter()
+    {
+        List<string> input = new()
+        {
+            "This is a test of the emergency broadcast system. This is only a test.",
+            "We repeat, this is only a test. A unit test."
+        };
+
+        var expected = new[]
+        {
+            "This is a test of the emergency broadcast system.",
+            "emergency broadcast system. This is only a test.",
+            "This is only a test. We repeat, this is only a test.",
+            "We repeat, this is only a test. A unit test.",
+            "A unit test."
+        };
+
+        var result = TextChunker.SplitPlainTextParagraphs(input, 75, 40, (input) => input.Length);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanSplitMarkDownLinesWithCustomTokenCounter()
+    {
+        const string Input = "This is a test of the emergency broadcast system. This is only a test.";
+        var expected = new[]
+        {
+            "This is a test of the emergency broadcast system.",
+            "This is only a test."
+        };
+
+        var result = TextChunker.SplitMarkDownLines(Input, 60, (input) => input.Length);
+
+        Assert.Equal(expected, result);
+    }
 }

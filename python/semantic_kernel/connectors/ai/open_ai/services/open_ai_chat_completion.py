@@ -60,7 +60,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._messages = []
 
     async def complete_chat_async(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
+        self,
+        messages: List[Tuple[str, str]],
+        request_settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         # TODO: tracking on token counts/etc.
         response = await self._send_chat_request(messages, request_settings, False)
@@ -71,7 +74,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             return [choice.message.content for choice in response.choices]
 
     async def complete_chat_stream_async(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
+        self,
+        messages: List[Tuple[str, str]],
+        request_settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
     ):
         response = await self._send_chat_request(messages, request_settings, True)
 
@@ -88,7 +94,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 yield text
 
     async def complete_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         """
         Completes the given prompt.
@@ -101,15 +110,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             str -- The completed text.
         """
         prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings(
-            temperature=request_settings.temperature,
-            top_p=request_settings.top_p,
-            presence_penalty=request_settings.presence_penalty,
-            frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens,
-            number_of_responses=request_settings.number_of_responses,
-            token_selection_biases=request_settings.token_selection_biases,
-        )
+        chat_settings = ChatRequestSettings.from_completion_config(request_settings)
+
         response = await self._send_chat_request(
             prompt_to_message, chat_settings, False
         )
@@ -120,7 +122,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             return [choice.message.content for choice in response.choices]
 
     async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ):
         prompt_to_message = [("user", prompt)]
         chat_settings = ChatRequestSettings(
@@ -131,6 +136,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             max_tokens=request_settings.max_tokens,
             number_of_responses=request_settings.number_of_responses,
             token_selection_biases=request_settings.token_selection_biases,
+            stop_sequences=request_settings.stop_sequences,
         )
         response = await self._send_chat_request(prompt_to_message, chat_settings, True)
 
@@ -205,11 +211,17 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 messages=formatted_messages,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
-                presence_penalty=request_settings.presence_penalty,
-                frequency_penalty=request_settings.frequency_penalty,
-                max_tokens=request_settings.max_tokens,
                 n=request_settings.number_of_responses,
                 stream=stream,
+                stop=(
+                    request_settings.stop_sequences
+                    if request_settings.stop_sequences is not None
+                    and len(request_settings.stop_sequences) > 0
+                    else None
+                ),
+                max_tokens=request_settings.max_tokens,
+                presence_penalty=request_settings.presence_penalty,
+                frequency_penalty=request_settings.frequency_penalty,
                 logit_bias=(
                     request_settings.token_selection_biases
                     if request_settings.token_selection_biases is not None

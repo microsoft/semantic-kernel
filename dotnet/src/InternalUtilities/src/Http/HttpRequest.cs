@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -43,12 +44,21 @@ internal static class HttpRequest
         {
             byte[] utf8Bytes = payload is string s ?
                 Encoding.UTF8.GetBytes(s) :
-                JsonSerializer.SerializeToUtf8Bytes(payload);
+                JsonSerializer.SerializeToUtf8Bytes(payload, s_jsonSerializerOptions);
 
             content = new ByteArrayContent(utf8Bytes);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
         }
 
         return content;
+    }
+
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
+
+    private static JsonSerializerOptions CreateSerializerOptions()
+    {
+        var jso = new JsonSerializerOptions();
+        jso.Converters.Add(new ReadOnlyMemoryConverter());
+        return jso;
     }
 }

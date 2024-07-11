@@ -46,7 +46,7 @@ internal sealed class Program
                 .AddConsole()
                 .AddDebug());
 
-        ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
+        ILogger logger = loggerFactory.CreateLogger<Program>();
 
         // Initialize semantic kernel
         AIServiceOptions aiOptions = configuration.GetRequiredSection(AIServiceOptions.PropertyName).Get<AIServiceOptions>()
@@ -75,7 +75,7 @@ internal sealed class Program
 
         BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(gitHubOptions.Key));
 
-        await kernel.ImportOpenApiSkillFromFileAsync(
+        await kernel.ImportAIPluginAsync(
             skillName: "GitHubSkill",
             filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "GitHubSkill/openapi.json"),
             new OpenApiSkillExecutionParameters(authCallback: authenticationProvider.AuthenticateRequestAsync));
@@ -145,7 +145,7 @@ internal sealed class Program
         SKContext planContext = await plan.InvokeAsync(logger: logger);
         if (planContext.ErrorOccurred)
         {
-            logger.LogError("{0}", planContext.LastErrorDescription);
+            logger.LogError(planContext.LastException!, "Unexpected failure executing plan");
             return string.Empty;
         }
         else if (string.IsNullOrWhiteSpace(planContext.Result))

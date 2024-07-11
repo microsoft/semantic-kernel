@@ -1,0 +1,32 @@
+{
+    "schema": 1,
+    "description": "Given a request or command or goal generate multi-step plan to reach the goal. After each step LLM is called to perform the reasoning for the next step.",
+    "type": "completion",
+    "completion": {
+      "max_tokens": 1024,
+      "temperature": 0,
+      "top_p": 0,
+      "presence_penalty": 0,
+      "frequency_penalty": 0,
+      "stop_sequences": ["[OBSERVATION]", "\n[THOUGHT]"]
+    },
+    "input": {
+      "parameters": [
+        {
+          "name": "question",
+          "description": "The question to answer",
+          "defaultValue": ""
+        },
+        {
+          "name": "agentScratchPad",
+          "description": "The agent's scratch pad",
+          "defaultValue": ""
+        },
+        {
+          "name": "functionDescriptions",
+          "description": "The manual of the agent's functions",
+          "defaultValue": ""
+        }
+      ]
+    }
+  }

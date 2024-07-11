@@ -8,10 +8,11 @@ from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
+    HnswVectorSearchAlgorithmConfiguration,
     SearchIndex,
     VectorSearch,
-    VectorSearchAlgorithmConfiguration,
 )
+from azure.search.documents.models import Vector
 from numpy import ndarray
 
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
@@ -58,7 +59,6 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         Instantiate using Async Context Manager:
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
-
         """
         try:
             pass
@@ -82,14 +82,14 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection_async(
         self,
         collection_name: str,
-        vector_config: Optional[VectorSearchAlgorithmConfiguration] = None,
+        vector_config: Optional[HnswVectorSearchAlgorithmConfiguration] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
         Arguments:
             collection_name {str}                              -- The name of the collection to create.
-            vector_config {VectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
-                                                                  (default: {None}).
+            vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
+                                                                      (default: {None}).
             semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
         Returns:
             None
@@ -100,7 +100,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         else:
             vector_search = VectorSearch(
                 algorithm_configurations=[
-                    VectorSearchAlgorithmConfiguration(
+                    HnswVectorSearchAlgorithmConfiguration(
                         name="az-vector-config",
                         kind="hnsw",
                         hnsw_parameters={
@@ -403,12 +403,14 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             collection_name.lower()
         )
 
+        vector = Vector(
+            value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING
+        )
+
         search_results = await search_client.search(
             search_text="*",
-            vector_fields=SEARCH_FIELD_EMBEDDING,
-            vector=embedding.tolist(),
+            vectors=[vector],
             select=get_field_selection(with_embeddings),
-            top_k=limit,
         )
 
         if not search_results or search_results is None:

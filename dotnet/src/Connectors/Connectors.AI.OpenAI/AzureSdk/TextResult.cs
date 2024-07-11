@@ -15,7 +15,7 @@ internal sealed class TextResult : ITextResult
 
     public TextResult(Completions resultData, Choice choice)
     {
-        this._modelResult = new ModelResult(resultData);
+        this._modelResult = new(new TextModelResult(resultData, choice));
         this._choice = choice;
     }
 

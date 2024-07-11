@@ -9,7 +9,7 @@ namespace SemanticKernel.Connectors.UnitTests;
 /// <summary>
 /// A logger that writes to the Xunit test output
 /// </summary>
-internal sealed class XunitLogger<T> : ILogger<T>, IDisposable
+internal sealed class XunitLogger<T> : ILogger, IDisposable
 {
     private readonly ITestOutputHelper _output;
 

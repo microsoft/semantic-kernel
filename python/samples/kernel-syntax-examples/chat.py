@@ -18,8 +18,8 @@ ChatBot:>
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.add_text_completion_service(
-    "davinci-003", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
+kernel.add_chat_service(
+    "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
 )
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(

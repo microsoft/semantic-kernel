@@ -13,6 +13,7 @@ namespace Microsoft.SemanticKernel.AI.Embeddings;
 /// Represents a strongly typed vector of numeric data.
 /// </summary>
 /// <typeparam name="TEmbedding"></typeparam>
+[Obsolete("This class is obsolete and will be removed in a future release. Please use ReadOnlyMemory<TEmbedding> instead.")]
 public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     where TEmbedding : unmanaged
 {
@@ -196,6 +197,7 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
 /// <summary>
 /// Provides functionality related to <see cref="Embedding{TEmbedding}"/>.
 /// </summary>
+[Obsolete("This class is obsolete and will be removed in a future release. Please use ReadOnlyMemory<TEmbedding> instead.")]
 public static class Embedding
 {
     /// <summary>

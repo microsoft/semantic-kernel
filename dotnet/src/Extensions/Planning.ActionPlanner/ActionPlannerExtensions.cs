@@ -13,9 +13,9 @@ public static class ActionPlannerExtensions
     /// Returns decorated instance of <see cref="IActionPlanner"/> with enabled instrumentation.
     /// </summary>
     /// <param name="planner">Instance of <see cref="IActionPlanner"/> to decorate.</param>
-    /// <param name="logger">Optional logger.</param>
-    public static IActionPlanner WithInstrumentation(this IActionPlanner planner, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public static IActionPlanner WithInstrumentation(this IActionPlanner planner, ILoggerFactory? loggerFactory = null)
     {
-        return new InstrumentedActionPlanner(planner, logger);
+        return new InstrumentedActionPlanner(planner, loggerFactory);
     }
 }

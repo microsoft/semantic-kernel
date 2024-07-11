@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -222,7 +223,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// </remarks>
     IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFilterAsync(
         string indexName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         Dictionary<string, object> filter,
         double minRelevanceScore = 0.0,
@@ -244,7 +245,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesFromNamespaceAsync(
         string indexName,
         string indexNamespace,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
@@ -263,7 +264,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     Task<(MemoryRecord, double)?> GetNearestMatchFromNamespaceAsync(
         string indexName,
         string indexNamespace,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0.0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default);

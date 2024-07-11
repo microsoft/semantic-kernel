@@ -40,7 +40,7 @@ public sealed class Program
         var serviceProvider = GetServiceProvider();
 
         var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
         using var meterListener = new MeterListener();
         using var activityListener = new ActivityListener();
@@ -48,8 +48,8 @@ public sealed class Program
         ConfigureMetering(meterListener, telemetryClient);
         ConfigureTracing(activityListener, telemetryClient);
 
-        var kernel = GetKernel(logger);
-        var planner = GetSequentialPlanner(kernel, logger);
+        var kernel = GetKernel(loggerFactory);
+        var planner = GetSequentialPlanner(kernel, loggerFactory);
 
         try
         {
@@ -92,7 +92,7 @@ public sealed class Program
 
         services.AddLogging(loggingBuilder =>
         {
-            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(typeof(Program).FullName, LogLevel);
+            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == LogLevel);
             loggingBuilder.SetMinimumLevel(LogLevel);
         });
 
@@ -102,14 +102,14 @@ public sealed class Program
         });
     }
 
-    private static IKernel GetKernel(ILogger logger)
+    private static IKernel GetKernel(ILoggerFactory loggerFactory)
     {
         var folder = RepoFiles.SampleSkillsPath();
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
 
         var kernel = new KernelBuilder()
-            .WithLogger(logger)
+            .WithLoggerFactory(loggerFactory)
             .WithAzureChatCompletionService(
                 Env.Var("AzureOpenAI__ChatDeploymentName"),
                 Env.Var("AzureOpenAI__Endpoint"),
@@ -127,24 +127,24 @@ public sealed class Program
 
     private static ISequentialPlanner GetSequentialPlanner(
         IKernel kernel,
-        ILogger logger,
+        ILoggerFactory loggerFactory,
         int maxTokens = 1024)
     {
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
 
-        return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(logger);
+        return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
     }
 
     private static IActionPlanner GetActionPlanner(
         IKernel kernel,
-        ILogger logger)
+        ILoggerFactory loggerFactory)
     {
-        return new ActionPlanner(kernel).WithInstrumentation(logger);
+        return new ActionPlanner(kernel).WithInstrumentation(loggerFactory);
     }
 
     private static IStepwisePlanner GetStepwisePlanner(
         IKernel kernel,
-        ILogger logger,
+        ILoggerFactory loggerFactory,
         int minIterationTimeMs = 1500,
         int maxTokens = 2000)
     {
@@ -154,7 +154,7 @@ public sealed class Program
             MaxTokens = maxTokens
         };
 
-        return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(logger);
+        return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
     }
 
     /// <summary>

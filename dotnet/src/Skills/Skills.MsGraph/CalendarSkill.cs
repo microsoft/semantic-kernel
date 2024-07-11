@@ -64,7 +64,7 @@ public sealed class CalendarSkill
     }
 
     private readonly ICalendarConnector _connector;
-    private readonly ILogger<CalendarSkill> _logger;
+    private readonly ILogger _logger;
     private static readonly JsonSerializerOptions s_options = new()
     {
         WriteIndented = false,
@@ -75,13 +75,13 @@ public sealed class CalendarSkill
     /// Initializes a new instance of the <see cref="CalendarSkill"/> class.
     /// </summary>
     /// <param name="connector">Calendar connector.</param>
-    /// <param name="logger">Logger.</param>
-    public CalendarSkill(ICalendarConnector connector, ILogger<CalendarSkill>? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public CalendarSkill(ICalendarConnector connector, ILoggerFactory? loggerFactory = null)
     {
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = logger ?? new NullLogger<CalendarSkill>();
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CalendarSkill)) : NullLogger.Instance;
     }
 
     /// <summary>

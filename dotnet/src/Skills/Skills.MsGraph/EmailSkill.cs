@@ -48,7 +48,7 @@ public sealed class EmailSkill
     }
 
     private readonly IEmailConnector _connector;
-    private readonly ILogger<EmailSkill> _logger;
+    private readonly ILogger _logger;
     private static readonly JsonSerializerOptions s_options = new()
     {
         WriteIndented = false,
@@ -59,13 +59,13 @@ public sealed class EmailSkill
     /// Initializes a new instance of the <see cref="EmailSkill"/> class.
     /// </summary>
     /// <param name="connector">Email connector.</param>
-    /// <param name="logger">Logger.</param>
-    public EmailSkill(IEmailConnector connector, ILogger<EmailSkill>? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public EmailSkill(IEmailConnector connector, ILoggerFactory? loggerFactory = null)
     {
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = logger ?? new NullLogger<EmailSkill>();
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(EmailSkill)) : NullLogger.Instance;
     }
 
     /// <summary>

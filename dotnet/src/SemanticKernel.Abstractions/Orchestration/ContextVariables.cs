@@ -53,7 +53,6 @@ public sealed class ContextVariables : IDictionary<string, string>
 
     /// <summary>
     /// Updates the main input text with the new value after a function is complete.
-    /// The string includes trust information and will overwrite the trust state of the input.
     /// </summary>
     /// <param name="value">The new input value, for the next function in the pipeline, or as a result for the user
     /// if the pipeline reached the end.</param>
@@ -91,7 +90,6 @@ public sealed class ContextVariables : IDictionary<string, string>
     /// This method allows to store additional data in the context variables, e.g. variables needed by functions in the
     /// pipeline. These "variables" are visible also to semantic functions using the "{{varName}}" syntax, allowing
     /// to inject more information into prompt templates.
-    /// The string value includes trust information and will overwrite the trust information already stored for the variable.
     /// </summary>
     /// <param name="name">Variable name</param>
     /// <param name="value">Value to store. If the value is NULL the variable is deleted.</param>

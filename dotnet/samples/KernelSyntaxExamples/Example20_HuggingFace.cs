@@ -17,7 +17,7 @@ public static class Example20_HuggingFace
         Console.WriteLine("======== HuggingFace text completion AI ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithHuggingFaceTextCompletionService(
                 model: TestConfiguration.HuggingFace.ApiKey,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)

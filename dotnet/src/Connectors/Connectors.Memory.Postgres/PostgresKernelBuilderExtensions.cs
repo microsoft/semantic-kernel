@@ -25,7 +25,7 @@ public static class PostgresKernelBuilderExtensions
         int vectorSize,
         string schema = PostgresMemoryStore.DefaultSchema)
     {
-        builder.WithMemoryStorage((parameters) =>
+        builder.WithMemoryStorage((loggerFactory, config) =>
         {
             return new PostgresMemoryStore(dataSource, vectorSize, schema);
         });
@@ -41,7 +41,7 @@ public static class PostgresKernelBuilderExtensions
     /// <returns>Self instance</returns>
     public static KernelBuilder WithPostgresMemoryStore(this KernelBuilder builder, IPostgresDbClient postgresDbClient)
     {
-        builder.WithMemoryStorage((parameters) =>
+        builder.WithMemoryStorage((loggerFactory, config) =>
         {
             return new PostgresMemoryStore(postgresDbClient);
         });

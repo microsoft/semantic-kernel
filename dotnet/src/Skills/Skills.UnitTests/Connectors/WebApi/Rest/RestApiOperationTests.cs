@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Xunit;
 
@@ -257,7 +258,7 @@ public class RestApiOperationTests
         };
 
         //Act and assert
-        Assert.Throws<RestApiOperationException>(() => sut.BuildOperationUrl(arguments));
+        Assert.Throws<SKException>(() => sut.BuildOperationUrl(arguments));
     }
 
     [Theory]
@@ -404,7 +405,7 @@ public class RestApiOperationTests
         void Act() => sut.RenderHeaders(new Dictionary<string, string>());
 
         // Assert
-        Assert.Throws<RestApiOperationException>(Act);
+        Assert.Throws<SKException>(Act);
     }
 
     [Fact]
@@ -429,7 +430,7 @@ public class RestApiOperationTests
         void Act() => sut.RenderHeaders(new Dictionary<string, string>());
 
         // Assert
-        Assert.Throws<RestApiOperationException>(Act);
+        Assert.Throws<SKException>(Act);
     }
 
     [Fact]

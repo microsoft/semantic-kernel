@@ -101,7 +101,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken).ConfigureAwait(false);
+        ReadOnlyMemory<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken).ConfigureAwait(false);
 
         IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
             collectionName: collection,
