@@ -71,7 +71,7 @@ def test_validate_endpoint(aca_python_sessions_unit_test_env):
         ),
     ],
 )
-def test_build_url_with_version(base_url, endpoint, params, expected_url):
+def test_build_url_with_version(base_url, endpoint, params, expected_url, aca_python_sessions_unit_test_env):
     plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     result = plugin._build_url_with_version(base_url, endpoint, params)
     assert result == expected_url
@@ -283,7 +283,7 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_throws_exception(mock_post):
+async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_test_env):
     """Test throwing exception during file upload."""
 
     async def async_raise_http_error(*args, **kwargs):
@@ -434,7 +434,7 @@ async def test_list_files(mock_get, aca_python_sessions_unit_test_env):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
-async def test_list_files_throws_exception(mock_get):
+async def test_list_files_throws_exception(mock_get, aca_python_sessions_unit_test_env):
     """Test throwing exception during list files."""
 
     async def async_raise_http_error(*args, **kwargs):
@@ -532,7 +532,7 @@ async def test_download_file_to_buffer(mock_get, aca_python_sessions_unit_test_e
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
-async def test_download_file_throws_exception(mock_get):
+async def test_download_file_throws_exception(mock_get, aca_python_sessions_unit_test_env):
     """Test throwing exception during download file."""
 
     async def async_raise_http_error(*args, **kwargs):
