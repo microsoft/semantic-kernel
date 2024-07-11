@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -41,17 +42,17 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
     public void ConstructorsAddRequiredMetadata()
     {
         // Case #1
-        var sut = new AzureOpenAITextToImageService("deployment", "https://api-host/", "api-key", "model");
+        var sut = new AzureOpenAITextToImageService("deployment", "https://api-host/", "api-key", "model", loggerFactory: this._mockLoggerFactory.Object);
         Assert.Equal("deployment", sut.Attributes[ClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
 
         // Case #2
-        sut = new AzureOpenAITextToImageService("deployment", "https://api-hostapi/", new Mock<TokenCredential>().Object, "model");
+        sut = new AzureOpenAITextToImageService("deployment", "https://api-hostapi/", new Mock<TokenCredential>().Object, "model", loggerFactory: this._mockLoggerFactory.Object);
         Assert.Equal("deployment", sut.Attributes[ClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
 
         // Case #3
-        sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(new Uri("https://api-host/"), "api-key"), "model");
+        sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(new Uri("https://api-host/"), "api-key"), "model", loggerFactory: this._mockLoggerFactory.Object);
         Assert.Equal("deployment", sut.Attributes[ClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
     }
@@ -68,7 +69,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
     public async Task GenerateImageWorksCorrectlyAsync(int width, int height, string modelId)
     {
         // Arrange
-        var sut = new AzureOpenAITextToImageService("deployment", "https://api-host", "api-key", modelId, this._httpClient);
+        var sut = new AzureOpenAITextToImageService("deployment", "https://api-host", "api-key", modelId, this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
 
         // Act 
         var result = await sut.GenerateImageAsync("description", width, height);
@@ -82,6 +83,65 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         Assert.Equal("deployment", request["model"]?.ToString());
         Assert.Equal("url", request["response_format"]?.ToString());
         Assert.Equal($"{width}x{height}", request["size"]?.ToString());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItShouldUseProvidedEndpoint(bool useTokeCredential)
+    {
+        // Arrange
+        var sut = useTokeCredential ?
+            new AzureOpenAITextToImageService("deployment", endpoint: "https://api-host", new Mock<TokenCredential>().Object, "dall-e-3", this._httpClient) :
+            new AzureOpenAITextToImageService("deployment", endpoint: "https://api-host", "api-key", "dall-e-3", this._httpClient);
+
+        // Act
+        var result = await sut.GenerateImageAsync("description", 1024, 1024);
+
+        // Assert
+        Assert.StartsWith("https://api-host", this._messageHandlerStub.RequestUri?.AbsoluteUri);
+    }
+
+    [Theory]
+    [InlineData(true, "")]
+    [InlineData(true, null)]
+    [InlineData(false, "")]
+    [InlineData(false, null)]
+    public async Task ItShouldUseHttpClientUriIfNoEndpointProvided(bool useTokeCredential, string? endpoint)
+    {
+        // Arrange
+        this._httpClient.BaseAddress = new Uri("https://api-host");
+
+        var sut = useTokeCredential ?
+            new AzureOpenAITextToImageService("deployment", endpoint: endpoint!, new Mock<TokenCredential>().Object, "dall-e-3", this._httpClient) :
+            new AzureOpenAITextToImageService("deployment", endpoint: endpoint!, "api-key", "dall-e-3", this._httpClient);
+
+        // Act
+        var result = await sut.GenerateImageAsync("description", 1024, 1024);
+
+        // Assert
+        Assert.StartsWith("https://api-host", this._messageHandlerStub.RequestUri?.AbsoluteUri);
+    }
+
+    [Theory]
+    [InlineData(true, "")]
+    [InlineData(true, null)]
+    [InlineData(false, "")]
+    [InlineData(false, null)]
+    public void ItShouldThrowExceptionIfNoEndpointProvided(bool useTokeCredential, string? endpoint)
+    {
+        // Arrange
+        this._httpClient.BaseAddress = null;
+
+        // Act & Assert
+        if (useTokeCredential)
+        {
+            Assert.Throws<ArgumentException>(() => new AzureOpenAITextToImageService("deployment", endpoint: endpoint!, new Mock<TokenCredential>().Object, "dall-e-3", this._httpClient));
+        }
+        else
+        {
+            Assert.Throws<ArgumentException>(() => new AzureOpenAITextToImageService("deployment", endpoint: endpoint!, "api-key", "dall-e-3", this._httpClient));
+        }
     }
 
     public void Dispose()
