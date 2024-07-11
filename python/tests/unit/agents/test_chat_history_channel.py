@@ -4,7 +4,7 @@ from collections.abc import AsyncIterable
 
 import pytest
 
-from semantic_kernel.agents.chat_history_channel import ChatHistoryChannel
+from semantic_kernel.agents.chat_history_channel import ChatHistoryAgentProtocol, ChatHistoryChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -26,6 +26,9 @@ class MockNonChatHistoryHandler:
     """Mock agent to test incorrect instance handling."""
 
     id: str = "mock_non_chat_history_handler"
+
+
+ChatHistoryAgentProtocol.register(MockChatHistoryHandler)
 
 
 @pytest.mark.asyncio
