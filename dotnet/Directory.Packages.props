@@ -15,7 +15,7 @@
     <PackageVersion Include="Markdig" Version="0.37.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
-    <PackageVersion Include="JsonSchema.Net" Version="7.1.1" />
+    <PackageVersion Include="JsonSchema.Net" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.3" />
@@ -65,13 +65,13 @@
     <PackageVersion Include="Verify.Xunit" Version="25.0.4" />
     <PackageVersion Include="xunit" Version="2.8.1" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.6" />
-    <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.0" />
+    <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.1" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
     <PackageVersion Include="MongoDB.Driver" Version="2.27.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
