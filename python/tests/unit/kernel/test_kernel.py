@@ -79,6 +79,18 @@ def test_kernel_init_with_plugins():
     assert kernel.plugins is not None
 
 
+def test_kernel_init_with_kernel_plugin_instance():
+    plugin = KernelPlugin(name="plugin")
+    kernel = Kernel(plugins=plugin)
+    assert kernel.plugins is not None
+
+
+def test_kernel_init_with_kernel_plugin_list():
+    plugin = [KernelPlugin(name="plugin")]
+    kernel = Kernel(plugins=plugin)
+    assert kernel.plugins is not None
+
+
 # endregion
 # region Invoke Functions
 
