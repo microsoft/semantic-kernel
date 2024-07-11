@@ -84,14 +84,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
 
         kernel = kwargs.get("kernel", None)
-        arguments = kwargs.get("arguments", None)
         if settings.function_choice_behavior is not None:
             if kernel is None:
                 raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
-            if arguments is None and settings.function_choice_behavior.auto_invoke_kernel_functions:
-                raise ServiceInvalidExecutionSettingsError(
-                    "The kernel arguments are required for auto invoking OpenAI tool calls."
-                )
             if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
@@ -126,7 +121,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                         function_call=function_call,
                         chat_history=chat_history,
                         kernel=kernel,
-                        arguments=arguments,
+                        arguments=kwargs.get("arguments", None),
                         function_call_count=fc_count,
                         request_index=request_index,
                         function_call_behavior=settings.function_choice_behavior,

@@ -260,12 +260,6 @@ async def test_cmc_function_choice_behavior_missing_kwargs(
             arguments=KernelArguments(),
         )
     with pytest.raises(ServiceInvalidExecutionSettingsError):
-        await openai_chat_completion.get_chat_message_contents(
-            chat_history=chat_history,
-            settings=complete_prompt_execution_settings,
-            kernel=kernel,
-        )
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
         complete_prompt_execution_settings.number_of_responses = 2
         await openai_chat_completion.get_chat_message_contents(
             chat_history=chat_history,
@@ -534,15 +528,6 @@ async def test_scmc_function_choice_behavior_missing_kwargs(
                 chat_history=chat_history,
                 settings=complete_prompt_execution_settings,
                 arguments=KernelArguments(),
-            )
-        ]
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
-        [
-            msg
-            async for msg in openai_chat_completion.get_streaming_chat_message_contents(
-                chat_history=chat_history,
-                settings=complete_prompt_execution_settings,
-                kernel=kernel,
             )
         ]
     with pytest.raises(ServiceInvalidExecutionSettingsError):
