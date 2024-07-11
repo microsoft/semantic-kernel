@@ -144,7 +144,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0001")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextToAudio(
         this IKernelBuilder builder,
         string modelId,
@@ -181,7 +181,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0001")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAIAudioToText(
         this IKernelBuilder builder,
         string modelId,
@@ -214,7 +214,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0001")]
+    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAIAudioToText(
         this IKernelBuilder builder,
         string modelId,

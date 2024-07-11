@@ -134,7 +134,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0001")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextToAudio(
         this IServiceCollection services,
         string modelId,
@@ -168,7 +168,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0001")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAIAudioToText(
         this IServiceCollection services,
         string modelId,
@@ -200,7 +200,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0001")]
+    [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAIAudioToText(
         this IServiceCollection services,
         string modelId,
