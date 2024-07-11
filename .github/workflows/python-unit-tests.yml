@@ -45,13 +45,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-coverage-$FILE_ID.txt
-          path: python-coverage.txt
+          path: python/python-coverage.txt
           overwrite: true
           retention-days: 1  
       - name: Upload pytest.xml
         uses: actions/upload-artifact@v4
         with:
           name: pytest-$FILE_ID.xml
-          path: pytest.xml
+          path: python/pytest.xml
           overwrite: true
           retention-days: 1
