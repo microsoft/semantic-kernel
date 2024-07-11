@@ -10,18 +10,26 @@ jobs:
   python-unit-tests:
     name: Python Unit Tests
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
+        experimental: [false]
+        include:
+          - python-version: "3.13.0-beta.3"
+            os: "ubuntu-latest"
+            experimental: true
     permissions:
       contents: write
     defaults:
       run:
-        working-directory: ./python
+        working-directory: python
     steps:
       - uses: actions/checkout@v4
+      - name: Setup filename variables
+        run: echo "FILE_ID=${{ github.run_id }}-${{ matrix.os }}-${{ matrix.python-version }}" >> $GITHUB_ENV
       - name: Install poetry
         run: pipx install poetry
       - name: Set up Python ${{ matrix.python-version }}
@@ -32,19 +40,18 @@ jobs:
       - name: Install dependencies
         run: poetry install --with unit-tests
       - name: Test with pytest
-        run: poetry run pytest -q --junitxml=pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
-        continue-on-error: false
+        run: poetry run pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
-          name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
-          path: python/python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          name: python-coverage-${{ env.FILE_ID }}.txt
+          path: python/python-coverage.txt
           overwrite: true
-          retention-days: 1  
+          retention-days: 1
       - name: Upload pytest.xml
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
-          path: python/pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          name: pytest-${{ env.FILE_ID }}.xml
+          path: python/pytest.xml
           overwrite: true
           retention-days: 1
