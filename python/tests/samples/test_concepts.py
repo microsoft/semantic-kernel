@@ -5,6 +5,8 @@ import copy
 import pytest
 from pytest import mark, param
 
+from samples.concepts.agents.step1_agent import main as step1_agent
+from samples.concepts.agents.step2_plugins import main as step2_plugins
 from samples.concepts.auto_function_calling.azure_python_code_interpreter_function_calling import (
     main as azure_python_code_interpreter_function_calling,
 )
@@ -95,6 +97,8 @@ concepts = [
     param(custom_service_selector, [], id="custom_service_selector"),
     param(function_defined_in_json_prompt, ["What is 3+3?", "exit"], id="function_defined_in_json_prompt"),
     param(function_defined_in_yaml_prompt, ["What is 3+3?", "exit"], id="function_defined_in_yaml_prompt"),
+    param(step1_agent, [], id="step1_agent"),
+    param(step2_plugins, [], id="step2_agent_plugins"),
     param(
         ollama_chat_completion,
         ["Why is the sky blue?", "exit"],
