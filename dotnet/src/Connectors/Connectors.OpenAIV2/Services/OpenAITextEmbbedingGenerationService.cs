@@ -31,7 +31,6 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
-    /// <param name="endpoint">Non-default endpoint for the OpenAI API</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
@@ -39,16 +38,15 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         string modelId,
         string apiKey,
         string? organization = null,
-        Uri? endpoint = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
+        Verify.NotNullOrWhiteSpace(modelId);
         this._client = new(
             modelId: modelId,
             apiKey: apiKey,
-            endpoint: endpoint,
+            endpoint: null,
             organizationId: organization,
             httpClient: httpClient,
             logger: loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
@@ -69,7 +67,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
+        Verify.NotNullOrWhiteSpace(modelId);
         this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
         this._dimensions = dimensions;
     }

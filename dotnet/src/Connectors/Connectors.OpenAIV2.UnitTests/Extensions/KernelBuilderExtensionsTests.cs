@@ -55,22 +55,7 @@ public class KernelBuilderExtensionsTests
         var sut = Kernel.CreateBuilder();
 
         // Act
-        var service = sut.AddOpenAITextToImage("model", "key")
-            .Build()
-            .GetRequiredService<ITextToImageService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
-    public void ItCanAddTextToImageServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = Kernel.CreateBuilder();
-
-        // Act
-        var service = sut.AddOpenAITextToImage("model", new OpenAIClient("key"))
+        var service = sut.AddOpenAITextToImage("key", modelId: "model")
             .Build()
             .GetRequiredService<ITextToImageService>();
 
@@ -86,21 +71,6 @@ public class KernelBuilderExtensionsTests
 
         // Act
         var service = sut.AddOpenAITextToAudio("model", "key")
-            .Build()
-            .GetRequiredService<ITextToAudioService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
-    public void ItCanAddTextToAudioServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = Kernel.CreateBuilder();
-
-        // Act
-        var service = sut.AddOpenAITextToAudio("model", new OpenAIClient("key"))
             .Build()
             .GetRequiredService<ITextToAudioService>();
 

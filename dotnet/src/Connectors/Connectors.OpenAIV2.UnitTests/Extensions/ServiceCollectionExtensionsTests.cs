@@ -88,22 +88,7 @@ public class ServiceCollectionExtensionsTests
         var sut = new ServiceCollection();
 
         // Act
-        var service = sut.AddOpenAITextToImage("model", "key")
-            .BuildServiceProvider()
-            .GetRequiredService<ITextToImageService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
-    public void ItCanAddImageToTextServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = new ServiceCollection();
-
-        // Act
-        var service = sut.AddOpenAITextToImage("model", new OpenAIClient("key"))
+        var service = sut.AddOpenAITextToImage("key", modelId: "model")
             .BuildServiceProvider()
             .GetRequiredService<ITextToImageService>();
 
@@ -119,21 +104,6 @@ public class ServiceCollectionExtensionsTests
 
         // Act
         var service = sut.AddOpenAITextToAudio("model", "key")
-            .BuildServiceProvider()
-            .GetRequiredService<ITextToAudioService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
-    public void ItCanAddTextToAudioServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = new ServiceCollection();
-
-        // Act
-        var service = sut.AddOpenAITextToAudio("model", new OpenAIClient("key"))
             .BuildServiceProvider()
             .GetRequiredService<ITextToAudioService>();
 
