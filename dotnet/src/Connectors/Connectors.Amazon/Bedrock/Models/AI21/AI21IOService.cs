@@ -13,8 +13,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.AI21;
 
-public class AI21IoService : IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse>,
-    IBedrockModelIoService<ITextGenerationRequest, ITextGenerationResponse>
+public class AI21IOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
+    IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {

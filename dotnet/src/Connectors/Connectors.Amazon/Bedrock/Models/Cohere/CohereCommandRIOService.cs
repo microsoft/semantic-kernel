@@ -12,8 +12,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Cohere;
 
-public class CohereCommandRIoService : IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse>,
-    IBedrockModelIoService<ITextGenerationRequest, ITextGenerationResponse>
+public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
+    IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
     public object GetInvokeModelRequestBody(string text, PromptExecutionSettings executionSettings)
     {

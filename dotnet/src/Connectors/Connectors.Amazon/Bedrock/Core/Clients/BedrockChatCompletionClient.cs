@@ -31,7 +31,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     private readonly string _modelId;
     private readonly string _modelProvider;
     private readonly IAmazonBedrockRuntime _bedrockApi;
-    private readonly IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse> _ioService;
+    private readonly IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse> _ioService;
     private readonly Uri _chatGenerationEndpoint;
 
     public BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockApi)
@@ -45,22 +45,22 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         switch (modelProvider)
         {
             case "amazon":
-                this._ioService = new AmazonIoService();
+                this._ioService = new AmazonIOService();
                 break;
             case "mistral":
-                this._ioService = new MistralIoService();
+                this._ioService = new MistralIOService();
                 break;
             case "anthropic":
-                this._ioService = new AnthropicIoService();
+                this._ioService = new AnthropicIOService();
                 break;
             case "ai21":
-                this._ioService = new AI21IoService();
+                this._ioService = new AI21IOService();
                 break;
             case "cohere":
-                this._ioService = new CohereCommandRIoService();
+                this._ioService = new CohereCommandRIOService();
                 break;
             case "meta":
-                this._ioService = new LlamaIoService();
+                this._ioService = new MetaIOService();
                 break;
             default:
                 throw new ArgumentException($"Unsupported model provider: {modelProvider}");

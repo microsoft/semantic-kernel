@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models;
 
-public interface IBedrockModelIoService<TRequest, TResponse>
+public interface IBedrockModelIOService<TRequest, TResponse>
 {
     object GetInvokeModelRequestBody(string text, PromptExecutionSettings settings);
     IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response);

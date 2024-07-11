@@ -12,8 +12,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Anthropic;
 
-public class AnthropicIoService : IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse>,
-    IBedrockModelIoService<ITextGenerationRequest, ITextGenerationResponse>
+public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
+    IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {

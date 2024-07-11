@@ -14,8 +14,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Mistral;
 
-public class MistralIoService : IBedrockModelIoService<IChatCompletionRequest, IChatCompletionResponse>,
-    IBedrockModelIoService<ITextGenerationRequest, ITextGenerationResponse>
+public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
+    IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {

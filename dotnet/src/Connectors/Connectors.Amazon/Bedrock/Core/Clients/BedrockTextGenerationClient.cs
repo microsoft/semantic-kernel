@@ -30,7 +30,7 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
 {
     private readonly string _modelId;
     private readonly IAmazonBedrockRuntime _bedrockApi;
-    private readonly IBedrockModelIoService<ITextGenerationRequest, ITextGenerationResponse> _ioService;
+    private readonly IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse> _ioService;
 
     protected BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockApi)
     {
@@ -41,25 +41,25 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
         switch (modelProvider)
         {
             case "amazon":
-                this._ioService = new AmazonIoService();
+                this._ioService = new AmazonIOService();
                 break;
             case "mistral":
-                this._ioService = new MistralIoService();
+                this._ioService = new MistralIOService();
                 break;
             case "ai21":
-                this._ioService = new AI21IoService();
+                this._ioService = new AI21IOService();
                 break;
             case "anthropic":
-                this._ioService = new AnthropicIoService();
+                this._ioService = new AnthropicIOService();
                 break;
             case "cohere":
                 if (modelId.Contains("command-r"))
                 {
-                    this._ioService = new CohereCommandRIoService();
+                    this._ioService = new CohereCommandRIOService();
                 }
                 else if (modelId.Contains("command"))
                 {
-                    this._ioService = new CohereCommandIoService();
+                    this._ioService = new CohereCommandIOService();
                 }
                 else
                 {
@@ -67,7 +67,7 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
                 }
                 break;
             case "meta":
-                this._ioService = new LlamaIoService();
+                this._ioService = new MetaIOService();
                 break;
             default:
                 throw new ArgumentException($"Unsupported model provider: {modelProvider}");
