@@ -89,7 +89,7 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
                 });
 
         AgentGroupChat chat = new();
-        chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, input)]);
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
 
         // Act
         StringBuilder builder = new();
