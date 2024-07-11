@@ -102,7 +102,7 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
     settings = AzureAIInferenceEmbeddingPromptExecutionSettings(
         dimensions=1024, encoding_format="float", input_type="text"
     )
-    await azure_ai_inference_service.generate_embeddings(texts, settings=settings)
+    await azure_ai_inference_service.generate_embeddings(texts, settings)
 
     mock_embed.assert_awaited_once_with(
         input=texts,
@@ -110,7 +110,7 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
         dimensions=settings.dimensions,
         encoding_format=settings.encoding_format,
         input_type=settings.input_type,
-        kwargs={"settings": settings},
+        kwargs={},
     )
 
 
@@ -129,7 +129,7 @@ async def test_azure_ai_inference_text_embedding_with_extra_parameters(
     texts = ["hello", "world"]
     extra_parameters = {"test_key": "test_value"}
     settings = AzureAIInferenceEmbeddingPromptExecutionSettings(extra_parameters=extra_parameters)
-    await azure_ai_inference_service.generate_embeddings(texts, settings=settings)
+    await azure_ai_inference_service.generate_embeddings(texts, settings)
 
     mock_embed.assert_awaited_once_with(
         input=texts,
@@ -137,5 +137,5 @@ async def test_azure_ai_inference_text_embedding_with_extra_parameters(
         dimensions=settings.dimensions,
         encoding_format=settings.encoding_format,
         input_type=settings.input_type,
-        kwargs={"settings": settings},
+        kwargs={},
     )

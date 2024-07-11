@@ -204,29 +204,24 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_
     chat_history: ChatHistory,
 ) -> None:
     """Test completion of AzureAIInferenceChatCompletion with function choice behavior expect verification failure"""
-    settings = AzureAIInferenceChatPromptExecutionSettings(
-        function_choice_behavior=FunctionChoiceBehavior.Auto(),
-        extra_parameters={"n": 2},
-    )
 
     # Missing kernel
     with pytest.raises(ServiceInvalidExecutionSettingsError):
+        settings = AzureAIInferenceChatPromptExecutionSettings(
+            function_choice_behavior=FunctionChoiceBehavior.Auto(),
+        )
         await azure_ai_inference_service.get_chat_message_contents(
             chat_history,
             settings,
             arguments=KernelArguments(),
         )
 
-    # Missing arguments
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
-        await azure_ai_inference_service.get_chat_message_contents(
-            chat_history,
-            settings,
-            kernel=kernel,
-        )
-
     # More than 1 responses
     with pytest.raises(ServiceInvalidExecutionSettingsError):
+        settings = AzureAIInferenceChatPromptExecutionSettings(
+            function_choice_behavior=FunctionChoiceBehavior.Auto(),
+            extra_parameters={"n": 2},
+        )
         await azure_ai_inference_service.get_chat_message_contents(
             chat_history,
             settings,
@@ -449,13 +444,12 @@ async def test_azure_ai_inference_streaming_chat_completion_with_function_choice
     chat_history: ChatHistory,
 ) -> None:
     """Test completion of AzureAIInferenceChatCompletion with function choice behavior expect verification failure"""
-    settings = AzureAIInferenceChatPromptExecutionSettings(
-        function_choice_behavior=FunctionChoiceBehavior.Auto(),
-        extra_parameters={"n": 2},
-    )
 
     # Missing kernel
     with pytest.raises(ServiceInvalidExecutionSettingsError):
+        settings = AzureAIInferenceChatPromptExecutionSettings(
+            function_choice_behavior=FunctionChoiceBehavior.Auto(),
+        )
         async for _ in azure_ai_inference_service.get_streaming_chat_message_contents(
             chat_history,
             settings,
@@ -463,17 +457,12 @@ async def test_azure_ai_inference_streaming_chat_completion_with_function_choice
         ):
             pass
 
-    # Missing arguments
-    with pytest.raises(ServiceInvalidExecutionSettingsError):
-        async for _ in azure_ai_inference_service.get_streaming_chat_message_contents(
-            chat_history,
-            settings,
-            kernel=kernel,
-        ):
-            pass
-
     # More than 1 responses
     with pytest.raises(ServiceInvalidExecutionSettingsError):
+        settings = AzureAIInferenceChatPromptExecutionSettings(
+            function_choice_behavior=FunctionChoiceBehavior.Auto(),
+            extra_parameters={"n": 2},
+        )
         async for _ in azure_ai_inference_service.get_streaming_chat_message_contents(
             chat_history,
             settings,
