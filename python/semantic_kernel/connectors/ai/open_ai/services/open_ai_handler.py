@@ -2,8 +2,9 @@
 
 import logging
 from abc import ABC
+from typing import Any
 
-from numpy import array, ndarray
+from numpy import array
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
@@ -57,7 +58,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
                 ex,
             ) from ex
 
-    async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> list[ndarray]:
+    async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> list[Any]:
         try:
             response = await self.client.embeddings.create(**settings.prepare_settings_dict())
             self.store_usage(response)
