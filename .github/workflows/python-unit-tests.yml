@@ -29,7 +29,7 @@ jobs:
     steps:
       - name: Setup filename variables
         run: |
-          echo "file_id=$(echo ${{ github.run_id }}-${{ matrix.os }}-${{ matrix.python-version }}" >> $GITHUB_ENV
+          echo "FILE_ID=${{ github.run_id }}-${{ matrix.os }}-${{ matrix.python-version }}" >> $GITHUB_ENV
       - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
