@@ -63,7 +63,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
                 raise ServiceInitializationError(f"Failed to validate Azure AI Inference settings: {e}") from e
 
             client = EmbeddingsClient(
-                endpoint=azure_ai_inference_settings.endpoint,
+                endpoint=str(azure_ai_inference_settings.endpoint),
                 credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
             )
 
@@ -76,6 +76,8 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         """Generate embeddings from the Azure AI Inference service."""
         settings: AzureAIInferenceEmbeddingPromptExecutionSettings = kwargs.get("settings", None)
+
+        assert isinstance(self.client, EmbeddingsClient)  # nosec
         response: EmbeddingsResult = await self.client.embed(
             input=texts,
             model_extras=settings.extra_parameters if settings else None,

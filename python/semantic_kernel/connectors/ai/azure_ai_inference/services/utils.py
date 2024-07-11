@@ -6,7 +6,9 @@ from collections.abc import Callable
 from azure.ai.inference.models import (
     AssistantMessage,
     ChatCompletionsFunctionToolCall,
+    ChatCompletionsToolCall,
     ChatRequestMessage,
+    ContentItem,
     FunctionCall,
     ImageContentItem,
     ImageDetailLevel,
@@ -54,13 +56,15 @@ def _format_user_message(message: ChatMessageContent) -> UserMessage:
     if not any(isinstance(item, (ImageContent)) for item in message.items):
         return UserMessage(content=message.content)
 
-    contentItems = []
+    contentItems: list[ContentItem] = []
     for item in message.items:
         if isinstance(item, TextContent):
             contentItems.append(TextContentItem(text=item.text))
         elif isinstance(item, ImageContent) and (item.data_uri or item.uri):
             contentItems.append(
-                ImageContentItem(image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto))
+                ImageContentItem(
+                    image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto.value)
+                )
             )
         else:
             logger.warning(
@@ -80,7 +84,7 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
     Returns:
         The formatted assistant message.
     """
-    toolCalls = []
+    toolCalls: list[ChatCompletionsToolCall] = []
 
     for item in message.items:
         if isinstance(item, TextContent):
@@ -90,7 +94,7 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
         if isinstance(item, FunctionCallContent):
             toolCalls.append(
                 ChatCompletionsFunctionToolCall(
-                    id=item.id, function=FunctionCall(name=item.name, arguments=item.arguments)
+                    id=item.id or "", function=FunctionCall(name=item.name or "", arguments=item.arguments or "")
                 )
             )
         else:
