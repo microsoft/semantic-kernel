@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -256,6 +255,7 @@ public class VectorStoreRecordPropertyReaderTests
     }
 
 #pragma warning disable CA1812 // Invalid unused classes error, since I am using these for testing purposes above.
+
     private sealed class NoKeyModel
     {
     }
@@ -370,5 +370,6 @@ public class VectorStoreRecordPropertyReaderTests
 
         public string NotAnnotated { get; set; } = string.Empty;
     }
+
 #pragma warning restore CA1812 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }
