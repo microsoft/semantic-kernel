@@ -36,6 +36,22 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         pass
 
+    async def get_chat_message_content(
+        self, chat_history: "ChatHistory", settings: "PromptExecutionSettings", **kwargs: Any
+    ) -> "ChatMessageContent":
+        """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
+
+        Args:
+            chat_history (ChatHistory): A list of chat chat_history, that can be rendered into a
+                set of chat_history, from system, user, assistant and function.
+            settings (PromptExecutionSettings): Settings for the request.
+            kwargs (Dict[str, Any]): The optional arguments.
+
+        Returns:
+            A string or list of strings representing the response(s) from the LLM.
+        """
+        return (await self.get_chat_message_contents(chat_history, settings, **kwargs))[0]
+
     @abstractmethod
     def get_streaming_chat_message_contents(
         self,
@@ -55,6 +71,31 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             A stream representing the response(s) from the LLM.
         """
         ...
+
+    async def get_streaming_chat_message_content(
+        self,
+        chat_history: "ChatHistory",
+        settings: "PromptExecutionSettings",
+        **kwargs: Any,
+    ) -> AsyncGenerator["StreamingChatMessageContent", Any]:
+        """This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
+
+        Args:
+            chat_history (ChatHistory): A list of chat chat_history, that can be rendered into a
+                set of chat_history, from system, user, assistant and function.
+            settings (PromptExecutionSettings): Settings for the request.
+            kwargs (Dict[str, Any]): The optional arguments.
+
+        Yields:
+            A stream representing the response(s) from the LLM.
+        """
+        async for streaming_chat_message_contents in self.get_streaming_chat_message_contents(
+            chat_history, settings, **kwargs
+        ):
+            if isinstance(streaming_chat_message_contents, list):
+                yield streaming_chat_message_contents[0]
+            else:
+                yield streaming_chat_message_contents
 
     def _prepare_chat_history_for_request(
         self,
