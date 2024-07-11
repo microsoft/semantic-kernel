@@ -24,6 +24,9 @@ jobs:
         python-version: ["3.10"]
         os: [ubuntu-latest]
     steps:
+      - name: Setup filename variables
+        run: |
+          echo "FILE_ID=$(${{ github.run_id }}-${{ matrix.os }}-${{ matrix.python-version }}" >> $GITHUB_ENV
       - name: Wait for unit tests to succeed
         continue-on-error: true
         uses: lewagon/wait-on-check-action@v1.3.4
@@ -38,7 +41,7 @@ jobs:
         continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
-          name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          name: python-coverage-${{ $FILE_ID }}.txt
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: python-unit-tests.yml
           search_artifacts: true
@@ -47,7 +50,7 @@ jobs:
         continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
-          name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          name: pytest-${{ $FILE_ID }}.xml
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: python-unit-tests.yml
           search_artifacts: true
