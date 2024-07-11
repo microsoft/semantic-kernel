@@ -63,7 +63,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
     public async Task GetAudioContentWithInvalidSettingsThrowsExceptionAsync(OpenAITextToAudioExecutionSettings? settings, Type expectedExceptionType)
     {
         // Arrange
-        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
+        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", this._httpClient);
         using var stream = new MemoryStream([0x00, 0x00, 0xFF, 0x7F]);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -85,7 +85,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         // Arrange
         byte[] expectedByteArray = [0x00, 0x00, 0xFF, 0x7F];
 
-        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
+        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", this._httpClient);
         using var stream = new MemoryStream(expectedByteArray);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -113,7 +113,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         // Arrange
         byte[] expectedByteArray = [0x00, 0x00, 0xFF, 0x7F];
 
-        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
+        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", this._httpClient);
         using var stream = new MemoryStream(expectedByteArray);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -139,7 +139,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         // Arrange
         byte[] expectedByteArray = [0x00, 0x00, 0xFF, 0x7F];
 
-        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
+        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", this._httpClient);
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () => await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings("voice")));
@@ -151,7 +151,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         // Arrange
         byte[] expectedByteArray = [0x00, 0x00, 0xFF, 0x7F];
 
-        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
+        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", this._httpClient);
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () => await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings() { ResponseFormat = "not supported" }));
@@ -170,7 +170,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
             this._httpClient.BaseAddress = new Uri("http://local-endpoint");
         }
 
-        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", null, this._httpClient);
+        var service = new OpenAITextToAudioService("model-id", "api-key", "organization", this._httpClient);
         using var stream = new MemoryStream(expectedByteArray);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
