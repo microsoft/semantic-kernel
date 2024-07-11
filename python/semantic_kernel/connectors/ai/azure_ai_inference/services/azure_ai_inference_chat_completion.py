@@ -130,9 +130,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         ):
             return await self._send_chat_request(chat_history, settings)
 
-        kernel: Kernel = kwargs.get("kernel")
-        arguments: KernelArguments = kwargs.get("arguments")
-        self._verify_function_choice_behavior(settings, kernel, arguments)
+        kernel = kwargs.get("kernel", None)
+        self._verify_function_choice_behavior(settings, kernel)
         self._configure_function_choice_behavior(settings, kernel)
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
@@ -146,7 +145,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                 function_calls=function_calls,
                 chat_history=chat_history,
                 kernel=kernel,
-                arguments=arguments,
+                arguments=kwargs.get("arguments", None),
                 function_call_count=fc_count,
                 request_index=request_index,
                 function_behavior=settings.function_choice_behavior,
@@ -250,9 +249,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Get streaming chat message contents from the Azure AI Inference service with auto invoking functions."""
-        kernel: Kernel = kwargs.get("kernel")
-        arguments: KernelArguments = kwargs.get("arguments")
-        self._verify_function_choice_behavior(settings, kernel, arguments)
+        kernel: Kernel = kwargs.get("kernel", None)
+        self._verify_function_choice_behavior(settings, kernel)
         self._configure_function_choice_behavior(settings, kernel)
         request_attempts = settings.function_choice_behavior.maximum_auto_invoke_attempts
 
@@ -279,7 +277,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                 function_calls=function_calls,
                 chat_history=chat_history,
                 kernel=kernel,
-                arguments=arguments,
+                arguments=kwargs.get("arguments", None),
                 function_call_count=len(function_calls),
                 request_index=request_index,
                 function_behavior=settings.function_choice_behavior,
@@ -396,14 +394,11 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         self,
         settings: AzureAIInferenceChatPromptExecutionSettings,
         kernel: Kernel,
-        arguments: KernelArguments,
     ):
         """Verify the function choice behavior."""
         if settings.function_choice_behavior is not None:
             if kernel is None:
                 raise ServiceInvalidExecutionSettingsError("Kernel is required for tool calls.")
-            if arguments is None and settings.function_choice_behavior.auto_invoke_kernel_functions:
-                raise ServiceInvalidExecutionSettingsError("Kernel arguments are required for auto tool calls.")
             if settings.extra_parameters is not None and settings.extra_parameters.get("n", 1) > 1:
                 # Currently only OpenAI models allow multiple completions but the Azure AI Inference service
                 # does not expose the functionality directly. If users want to have more than 1 responses, they
@@ -425,7 +420,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         function_calls: list[FunctionCallContent],
         chat_history: ChatHistory,
         kernel: Kernel,
-        arguments: KernelArguments,
+        arguments: KernelArguments | None,
         function_call_count: int,
         request_index: int,
         function_behavior: FunctionChoiceBehavior,

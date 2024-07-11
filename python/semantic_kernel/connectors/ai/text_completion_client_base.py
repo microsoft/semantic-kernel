@@ -20,7 +20,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> list["TextContent"]:
-        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
+        """Create text contents, in the number specified by the settings.
 
         Args:
             prompt (str): The prompt to send to the LLM.
@@ -36,7 +36,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
-        """This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
+        """Create streaming text contents, in the number specified by the settings.
 
         Args:
             prompt (str): The prompt to send to the LLM.
