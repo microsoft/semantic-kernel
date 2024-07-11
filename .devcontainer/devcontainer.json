@@ -12,7 +12,8 @@
 			"extensions": [
 				"ms-dotnettools.dotnet-interactive-vscode",
 				"ms-semantic-kernel.semantic-kernel",
-				"esbenp.prettier-vscode"
+				"esbenp.prettier-vscode",
+				"vscjava.vscode-gradle"
 			]
 		}
 	},
