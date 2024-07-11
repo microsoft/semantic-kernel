@@ -16,11 +16,11 @@ TBD - Breaking
 
 ### Configuration Classes
 
-TBD
+Specific configuration/setttings classes are introduced to support the ability to define assistant behavior at each of the supported articulation points (i.e. _assistant_, _thread_, & _run_).
 
 #### Service Configuration
 
-TBD
+The `OpenAIServiceConfiguration` defines how to connect to a specific remote service, whether it be OpenAI, Azure, or proxy.  This eliminates the need to define multiple overloads for each call site that results in a connection to the remote API service (i.e. create a _client)_.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-serviceconfig.png"  style="width: 360pt;"></kbd>
@@ -28,7 +28,9 @@ TBD
 
 #### Assistant Definition
 
-TBD
+The `OpenAIAssistantDefinition` was previously used only when enumerating a list of stored agents.  It has been evolved to also be used as input for creating and agent and exposed as a discrete property on the `OpenAIAssistantAgent` instance.
+
+This includes optional _execution_settings_ for defining default _run_ behavior.  Since these execution settings are not part of the remote assistant definition, they are persisted in the assistant metadata for when an existing agent is retrieved.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-definition.png"  style="width: 360pt;"></kbd>
@@ -36,7 +38,7 @@ TBD
 
 #### Assistant Invocation Settings
 
-TBD
+When invoking an `OpenAIAssistantAgent` directly (no-chat), settings that only apply to a dicrete run may be specified.  These settings are defined as `OpenAIAssistantInvocationSettings`.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 220pt;"></kbd>
