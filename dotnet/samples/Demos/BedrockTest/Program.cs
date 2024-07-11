@@ -17,13 +17,14 @@ using Microsoft.SemanticKernel.TextGeneration;
 //     {
 //         chatHistory.AddMessage(AuthorRole.User, userInput);
 //
-//         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
+//         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-sonnet-20240229-v1:0").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-haiku-20240307-v1:0").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-v2:1").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("ai21.jamba-instruct-v1:0").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("cohere.command-r-plus-v1:0").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("meta.llama3-8b-instruct-v1:0").Build();
+//         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("ai21.j2-ultra-v1").Build();
 //
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build(); //fills up on requests fast
 //
@@ -51,7 +52,8 @@ using Microsoft.SemanticKernel.TextGeneration;
 // // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("anthropic.claude-v2:1").Build();
 // // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-text-v14").Build();
 // // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("meta.llama3-8b-instruct-v1:0").Build();
-// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-r-plus-v1:0").Build();
+// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-r-plus-v1:0").Build();
+// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.j2-ultra-v1").Build();
 //
 // var textGenerationService = kernel2.GetRequiredService<ITextGenerationService>();
 // var textGeneration = await textGenerationService.GetTextContentsAsync(UserPrompt2).ConfigureAwait(false);
@@ -79,13 +81,15 @@ using Microsoft.SemanticKernel.TextGeneration;
 // ----------------------------STREAM TEXT GENERATION----------------------------
 // Console.Write("Stream Text Generation Prompt: ");
 // string UserPrompt3 = Console.ReadLine();
-// var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
+// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
 // // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("anthropic.claude-v2").Build();
 // // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("mistral.mistral-7b-instruct-v0:2").Build();
 // // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-text-v14").Build();
 // // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-r-plus-v1:0").Build();
 //
-// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.jamba-instruct-v1:0").Build(); //model unsupported for streaming??
+// //AI21Labs Jurassic and Jamba models do not support streaming
+// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.j2-ultra-v1").Build();
+// var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.jamba-instruct-v1:0").Build();
 //
 // var streamTextGenerationService = kernel3.GetRequiredService<ITextGenerationService>();
 // var streamTextGeneration = streamTextGenerationService.GetStreamingTextContentsAsync(UserPrompt3).ConfigureAwait(true);
@@ -117,7 +121,11 @@ do
         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-v2").Build();
         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-sonnet-20240229-v1:0").Build();
         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("cohere.command-r-plus-v1:0").Build();
-        var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("meta.llama3-8b-instruct-v1:0").Build();
+        // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("meta.llama3-8b-instruct-v1:0").Build();
+
+        // AI21 Labs does not support streaming
+        var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("ai21.jamba-instruct-v1:0").Build();
+
 
 
         var chatCompletionService = kernel4.GetRequiredService<IChatCompletionService>();

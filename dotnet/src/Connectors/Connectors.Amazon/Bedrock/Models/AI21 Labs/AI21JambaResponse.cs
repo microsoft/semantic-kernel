@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Connectors.Amazon.Models.AI21;
 
-public class AI21Response
+public class AI21JambaResponse
 {
     [Serializable]
     public class AI21TextResponse

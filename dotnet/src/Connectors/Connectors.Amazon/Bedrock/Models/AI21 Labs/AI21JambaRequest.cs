@@ -8,7 +8,7 @@ using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.AI21;
 
-public class AI21Request
+public class AI21JambaRequest
 {
     public class AI21ChatCompletionRequest : IChatCompletionRequest //for jamba
     {

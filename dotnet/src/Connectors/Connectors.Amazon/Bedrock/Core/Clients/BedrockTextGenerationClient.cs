@@ -47,7 +47,18 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
                 this._ioService = new MistralIOService();
                 break;
             case "ai21":
-                this._ioService = new AI21IOService();
+                if (modelId.Contains("j2-"))
+                {
+                    this._ioService = new AI21JurassicIOService();
+                }
+                else if (modelId.Contains("jamba"))
+                {
+                    this._ioService = new AI21JambaIOService();
+                }
+                else
+                {
+                    throw new ArgumentException($"Unsupported AI21 model: {modelId}");
+                }
                 break;
             case "anthropic":
                 this._ioService = new AnthropicIOService();

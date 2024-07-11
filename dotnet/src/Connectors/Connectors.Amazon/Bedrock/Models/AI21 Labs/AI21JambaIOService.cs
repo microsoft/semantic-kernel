@@ -13,14 +13,14 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.AI21;
 
-public class AI21IOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
+public class AI21JambaIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
     {
-        List<AI21Request.Msg> messages = new List<AI21Request.Msg>
+        List<AI21JambaRequest.Msg> messages = new List<AI21JambaRequest.Msg>
         {
-            new AI21Request.Msg
+            new AI21JambaRequest.Msg
             {
                 Role = "user",
                 Content = prompt
@@ -59,7 +59,7 @@ public class AI21IOService : IBedrockModelIOService<IChatCompletionRequest, ICha
             presencePenalty = presencePenaltyValue as double?;
         }
 
-        var requestBody = new AI21Request.AI21TextGenerationRequest
+        var requestBody = new AI21JambaRequest.AI21TextGenerationRequest
         {
             Messages = messages,
             Temperature = temperature,
@@ -82,7 +82,7 @@ public class AI21IOService : IBedrockModelIOService<IChatCompletionRequest, ICha
             memoryStream.Position = 0;
             using (var reader = new StreamReader(memoryStream))
             {
-                var responseBody = JsonSerializer.Deserialize<AI21Response.AI21TextResponse>(reader.ReadToEnd());
+                var responseBody = JsonSerializer.Deserialize<AI21JambaResponse.AI21TextResponse>(reader.ReadToEnd());
                 var textContents = new List<TextContent>();
 
                 if (responseBody?.Choices != null && responseBody.Choices.Count > 0)
@@ -103,44 +103,44 @@ public class AI21IOService : IBedrockModelIOService<IChatCompletionRequest, ICha
 
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var ai21Request = new AI21Request.AI21ChatCompletionRequest
-    {
-        Messages = chatHistory.Select(m => new Message
+        var ai21Request = new AI21JambaRequest.AI21ChatCompletionRequest
         {
-            Role = MapRole(m.Role),
-            Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
-        }).ToList(),
-        System = new List<SystemContentBlock>(),
-        InferenceConfig = new InferenceConfiguration
-        {
-            Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1),
-            TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 1),
-            MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 4096),
-            StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
-        },
-        NumResponses = this.GetExtensionDataValue<int>(settings?.ExtensionData, "n", 1),
-        FrequencyPenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "frequency_penalty", 0.0),
-        PresencePenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "presence_penalty", 0.0)
-    };
+            Messages = chatHistory.Select(m => new Message
+            {
+                Role = MapRole(m.Role),
+                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+            }).ToList(),
+            System = new List<SystemContentBlock>(),
+            InferenceConfig = new InferenceConfiguration
+            {
+                Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1),
+                TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 1),
+                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 4096),
+                StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
+            },
+            NumResponses = this.GetExtensionDataValue<int>(settings?.ExtensionData, "n", 1),
+            FrequencyPenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "frequency_penalty", 0.0),
+            PresencePenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "presence_penalty", 0.0)
+        };
 
-    var converseRequest = new ConverseRequest
-    {
-        ModelId = modelId,
-        Messages = ai21Request.Messages,
-        System = ai21Request.System,
-        InferenceConfig = ai21Request.InferenceConfig,
-        AdditionalModelRequestFields = new Document
+        var converseRequest = new ConverseRequest
         {
-            { "n", ai21Request.NumResponses },
-            { "frequency_penalty", ai21Request.FrequencyPenalty },
-            { "presence_penalty", ai21Request.PresencePenalty }
-        },
-        AdditionalModelResponseFieldPaths = new List<string>(),
-        GuardrailConfig = null, // Set if needed
-        ToolConfig = null // Set if needed
-    };
+            ModelId = modelId,
+            Messages = ai21Request.Messages,
+            System = ai21Request.System,
+            InferenceConfig = ai21Request.InferenceConfig,
+            AdditionalModelRequestFields = new Document
+            {
+                { "n", ai21Request.NumResponses },
+                { "frequency_penalty", ai21Request.FrequencyPenalty },
+                { "presence_penalty", ai21Request.PresencePenalty }
+            },
+            AdditionalModelResponseFieldPaths = new List<string>(),
+            GuardrailConfig = null, // Set if needed
+            ToolConfig = null // Set if needed
+        };
 
-    return converseRequest;
+        return converseRequest;
     }
     private static ConversationRole MapRole(AuthorRole role)
     {
@@ -256,8 +256,46 @@ public class AI21IOService : IBedrockModelIOService<IChatCompletionRequest, ICha
         }
     }
 
+    // AI21 Labs Jamba does nto support streaming. Below is what implementation would look like but returns
+    // Amazon.BedrockRuntime.Model.ValidationException: The model is unsupported for streaming.
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
-        throw new NotImplementedException(); //AI21 does not support converse stream.
+        var ai21Request = new AI21JambaRequest.AI21ChatCompletionRequest
+        {
+            Messages = chatHistory.Select(m => new Message
+            {
+                Role = MapRole(m.Role),
+                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+            }).ToList(),
+            System = new List<SystemContentBlock>(),
+            InferenceConfig = new InferenceConfiguration
+            {
+                Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1),
+                TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 1),
+                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 4096),
+                StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
+            },
+            NumResponses = this.GetExtensionDataValue<int>(settings?.ExtensionData, "n", 1),
+            FrequencyPenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "frequency_penalty", 0.0),
+            PresencePenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "presence_penalty", 0.0)
+        };
+
+        var converseStreamRequest = new ConverseStreamRequest
+        {
+            ModelId = modelId,
+            Messages = ai21Request.Messages,
+            System = ai21Request.System,
+            InferenceConfig = ai21Request.InferenceConfig,
+            AdditionalModelRequestFields = new Document
+            {
+                { "n", ai21Request.NumResponses },
+                { "frequency_penalty", ai21Request.FrequencyPenalty },
+                { "presence_penalty", ai21Request.PresencePenalty }
+            },
+            AdditionalModelResponseFieldPaths = new List<string>(),
+            GuardrailConfig = null, // Set if needed
+            ToolConfig = null // Set if needed
+        };
+        return converseStreamRequest;
     }
 }
