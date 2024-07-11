@@ -17,7 +17,6 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
     AzureAIInferenceChatCompletion,
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
@@ -167,7 +166,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "openai",
             {
-                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
                     auto_invoke=True, filters={"excluded_plugins": ["chat"]}
                 )
             },
@@ -180,7 +179,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "openai",
             {
-                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
                     auto_invoke=False, filters={"excluded_plugins": ["chat"]}
                 )
             },
@@ -264,38 +263,12 @@ pytestmark = pytest.mark.parametrize(
         ),
         pytest.param(
             "azure",
-            {
-                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
-                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
-                )
-            },
-            [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
-            ],
-            ["348"],
-            id="azure_tool_call_auto_function_call_behavior",
-        ),
-        pytest.param(
-            "azure",
-            {
-                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
-                    auto_invoke=False, filters={"excluded_plugins": ["chat"]}
-                )
-            },
-            [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
-            ],
-            ["348"],
-            id="azure_tool_call_non_auto_function_call_behavior",
-        ),
-        pytest.param(
-            "azure",
             {"function_choice_behavior": FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["chat"]})},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
-            id="azure_tool_call_auto_function_choice_behavior",
+            id="azure_tool_call_auto",
         ),
         pytest.param(
             "azure",
@@ -304,7 +277,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
-            id="azure_tool_call_auto_function_choice_behavior_as_string",
+            id="azure_tool_call_auto_as_string",
         ),
         pytest.param(
             "azure",
@@ -317,7 +290,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
-            id="azure_tool_call_non_auto_function_choice_behavior",
+            id="azure_tool_call_non_auto",
         ),
         pytest.param(
             "azure",
@@ -410,7 +383,8 @@ pytestmark = pytest.mark.parametrize(
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
                     auto_invoke=True, filters={"excluded_plugins": ["chat"]}
-                )
+                ),
+                "max_tokens": 256,
             },
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
