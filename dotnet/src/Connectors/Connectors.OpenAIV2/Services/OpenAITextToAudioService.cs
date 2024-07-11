@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToAudio;
-using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -48,21 +47,6 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
     {
         Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
         this._client = new(modelId, apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAITextToAudioService"/> class.
-    /// </summary>
-    /// <param name="modelId">Model name</param>
-    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextToAudioService(
-        string modelId,
-        OpenAIClient openAIClient,
-        ILoggerFactory? loggerFactory = null)
-    {
-        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
-        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
     }
 
     /// <inheritdoc/>

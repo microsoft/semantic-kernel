@@ -112,21 +112,6 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void ItCanAddTextToAudioServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = new ServiceCollection();
-
-        // Act
-        var service = sut.AddOpenAITextToAudio("model", new OpenAIClient("key"))
-            .BuildServiceProvider()
-            .GetRequiredService<ITextToAudioService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
     public void ItCanAddAudioToTextService()
     {
         // Arrange

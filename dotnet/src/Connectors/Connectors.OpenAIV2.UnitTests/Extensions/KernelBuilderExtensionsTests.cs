@@ -79,21 +79,6 @@ public class KernelBuilderExtensionsTests
     }
 
     [Fact]
-    public void ItCanAddTextToAudioServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = Kernel.CreateBuilder();
-
-        // Act
-        var service = sut.AddOpenAITextToAudio("model", new OpenAIClient("key"))
-            .Build()
-            .GetRequiredService<ITextToAudioService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
     public void ItCanAddAudioToTextService()
     {
         // Arrange

@@ -153,30 +153,6 @@ public static class OpenAIServiceCollectionExtensions
                 serviceProvider.GetService<ILoggerFactory>()));
     }
 
-    /// <summary>
-    /// Adds the <see cref="OpenAITextToAudioService"/> to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
-    /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0010")]
-    public static IServiceCollection AddOpenAITextToAudio(
-        this IServiceCollection services,
-        string modelId,
-        OpenAIClient? openAIClient = null,
-        string? serviceId = null)
-    {
-        Verify.NotNull(services);
-
-        return services.AddKeyedSingleton<ITextToAudioService>(serviceId, (serviceProvider, _) =>
-            new OpenAITextToAudioService(
-                modelId,
-                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
-                serviceProvider.GetService<ILoggerFactory>()));
-    }
-
     #endregion
 
     #region Audio-to-Text

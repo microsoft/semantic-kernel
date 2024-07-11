@@ -51,11 +51,8 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new OpenAITextToAudioService(" ", "apikey"));
-        Assert.Throws<ArgumentException>(() => new OpenAITextToAudioService(" ", openAIClient: new("apikey")));
         Assert.Throws<ArgumentException>(() => new OpenAITextToAudioService("", "apikey"));
-        Assert.Throws<ArgumentException>(() => new OpenAITextToAudioService("", openAIClient: new("apikey")));
         Assert.Throws<ArgumentNullException>(() => new OpenAITextToAudioService(null!, "apikey"));
-        Assert.Throws<ArgumentNullException>(() => new OpenAITextToAudioService(null!, openAIClient: new("apikey")));
     }
 
     [Theory]
