@@ -138,7 +138,7 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
             var result = context.Result;
 
             // Example: override function result value
-            context.Result = new FunctionResult(context.Result, "Result from auto function invocation filter");
+            context.Result = new FunctionResult(context.Function, "Result from auto function invocation filter");
 
             // Example: Terminate function invocation
             context.Terminate = true;

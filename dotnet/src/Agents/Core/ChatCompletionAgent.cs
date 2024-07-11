@@ -55,8 +55,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             message.AuthorName = this.Name;
 
             history.Add(message);
-
-            yield return message;
         }
 
         foreach (ChatMessageContent message in messages ?? [])

@@ -41,6 +41,14 @@ public abstract class AgentChannel
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     protected internal abstract IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    /// <param name="functionResultsMessage"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    protected internal abstract Task CaptureFunctionResultAsync(ChatMessageContent functionResultsMessage, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

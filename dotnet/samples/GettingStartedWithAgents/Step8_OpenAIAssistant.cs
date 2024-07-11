@@ -60,7 +60,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in agent.InvokeAsync(threadId))
+            await foreach (ChatMessageContent content in agent.InvokeAsync(threadId))
             {
                 if (content.Role != AuthorRole.Tool)
                 {

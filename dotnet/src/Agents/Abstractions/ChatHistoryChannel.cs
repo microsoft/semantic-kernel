@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,12 +29,12 @@ public class ChatHistoryChannel : AgentChannel
 
         await foreach (ChatMessageContent message in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
         {
-            // Don't append messages already added to the history.
-            if (messageCount < this._history.Count)
-            {
-                messageCount = this._history.Count;
-            }
-            else
+            //for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++) // %%% DECISION POINT
+            //{
+            //    yield return this._history[messageIndex];
+            //}
+
+            if (message.Role != AuthorRole.Tool) // %%% BIG PROBLEM
             {
                 this._history.Add(message);
             }
@@ -57,6 +55,14 @@ public class ChatHistoryChannel : AgentChannel
     protected internal sealed override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._history.ToDescendingAsync();
+    }
+
+    /// <inheritdoc/>
+    protected internal override Task CaptureFunctionResultAsync(ChatMessageContent functionResultsMessage, CancellationToken cancellationToken = default)
+    {
+        this._history.Add(functionResultsMessage);
+
+        return Task.CompletedTask;
     }
 
     /// <summary>

@@ -43,6 +43,7 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
 
             await foreach (ChatMessageContent content in agent.InvokeAsync(chat))
             {
+                chat.Add(content);
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
