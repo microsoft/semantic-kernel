@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
-
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -14,7 +12,7 @@ if TYPE_CHECKING:
 
 
 @experimental_class
-class AgentChannel(ABC, BaseModel):
+class AgentChannel(ABC):
     """Defines the communication protocol for a particular Agent type.
 
     An agent provides it own AgentChannel via CreateChannel.
@@ -35,7 +33,7 @@ class AgentChannel(ABC, BaseModel):
         ...
 
     @abstractmethod
-    async def invoke(
+    def invoke(
         self,
         agent: "Agent",
     ) -> AsyncIterable["ChatMessageContent"]:
@@ -50,7 +48,7 @@ class AgentChannel(ABC, BaseModel):
         ...
 
     @abstractmethod
-    async def get_history(
+    def get_history(
         self,
     ) -> AsyncIterable["ChatMessageContent"]:
         """Retrieve the message history specific to this channel.

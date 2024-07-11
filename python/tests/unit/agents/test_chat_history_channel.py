@@ -5,14 +5,13 @@ from collections.abc import AsyncIterable
 import pytest
 
 from semantic_kernel.agents.chat_history_channel import ChatHistoryChannel
-from semantic_kernel.agents.chat_history_handler import ChatHistoryHandler
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import ServiceInvalidTypeError
 
 
-class MockChatHistoryHandler(ChatHistoryHandler):
+class MockChatHistoryHandler:
     """Mock agent to test chat history handling"""
 
     async def invoke(self, history: list[ChatMessageContent]) -> AsyncIterable[ChatMessageContent]:

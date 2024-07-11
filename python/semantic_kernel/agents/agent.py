@@ -1,17 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import uuid
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from abc import ABC
+from typing import ClassVar
 
 from pydantic import Field
 
+from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
-
-if TYPE_CHECKING:
-    from semantic_kernel.agents.agent_channel import AgentChannel
 
 
 @experimental_class
@@ -36,21 +34,24 @@ class Agent(ABC, KernelBaseModel):
     name: str | None = None
     instructions: str | None = None
     kernel: Kernel = Field(default_factory=Kernel)
+    channel_type: ClassVar[type[AgentChannel] | None] = None
 
-    @abstractmethod
     def get_channel_keys(self) -> list[str]:
         """Get the channel keys.
 
         Returns:
             A list of channel keys.
         """
-        ...
+        if not self.channel_type:
+            raise NotImplementedError("Unable to get channel keys. Channel type not configured.")
+        return [self.channel_type.__name__]
 
-    @abstractmethod
-    async def create_channel(self) -> "AgentChannel":
+    def create_channel(self) -> AgentChannel:
         """Create a channel.
 
         Returns:
             An instance of AgentChannel.
         """
-        ...
+        if not self.channel_type:
+            raise NotImplementedError("Unable to create channel. Channel type not configured.")
+        return self.channel_type()

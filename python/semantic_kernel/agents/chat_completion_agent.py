@@ -3,14 +3,17 @@
 import logging
 import sys
 from collections.abc import AsyncGenerator, AsyncIterable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
+
+from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents.chat_history_channel import ChatHistoryChannel
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.agents.chat_history_kernel_agent import ChatHistoryKernelAgent
+from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
@@ -29,7 +32,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class ChatCompletionAgent(ChatHistoryKernelAgent):
+class ChatCompletionAgent(Agent):
     """A KernelAgent specialization based on ChatCompletionClientBase.
 
     Note: enable `function_choice_behavior` on the PromptExecutionSettings to enable function
@@ -39,6 +42,7 @@ class ChatCompletionAgent(ChatHistoryKernelAgent):
 
     service_id: str
     execution_settings: PromptExecutionSettings | None = None
+    channel_type: ClassVar[type[AgentChannel]] = ChatHistoryChannel
 
     def __init__(
         self,
