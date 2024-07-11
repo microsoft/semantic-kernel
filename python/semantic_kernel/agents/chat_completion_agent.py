@@ -1,19 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import sys
 from collections.abc import AsyncGenerator, AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.chat_history_channel import ChatHistoryChannel
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from semantic_kernel.agents.agent_channel import AgentChannel
+from semantic_kernel.agents.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
@@ -22,7 +15,6 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
@@ -70,7 +62,7 @@ class ChatCompletionAgent(Agent):
         if not service_id:
             service_id = DEFAULT_SERVICE_NAME
 
-        args = {
+        args: dict[str, Any] = {
             "service_id": service_id,
             "name": name,
             "description": description,
@@ -80,11 +72,10 @@ class ChatCompletionAgent(Agent):
         if id is not None:
             args["id"] = id
         if kernel is not None:
-            args["kernel"] = kernel  # type: ignore
+            args["kernel"] = kernel
         super().__init__(**args)
 
-    @override
-    async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:  # type: ignore
+    async def invoke(self, history: ChatHistory) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat history handler.
 
         Args:
@@ -120,7 +111,6 @@ class ChatCompletionAgent(Agent):
             chat_history=chat,
             settings=settings,
             kernel=self.kernel,
-            arguments=KernelArguments(),
         )
 
         logger.info(
@@ -138,10 +128,7 @@ class ChatCompletionAgent(Agent):
             message.name = self.name
             yield message
 
-    @override
-    async def invoke_stream(  # type: ignore
-        self, history: ChatHistory
-    ) -> AsyncIterable[StreamingChatMessageContent]:
+    async def invoke_stream(self, history: ChatHistory) -> AsyncIterable[StreamingChatMessageContent]:
         """Invoke the chat history handler in streaming mode.
 
         Args:
@@ -178,7 +165,6 @@ class ChatCompletionAgent(Agent):
                 chat_history=chat,
                 settings=settings,
                 kernel=self.kernel,
-                arguments=KernelArguments(),
             )
         )
 

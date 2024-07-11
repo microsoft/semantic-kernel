@@ -18,7 +18,7 @@ from semantic_kernel.kernel import Kernel
 def mock_streaming_chat_completion_response() -> AsyncMock:
     """A fixture that returns a mock response for a streaming chat completion response."""
 
-    async def mock_response(chat_history, settings, kernel, arguments):
+    async def mock_response(chat_history, settings, kernel):
         content1 = ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message 1")
         content2 = ChatMessageContent(role=AuthorRole.TOOL, content="Processed Message 2")
         chat_history.messages.append(content1)
@@ -109,7 +109,7 @@ async def test_invoke_tool_call_added():
 
     history = ChatHistory(messages=[ChatMessageContent(role=AuthorRole.USER, content="Initial Message")])
 
-    async def mock_get_chat_message_contents(chat_history, settings, kernel, arguments):
+    async def mock_get_chat_message_contents(chat_history, settings, kernel):
         new_messages = [
             ChatMessageContent(role=AuthorRole.ASSISTANT, content="Processed Message 1"),
             ChatMessageContent(role=AuthorRole.TOOL, content="Processed Message 2"),
