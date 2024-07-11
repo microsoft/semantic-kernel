@@ -32,7 +32,6 @@ jobs:
       - name: Install dependencies
         run: poetry install --with unit-tests
       - name: Test with pytest
-        working-directory: python
         run: poetry run pytest -q --junitxml=pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
         continue-on-error: false
       - name: Upload coverage
