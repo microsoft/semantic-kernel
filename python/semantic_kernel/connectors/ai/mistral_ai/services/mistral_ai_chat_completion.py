@@ -111,6 +111,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             List[ChatMessageContent]: The completion result(s).
         """
         settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, MistralAIChatPromptExecutionSettings)  # nosec
 
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -147,6 +148,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
                 StreamingChatMessageContent when using Azure.
         """
         settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, MistralAIChatPromptExecutionSettings)  # nosec
 
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
