@@ -23,10 +23,16 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
     @override
     async def generate_embeddings(self, texts: list[str], batch_size: int | None = None, **kwargs: Any) -> ndarray:
-        settings = OpenAIEmbeddingPromptExecutionSettings(
-            ai_model_id=self.ai_model_id,
-            **kwargs,
-        )
+        settings: OpenAIEmbeddingPromptExecutionSettings | None = kwargs.pop("settings", None)
+        if settings:
+            for key, value in kwargs.items():
+                setattr(settings, key, value)
+        else:
+            settings = OpenAIEmbeddingPromptExecutionSettings(
+                **kwargs,
+            )
+        if settings.ai_model_id is None:
+            settings.ai_model_id = self.ai_model_id
         raw_embeddings = []
         batch_size = batch_size or len(texts)
         for i in range(0, len(texts), batch_size):
@@ -39,5 +45,5 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
         return array(raw_embeddings)
 
     @override
-    def get_prompt_execution_settings_class(self) -> PromptExecutionSettings:
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return OpenAIEmbeddingPromptExecutionSettings
