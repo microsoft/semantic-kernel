@@ -123,8 +123,8 @@ class FunctionResultContent(KernelContent):
         from semantic_kernel.contents.chat_message_content import ChatMessageContent
         from semantic_kernel.functions.function_result import FunctionResult
 
-        if function_call_content.metadata:
-            metadata.update(function_call_content.metadata)
+        metadata.update(function_call_content.metadata or {})
+        metadata.update(getattr(result, "metadata", {}))
         inner_content = result
         if isinstance(result, FunctionResult):
             result = result.value
@@ -144,7 +144,8 @@ class FunctionResultContent(KernelContent):
             id=function_call_content.id or "unknown",
             inner_content=inner_content,
             result=res,
-            name=function_call_content.name,
+            function_name=function_call_content.function_name,
+            plugin_name=function_call_content.plugin_name,
             ai_model_id=function_call_content.ai_model_id,
             metadata=metadata,
         )
