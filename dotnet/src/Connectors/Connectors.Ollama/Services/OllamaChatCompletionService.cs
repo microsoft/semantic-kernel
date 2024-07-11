@@ -24,15 +24,15 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     /// Initializes a new instance of the <see cref="OllamaChatCompletionService"/> class.
     /// </summary>
     /// <param name="model">The hosted model.</param>
-    /// <param name="baseUri">The base uri including the port where Ollama server is hosted</param>
+    /// <param name="endpoint">The endpoint including the port where Ollama server is hosted</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Ollama API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaChatCompletionService(
         string model,
-        Uri baseUri,
+        Uri endpoint,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : base(model, baseUri, httpClient, loggerFactory)
+        : base(model, endpoint, httpClient, loggerFactory)
     {
     }
 
@@ -73,7 +73,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
             role: GetAuthorRole(message.Role) ?? AuthorRole.Assistant,
             content: message.Content,
             modelId: this._client.SelectedModel,
-            innerContent: message)];
+            innerContent: message)]; // Currently the Ollama Message does not provide any metadata
     }
 
     /// <inheritdoc />
@@ -88,7 +88,12 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
 
         await foreach (var message in this._client.StreamChat(request, cancellationToken).ConfigureAwait(false))
         {
-            yield return new StreamingChatMessageContent(GetAuthorRole(message?.Message.Role), message?.Message.Content, modelId: message?.Model, innerContent: message);
+            yield return new StreamingChatMessageContent(
+                GetAuthorRole(message?.Message.Role),
+                message?.Message.Content,
+                modelId: message?.Model,
+                innerContent: message,
+                metadata: new OllamaMetadata(message));
         }
     }
 

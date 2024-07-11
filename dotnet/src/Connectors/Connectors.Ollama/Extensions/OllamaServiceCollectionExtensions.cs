@@ -22,13 +22,13 @@ public static class OllamaServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The target service collection.</param>
     /// <param name="modelId">The model for text generation.</param>
-    /// <param name="baseUri">The base uri to Ollama hosted service.</param>
+    /// <param name="endpoint">The endpoint to Ollama hosted service.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
     public static IServiceCollection AddOllamaTextGeneration(
         this IServiceCollection services,
         string modelId,
-        Uri baseUri,
+        Uri endpoint,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -36,7 +36,7 @@ public static class OllamaServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new OllamaTextGenerationService(
                 model: modelId,
-                baseUri: baseUri,
+                endpoint: endpoint,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
@@ -69,13 +69,13 @@ public static class OllamaServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The target service collection.</param>
     /// <param name="modelId">The model for text generation.</param>
-    /// <param name="baseUri">The base uri to Ollama hosted service.</param>
+    /// <param name="endpoint">The endpoint to Ollama hosted service.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddOllamaChatCompletion(
         this IServiceCollection services,
         string modelId,
-        Uri baseUri,
+        Uri endpoint,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -83,7 +83,7 @@ public static class OllamaServiceCollectionExtensions
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new OllamaChatCompletionService(
                 model: modelId,
-                baseUri: baseUri,
+                endpoint: endpoint,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 
@@ -118,13 +118,13 @@ public static class OllamaServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The target service collection.</param>
     /// <param name="modelId">The model for text generation.</param>
-    /// <param name="baseUri">The base uri to Ollama hosted service.</param>
+    /// <param name="endpoint">The endpoint to Ollama hosted service.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
     public static IServiceCollection AddOllamaTextEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
-        Uri baseUri,
+        Uri endpoint,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -132,7 +132,7 @@ public static class OllamaServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OllamaTextEmbeddingGenerationService(
                 model: modelId,
-                baseUri: baseUri,
+                endpoint: endpoint,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }

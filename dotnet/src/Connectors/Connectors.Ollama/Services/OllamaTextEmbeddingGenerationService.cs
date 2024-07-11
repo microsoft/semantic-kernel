@@ -23,15 +23,15 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
     /// Initializes a new instance of the <see cref="OllamaTextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="model">The hosted model.</param>
-    /// <param name="baseUri">The base uri including the port where Ollama server is hosted</param>
+    /// <param name="endpoint">The endpoint including the port where Ollama server is hosted</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Ollama API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaTextEmbeddingGenerationService(
         string model,
-        Uri baseUri,
+        Uri endpoint,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : base(model, baseUri, httpClient, loggerFactory)
+        : base(model, endpoint, httpClient, loggerFactory)
     {
     }
 

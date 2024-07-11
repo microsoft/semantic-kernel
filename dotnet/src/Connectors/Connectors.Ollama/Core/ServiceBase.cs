@@ -22,7 +22,7 @@ public abstract class ServiceBase
     internal readonly OllamaApiClient _client;
 
     internal ServiceBase(string model,
-        Uri baseUri,
+        Uri endpoint,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -31,7 +31,7 @@ public abstract class ServiceBase
 
         if (httpClient is not null)
         {
-            httpClient.BaseAddress ??= baseUri;
+            httpClient.BaseAddress ??= endpoint;
 
             // Try to add User-Agent header.
             if (!httpClient.DefaultRequestHeaders.TryGetValues("User-Agent", out _))
@@ -52,7 +52,7 @@ public abstract class ServiceBase
 #pragma warning disable CA2000 // Dispose objects before losing scope
             // Client needs to be created to be able to inject Semantic Kernel headers
             var internalClient = HttpClientProvider.GetHttpClient();
-            internalClient.BaseAddress = baseUri;
+            internalClient.BaseAddress = endpoint;
             internalClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
             internalClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(Kernel)));
 
