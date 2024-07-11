@@ -35,7 +35,6 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="endpoint">Non-default endpoint for the OpenAI API.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
@@ -46,18 +45,18 @@ public static class OpenAIKernelBuilderExtensions
         string apiKey,
         string? orgId = null,
         string? serviceId = null,
-        Uri? endpoint = null,
         HttpClient? httpClient = null,
         int? dimensions = null)
     {
         Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
                 orgId,
-                endpoint,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
                 dimensions));
@@ -83,6 +82,7 @@ public static class OpenAIKernelBuilderExtensions
         int? dimensions = null)
     {
         Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(modelId);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextEmbeddingGenerationService(

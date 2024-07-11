@@ -39,7 +39,6 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
-    /// <param name="endpoint">Non-default endpoint for the OpenAI API.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(
@@ -48,17 +47,17 @@ public static class OpenAIServiceCollectionExtensions
         string apiKey,
         string? orgId = null,
         string? serviceId = null,
-        int? dimensions = null,
-        Uri? endpoint = null)
+        int? dimensions = null)
     {
         Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
                 orgId,
-                endpoint,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>(),
                 dimensions));
@@ -81,6 +80,7 @@ public static class OpenAIServiceCollectionExtensions
         int? dimensions = null)
     {
         Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OpenAITextEmbeddingGenerationService(
