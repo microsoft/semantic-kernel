@@ -48,7 +48,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             kwargs (Dict[str, Any]): The optional arguments.
 
         Returns:
-            A string or list of strings representing the response(s) from the LLM.
+            A string representing the response from the LLM.
         """
         results = await self.get_chat_message_contents(chat_history, settings, **kwargs)
         if results:
