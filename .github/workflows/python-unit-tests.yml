@@ -17,6 +17,9 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     permissions:
       contents: write
+    defaults:
+      run:
+        working-directory: ./python
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
@@ -27,9 +30,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
       - name: Install dependencies
-        run: cd python && poetry install --with unit-tests
+        run: poetry install --with unit-tests
       - name: Test with pytest
-        run: cd python && poetry run pytest -q --junitxml=pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+        run: poetry run pytest -q --junitxml=pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+        continue-on-error: false
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:

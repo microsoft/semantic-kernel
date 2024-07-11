@@ -91,7 +91,9 @@ def test_cmc_content_set_empty():
 
 
 def test_cmc_to_element():
-    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!", name=None)
+    message = ChatMessageContent(
+        role=AuthorRole.USER, items=[TextContent(text="Hello, world!", encoding="utf8")], name=None
+    )
     element = message.to_element()
     assert element.tag == "message"
     assert element.attrib == {"role": "user"}
