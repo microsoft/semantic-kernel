@@ -55,7 +55,7 @@ public class KernelBuilderExtensionsTests
         var sut = Kernel.CreateBuilder();
 
         // Act
-        var service = sut.AddOpenAITextToImage("model", "key")
+        var service = sut.AddOpenAITextToImage("key", modelId: "model")
             .Build()
             .GetRequiredService<ITextToImageService>();
 

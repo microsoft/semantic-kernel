@@ -93,31 +93,29 @@ public static class OpenAIServiceCollectionExtensions
 
     #region Text to Image
     /// <summary>
-    /// Adds the <see cref="OpenAITextToImageService"/> to the <see cref="IServiceCollection"/>.
+    /// Add the OpenAI Dall-E text to image service to the list
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="modelId">The model to use for image generation.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="modelId">The model to use for image generation.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="endpoint">Non-default endpoint for the OpenAI API.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextToImage(this IServiceCollection services,
-        string modelId,
         string apiKey,
         string? orgId = null,
-        string? serviceId = null,
-        Uri? endpoint = null)
+        string? modelId = null,
+        string? serviceId = null)
     {
         Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<ITextToImageService>(serviceId, (serviceProvider, _) =>
             new OpenAITextToImageService(
-                modelId,
                 apiKey,
                 orgId,
-                endpoint,
+                modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }

@@ -88,7 +88,7 @@ public class ServiceCollectionExtensionsTests
         var sut = new ServiceCollection();
 
         // Act
-        var service = sut.AddOpenAITextToImage("model", "key")
+        var service = sut.AddOpenAITextToImage("key", modelId: "model")
             .BuildServiceProvider()
             .GetRequiredService<ITextToImageService>();
 
