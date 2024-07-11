@@ -38,13 +38,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
-          path: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
+          path: python/python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
           overwrite: true
           retention-days: 1  
       - name: Upload pytest.xml
         uses: actions/upload-artifact@v4
         with:
           name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
-          path: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          path: python/pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           overwrite: true
           retention-days: 1
