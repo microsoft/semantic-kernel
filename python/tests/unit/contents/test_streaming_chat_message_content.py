@@ -284,24 +284,81 @@ def test_scmc_add_three():
     assert len(combined.inner_content) == 3
 
 
-def test_scmc_add_different_items():
-    message1 = StreamingChatMessageContent(
-        choice_index=0,
-        role=AuthorRole.USER,
-        items=[StreamingTextContent(choice_index=0, text="Hello, ")],
-        inner_content="source1",
-    )
-    message2 = StreamingChatMessageContent(
-        choice_index=0,
-        role=AuthorRole.USER,
-        items=[FunctionResultContent(id="test", name="test", result="test")],
-        inner_content="source2",
-    )
+@pytest.mark.parametrize(
+    "message1, message2",
+    [
+        (
+            StreamingChatMessageContent(
+                choice_index=0,
+                role=AuthorRole.USER,
+                items=[StreamingTextContent(choice_index=0, text="Hello, ")],
+                inner_content="source1",
+            ),
+            StreamingChatMessageContent(
+                choice_index=0,
+                role=AuthorRole.USER,
+                items=[FunctionResultContent(id="test", name="test", result="test")],
+                inner_content="source2",
+            ),
+        ),
+        (
+            StreamingChatMessageContent(
+                choice_index=0,
+                role=AuthorRole.TOOL,
+                items=[FunctionCallContent(id="test1", name="test")],
+                inner_content="source1",
+            ),
+            StreamingChatMessageContent(
+                choice_index=0,
+                role=AuthorRole.TOOL,
+                items=[FunctionCallContent(id="test2", name="test")],
+                inner_content="source2",
+            ),
+        ),
+        (
+            StreamingChatMessageContent(
+                choice_index=0, role=AuthorRole.USER, items=[StreamingTextContent(text="Hello, ", choice_index=0)]
+            ),
+            StreamingChatMessageContent(
+                choice_index=0, role=AuthorRole.USER, items=[StreamingTextContent(text="world!", choice_index=1)]
+            ),
+        ),
+        (
+            StreamingChatMessageContent(
+                choice_index=0,
+                role=AuthorRole.USER,
+                items=[StreamingTextContent(text="Hello, ", choice_index=0, ai_model_id="0")],
+            ),
+            StreamingChatMessageContent(
+                choice_index=0,
+                role=AuthorRole.USER,
+                items=[StreamingTextContent(text="world!", choice_index=0, ai_model_id="1")],
+            ),
+        ),
+        (
+            StreamingChatMessageContent(
+                choice_index=0,
+                role=AuthorRole.USER,
+                items=[StreamingTextContent(text="Hello, ", encoding="utf-8", choice_index=0)],
+            ),
+            StreamingChatMessageContent(
+                choice_index=0,
+                role=AuthorRole.USER,
+                items=[StreamingTextContent(text="world!", encoding="utf-16", choice_index=0)],
+            ),
+        ),
+    ],
+    ids=[
+        "different_types",
+        "different_fccs",
+        "different_text_content_choice_index",
+        "different_text_content_models",
+        "different_text_content_encoding",
+    ],
+)
+def test_scmc_add_different_items_same_type(message1, message2):
     combined = message1 + message2
-    assert combined.role == AuthorRole.USER
-    assert combined.content == "Hello, "
     assert len(combined.items) == 2
-    assert len(combined.inner_content) == 2
 
 
 @pytest.mark.parametrize(
@@ -328,7 +385,13 @@ def test_scmc_add_different_items():
             ChatMessageContent(role=AuthorRole.USER, content="world!"),
         ),
     ],
-    ids=["different_roles", "different_index", "different_model", "different_encoding", "different_type"],
+    ids=[
+        "different_roles",
+        "different_index",
+        "different_model",
+        "different_encoding",
+        "different_type",
+    ],
 )
 def test_smsc_add_exception(message1, message2):
     with pytest.raises(ContentAdditionException):
@@ -338,3 +401,4 @@ def test_smsc_add_exception(message1, message2):
 def test_scmc_bytes():
     message = StreamingChatMessageContent(choice_index=0, role=AuthorRole.USER, content="Hello, world!")
     assert bytes(message) == b"Hello, world!"
+    assert bytes(message.items[0]) == b"Hello, world!"

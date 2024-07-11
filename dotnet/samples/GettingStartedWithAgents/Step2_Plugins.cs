@@ -33,7 +33,7 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
-        /// Create a chat for agent interaction. For more, <see cref="Step3_Chat"/>.
+        /// Create the chat history to capture the agent interaction.
         ChatHistory chat = [];
 
         // Respond to user input, invoking functions where appropriate.
@@ -51,6 +51,7 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
             await foreach (ChatMessageContent content in agent.InvokeAsync(chat))
             {
                 chat.Add(content);
+
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
