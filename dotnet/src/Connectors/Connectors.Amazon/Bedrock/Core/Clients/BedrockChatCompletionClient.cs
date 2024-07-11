@@ -39,7 +39,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
         this._chatGenerationEndpoint = new Uri("https://bedrock-runtime.us-east-1.amazonaws.com");
-        int periodIndex = modelId.IndexOf('.'); //modelId looks like "amazon.titan-embed-text-v1"
+        int periodIndex = modelId.IndexOf('.'); //modelId looks like "amazon.titan-embed-text-v1:0"
         string modelProvider = periodIndex >= 0 ? modelId.Substring(0, periodIndex) : modelId;
         this._modelProvider = modelProvider;
         switch (modelProvider)

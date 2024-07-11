@@ -16,16 +16,16 @@ using Microsoft.SemanticKernel.TextGeneration;
 //     if (userInput.ToLower() != "exit")
 //     {
 //         chatHistory.AddMessage(AuthorRole.User, userInput);
-//         Console.WriteLine($"Chat Completion Question: {userInput}");
 //
-//         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
-//         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build();
+//         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-sonnet-20240229-v1:0").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-haiku-20240307-v1:0").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-v2:1").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("ai21.jamba-instruct-v1:0").Build();
 //         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("cohere.command-r-plus-v1:0").Build();
-//         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("meta.llama3-8b-instruct-v1:0").Build();
+//         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("meta.llama3-8b-instruct-v1:0").Build();
+//
+//         // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build(); //fills up on requests fast
 //
 //         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 //         var result = await chatCompletionService.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(false);
@@ -43,48 +43,48 @@ using Microsoft.SemanticKernel.TextGeneration;
 
 
 // ----------------------------TEXT GENERATION----------------------------
-Console.Write("Text Generation Prompt: ");
-string UserPrompt2 = Console.ReadLine();
-// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
-// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("mistral.mistral-7b-instruct-v0:2").Build();
-// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.jamba-instruct-v1:0").Build();
-// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("anthropic.claude-v2:1").Build();
-// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-text-v14").Build();
-// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("meta.llama3-8b-instruct-v1:0").Build();
-var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-r-plus-v1:0").Build();
-
-var textGenerationService = kernel2.GetRequiredService<ITextGenerationService>();
-var textGeneration = await textGenerationService.GetTextContentsAsync(UserPrompt2).ConfigureAwait(false);
-if (textGeneration.Count > 0)
-{
-    var firstTextContent = textGeneration.FirstOrDefault();
-    if (firstTextContent != null)
-    {
-        Console.WriteLine("Text Generation Answer: " + firstTextContent.Text);
-    }
-    else
-    {
-        Console.WriteLine("Text Generation Answer: (none)");
-    }
-}
-else
-{
-    Console.WriteLine("Text Generation Answer: (No output text)");
-}
+// Console.Write("Text Generation Prompt: ");
+// string UserPrompt2 = Console.ReadLine();
+// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
+// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("mistral.mistral-7b-instruct-v0:2").Build();
+// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.jamba-instruct-v1:0").Build();
+// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("anthropic.claude-v2:1").Build();
+// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-text-v14").Build();
+// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("meta.llama3-8b-instruct-v1:0").Build();
+// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-r-plus-v1:0").Build();
+//
+// var textGenerationService = kernel2.GetRequiredService<ITextGenerationService>();
+// var textGeneration = await textGenerationService.GetTextContentsAsync(UserPrompt2).ConfigureAwait(false);
+// if (textGeneration.Count > 0)
+// {
+//     var firstTextContent = textGeneration.FirstOrDefault();
+//     if (firstTextContent != null)
+//     {
+//         Console.WriteLine("Text Generation Answer: " + firstTextContent.Text);
+//     }
+//     else
+//     {
+//         Console.WriteLine("Text Generation Answer: (none)");
+//     }
+// }
+// else
+// {
+//     Console.WriteLine("Text Generation Answer: (No output text)");
+// }
 
 
 
 
 
 // ----------------------------STREAM TEXT GENERATION----------------------------
-// Console.WriteLine("Stream Text Generation Prompt: ");
+// Console.Write("Stream Text Generation Prompt: ");
 // string UserPrompt3 = Console.ReadLine();
-// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
+// var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
 // // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("anthropic.claude-v2").Build();
 // // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("mistral.mistral-7b-instruct-v0:2").Build();
-// var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-text-v14").Build();
+// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-text-v14").Build();
+// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-r-plus-v1:0").Build();
 //
-// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-r-plus-v1:0").Build(); //need to make invoke request body - diff than command
 // // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.jamba-instruct-v1:0").Build(); //model unsupported for streaming??
 //
 // var streamTextGenerationService = kernel3.GetRequiredService<ITextGenerationService>();
@@ -100,35 +100,35 @@ else
 
 
 // ----------------------------STREAM CHAT COMPLETION----------------------------
-// string userInput;
-// ChatHistory chatHistory = new ChatHistory();
-// do
-// {
-//     Console.Write("Enter a prompt (or 'exit' to quit): ");
-//     userInput = Console.ReadLine();
-//
-//     if (userInput.ToLower() != "exit")
-//     {
-//         chatHistory.AddMessage(AuthorRole.User, userInput);
-//         Console.WriteLine($"Stream Chat Completion Question: {userInput}");
-//
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build();
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-v2").Build();
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-sonnet-20240229-v1:0").Build();
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("cohere.command-r-plus-v1:0").Build();
-//         var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("meta.llama3-8b-instruct-v1:0").Build();
-//
-//
-//         var chatCompletionService = kernel4.GetRequiredService<IChatCompletionService>();
-//         var result = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory).ConfigureAwait(false);
-//         string output = "";
-//         await foreach (var message in result)
-//         {
-//             Console.Write($"{message.Content}");
-//             output += message.Content;
-//         }
-//         Console.WriteLine();
-//         chatHistory.AddMessage(AuthorRole.Assistant, output);
-//     }
-// } while (userInput.ToLower() != "exit");
+string userInput;
+ChatHistory chatHistory = new ChatHistory();
+do
+{
+    Console.Write("Enter a prompt (or 'exit' to quit): ");
+    userInput = Console.ReadLine();
+
+    if (userInput.ToLower() != "exit")
+    {
+        chatHistory.AddMessage(AuthorRole.User, userInput);
+        // Console.WriteLine($"Stream Chat Completion Question: {userInput}");
+
+        // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build();
+        // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
+        // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-v2").Build();
+        // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-sonnet-20240229-v1:0").Build();
+        // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("cohere.command-r-plus-v1:0").Build();
+        var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("meta.llama3-8b-instruct-v1:0").Build();
+
+
+        var chatCompletionService = kernel4.GetRequiredService<IChatCompletionService>();
+        var result = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory).ConfigureAwait(false);
+        string output = "";
+        await foreach (var message in result)
+        {
+            Console.Write($"{message.Content}");
+            output += message.Content;
+        }
+        Console.WriteLine();
+        chatHistory.AddMessage(AuthorRole.Assistant, output);
+    }
+} while (userInput.ToLower() != "exit");

@@ -157,11 +157,11 @@ public class CohereCommandRIoService : IBedrockModelIoService<IChatCompletionReq
         AdditionalModelRequestFields = new Document
         {
             { "message", cohereRequest.Message },
-            { "chat_history", new Document(cohereRequest.ChatHistory.Select(m => new Document
-            {
-                { "role", m.Role.ToUpper() },
-                { "message", m.Message }
-            }).ToList()) },
+            // { "chat_history", new Document(cohereRequest.ChatHistory.Select(m => new Document
+            // {
+            //     { "role", m.Role.ToUpper() },
+            //     { "message", m.Message }
+            // }).ToList()) },
             { "documents", new Document(cohereRequest.Documents?.Select(d => new Document
             {
                 { "title", d.Title },
