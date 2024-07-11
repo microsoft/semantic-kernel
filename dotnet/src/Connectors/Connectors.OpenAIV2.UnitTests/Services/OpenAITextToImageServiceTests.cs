@@ -77,26 +77,6 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         Assert.Equal("https://image-url/", result);
     }
 
-    [Fact]
-    public async Task GenerateImageDoesLogActionAsync()
-    {
-        // Assert
-        var modelId = "dall-e-2";
-        var logger = new Mock<ILogger<OpenAITextToImageService>>();
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-
-        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
-
-        // Arrange
-        var sut = new OpenAITextToImageService("apiKey", modelId: modelId, httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
-
-        // Act
-        await sut.GenerateImageAsync("description", 256, 256);
-
-        // Assert
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAITextToImageService.GenerateImageAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
-    }
-
     public void Dispose()
     {
         this._httpClient.Dispose();

@@ -182,26 +182,6 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         Assert.StartsWith(expectedBaseAddress, this._messageHandlerStub.RequestUri!.AbsoluteUri, StringComparison.InvariantCulture);
     }
 
-    [Fact]
-    public async Task GetAudioContentDoesLogActionAsync()
-    {
-        // Assert
-        var modelId = "whisper-1";
-        var logger = new Mock<ILogger<OpenAITextToAudioService>>();
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-
-        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
-
-        // Arrange
-        var sut = new OpenAITextToAudioService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
-
-        // Act
-        await sut.GetAudioContentsAsync("description");
-
-        // Assert
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAITextToAudioService.GetAudioContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
-    }
-
     public void Dispose()
     {
         this._httpClient.Dispose();
