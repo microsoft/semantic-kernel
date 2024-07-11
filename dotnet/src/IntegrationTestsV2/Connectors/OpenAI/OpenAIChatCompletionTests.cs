@@ -209,7 +209,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         // Act
         var result = await kernel.InvokePromptAsync("Hi, can you help me today?", new(settings));
 
-        var logProbabilityInfo = result.Metadata?["LogProbabilityInfo"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
+        var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
 
         // Assert
         Assert.NotNull(logProbabilityInfo);
