@@ -27,10 +27,9 @@ jobs:
       run:
         working-directory: python
     steps:
-      - name: Setup filename variables
-        run: |
-          echo "FILE_ID=${{ github.run_id }}-${{ matrix.os }}-${{ matrix.python-version }}" >> $GITHUB_ENV
       - uses: actions/checkout@v4
+      - name: Setup filename variables
+        run: echo "FILE_ID=${{ github.run_id }}-${{ matrix.os }}-${{ matrix.python-version }}" >> $GITHUB_ENV
       - name: Install poetry
         run: pipx install poetry
       - name: Set up Python ${{ matrix.python-version }}
