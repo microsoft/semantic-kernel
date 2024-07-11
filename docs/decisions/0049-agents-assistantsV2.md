@@ -12,7 +12,10 @@ Open AI has release the _Assistants V2_ API.  This builds on top of the V1 _assi
 
 ## Design
 
-TBD - Breaking
+Migrating to Assistant V2 API is a breaking change to the existing package due to:
+- Class definition changes
+- Underlying capability differences (e.g. `file-search` vs `retrieval`)
+- Underlying V2 SDK is version incompatible with V1 (`OpenAI` and `Azure.AI.OpenAI`)
 
 ### Configuration Classes
 
@@ -21,6 +24,8 @@ Specific configuration/setttings classes are introduced to support the ability t
 #### Service Configuration
 
 The `OpenAIServiceConfiguration` defines how to connect to a specific remote service, whether it be OpenAI, Azure, or proxy.  This eliminates the need to define multiple overloads for each call site that results in a connection to the remote API service (i.e. create a _client)_.
+
+> Note: This was previously named `OpenAIAssistantConfiguration`, but is not necessarily assistant specific.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-serviceconfig.png"  style="width: 360pt;"></kbd>
@@ -47,7 +52,7 @@ When invoking an `OpenAIAssistantAgent` directly (no-chat), settings that only a
 
 #### Thread Creation Settings
 
-TBD
+When invoking an `OpenAIAssistantAgent` directly (no-chat), a thread must be explicitly managed.  When doing so, thread specific settings may be specified.  These settings are defined as `OpenAIThreadCreationSettings`.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-threadcreationsettings.png" style="width: 132pt;"></kbd>
@@ -55,7 +60,10 @@ TBD
 
 ### Agent Implementation
 
-TBD
+The `OpenAIAssistant` agent is roughly equivalent to its V1 form save for:
+
+- Supports settings for _assistant_, _thread_, and _run_
+- Agent definition shifts to `Definition` property
 
 <p align="center">
 <kbd><img src="diagrams/assistant-agent.png"  style="width: 720pt;"></kbd>
