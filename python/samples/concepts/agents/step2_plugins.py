@@ -63,7 +63,7 @@ async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory
     else:
         async for content in agent.invoke(chat):
             print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
-        chat.add_assistant_message(content.content)
+        chat.add_message(content)
 
 
 async def main():

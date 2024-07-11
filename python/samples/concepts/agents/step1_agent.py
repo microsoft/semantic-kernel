@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+from functools import reduce
 
 from semantic_kernel.agents.chat_completion_agent import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -34,10 +35,13 @@ async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory
         async for content in agent.invoke_stream(chat):
             content_name = content.name
             contents.append(content)
-        print(f"# {content.role} - {content_name or '*'}: '{''.join([content.content for content in contents])}'")
+        streaming_chat_message = reduce(lambda first, second: first + second, contents)
+        print(f"# {content.role} - {content_name or '*'}: '{streaming_chat_message}'")
+        chat.add_message(content)
     else:
         async for content in agent.invoke(chat):
             print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+            chat.add_message(content)
 
 
 async def main():
