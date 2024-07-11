@@ -123,30 +123,34 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
     public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        this._client.LogActionDetails();
-        return this._client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
-    }
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+        => this._client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        this._client.LogActionDetails();
-        return this._client.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
-    }
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+        => this._client.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        this._client.LogActionDetails();
-        return this._client.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
-    }
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+        => this._client.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        this._client.LogActionDetails();
-        return this._client.GetChatAsTextStreamingContentsAsync(prompt, executionSettings, kernel, cancellationToken);
-    }
+    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+        => this._client.GetChatAsTextStreamingContentsAsync(prompt, executionSettings, kernel, cancellationToken);
 }

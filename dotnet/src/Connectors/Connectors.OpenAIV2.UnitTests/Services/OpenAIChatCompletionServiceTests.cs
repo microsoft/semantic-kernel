@@ -811,31 +811,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("2", assistantMessage2.GetProperty("tool_call_id").GetString());
     }
 
-    [Fact]
-    public async Task GetAllContentsDoesLogActionAsync()
-    {
-        // Assert
-        var modelId = "gpt-4o";
-        var logger = new Mock<ILogger<OpenAIChatCompletionService>>();
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-
-        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
-
-        // Arrange
-        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAnyAsync<Exception>(async () => { await sut.GetChatMessageContentsAsync(this._chatHistoryForTest); });
-        await Assert.ThrowsAnyAsync<Exception>(async () => { await sut.GetStreamingChatMessageContentsAsync(this._chatHistoryForTest).GetAsyncEnumerator().MoveNextAsync(); });
-        await Assert.ThrowsAnyAsync<Exception>(async () => { await sut.GetTextContentsAsync("test"); });
-        await Assert.ThrowsAnyAsync<Exception>(async () => { await sut.GetStreamingTextContentsAsync("test").GetAsyncEnumerator().MoveNextAsync(); });
-
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
-    }
-
     [Theory]
     [InlineData("string", "json_object")]
     [InlineData("string", "text")]
@@ -876,102 +851,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-    }
-
-    [Fact]
-    public async Task GetChatMessageContentsLogsAsExpected()
-    {
-        // Assert
-        var modelId = "gpt-4o";
-        var logger = new Mock<ILogger<OpenAIChatCompletionService>>();
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-
-        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
-
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
-        };
-
-        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
-
-        // Act
-        await sut.GetChatMessageContentsAsync(this._chatHistoryForTest);
-
-        // Arrange
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
-    }
-
-    [Fact]
-    public async Task GetStreamingChatMessageContentsLogsAsExpected()
-    {
-        // Assert
-        var modelId = "gpt-4o";
-        var logger = new Mock<ILogger<OpenAIChatCompletionService>>();
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-
-        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
-
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt"))
-        };
-
-        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
-
-        // Act
-        await sut.GetStreamingChatMessageContentsAsync(this._chatHistoryForTest).GetAsyncEnumerator().MoveNextAsync();
-
-        // Arrange
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingChatMessageContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
-    }
-
-    [Fact]
-    public async Task GetTextContentsLogsAsExpected()
-    {
-        // Assert
-        var modelId = "gpt-4o";
-        var logger = new Mock<ILogger<OpenAIChatCompletionService>>();
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-
-        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
-
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json"))
-        };
-
-        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
-
-        // Act
-        await sut.GetTextContentAsync("test");
-
-        // Arrange
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
-    }
-
-    [Fact]
-    public async Task GetStreamingTextContentsLogsAsExpected()
-    {
-        // Assert
-        var modelId = "gpt-4o";
-        var logger = new Mock<ILogger<OpenAIChatCompletionService>>();
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-
-        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
-
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt"))
-        };
-
-        var sut = new OpenAIChatCompletionService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
-
-        // Act
-        await sut.GetStreamingTextContentsAsync("test").GetAsyncEnumerator().MoveNextAsync();
-
-        // Arrange
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIChatCompletionService.GetStreamingTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
     }
 
     [Fact(Skip = "Not working running in the console")]
