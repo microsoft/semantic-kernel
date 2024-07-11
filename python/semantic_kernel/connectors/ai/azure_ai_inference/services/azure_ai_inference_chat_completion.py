@@ -366,12 +366,6 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         chat_request_messages: list[ChatRequestMessage] = []
 
         for message in chat_history.messages:
-            if message.role not in MESSAGE_CONVERTERS:
-                logger.warning(
-                    "Unsupported author role in chat history while formatting for Azure AI Inference: {message.role}"
-                )
-                continue
-
             chat_request_messages.append(MESSAGE_CONVERTERS[message.role](message))
 
         return chat_request_messages
@@ -395,8 +389,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     def _verify_function_choice_behavior(
         self,
         settings: AzureAIInferenceChatPromptExecutionSettings,
-        kernel: Kernel,
-        arguments: KernelArguments,
+        kernel: Kernel | None,
+        arguments: KernelArguments | None,
     ):
         """Verify the function choice behavior."""
         if settings.function_choice_behavior is not None:

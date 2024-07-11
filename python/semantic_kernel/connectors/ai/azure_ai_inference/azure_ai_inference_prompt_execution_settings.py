@@ -23,7 +23,7 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
     stop: str | None = None
     temperature: float | None = Field(None, ge=0.0, le=1.0)
     top_p: float | None = Field(None, ge=0.0, le=1.0)
-    extra_parameters: dict[str, str] | None = None
+    extra_parameters: dict[str, Any] | None = None
 
 
 @experimental_class
