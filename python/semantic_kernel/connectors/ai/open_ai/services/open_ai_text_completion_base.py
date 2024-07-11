@@ -26,7 +26,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions import ServiceInvalidResponseError
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -97,12 +96,10 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         choice_metadata = self._get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
         text = choice.text if isinstance(choice, TextCompletionChoice) else choice.message.content
-        if not text:
-            raise ServiceInvalidResponseError("Expected a text response or the content of a message.")
         return TextContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
-            text=text,
+            text=text or "",
             metadata=choice_metadata,
         )
 
@@ -116,14 +113,12 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         choice_metadata = self._get_metadata_from_text_choice(choice)
         choice_metadata.update(response_metadata)
         text = choice.text if isinstance(choice, TextCompletionChoice) else choice.delta.content
-        if not text:
-            raise ServiceInvalidResponseError("Expected a text response or the content of a message.")
         return StreamingTextContent(
             choice_index=choice.index,
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=choice_metadata,
-            text=text,
+            text=text or "",
         )
 
     def _get_metadata_from_text_response(

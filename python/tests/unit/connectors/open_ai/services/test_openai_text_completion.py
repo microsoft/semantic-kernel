@@ -16,7 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
 def test_init(openai_unit_test_env) -> None:
@@ -194,26 +194,6 @@ async def test_tc_prompt_execution_settings(
 
 @pytest.mark.asyncio
 @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
-async def test_tc_empty(
-    mock_create,
-    openai_unit_test_env,
-) -> None:
-    mock_create.return_value = TextCompletion(
-        id="test",
-        choices=[TextCompletionChoice(text="", index=0, finish_reason="stop")],
-        created=0,
-        model="test",
-        object="text_completion",
-    )
-    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(service_id="test_service_id")
-
-    openai_text_completion = OpenAITextCompletion()
-    with pytest.raises(ServiceInvalidResponseError):
-        await openai_text_completion.get_text_contents(prompt="test", settings=complete_prompt_execution_settings)
-
-
-@pytest.mark.asyncio
-@patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
 async def test_stc(
     mock_create,
     openai_unit_test_env,
@@ -301,31 +281,3 @@ async def test_stc_empty_choices(
         prompt="test",
         echo=False,
     )
-
-
-@pytest.mark.asyncio
-@patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
-async def test_stc_no_text(
-    mock_create,
-    openai_unit_test_env,
-) -> None:
-    content = TextCompletion(
-        id="test",
-        choices=[TextCompletionChoice(text="", index=0, finish_reason="stop")],
-        created=0,
-        model="test",
-        object="text_completion",
-    )
-    stream = MagicMock(spec=AsyncStream)
-    stream.__aiter__.return_value = [content]
-    mock_create.return_value = stream
-    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(service_id="test_service_id")
-
-    openai_text_completion = OpenAITextCompletion()
-    with pytest.raises(ServiceInvalidResponseError):
-        [
-            text
-            async for text in openai_text_completion.get_streaming_text_contents(
-                prompt="test", settings=complete_prompt_execution_settings
-            )
-        ]
