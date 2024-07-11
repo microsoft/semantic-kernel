@@ -9,7 +9,9 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
     MistralAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
+)
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceResponseException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -21,10 +23,8 @@ def mock_settings() -> MistralAIChatPromptExecutionSettings:
     return MistralAIChatPromptExecutionSettings()
 
 
-@pytest.mark.asyncio
-async def test_complete_chat_contents(kernel: Kernel, mock_settings: MistralAIChatPromptExecutionSettings):
-    chat_history = MagicMock()
-    arguments = KernelArguments()
+@pytest.fixture
+def mock_mistral_ai_client_completion() -> MistralAsyncClient:
     client = MagicMock(spec=MistralAsyncClient)
     chat_completion_response = AsyncMock()
     choices = [
@@ -32,20 +32,11 @@ async def test_complete_chat_contents(kernel: Kernel, mock_settings: MistralAICh
     ]
     chat_completion_response.choices = choices
     client.chat.return_value = chat_completion_response
-    chat_completion_base = MistralAIChatCompletion(
-        ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
-    )
-
-    content: list[ChatMessageContent] = await chat_completion_base.get_chat_message_contents(
-        chat_history, mock_settings, kernel=kernel, arguments=arguments
-    )
-    assert content is not None
+    return client
 
 
-@pytest.mark.asyncio
-async def test_complete_chat_stream_contents(kernel: Kernel, mock_settings: MistralAIChatPromptExecutionSettings):
-    chat_history = MagicMock()
-    arguments = KernelArguments()
+@pytest.fixture
+def mock_mistral_ai_client_completion_stream() -> MistralAsyncClient:
     client = MagicMock(spec=MistralAsyncClient)
     chat_completion_response = MagicMock()
     choices = [
@@ -58,9 +49,40 @@ async def test_complete_chat_stream_contents(kernel: Kernel, mock_settings: Mist
     generator_mock = MagicMock()
     generator_mock.__aiter__.return_value = [chat_completion_response_empty, chat_completion_response]
     client.chat_stream.return_value = generator_mock
+    return client
+
+
+@pytest.mark.asyncio
+async def test_complete_chat_contents(
+    kernel: Kernel, 
+    mock_settings: MistralAIChatPromptExecutionSettings,
+    mock_mistral_ai_client_completion: MistralAsyncClient
+):
+    chat_history = MagicMock()
+    arguments = KernelArguments()
+    chat_completion_base = MistralAIChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key="", async_client=mock_mistral_ai_client_completion
+    )
+
+    content: list[ChatMessageContent] = await chat_completion_base.get_chat_message_contents(
+        chat_history, mock_settings, kernel=kernel, arguments=arguments
+    )
+    assert content is not None
+
+
+@pytest.mark.asyncio
+async def test_complete_chat_stream_contents(
+    kernel: Kernel,
+    mock_settings: MistralAIChatPromptExecutionSettings,
+    mock_mistral_ai_client_completion_stream: MistralAsyncClient
+):
+    chat_history = MagicMock()
+    arguments = KernelArguments()
 
     chat_completion_base = MistralAIChatCompletion(
-        ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
+        ai_model_id="test_model_id", 
+        service_id="test", api_key="", 
+        async_client=mock_mistral_ai_client_completion_stream
     )
 
     async for content in chat_completion_base.get_streaming_chat_message_contents(
@@ -75,10 +97,11 @@ async def test_mistral_ai_sdk_exception(kernel: Kernel, mock_settings: MistralAI
     arguments = KernelArguments()
     client = MagicMock(spec=MistralAsyncClient)
     client.chat.side_effect = Exception("Test Exception")
-    client.chat_stream.side_effect = Exception("Test Exception")
 
     chat_completion_base = MistralAIChatCompletion(
-        ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
+        ai_model_id="test_model_id", 
+        service_id="test", api_key="", 
+        async_client=client
     )
 
     with pytest.raises(ServiceResponseException):
@@ -138,25 +161,44 @@ def test_prompt_execution_settings_class(mistralai_unit_test_env):
     assert prompt_execution_settings == MistralAIChatPromptExecutionSettings
 
 
-@pytest.mark.parametrize("stream", [True, False])
 @pytest.mark.asyncio
-async def test_with_prompt_execution_settings(kernel: Kernel, stream: bool):
+async def test_with_different_execution_settings(
+    kernel: Kernel, 
+    mock_mistral_ai_client_completion: MagicMock
+):
     chat_history = MagicMock()
+    settings = OpenAIChatPromptExecutionSettings(temperature=0.2, seed=2)
     arguments = KernelArguments()
-    client = MagicMock(spec=MistralAsyncClient)
-    mock_settings = PromptExecutionSettings()
-
     chat_completion_base = MistralAIChatCompletion(
-        ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
+        ai_model_id="test_model_id", 
+        service_id="test", api_key="", 
+        async_client=mock_mistral_ai_client_completion
     )
 
-    if stream:
-        async for content in chat_completion_base.get_streaming_chat_message_contents(
-            chat_history, mock_settings, kernel=kernel, arguments=arguments
-        ):
-            assert content is not None
-    else:
-        content = await chat_completion_base.get_chat_message_contents(
-            chat_history, mock_settings, kernel=kernel, arguments=arguments
-        )
-        assert content is not None
+    await chat_completion_base.get_chat_message_contents(
+        chat_history, settings, kernel=kernel, arguments=arguments
+    )
+    assert mock_mistral_ai_client_completion.chat.call_args.kwargs["temperature"] == 0.2
+    assert mock_mistral_ai_client_completion.chat.call_args.kwargs["seed"] == 2
+
+
+@pytest.mark.asyncio
+async def test_with_different_execution_settings_stream(
+    kernel: Kernel,
+    mock_mistral_ai_client_completion_stream: MagicMock
+):
+    chat_history = MagicMock()
+    settings = OpenAIChatPromptExecutionSettings(temperature=0.2, seed=2)
+    arguments = KernelArguments()
+    chat_completion_base = MistralAIChatCompletion(
+        ai_model_id="test_model_id",
+        service_id="test", api_key="",
+        async_client=mock_mistral_ai_client_completion_stream
+    )
+
+    async for chunk in chat_completion_base.get_streaming_chat_message_contents(
+        chat_history, settings, kernel=kernel, arguments=arguments
+    ):
+        continue
+    assert mock_mistral_ai_client_completion_stream.chat_stream.call_args.kwargs["temperature"] == 0.2
+    assert mock_mistral_ai_client_completion_stream.chat_stream.call_args.kwargs["seed"] == 2
