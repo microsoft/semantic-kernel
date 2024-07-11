@@ -2,17 +2,20 @@
 
 import uuid
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 
-from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
+if TYPE_CHECKING:
+    from semantic_kernel.agents.agent_channel import AgentChannel
+
 
 @experimental_class
-class AgentBase(ABC, KernelBaseModel):
+class Agent(ABC, KernelBaseModel):
     """Base abstraction for all Semantic Kernel agents.
 
     An agent instance may participate in one or more conversations.
@@ -44,7 +47,7 @@ class AgentBase(ABC, KernelBaseModel):
         ...
 
     @abstractmethod
-    async def create_channel(self) -> AgentChannel:
+    async def create_channel(self) -> "AgentChannel":
         """Create a channel.
 
         Returns:

@@ -5,11 +5,11 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from semantic_kernel.agents.agent_base import AgentBase
+from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.agent_channel import AgentChannel
 
 
-class MockAgent(AgentBase):
+class MockAgent(Agent):
     """A mock agent for testing purposes."""
 
     def __init__(self, name: str = "Test Agent", description: str = "A test agent", id: str = None):

@@ -10,7 +10,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.agents.agent_base import AgentBase
+from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.agents.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.agents.chat_history_handler import ChatHistoryHandler
@@ -23,7 +23,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class ChatHistoryKernelAgent(AgentBase, ChatHistoryHandler, ABC):
+class ChatHistoryKernelAgent(Agent, ChatHistoryHandler, ABC):
     """A KernelAgent specialization bound to a ChatHistoryChannel."""
 
     @override

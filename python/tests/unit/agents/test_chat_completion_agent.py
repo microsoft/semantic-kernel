@@ -111,7 +111,7 @@ async def test_invoke_tool_call_added():
 
     async def mock_get_chat_message_contents(chat_history, settings, kernel, arguments):
         new_messages = [
-            ChatMessageContent(role=AuthorRole.SYSTEM, content="Processed Message 1"),
+            ChatMessageContent(role=AuthorRole.ASSISTANT, content="Processed Message 1"),
             ChatMessageContent(role=AuthorRole.TOOL, content="Processed Message 2"),
         ]
         chat_history.messages.extend(new_messages)

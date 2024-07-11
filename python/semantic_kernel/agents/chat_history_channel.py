@@ -8,7 +8,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.agents.agent_base import AgentBase
+from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.agents.chat_history_handler import ChatHistoryHandler
 from semantic_kernel.contents import ChatMessageContent
@@ -24,7 +24,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
     @override
     async def invoke(  # type: ignore
         self,
-        agent: AgentBase,
+        agent: Agent,
     ) -> AsyncIterable[ChatMessageContent]:
         """Perform a discrete incremental interaction between a single Agent and AgentChat.
 
@@ -40,7 +40,8 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
                 f"Invalid channel binding for agent with id: `{id}` with name: ({type(agent).__name__})"
             )
 
-        async for message in agent.invoke(self.messages):
+        # Type checker does not recognize the async for loop
+        async for message in agent.invoke(self):  # type: ignore
             self.messages.append(message)
             yield message
 
