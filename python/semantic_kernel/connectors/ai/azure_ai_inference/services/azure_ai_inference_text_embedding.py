@@ -14,6 +14,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -73,11 +74,20 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
             client=client,
         )
 
-    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
+    async def generate_embeddings(
+        self,
+        texts: list[str],
+        settings: "PromptExecutionSettings | None" = None,
+        **kwargs: Any,
+    ) -> ndarray:
         """Generate embeddings from the Azure AI Inference service."""
-        settings: AzureAIInferenceEmbeddingPromptExecutionSettings = kwargs.get("settings", None)
-
+        if not settings:
+            settings = AzureAIInferenceEmbeddingPromptExecutionSettings()
+        else:
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, AzureAIInferenceEmbeddingPromptExecutionSettings)  # nosec
         assert isinstance(self.client, EmbeddingsClient)  # nosec
+
         response: EmbeddingsResult = await self.client.embed(
             input=texts,
             model_extras=settings.extra_parameters if settings else None,

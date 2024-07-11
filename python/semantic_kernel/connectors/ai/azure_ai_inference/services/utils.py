@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 from collections.abc import Callable
 
@@ -94,7 +95,13 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
         if isinstance(item, FunctionCallContent):
             toolCalls.append(
                 ChatCompletionsFunctionToolCall(
-                    id=item.id or "", function=FunctionCall(name=item.name or "", arguments=item.arguments or "")
+                    id=item.id or "",
+                    function=FunctionCall(
+                        name=item.name or "",
+                        arguments=json.dumps(item.arguments)
+                        if isinstance(item.arguments, dict)
+                        else item.arguments or "",
+                    ),
                 )
             )
         else:
