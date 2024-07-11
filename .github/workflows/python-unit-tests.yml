@@ -25,7 +25,7 @@ jobs:
       contents: write
     defaults:
       run:
-        working-directory: ./python
+        working-directory: python
     steps:
       - name: Setup filename variables
         run: |
@@ -41,18 +41,18 @@ jobs:
       - name: Install dependencies
         run: poetry install --with unit-tests
       - name: Test with pytest
-        run: poetry run pytest -q --junitxml=pytest-$FILE_ID.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage-$FILE_ID.txt
+        run: poetry run pytest -q --junitxml=pytest.xml  --cov=semantic_kernel --cov-report=term-missing:skip-covered ./tests/unit | tee python-coverage.txt
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
           name: python-coverage-$FILE_ID.txt
-          path: python/python-coverage-$FILE_ID.txt
+          path: python-coverage.txt
           overwrite: true
           retention-days: 1  
       - name: Upload pytest.xml
         uses: actions/upload-artifact@v4
         with:
           name: pytest-$FILE_ID.xml
-          path: python/pytest-$FILE_ID.xml
+          path: pytest.xml
           overwrite: true
           retention-days: 1
