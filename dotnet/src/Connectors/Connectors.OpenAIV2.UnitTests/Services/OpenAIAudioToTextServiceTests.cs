@@ -43,7 +43,6 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
         // Assert
         Assert.NotNull(service);
         Assert.Equal("model-id", service.Attributes["ModelId"]);
-        Assert.Equal("Organization", OpenAIAudioToTextService.OrganizationKey);
     }
 
     [Fact]
@@ -115,7 +114,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     public async Task GetTextContentByDefaultWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", null, this._httpClient);
+        var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StringContent("Test audio-to-text response")
@@ -133,7 +132,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     public async Task GetTextContentThrowsIfAudioCantBeReadAsync()
     {
         // Arrange
-        var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", null, this._httpClient);
+        var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", this._httpClient);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(async () => { await service.GetTextContentsAsync(new AudioContent(new Uri("http://remote-audio")), new OpenAIAudioToTextExecutionSettings("file.mp3")); });
@@ -143,7 +142,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     public async Task GetTextContentThrowsIfFileNameIsInvalidAsync()
     {
         // Arrange
-        var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", null, this._httpClient);
+        var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", this._httpClient);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(async () => { await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), new OpenAIAudioToTextExecutionSettings("invalid")); });

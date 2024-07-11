@@ -16,6 +16,8 @@ using OpenAI;
 
 namespace Microsoft.SemanticKernel;
 
+#pragma warning disable IDE0039 // Use local function
+
 /* Phase 02
 - Add endpoint parameter for both Embedding and TextToImage services extensions.
 - Removed unnecessary Validation checks (that are already happening in the service/client constructors)
@@ -158,48 +160,47 @@ public static class OpenAIServiceCollectionExtensions
     #region Audio-to-Text
 
     /// <summary>
-    /// Adds the <see cref="OpenAIAudioToTextService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds the OpenAI audio-to-text service to the list.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <param name="endpoint">Non-default endpoint for the OpenAI API.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0010")]
+    [Experimental("SKEXP0001")]
     public static IServiceCollection AddOpenAIAudioToText(
         this IServiceCollection services,
         string modelId,
         string apiKey,
         string? orgId = null,
-        string? serviceId = null,
-        Uri? endpoint = null)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
-        OpenAIAudioToTextService Factory(IServiceProvider serviceProvider, object? _) =>
+        Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
             new(modelId,
                 apiKey,
                 orgId,
-                endpoint,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>());
 
-        services.AddKeyedSingleton<IAudioToTextService>(serviceId, (Func<IServiceProvider, object?, OpenAIAudioToTextService>)Factory);
+        services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
 
         return services;
     }
 
     /// <summary>
-    /// Adds the <see cref="OpenAIAudioToTextService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds the OpenAI audio-to-text service to the list.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model id</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    [Experimental("SKEXP0010")]
+    [Experimental("SKEXP0001")]
     public static IServiceCollection AddOpenAIAudioToText(
         this IServiceCollection services,
         string modelId,
@@ -207,11 +208,12 @@ public static class OpenAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
 
-        OpenAIAudioToTextService Factory(IServiceProvider serviceProvider, object? _) =>
+        Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
             new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
 
-        services.AddKeyedSingleton<IAudioToTextService>(serviceId, (Func<IServiceProvider, object?, OpenAIAudioToTextService>)Factory);
+        services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
 
         return services;
     }
