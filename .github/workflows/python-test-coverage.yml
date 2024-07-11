@@ -41,7 +41,7 @@ jobs:
         continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
-          name: python-coverage-${{ $FILE_ID }}.txt
+          name: python-coverage-$FILE_ID.txt
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: python-unit-tests.yml
           search_artifacts: true
@@ -50,7 +50,7 @@ jobs:
         continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
-          name: pytest-${{ $FILE_ID }}.xml
+          name: pytest-$FILE_ID.xml
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: python-unit-tests.yml
           search_artifacts: true
