@@ -17,7 +17,7 @@ public sealed class Legacy_AgentCharts(ITestOutputHelper output) : BaseTest(outp
     /// <summary>
     /// Create a chart and retrieve by file_id.
     /// </summary>
-    [Fact/*(Skip = "Launches external processes")*/]
+    [Fact]
     public async Task CreateChartAsync()
     {
         Console.WriteLine("======== Using CodeInterpreter tool ========");

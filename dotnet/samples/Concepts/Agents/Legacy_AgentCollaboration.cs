@@ -15,7 +15,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
     /// <summary>
     /// Show how two agents are able to collaborate as agents on a single thread.
     /// </summary>
-    [Fact/*(Skip = "This test take more than 5 minutes to execute")*/]
+    [Fact(Skip = "This test take more than 5 minutes to execute")]
     public async Task RunCollaborationAsync()
     {
         IAgentThread? thread = null;
@@ -66,7 +66,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
     /// While this may achieve an equivalent result to <see cref="RunCollaborationAsync"/>,
     /// it is not using shared thread state for agent interaction.
     /// </remarks>
-    [Fact/*(Skip = "This test take more than 2 minutes to execute")*/]
+    [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAsPluginsAsync()
     {
         try

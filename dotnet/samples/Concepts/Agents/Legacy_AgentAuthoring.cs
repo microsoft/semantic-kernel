@@ -12,7 +12,7 @@ public class Legacy_AgentAuthoring(ITestOutputHelper output) : BaseTest(output)
     // Track agents for clean-up
     private static readonly List<IAgent> s_agents = [];
 
-    [Fact/*(Skip = "This test take more than 2 minutes to execute")*/]
+    [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAgentAsync()
     {
         Console.WriteLine($"======== {nameof(Legacy_AgentAuthoring)} ========");
@@ -34,7 +34,7 @@ public class Legacy_AgentAuthoring(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    [Fact/*(Skip = "This test take more than 2 minutes to execute")*/]
+    [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAsPluginAsync()
     {
         Console.WriteLine($"======== {nameof(Legacy_AgentAuthoring)} ========");
