@@ -21,30 +21,30 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaTextGenerationService"/> class.
     /// </summary>
-    /// <param name="model">The Ollama model for the text generation service.</param>
-    /// <param name="baseUri">The base uri including the port where Ollama server is hosted</param>
+    /// <param name="modelId">The Ollama model for the text generation service.</param>
+    /// <param name="endpoint">The endpoint including the port where Ollama server is hosted</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Ollama API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaTextGenerationService(
-        string model,
-        Uri baseUri,
+        string modelId,
+        Uri endpoint,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : base(model, baseUri, httpClient, loggerFactory)
+        : base(modelId, endpoint, httpClient, loggerFactory)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaTextGenerationService"/> class.
     /// </summary>
-    /// <param name="model">The hosted model.</param>
+    /// <param name="modelId">The hosted model.</param>
     /// <param name="ollamaClient">The Ollama API client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaTextGenerationService(
-        string model,
+        string modelId,
         OllamaApiClient ollamaClient,
         ILoggerFactory? loggerFactory = null)
-        : base(model, ollamaClient, loggerFactory)
+        : base(modelId, ollamaClient, loggerFactory)
     {
     }
 
@@ -60,7 +60,11 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
     {
         var content = await this._client.GetCompletion(prompt, null, cancellationToken).ConfigureAwait(false);
 
-        return [new(content.Response, modelId: this._client.SelectedModel, innerContent: content)];
+        return [new(content.Response, modelId: this._client.SelectedModel, innerContent: content, metadata:
+            new Dictionary<string, object?>()
+            {
+                ["Context"] = content.Context
+            })];
     }
 
     /// <inheritdoc />
@@ -72,7 +76,7 @@ public sealed class OllamaTextGenerationService : ServiceBase, ITextGenerationSe
     {
         await foreach (var content in this._client.StreamCompletion(prompt, null, cancellationToken).ConfigureAwait(false))
         {
-            yield return new StreamingTextContent(content?.Response, modelId: content?.Model, innerContent: content);
+            yield return new StreamingTextContent(content?.Response, modelId: content?.Model, innerContent: content, metadata: new OllamaMetadata(content));
         }
     }
 }
