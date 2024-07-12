@@ -244,7 +244,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// Constructor
     /// </summary>
     /// <param name="filename">DuckDB db filename.</param>
-    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="vectorSize">Embedding vector size. If provided, the database will be used ARRAY type to store embeddings. If not, the database will fall back to LIST.</param>
     private DuckDBMemoryStore(string filename, int? vectorSize = null)
     {
         this._dbConnector = new Database(vectorSize);
@@ -256,7 +256,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// Constructor
     /// </summary>
     /// <param name="connection"></param>
-    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="vectorSize">Embedding vector size. If provided, the database will be used ARRAY type to store embeddings. If not, the database will fall back to LIST.</param>
     private DuckDBMemoryStore(DuckDBConnection connection, int? vectorSize = null)
     {
         this._dbConnector = new Database(vectorSize);
