@@ -75,7 +75,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// Retrieve the resulting function from the chat result.
     /// </summary>
     /// <returns>The <see cref="OpenAIFunctionToolCall"/>, or null if no function was returned by the model.</returns>
-    public IReadOnlyList<OpenAIFunctionToolCall> GetFunctionToolCalls()
+    public IReadOnlyList<OpenAIFunctionToolCall> GetOpenAIFunctionToolCalls()
     {
         List<OpenAIFunctionToolCall>? functionToolCallList = null;
 
