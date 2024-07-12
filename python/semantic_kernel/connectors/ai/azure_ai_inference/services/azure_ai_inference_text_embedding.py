@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from azure.ai.inference.aio import EmbeddingsClient
 from azure.ai.inference.models import EmbeddingsResult
@@ -14,9 +14,11 @@ from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
 @experimental_class
