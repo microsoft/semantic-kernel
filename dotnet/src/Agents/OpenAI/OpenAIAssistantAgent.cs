@@ -256,7 +256,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <inheritdoc/>
     protected override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        this.Logger.LogDebug("[{MethodName}] Creating assistant thread", nameof(CreateChannelAsync));
+        this.Logger.LogOpenAIAssistantAgentCreatingChannel(nameof(CreateChannelAsync), nameof(OpenAIAssistantChannel));
 
         AssistantThread thread = await this._client.CreateThreadAsync(options: null, cancellationToken).ConfigureAwait(false);
 
@@ -267,6 +267,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             {
                 Logger = this.LoggerFactory.CreateLogger<OpenAIAssistantChannel>()
             };
+
+        this.Logger.LogOpenAIAssistantAgentCreatedChannel(nameof(CreateChannelAsync), nameof(OpenAIAssistantChannel), thread.Id);
+
+        return channel;
     }
 
     internal void ThrowIfDeleted()

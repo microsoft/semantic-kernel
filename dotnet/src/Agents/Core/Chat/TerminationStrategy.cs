@@ -55,19 +55,19 @@ public abstract class TerminationStrategy
     /// <returns>True to terminate chat loop.</returns>
     public async Task<bool> ShouldTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        this.Logger.LogDebug("[{MethodName}] Evaluating termination for agent {AgentType}: {AgentId}.", nameof(ShouldTerminateAsync), agent.GetType(), agent.Id);
+        this.Logger.LogTerminationStrategyEvaluatingCriteria(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id);
 
         // `Agents` must contain `agent`, if `Agents` not empty.
         if ((this.Agents?.Count ?? 0) > 0 && !this.Agents!.Any(a => a.Id == agent.Id))
         {
-            this.Logger.LogInformation("[{MethodName}] {AgentType} agent out of scope for termination: {AgentId}.", nameof(ShouldTerminateAsync), agent.GetType(), agent.Id);
+            this.Logger.LogTerminationStrategyAgentOutOfScope(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id);
 
             return false;
         }
 
         bool shouldTerminate = await this.ShouldAgentTerminateAsync(agent, history, cancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogInformation("[{MethodName}] Evaluated termination for agent {AgentType}: {AgentId} - {Termination}", nameof(ShouldTerminateAsync), agent.GetType(), agent.Id, shouldTerminate);
+        this.Logger.LogTerminationStrategyEvaluatedCriteria(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id, shouldTerminate);
 
         return shouldTerminate;
     }

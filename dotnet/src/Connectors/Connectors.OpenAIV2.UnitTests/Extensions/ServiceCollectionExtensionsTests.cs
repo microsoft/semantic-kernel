@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 using OpenAI;
@@ -15,6 +18,39 @@ namespace SemanticKernel.Connectors.OpenAI.UnitTests.Extensions;
 
 public class ServiceCollectionExtensionsTests
 {
+    #region Chat completion
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
+    public void ItCanAddChatCompletionService(InitializationType type)
+    {
+        // Arrange
+        var client = new OpenAIClient("key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton(client);
+
+        // Act
+        IServiceCollection collection = type switch
+        {
+            InitializationType.ApiKey => builder.Services.AddOpenAIChatCompletion("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.ClientInline => builder.Services.AddOpenAIChatCompletion("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.Services.AddOpenAIChatCompletion("deployment-name"),
+            _ => builder.Services
+        };
+
+        // Assert
+        var chatCompletionService = builder.Build().GetRequiredService<IChatCompletionService>();
+        Assert.True(chatCompletionService is OpenAIChatCompletionService);
+
+        var textGenerationService = builder.Build().GetRequiredService<ITextGenerationService>();
+        Assert.True(textGenerationService is OpenAIChatCompletionService);
+    }
+
+    #endregion
+
     [Fact]
     public void ItCanAddTextEmbeddingGenerationService()
     {
@@ -52,22 +88,7 @@ public class ServiceCollectionExtensionsTests
         var sut = new ServiceCollection();
 
         // Act
-        var service = sut.AddOpenAITextToImage("model", "key")
-            .BuildServiceProvider()
-            .GetRequiredService<ITextToImageService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
-    public void ItCanAddImageToTextServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = new ServiceCollection();
-
-        // Act
-        var service = sut.AddOpenAITextToImage("model", new OpenAIClient("key"))
+        var service = sut.AddOpenAITextToImage("key", modelId: "model")
             .BuildServiceProvider()
             .GetRequiredService<ITextToImageService>();
 
@@ -83,21 +104,6 @@ public class ServiceCollectionExtensionsTests
 
         // Act
         var service = sut.AddOpenAITextToAudio("model", "key")
-            .BuildServiceProvider()
-            .GetRequiredService<ITextToAudioService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
-    public void ItCanAddTextToAudioServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = new ServiceCollection();
-
-        // Act
-        var service = sut.AddOpenAITextToAudio("model", new OpenAIClient("key"))
             .BuildServiceProvider()
             .GetRequiredService<ITextToAudioService>();
 
@@ -136,6 +142,7 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
+    [Obsolete("This test is deprecated and will be removed in a future version.")]
     public void ItCanAddFileService()
     {
         // Arrange
@@ -145,5 +152,13 @@ public class ServiceCollectionExtensionsTests
         var service = sut.AddOpenAIFiles("key")
             .BuildServiceProvider()
             .GetRequiredService<OpenAIFileService>();
+    }
+
+    public enum InitializationType
+    {
+        ApiKey,
+        ClientInline,
+        ClientInServiceProvider,
+        ClientEndpoint,
     }
 }

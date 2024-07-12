@@ -114,7 +114,7 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     public async Task GetTextContentByDefaultWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", null, this._httpClient);
+        var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StringContent("Test audio-to-text response")
@@ -129,23 +129,23 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetTextContentsDoesLogActionAsync()
+    public async Task GetTextContentThrowsIfAudioCantBeReadAsync()
     {
-        // Assert
-        var modelId = "whisper-1";
-        var logger = new Mock<ILogger<OpenAITextToAudioService>>();
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-
-        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
-
         // Arrange
-        var sut = new OpenAIAudioToTextService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
+        var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", this._httpClient);
 
-        // Act
-        await sut.GetTextContentsAsync(new(new byte[] { 0x01, 0x02 }, "text/plain"));
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(async () => { await service.GetTextContentsAsync(new AudioContent(new Uri("http://remote-audio")), new OpenAIAudioToTextExecutionSettings("file.mp3")); });
+    }
 
-        // Assert
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAIAudioToTextService.GetTextContentsAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
+    [Fact]
+    public async Task GetTextContentThrowsIfFileNameIsInvalidAsync()
+    {
+        // Arrange
+        var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", this._httpClient);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(async () => { await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), new OpenAIAudioToTextExecutionSettings("invalid")); });
     }
 
     public void Dispose()

@@ -12,11 +12,12 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
+namespace SemanticKernel.Connectors.OpenAI.UnitTests.Files;
 
 /// <summary>
 /// Unit tests for <see cref="OpenAITextToImageService"/> class.
 /// </summary>
+[Obsolete("This class is deprecated and will be removed in a future version.")]
 public sealed class OpenAIFileServiceTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
@@ -39,6 +40,9 @@ public sealed class OpenAIFileServiceTests : IDisposable
         var service = includeLoggerFactory ?
             new OpenAIFileService("api-key", loggerFactory: this._mockLoggerFactory.Object) :
             new OpenAIFileService("api-key");
+
+        // Assert
+        Assert.NotNull(service);
     }
 
     [Theory]
@@ -50,98 +54,99 @@ public sealed class OpenAIFileServiceTests : IDisposable
         var service = includeLoggerFactory ?
             new OpenAIFileService(new Uri("http://localhost"), "api-key", loggerFactory: this._mockLoggerFactory.Object) :
             new OpenAIFileService(new Uri("http://localhost"), "api-key");
+
+        // Assert
+        Assert.NotNull(service);
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task DeleteFileWorksCorrectlyAsync(bool isCustomEndpoint)
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task DeleteFileWorksCorrectlyAsync(bool isAzure, bool isFailedRequest)
     {
         // Arrange
-        var service = this.CreateFileService(isCustomEndpoint);
-        using var response = this.CreateSuccessResponse(
-            """
-            {
-                "id": "123",
-                "filename": "test.txt",
-                "purpose": "assistants",
-                "bytes": 120000,
-                "created_at": 1677610602
-            }
-            """);
-
+        var service = this.CreateFileService(isAzure);
+        using var response =
+            isFailedRequest ?
+                this.CreateFailedResponse() :
+                this.CreateSuccessResponse(
+                    """
+                    {
+                        "id": "123",
+                        "filename": "test.txt",
+                        "purpose": "assistants",
+                        "bytes": 120000,
+                        "created_at": 1677610602
+                    }
+                    """);
         this._messageHandlerStub.ResponseToReturn = response;
 
         // Act & Assert
-        await service.DeleteFileAsync("file-id");
+        if (isFailedRequest)
+        {
+            await Assert.ThrowsAsync<HttpOperationException>(() => service.DeleteFileAsync("file-id"));
+        }
+        else
+        {
+            await service.DeleteFileAsync("file-id");
+        }
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task DeleteFileFailsAsExpectedAsync(bool isCustomEndpoint)
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task GetFileWorksCorrectlyAsync(bool isAzure, bool isFailedRequest)
     {
         // Arrange
-        var service = this.CreateFileService(isCustomEndpoint);
-        using var response = this.CreateFailedResponse();
-
+        var service = this.CreateFileService(isAzure);
+        using var response =
+            isFailedRequest ?
+                this.CreateFailedResponse() :
+                this.CreateSuccessResponse(
+                    """
+                    {
+                        "id": "123",
+                        "filename": "file.txt",
+                        "purpose": "assistants",
+                        "bytes": 120000,
+                        "created_at": 1677610602
+                    }
+                    """);
         this._messageHandlerStub.ResponseToReturn = response;
 
         // Act & Assert
-        await Assert.ThrowsAsync<HttpOperationException>(() => service.DeleteFileAsync("file-id"));
+        if (isFailedRequest)
+        {
+            await Assert.ThrowsAsync<HttpOperationException>(() => service.GetFileAsync("file-id"));
+        }
+        else
+        {
+            var file = await service.GetFileAsync("file-id");
+            Assert.NotNull(file);
+            Assert.NotEqual(string.Empty, file.Id);
+            Assert.NotEqual(string.Empty, file.FileName);
+            Assert.NotEqual(DateTime.MinValue, file.CreatedTimestamp);
+            Assert.NotEqual(0, file.SizeInBytes);
+        }
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task GetFileWorksCorrectlyAsync(bool isCustomEndpoint)
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task GetFilesWorksCorrectlyAsync(bool isAzure, bool isFailedRequest)
     {
         // Arrange
-        var service = this.CreateFileService(isCustomEndpoint);
-        using var response = this.CreateSuccessResponse(
-            """
-            {
-                "id": "123",
-                "filename": "file.txt",
-                "purpose": "assistants",
-                "bytes": 120000,
-                "created_at": 1677610602
-            }
-            """);
-
-        this._messageHandlerStub.ResponseToReturn = response;
-
-        // Act & Assert
-        var file = await service.GetFileAsync("file-id");
-        Assert.NotNull(file);
-        Assert.NotEqual(string.Empty, file.Id);
-        Assert.NotEqual(string.Empty, file.FileName);
-        Assert.NotEqual(DateTime.MinValue, file.CreatedTimestamp);
-        Assert.NotEqual(0, file.SizeInBytes);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task GetFileFailsAsExpectedAsync(bool isCustomEndpoint)
-    {
-        // Arrange
-        var service = this.CreateFileService(isCustomEndpoint);
-        using var response = this.CreateFailedResponse();
-        this._messageHandlerStub.ResponseToReturn = response;
-
-        // Act & Assert
-        await Assert.ThrowsAsync<HttpOperationException>(() => service.GetFileAsync("file-id"));
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task GetFilesWorksCorrectlyAsync(bool isCustomEndpoint)
-    {
-        // Arrange
-        var service = this.CreateFileService(isCustomEndpoint);
-        using var response = this.CreateSuccessResponse(
+        var service = this.CreateFileService(isAzure);
+        using var response =
+            isFailedRequest ?
+                this.CreateFailedResponse() :
+                this.CreateSuccessResponse(
                     """
                     {
                         "data": [
@@ -162,37 +167,29 @@ public sealed class OpenAIFileServiceTests : IDisposable
                         ]
                     }
                     """);
-
         this._messageHandlerStub.ResponseToReturn = response;
 
         // Act & Assert
-        var files = (await service.GetFilesAsync()).ToArray();
-        Assert.NotNull(files);
-        Assert.NotEmpty(files);
+        if (isFailedRequest)
+        {
+            await Assert.ThrowsAsync<HttpOperationException>(() => service.GetFilesAsync());
+        }
+        else
+        {
+            var files = (await service.GetFilesAsync()).ToArray();
+            Assert.NotNull(files);
+            Assert.NotEmpty(files);
+        }
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task GetFilesFailsAsExpectedAsync(bool isCustomEndpoint)
-    {
-        // Arrange
-        var service = this.CreateFileService(isCustomEndpoint);
-        using var response = this.CreateFailedResponse();
-
-        this._messageHandlerStub.ResponseToReturn = response;
-
-        await Assert.ThrowsAsync<HttpOperationException>(() => service.GetFilesAsync());
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task GetFileContentWorksCorrectlyAsync(bool isCustomEndpoint)
+    public async Task GetFileContentWorksCorrectlyAsync(bool isAzure)
     {
         // Arrange
         var data = BinaryData.FromString("Hello AI!");
-        var service = this.CreateFileService(isCustomEndpoint);
+        var service = this.CreateFileService(isAzure);
         this._messageHandlerStub.ResponseToReturn =
             new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
@@ -206,23 +203,27 @@ public sealed class OpenAIFileServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task UploadContentWorksCorrectlyAsync(bool isCustomEndpoint)
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task UploadContentWorksCorrectlyAsync(bool isAzure, bool isFailedRequest)
     {
         // Arrange
-        var service = this.CreateFileService(isCustomEndpoint);
-        using var response = this.CreateSuccessResponse(
-            """
-            {
-                "id": "123",
-                "filename": "test.txt",
-                "purpose": "assistants",
-                "bytes": 120000,
-                "created_at": 1677610602
-            }
-            """);
-
+        var service = this.CreateFileService(isAzure);
+        using var response =
+            isFailedRequest ?
+                this.CreateFailedResponse() :
+                this.CreateSuccessResponse(
+                    """
+                    {
+                        "id": "123",
+                        "filename": "test.txt",
+                        "purpose": "assistants",
+                        "bytes": 120000,
+                        "created_at": 1677610602
+                    }
+                    """);
         this._messageHandlerStub.ResponseToReturn = response;
 
         var settings = new OpenAIFileUploadExecutionSettings("test.txt", OpenAIFilePurpose.Assistants);
@@ -239,46 +240,25 @@ public sealed class OpenAIFileServiceTests : IDisposable
         var content = new BinaryContent(stream.ToArray(), "text/plain");
 
         // Act & Assert
-        var file = await service.UploadContentAsync(content, settings);
-        Assert.NotNull(file);
-        Assert.NotEqual(string.Empty, file.Id);
-        Assert.NotEqual(string.Empty, file.FileName);
-        Assert.NotEqual(DateTime.MinValue, file.CreatedTimestamp);
-        Assert.NotEqual(0, file.SizeInBytes);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task UploadContentFailsAsExpectedAsync(bool isCustomEndpoint)
-    {
-        // Arrange
-        var service = this.CreateFileService(isCustomEndpoint);
-        using var response = this.CreateFailedResponse();
-
-        this._messageHandlerStub.ResponseToReturn = response;
-
-        var settings = new OpenAIFileUploadExecutionSettings("test.txt", OpenAIFilePurpose.Assistants);
-
-        await using var stream = new MemoryStream();
-        await using (var writer = new StreamWriter(stream, leaveOpen: true))
+        if (isFailedRequest)
         {
-            await writer.WriteLineAsync("test");
-            await writer.FlushAsync();
+            await Assert.ThrowsAsync<HttpOperationException>(() => service.UploadContentAsync(content, settings));
         }
-
-        stream.Position = 0;
-
-        var content = new BinaryContent(stream.ToArray(), "text/plain");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<HttpOperationException>(() => service.UploadContentAsync(content, settings));
+        else
+        {
+            var file = await service.UploadContentAsync(content, settings);
+            Assert.NotNull(file);
+            Assert.NotEqual(string.Empty, file.Id);
+            Assert.NotEqual(string.Empty, file.FileName);
+            Assert.NotEqual(DateTime.MinValue, file.CreatedTimestamp);
+            Assert.NotEqual(0, file.SizeInBytes);
+        }
     }
 
-    private OpenAIFileService CreateFileService(bool isCustomEndpoint = false)
+    private OpenAIFileService CreateFileService(bool isAzure = false)
     {
         return
-            isCustomEndpoint ?
+            isAzure ?
                 new OpenAIFileService(new Uri("http://localhost"), "api-key", httpClient: this._httpClient) :
                 new OpenAIFileService("api-key", "organization", this._httpClient);
     }

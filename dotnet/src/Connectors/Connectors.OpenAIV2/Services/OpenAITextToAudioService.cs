@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -9,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToAudio;
-using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -38,34 +36,17 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
-    /// <param name="endpoint">Non-default endpoint for the OpenAI API.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAITextToAudioService(
         string modelId,
         string apiKey,
         string? organization = null,
-        Uri? endpoint = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
-        this._client = new(modelId, apiKey, organization, endpoint, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAITextToAudioService"/> class.
-    /// </summary>
-    /// <param name="modelId">Model name</param>
-    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextToAudioService(
-        string modelId,
-        OpenAIClient openAIClient,
-        ILoggerFactory? loggerFactory = null)
-    {
-        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
-        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
+        this._client = new(modelId, apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
     }
 
     /// <inheritdoc/>
@@ -74,8 +55,5 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-    {
-        this._client.LogActionDetails();
-        return this._client.GetAudioContentsAsync(text, executionSettings, cancellationToken);
-    }
+        => this._client.GetAudioContentsAsync(text, executionSettings, cancellationToken);
 }

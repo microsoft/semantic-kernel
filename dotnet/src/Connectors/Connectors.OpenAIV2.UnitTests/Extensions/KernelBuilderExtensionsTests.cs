@@ -1,10 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 using OpenAI;
@@ -51,22 +55,7 @@ public class KernelBuilderExtensionsTests
         var sut = Kernel.CreateBuilder();
 
         // Act
-        var service = sut.AddOpenAITextToImage("model", "key")
-            .Build()
-            .GetRequiredService<ITextToImageService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
-    public void ItCanAddTextToImageServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = Kernel.CreateBuilder();
-
-        // Act
-        var service = sut.AddOpenAITextToImage("model", new OpenAIClient("key"))
+        var service = sut.AddOpenAITextToImage("key", modelId: "model")
             .Build()
             .GetRequiredService<ITextToImageService>();
 
@@ -82,21 +71,6 @@ public class KernelBuilderExtensionsTests
 
         // Act
         var service = sut.AddOpenAITextToAudio("model", "key")
-            .Build()
-            .GetRequiredService<ITextToAudioService>();
-
-        // Assert
-        Assert.Equal("model", service.Attributes[AIServiceExtensions.ModelIdKey]);
-    }
-
-    [Fact]
-    public void ItCanAddTextToAudioServiceWithOpenAIClient()
-    {
-        // Arrange
-        var sut = Kernel.CreateBuilder();
-
-        // Act
-        var service = sut.AddOpenAITextToAudio("model", new OpenAIClient("key"))
             .Build()
             .GetRequiredService<ITextToAudioService>();
 
@@ -135,6 +109,7 @@ public class KernelBuilderExtensionsTests
     }
 
     [Fact]
+    [Obsolete("This test is deprecated and will be removed in a future version.")]
     public void ItCanAddFileService()
     {
         // Arrange
@@ -143,5 +118,46 @@ public class KernelBuilderExtensionsTests
         // Act
         var service = sut.AddOpenAIFiles("key").Build()
             .GetRequiredService<OpenAIFileService>();
+    }
+
+    #region Chat completion
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
+    public void KernelBuilderAddOpenAIChatCompletionAddsValidService(InitializationType type)
+    {
+        // Arrange
+        var client = new OpenAIClient("key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton(client);
+
+        // Act
+        builder = type switch
+        {
+            InitializationType.ApiKey => builder.AddOpenAIChatCompletion("model-id", "api-key"),
+            InitializationType.OpenAIClientInline => builder.AddOpenAIChatCompletion("model-id", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddOpenAIChatCompletion("model-id"),
+            _ => builder
+        };
+
+        // Assert
+        var chatCompletionService = builder.Build().GetRequiredService<IChatCompletionService>();
+        Assert.True(chatCompletionService is OpenAIChatCompletionService);
+
+        var textGenerationService = builder.Build().GetRequiredService<ITextGenerationService>();
+        Assert.True(textGenerationService is OpenAIChatCompletionService);
+    }
+
+    #endregion
+
+    public enum InitializationType
+    {
+        ApiKey,
+        OpenAIClientInline,
+        OpenAIClientInServiceProvider,
+        OpenAIClientEndpoint,
     }
 }

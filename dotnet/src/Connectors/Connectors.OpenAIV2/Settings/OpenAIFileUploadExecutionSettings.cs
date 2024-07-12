@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Execution settings associated with Open AI file upload <see cref="OpenAIFileService.UploadContentAsync"/>.
+/// Execution serttings associated with Open AI file upload <see cref="OpenAIFileService.UploadContentAsync"/>.
 /// </summary>
 [Experimental("SKEXP0010")]
+[Obsolete("Use OpenAI SDK or AzureOpenAI SDK clients for file operations. This class is deprecated and will be removed in a future version.")]
+[ExcludeFromCodeCoverage]
 public sealed class OpenAIFileUploadExecutionSettings
 {
     /// <summary>

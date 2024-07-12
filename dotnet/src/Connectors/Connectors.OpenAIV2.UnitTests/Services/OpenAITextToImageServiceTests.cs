@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using Moq;
-using OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
@@ -39,7 +38,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public void ConstructorWorksCorrectly()
     {
         // Arrange & Act
-        var sut = new OpenAITextToImageService("model", "api-key", "organization");
+        var sut = new OpenAITextToImageService("apikey", "organization", "model");
 
         // Assert
         Assert.NotNull(sut);
@@ -51,23 +50,9 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public void ItThrowsIfModelIdIsNotProvided()
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService(" ", "apikey"));
-        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService(" ", openAIClient: new("apikey")));
-        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService("", "apikey"));
-        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService("", openAIClient: new("apikey")));
-        Assert.Throws<ArgumentNullException>(() => new OpenAITextToImageService(null!, "apikey"));
-        Assert.Throws<ArgumentNullException>(() => new OpenAITextToImageService(null!, openAIClient: new("apikey")));
-    }
-
-    [Fact]
-    public void OpenAIClientConstructorWorksCorrectly()
-    {
-        // Arrange
-        var sut = new OpenAITextToImageService("model", new OpenAIClient("apikey"));
-
-        // Assert
-        Assert.NotNull(sut);
-        Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
+        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService("apikey", modelId: " "));
+        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService("apikey", modelId: string.Empty));
+        Assert.Throws<ArgumentNullException>(() => new OpenAITextToImageService("apikey", modelId: null!));
     }
 
     [Theory]
@@ -82,7 +67,7 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public async Task GenerateImageWorksCorrectlyAsync(int width, int height, string modelId)
     {
         // Arrange
-        var sut = new OpenAITextToImageService(modelId, "api-key", httpClient: this._httpClient);
+        var sut = new OpenAITextToImageService("api-key", modelId: modelId, httpClient: this._httpClient);
         Assert.Equal(modelId, sut.Attributes["ModelId"]);
 
         // Act 
@@ -90,26 +75,6 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
 
         // Assert
         Assert.Equal("https://image-url/", result);
-    }
-
-    [Fact]
-    public async Task GenerateImageDoesLogActionAsync()
-    {
-        // Assert
-        var modelId = "dall-e-2";
-        var logger = new Mock<ILogger<OpenAITextToImageService>>();
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-
-        this._mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(logger.Object);
-
-        // Arrange
-        var sut = new OpenAITextToImageService(modelId, "apiKey", httpClient: this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
-
-        // Act
-        await sut.GenerateImageAsync("description", 256, 256);
-
-        // Assert
-        logger.VerifyLog(LogLevel.Information, $"Action: {nameof(OpenAITextToImageService.GenerateImageAsync)}. OpenAI Model ID: {modelId}.", Times.Once());
     }
 
     public void Dispose()
