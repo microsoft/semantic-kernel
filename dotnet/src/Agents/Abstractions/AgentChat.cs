@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.Agents.Filters;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -49,6 +50,21 @@ public abstract class AgentChat
     /// Exposes the internal history to subclasses.
     /// </summary>
     protected ChatHistory History { get; }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public IAssistantMessageFilter? AssistantMessageFilter { get; set; }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public IManualFunctionCallProcessor? ManualFunctionCallProcessor { get; set; } = new HackFunctionCallProcessor(); // %%% HACK
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public ITerminatedFunctionResultProcessor? TerminatedFunctionResultProcessor { get; set; } // = new HackTerminatedFunctionResultProcessor(); // %%% HACK
 
     /// <summary>
     /// Process a series of interactions between the agents participating in this chat.
@@ -216,45 +232,26 @@ public abstract class AgentChat
 
             // Invoke agent & process response
             List<ChatMessageContent> messages = [];
-            bool didPostFunctionResult;
-            do
+
+            await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
-                didPostFunctionResult = false;
-                await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
+                this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType(), message);
+
+                // Capture potential message replacement
+                ChatMessageContent effectiveMessage = await this.OnAgentInvokedFilterAsync(agent, this.History, message, cancellationToken).ConfigureAwait(false);
+
+                // %%% Broadcast everything
+                messages.Add(effectiveMessage);
+
+                // Add to primary history
+                this.History.Add(effectiveMessage);
+
+                if (!effectiveMessage.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
                 {
-                    this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType(), message);
-
-                    messages.Add(message);
-
-                    if (message.Items.Any(i => i is FunctionCallContent)) // %%% AGENTCHAT FILTER: Manual Function Invocation
-                    {
-                        ChatMessageContent functionResultContent = await this.OnManualFunctionInvocationAsync(agent, message).ConfigureAwait(false);
-                        await channel.CaptureFunctionResultAsync(functionResultContent, cancellationToken).ConfigureAwait(false);
-                        didPostFunctionResult = true;
-                        continue;
-                    }
-
-                    ChatMessageContent assistantMessage = message;
-
-                    if (message.Items.Any(i => i is FunctionResultContent)) // %%% AGENTCHAT FILTER: Autocomplete Function Termination, et al...
-                    {
-                        assistantMessage = this.OnFunctionResultTransformation(agent, message);
-                    }
-                    else
-                    {
-
-                    }
-
-                    // Add to primary history
-                    this.History.Add(assistantMessage);
-
-                    //messages.Add(assistantMessage);
-
                     // Yield message to caller
-                    yield return assistantMessage;
+                    yield return effectiveMessage;
                 }
             }
-            while (didPostFunctionResult);
 
             // Broadcast message to other channels (in parallel)
             // Note: Able to queue messages without synchronizing channels.
@@ -280,15 +277,15 @@ public abstract class AgentChat
                 this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
                 channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
+                channel.ManualFunctionCallProcessor = this.ManualFunctionCallProcessor; // %%% HACK
+                channel.TerminatedFunctionResultProcessor = this.TerminatedFunctionResultProcessor; // %%% HACK
 
                 this._agentChannels.Add(channelKey, channel);
 
                 if (this.History.Count > 0)
                 {
                     // Sync channel with existing history (user and assistant messages only / no function content)
-                    await channel.ReceiveAsync(
-                        this.History.Where(m => m.Role != AuthorRole.Tool && !m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent)), // %%% BIG PROBLEM
-                        cancellationToken).ConfigureAwait(false);
+                    await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
                 }
 
                 this.Logger.LogInformation("[{MethodName}] Created channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
@@ -298,32 +295,6 @@ public abstract class AgentChat
         }
     }
 
-    private async Task<ChatMessageContent> OnManualFunctionInvocationAsync(Agent agent, ChatMessageContent message)
-    {
-        // %%% GET FILTER IF EXISTS
-
-        // %%% FAKE
-        KernelAgent kernelAgent = agent as KernelAgent ?? throw new KernelException("Agent must be a KernelAgent to invoke functions.");
-        FunctionCallContent functionCall = message.Items.OfType<FunctionCallContent>().Single();
-        FunctionResultContent functionResult = await functionCall.InvokeAsync(kernelAgent.Kernel).ConfigureAwait(false);
-        return functionResult.ToChatMessage();
-    }
-
-    private ChatMessageContent OnFunctionResultTransformation(Agent agent, ChatMessageContent message)
-    {
-        // %%% GET FILTER IF EXISTS
-
-        // Default logic if no filter
-        ChatMessageContent transformedResult =
-            new(AuthorRole.Assistant, content: message.Content)
-            {
-                Items = [.. message.Items.OfType<TextContent>().Cast<KernelContent>()],
-                //Items = [new TextContent("transformed"],
-            };
-
-        return transformedResult;
-    }
-
     /// <summary>
     /// Clear activity signal to indicate that activity has ceased.
     /// </summary>
@@ -331,6 +302,28 @@ public abstract class AgentChat
     {
         // Note: Interlocked is the absolute lightest synchronization mechanism available in dotnet.
         Interlocked.Exchange(ref this._isActive, 0);
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <param name="history"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    private async Task<ChatMessageContent> OnAgentInvokedFilterAsync(Agent agent, ChatHistory history, ChatMessageContent message, CancellationToken cancellationToken)
+    {
+        if (this.AssistantMessageFilter != null)
+        {
+            AssistantMessageContext context = new(agent, history, message) { CancellationToken = cancellationToken };
+            IEnumerable<KernelContent> content = await this.AssistantMessageFilter.OnFilterAssistantMessage(context).ConfigureAwait(false);
+
+            return new(message.Role, [.. content], message.ModelId, message.InnerContent, message.Encoding, message.Metadata); // %%%
+        }
+
+        return message;
     }
 
     /// <summary>
@@ -386,5 +379,24 @@ public abstract class AgentChat
         this._broadcastQueue = new();
         this._channelMap = [];
         this.History = [];
+    }
+
+    private sealed class HackFunctionCallProcessor : IManualFunctionCallProcessor // %%% HACK
+    {
+        /// <inheritdoc/>
+        public async Task OnProcessFunctionCallAsync(ManualFunctionCallContext context)
+        {
+            context.Result = await context.Function.InvokeAsync(context.Kernel, context.Arguments).ConfigureAwait(false);
+        }
+    }
+
+    private class HackTerminatedFunctionResultProcessor : ITerminatedFunctionResultProcessor
+    {
+        public Task OnProcessTerminatedFunctionResultAsync(TerminatedFunctionResultContext context)
+        {
+            context.TransformedContent = context.FunctionResults.Select(r => new TextContent(r.ToString())).ToArray();
+
+            return Task.CompletedTask;
+        }
     }
 }

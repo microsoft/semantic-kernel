@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Agents.Filters;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -49,6 +50,36 @@ public abstract class AgentChannel
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     protected internal abstract Task CaptureFunctionResultAsync(ChatMessageContent functionResultsMessage, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    protected Task<ChatMessageContent> OnManualFunctionCallAsync(Agent agent, ChatMessageContent message, CancellationToken cancellationToken)
+        => ChannelProcessors.ProcessManualFunctionCallAsync(this, agent, message, cancellationToken);
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    protected Task<ChatMessageContent> OnTerminatedFunctionResultAsync(Agent agent, ChatMessageContent message, CancellationToken cancellationToken)
+        => ChannelProcessors.ProcessTerminatedFunctionResultAsync(this, agent, message, cancellationToken);
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    internal IManualFunctionCallProcessor? ManualFunctionCallProcessor { get; set; } // %%% HACK
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    internal ITerminatedFunctionResultProcessor? TerminatedFunctionResultProcessor { get; set; } // %%% HACK
 }
 
 /// <summary>

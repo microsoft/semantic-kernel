@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,22 +27,60 @@ public class ChatHistoryChannel : AgentChannel
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
-        int messageCount = this._history.Count;
-
-        await foreach (ChatMessageContent message in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
+        bool didPostFunctionResult;
+        do
         {
-            //for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++) // %%% DECISION POINT
-            //{
-            //    yield return this._history[messageIndex];
-            //}
+            didPostFunctionResult = false; // Clear on each iteration
 
-            if (message.Role != AuthorRole.Tool) // %%% BIG PROBLEM
+            int messageCount = this._history.Count;
+            HashSet<ChatMessageContent> mutatedHistory = [];
+
+            Queue<ChatMessageContent> messageQueue = [];
+            ChatMessageContent? yieldMessage = null;
+            await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
             {
-                this._history.Add(message);
+                for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)
+                {
+                    ChatMessageContent mutatedMessage = this._history[messageIndex];
+                    mutatedHistory.Add(mutatedMessage);
+                    messageQueue.Enqueue(mutatedMessage);
+                }
+
+                if (!mutatedHistory.Contains(responseMessage))
+                {
+                    this._history.Add(responseMessage);
+                    messageQueue.Enqueue(responseMessage);
+                }
+
+                yieldMessage = messageQueue.Dequeue();
+                yield return yieldMessage;
             }
 
-            yield return message;
+            while (messageQueue.Count > 0)
+            {
+                yieldMessage = messageQueue.Dequeue();
+
+                yield return yieldMessage;
+            }
+
+            if (yieldMessage != null)
+            {
+                // Process manual Function Invocation
+                if (yieldMessage.Items.Any(i => i is FunctionCallContent))
+                {
+                    ChatMessageContent functionResultContent = await this.OnManualFunctionCallAsync(agent, yieldMessage, cancellationToken).ConfigureAwait(false);
+                    yield return functionResultContent;
+                    didPostFunctionResult = true;
+                }
+
+                // Autocomplete Function Termination, et al...
+                if (yieldMessage.Items.Any(i => i is FunctionResultContent))
+                {
+                    yield return await this.OnTerminatedFunctionResultAsync(agent, yieldMessage, cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
+        while (didPostFunctionResult);
     }
 
     /// <inheritdoc/>

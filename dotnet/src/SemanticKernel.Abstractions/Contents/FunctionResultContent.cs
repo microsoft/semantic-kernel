@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -82,6 +83,24 @@ public sealed class FunctionResultContent : KernelContent
     /// <returns>The <see cref="ChatMessageContent"/> instance.</returns>
     public ChatMessageContent ToChatMessage()
     {
-        return new ChatMessageContent(AuthorRole.Tool, [this]);
+        string? resultContent = this.Result as string;
+
+        if (string.IsNullOrEmpty(resultContent) &&
+            this.Result is ChatMessageContent chatMessageContent)
+        {
+            resultContent = chatMessageContent.ToString();
+        }
+
+        if (string.IsNullOrEmpty(resultContent) &&
+            this.Result is Exception exception)
+        {
+            resultContent = exception.ToString();
+        }
+
+        ChatMessageContent chatMessage = new(AuthorRole.Tool, content: resultContent);
+
+        chatMessage.Items.Add(this);
+
+        return chatMessage;
     }
 }
