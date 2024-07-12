@@ -64,7 +64,7 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-identity</artifactId>
-            <version>1.9.1</version>
+            <version>1.12.2</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
