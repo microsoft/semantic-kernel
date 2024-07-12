@@ -55,12 +55,12 @@ jobs:
         uses: MishaKav/pytest-coverage-comment@main
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          pytest-coverage-path: python-coverage-${{ env.FILE_ID }}.txt
+          pytest-coverage-path: python-coverage.txt
           coverage-path-prefix: "python/"
           title: "Python ${{ env.PYTHON_VERSION }} Test Coverage Report"
           badge-title: "Py${{ env.PYTHON_VERSION }} Test Coverage"
           report-only-changed-files: true
           junitxml-title: "Python ${{ env.PYTHON_VERSION }} Unit Test Overview"
-          junitxml-path: pytest-${{ env.FILE_ID }}.xml
+          junitxml-path: pytest.xml
           default-branch: "main"
           unique-id-for-comment: python-${{ env.PYTHON_VERSION }}
