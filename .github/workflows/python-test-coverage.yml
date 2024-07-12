@@ -25,7 +25,6 @@ jobs:
         os: [ubuntu-latest]
     steps:
       - name: Wait for unit tests to succeed
-        continue-on-error: true
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -37,7 +36,6 @@ jobs:
       - name: Setup filename variables
         run: echo "FILE_ID=${{ github.event.number }}-${{ matrix.os }}-${{ matrix.python-version }}" >> $GITHUB_ENV
       - name: Download coverage
-        continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
           name: python-coverage-${{ env.FILE_ID }}.txt
@@ -46,7 +44,6 @@ jobs:
           search_artifacts: true
           if_no_artifact_found: warn
       - name: Download pytest
-        continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
           name: pytest-${{ env.FILE_ID }}.xml
@@ -55,7 +52,6 @@ jobs:
           search_artifacts: true
           if_no_artifact_found: warn
       - name: Pytest coverage comment
-        continue-on-error: true
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:
