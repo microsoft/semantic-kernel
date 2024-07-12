@@ -1,27 +1,30 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections import OrderedDict
 from collections.abc import Callable
 from enum import Enum
 from typing import TYPE_CHECKING, Literal, TypeVar
 
-from pydantic.dataclasses import dataclass
 from typing_extensions import deprecated
 
+from semantic_kernel.connectors.ai.function_calling_utils import _combine_filter_dicts
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.kernel import Kernel
+
 
 DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS = 5
 
 logger = logging.getLogger(__name__)
+
+
+_T = TypeVar("_T", bound="FunctionChoiceBehavior")
 
 
 @experimental_class
@@ -34,40 +37,6 @@ class FunctionChoiceType(Enum):
 
 
 @experimental_class
-@dataclass
-class FunctionCallChoiceConfiguration:
-    """Configuration for function call choice."""
-
-    available_functions: list[KernelFunctionMetadata] | None = None
-
-
-def _combine_filter_dicts(*dicts: dict[str, list[str]]) -> dict:
-    """Combine multiple filter dictionaries with list values into one dictionary.
-
-    This method is ensuring unique values while preserving order.
-    """
-    combined_filters = {}
-
-    keys = set().union(*(d.keys() for d in dicts))
-
-    for key in keys:
-        combined_functions: OrderedDict[str, None] = OrderedDict()
-        for d in dicts:
-            if key in d:
-                if isinstance(d[key], list):
-                    for item in d[key]:
-                        combined_functions[item] = None
-                else:
-                    raise ServiceInitializationError(f"Values for filter key '{key}' are not lists.")
-        combined_filters[key] = list(combined_functions.keys())
-
-    return combined_filters
-
-
-_T = TypeVar("_T", bound="FunctionChoiceBehavior")
-
-
-@experimental_class
 class FunctionChoiceBehavior(KernelBaseModel):
     """Class that controls function choice behavior.
 
@@ -76,7 +45,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         max_auto_invoke_attempts: The maximum number of auto invoke attempts.
         filters: Filters for the function choice behavior. Available options are: excluded_plugins,
             included_plugins, excluded_functions, or included_functions.
-        type: The type of function choice behavior.
+        type_: The type of function choice behavior.
 
     Properties:
         auto_invoke_kernel_functions: Check if the kernel functions should be auto-invoked.
@@ -148,8 +117,10 @@ class FunctionChoiceBehavior(KernelBaseModel):
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
         ]
         | None = {},
-    ) -> FunctionCallChoiceConfiguration:
+    ) -> "FunctionCallChoiceConfiguration":
         """Check for missing functions and get the function call choice configuration."""
+        from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+
         if filters:
             return FunctionCallChoiceConfiguration(available_functions=kernel.get_list_of_function_metadata(filters))
         return FunctionCallChoiceConfiguration(available_functions=kernel.get_full_list_of_function_metadata())
@@ -169,7 +140,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         if config:
             update_settings_callback(config, settings, self.type_)
 
-    def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:
+    def get_config(self, kernel: "Kernel") -> "FunctionCallChoiceConfiguration":
         """Get the function call choice configuration based on the type."""
         return self._check_and_get_config(kernel, self.filters)
 
@@ -192,7 +163,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         """
         kwargs.setdefault("maximum_auto_invoke_attempts", DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if auto_invoke else 0)
         return cls(
-            type=FunctionChoiceType.AUTO,
+            type_=FunctionChoiceType.AUTO,
             filters=filters,
             **kwargs,
         )
@@ -215,7 +186,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         """
         kwargs.setdefault("maximum_auto_invoke_attempts", 0)
         return cls(
-            type=FunctionChoiceType.NONE,
+            type_=FunctionChoiceType.NONE,
             filters=filters,
             **kwargs,
         )
@@ -239,7 +210,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         """
         kwargs.setdefault("maximum_auto_invoke_attempts", 1 if auto_invoke else 0)
         return cls(
-            type=FunctionChoiceType.REQUIRED,
+            type_=FunctionChoiceType.REQUIRED,
             filters=filters,
             **kwargs,
         )
