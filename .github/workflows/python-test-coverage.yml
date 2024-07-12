@@ -11,7 +11,7 @@ on:
       - in_progress
 
 env:
-  PYTHON_VERSION: 3.10
+  PYTHON_VERSION: "3.10"
   RUN_OS: ubuntu-latest
 
 jobs:
