@@ -3,7 +3,7 @@
 import logging
 import sys
 from collections.abc import AsyncGenerator, AsyncIterator, Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -17,7 +17,6 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -26,6 +25,9 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -75,7 +77,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
     async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
-        settings: PromptExecutionSettings,
+        settings: "PromptExecutionSettings",
         **kwargs: Any,
     ) -> list[ChatMessageContent]:
         """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -117,7 +119,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
     async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
-        settings: PromptExecutionSettings,
+        settings: "PromptExecutionSettings",
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Streams a text completion using an Ollama model.
@@ -163,7 +165,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
     async def get_text_contents(
         self,
         prompt: str,
-        settings: PromptExecutionSettings,
+        settings: "PromptExecutionSettings",
     ) -> list[TextContent]:
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -201,7 +203,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
     async def get_streaming_text_contents(
         self,
         prompt: str,
-        settings: PromptExecutionSettings,
+        settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """Streams a text completion using an Ollama model.
 

@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ollama import AsyncClient
 from pydantic import ValidationError
@@ -10,8 +10,10 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaEmbeddingPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
