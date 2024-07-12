@@ -9,7 +9,7 @@ from semantic_kernel.const import USER_AGENT
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
-def test_open_ai_chat_completion_init(openai_unit_test_env) -> None:
+def test_init(openai_unit_test_env) -> None:
     # Test successful initialization
     open_ai_chat_completion = OpenAIChatCompletion()
 
@@ -17,7 +17,13 @@ def test_open_ai_chat_completion_init(openai_unit_test_env) -> None:
     assert isinstance(open_ai_chat_completion, ChatCompletionClientBase)
 
 
-def test_open_ai_chat_completion_init_ai_model_id_constructor(openai_unit_test_env) -> None:
+def test_init_validation_fail() -> None:
+    # Test successful initialization
+    with pytest.raises(ServiceInitializationError):
+        OpenAIChatCompletion(api_key="34523", ai_model_id={"test": "dict"})
+
+
+def test_init_ai_model_id_constructor(openai_unit_test_env) -> None:
     # Test successful initialization
     ai_model_id = "test_model_id"
     open_ai_chat_completion = OpenAIChatCompletion(ai_model_id=ai_model_id)
@@ -26,7 +32,7 @@ def test_open_ai_chat_completion_init_ai_model_id_constructor(openai_unit_test_e
     assert isinstance(open_ai_chat_completion, ChatCompletionClientBase)
 
 
-def test_open_ai_chat_completion_init_with_default_header(openai_unit_test_env) -> None:
+def test_init_with_default_header(openai_unit_test_env) -> None:
     default_headers = {"X-Unit-Test": "test-guid"}
 
     # Test successful initialization
@@ -43,8 +49,8 @@ def test_open_ai_chat_completion_init_with_default_header(openai_unit_test_env) 
         assert open_ai_chat_completion.client.default_headers[key] == value
 
 
-@pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
-def test_open_ai_chat_completion_init_with_empty_model_id(openai_unit_test_env) -> None:
+@pytest.mark.parametrize("exclude_list", [["OPENAI_CHAT_MODEL_ID"]], indirect=True)
+def test_init_with_empty_model_id(openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         OpenAIChatCompletion(
             env_file_path="test.env",
@@ -52,7 +58,7 @@ def test_open_ai_chat_completion_init_with_empty_model_id(openai_unit_test_env) 
 
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
-def test_open_ai_chat_completion_init_with_empty_api_key(openai_unit_test_env) -> None:
+def test_init_with_empty_api_key(openai_unit_test_env) -> None:
     ai_model_id = "test_model_id"
 
     with pytest.raises(ServiceInitializationError):
@@ -62,7 +68,7 @@ def test_open_ai_chat_completion_init_with_empty_api_key(openai_unit_test_env) -
         )
 
 
-def test_open_ai_chat_completion_serialize(openai_unit_test_env) -> None:
+def test_serialize(openai_unit_test_env) -> None:
     default_headers = {"X-Unit-Test": "test-guid"}
 
     settings = {
@@ -83,7 +89,7 @@ def test_open_ai_chat_completion_serialize(openai_unit_test_env) -> None:
     assert USER_AGENT not in dumped_settings["default_headers"]
 
 
-def test_open_ai_chat_completion_serialize_with_org_id(openai_unit_test_env) -> None:
+def test_serialize_with_org_id(openai_unit_test_env) -> None:
     settings = {
         "ai_model_id": openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         "api_key": openai_unit_test_env["OPENAI_API_KEY"],
