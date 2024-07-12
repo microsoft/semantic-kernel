@@ -26,7 +26,7 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
-        /// Create a chat for agent interaction. For more, <see cref="Step3_Chat"/>.
+        /// Create the chat history to capture the agent interaction.
         ChatHistory chat = [];
 
         // Respond to user input
@@ -43,6 +43,8 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
 
             await foreach (ChatMessageContent content in agent.InvokeAsync(chat))
             {
+                chat.Add(content);
+
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }

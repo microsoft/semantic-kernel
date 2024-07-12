@@ -36,7 +36,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
-        // Create a chat for agent interaction.
+        // Create a thread for the agent interaction.
         string threadId = await agent.CreateThreadAsync();
 
         // Respond to user input
@@ -60,7 +60,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in agent.InvokeAsync(threadId))
+            await foreach (ChatMessageContent content in agent.InvokeAsync(threadId))
             {
                 if (content.Role != AuthorRole.Tool)
                 {
