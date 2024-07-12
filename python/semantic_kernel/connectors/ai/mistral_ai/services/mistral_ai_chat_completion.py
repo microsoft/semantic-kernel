@@ -20,6 +20,7 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
     MistralAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -95,20 +96,24 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
     async def get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
-        settings: "MistralAIChatPromptExecutionSettings",  # type: ignore[override]
+        settings: "PromptExecutionSettings",
         **kwargs: Any,
     ) -> list["ChatMessageContent"]: 
         """Executes a chat completion request and returns the result.
 
         Args:
             chat_history (ChatHistory): The chat history to use for the chat completion.
-            settings (MistralAIChatPromptExecutionSettings): The settings to use
+            settings (PromptExecutionSettings): The settings to use
                 for the chat completion request.
             kwargs (Dict[str, Any]): The optional arguments.
 
         Returns:
             List[ChatMessageContent]: The completion result(s).
         """
+        if not isinstance(settings, MistralAIChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, MistralAIChatPromptExecutionSettings)  # nosec
+
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
 
@@ -128,14 +133,14 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
     async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
-        settings: MistralAIChatPromptExecutionSettings,  # type: ignore[override]
+        settings: PromptExecutionSettings, 
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]: 
         """Executes a streaming chat completion request and returns the result.
 
         Args:
             chat_history (ChatHistory): The chat history to use for the chat completion.
-            settings (MistralAIChatPromptExecutionSettings): The settings to use
+            settings (PromptExecutionSettings): The settings to use
                 for the chat completion request.
             kwargs (Dict[str, Any]): The optional arguments.
 
@@ -143,6 +148,10 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             List[StreamingChatMessageContent]: A stream of
                 StreamingChatMessageContent when using Azure.
         """
+        if not isinstance(settings, MistralAIChatPromptExecutionSettings):
+            settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, MistralAIChatPromptExecutionSettings)  # nosec
+
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
 
