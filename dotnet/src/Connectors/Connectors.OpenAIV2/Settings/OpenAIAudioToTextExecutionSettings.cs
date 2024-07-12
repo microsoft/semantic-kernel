@@ -61,11 +61,10 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// The format of the transcript output, in one of these options: Text, Simple, Verbose, Sttor vtt. Default is 'json'.
+    /// The format of the transcript output, in one of these options: json, srt, verbose_json, or vtt. Default is 'json'.
     /// </summary>
     [JsonPropertyName("response_format")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public AudioTranscriptionFormat? ResponseFormat
+    public string ResponseFormat
     {
         get => this._responseFormat;
 
@@ -180,7 +179,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     private const string DefaultFilename = "file.mp3";
 
     private float _temperature = 0;
-    private AudioTranscriptionFormat? _responseFormat;
+    private string _responseFormat = "json";
     private string _filename;
     private string? _language;
     private string? _prompt;

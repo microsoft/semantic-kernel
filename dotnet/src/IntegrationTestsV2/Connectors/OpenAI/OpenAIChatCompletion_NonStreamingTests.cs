@@ -77,7 +77,7 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
 
-        Assert.True(result.Metadata.TryGetValue("LogProbabilityInfo", out object? logProbabilityInfo));
+        Assert.True(result.Metadata.TryGetValue("ContentTokenLogProbabilities", out object? logProbabilityInfo));
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
     }
 
@@ -136,7 +136,7 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
 
-        Assert.True(result.Metadata.TryGetValue("LogProbabilityInfo", out object? logProbabilityInfo));
+        Assert.True(result.Metadata.TryGetValue("ContentTokenLogProbabilities", out object? logProbabilityInfo));
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
     }
 

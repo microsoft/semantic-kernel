@@ -60,7 +60,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(result.Metadata.TryGetValue("CreatedAt", out object? createdAt));
         Assert.NotNull(createdAt);
 
-        Assert.True(result.Metadata.ContainsKey("PromptFilterResults"));
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForPrompt"));
 
         Assert.True(result.Metadata.ContainsKey("SystemFingerprint"));
 
@@ -76,12 +76,12 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
 
-        Assert.True(result.Metadata.ContainsKey("ContentFilterResults"));
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForResponse"));
 
         Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
 
-        Assert.True(result.Metadata.TryGetValue("LogProbabilityInfo", out object? logProbabilityInfo));
+        Assert.True(result.Metadata.TryGetValue("ContentTokenLogProbabilities", out object? logProbabilityInfo));
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
     }
 
@@ -123,7 +123,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(result.Metadata.TryGetValue("CreatedAt", out object? createdAt));
         Assert.NotNull(createdAt);
 
-        Assert.True(result.Metadata.ContainsKey("PromptFilterResults"));
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForPrompt"));
 
         Assert.True(result.Metadata.ContainsKey("SystemFingerprint"));
 
@@ -139,12 +139,12 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
 
-        Assert.True(result.Metadata.ContainsKey("ContentFilterResults"));
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForResponse"));
 
         Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
 
-        Assert.True(result.Metadata.TryGetValue("LogProbabilityInfo", out object? logProbabilityInfo));
+        Assert.True(result.Metadata.TryGetValue("ContentTokenLogProbabilities", out object? logProbabilityInfo));
         Assert.Empty((logProbabilityInfo as IReadOnlyList<ChatTokenLogProbabilityInfo>)!);
     }
 

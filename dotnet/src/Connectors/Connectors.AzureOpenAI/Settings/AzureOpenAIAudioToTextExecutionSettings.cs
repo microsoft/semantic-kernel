@@ -62,11 +62,10 @@ public sealed class AzureOpenAIAudioToTextExecutionSettings : PromptExecutionSet
     }
 
     /// <summary>
-    /// The format of the transcript output, in one of these options: Text, Simple, Verbose, Sttor vtt. Default is 'json'.
+    /// The format of the transcript output, in one of these options: json, srt, verbose_json, or vtt. Default is 'json'.
     /// </summary>
     [JsonPropertyName("response_format")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public AudioTranscriptionFormat? ResponseFormat
+    public string ResponseFormat
     {
         get => this._responseFormat;
 
@@ -155,38 +154,12 @@ public sealed class AzureOpenAIAudioToTextExecutionSettings : PromptExecutionSet
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureOpenAIAudioToTextExecutionSettings)}", nameof(executionSettings));
     }
 
-    /// <summary>
-    /// Specifies the format of the audio transcription.
-    /// </summary>
-    public enum AudioTranscriptionFormat
-    {
-        /// <summary>
-        /// Response body that is a JSON object containing a single 'text' field for the transcription.
-        /// </summary>
-        Simple,
-
-        /// <summary>
-        /// Use a response body that is a JSON object containing transcription text along with timing, segments, and other metadata.
-        /// </summary>
-        Verbose,
-
-        /// <summary>
-        /// Response body that is plain text in SubRip (SRT) format that also includes timing information.
-        /// </summary>
-        Srt,
-
-        /// <summary>
-        /// Response body that is plain text in Web Video Text Tracks (VTT) format that also includes timing information.
-        /// </summary>
-        Vtt,
-    }
-
     #region private ================================================================================
 
     private const string DefaultFilename = "file.mp3";
 
     private float _temperature = 0;
-    private AudioTranscriptionFormat? _responseFormat;
+    private string _responseFormat = "json";
     private string _filename;
     private string? _language;
     private string? _prompt;
