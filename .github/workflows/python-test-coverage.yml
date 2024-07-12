@@ -13,7 +13,7 @@ on:
 jobs:
   python-tests-coverage:
     name: Create Test Coverage Messages
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     continue-on-error: true
     permissions:
       pull-requests: write
