@@ -120,8 +120,6 @@
     <Compile Remove="Agents\OpenAIAssistant_FileManipulation.cs" />
     <Compile Remove="Agents\OpenAIAssistant_FileService.cs" />
     <Compile Remove="Agents\OpenAIAssistant_Retrieval.cs" />
-    <Compile Remove="AudioToText\OpenAI_AudioToText.cs" />
-    <Compile Remove="Caching\SemanticCachingWithFilters.cs" />
     <Compile Remove="ChatCompletion\AzureOpenAIWithData_ChatCompletion.cs" />
     <Compile Remove="ChatCompletion\ChatHistoryAuthorName.cs" />
     <Compile Remove="ChatCompletion\ChatHistorySerialization.cs" />
@@ -145,11 +143,6 @@
     <Compile Remove="ChatCompletion\OpenAI_ReasonedFunctionCalling.cs" />
     <Compile Remove="ChatCompletion\OpenAI_RepeatedFunctionCalling.cs" />
     <Compile Remove="ChatCompletion\OpenAI_UsingLogitBias.cs" />
-    <Compile Remove="ChatPrompts\SafeChatPrompts.cs" />
-    <Compile Remove="DependencyInjection\HttpClient_Registration.cs" />
-    <Compile Remove="DependencyInjection\HttpClient_Resiliency.cs" />
-    <Compile Remove="DependencyInjection\Kernel_Building.cs" />
-    <Compile Remove="DependencyInjection\Kernel_Injecting.cs" />
     <Compile Remove="Filtering\AutoFunctionInvocationFiltering.cs" />
     <Compile Remove="Filtering\FunctionInvocationFiltering.cs" />
     <Compile Remove="Filtering\Legacy_KernelHooks.cs" />
@@ -231,8 +224,6 @@
     <None Include="Agents\OpenAIAssistant_FileManipulation.cs" />
     <None Include="Agents\OpenAIAssistant_FileService.cs" />
     <None Include="Agents\OpenAIAssistant_Retrieval.cs" />
-    <None Include="AudioToText\OpenAI_AudioToText.cs" />
-    <None Include="Caching\SemanticCachingWithFilters.cs" />
     <None Include="ChatCompletion\AzureOpenAIWithData_ChatCompletion.cs" />
     <None Include="ChatCompletion\ChatHistoryAuthorName.cs" />
     <None Include="ChatCompletion\ChatHistorySerialization.cs" />
@@ -256,11 +247,6 @@
     <None Include="ChatCompletion\OpenAI_ReasonedFunctionCalling.cs" />
     <None Include="ChatCompletion\OpenAI_RepeatedFunctionCalling.cs" />
     <None Include="ChatCompletion\OpenAI_UsingLogitBias.cs" />
-    <None Include="ChatPrompts\SafeChatPrompts.cs" />
-    <None Include="DependencyInjection\HttpClient_Registration.cs" />
-    <None Include="DependencyInjection\HttpClient_Resiliency.cs" />
-    <None Include="DependencyInjection\Kernel_Building.cs" />
-    <None Include="DependencyInjection\Kernel_Injecting.cs" />
     <None Include="Filtering\AutoFunctionInvocationFiltering.cs" />
     <None Include="Filtering\FunctionInvocationFiltering.cs" />
     <None Include="Filtering\Legacy_KernelHooks.cs" />
