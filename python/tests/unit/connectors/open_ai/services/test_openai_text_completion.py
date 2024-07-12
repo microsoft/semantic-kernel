@@ -174,6 +174,26 @@ async def test_tc(
 
 @pytest.mark.asyncio
 @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
+async def test_tc_singular(
+    mock_create,
+    openai_unit_test_env,
+    completion_response,
+) -> None:
+    mock_create.return_value = completion_response
+    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(service_id="test_service_id")
+
+    openai_text_completion = OpenAITextCompletion()
+    await openai_text_completion.get_text_content(prompt="test", settings=complete_prompt_execution_settings)
+    mock_create.assert_awaited_once_with(
+        model=openai_unit_test_env["OPENAI_TEXT_MODEL_ID"],
+        stream=False,
+        prompt="test",
+        echo=False,
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
 async def test_tc_prompt_execution_settings(
     mock_create,
     openai_unit_test_env,
@@ -192,6 +212,9 @@ async def test_tc_prompt_execution_settings(
     )
 
 
+# region Streaming
+
+
 @pytest.mark.asyncio
 @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
 async def test_stc(
@@ -206,6 +229,31 @@ async def test_stc(
     [
         text
         async for text in openai_text_completion.get_streaming_text_contents(
+            prompt="test", settings=complete_prompt_execution_settings
+        )
+    ]
+    mock_create.assert_awaited_once_with(
+        model=openai_unit_test_env["OPENAI_TEXT_MODEL_ID"],
+        stream=True,
+        prompt="test",
+        echo=False,
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
+async def test_stc_singular(
+    mock_create,
+    openai_unit_test_env,
+    streaming_completion_response,
+) -> None:
+    mock_create.return_value = streaming_completion_response
+    complete_prompt_execution_settings = OpenAITextPromptExecutionSettings(service_id="test_service_id")
+
+    openai_text_completion = OpenAITextCompletion()
+    [
+        text
+        async for text in openai_text_completion.get_streaming_text_content(
             prompt="test", settings=complete_prompt_execution_settings
         )
     ]
