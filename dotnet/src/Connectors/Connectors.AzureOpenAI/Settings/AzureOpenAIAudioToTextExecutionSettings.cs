@@ -96,12 +96,6 @@ public sealed class AzureOpenAIAudioToTextExecutionSettings : PromptExecutionSet
     }
 
     /// <summary>
-    /// The timestamp granularities to populate for this transcription. response_format must be set verbose_json to use timestamp granularities. Either or both of these options are supported: word, or segment.
-    /// </summary>
-    [JsonPropertyName("granularities")]
-    public IReadOnlyList<TimeStampGranularities>? Granularities { get; set; }
-
-    /// <summary>
     /// Creates an instance of <see cref="AzureOpenAIAudioToTextExecutionSettings"/> class with default filename - "file.mp3".
     /// </summary>
     public AzureOpenAIAudioToTextExecutionSettings()
@@ -159,27 +153,6 @@ public sealed class AzureOpenAIAudioToTextExecutionSettings : PromptExecutionSet
         }
 
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureOpenAIAudioToTextExecutionSettings)}", nameof(executionSettings));
-    }
-
-    /// <summary>
-    /// The timestamp granularities available to populate transcriptions.
-    /// </summary>
-    public enum TimeStampGranularities
-    {
-        /// <summary>
-        /// Not specified.
-        /// </summary>
-        Default = 0,
-
-        /// <summary>
-        /// The transcription is segmented by word.
-        /// </summary>
-        Word = 1,
-
-        /// <summary>
-        /// The timestamp of transcription is by segment.
-        /// </summary>
-        Segment = 2,
     }
 
     /// <summary>
