@@ -14,11 +14,8 @@ namespace Agents;
 /// </summary>
 public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(output)
 {
-    /// <summary>
-    /// Specific model is required that supports agents and parallel function calling.
-    /// Currently this is limited to Open AI hosted services.
-    /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
+    /// <inheritdoc/>
+    protected override bool ForceOpenAI => true;
 
     // Track agents for clean-up
     private readonly List<IAgent> _agents = [];
@@ -171,7 +168,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
     {
         return
             this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
+                new AgentBuilder().WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey) :
                 new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
 

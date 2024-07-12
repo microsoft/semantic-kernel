@@ -15,15 +15,9 @@ namespace Agents;
 public sealed class Legacy_AgentCharts(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Specific model is required that supports agents and parallel function calling.
-    /// Currently this is limited to Open AI hosted services.
-    /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
-
-    /// <summary>
     /// Create a chart and retrieve by file_id.
     /// </summary>
-    [Fact(Skip = "Launches external processes")]
+    [Fact/*(Skip = "Launches external processes")*/]
     public async Task CreateChartAsync()
     {
         Console.WriteLine("======== Using CodeInterpreter tool ========");
@@ -101,7 +95,7 @@ Sum      426  1622     856 2904
     {
         return
             this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
+                new AgentBuilder().WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey) :
                 new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
 }

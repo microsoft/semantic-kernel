@@ -12,12 +12,6 @@ namespace Agents;
 /// </summary>
 public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
 {
-    /// <summary>
-    /// Specific model is required that supports agents and function calling.
-    /// Currently this is limited to Open AI hosted services.
-    /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
-
     // Track agents for clean-up
     private static readonly List<IAgent> s_agents = [];
 
@@ -27,8 +21,6 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        Console.WriteLine("======== Example71_AgentDelegation ========");
-
         if (TestConfiguration.OpenAI.ApiKey is null)
         {
             Console.WriteLine("OpenAI apiKey not found. Skipping example.");
@@ -43,7 +35,7 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
             var menuAgent =
                 Track(
                     await new AgentBuilder()
-                        .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                        .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
                         .FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml"))
                         .WithDescription("Answer questions about how the menu uses the tool.")
                         .WithPlugin(plugin)
@@ -52,14 +44,14 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
             var parrotAgent =
                 Track(
                     await new AgentBuilder()
-                        .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                        .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
                         .FromTemplate(EmbeddedResource.Read("Agents.ParrotAgent.yaml"))
                         .BuildAsync());
 
             var toolAgent =
                 Track(
                     await new AgentBuilder()
-                        .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                        .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
                         .FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml"))
                         .WithPlugin(parrotAgent.AsPlugin())
                         .WithPlugin(menuAgent.AsPlugin())

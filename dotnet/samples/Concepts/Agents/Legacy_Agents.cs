@@ -14,19 +14,6 @@ namespace Agents;
 public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Specific model is required that supports agents and function calling.
-    /// Currently this is limited to Open AI hosted services.
-    /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
-
-    /// <summary>
-    /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
-    /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
-    /// If 'false', Azure takes precedence.
-    /// </summary>
-    private new const bool ForceOpenAI = false;
-
-    /// <summary>
     /// Chat using the "Parrot" agent.
     /// Tools/functions: None
     /// </summary>
@@ -114,7 +101,7 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
         // Create parrot agent, same as the other cases.
         var agent =
             await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
                 .FromTemplate(EmbeddedResource.Read("Agents.ParrotAgent.yaml"))
                 .BuildAsync();
 
@@ -187,11 +174,11 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    private static AgentBuilder CreateAgentBuilder()
+    private AgentBuilder CreateAgentBuilder()
     {
         return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
+            this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                new AgentBuilder().WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey) :
                 new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
 }
