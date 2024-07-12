@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using OllamaSharp.Models;
+using OllamaSharp.Models.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
@@ -12,15 +13,45 @@ namespace Microsoft.SemanticKernel.Connectors.Ollama;
 /// </summary>
 public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
 {
-    internal OllamaMetadata(GenerateCompletionDoneResponseStream ollamaResponse) : base(new Dictionary<string, object?>())
+    internal OllamaMetadata(GenerateCompletionResponseStream? ollamaResponse) : base(new Dictionary<string, object?>())
     {
-        this.TotalDuration = ollamaResponse.TotalDuration;
-        this.EvalCount = ollamaResponse.EvalCount;
-        this.EvalDuration = ollamaResponse.EvalDuration;
+        if (ollamaResponse is null)
+        {
+            return;
+        }
+
         this.CreatedAt = ollamaResponse.CreatedAt;
-        this.LoadDuration = ollamaResponse.LoadDuration;
-        this.PromptEvalCount = ollamaResponse.PromptEvalCount;
-        this.PromptEvalDuration = ollamaResponse.PromptEvalDuration;
+        this.Done = ollamaResponse.Done;
+
+        if (ollamaResponse is GenerateCompletionDoneResponseStream doneResponse)
+        {
+            this.TotalDuration = doneResponse.TotalDuration;
+            this.EvalCount = doneResponse.EvalCount;
+            this.EvalDuration = doneResponse.EvalDuration;
+            this.LoadDuration = doneResponse.LoadDuration;
+            this.PromptEvalCount = doneResponse.PromptEvalCount;
+            this.PromptEvalDuration = doneResponse.PromptEvalDuration;
+        }
+    }
+
+    internal OllamaMetadata(ChatResponseStream? message) : base(new Dictionary<string, object?>())
+    {
+        if (message is null)
+        {
+            return;
+        }
+        this.CreatedAt = message?.CreatedAt;
+        this.Done = message?.Done;
+
+        if (message is ChatDoneResponseStream doneMessage)
+        {
+            this.TotalDuration = doneMessage.TotalDuration;
+            this.EvalCount = doneMessage.EvalCount;
+            this.EvalDuration = doneMessage.EvalDuration;
+            this.LoadDuration = doneMessage.LoadDuration;
+            this.PromptEvalCount = doneMessage.PromptEvalCount;
+            this.PromptEvalDuration = doneMessage.PromptEvalDuration;
+        }
     }
 
     /// <summary>
@@ -56,6 +87,15 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
     public string? CreatedAt
     {
         get => this.GetValueFromDictionary() as string;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+    /// <summary>
+    /// The response is done
+    /// </summary>
+    public bool? Done
+    {
+        get => this.GetValueFromDictionary() as bool?;
         internal init => this.SetValueInDictionary(value);
     }
 
