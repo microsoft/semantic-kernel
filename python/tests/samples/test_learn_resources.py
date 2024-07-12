@@ -1,7 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import copy
-
 from pytest import mark
 
 from samples.learn_resources.ai_services import main as ai_services
@@ -46,15 +44,8 @@ from tests.samples.samples_utils import retry
     ],
 )
 async def test_learn_resources(func, responses, monkeypatch):
-    saved_responses = copy.deepcopy(responses)
-
-    def reset():
-        responses.clear()
-        responses.extend(saved_responses)
-
     monkeypatch.setattr("builtins.input", lambda _: responses.pop(0))
     if func.__module__ == "samples.learn_resources.your_first_prompt":
-        await retry(lambda: func(delay=10), reset=reset)
+        await retry(lambda: func(delay=10))
         return
-
-    await retry(lambda: func(), reset=reset)
+    await retry(lambda: func())

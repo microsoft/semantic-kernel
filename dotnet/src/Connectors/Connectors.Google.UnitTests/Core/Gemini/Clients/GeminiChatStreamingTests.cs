@@ -248,7 +248,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldPassSystemMessageToRequestAsync()
+    public async Task ShouldPassConvertedSystemMessageToUserMessageToRequestAsync()
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
@@ -262,35 +262,10 @@ public sealed class GeminiChatStreamingTests : IDisposable
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
-        Assert.NotNull(request.SystemInstruction);
-        var systemMessage = request.SystemInstruction.Parts![0].Text;
-        Assert.Null(request.SystemInstruction.Role);
+        var systemMessage = request.Contents[0].Parts![0].Text;
+        var messageRole = request.Contents[0].Role;
+        Assert.Equal(AuthorRole.User, messageRole);
         Assert.Equal(message, systemMessage);
-    }
-
-    [Fact]
-    public async Task ShouldPassMultipleSystemMessagesToRequestAsync()
-    {
-        // Arrange
-        string[] messages = ["System message 1", "System message 2", "System message 3"];
-        var client = this.CreateChatCompletionClient();
-        var chatHistory = new ChatHistory(messages[0]);
-        chatHistory.AddSystemMessage(messages[1]);
-        chatHistory.AddSystemMessage(messages[2]);
-        chatHistory.AddUserMessage("Hello");
-
-        // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
-
-        // Assert
-        GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
-        Assert.NotNull(request);
-        Assert.NotNull(request.SystemInstruction);
-        Assert.Null(request.SystemInstruction.Role);
-        Assert.Collection(request.SystemInstruction.Parts!,
-            item => Assert.Equal(messages[0], item.Text),
-            item => Assert.Equal(messages[1], item.Text),
-            item => Assert.Equal(messages[2], item.Text));
     }
 
     [Theory]

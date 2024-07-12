@@ -132,6 +132,7 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
+    [Experimental("SKEXP0001")]
     public IList<IFunctionInvocationFilter> FunctionInvocationFilters =>
         this._functionInvocationFilters ??
         Interlocked.CompareExchange(ref this._functionInvocationFilters, [], null) ??
@@ -140,6 +141,7 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
+    [Experimental("SKEXP0001")]
     public IList<IPromptRenderFilter> PromptRenderFilters =>
         this._promptRenderFilters ??
         Interlocked.CompareExchange(ref this._promptRenderFilters, [], null) ??
@@ -261,7 +263,7 @@ public sealed class Kernel
             // M.E.DI doesn't support querying for a service without a key, and it also doesn't
             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
-            // mapping. We can query for that service and then use it to try to get a service.
+            // mapping. We can query for that service and and then use it to try to get a service.
             if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
             {
                 if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?>? keys))
@@ -307,6 +309,7 @@ public sealed class Kernel
         }
     }
 
+    [Experimental("SKEXP0001")]
     internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
         KernelFunction function,
         KernelArguments arguments,
@@ -348,6 +351,7 @@ public sealed class Kernel
         }
     }
 
+    [Experimental("SKEXP0001")]
     internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,

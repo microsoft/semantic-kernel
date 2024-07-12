@@ -18,6 +18,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 internal static class AssistantThreadActions
 {
+    /*AssistantsClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration*/
     private const string FunctionDelimiter = "-";
 
     private static readonly HashSet<AuthorRole> s_messageRoles =
@@ -151,7 +152,7 @@ internal static class AssistantThreadActions
 
         ToolDefinition[]? tools = [.. agent.Tools, .. agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimiter)))];
 
-        logger.LogOpenAIAssistantCreatingRun(nameof(InvokeAsync), threadId);
+        logger.LogDebug("[{MethodName}] Creating run for agent/thrad: {AgentId}/{ThreadId}", nameof(InvokeAsync), agent.Id, threadId);
 
         CreateRunOptions options =
             new(agent.Id)
@@ -163,7 +164,7 @@ internal static class AssistantThreadActions
         // Create run
         ThreadRun run = await client.CreateRunAsync(threadId, options, cancellationToken).ConfigureAwait(false);
 
-        logger.LogOpenAIAssistantCreatedRun(nameof(InvokeAsync), run.Id, threadId);
+        logger.LogInformation("[{MethodName}] Created run: {RunId}", nameof(InvokeAsync), run.Id);
 
         // Evaluate status and process steps and messages, as encountered.
         HashSet<string> processedStepIds = [];
@@ -183,7 +184,7 @@ internal static class AssistantThreadActions
             // Is tool action required?
             if (run.Status == RunStatus.RequiresAction)
             {
-                logger.LogOpenAIAssistantProcessingRunSteps(nameof(InvokeAsync), run.Id, threadId);
+                logger.LogDebug("[{MethodName}] Processing run steps: {RunId}", nameof(InvokeAsync), run.Id);
 
                 // Execute functions in parallel and post results at once.
                 FunctionCallContent[] activeFunctionSteps = steps.Data.SelectMany(step => ParseFunctionStep(agent, step)).ToArray();
@@ -204,11 +205,14 @@ internal static class AssistantThreadActions
                     await client.SubmitToolOutputsToRunAsync(run, toolOutputs, cancellationToken).ConfigureAwait(false);
                 }
 
-                logger.LogOpenAIAssistantProcessedRunSteps(nameof(InvokeAsync), activeFunctionSteps.Length, run.Id, threadId);
+                if (logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
+                {
+                    logger.LogInformation("[{MethodName}] Processed #{MessageCount} run steps: {RunId}", nameof(InvokeAsync), activeFunctionSteps.Length, run.Id);
+                }
             }
 
             // Enumerate completed messages
-            logger.LogOpenAIAssistantProcessingRunMessages(nameof(InvokeAsync), run.Id, threadId);
+            logger.LogDebug("[{MethodName}] Processing run messages: {RunId}", nameof(InvokeAsync), run.Id);
 
             IEnumerable<RunStep> completedStepsToProcess =
                 steps
@@ -285,16 +289,19 @@ internal static class AssistantThreadActions
                 processedStepIds.Add(completedStep.Id);
             }
 
-            logger.LogOpenAIAssistantProcessedRunMessages(nameof(InvokeAsync), messageCount, run.Id, threadId);
+            if (logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
+            {
+                logger.LogInformation("[{MethodName}] Processed #{MessageCount} run messages: {RunId}", nameof(InvokeAsync), messageCount, run.Id);
+            }
         }
         while (RunStatus.Completed != run.Status);
 
-        logger.LogOpenAIAssistantCompletedRun(nameof(InvokeAsync), run.Id, threadId);
+        logger.LogInformation("[{MethodName}] Completed run: {RunId}", nameof(InvokeAsync), run.Id);
 
         // Local function to assist in run polling (participates in method closure).
         async Task<PageableList<RunStep>> PollRunStatusAsync()
         {
-            logger.LogOpenAIAssistantPollingRunStatus(nameof(PollRunStatusAsync), run.Id, threadId);
+            logger.LogInformation("[{MethodName}] Polling run status: {RunId}", nameof(PollRunStatusAsync), run.Id);
 
             int count = 0;
 
@@ -317,7 +324,7 @@ internal static class AssistantThreadActions
             }
             while (s_pollingStatuses.Contains(run.Status));
 
-            logger.LogOpenAIAssistantPolledRunStatus(nameof(PollRunStatusAsync), run.Status, run.Id, threadId);
+            logger.LogInformation("[{MethodName}] Run status is {RunStatus}: {RunId}", nameof(PollRunStatusAsync), run.Status, run.Id);
 
             return await client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
         }

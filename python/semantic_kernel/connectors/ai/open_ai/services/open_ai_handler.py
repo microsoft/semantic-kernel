@@ -2,11 +2,10 @@
 
 import logging
 from abc import ABC
-from typing import Any
 
-from numpy import array
+from numpy import array, ndarray
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
-from openai.types import Completion, CreateEmbeddingResponse
+from openai.types import Completion
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
@@ -34,7 +33,19 @@ class OpenAIHandler(KernelBaseModel, ABC):
         self,
         request_settings: OpenAIPromptExecutionSettings,
     ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
-        """Execute the appropriate call to OpenAI models."""
+        """Completes the given prompt. Returns a single string completion.
+
+        Cannot return multiple completions. Cannot return logprobs.
+
+        Args:
+            prompt (str): The prompt to complete.
+            messages (List[Tuple[str, str]]): A list of tuples, where each tuple is a role and content set.
+            request_settings (OpenAIPromptExecutionSettings): The request settings.
+            stream (bool): Whether to stream the response.
+
+        Returns:
+            ChatCompletion, Completion, AsyncStream[Completion | ChatCompletionChunk]: The completion response.
+        """
         try:
             if self.ai_model_type == OpenAIModelTypes.CHAT:
                 response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())
@@ -47,7 +58,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
                 raise ContentFilterAIException(
                     f"{type(self)} service encountered a content error",
                     ex,
-                ) from ex
+                )
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the prompt",
                 ex,
@@ -58,7 +69,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
                 ex,
             ) from ex
 
-    async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> list[Any]:
+    async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> list[ndarray]:
         try:
             response = await self.client.embeddings.create(**settings.prepare_settings_dict())
             self.store_usage(response)
@@ -71,16 +82,9 @@ class OpenAIHandler(KernelBaseModel, ABC):
                 ex,
             ) from ex
 
-    def store_usage(
-        self,
-        response: ChatCompletion
-        | Completion
-        | AsyncStream[ChatCompletionChunk]
-        | AsyncStream[Completion]
-        | CreateEmbeddingResponse,
-    ):
+    def store_usage(self, response):
         """Store the usage information from the response."""
-        if not isinstance(response, AsyncStream) and response.usage:
+        if not isinstance(response, AsyncStream):
             logger.info(f"OpenAI usage: {response.usage}")
             self.prompt_tokens += response.usage.prompt_tokens
             self.total_tokens += response.usage.total_tokens

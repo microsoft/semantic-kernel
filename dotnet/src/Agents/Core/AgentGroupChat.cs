@@ -72,12 +72,12 @@ public sealed class AgentGroupChat : AgentChat
             this.IsComplete = false;
         }
 
-        this.Logger.LogAgentGroupChatInvokingAgents(nameof(InvokeAsync), this.Agents);
+        this.Logger.LogDebug("[{MethodName}] Invoking chat: {Agents}", nameof(InvokeAsync), string.Join(", ", this.Agents.Select(a => $"{a.GetType()}:{a.Id}")));
 
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
-            this.Logger.LogAgentGroupChatSelectingAgent(nameof(InvokeAsync), this.ExecutionSettings.SelectionStrategy.GetType());
+            this.Logger.LogDebug("[{MethodName}] Selecting agent: {StrategyType}", nameof(InvokeAsync), this.ExecutionSettings.SelectionStrategy.GetType());
 
             Agent agent;
             try
@@ -86,11 +86,11 @@ public sealed class AgentGroupChat : AgentChat
             }
             catch (Exception exception)
             {
-                this.Logger.LogAgentGroupChatNoAgentSelected(nameof(InvokeAsync), exception);
+                this.Logger.LogError(exception, "[{MethodName}] Unable to determine next agent.", nameof(InvokeAsync));
                 throw;
             }
 
-            this.Logger.LogAgentGroupChatSelectedAgent(nameof(InvokeAsync), agent.GetType(), agent.Id, this.ExecutionSettings.SelectionStrategy.GetType());
+            this.Logger.LogInformation("[{MethodName}] Agent selected {AgentType}: {AgentId} by {StrategyType}", nameof(InvokeAsync), agent.GetType(), agent.Id, this.ExecutionSettings.SelectionStrategy.GetType());
 
             // Invoke agent and process messages along with termination
             await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
@@ -110,7 +110,7 @@ public sealed class AgentGroupChat : AgentChat
             }
         }
 
-        this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
+        this.Logger.LogDebug("[{MethodName}] Yield chat - IsComplete: {IsComplete}", nameof(InvokeAsync), this.IsComplete);
     }
 
     /// <summary>
@@ -143,7 +143,7 @@ public sealed class AgentGroupChat : AgentChat
     {
         this.EnsureStrategyLoggerAssignment();
 
-        this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id);
+        this.Logger.LogDebug("[{MethodName}] Invoking chat: {AgentType}: {AgentId}", nameof(InvokeAsync), agent.GetType(), agent.Id);
 
         if (isJoining)
         {
@@ -161,7 +161,7 @@ public sealed class AgentGroupChat : AgentChat
             yield return message;
         }
 
-        this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
+        this.Logger.LogDebug("[{MethodName}] Yield chat - IsComplete: {IsComplete}", nameof(InvokeAsync), this.IsComplete);
     }
 
     /// <summary>

@@ -33,8 +33,8 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
-        /// Create the chat history to capture the agent interaction.
-        ChatHistory chat = [];
+        /// Create a chat for agent interaction. For more, <see cref="Step3_Chat"/>.
+        AgentGroupChat chat = new();
 
         // Respond to user input, invoking functions where appropriate.
         await InvokeAgentAsync("Hello");
@@ -45,13 +45,11 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.Add(new ChatMessageContent(AuthorRole.User, input));
+            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (ChatMessageContent content in agent.InvokeAsync(chat))
+            await foreach (var content in chat.InvokeAsync(agent))
             {
-                chat.Add(content);
-
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }

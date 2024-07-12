@@ -2,7 +2,6 @@
 
 import logging
 from collections.abc import Mapping
-from typing import Any, TypeVar
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -16,8 +15,6 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-T_ = TypeVar("T_", bound="OpenAITextEmbedding")
-
 
 @experimental_class
 class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
@@ -25,7 +22,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 
     def __init__(
         self,
-        ai_model_id: str | None = None,
+        ai_model_id: str,
         api_key: str | None = None,
         org_id: str | None = None,
         service_id: str | None = None,
@@ -70,21 +67,21 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             org_id=openai_settings.org_id,
             service_id=service_id,
             default_headers=default_headers,
-            client=async_client,
+            async_client=async_client,
         )
 
     @classmethod
-    def from_dict(cls: type[T_], settings: dict[str, Any]) -> T_:
+    def from_dict(cls, settings: dict[str, str]) -> "OpenAITextEmbedding":
         """Initialize an Open AI service from a dictionary of settings.
 
         Args:
             settings: A dictionary of settings for the service.
         """
-        return cls(
-            ai_model_id=settings.get("ai_model_id"),
+        return OpenAITextEmbedding(
+            ai_model_id=settings["ai_model_id"],
             api_key=settings.get("api_key"),
             org_id=settings.get("org_id"),
             service_id=settings.get("service_id"),
-            default_headers=settings.get("default_headers", {}),
+            default_headers=settings.get("default_headers"),
             env_file_path=settings.get("env_file_path"),
         )

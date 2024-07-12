@@ -10,57 +10,59 @@ on:
     types: 
       - in_progress
 
-env:
-  PYTHON_VERSION: "3.10"
-  RUN_OS: ubuntu-latest
-
 jobs:
   python-tests-coverage:
-    runs-on: ubuntu-latest
-    continue-on-error: true
+    name: Create Test Coverage Messages
+    runs-on: ${{ matrix.os }}
     permissions:
       pull-requests: write
       contents: read
       actions: read
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+        os: [ubuntu-latest]
     steps:
       - name: Wait for unit tests to succeed
+        continue-on-error: true
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'Python Unit Tests (${{ env.PYTHON_VERSION }}, ${{ env.RUN_OS }}, false)'
+          check-name: 'Python Unit Tests (${{ matrix.python-version}}, ${{ matrix.os }})'
           repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          wait-interval: 90
+          wait-interval: 10
           allowed-conclusions: success
       - uses: actions/checkout@v4
-      - name: Setup filename variables
-        run: echo "FILE_ID=${{ github.event.number }}-${{ env.RUN_OS }}-${{ env.PYTHON_VERSION }}" >> $GITHUB_ENV
       - name: Download coverage
+        continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
-          name: python-coverage-${{ env.FILE_ID }}.txt
+          name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: python-unit-tests.yml
           search_artifacts: true
           if_no_artifact_found: warn
       - name: Download pytest
+        continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
-          name: pytest-${{ env.FILE_ID }}.xml
+          name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           github_token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           workflow: python-unit-tests.yml
           search_artifacts: true
           if_no_artifact_found: warn
       - name: Pytest coverage comment
+        continue-on-error: true
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          pytest-coverage-path: python-coverage.txt
+          pytest-coverage-path: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
           coverage-path-prefix: "python/"
-          title: "Python ${{ env.PYTHON_VERSION }} Test Coverage Report"
-          badge-title: "Py${{ env.PYTHON_VERSION }} Test Coverage"
+          title: "Python ${{ matrix.python-version }} Test Coverage Report"
+          badge-title: "Py${{ matrix.python-version }} Test Coverage"
           report-only-changed-files: true
-          junitxml-title: "Python ${{ env.PYTHON_VERSION }} Unit Test Overview"
-          junitxml-path: pytest.xml
+          junitxml-title: "Python ${{ matrix.python-version }} Unit Test Overview"
+          junitxml-path: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
           default-branch: "main"
-          unique-id-for-comment: python-${{ env.PYTHON_VERSION }}
+          unique-id-for-comment: python-${{ matrix.python-version }}

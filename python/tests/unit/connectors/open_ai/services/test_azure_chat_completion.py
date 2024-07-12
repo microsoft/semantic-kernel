@@ -1,19 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 import os
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import openai
 import pytest
 from httpx import Request, Response
-from openai import AsyncAzureOpenAI, AsyncStream
+from openai import AsyncAzureOpenAI
 from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
-from openai.types.chat import ChatCompletion, ChatCompletionChunk
-from openai.types.chat.chat_completion import Choice
-from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
-from openai.types.chat.chat_completion_chunk import ChoiceDelta as ChunkChoiceDelta
-from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
@@ -23,41 +17,28 @@ from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exceptio
     ContentFilterResultSeverity,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+    AzureAISearchDataSource,
     AzureChatPromptExecutionSettings,
+    ExtraBody,
 )
 from semantic_kernel.const import USER_AGENT
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
 from semantic_kernel.kernel import Kernel
 
-# region Service Setup
 
-
-def test_init(azure_openai_unit_test_env) -> None:
+def test_azure_chat_completion_init(azure_openai_unit_test_env) -> None:
     # Test successful initialization
-    azure_chat_completion = AzureChatCompletion(service_id="test_service_id")
+    azure_chat_completion = AzureChatCompletion()
 
     assert azure_chat_completion.client is not None
     assert isinstance(azure_chat_completion.client, AsyncAzureOpenAI)
     assert azure_chat_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]
     assert isinstance(azure_chat_completion, ChatCompletionClientBase)
-    assert azure_chat_completion.get_prompt_execution_settings_class() == AzureChatPromptExecutionSettings
 
 
-def test_init_client(azure_openai_unit_test_env) -> None:
-    # Test successful initialization with client
-    client = MagicMock(spec=AsyncAzureOpenAI)
-    azure_chat_completion = AzureChatCompletion(async_client=client)
-
-    assert azure_chat_completion.client is not None
-    assert isinstance(azure_chat_completion.client, AsyncAzureOpenAI)
-
-
-def test_init_base_url(azure_openai_unit_test_env) -> None:
+def test_azure_chat_completion_init_base_url(azure_openai_unit_test_env) -> None:
     # Custom header for testing
     default_headers = {"X-Unit-Test": "test-guid"}
 
@@ -74,18 +55,8 @@ def test_init_base_url(azure_openai_unit_test_env) -> None:
         assert azure_chat_completion.client.default_headers[key] == value
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_BASE_URL"]], indirect=True)
-def test_init_endpoint(azure_openai_unit_test_env) -> None:
-    azure_chat_completion = AzureChatCompletion()
-
-    assert azure_chat_completion.client is not None
-    assert isinstance(azure_chat_completion.client, AsyncAzureOpenAI)
-    assert azure_chat_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]
-    assert isinstance(azure_chat_completion, ChatCompletionClientBase)
-
-
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True)
-def test_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
+def test_azure_chat_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureChatCompletion(
             env_file_path="test.env",
@@ -93,7 +64,7 @@ def test_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
-def test_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
+def test_azure_chat_completion_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureChatCompletion(
             env_file_path="test.env",
@@ -101,7 +72,7 @@ def test_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
-def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
+def test_azure_chat_completion_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureChatCompletion(
             env_file_path="test.env",
@@ -109,13 +80,82 @@ def test_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> No
 
 
 @pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
-def test_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
+def test_azure_chat_completion_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureChatCompletion()
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_BASE_URL"]], indirect=True)
-def test_serialize(azure_openai_unit_test_env) -> None:
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_azure_chat_completion_call_with_parameters(
+    mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
+) -> None:
+    chat_history.add_user_message("hello world")
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(service_id="test_service_id")
+
+    azure_chat_completion = AzureChatCompletion()
+    await azure_chat_completion.get_chat_message_contents(
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    )
+    mock_create.assert_awaited_once_with(
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+        stream=False,
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined(
+    mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
+) -> None:
+    prompt = "hello world"
+    chat_history.add_user_message(prompt)
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
+
+    token_bias = {"1": -100}
+    complete_prompt_execution_settings.logit_bias = token_bias
+
+    azure_chat_completion = AzureChatCompletion()
+
+    await azure_chat_completion.get_chat_message_contents(
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    )
+
+    mock_create.assert_awaited_once_with(
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
+        stream=False,
+        logit_bias=token_bias,
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
+    mock_create,
+    azure_openai_unit_test_env,
+) -> None:
+    prompt = "hello world"
+    messages = [{"role": "user", "content": prompt}]
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
+
+    stop = ["!"]
+    complete_prompt_execution_settings.stop = stop
+
+    azure_chat_completion = AzureChatCompletion()
+
+    await azure_chat_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
+
+    mock_create.assert_awaited_once_with(
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+        messages=messages,
+        stream=False,
+        stop=complete_prompt_execution_settings.stop,
+    )
+
+
+def test_azure_chat_completion_serialize(azure_openai_unit_test_env) -> None:
     default_headers = {"X-Test": "test"}
 
     settings = {
@@ -143,394 +183,62 @@ def test_serialize(azure_openai_unit_test_env) -> None:
     assert USER_AGENT not in dumped_settings["default_headers"]
 
 
-# endregion
-# region CMC
-
-
-@pytest.fixture
-def mock_chat_completion_response() -> ChatCompletion:
-    return ChatCompletion(
-        id="test_id",
-        choices=[
-            Choice(index=0, message=ChatCompletionMessage(content="test", role="assistant"), finish_reason="stop")
-        ],
-        created=0,
-        model="test",
-        object="chat.completion",
-    )
-
-
-@pytest.fixture
-def mock_streaming_chat_completion_response() -> AsyncStream[ChatCompletionChunk]:
-    content = ChatCompletionChunk(
-        id="test_id",
-        choices=[ChunkChoice(index=0, delta=ChunkChoiceDelta(content="test", role="assistant"), finish_reason="stop")],
-        created=0,
-        model="test",
-        object="chat.completion.chunk",
-    )
-    stream = MagicMock(spec=AsyncStream)
-    stream.__aiter__.return_value = [content]
-    return stream
-
-
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_cmc(
-    mock_create,
-    kernel: Kernel,
-    azure_openai_unit_test_env,
-    chat_history: ChatHistory,
-    mock_chat_completion_response: ChatCompletion,
+async def test_azure_chat_completion_with_data_call_with_parameters(
+    mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
 ) -> None:
-    mock_create.return_value = mock_chat_completion_response
-    chat_history.add_user_message("hello world")
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(service_id="test_service_id")
+    prompt = "hello world"
+    messages_in = chat_history
+    messages_in.add_user_message(prompt)
+    messages_out = ChatHistory()
+    messages_out.add_user_message(prompt)
+
+    expected_data_settings = {
+        "dataSources": [
+            {
+                "type": "AzureCognitiveSearch",
+                "parameters": {
+                    "indexName": "test_index",
+                    "endpoint": "https://test-endpoint-search.com",
+                    "key": "test_key",
+                },
+            }
+        ]
+    }
+
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(extra_body=expected_data_settings)
 
     azure_chat_completion = AzureChatCompletion()
+
     await azure_chat_completion.get_chat_message_contents(
-        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+        chat_history=messages_in, settings=complete_prompt_execution_settings, kernel=kernel
     )
+
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+        messages=azure_chat_completion._prepare_chat_history_for_request(messages_out),
         stream=False,
-        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
+        extra_body=expected_data_settings,
     )
 
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_cmc_with_logit_bias(
-    mock_create,
-    kernel: Kernel,
-    azure_openai_unit_test_env,
-    chat_history: ChatHistory,
-    mock_chat_completion_response: ChatCompletion,
+async def test_azure_chat_completion_call_with_data_parameters_and_function_calling(
+    mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
 ) -> None:
-    mock_create.return_value = mock_chat_completion_response
     prompt = "hello world"
     chat_history.add_user_message(prompt)
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
 
-    token_bias = {"1": -100}
-    complete_prompt_execution_settings.logit_bias = token_bias
-
-    azure_chat_completion = AzureChatCompletion()
-
-    await azure_chat_completion.get_chat_message_contents(
-        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    ai_source = AzureAISearchDataSource(
+        parameters={
+            "indexName": "test-index",
+            "endpoint": "test-endpoint",
+            "authentication": {"type": "api_key", "api_key": "test-key"},
+        }
     )
-
-    mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
-        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
-        stream=False,
-        logit_bias=token_bias,
-    )
-
-
-@pytest.mark.asyncio
-@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_cmc_with_stop(
-    mock_create,
-    azure_openai_unit_test_env,
-    chat_history: ChatHistory,
-    mock_chat_completion_response: ChatCompletion,
-) -> None:
-    mock_create.return_value = mock_chat_completion_response
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
-
-    stop = ["!"]
-    complete_prompt_execution_settings.stop = stop
-
-    azure_chat_completion = AzureChatCompletion()
-
-    await azure_chat_completion.get_chat_message_contents(
-        chat_history=chat_history, settings=complete_prompt_execution_settings
-    )
-
-    mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
-        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
-        stream=False,
-        stop=stop,
-    )
-
-
-@pytest.mark.asyncio
-@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_azure_on_your_data(
-    mock_create,
-    kernel: Kernel,
-    azure_openai_unit_test_env,
-    chat_history: ChatHistory,
-    mock_chat_completion_response: ChatCompletion,
-) -> None:
-    mock_chat_completion_response.choices = [
-        Choice(
-            index=0,
-            message=ChatCompletionMessage(
-                content="test",
-                role="assistant",
-                context={
-                    "citations": {
-                        "content": "test content",
-                        "title": "test title",
-                        "url": "test url",
-                        "filepath": "test filepath",
-                        "chunk_id": "test chunk_id",
-                    },
-                    "intent": "query used",
-                },
-            ),
-            finish_reason="stop",
-        )
-    ]
-    mock_create.return_value = mock_chat_completion_response
-    prompt = "hello world"
-    messages_in = chat_history
-    messages_in.add_user_message(prompt)
-    messages_out = ChatHistory()
-    messages_out.add_user_message(prompt)
-
-    expected_data_settings = {
-        "data_sources": [
-            {
-                "type": "AzureCognitiveSearch",
-                "parameters": {
-                    "indexName": "test_index",
-                    "endpoint": "https://test-endpoint-search.com",
-                    "key": "test_key",
-                },
-            }
-        ]
-    }
-
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(extra_body=expected_data_settings)
-
-    azure_chat_completion = AzureChatCompletion()
-
-    content = await azure_chat_completion.get_chat_message_contents(
-        chat_history=messages_in, settings=complete_prompt_execution_settings, kernel=kernel
-    )
-    assert isinstance(content[0].items[0], FunctionCallContent)
-    assert isinstance(content[0].items[1], FunctionResultContent)
-    assert isinstance(content[0].items[2], TextContent)
-    assert content[0].items[2].text == "test"
-
-    mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
-        messages=azure_chat_completion._prepare_chat_history_for_request(messages_out),
-        stream=False,
-        extra_body=expected_data_settings,
-    )
-
-
-@pytest.mark.asyncio
-@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_azure_on_your_data_string(
-    mock_create,
-    kernel: Kernel,
-    azure_openai_unit_test_env,
-    chat_history: ChatHistory,
-    mock_chat_completion_response: ChatCompletion,
-) -> None:
-    mock_chat_completion_response.choices = [
-        Choice(
-            index=0,
-            message=ChatCompletionMessage(
-                content="test",
-                role="assistant",
-                context=json.dumps(
-                    {
-                        "citations": {
-                            "content": "test content",
-                            "title": "test title",
-                            "url": "test url",
-                            "filepath": "test filepath",
-                            "chunk_id": "test chunk_id",
-                        },
-                        "intent": "query used",
-                    }
-                ),
-            ),
-            finish_reason="stop",
-        )
-    ]
-    mock_create.return_value = mock_chat_completion_response
-    prompt = "hello world"
-    messages_in = chat_history
-    messages_in.add_user_message(prompt)
-    messages_out = ChatHistory()
-    messages_out.add_user_message(prompt)
-
-    expected_data_settings = {
-        "data_sources": [
-            {
-                "type": "AzureCognitiveSearch",
-                "parameters": {
-                    "indexName": "test_index",
-                    "endpoint": "https://test-endpoint-search.com",
-                    "key": "test_key",
-                },
-            }
-        ]
-    }
-
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(extra_body=expected_data_settings)
-
-    azure_chat_completion = AzureChatCompletion()
-
-    content = await azure_chat_completion.get_chat_message_contents(
-        chat_history=messages_in, settings=complete_prompt_execution_settings, kernel=kernel
-    )
-    assert isinstance(content[0].items[0], FunctionCallContent)
-    assert isinstance(content[0].items[1], FunctionResultContent)
-    assert isinstance(content[0].items[2], TextContent)
-    assert content[0].items[2].text == "test"
-
-    mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
-        messages=azure_chat_completion._prepare_chat_history_for_request(messages_out),
-        stream=False,
-        extra_body=expected_data_settings,
-    )
-
-
-@pytest.mark.asyncio
-@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_azure_on_your_data_fail(
-    mock_create,
-    kernel: Kernel,
-    azure_openai_unit_test_env,
-    chat_history: ChatHistory,
-    mock_chat_completion_response: ChatCompletion,
-) -> None:
-    mock_chat_completion_response.choices = [
-        Choice(
-            index=0,
-            message=ChatCompletionMessage(
-                content="test",
-                role="assistant",
-                context="not a dictionary",
-            ),
-            finish_reason="stop",
-        )
-    ]
-    mock_create.return_value = mock_chat_completion_response
-    prompt = "hello world"
-    messages_in = chat_history
-    messages_in.add_user_message(prompt)
-    messages_out = ChatHistory()
-    messages_out.add_user_message(prompt)
-
-    expected_data_settings = {
-        "data_sources": [
-            {
-                "type": "AzureCognitiveSearch",
-                "parameters": {
-                    "indexName": "test_index",
-                    "endpoint": "https://test-endpoint-search.com",
-                    "key": "test_key",
-                },
-            }
-        ]
-    }
-
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(extra_body=expected_data_settings)
-
-    azure_chat_completion = AzureChatCompletion()
-
-    content = await azure_chat_completion.get_chat_message_contents(
-        chat_history=messages_in, settings=complete_prompt_execution_settings, kernel=kernel
-    )
-    assert isinstance(content[0].items[0], TextContent)
-    assert content[0].items[0].text == "test"
-
-    mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
-        messages=azure_chat_completion._prepare_chat_history_for_request(messages_out),
-        stream=False,
-        extra_body=expected_data_settings,
-    )
-
-
-@pytest.mark.asyncio
-@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_azure_on_your_data_split_messages(
-    mock_create,
-    kernel: Kernel,
-    azure_openai_unit_test_env,
-    chat_history: ChatHistory,
-    mock_chat_completion_response: ChatCompletion,
-) -> None:
-    mock_chat_completion_response.choices = [
-        Choice(
-            index=0,
-            message=ChatCompletionMessage(
-                content="test",
-                role="assistant",
-                context={
-                    "citations": {
-                        "content": "test content",
-                        "title": "test title",
-                        "url": "test url",
-                        "filepath": "test filepath",
-                        "chunk_id": "test chunk_id",
-                    },
-                    "intent": "query used",
-                },
-            ),
-            finish_reason="stop",
-        )
-    ]
-    mock_create.return_value = mock_chat_completion_response
-    prompt = "hello world"
-    messages_in = chat_history
-    messages_in.add_user_message(prompt)
-    messages_out = ChatHistory()
-    messages_out.add_user_message(prompt)
-
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
-
-    azure_chat_completion = AzureChatCompletion()
-
-    content = await azure_chat_completion.get_chat_message_contents(
-        chat_history=messages_in, settings=complete_prompt_execution_settings, kernel=kernel
-    )
-    messages = azure_chat_completion.split_message(content[0])
-    assert len(messages) == 3
-    assert isinstance(messages[0].items[0], FunctionCallContent)
-    assert isinstance(messages[1].items[0], FunctionResultContent)
-    assert isinstance(messages[2].items[0], TextContent)
-    assert messages[2].items[0].text == "test"
-    message = azure_chat_completion.split_message(messages[0])
-    assert message == [messages[0]]
-
-
-@pytest.mark.asyncio
-@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_cmc_function_calling(
-    mock_create,
-    kernel: Kernel,
-    azure_openai_unit_test_env,
-    chat_history: ChatHistory,
-    mock_chat_completion_response: ChatCompletion,
-) -> None:
-    mock_chat_completion_response.choices = [
-        Choice(
-            index=0,
-            message=ChatCompletionMessage(
-                content=None,
-                role="assistant",
-                function_call={"name": "test-function", "arguments": '{"key": "value"}'},
-            ),
-            finish_reason="stop",
-        )
-    ]
-    mock_create.return_value = mock_chat_completion_response
-    prompt = "hello world"
-    chat_history.add_user_message(prompt)
+    extra = ExtraBody(data_sources=[ai_source])
 
     azure_chat_completion = AzureChatCompletion()
 
@@ -538,19 +246,22 @@ async def test_cmc_function_calling(
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
         function_call="test-function",
         functions=functions,
+        extra_body=extra,
     )
 
-    content = await azure_chat_completion.get_chat_message_contents(
+    await azure_chat_completion.get_chat_message_contents(
         chat_history=chat_history,
         settings=complete_prompt_execution_settings,
         kernel=kernel,
     )
-    assert isinstance(content[0].items[0], FunctionCallContent)
+
+    expected_data_settings = extra.model_dump(exclude_none=True, by_alias=True)
 
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         stream=False,
+        extra_body=expected_data_settings,
         functions=functions,
         function_call=complete_prompt_execution_settings.function_call,
     )
@@ -558,50 +269,40 @@ async def test_cmc_function_calling(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_cmc_tool_calling(
-    mock_create,
-    kernel: Kernel,
-    azure_openai_unit_test_env,
-    chat_history: ChatHistory,
-    mock_chat_completion_response: ChatCompletion,
+async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Defined(
+    mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
 ) -> None:
-    mock_chat_completion_response.choices = [
-        Choice(
-            index=0,
-            message=ChatCompletionMessage(
-                content=None,
-                role="assistant",
-                tool_calls=[
-                    {
-                        "id": "test id",
-                        "function": {"name": "test-tool", "arguments": '{"key": "value"}'},
-                        "type": "function",
-                    }
-                ],
-            ),
-            finish_reason="stop",
-        )
-    ]
-    mock_create.return_value = mock_chat_completion_response
-    prompt = "hello world"
-    chat_history.add_user_message(prompt)
+    chat_history.add_user_message("hello world")
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
+
+    stop = ["!"]
+    complete_prompt_execution_settings.stop = stop
+
+    ai_source = AzureAISearchDataSource(
+        parameters={
+            "indexName": "test-index",
+            "endpoint": "test-endpoint",
+            "authentication": {"type": "api_key", "api_key": "test-key"},
+        }
+    )
+    extra = ExtraBody(data_sources=[ai_source])
+
+    complete_prompt_execution_settings.extra_body = extra
 
     azure_chat_completion = AzureChatCompletion()
 
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings()
-
-    content = await azure_chat_completion.get_chat_message_contents(
-        chat_history=chat_history,
-        settings=complete_prompt_execution_settings,
-        kernel=kernel,
+    await azure_chat_completion.get_chat_message_contents(
+        chat_history, complete_prompt_execution_settings, kernel=kernel
     )
-    assert isinstance(content[0].items[0], FunctionCallContent)
-    assert content[0].items[0].id == "test id"
+
+    expected_data_settings = extra.model_dump(exclude_none=True, by_alias=True)
 
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         stream=False,
+        stop=complete_prompt_execution_settings.stop,
+        extra_body=expected_data_settings,
     )
 
 
@@ -620,7 +321,7 @@ CONTENT_FILTERED_ERROR_FULL_MESSAGE = (
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
-async def test_content_filtering_raises_correct_exception(
+async def test_azure_chat_completion_content_filtering_raises_correct_exception(
     mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
 ) -> None:
     prompt = "some prompt that would trigger the content filtering"
@@ -664,7 +365,7 @@ async def test_content_filtering_raises_correct_exception(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
-async def test_content_filtering_without_response_code_raises_with_default_code(
+async def test_azure_chat_completion_content_filtering_without_response_code_raises_with_default_code(
     mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
 ) -> None:
     prompt = "some prompt that would trigger the content filtering"
@@ -702,7 +403,7 @@ async def test_content_filtering_without_response_code_raises_with_default_code(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
-async def test_bad_request_non_content_filter(
+async def test_azure_chat_completion_bad_request_non_content_filter(
     mock_create, kernel: Kernel, azure_openai_unit_test_env, chat_history: ChatHistory
 ) -> None:
     prompt = "some prompt that would trigger the content filtering"
@@ -724,7 +425,7 @@ async def test_bad_request_non_content_filter(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
-async def test_no_kernel_provided_throws_error(
+async def test_azure_chat_completion_no_kernel_provided_throws_error(
     mock_create, azure_openai_unit_test_env, chat_history: ChatHistory
 ) -> None:
     prompt = "some prompt that would trigger the content filtering"
@@ -749,7 +450,7 @@ async def test_no_kernel_provided_throws_error(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
-async def test_auto_invoke_false_no_kernel_provided_throws_error(
+async def test_azure_chat_completion_auto_invoke_false_no_kernel_provided_throws_error(
     mock_create, azure_openai_unit_test_env, chat_history: ChatHistory
 ) -> None:
     prompt = "some prompt that would trigger the content filtering"
@@ -770,28 +471,3 @@ async def test_auto_invoke_false_no_kernel_provided_throws_error(
         match="The kernel is required for OpenAI tool calls.",
     ):
         await azure_chat_completion.get_chat_message_contents(chat_history, complete_prompt_execution_settings)
-
-
-@pytest.mark.asyncio
-@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
-async def test_cmc_streaming(
-    mock_create,
-    kernel: Kernel,
-    azure_openai_unit_test_env,
-    chat_history: ChatHistory,
-    mock_streaming_chat_completion_response: AsyncStream[ChatCompletionChunk],
-) -> None:
-    mock_create.return_value = mock_streaming_chat_completion_response
-    chat_history.add_user_message("hello world")
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(service_id="test_service_id")
-
-    azure_chat_completion = AzureChatCompletion()
-    async for msg in azure_chat_completion.get_streaming_chat_message_contents(
-        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
-    ):
-        assert msg is not None
-    mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
-        stream=True,
-        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
-    )
