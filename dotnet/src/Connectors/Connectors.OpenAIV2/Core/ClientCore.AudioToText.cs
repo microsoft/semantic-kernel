@@ -51,34 +51,12 @@ internal partial class ClientCore
     private static AudioTranscriptionOptions? AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
         => new()
         {
-            Granularities = ConvertToAudioTimestampGranularities(executionSettings!.Granularities),
+            Granularities = AudioTimestampGranularities.Default,
             Language = executionSettings.Language,
             Prompt = executionSettings.Prompt,
             Temperature = executionSettings.Temperature,
             ResponseFormat = ConvertResponseFormat(executionSettings.ResponseFormat)
         };
-
-    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(IEnumerable<OpenAIAudioToTextExecutionSettings.TimeStampGranularities>? granularities)
-    {
-        AudioTimestampGranularities result = AudioTimestampGranularities.Default;
-
-        if (granularities is not null)
-        {
-            foreach (var granularity in granularities)
-            {
-                var openAIGranularity = granularity switch
-                {
-                    OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Word => AudioTimestampGranularities.Word,
-                    OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Segment => AudioTimestampGranularities.Segment,
-                    _ => AudioTimestampGranularities.Default
-                };
-
-                result |= openAIGranularity;
-            }
-        }
-
-        return result;
-    }
 
     private static AudioTranscriptionFormat ConvertResponseFormat(string responseFormat)
     {

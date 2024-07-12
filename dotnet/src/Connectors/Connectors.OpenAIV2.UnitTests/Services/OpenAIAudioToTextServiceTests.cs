@@ -2,7 +2,6 @@
 
 using System;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -10,7 +9,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using OpenAI;
 using Xunit;
-using static Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIAudioToTextExecutionSettings;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
 
@@ -71,43 +69,6 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
         // Assert
         Assert.NotNull(service);
         Assert.Equal("model-id", service.Attributes["ModelId"]);
-    }
-
-    [Theory]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Default }, "0")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Word }, "word")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Segment }, "segment")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Segment, TimeStampGranularities.Word }, "word", "segment")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Word, TimeStampGranularities.Segment }, "word", "segment")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Default, TimeStampGranularities.Word }, "word", "0")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Word, TimeStampGranularities.Default }, "word", "0")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Default, TimeStampGranularities.Segment }, "segment", "0")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Segment, TimeStampGranularities.Default }, "segment", "0")]
-    public async Task GetTextContentGranularitiesWorksAsync(TimeStampGranularities[] granularities, params string[] expectedGranularities)
-    {
-        // Arrange
-        var service = new OpenAIAudioToTextService("model-id", "api-key", httpClient: this._httpClient);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent("Test audio-to-text response")
-        };
-
-        // Act
-        var settings = new OpenAIAudioToTextExecutionSettings("file.mp3") { Granularities = granularities };
-        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), settings);
-
-        // Assert
-        Assert.NotNull(this._messageHandlerStub.RequestContent);
-        Assert.NotNull(result);
-
-        var multiPartData = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        var multiPartBreak = multiPartData.Substring(0, multiPartData.IndexOf("\r\n", StringComparison.OrdinalIgnoreCase));
-
-        foreach (var granularity in expectedGranularities)
-        {
-            var expectedMultipart = $"{granularity}\r\n{multiPartBreak}";
-            Assert.Contains(expectedMultipart, multiPartData);
-        }
     }
 
     [Fact]
