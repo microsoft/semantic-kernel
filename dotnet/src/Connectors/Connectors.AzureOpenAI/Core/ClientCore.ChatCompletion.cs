@@ -29,7 +29,6 @@ internal partial class ClientCore
 {
     private const string ContentFilterResultForPromptKey = "ContentFilterResultForPrompt";
     private const string ContentFilterResultForResponseKey = "ContentFilterResultForResponse";
-    private const string ContentTokenLogProbabilitiesKey = "ContentTokenLogProbabilities";
     private const string ModelProvider = "openai";
     private record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
 
@@ -103,7 +102,7 @@ internal partial class ClientCore
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason.ToString() },
-            { ContentTokenLogProbabilitiesKey, completions.ContentTokenLogProbabilities },
+            { nameof(completions.ContentTokenLogProbabilities), completions.ContentTokenLogProbabilities },
         };
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }

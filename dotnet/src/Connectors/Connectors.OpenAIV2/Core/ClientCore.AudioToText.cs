@@ -51,48 +51,21 @@ internal partial class ClientCore
     private static AudioTranscriptionOptions? AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
         => new()
         {
-            Granularities = ConvertToAudioTimestampGranularities(executionSettings!.Granularities),
+            Granularities = AudioTimestampGranularities.Default,
             Language = executionSettings.Language,
             Prompt = executionSettings.Prompt,
             Temperature = executionSettings.Temperature,
             ResponseFormat = ConvertResponseFormat(executionSettings.ResponseFormat)
         };
 
-    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(IEnumerable<OpenAIAudioToTextExecutionSettings.TimeStampGranularities>? granularities)
+    private static AudioTranscriptionFormat ConvertResponseFormat(string responseFormat)
     {
-        AudioTimestampGranularities result = AudioTimestampGranularities.Default;
-
-        if (granularities is not null)
-        {
-            foreach (var granularity in granularities)
-            {
-                var openAIGranularity = granularity switch
-                {
-                    OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Word => AudioTimestampGranularities.Word,
-                    OpenAIAudioToTextExecutionSettings.TimeStampGranularities.Segment => AudioTimestampGranularities.Segment,
-                    _ => AudioTimestampGranularities.Default
-                };
-
-                result |= openAIGranularity;
-            }
-        }
-
-        return result;
-    }
-
-    private static AudioTranscriptionFormat? ConvertResponseFormat(OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat? responseFormat)
-    {
-        if (responseFormat is null)
-        {
-            return null;
-        }
-
         return responseFormat switch
         {
-            OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple => AudioTranscriptionFormat.Simple,
-            OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose => AudioTranscriptionFormat.Verbose,
-            OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Vtt => AudioTranscriptionFormat.Vtt,
-            OpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Srt => AudioTranscriptionFormat.Srt,
+            "json" => AudioTranscriptionFormat.Simple,
+            "verbose_json" => AudioTranscriptionFormat.Verbose,
+            "vtt" => AudioTranscriptionFormat.Vtt,
+            "srt" => AudioTranscriptionFormat.Srt,
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
         };
     }

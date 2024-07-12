@@ -18,12 +18,12 @@ public static class OpenAIPluginCollectionExtensions
     /// <param name="function">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/></param>
     /// <param name="arguments">When this method returns, the arguments for the function; otherwise, <see langword="null"/></param>
     /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
-    public static bool TryGetOpenAIFunctionAndArguments(
+    public static bool TryGetFunctionAndArguments(
         this IReadOnlyKernelPluginCollection plugins,
         ChatToolCall functionToolCall,
         [NotNullWhen(true)] out KernelFunction? function,
         out KernelArguments? arguments) =>
-        plugins.TryGetOpenAIFunctionAndArguments(new OpenAIFunctionToolCall(functionToolCall), out function, out arguments);
+        plugins.TryGetFunctionAndArguments(new OpenAIFunctionToolCall(functionToolCall), out function, out arguments);
 
     /// <summary>
     /// Given an <see cref="OpenAIFunctionToolCall"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/> and populate <see cref="KernelArguments"/> with its parameters.
@@ -33,7 +33,7 @@ public static class OpenAIPluginCollectionExtensions
     /// <param name="function">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/></param>
     /// <param name="arguments">When this method returns, the arguments for the function; otherwise, <see langword="null"/></param>
     /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
-    public static bool TryGetOpenAIFunctionAndArguments(
+    public static bool TryGetFunctionAndArguments(
         this IReadOnlyKernelPluginCollection plugins,
         OpenAIFunctionToolCall functionToolCall,
         [NotNullWhen(true)] out KernelFunction? function,

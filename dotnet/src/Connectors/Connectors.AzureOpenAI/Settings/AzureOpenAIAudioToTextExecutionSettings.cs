@@ -62,11 +62,10 @@ public sealed class AzureOpenAIAudioToTextExecutionSettings : PromptExecutionSet
     }
 
     /// <summary>
-    /// The format of the transcript output, in one of these options: Text, Simple, Verbose, Sttor vtt. Default is 'json'.
+    /// The format of the transcript output, in one of these options: json, srt, verbose_json, or vtt. Default is 'json'.
     /// </summary>
     [JsonPropertyName("response_format")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public AudioTranscriptionFormat? ResponseFormat
+    public string ResponseFormat
     {
         get => this._responseFormat;
 
@@ -94,12 +93,6 @@ public sealed class AzureOpenAIAudioToTextExecutionSettings : PromptExecutionSet
             this._temperature = value;
         }
     }
-
-    /// <summary>
-    /// The timestamp granularities to populate for this transcription. response_format must be set verbose_json to use timestamp granularities. Either or both of these options are supported: word, or segment.
-    /// </summary>
-    [JsonPropertyName("granularities")]
-    public IReadOnlyList<TimeStampGranularities>? Granularities { get; set; }
 
     /// <summary>
     /// Creates an instance of <see cref="AzureOpenAIAudioToTextExecutionSettings"/> class with default filename - "file.mp3".
@@ -161,59 +154,12 @@ public sealed class AzureOpenAIAudioToTextExecutionSettings : PromptExecutionSet
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureOpenAIAudioToTextExecutionSettings)}", nameof(executionSettings));
     }
 
-    /// <summary>
-    /// The timestamp granularities available to populate transcriptions.
-    /// </summary>
-    public enum TimeStampGranularities
-    {
-        /// <summary>
-        /// Not specified.
-        /// </summary>
-        Default = 0,
-
-        /// <summary>
-        /// The transcription is segmented by word.
-        /// </summary>
-        Word = 1,
-
-        /// <summary>
-        /// The timestamp of transcription is by segment.
-        /// </summary>
-        Segment = 2,
-    }
-
-    /// <summary>
-    /// Specifies the format of the audio transcription.
-    /// </summary>
-    public enum AudioTranscriptionFormat
-    {
-        /// <summary>
-        /// Response body that is a JSON object containing a single 'text' field for the transcription.
-        /// </summary>
-        Simple,
-
-        /// <summary>
-        /// Use a response body that is a JSON object containing transcription text along with timing, segments, and other metadata.
-        /// </summary>
-        Verbose,
-
-        /// <summary>
-        /// Response body that is plain text in SubRip (SRT) format that also includes timing information.
-        /// </summary>
-        Srt,
-
-        /// <summary>
-        /// Response body that is plain text in Web Video Text Tracks (VTT) format that also includes timing information.
-        /// </summary>
-        Vtt,
-    }
-
     #region private ================================================================================
 
     private const string DefaultFilename = "file.mp3";
 
     private float _temperature = 0;
-    private AudioTranscriptionFormat? _responseFormat;
+    private string _responseFormat = "json";
     private string _filename;
     private string? _language;
     private string? _prompt;

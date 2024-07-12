@@ -22,7 +22,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin_MyFunction", string.Empty);
 
         // Act
-        var result = plugins.TryGetOpenAIFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
+        var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
 
         // Assert
         Assert.False(result);
@@ -41,7 +41,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", string.Empty);
 
         // Act
-        var result = plugins.TryGetOpenAIFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
+        var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
 
         // Assert
         Assert.True(result);
@@ -60,7 +60,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         var toolCall = ChatToolCall.CreateFunctionToolCall("id", "MyPlugin-MyFunction", "{\n \"location\": \"San Diego\",\n \"max_price\": 300\n,\n \"null_argument\": null\n}");
 
         // Act
-        var result = plugins.TryGetOpenAIFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
+        var result = plugins.TryGetFunctionAndArguments(toolCall, out var actualFunction, out var actualArguments);
 
         // Assert
         Assert.True(result);

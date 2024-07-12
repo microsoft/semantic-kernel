@@ -61,11 +61,10 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// The format of the transcript output, in one of these options: Text, Simple, Verbose, Sttor vtt. Default is 'json'.
+    /// The format of the transcript output, in one of these options: json, srt, verbose_json, or vtt. Default is 'json'.
     /// </summary>
     [JsonPropertyName("response_format")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public AudioTranscriptionFormat? ResponseFormat
+    public string ResponseFormat
     {
         get => this._responseFormat;
 
@@ -93,12 +92,6 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
             this._temperature = value;
         }
     }
-
-    /// <summary>
-    /// The timestamp granularities to populate for this transcription. response_format must be set verbose_json to use timestamp granularities. Either or both of these options are supported: word, or segment.
-    /// </summary>
-    [JsonPropertyName("granularities")]
-    public IReadOnlyList<TimeStampGranularities>? Granularities { get; set; }
 
     /// <summary>
     /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class with default filename - "file.mp3".
@@ -156,27 +149,6 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// The timestamp granularities available to populate transcriptions.
-    /// </summary>
-    public enum TimeStampGranularities
-    {
-        /// <summary>
-        /// Not specified.
-        /// </summary>
-        Default = 0,
-
-        /// <summary>
-        /// The transcription is segmented by word.
-        /// </summary>
-        Word = 1,
-
-        /// <summary>
-        /// The timestamp of transcription is by segment.
-        /// </summary>
-        Segment = 2,
-    }
-
-    /// <summary>
     /// Specifies the format of the audio transcription.
     /// </summary>
     public enum AudioTranscriptionFormat
@@ -207,7 +179,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     private const string DefaultFilename = "file.mp3";
 
     private float _temperature = 0;
-    private AudioTranscriptionFormat? _responseFormat;
+    private string _responseFormat = "json";
     private string _filename;
     private string? _language;
     private string? _prompt;
