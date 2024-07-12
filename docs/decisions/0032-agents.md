@@ -64,7 +64,7 @@ In addition to `Agent`, two fundamental concepts are identified from this patter
 - Conversation - Context for sequence of agent interactions.
 - Channel: ("Communication Path" from diagram) - The protocol with which the agent interacts with the nexus.
 
-> Agents of different modalities must be free to satisfy the requirements presented by their modality.  Formalizing the `Channel` concept provides natural vehicle for this to occur.
+> Agents of different modalities must be free to satisfy the requirements presented by their modality.  Formalizing the `Channel` concept provides a natural vehicle for this to occur.
 
 These concepts come together to suggest the following generalization:
 
