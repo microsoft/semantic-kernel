@@ -41,6 +41,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         service_id: str | None = None,
         ai_model_id: str | None = None,
         host: str | None = None,
+        client: AsyncClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -51,6 +52,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             ai_model_id (Optional[str]): The model name. (Optional)
             host (Optional[str]): URL of the Ollama server, defaults to None and
                 will use the default Ollama service address: http://127.0.0.1:11434. (Optional)
+            client (Optional[AsyncClient]): A custom Ollama client to use for the service. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
             env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
         """
@@ -67,7 +69,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         super().__init__(
             service_id=service_id or ollama_settings.model,
             ai_model_id=ollama_settings.model,
-            host=ollama_settings.host,
+            client=client or AsyncClient(host=ollama_settings.host),
         )
 
     async def get_chat_message_contents(
@@ -90,7 +92,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         settings = self.get_prompt_execution_settings_from_settings(settings)
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
-        response_object = await AsyncClient(host=self.host).chat(
+        response_object = await self.client.chat(
             model=self.ai_model_id,
             messages=prepared_chat_history,
             stream=False,
@@ -134,7 +136,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         settings = self.get_prompt_execution_settings_from_settings(settings)
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
-        response_object = await AsyncClient(host=self.host).chat(
+        response_object = await self.client.chat(
             model=self.ai_model_id,
             messages=prepared_chat_history,
             stream=True,
@@ -175,7 +177,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         settings = self.get_prompt_execution_settings_from_settings(settings)
         prepared_chat_history = [Message(role=AuthorRole.USER.value, content=prompt)]
 
-        response_object = await AsyncClient(host=self.host).chat(
+        response_object = await self.client.chat(
             model=self.ai_model_id,
             messages=prepared_chat_history,
             stream=False,
@@ -215,7 +217,7 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
         settings = self.get_prompt_execution_settings_from_settings(settings)
         prepared_chat_history = [Message(role=AuthorRole.USER.value, content=prompt)]
 
-        response_object = await AsyncClient(host=self.host).chat(
+        response_object = await self.client.chat(
             model=self.ai_model_id,
             messages=prepared_chat_history,
             stream=True,

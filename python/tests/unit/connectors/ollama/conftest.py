@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator, AsyncIterator
 from unittest.mock import MagicMock
 
 import pytest
+from ollama import AsyncClient
 
 from semantic_kernel.contents.chat_history import ChatHistory
 
@@ -21,6 +22,11 @@ def service_id() -> str:
 @pytest.fixture()
 def host() -> str:
     return "http://localhost:5000"
+
+
+@pytest.fixture()
+def custom_client() -> AsyncClient:
+    return AsyncClient("http://localhost:5001")
 
 
 @pytest.fixture()

@@ -25,6 +25,12 @@ def test_init_empty_service_id(model_id):
     assert ollama.service_id == model_id
 
 
+def test_custom_client(custom_client):
+    """Test that the service initializes correctly with a custom client."""
+    ollama = OllamaChatCompletion(client=custom_client)
+    assert ollama.client == custom_client
+
+
 @pytest.mark.parametrize("exclude_list", [["OLLAMA_MODEL"]], indirect=True)
 def test_init_empty_model_id(ollama_unit_test_env):
     """Test that the service initializes incorrectly with an empty model id."""
@@ -60,8 +66,11 @@ async def test_custom_host(
         OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
     )
 
-    assert mock_client.call_count == 2
+    # Check that the client was initialized once with the correct host
+    assert mock_client.call_count == 1
     mock_client.assert_called_with(host=host)
+    # Check that the chat client was called twice and the responses are correct
+    assert mock_chat_client.call_count == 2
     assert len(chat_responses) == 1
     assert chat_responses[0].content == "test_response"
     assert len(text_responses) == 1
@@ -102,8 +111,11 @@ async def test_custom_host_streaming(
         assert len(messages) == 1
         assert messages[0].text == "test_response"
 
-    assert mock_client.call_count == 2
+    # Check that the client was initialized once with the correct host
+    assert mock_client.call_count == 1
     mock_client.assert_called_with(host=host)
+    # Check that the chat client was called twice and the responses are correct
+    assert mock_chat_client.call_count == 2
 
 
 @pytest.mark.asyncio

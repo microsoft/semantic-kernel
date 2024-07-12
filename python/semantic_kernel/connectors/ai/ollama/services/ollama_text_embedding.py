@@ -38,6 +38,7 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
         service_id: str | None = None,
         ai_model_id: str | None = None,
         host: str | None = None,
+        client: AsyncClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -48,6 +49,7 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
             ai_model_id (Optional[str]): The model name. (Optional)
             host (Optional[str]): URL of the Ollama server, defaults to None and
                 will use the default Ollama service address: http://127.0.0.1:11434. (Optional)
+            client (Optional[AsyncClient]): A custom Ollama client to use for the service. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
             env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
         """
@@ -64,7 +66,7 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
         super().__init__(
             service_id=service_id or ollama_settings.model,
             ai_model_id=ollama_settings.model,
-            host=ollama_settings.host,
+            client=client or AsyncClient(host=ollama_settings.host),
         )
 
     @override
@@ -81,7 +83,7 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
 
         result = []
         for text in texts:
-            response_object = await AsyncClient(host=self.host).embeddings(
+            response_object = await self.client.embeddings(
                 model=self.ai_model_id,
                 prompt=text,
                 **settings.prepare_settings_dict(),

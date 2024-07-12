@@ -22,6 +22,12 @@ def test_init_empty_service_id(model_id):
     assert ollama.service_id == model_id
 
 
+def test_custom_client(custom_client):
+    """Test that the service initializes correctly with a custom client."""
+    ollama = OllamaTextCompletion(client=custom_client)
+    assert ollama.client == custom_client
+
+
 @pytest.mark.parametrize("exclude_list", [["OLLAMA_MODEL"]], indirect=True)
 def test_init_empty_model_id(ollama_unit_test_env):
     """Test that the service initializes incorrectly with an empty model_id"""

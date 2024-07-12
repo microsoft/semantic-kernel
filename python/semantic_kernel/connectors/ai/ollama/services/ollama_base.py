@@ -2,6 +2,8 @@
 
 from abc import ABC
 
+from ollama import AsyncClient
+
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
@@ -9,8 +11,7 @@ class OllamaBase(KernelBaseModel, ABC):
     """Ollama service base.
 
     Args:
-        host (Optional[str]): URL of the Ollama server, defaults to None and
-            will use the default Ollama service address: http://127.0.0.1:11434
+        client [AsyncClient]: An Ollama client to use for the service.
     """
 
-    host: str | None = None
+    client: AsyncClient
