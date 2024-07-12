@@ -4,10 +4,12 @@ import asyncio
 import contextlib
 import logging
 import types
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from collections.abc import Callable
 from inspect import signature
 from typing import Any, Generic, TypeVar
+
+from pydantic import model_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.data.models.vector_store_model_definition import (
@@ -28,6 +30,7 @@ from semantic_kernel.exceptions.memory_connector_exceptions import (
     VectorStoreModelSerializationException,
 )
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -38,61 +41,41 @@ logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
-    def __init__(
-        self,
-        collection_name: str,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
-        kernel: Kernel | None = None,
-    ):
-        """Create a VectorStoreBase instance.
+class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
+    collection_name: str
+    data_model_type: type[TModel]
+    data_model_definition: VectorStoreRecordDefinition
+    kernel: Kernel | None = None
+    _container_mode: bool = False
+    _key_field: str = ""
 
-        Args:
-            collection_name (str): The collection name.
-            data_model_type (type[TModel]): The data model type.
-            data_model_definition (VectorStoreRecordDefinition):
-                The model fields when supplied, can be a VectorStoreRecordDefinition or VectorStoreContainerDefinition.
-                The VectorStoreRecordDefinition is used when the data model are single instances of data records.
-                When a container style data model is used, for instance a pandas DataFrame,
-                the VectorStoreContainerDefinition must be used.
-                This field supplied directly takes precedence over the fields defined in the item_type.
-            kernel (Kernel, optional): The kernel, used if embeddings need to be created.
+    @model_validator(mode="before")
+    @classmethod
+    def validate_data_model_definition(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Validate the data model definition, if it isn't passed, try to get it from the data model type."""
+        if not data.get("data_model_definition"):
+            data["data_model_definition"] = getattr(data["data_model_type"], "__kernel_data_model_fields__", None)
+        return data
 
-        Raises:
-            ValueError: If the item type is not a data model.
-            ValueError: If the item type does not have fields defined.
-            ValueError: If the item type does not have the key field defined.
-        """
-        self.collection_name = collection_name
-        self._kernel = kernel
-        self._data_model_type: type[TModel] = data_model_type
-        self._data_model_definition: VectorStoreRecordDefinition = data_model_definition or getattr(
-            self._data_model_type, "__kernel_data_model_fields__"
-        )
-        if not self._data_model_definition:
-            raise ValueError(
-                f"Item type {data_model_type} must have the model fields defined or it needs to be passed in directly."
-            )
-        self._container_mode = self._data_model_definition.container_mode
-        self._key_field = self._data_model_definition.key_field.name
-        if not self._key_field:
-            raise ValueError(
-                f"The key field must be defined, either in the datamodel ({self._data_model_type}) "
-                f"or the model_fields ({self._data_model_definition})."
-            )
-        if hasattr(self._data_model_type, "__kernel_data_model__"):
+    def model_post_init(self, __context: object | None = None):
+        """Post init function that sets the key field and container mode values, and validates the datamodel."""
+        if self.data_model_definition.key_field.name is None:
+            raise ValueError("Key field must be defined and have a name in the data model definition.")
+        self._key_field = self.data_model_definition.key_field.name
+        self._container_mode = self.data_model_definition.container_mode
+
+        if hasattr(self.data_model_type, "__kernel_data_model__"):
             self._validate_data_model()
         else:
             logger.debug(
-                f"No data model validation performed on {self._data_model_type}, "
+                f"No data model validation performed on {self.data_model_type}, "
                 "as it is not a DataModel, your input may be incorrect."
             )
 
-    # region Overloadable Methods
+    # region Overload Methods
     async def close(self):
         """Close the connection."""
-        pass
+        return
 
     @abstractmethod
     async def _inner_upsert(
@@ -151,13 +134,13 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
 
         Checks should include, allowed naming of parameters, allowed data types, allowed vector dimensions.
         """
-        model_sig = signature(self._data_model_type)
+        model_sig = signature(self.data_model_type)
         key_type = model_sig.parameters[self._key_field].annotation.__args__[0]  # type: ignore
         if self.supported_key_types and key_type not in self.supported_key_types:
             raise ValueError(f"Key field must be one of {self.supported_key_types}")
         if not self.supported_vector_types:
             return
-        for field_name, field in self._data_model_definition.fields.items():
+        for field_name, field in self.data_model_definition.fields.items():
             if isinstance(field, VectorStoreRecordVectorField):
                 field_type = model_sig.parameters[field_name].annotation.__args__[0]
                 if field_type.__class__ is types.UnionType:
@@ -182,7 +165,27 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
         """
         ...
 
-    # endregion
+    async def create_collection_if_not_exists(self, **kwargs: Any):
+        """Create the collection in the service, first uses does_collection_exist to check if it exists."""
+        if await self.does_collection_exist(**kwargs):
+            return
+        await self.create_collection(**kwargs)
+
+    @abstractmethod
+    async def create_collection(self, **kwargs: Any):
+        """Create the collection in the service."""
+        ...
+
+    @abstractmethod
+    async def does_collection_exist(self, **kwargs: Any) -> bool:
+        """Check if the collection exists."""
+        ...
+
+    @abstractmethod
+    async def delete_collection(self, **kwargs: Any):
+        """Delete the collection."""
+        ...
+
     # region Public Methods
 
     async def upsert(
@@ -314,8 +317,7 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
         except Exception as exc:
             raise MemoryConnectorException(f"Error deleting records: {exc}") from exc
 
-    # endregion
-    # region Internal SerDe methods
+    # region Internal Serialization methods
 
     def serialize(self, records: OneOrMany[TModel], **kwargs: Any) -> OneOrMany[Any] | None:
         """Serialize the data model to the store model.
@@ -377,8 +379,8 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
             if not all(result):
                 return None
             return result
-        if self._container_mode and self._data_model_definition.serialize:
-            return self._data_model_definition.serialize(record, **kwargs)  # type: ignore
+        if self._container_mode and self.data_model_definition.serialize:
+            return self.data_model_definition.serialize(record, **kwargs)  # type: ignore
         if isinstance(record, VectorStoreModelFunctionSerdeProtocol):
             try:
                 return record.serialize(**kwargs)
@@ -394,13 +396,13 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
 
         The developer is responsible for correctly deserializing for the specific data source.
         """
-        if self._container_mode and self._data_model_definition.deserialize:
-            return self._data_model_definition.deserialize(record, **kwargs)
-        if isinstance(self._data_model_type, VectorStoreModelFunctionSerdeProtocol):
+        if self._container_mode and self.data_model_definition.deserialize:
+            return self.data_model_definition.deserialize(record, **kwargs)
+        if isinstance(self.data_model_type, VectorStoreModelFunctionSerdeProtocol):
             try:
                 if isinstance(record, list):
-                    return [self._data_model_type.deserialize(rec, **kwargs) for rec in record]
-                return self._data_model_type.deserialize(record, **kwargs)
+                    return [self.data_model_type.deserialize(rec, **kwargs) for rec in record]
+                return self.data_model_type.deserialize(record, **kwargs)
             except Exception as exc:
                 raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
         return None
@@ -414,8 +416,8 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
         """
         if isinstance(record, dict):
             return record
-        if self._container_mode and self._data_model_definition.to_dict:
-            return self._data_model_definition.to_dict(record, **kwargs)
+        if self._container_mode and self.data_model_definition.to_dict:
+            return self.data_model_definition.to_dict(record, **kwargs)
         if isinstance(record, VectorStoreModelPydanticProtocol):
             try:
                 return record.model_dump()
@@ -428,7 +430,7 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
                 raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
 
         store_model = {}
-        for field_name in self._data_model_definition.field_names:  # type: ignore
+        for field_name in self.data_model_definition.field_names:  # type: ignore
             if (getter := getattr(record, "get", None)) and callable(getter):
                 try:
                     value = record.get(field_name)  # type: ignore
@@ -451,36 +453,34 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
 
         The input of this should come from the _deserialized_store_model_to_dict function.
         """
-        if self._container_mode and self._data_model_definition.from_dict:
+        if self._container_mode and self.data_model_definition.from_dict:
             if not isinstance(record, list):
                 record = [record]
-            return self._data_model_definition.from_dict(record, **kwargs)
+            return self.data_model_definition.from_dict(record, **kwargs)
         if isinstance(record, list):
             if len(record) > 1:
                 raise ValueError(
                     "Cannot deserialize multiple records to a single record unless you are using a container."
                 )
             record = record[0]
-        if isinstance(self._data_model_type, dict):
+        if isinstance(self.data_model_type, dict):
             return record
-        if isinstance(self._data_model_type, VectorStoreModelPydanticProtocol):
+        if isinstance(self.data_model_type, VectorStoreModelPydanticProtocol):
             try:
-                return self._data_model_type.model_validate(record)
+                return self.data_model_type.model_validate(record)
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
-        if isinstance(self._data_model_type, VectorStoreModelToDictFromDictProtocol):
+        if isinstance(self.data_model_type, VectorStoreModelToDictFromDictProtocol):
             try:
-                return self._data_model_type.from_dict(record)
+                return self.data_model_type.from_dict(record)
             except Exception as exc:
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
         data_model_dict: dict[str, Any] = {}
-        for field_name in self._data_model_definition.fields:  # type: ignore
+        for field_name in self.data_model_definition.fields:  # type: ignore
             data_model_dict[field_name] = record.get(field_name)
-        if isinstance(self._data_model_type, dict):
+        if isinstance(self.data_model_type, dict):
             return data_model_dict  # type: ignore
-        return self._data_model_type(**data_model_dict)
-
-    # endregion
+        return self.data_model_type(**data_model_dict)
 
     # region Internal Functions
 
@@ -502,7 +502,7 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
         # dict of embedding_field.name and tuple of record, settings, field_name
         embeddings_to_make: list[tuple[str, str, dict[str, PromptExecutionSettings], Callable | None]] = []
 
-        for name, field in self._data_model_definition.fields.items():  # type: ignore
+        for name, field in self.data_model_definition.fields.items():  # type: ignore
             if (
                 not isinstance(field, VectorStoreRecordDataField)
                 or not field.has_embedding
@@ -510,7 +510,7 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
             ):
                 continue
             embedding_field_name = field.embedding_property_name
-            embedding_field = self._data_model_definition.fields.get(embedding_field_name)
+            embedding_field = self.data_model_definition.fields.get(embedding_field_name)
             assert isinstance(embedding_field, VectorStoreRecordVectorField)  # nosec
             if not embedding_field.local_embedding:
                 continue
@@ -519,9 +519,9 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
             embeddings_to_make.append((name, embedding_field_name, settings, cast_callable))
 
         for field_to_embed, field_to_store, settings, cast_callable in embeddings_to_make:
-            if not self._kernel:
+            if not self.kernel:
                 raise MemoryConnectorException("Kernel is required to create embeddings.")
-            await self._kernel.add_embedding_to_object(
+            await self.kernel.add_embedding_to_object(
                 inputs=records,
                 field_to_embed=field_to_embed,
                 field_to_store=field_to_store,
@@ -531,5 +531,3 @@ class VectorStoreCollectionBase(ABC, Generic[TKey, TModel]):
                 **kwargs,
             )
         return records
-
-    # endregion

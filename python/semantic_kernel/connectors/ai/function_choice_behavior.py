@@ -4,19 +4,19 @@ import logging
 from collections import OrderedDict
 from collections.abc import Callable
 from enum import Enum
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, TypeVar
 
 from pydantic.dataclasses import dataclass
 from typing_extensions import deprecated
 
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
     from semantic_kernel.kernel import Kernel
 
 DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS = 5
@@ -38,7 +38,7 @@ class FunctionChoiceType(Enum):
 class FunctionCallChoiceConfiguration:
     """Configuration for function call choice."""
 
-    available_functions: list["KernelFunctionMetadata"] | None = None
+    available_functions: list[KernelFunctionMetadata] | None = None
 
 
 def _combine_filter_dicts(*dicts: dict[str, list[str]]) -> dict:
@@ -62,6 +62,9 @@ def _combine_filter_dicts(*dicts: dict[str, list[str]]) -> dict:
         combined_filters[key] = list(combined_functions.keys())
 
     return combined_filters
+
+
+_T = TypeVar("_T", bound="FunctionChoiceBehavior")
 
 
 @experimental_class
@@ -105,7 +108,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
     @classmethod
     @deprecated("The `FunctionCallBehavior` class is deprecated; use `FunctionChoiceBehavior` instead.")
-    def from_function_call_behavior(cls, behavior: "FunctionCallBehavior") -> "FunctionChoiceBehavior":
+    def from_function_call_behavior(cls: type[_T], behavior: "FunctionCallBehavior") -> _T:
         """Create a FunctionChoiceBehavior from a FunctionCallBehavior."""
         from semantic_kernel.connectors.ai.function_call_behavior import (
             EnabledFunctions,
@@ -172,7 +175,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
     @classmethod
     def Auto(
-        cls,
+        cls: type[_T],
         auto_invoke: bool = True,
         *,
         filters: dict[
@@ -180,7 +183,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         ]
         | None = None,
         **kwargs,
-    ) -> "FunctionChoiceBehavior":
+    ) -> _T:
         """Creates a FunctionChoiceBehavior with type AUTO.
 
         Returns FunctionChoiceBehavior class with auto_invoke enabled, and the desired functions
@@ -196,14 +199,14 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
     @classmethod
     def NoneInvoke(
-        cls,
+        cls: type[_T],
         *,
         filters: dict[
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
         ]
         | None = None,
         **kwargs,
-    ) -> "FunctionChoiceBehavior":
+    ) -> _T:
         """Creates a FunctionChoiceBehavior with type NONE.
 
         Returns FunctionChoiceBehavior class with auto_invoke disabled, and the desired functions
@@ -219,7 +222,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
 
     @classmethod
     def Required(
-        cls,
+        cls: type[_T],
         auto_invoke: bool = True,
         *,
         filters: dict[
@@ -227,7 +230,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         ]
         | None = None,
         **kwargs,
-    ) -> "FunctionChoiceBehavior":
+    ) -> _T:
         """Creates a FunctionChoiceBehavior with type REQUIRED.
 
         Returns FunctionChoiceBehavior class with auto_invoke enabled, and the desired functions
@@ -242,7 +245,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         )
 
     @classmethod
-    def from_dict(cls, data: dict) -> "FunctionChoiceBehavior":
+    def from_dict(cls: type[_T], data: dict) -> _T:
         """Create a FunctionChoiceBehavior from a dictionary."""
         type_map = {
             "auto": cls.Auto,
@@ -268,7 +271,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         )
 
     @classmethod
-    def from_string(cls, data: str) -> "FunctionChoiceBehavior":
+    def from_string(cls: type[_T], data: str) -> _T:
         """Create a FunctionChoiceBehavior from a string.
 
         This method converts the provided string to a FunctionChoiceBehavior object

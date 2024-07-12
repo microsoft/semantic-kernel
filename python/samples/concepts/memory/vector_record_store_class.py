@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-import contextlib
 from dataclasses import dataclass, field
 from typing import Annotated
 from uuid import uuid4
@@ -13,20 +12,14 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_vector_store_collection import (
-    AzureAISearchVectorStoreCollection,
+from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection import (
+    AzureAISearchCollection,
 )
-from semantic_kernel.connectors.memory.qdrant.qdrant_vector_record_store import QdrantVectorRecordStore
-from semantic_kernel.connectors.memory.redis.redis_vector_record_store import RedisVectorRecordStore
 from semantic_kernel.data.models.vector_store_model_decorator import vectorstoremodel
 from semantic_kernel.data.models.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
-)
-from semantic_kernel.data.protocols.vector_collection_store_protocol import (
-    VectorCollectionProtocol,
-    VectorCollectionReadProtocol,
 )
 
 
@@ -55,24 +48,23 @@ kernel = Kernel()
 
 
 stores = {
-    "ai_search": AzureAISearchVectorStoreCollection[MyDataModel](
+    "ai_search": AzureAISearchCollection[MyDataModel](
         data_model_type=MyDataModel,
         kernel=kernel,
     ),
-    "redis": RedisVectorRecordStore[MyDataModel](
-        data_model_type=MyDataModel,
-        kernel=kernel,
-        collection_name="test",
-        prefix_collection_name_to_key_names=True,
-    ),
-    "qdrant": QdrantVectorRecordStore[MyDataModel](
-        data_model_type=MyDataModel, kernel=kernel, collection_name="test", prefer_grpc=True
-    ),
+    # "redis": RedisVectorRecordStore[MyDataModel](
+    #     data_model_type=MyDataModel,
+    #     kernel=kernel,
+    #     collection_name="test",
+    #     prefix_collection_name_to_key_names=True,
+    # ),
+    # "qdrant": QdrantVectorRecordStore[MyDataModel](
+    #     data_model_type=MyDataModel, kernel=kernel, collection_name="test", prefer_grpc=True
+    # ),
 }
 
 store = "ai_search"
 manual_embed = False
-recreate_index = True
 
 
 async def main():
@@ -80,14 +72,7 @@ async def main():
     ai_model_id = "text-embedding-3-small"
     kernel.add_service(OpenAITextEmbedding(service_id=service_id, ai_model_id=ai_model_id))
     async with stores[store] as record_store:
-        if recreate_index and isinstance(record_store, VectorCollectionProtocol):
-            with contextlib.suppress(Exception):
-                await record_store.delete_collection()
-            if not await record_store.collection_exists():
-                index = await record_store.create_collection()
-                print(index.fields)
-        if isinstance(record_store, VectorCollectionReadProtocol):
-            assert await record_store.collection_exists()
+        await record_store.create_collection_if_not_exists()
 
         record1 = MyDataModel(content="My text", id="e6103c03-487f-4d7d-9c23-4723651c17f4")
         record2 = MyDataModel(content="My other text", id="09caec77-f7e1-466a-bcec-f1d51c5b15be")
@@ -110,10 +95,13 @@ async def main():
         print(f"upserted {keys=}")
 
         result = await record_store.get(record1.id)
-        print(f"found {result.id=}")
-        print(f"{result.content=}")
-        if result.vector:
-            print(f"{result.vector[:5]=}")
+        if result:
+            print(f"found {result.id=}")
+            print(f"{result.content=}")
+            if result.vector:
+                print(f"{result.vector[:5]=}")
+        else:
+            print("not found")
 
 
 if __name__ == "__main__":

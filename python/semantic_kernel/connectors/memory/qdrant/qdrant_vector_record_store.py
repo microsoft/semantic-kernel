@@ -15,7 +15,7 @@ else:
 from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_collection_base import VectorStoreCollectionBase
+from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.kernel import Kernel
@@ -29,7 +29,7 @@ TKey = TypeVar("TKey", str, int)
 
 
 @experimental_class
-class QdrantVectorRecordStore(VectorStoreCollectionBase[str | int, TModel]):
+class QdrantVectorRecordStore(VectorStoreRecordCollection[str | int, TModel]):
     def __init__(
         self,
         data_model_type: type[TModel],
