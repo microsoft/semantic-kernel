@@ -121,7 +121,7 @@ internal sealed class Agent : IAgent
         this.Kernel =
             this._restContext.HasVersion ?
                 builder.AddAzureOpenAIChatCompletion(this._model.Model, this.GetAzureRootEndpoint(), this._restContext.ApiKey).Build() :
-                builder.AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey).Build();
+                new(); // %%% HACK builder.AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey).Build();
 
         if (plugins is not null)
         {

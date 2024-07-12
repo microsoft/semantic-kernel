@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Agents.Internal;
 using Microsoft.SemanticKernel.Http;
@@ -92,7 +91,7 @@ internal static partial class OpenAIRestExtensions
     {
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
         request.Headers.Add(HeaderNameUserAgent, HttpHeaderConstant.Values.UserAgent);
-        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIFileService)));
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(IAgent)));
 
         if (context.HasVersion)
         {

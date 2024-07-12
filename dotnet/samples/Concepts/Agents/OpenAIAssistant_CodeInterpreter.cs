@@ -11,7 +11,7 @@ namespace Agents;
 /// </summary>
 public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTest(output)
 {
-    protected override bool ForceOpenAI => true;
+    protected override bool ForceOpenAI => false;
 
     [Fact]
     public async Task UseCodeInterpreterToolWithOpenAIAssistantAgentAsync()
@@ -20,15 +20,15 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
+                config: GetOpenAIConfiguration(),
                 new()
                 {
                     EnableCodeInterpreter = true, // Enable code-interpreter
-                    ModelId = this.Model,
+                    ModelName = this.Model,
                 });
 
         // Create a chat for agent interaction.
-        AgentGroupChat chat = new();
+        var chat = new AgentGroupChat();
 
         // Respond to user input
         try
@@ -53,4 +53,10 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
             }
         }
     }
+
+    private OpenAIServiceConfiguration GetOpenAIConfiguration()
+        =>
+            this.UseOpenAIConfig ?
+                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
+                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

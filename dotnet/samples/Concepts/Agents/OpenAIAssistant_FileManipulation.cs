@@ -23,24 +23,21 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
-
         OpenAIFileReference uploadFile =
             await fileService.UploadContentAsync(
                 new BinaryContent(await EmbeddedResource.ReadAllAsync("sales.csv"), mimeType: "text/plain"),
                 new OpenAIFileUploadExecutionSettings("sales.csv", OpenAIFilePurpose.Assistants));
 
-        Console.WriteLine(this.ApiKey);
-
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
+                config: GetOpenAIConfiguration(),
                 new()
                 {
+                    CodeInterpterFileIds = [uploadFile.Id],
                     EnableCodeInterpreter = true, // Enable code-interpreter
-                    ModelId = this.Model,
-                    FileIds = [uploadFile.Id] // Associate uploaded file
+                    ModelName = this.Model,
                 });
 
         // Create a chat for agent interaction.
@@ -62,15 +59,15 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            chat.AddChatMessage(new(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (ChatMessageContent content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
 
-                foreach (AnnotationContent annotation in content.Items.OfType<AnnotationContent>())
+                foreach (AnnotationContent annotation in message.Items.OfType<AnnotationContent>())
                 {
                     Console.WriteLine($"\n* '{annotation.Quote}' => {annotation.FileId}");
                     BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!);
@@ -80,4 +77,10 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
             }
         }
     }
+
+    private OpenAIServiceConfiguration GetOpenAIConfiguration()
+        =>
+            this.UseOpenAIConfig ?
+                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
+                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

@@ -47,12 +47,12 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         OpenAIAssistantAgent agentWriter =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
+                config: this.GetOpenAIConfiguration(),
                 definition: new()
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
-                    ModelId = this.Model,
+                    ModelName = this.Model,
                 });
 
         // Create a chat for agent interaction.
@@ -94,4 +94,10 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
             => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
     }
+
+    private OpenAIServiceConfiguration GetOpenAIConfiguration()
+        =>
+            this.UseOpenAIConfig ?
+                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
+                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

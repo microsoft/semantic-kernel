@@ -27,17 +27,17 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
+                config: GetOpenAIConfiguration(),
                 new()
                 {
                     Instructions = AgentInstructions,
                     Name = AgentName,
                     EnableCodeInterpreter = true,
-                    ModelId = this.Model,
+                    ModelName = this.Model,
                 });
 
         // Create a chat for agent interaction.
-        AgentGroupChat chat = new();
+        var chat = new AgentGroupChat();
 
         // Respond to user input
         try
@@ -54,7 +54,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
                 Sum      426  1622     856 2904
                 """);
 
-            await InvokeAgentAsync("Can you regenerate this same chart using the category names as the bar colors?");
+            await InvokeAgentAsync("Can you regenerate this same chart using the category names as the bar colors?"); // %%% WHY NOT ???
         }
         finally
         {
@@ -68,18 +68,24 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
+            await foreach (var message in chat.InvokeAsync(agent))
             {
                 if (!string.IsNullOrWhiteSpace(message.Content))
                 {
                     Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
                 }
 
-                foreach (FileReferenceContent fileReference in message.Items.OfType<FileReferenceContent>())
+                foreach (var fileReference in message.Items.OfType<FileReferenceContent>())
                 {
                     Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: @{fileReference.FileId}");
                 }
             }
         }
     }
+
+    private OpenAIServiceConfiguration GetOpenAIConfiguration()
+        =>
+            this.UseOpenAIConfig ?
+                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
+                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

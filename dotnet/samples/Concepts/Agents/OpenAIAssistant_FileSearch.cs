@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.VectorStores;
 using Resources;
 
 namespace Agents;
@@ -11,7 +12,7 @@ namespace Agents;
 /// <summary>
 /// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(output)
+public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Retrieval tool not supported on Azure OpenAI.
@@ -22,25 +23,30 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
     public async Task UseRetrievalToolWithOpenAIAssistantAgentAsync()
     {
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
-
         OpenAIFileReference uploadFile =
             await fileService.UploadContentAsync(new BinaryContent(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!, "text/plain"),
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
+
+        VectorStore vectorStore =
+            await new OpenAIVectorStoreBuilder(GetOpenAIConfiguration())
+                .AddFile(uploadFile.Id)
+                .CreateAsync();
+
+        OpenAIVectorStore openAIStore = new(vectorStore.Id, GetOpenAIConfiguration());
 
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
+                config: GetOpenAIConfiguration(),
                 new()
                 {
-                    EnableRetrieval = true, // Enable retrieval
-                    ModelId = this.Model,
-                    FileIds = [uploadFile.Id] // Associate uploaded file
+                    ModelName = this.Model,
+                    VectorStoreId = vectorStore.Id,
                 });
 
         // Create a chat for agent interaction.
-        AgentGroupChat chat = new();
+        var chat = new AgentGroupChat();
 
         // Respond to user input
         try
@@ -52,6 +58,8 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
         finally
         {
             await agent.DeleteAsync();
+            await openAIStore.DeleteAsync();
+            await fileService.DeleteFileAsync(uploadFile.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -61,10 +69,16 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (ChatMessageContent content in chat.InvokeAsync(agent))
+            await foreach (var content in chat.InvokeAsync(agent))
             {
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
     }
+
+    private OpenAIServiceConfiguration GetOpenAIConfiguration()
+        =>
+            this.UseOpenAIConfig ?
+                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
+                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

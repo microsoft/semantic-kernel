@@ -165,13 +165,8 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         }
     }
 
-    private static Kernel CreateFileEnabledKernel()
-    {
-        return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build() :
-                Kernel.CreateBuilder().AddAzureOpenAIFiles(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey).Build();
-    }
+    private static Kernel CreateFileEnabledKernel() =>
+        Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build();
 
     private static AgentBuilder CreateAgentBuilder()
     {
