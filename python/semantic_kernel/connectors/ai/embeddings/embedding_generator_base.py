@@ -9,18 +9,42 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 if TYPE_CHECKING:
     from numpy import ndarray
 
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
 
 @experimental_class
 class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
     """Base class for embedding generators."""
 
     @abstractmethod
-    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> "ndarray":
+    async def generate_embeddings(
+        self,
+        texts: list[str],
+        settings: "PromptExecutionSettings | None" = None,
+        **kwargs: Any,
+    ) -> "ndarray":
         """Returns embeddings for the given texts as ndarray.
 
         Args:
             texts (List[str]): The texts to generate embeddings for.
-            batch_size (Optional[int]): The batch size to use for the request.
-            kwargs (Dict[str, Any]): Additional arguments to pass to the request.
+            settings (PromptExecutionSettings): The settings to use for the request, optional.
+            kwargs (Any): Additional arguments to pass to the request.
         """
         pass
+
+    async def generate_raw_embeddings(
+        self,
+        texts: list[str],
+        settings: "PromptExecutionSettings | None" = None,
+        **kwargs: Any,
+    ) -> Any:
+        """Returns embeddings for the given texts in the unedited format.
+
+        This is not implemented for all embedding services, falling back to the generate_embeddings method.
+
+        Args:
+            texts (List[str]): The texts to generate embeddings for.
+            settings (PromptExecutionSettings): The settings to use for the request, optional.
+            kwargs (Any): Additional arguments to pass to the request.
+        """
+        return await self.generate_embeddings(texts, settings, **kwargs)
