@@ -10,31 +10,30 @@ on:
     types: 
       - in_progress
 
+env:
+  PYTHON_VERSION: 3.10
+  RUN_OS: ubuntu-latest
+
 jobs:
   python-tests-coverage:
-    name: Create Test Coverage Messages
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ github.env.RUN_OS }}
     continue-on-error: true
     permissions:
       pull-requests: write
       contents: read
       actions: read
-    strategy:
-      matrix:
-        python-version: ["3.10"]
-        os: [ubuntu-latest]
     steps:
       - name: Wait for unit tests to succeed
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'Python Unit Tests (${{ matrix.python-version}}, ${{ matrix.os }})'
+          check-name: 'Python Unit Tests (${{ env.PYTHON_VERSION }}, ${{ env.RUN_OS }}, false)'
           repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
-          wait-interval: 10
+          wait-interval: 90
           allowed-conclusions: success
       - uses: actions/checkout@v4
       - name: Setup filename variables
-        run: echo "FILE_ID=${{ github.event.number }}-${{ matrix.os }}-${{ matrix.python-version }}" >> $GITHUB_ENV
+        run: echo "FILE_ID=${{ github.event.number }}-${{ env.RUN_OS }}-${{ env.PYTHON_VERSION }}" >> $GITHUB_ENV
       - name: Download coverage
         uses: dawidd6/action-download-artifact@v3
         with:
@@ -58,10 +57,10 @@ jobs:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           pytest-coverage-path: python-coverage-${{ env.FILE_ID }}.txt
           coverage-path-prefix: "python/"
-          title: "Python ${{ matrix.python-version }} Test Coverage Report"
-          badge-title: "Py${{ matrix.python-version }} Test Coverage"
+          title: "Python ${{ env.PYTHON_VERSION }} Test Coverage Report"
+          badge-title: "Py${{ env.PYTHON_VERSION }} Test Coverage"
           report-only-changed-files: true
-          junitxml-title: "Python ${{ matrix.python-version }} Unit Test Overview"
+          junitxml-title: "Python ${{ env.PYTHON_VERSION }} Unit Test Overview"
           junitxml-path: pytest-${{ env.FILE_ID }}.xml
           default-branch: "main"
-          unique-id-for-comment: python-${{ matrix.python-version }}
+          unique-id-for-comment: python-${{ env.PYTHON_VERSION }}
