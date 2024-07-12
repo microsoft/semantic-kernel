@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using OllamaSharp.Models;
+using OllamaSharp.Models.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
@@ -21,6 +22,24 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
         this.LoadDuration = ollamaResponse.LoadDuration;
         this.PromptEvalCount = ollamaResponse.PromptEvalCount;
         this.PromptEvalDuration = ollamaResponse.PromptEvalDuration;
+        this.Done = ollamaResponse.Done;
+    }
+
+    internal OllamaMetadata(ChatResponse response) : base(new Dictionary<string, object?>())
+    {
+        this.TotalDuration = response.TotalDuration;
+        this.EvalCount = response.EvalCount;
+        this.EvalDuration = response.EvalDuration;
+        this.CreatedAt = response.CreatedAt;
+        this.LoadDuration = response.LoadDuration;
+        this.PromptEvalDuration = response.PromptEvalDuration;
+        this.CreatedAt = response.CreatedAt;
+    }
+
+    internal OllamaMetadata(ChatResponseStream message) : base(new Dictionary<string, object?>())
+    {
+        this.CreatedAt = message.CreatedAt;
+        this.Done = message.Done;
     }
 
     /// <summary>
@@ -83,6 +102,15 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
     public long TotalDuration
     {
         get => this.GetValueFromDictionary() as long? ?? 0;
+        internal init => this.SetValueInDictionary(value);
+    }
+
+    /// <summary>
+    /// Informs when the response generation process is complete.
+    /// </summary>
+    public bool? Done
+    {
+        get => this.GetValueFromDictionary() as bool?;
         internal init => this.SetValueInDictionary(value);
     }
 

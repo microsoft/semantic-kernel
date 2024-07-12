@@ -109,11 +109,11 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task GetChatMessageContentsShouldHaveModelIdDefinedAsync()
+    public async Task GetChatMessageContentsShouldHaveModelAndMetadataAsync()
     {
         //Arrange
         var sut = new OllamaChatCompletionService(
-            "fake-model",
+            "phi3",
             new Uri("http://localhost:11434"),
             httpClient: this._httpClient);
 
@@ -135,11 +135,11 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
         // Assert
         Assert.NotNull(message.ModelId);
-        Assert.Equal("fake-model", message.ModelId);
+        Assert.Equal("phi3", message.ModelId);
     }
 
     [Fact]
-    public async Task GetStreamingChatMessageContentsShouldHaveModelIdDefinedAsync()
+    public async Task GetStreamingChatMessageContentsShouldHaveModelAndMetadataAsync()
     {
         //Arrange
         var expectedModel = "phi3";
@@ -161,11 +161,18 @@ public sealed class OllamaChatCompletionTests : IDisposable
         await foreach (var message in sut.GetStreamingChatMessageContentsAsync(chat))
         {
             lastMessage = message;
+            Assert.NotNull(message.Metadata);
         }
 
         // Assert
         Assert.NotNull(lastMessage!.ModelId);
         Assert.Equal(expectedModel, lastMessage.ModelId);
+
+        Assert.IsType<OllamaMetadata>(lastMessage.Metadata);
+        var metadata = lastMessage.Metadata as OllamaMetadata;
+        Assert.NotNull(metadata);
+        Assert.NotEmpty(metadata);
+        Assert.True(metadata.Done);
     }
 
     public void Dispose()

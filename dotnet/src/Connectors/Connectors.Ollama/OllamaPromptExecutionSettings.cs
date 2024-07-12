@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -46,7 +47,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("stop")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Stop
+    public List<string>? Stop
     {
         get => this._stop;
 
@@ -112,7 +113,7 @@ public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
 
     #region private ================================================================================
 
-    private string? _stop;
+    private List<string>? _stop;
     private float? _temperature;
     private float? _topP;
     private int? _topK;
