@@ -74,7 +74,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     public static async Task<DuckDBMemoryStore> ConnectAsync(DuckDBConnection connection,
         CancellationToken cancellationToken = default)
     {
-        var memoryStore = new DuckDBMemoryStore(connection, null);
+        var memoryStore = new DuckDBMemoryStore(connection);
         return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
     }
 
