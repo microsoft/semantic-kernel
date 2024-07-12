@@ -5,7 +5,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="OpenAI" Version="2.0.0-beta.7" />
+    <PackageVersion Include="OpenAI" Version="2.0.0-beta.5" />
     <PackageVersion Include="System.ClientModel" Version="1.1.0-beta.4" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
