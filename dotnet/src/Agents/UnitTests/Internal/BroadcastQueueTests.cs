@@ -131,6 +131,11 @@ public class BroadcastQueueTests
 
         public List<ChatMessageContent> ReceivedMessages { get; } = [];
 
+        protected internal override Task CaptureFunctionResultAsync(ChatMessageContent functionResultsMessage, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
@@ -153,6 +158,11 @@ public class BroadcastQueueTests
     private sealed class BadChannel : AgentChannel
     {
         public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.1);
+
+        protected internal override Task CaptureFunctionResultAsync(ChatMessageContent functionResultsMessage, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
 
         protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
         {
