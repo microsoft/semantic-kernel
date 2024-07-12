@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using DuckDB.NET.Data;
 using Microsoft.SemanticKernel.Connectors.DuckDB;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
@@ -158,6 +159,40 @@ public class DuckDBMemoryStoreTests
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
+    }
+
+    [Fact]
+    public async Task ItCanNotInsertLargerVectorAsync()
+    {
+        // Arrange
+        float[] embedding = new float[] { 1, 2, 3 };
+        using var db = await DuckDBMemoryStore.ConnectAsync(embedding.Length - 1);
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: embedding,
+            key: null,
+            timestamp: null);
+
+        await Assert.ThrowsAsync<DuckDBException>(async () => await db.UpsertAsync("random collection", testRecord));
+    }
+
+    [Fact]
+    public async Task ItCanNotInsertSmallerVectorAsync()
+    {
+        // Arrange
+        float[] embedding = new float[] { 1, 2, 3 };
+        using var db = await DuckDBMemoryStore.ConnectAsync(embedding.Length + 1);
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: embedding,
+            key: null,
+            timestamp: null);
+
+        await Assert.ThrowsAsync<DuckDBException>(async () => await db.UpsertAsync("random collection", testRecord));
     }
 
     [Fact]
