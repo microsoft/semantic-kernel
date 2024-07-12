@@ -263,7 +263,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
         OpenAIAssistantChannel channel =
-            new (this._client, thread.Id)
+            new(this._client, thread.Id)
             {
                 Logger = this.LoggerFactory.CreateLogger<OpenAIAssistantChannel>()
             };
