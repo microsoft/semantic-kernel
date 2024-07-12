@@ -219,7 +219,7 @@ OpenAIAssistantConfiguration config = new("apikey", "endpoint");
 OpenAIAssistantDefinition definition = new()
 {
     Instructions = "instructions",
-    Name = "naem",
+    Name = "name",
     Model = "gpt-4",
 };
 
