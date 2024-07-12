@@ -104,7 +104,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         dict[Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]]
         | None
     ) = None
-    type: FunctionChoiceType | None = None
+    type_: FunctionChoiceType | None = None
 
     @classmethod
     @deprecated("The `FunctionCallBehavior` class is deprecated; use `FunctionChoiceBehavior` instead.")
@@ -167,7 +167,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         config = self.get_config(kernel)
 
         if config:
-            update_settings_callback(config, settings, self.type)
+            update_settings_callback(config, settings, self.type_)
 
     def get_config(self, kernel: "Kernel") -> FunctionCallChoiceConfiguration:
         """Get the function call choice configuration based on the type."""
@@ -279,11 +279,11 @@ class FunctionChoiceBehavior(KernelBaseModel):
         """
         type_value = data.lower()
         if type_value == "auto":
-            return FunctionChoiceBehavior.Auto()
+            return cls.Auto()
         if type_value == "none":
-            return FunctionChoiceBehavior.NoneInvoke()
+            return cls.NoneInvoke()
         if type_value == "required":
-            return FunctionChoiceBehavior.Required()
+            return cls.Required()
         raise ServiceInitializationError(
             f"The specified type `{type_value}` is not supported. Allowed types are: `auto`, `none`, `required`."
         )
