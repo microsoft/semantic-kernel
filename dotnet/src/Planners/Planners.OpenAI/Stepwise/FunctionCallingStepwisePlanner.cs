@@ -136,7 +136,7 @@ public sealed class FunctionCallingStepwisePlanner
             // Look up function in kernel
             foreach (OpenAIFunctionToolCall functionResponse in functionResponses)
             {
-                if (clonedKernel.Plugins.TryGetFunctionAndArguments(functionResponse, out KernelFunction? pluginFunction, out KernelArguments? arguments))
+                if (clonedKernel.Plugins.TryGetOpenAIFunctionAndArguments(functionResponse, out KernelFunction? pluginFunction, out KernelArguments? arguments))
                 {
                     try
                     {
@@ -231,7 +231,7 @@ public sealed class FunctionCallingStepwisePlanner
         errorMessage = null;
         try
         {
-            functionResponses = openAiChatMessage.GetOpenAIFunctionToolCalls();
+            functionResponses = openAiChatMessage.GetFunctionToolCalls();
         }
         catch (JsonException)
         {
