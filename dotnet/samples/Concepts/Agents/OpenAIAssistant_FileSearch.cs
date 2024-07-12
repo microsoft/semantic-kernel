@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI;
+using OpenAI.Files;
 using OpenAI.VectorStores;
 using Resources;
 
@@ -22,10 +24,13 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task UseRetrievalToolWithOpenAIAssistantAgentAsync()
     {
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
-        OpenAIFileReference uploadFile =
-            await fileService.UploadContentAsync(new BinaryContent(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!, "text/plain"),
-                new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
+        FileClient fileClient = CreateFileClient();
+
+        OpenAIFileInfo uploadFile =
+            await fileClient.UploadFileAsync(
+                new BinaryData(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!),
+                "travelinfo.txt",
+                FileUploadPurpose.Assistants);
 
         VectorStore vectorStore =
             await new OpenAIVectorStoreBuilder(GetOpenAIConfiguration())
@@ -59,7 +64,7 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
         {
             await agent.DeleteAsync();
             await openAIStore.DeleteAsync();
-            await fileService.DeleteFileAsync(uploadFile.Id);
+            await fileClient.DeleteFileAsync(uploadFile.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -81,4 +86,14 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
             this.UseOpenAIConfig ?
                 OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
                 OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
+
+    private FileClient CreateFileClient()
+    {
+        OpenAIClient client =
+            this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                new OpenAIClient(TestConfiguration.OpenAI.ApiKey) :
+                new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), TestConfiguration.AzureOpenAI.ApiKey);
+
+        return client.GetFileClient();
+    }
 }

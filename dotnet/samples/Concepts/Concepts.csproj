@@ -105,6 +105,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Agents\OpenAIAssistant_FileService.cs" />
     <Compile Remove="AudioToText\OpenAI_AudioToText.cs" />
     <Compile Remove="Caching\SemanticCachingWithFilters.cs" />
     <Compile Remove="ChatCompletion\AzureOpenAIWithData_ChatCompletion.cs" />

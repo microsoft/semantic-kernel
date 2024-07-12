@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Text;
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI;
+using OpenAI.Files;
 using Resources;
 
 namespace Agents;
@@ -22,11 +24,13 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
     [Fact]
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
-        OpenAIFileReference uploadFile =
-            await fileService.UploadContentAsync(
-                new BinaryContent(await EmbeddedResource.ReadAllAsync("sales.csv"), mimeType: "text/plain"),
-                new OpenAIFileUploadExecutionSettings("sales.csv", OpenAIFilePurpose.Assistants));
+        FileClient fileClient = CreateFileClient();
+
+        OpenAIFileInfo uploadFile =
+            await fileClient.UploadFileAsync(
+                new BinaryData(await EmbeddedResource.ReadAllAsync("sales.csv")!),
+                "sales.csv",
+                FileUploadPurpose.Assistants);
 
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -53,7 +57,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
         finally
         {
             await agent.DeleteAsync();
-            await fileService.DeleteFileAsync(uploadFile.Id);
+            await fileClient.DeleteFileAsync(uploadFile.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -70,9 +74,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
                 foreach (AnnotationContent annotation in message.Items.OfType<AnnotationContent>())
                 {
                     Console.WriteLine($"\n* '{annotation.Quote}' => {annotation.FileId}");
-                    BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!);
-                    byte[] byteContent = fileContent.Data?.ToArray() ?? [];
-                    Console.WriteLine(Encoding.Default.GetString(byteContent));
+                    BinaryData content = await fileClient.DownloadFileAsync(annotation.FileId!);
+                    Console.WriteLine(Encoding.Default.GetString(content.ToArray()));
                 }
             }
         }
@@ -83,4 +86,14 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
             this.UseOpenAIConfig ?
                 OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
                 OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
+
+    private FileClient CreateFileClient()
+    {
+        OpenAIClient client =
+            this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                new OpenAIClient(TestConfiguration.OpenAI.ApiKey) :
+                new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), TestConfiguration.AzureOpenAI.ApiKey);
+
+        return client.GetFileClient();
+    }
 }
