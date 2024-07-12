@@ -16,7 +16,7 @@ env:
 
 jobs:
   python-tests-coverage:
-    runs-on: ${{ github.env.RUN_OS }}
+    runs-on: ubuntu-latest
     continue-on-error: true
     permissions:
       pull-requests: write
