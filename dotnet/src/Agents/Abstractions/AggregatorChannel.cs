@@ -15,7 +15,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 
     protected internal override Task CaptureFunctionResultAsync(ChatMessageContent functionResultsMessage, CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException(); // %%% NOT A KERNEL BASED CHANNEL (NO FUNCTIONS)
+        throw new System.NotImplementedException(); // %%% TODO
     }
 
     protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default)

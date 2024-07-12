@@ -43,6 +43,6 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     /// <inheritdoc/>
     protected override Task CaptureFunctionResultAsync(ChatMessageContent functionResultsMessage, CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        throw new System.NotImplementedException(); // %%% TODO
     }
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -99,7 +100,8 @@ public class FunctionResultContentTests
 
         // Assert
         Assert.NotNull(chatMessageContent);
-        Assert.Single(chatMessageContent.Items);
-        Assert.Same(sut, chatMessageContent.Items[0]);
+        Assert.Equal(2, chatMessageContent.Items.Count);
+        Assert.Single(chatMessageContent.Items.OfType<FunctionCallContent>());
+        Assert.Same(sut, chatMessageContent.Items.OfType<FunctionCallContent>().Single());
     }
 }
