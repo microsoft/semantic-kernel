@@ -6,10 +6,7 @@ from semantic_kernel.exceptions import ContentAdditionException
 
 
 class StreamingTextContent(StreamingContentMixin, TextContent):
-    """This is the base class for streaming text response content.
-
-    All Text Completion Services should return an instance of this class as streaming response.
-    Or they can implement their own subclass of this class and return an instance.
+    """This represents streaming text response content.
 
     Args:
         choice_index: int - The index of the choice that generated this response.
