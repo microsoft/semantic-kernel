@@ -297,7 +297,7 @@ internal sealed class HuggingFaceClient
         var response = DeserializeResponse<TextEmbeddingResponse>(body);
 
         // Currently only one embedding per data is supported
-        return response.ToList()!;
+        return response[0][0].ToList()!;
     }
 
     private Uri GetEmbeddingGenerationEndpoint(string modelId)

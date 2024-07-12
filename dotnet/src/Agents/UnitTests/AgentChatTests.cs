@@ -135,7 +135,7 @@ public class AgentChatTests
         public int InvokeCount { get; private set; }
 
         public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            ChatHistory history,
+            IReadOnlyList<ChatMessageContent> history,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await Task.Delay(0, cancellationToken);
@@ -143,17 +143,6 @@ public class AgentChatTests
             this.InvokeCount++;
 
             yield return new ChatMessageContent(AuthorRole.Assistant, "sup");
-        }
-
-        public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
-            ChatHistory history,
-            CancellationToken cancellationToken = default)
-        {
-            this.InvokeCount++;
-
-            StreamingChatMessageContent[] contents = [new(AuthorRole.Assistant, "sup")];
-
-            return contents.ToAsyncEnumerable();
         }
     }
 }

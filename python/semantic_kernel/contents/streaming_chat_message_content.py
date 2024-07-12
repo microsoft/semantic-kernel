@@ -170,7 +170,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
                             new_item = item + other_item  # type: ignore
                             self.items[id] = new_item
                             added = True
-                        except (ValueError, ContentAdditionException):
+                        except ValueError:
                             continue
                 if not added:
                     self.items.append(other_item)

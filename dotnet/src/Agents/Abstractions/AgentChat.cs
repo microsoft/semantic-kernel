@@ -81,7 +81,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        this.Logger.LogAgentChatGetChatMessages(nameof(GetChatMessagesAsync), agent);
+        this.Logger.LogDebug("[{MethodName}] Source: {MessageSourceType}/{MessageSourceId}", nameof(GetChatMessagesAsync), agent?.GetType().Name ?? "primary", agent?.Id ?? "primary");
 
         try
         {
@@ -163,7 +163,10 @@ public abstract class AgentChat
             }
         }
 
-        this.Logger.LogAgentChatAddingMessages(nameof(AddChatMessages), messages.Count);
+        if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
+        {
+            this.Logger.LogDebug("[{MethodName}] Adding Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
+        }
 
         try
         {
@@ -175,7 +178,10 @@ public abstract class AgentChat
             var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages);
 
-            this.Logger.LogAgentChatAddedMessages(nameof(AddChatMessages), messages.Count);
+            if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
+            {
+                this.Logger.LogInformation("[{MethodName}] Added Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
+            }
         }
         finally
         {
@@ -199,7 +205,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+        this.Logger.LogDebug("[{MethodName}] Invoking agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
         try
         {
@@ -211,7 +217,7 @@ public abstract class AgentChat
             List<ChatMessageContent> messages = [];
             await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
-                this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, message);
+                this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType(), message);
 
                 // Add to primary history
                 this.History.Add(message);
@@ -235,7 +241,7 @@ public abstract class AgentChat
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages.Where(m => m.Role != AuthorRole.Tool).ToArray());
 
-            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+            this.Logger.LogInformation("[{MethodName}] Invoked agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
         }
         finally
         {
@@ -248,7 +254,7 @@ public abstract class AgentChat
             AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
             if (channel is null)
             {
-                this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+                this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
                 channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
 
@@ -259,7 +265,7 @@ public abstract class AgentChat
                     await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
                 }
 
-                this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+                this.Logger.LogInformation("[{MethodName}] Created channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
             }
 
             return channel;

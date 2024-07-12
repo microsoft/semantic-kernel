@@ -4,13 +4,11 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 
 | Features | Description |
 | -------- | ----------- |
-| Agents | Creating and using agents in Semantic Kernel |
 | AutoFunctionCalling | Using `Auto Function Calling` to allow function call capable models to invoke Kernel Functions automatically |
 | ChatCompletion | Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) messaging capable service with models  |
 | Filtering | Creating and using Filters |
 | Functions | Invoking [`Method`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_method.py) or [`Prompt`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_prompt.py) functions with [`Kernel`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/kernel.py) |
 | Grounding | An example of how to perform LLM grounding |
-| Local Models | Using the [`OpenAI connector`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py) to talk to models hosted locally in Ollama and LM Studio |
 | Logging | Showing how to set up logging |
 | Memory | Using [`Memory`](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/SemanticKernel.Abstractions/Memory) AI concepts |
 | On Your Data | Examples of using AzureOpenAI [`On Your Data`](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/use-your-data?tabs=mongo-db) |

@@ -208,7 +208,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
         description: str | None = None,
     ) -> KernelPlugin:
-        """Add a plugin from the OpenAPI manifest.
+        """Add a plugin from the Open AI manifest.
 
         Args:
             plugin_name (str): The name of the plugin

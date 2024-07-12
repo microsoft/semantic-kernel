@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Interface for filtering actions during function invocation.
 /// </summary>
+[Experimental("SKEXP0001")]
 public interface IFunctionInvocationFilter
 {
     /// <summary>

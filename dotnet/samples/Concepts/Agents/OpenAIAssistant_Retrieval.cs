@@ -40,7 +40,7 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
                 });
 
         // Create a chat for agent interaction.
-        AgentGroupChat chat = new();
+        var chat = new AgentGroupChat();
 
         // Respond to user input
         try
@@ -61,7 +61,7 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (ChatMessageContent content in chat.InvokeAsync(agent))
+            await foreach (var content in chat.InvokeAsync(agent))
             {
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
