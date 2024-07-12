@@ -231,7 +231,7 @@ public sealed class FunctionCallingStepwisePlanner
         errorMessage = null;
         try
         {
-            functionResponses = openAiChatMessage.GetOpenAIFunctionToolCalls();
+            functionResponses = openAiChatMessage.GetFunctionToolCalls();
         }
         catch (JsonException)
         {

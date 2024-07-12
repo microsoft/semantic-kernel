@@ -211,7 +211,7 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
             // Iterating over the requested function calls and invoking them
             foreach (var toolCall in toolCalls)
             {
-                string content = kernel.Plugins.TryGetOpenAIFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments) ?
+                string content = kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments) ?
                     JsonSerializer.Serialize((await function.InvokeAsync(kernel, arguments)).GetValue<object>()) :
                     "Unable to find function. Please try again!";
 
