@@ -4,8 +4,13 @@ from unittest.mock import mock_open, patch
 
 import httpx
 import pytest
+from httpx import HTTPStatusError
 
-from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import SessionsPythonTool
+from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import (
+    SESSIONS_API_VERSION,
+    SessionsPythonTool,
+)
+from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import SessionsRemoteFileMetadata
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.kernel import Kernel
 
@@ -23,6 +28,53 @@ def test_validate_endpoint(aca_python_sessions_unit_test_env):
     plugin = SessionsPythonTool(auth_callback=auth_callback_test)
     assert plugin is not None
     assert str(plugin.pool_management_endpoint) == aca_python_sessions_unit_test_env["ACA_POOL_MANAGEMENT_ENDPOINT"]
+
+
+@pytest.mark.parametrize(
+    "base_url, endpoint, params, expected_url",
+    [
+        (
+            "http://example.com",
+            "api/resource",
+            {"param1": "value1", "param2": "value2"},
+            f"http://example.com/api/resource?param1=value1&param2=value2&api-version={SESSIONS_API_VERSION}",
+        ),
+        (
+            "http://example.com/",
+            "api/resource",
+            {"param1": "value1"},
+            f"http://example.com/api/resource?param1=value1&api-version={SESSIONS_API_VERSION}",
+        ),
+        (
+            "http://example.com",
+            "api/resource/",
+            {"param1": "value1", "param2": "value2"},
+            f"http://example.com/api/resource?param1=value1&param2=value2&api-version={SESSIONS_API_VERSION}",
+        ),
+        (
+            "http://example.com/",
+            "api/resource/",
+            {"param1": "value1"},
+            f"http://example.com/api/resource?param1=value1&api-version={SESSIONS_API_VERSION}",
+        ),
+        (
+            "http://example.com",
+            "api/resource",
+            {},
+            f"http://example.com/api/resource?api-version={SESSIONS_API_VERSION}",
+        ),
+        (
+            "http://example.com/",
+            "api/resource",
+            {},
+            f"http://example.com/api/resource?api-version={SESSIONS_API_VERSION}",
+        ),
+    ],
+)
+def test_build_url_with_version(base_url, endpoint, params, expected_url, aca_python_sessions_unit_test_env):
+    plugin = SessionsPythonTool(auth_callback=auth_callback_test)
+    result = plugin._build_url_with_version(base_url, endpoint, params)
+    assert result == expected_url
 
 
 @pytest.mark.parametrize(
@@ -229,6 +281,37 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
         mock_post.assert_awaited_once()
 
 
+@pytest.mark.asyncio
+@patch("httpx.AsyncClient.post")
+async def test_upload_file_throws_exception(mock_post, aca_python_sessions_unit_test_env):
+    """Test throwing exception during file upload."""
+
+    async def async_raise_http_error(*args, **kwargs):
+        mock_request = httpx.Request(method="POST", url="https://example.com/files/upload")
+        mock_response = httpx.Response(status_code=500, request=mock_request)
+        raise HTTPStatusError("Server Error", request=mock_request, response=mock_response)
+
+    with (
+        patch(
+            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+            return_value="test_token",
+        ),
+        patch("builtins.open", mock_open(read_data=b"file data")),
+    ):
+        mock_post.side_effect = async_raise_http_error
+
+        plugin = SessionsPythonTool(
+            auth_callback=lambda: "sample_token",
+            env_file_path="test.env",
+        )
+
+        with pytest.raises(
+            FunctionExecutionException, match="Upload failed with status code 500 and error: Internal Server Error"
+        ):
+            await plugin.upload_file(local_file_path="hello.py")
+        mock_post.assert_awaited_once()
+
+
 @pytest.mark.parametrize(
     "local_file_path, input_remote_file_path, expected_remote_file_path",
     [
@@ -351,6 +434,36 @@ async def test_list_files(mock_get, aca_python_sessions_unit_test_env):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
+async def test_list_files_throws_exception(mock_get, aca_python_sessions_unit_test_env):
+    """Test throwing exception during list files."""
+
+    async def async_raise_http_error(*args, **kwargs):
+        mock_request = httpx.Request(method="GET", url="https://example.com/files?identifier=None")
+        mock_response = httpx.Response(status_code=500, request=mock_request)
+        raise HTTPStatusError("Server Error", request=mock_request, response=mock_response)
+
+    with (
+        patch(
+            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+            return_value="test_token",
+        ),
+    ):
+        mock_get.side_effect = async_raise_http_error
+
+        plugin = SessionsPythonTool(
+            auth_callback=lambda: "sample_token",
+            env_file_path="test.env",
+        )
+
+        with pytest.raises(
+            FunctionExecutionException, match="List files failed with status code 500 and error: Internal Server Error"
+        ):
+            await plugin.list_files()
+        mock_get.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch("httpx.AsyncClient.get")
 async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_env):
     """Test download_file when saving to a local file path."""
 
@@ -417,6 +530,38 @@ async def test_download_file_to_buffer(mock_get, aca_python_sessions_unit_test_e
         mock_get.assert_awaited_once()
 
 
+@pytest.mark.asyncio
+@patch("httpx.AsyncClient.get")
+async def test_download_file_throws_exception(mock_get, aca_python_sessions_unit_test_env):
+    """Test throwing exception during download file."""
+
+    async def async_raise_http_error(*args, **kwargs):
+        mock_request = httpx.Request(
+            method="GET", url="https://example.com/files/content/remote_test.txt?identifier=None"
+        )
+        mock_response = httpx.Response(status_code=500, request=mock_request)
+        raise HTTPStatusError("Server Error", request=mock_request, response=mock_response)
+
+    with (
+        patch(
+            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+            return_value="test_token",
+        ),
+    ):
+        mock_get.side_effect = async_raise_http_error
+
+        plugin = SessionsPythonTool(
+            auth_callback=lambda: "sample_token",
+            env_file_path="test.env",
+        )
+
+        with pytest.raises(
+            FunctionExecutionException, match="Download failed with status code 500 and error: Internal Server Error"
+        ):
+            await plugin.download_file(remote_file_name="remote_test.txt")
+        mock_get.assert_awaited_once()
+
+
 @pytest.mark.parametrize(
     "input_code, expected_output",
     [
@@ -466,3 +611,15 @@ async def test_auth_token_fail(aca_python_sessions_unit_test_env):
         FunctionExecutionException, match="Failed to retrieve the client auth token with messages: Could not get token."
     ):
         await plugin._ensure_auth_token()
+
+
+@pytest.mark.parametrize(
+    "filename, expected_full_path",
+    [
+        ("/mnt/data/testfile.txt", "/mnt/data/testfile.txt"),
+        ("testfile.txt", "/mnt/data/testfile.txt"),
+    ],
+)
+def test_full_path(filename, expected_full_path):
+    metadata = SessionsRemoteFileMetadata(filename=filename, size_in_bytes=123)
+    assert metadata.full_path == expected_full_path
