@@ -25,7 +25,7 @@ public class ChatHistoryChannel : AgentChannel
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
-        await foreach (var message in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
+        await foreach (ChatMessageContent message in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
         {
             this._history.Add(message);
 
