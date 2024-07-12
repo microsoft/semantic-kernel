@@ -35,7 +35,7 @@ jobs:
           allowed-conclusions: success
       - uses: actions/checkout@v4
       - name: Setup filename variables
-        run: echo "FILE_ID=${{ github.run_id }}-${{ matrix.os }}-${{ matrix.python-version }}" >> $GITHUB_ENV
+        run: echo "FILE_ID=${{ github.event.number }}-${{ matrix.os }}-${{ matrix.python-version }}" >> $GITHUB_ENV
       - name: Download coverage
         continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
