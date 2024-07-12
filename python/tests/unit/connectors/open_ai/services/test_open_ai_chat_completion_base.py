@@ -97,6 +97,30 @@ async def test_cmc(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_cmc_singular(
+    mock_create,
+    kernel: Kernel,
+    chat_history: ChatHistory,
+    mock_chat_completion_response: ChatCompletion,
+    openai_unit_test_env,
+):
+    mock_create.return_value = mock_chat_completion_response
+    chat_history.add_user_message("hello world")
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+
+    openai_chat_completion = OpenAIChatCompletion()
+    await openai_chat_completion.get_chat_message_content(
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    )
+    mock_create.assert_awaited_once_with(
+        model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
+        stream=False,
+        messages=openai_chat_completion._prepare_chat_history_for_request(chat_history),
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_cmc_prompt_execution_settings(
     mock_create,
     kernel: Kernel,
@@ -429,6 +453,50 @@ async def test_scmc(
         arguments=KernelArguments(),
     ):
         assert isinstance(msg[0], StreamingChatMessageContent)
+    mock_create.assert_awaited_once_with(
+        model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
+        stream=True,
+        messages=openai_chat_completion._prepare_chat_history_for_request(orig_chat_history),
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_scmc_singular(
+    mock_create,
+    kernel: Kernel,
+    chat_history: ChatHistory,
+    openai_unit_test_env,
+):
+    content1 = ChatCompletionChunk(
+        id="test_id",
+        choices=[],
+        created=0,
+        model="test",
+        object="chat.completion.chunk",
+    )
+    content2 = ChatCompletionChunk(
+        id="test_id",
+        choices=[ChunkChoice(index=0, delta=ChunkChoiceDelta(content="test", role="assistant"), finish_reason="stop")],
+        created=0,
+        model="test",
+        object="chat.completion.chunk",
+    )
+    stream = MagicMock(spec=AsyncStream)
+    stream.__aiter__.return_value = [content1, content2]
+    mock_create.return_value = stream
+    chat_history.add_user_message("hello world")
+    orig_chat_history = deepcopy(chat_history)
+    complete_prompt_execution_settings = OpenAIChatPromptExecutionSettings(service_id="test_service_id")
+
+    openai_chat_completion = OpenAIChatCompletion()
+    async for msg in openai_chat_completion.get_streaming_chat_message_content(
+        chat_history=chat_history,
+        settings=complete_prompt_execution_settings,
+        kernel=kernel,
+        arguments=KernelArguments(),
+    ):
+        assert isinstance(msg, StreamingChatMessageContent)
     mock_create.assert_awaited_once_with(
         model=openai_unit_test_env["OPENAI_CHAT_MODEL_ID"],
         stream=True,

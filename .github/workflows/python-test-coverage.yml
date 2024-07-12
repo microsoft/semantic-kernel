@@ -59,7 +59,6 @@ jobs:
           coverage-path-prefix: "python/"
           title: "Python ${{ env.PYTHON_VERSION }} Test Coverage Report"
           badge-title: "Py${{ env.PYTHON_VERSION }} Test Coverage"
-          report-only-changed-files: true
           junitxml-title: "Python ${{ env.PYTHON_VERSION }} Unit Test Overview"
           junitxml-path: pytest.xml
           default-branch: "main"
