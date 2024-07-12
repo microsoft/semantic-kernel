@@ -35,7 +35,7 @@ public static class OllamaServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new OllamaTextGenerationService(
-                model: modelId,
+                modelId: modelId,
                 endpoint: endpoint,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
@@ -59,7 +59,7 @@ public static class OllamaServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new OllamaTextGenerationService(
-                model: modelId,
+                modelId: modelId,
                 ollamaClient: ollamaClient,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
@@ -82,7 +82,7 @@ public static class OllamaServiceCollectionExtensions
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new OllamaChatCompletionService(
-                model: modelId,
+                modelId: modelId,
                 endpoint: endpoint,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
@@ -108,7 +108,7 @@ public static class OllamaServiceCollectionExtensions
 
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new OllamaChatCompletionService(
-                model: modelId,
+                modelId: modelId,
                 client: ollamaClient,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
@@ -131,7 +131,7 @@ public static class OllamaServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OllamaTextEmbeddingGenerationService(
-                model: modelId,
+                modelId: modelId,
                 endpoint: endpoint,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
@@ -155,7 +155,7 @@ public static class OllamaServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new OllamaTextEmbeddingGenerationService(
-                model: modelId,
+                modelId: modelId,
                 ollamaClient: ollamaClient,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }

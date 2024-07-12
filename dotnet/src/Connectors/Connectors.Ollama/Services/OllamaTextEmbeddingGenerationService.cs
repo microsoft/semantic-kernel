@@ -22,30 +22,30 @@ public sealed class OllamaTextEmbeddingGenerationService : ServiceBase, ITextEmb
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaTextEmbeddingGenerationService"/> class.
     /// </summary>
-    /// <param name="model">The hosted model.</param>
+    /// <param name="modelId">The hosted model.</param>
     /// <param name="endpoint">The endpoint including the port where Ollama server is hosted</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Ollama API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaTextEmbeddingGenerationService(
-        string model,
+        string modelId,
         Uri endpoint,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : base(model, endpoint, httpClient, loggerFactory)
+        : base(modelId, endpoint, httpClient, loggerFactory)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaTextEmbeddingGenerationService"/> class.
     /// </summary>
-    /// <param name="model">The hosted model.</param>
+    /// <param name="modelId">The hosted model.</param>
     /// <param name="ollamaClient">The Ollama API client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaTextEmbeddingGenerationService(
-        string model,
+        string modelId,
         OllamaApiClient ollamaClient,
         ILoggerFactory? loggerFactory = null)
-        : base(model, ollamaClient, loggerFactory)
+        : base(modelId, ollamaClient, loggerFactory)
     {
     }
 

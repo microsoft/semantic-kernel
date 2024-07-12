@@ -23,30 +23,30 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaChatCompletionService"/> class.
     /// </summary>
-    /// <param name="model">The hosted model.</param>
+    /// <param name="modelId">The hosted model.</param>
     /// <param name="endpoint">The endpoint including the port where Ollama server is hosted</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Ollama API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaChatCompletionService(
-        string model,
+        string modelId,
         Uri endpoint,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : base(model, endpoint, httpClient, loggerFactory)
+        : base(modelId, endpoint, httpClient, loggerFactory)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OllamaChatCompletionService"/> class.
     /// </summary>
-    /// <param name="model">The hosted model.</param>
+    /// <param name="modelId">The hosted model.</param>
     /// <param name="client">The Ollama API client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public OllamaChatCompletionService(
-        string model,
+        string modelId,
         OllamaApiClient client,
         ILoggerFactory? loggerFactory = null)
-        : base(model, client, loggerFactory)
+        : base(modelId, client, loggerFactory)
     {
     }
 

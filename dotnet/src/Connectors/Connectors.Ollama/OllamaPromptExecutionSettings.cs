@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
 /// <summary>
-/// Ollama Execution Settings.
+/// Ollama Prompt Execution Settings.
 /// </summary>
 public sealed class OllamaPromptExecutionSettings : PromptExecutionSettings
 {

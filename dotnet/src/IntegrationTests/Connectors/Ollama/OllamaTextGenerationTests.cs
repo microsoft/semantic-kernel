@@ -18,7 +18,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Ollama;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposable
+public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDisposable
 {
     private const string InputParameterName = "input";
     private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
@@ -37,7 +37,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
 
-        this.ConfigureChatOllama(this._kernelBuilder);
+        this.ConfigureTextOllama(this._kernelBuilder);
 
         Kernel target = builder.Build();
 
@@ -47,12 +47,8 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         // Act
         await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
-            if (content is StreamingChatMessageContent messageContent)
-            {
-                Assert.NotNull(messageContent.Role);
-            }
-
             fullResult.Append(content);
+            Assert.NotNull(content.Metadata);
         }
 
         // Assert
@@ -65,7 +61,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         // Arrange
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
 
-        this.ConfigureChatOllama(this._kernelBuilder);
+        this.ConfigureTextOllama(this._kernelBuilder);
 
         var kernel = this._kernelBuilder.Build();
 
@@ -84,6 +80,11 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
 
         // CreatedAt
         Assert.True(lastUpdate.Metadata.TryGetValue("CreatedAt", out object? createdAt));
+        Assert.IsType<OllamaMetadata>(lastUpdate.Metadata);
+        OllamaMetadata ollamaMetadata = (OllamaMetadata)lastUpdate.Metadata;
+        Assert.NotNull(ollamaMetadata.CreatedAt);
+        Assert.NotEqual(0, ollamaMetadata.TotalDuration);
+        Assert.NotEqual(0, ollamaMetadata.EvalDuration);
     }
 
     [Theory(Skip = "For manual verification only")]
@@ -100,7 +101,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         const string ExpectedAnswerContains = "result";
 
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
-        this.ConfigureChatOllama(this._kernelBuilder);
+        this.ConfigureTextOllama(this._kernelBuilder);
 
         Kernel target = this._kernelBuilder.Build();
 
@@ -119,7 +120,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         // Arrange
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
-        this.ConfigureChatOllama(builder);
+        this.ConfigureTextOllama(builder);
         Kernel target = builder.Build();
 
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
@@ -139,7 +140,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
 
-        this.ConfigureChatOllama(this._kernelBuilder);
+        this.ConfigureTextOllama(this._kernelBuilder);
 
         Kernel target = builder.Build();
 
@@ -150,6 +151,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(actual.Metadata);
     }
 
     [Fact(Skip = "For manual verification only")]
@@ -166,7 +168,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         using var httpClient = new HttpClient(httpHeaderHandler);
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
         var builder = this._kernelBuilder;
-        builder.AddOllamaChatCompletion(
+        builder.AddOllamaTextGeneration(
             endpoint: config.Endpoint,
             modelId: config.ModelId,
             httpClient: httpClient);
@@ -191,7 +193,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         this._testOutputHelper.Dispose();
     }
 
-    private void ConfigureChatOllama(IKernelBuilder kernelBuilder)
+    private void ConfigureTextOllama(IKernelBuilder kernelBuilder)
     {
         var config = this._configuration.GetSection("Ollama").Get<OllamaConfiguration>();
 
@@ -199,7 +201,7 @@ public sealed class OllamaCompletionTests(ITestOutputHelper output) : IDisposabl
         Assert.NotNull(config.Endpoint);
         Assert.NotNull(config.ModelId);
 
-        kernelBuilder.AddOllamaChatCompletion(
+        kernelBuilder.AddOllamaTextGeneration(
             modelId: config.ModelId,
             endpoint: config.Endpoint);
     }

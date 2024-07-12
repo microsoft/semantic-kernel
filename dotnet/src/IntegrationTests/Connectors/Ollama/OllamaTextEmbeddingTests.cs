@@ -3,7 +3,6 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.Ollama;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -12,50 +11,29 @@ namespace SemanticKernel.IntegrationTests.Connectors.Ollama;
 
 public sealed class OllamaTextEmbeddingTests
 {
-    private const int AdaVectorLength = 1536;
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
         .AddUserSecrets<OllamaTextEmbeddingTests>()
         .Build();
 
-    [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
-    [InlineData("test sentence")]
-    public async Task OpenAITestAsync(string testInputString)
+    [Theory(Skip = "For manual verification only")]
+    [InlineData("mxbai-embed-large", 1024)]
+    [InlineData("nomic-embed-text", 768)]
+    [InlineData("all-minilm", 384)]
+    public async Task GenerateEmbeddingHasExpectedLengthForModelAsync(string modelId, int expectedVectorLength)
     {
         // Arrange
+        const string TestInputString = "test sentence";
+
         OllamaConfiguration? config = this._configuration.GetSection("Ollama").Get<OllamaConfiguration>();
         Assert.NotNull(config);
-        Assert.NotNull(config.ModelId);
         Assert.NotNull(config.Endpoint);
 
-        var embeddingGenerator = new OllamaTextEmbeddingGenerationService(config.ModelId, config.Endpoint);
-
-        // Act
-        var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
-        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync([testInputString, testInputString, testInputString]);
-
-        // Assert
-        Assert.Equal(AdaVectorLength, singleResult.Length);
-        Assert.Equal(3, batchResult.Count);
-    }
-
-    [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
-    [InlineData(null, 3072)]
-    [InlineData(1024, 1024)]
-    public async Task OpenAIWithDimensionsAsync(int? dimensions, int expectedVectorLength)
-    {
-        // Arrange
-        const string TestInputString = "test sentence";
-
-        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
-        Assert.NotNull(openAIConfiguration);
-
-        var embeddingGenerator = new OpenAITextEmbeddingGenerationService(
-            "text-embedding-3-large",
-            openAIConfiguration.ApiKey,
-            dimensions: dimensions);
+        var embeddingGenerator = new OllamaTextEmbeddingGenerationService(
+            modelId,
+            config.Endpoint);
 
         // Act
         var result = await embeddingGenerator.GenerateEmbeddingAsync(TestInputString);
@@ -64,48 +42,28 @@ public sealed class OllamaTextEmbeddingTests
         Assert.Equal(expectedVectorLength, result.Length);
     }
 
-    [Theory]
-    [InlineData("test sentence")]
-    public async Task AzureOpenAITestAsync(string testInputString)
+    [Theory(Skip = "For manual verification only")]
+    [InlineData("mxbai-embed-large", 1024)]
+    [InlineData("nomic-embed-text", 768)]
+    [InlineData("all-minilm", 384)]
+    public async Task GenerateEmbeddingsHasExpectedResultsLengthForModelAsync(string modelId, int expectedVectorLength)
     {
         // Arrange
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
+        string[] testInputStrings = ["test sentence 1", "test sentence 2", "test sentence 3"];
 
-        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(azureOpenAIConfiguration.DeploymentName,
-            azureOpenAIConfiguration.Endpoint,
-            azureOpenAIConfiguration.ApiKey);
+        OllamaConfiguration? config = this._configuration.GetSection("Ollama").Get<OllamaConfiguration>();
+        Assert.NotNull(config);
+        Assert.NotNull(config.Endpoint);
 
-        // Act
-        var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
-        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync([testInputString, testInputString, testInputString]);
-
-        // Assert
-        Assert.Equal(AdaVectorLength, singleResult.Length);
-        Assert.Equal(3, batchResult.Count);
-    }
-
-    [Theory]
-    [InlineData(null, 3072)]
-    [InlineData(1024, 1024)]
-    public async Task AzureOpenAIWithDimensionsAsync(int? dimensions, int expectedVectorLength)
-    {
-        // Arrange
-        const string TestInputString = "test sentence";
-
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
-        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
-            "text-embedding-3-large",
-            azureOpenAIConfiguration.Endpoint,
-            azureOpenAIConfiguration.ApiKey,
-            dimensions: dimensions);
+        var embeddingGenerator = new OllamaTextEmbeddingGenerationService(
+            modelId,
+            config.Endpoint);
 
         // Act
-        var result = await embeddingGenerator.GenerateEmbeddingAsync(TestInputString);
+        var result = await embeddingGenerator.GenerateEmbeddingsAsync(testInputStrings);
 
         // Assert
-        Assert.Equal(expectedVectorLength, result.Length);
+        Assert.Equal(testInputStrings.Length, result.Count);
+        Assert.All(result, r => Assert.Equal(expectedVectorLength, r.Length));
     }
 }
