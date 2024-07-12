@@ -6,22 +6,25 @@ import pytest
 
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import OllamaTextCompletion
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 
 
 def test_settings(model_id):
+    """Test that the settings class is correct"""
     ollama = OllamaTextCompletion(ai_model_id=model_id)
     settings = ollama.get_prompt_execution_settings_class()
     assert settings == OllamaTextPromptExecutionSettings
 
 
 def test_init_empty_service_id(model_id):
+    """Test that the service initializes correctly with an empty service_id"""
     ollama = OllamaTextCompletion(ai_model_id=model_id)
     assert ollama.service_id == model_id
 
 
 @pytest.mark.parametrize("exclude_list", [["OLLAMA_MODEL"]], indirect=True)
 def test_init_empty_model_id(ollama_unit_test_env):
+    """Test that the service initializes incorrectly with an empty model_id"""
     with pytest.raises(ServiceInitializationError):
         _ = OllamaTextCompletion(env_file_path="fake_env_file_path.env")
 
@@ -32,6 +35,7 @@ def test_init_empty_model_id(ollama_unit_test_env):
 async def test_custom_host(
     mock_completion_client, mock_client, model_id, service_id, host, chat_history, default_options
 ):
+    """Test that the service initializes and generates content correctly with a custom host."""
     mock_completion_client.return_value = {"response": "test_response"}
 
     ollama = OllamaTextCompletion(ai_model_id=model_id, host=host)
@@ -49,6 +53,7 @@ async def test_custom_host(
 async def test_custom_host_streaming(
     mock_completion_client, mock_client, model_id, service_id, host, chat_history, default_options
 ):
+    """Test that the service initializes and generates streaming content correctly with a custom host."""
     mock_completion_client.__aiter__.return_value = {"response": "test_response"}
 
     ollama = OllamaTextCompletion(ai_model_id=model_id, host=host)
@@ -63,7 +68,8 @@ async def test_custom_host_streaming(
 
 @pytest.mark.asyncio
 @patch("ollama.AsyncClient.generate")
-async def test_complete(mock_completion_client, model_id, service_id, prompt, default_options):
+async def test_completion(mock_completion_client, model_id, service_id, prompt, default_options):
+    """Test that the service generates content correctly."""
     mock_completion_client.return_value = {"response": "test_response"}
 
     ollama = OllamaTextCompletion(ai_model_id=model_id)
@@ -83,7 +89,28 @@ async def test_complete(mock_completion_client, model_id, service_id, prompt, de
 
 @pytest.mark.asyncio
 @patch("ollama.AsyncClient.generate")
-async def test_complete_stream(
+async def test_completion_wrong_return_type(
+    mock_completion_client,
+    mock_streaming_text_response,
+    model_id,
+    service_id,
+    chat_history,
+    default_options,
+):
+    """Test that the completion service fails when the return type is incorrect."""
+    mock_completion_client.return_value = mock_streaming_text_response  # should not be a streaming response
+
+    ollama = OllamaTextCompletion(ai_model_id=model_id)
+    with pytest.raises(ServiceInvalidResponseError):
+        await ollama.get_text_contents(
+            chat_history,
+            OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+        )
+
+
+@pytest.mark.asyncio
+@patch("ollama.AsyncClient.generate")
+async def test_streaming_completion(
     mock_completion_client,
     mock_streaming_text_response,
     model_id,
@@ -91,6 +118,7 @@ async def test_complete_stream(
     prompt,
     default_options,
 ):
+    """Test that the service generates streaming content correctly."""
     mock_completion_client.return_value = mock_streaming_text_response
 
     ollama = OllamaTextCompletion(ai_model_id=model_id)
@@ -111,3 +139,24 @@ async def test_complete_stream(
         options=default_options,
         stream=True,
     )
+
+
+@pytest.mark.asyncio
+@patch("ollama.AsyncClient.generate")
+async def test_streaming_completion_wrong_return_type(
+    mock_completion_client,
+    model_id,
+    service_id,
+    chat_history,
+    default_options,
+):
+    """Test that the streaming completion service fails when the return type is incorrect."""
+    mock_completion_client.return_value = {"response": "test_response"}  # should not be a non-streaming response
+
+    ollama = OllamaTextCompletion(ai_model_id=model_id)
+    with pytest.raises(ServiceInvalidResponseError):
+        async for _ in ollama.get_streaming_text_contents(
+            chat_history,
+            OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+        ):
+            pass

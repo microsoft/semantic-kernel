@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaEmbeddingPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.ollama_settings import OllamaSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_base import OllamaBase
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 if sys.version_info >= (3, 12):
@@ -67,11 +68,16 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
         )
 
     @override
-    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
-        settings: OllamaEmbeddingPromptExecutionSettings = kwargs.get(
-            "settings",
-            OllamaEmbeddingPromptExecutionSettings(),
-        )
+    async def generate_embeddings(
+        self,
+        texts: list[str],
+        settings: "PromptExecutionSettings | None" = None,
+        **kwargs: Any,
+    ) -> ndarray:
+        if not settings:
+            settings = OllamaEmbeddingPromptExecutionSettings()
+        else:
+            settings = self.get_prompt_execution_settings_from_settings(settings)
 
         result = []
         for text in texts:

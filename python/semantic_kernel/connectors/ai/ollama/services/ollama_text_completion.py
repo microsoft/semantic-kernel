@@ -20,7 +20,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -80,7 +80,6 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
         """
         settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OllamaTextPromptExecutionSettings)  # nosec
 
         response_object = await AsyncClient(host=self.host).generate(
             model=self.ai_model_id,
@@ -89,7 +88,12 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             **settings.prepare_settings_dict(),
         )
 
-        assert isinstance(response_object, Mapping)  # nosec
+        if not isinstance(response_object, Mapping):
+            raise ServiceInvalidResponseError(
+                "Invalid response type from Ollama chat completion. "
+                f"Expected Mapping but got {type(response_object)}."
+            )
+
         inner_content = response_object
         text = inner_content["response"]
         return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
@@ -112,7 +116,6 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             List[StreamingTextContent]: Completion result.
         """
         settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OllamaTextPromptExecutionSettings)  # nosec
 
         response_object = await AsyncClient(host=self.host).generate(
             model=self.ai_model_id,
@@ -121,7 +124,12 @@ class OllamaTextCompletion(OllamaBase, TextCompletionClientBase):
             **settings.prepare_settings_dict(),
         )
 
-        assert isinstance(response_object, AsyncIterator)  # nosec
+        if not isinstance(response_object, AsyncIterator):
+            raise ServiceInvalidResponseError(
+                "Invalid response type from Ollama chat completion. "
+                f"Expected AsyncIterator but got {type(response_object)}."
+            )
+
         async for part in response_object:
             yield [
                 StreamingTextContent(

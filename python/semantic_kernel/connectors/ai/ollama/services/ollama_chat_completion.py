@@ -25,7 +25,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidResponseError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -88,8 +88,6 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             List[ChatMessageContent]: A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
         settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
-
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
         response_object = await AsyncClient(host=self.host).chat(
@@ -98,7 +96,12 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             stream=False,
             **settings.prepare_settings_dict(),
         )
-        assert isinstance(response_object, Mapping)  # nosec
+
+        if not isinstance(response_object, Mapping):
+            raise ServiceInvalidResponseError(
+                "Invalid response type from Ollama chat completion. "
+                f"Expected Mapping but got {type(response_object)}."
+            )
 
         return [
             ChatMessageContent(
@@ -129,8 +132,6 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             List[StreamingChatMessageContent]: Stream of StreamingChatMessageContent objects.
         """
         settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
-
         prepared_chat_history = self._prepare_chat_history_for_request(chat_history)
 
         response_object = await AsyncClient(host=self.host).chat(
@@ -139,7 +140,12 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             stream=True,
             **settings.prepare_settings_dict(),
         )
-        assert isinstance(response_object, AsyncIterator)  # nosec
+
+        if not isinstance(response_object, AsyncIterator):
+            raise ServiceInvalidResponseError(
+                "Invalid response type from Ollama chat completion. "
+                f"Expected AsyncIterator but got {type(response_object)}."
+            )
 
         async for part in response_object:
             yield [
@@ -167,8 +173,6 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             List["TextContent"]: The completion result(s).
         """
         settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
-
         prepared_chat_history = [Message(role=AuthorRole.USER.value, content=prompt)]
 
         response_object = await AsyncClient(host=self.host).chat(
@@ -177,7 +181,12 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             stream=False,
             **settings.prepare_settings_dict(),
         )
-        assert isinstance(response_object, Mapping)  # nosec
+
+        if not isinstance(response_object, Mapping):
+            raise ServiceInvalidResponseError(
+                "Invalid response type from Ollama chat completion. "
+                f"Expected Mapping but got {type(response_object)}."
+            )
 
         return [
             TextContent(
@@ -204,8 +213,6 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             List["StreamingTextContent"]: The result stream made up of StreamingTextContent objects.
         """
         settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OllamaChatPromptExecutionSettings)  # nosec
-
         prepared_chat_history = [Message(role=AuthorRole.USER.value, content=prompt)]
 
         response_object = await AsyncClient(host=self.host).chat(
@@ -214,7 +221,12 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             stream=True,
             **settings.prepare_settings_dict(),
         )
-        assert isinstance(response_object, AsyncIterator)  # nosec
+
+        if not isinstance(response_object, AsyncIterator):
+            raise ServiceInvalidResponseError(
+                "Invalid response type from Ollama chat completion. "
+                f"Expected AsyncIterator but got {type(response_object)}."
+            )
 
         async for part in response_object:
             yield [
