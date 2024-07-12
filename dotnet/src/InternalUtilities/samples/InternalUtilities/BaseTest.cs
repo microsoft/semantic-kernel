@@ -43,9 +43,9 @@ public abstract class BaseTest
 
         if (this.UseOpenAIConfig)
         {
-            //builder.AddOpenAIChatCompletion( // %%% CONNECTOR
-            //    TestConfiguration.OpenAI.ChatModelId,
-            //    TestConfiguration.OpenAI.ApiKey);
+            builder.AddOpenAIChatCompletion(
+                TestConfiguration.OpenAI.ChatModelId,
+                TestConfiguration.OpenAI.ApiKey);
         }
         else
         {

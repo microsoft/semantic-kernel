@@ -39,6 +39,7 @@
     <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAIV2\Connectors.OpenAIV2.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
