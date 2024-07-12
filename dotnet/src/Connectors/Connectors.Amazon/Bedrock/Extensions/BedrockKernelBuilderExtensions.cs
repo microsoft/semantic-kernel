@@ -7,6 +7,7 @@ using Connectors.Amazon.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Amazon.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Connectors.Amazon.Extensions;

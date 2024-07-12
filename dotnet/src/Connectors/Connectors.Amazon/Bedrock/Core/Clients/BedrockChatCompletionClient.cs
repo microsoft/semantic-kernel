@@ -44,42 +44,36 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         this._modelProvider = modelProvider;
         switch (modelProvider)
         {
-            case "amazon":
-                this._ioService = new AmazonIOService();
-                break;
-            case "mistral":
-                this._ioService = new MistralIOService();
-                break;
-            case "anthropic":
-                this._ioService = new AnthropicIOService();
-                break;
             case "ai21":
+                if (modelId.Contains("jamba"))
+                {
+                    this._ioService = new AI21JambaIOService();
+                    break;
+                }
                 if (modelId.Contains("j2-"))
                 {
                     this._ioService = new AI21JurassicIOService();
+                    break;
                 }
-                else if (modelId.Contains("jamba"))
-                {
-                    this._ioService = new AI21JambaIOService();
-                }
-                else
-                {
-                    throw new ArgumentException($"Unsupported AI21 model: {modelId}");
-                }
-
+                throw new ArgumentException($"Unsupported AI21 model: {modelId}");
+            case "amazon":
+                this._ioService = new AmazonIOService();
+                break;
+            case "anthropic":
+                this._ioService = new AnthropicIOService();
                 break;
             case "cohere":
                 if (modelId.Contains("command-r"))
                 {
                     this._ioService = new CohereCommandRIOService();
+                    break;
                 }
-                else
-                {
-                    throw new ArgumentException($"Unsupported Cohere model: {modelId}");
-                }
-                break;
+                throw new ArgumentException($"Unsupported Cohere model: {modelId}");
             case "meta":
                 this._ioService = new MetaIOService();
+                break;
+            case "mistral":
+                this._ioService = new MistralIOService();
                 break;
             default:
                 throw new ArgumentException($"Unsupported model provider: {modelProvider}");
