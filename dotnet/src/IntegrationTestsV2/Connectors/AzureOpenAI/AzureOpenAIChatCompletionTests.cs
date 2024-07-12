@@ -137,8 +137,7 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
 
-        // ContentFilterResults
-        Assert.True(result.Metadata.ContainsKey("ContentFilterResults"));
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForResponse"));
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -212,7 +211,7 @@ public sealed class AzureOpenAIChatCompletionTests : BaseIntegrationTest
         // Act
         var result = await kernel.InvokePromptAsync("Hi, can you help me today?", new(settings));
 
-        var logProbabilityInfo = result.Metadata?["LogProbabilityInfo"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
+        var logProbabilityInfo = result.Metadata?["ContentTokenLogProbabilities"] as IReadOnlyList<ChatTokenLogProbabilityInfo>;
 
         // Assert
         Assert.NotNull(logProbabilityInfo);

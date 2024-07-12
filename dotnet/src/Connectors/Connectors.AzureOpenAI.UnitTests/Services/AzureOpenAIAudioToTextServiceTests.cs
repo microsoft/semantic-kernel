@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Services;
 using Moq;
-using static Microsoft.SemanticKernel.Connectors.AzureOpenAI.AzureOpenAIAudioToTextExecutionSettings;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
@@ -110,16 +109,11 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Default }, "0")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Word }, "word")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Segment }, "segment")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Segment, TimeStampGranularities.Word }, "word", "segment")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Word, TimeStampGranularities.Segment }, "word", "segment")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Default, TimeStampGranularities.Word }, "word", "0")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Word, TimeStampGranularities.Default }, "word", "0")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Default, TimeStampGranularities.Segment }, "segment", "0")]
-    [InlineData(new TimeStampGranularities[] { TimeStampGranularities.Segment, TimeStampGranularities.Default }, "segment", "0")]
-    public async Task GetTextContentGranularitiesWorksAsync(TimeStampGranularities[] granularities, params string[] expectedGranularities)
+    [InlineData("verbose_json")]
+    [InlineData("json")]
+    [InlineData("vtt")]
+    [InlineData("srt")]
+    public async Task ItRespectResultFormatExecutionSettingAsync(string format)
     {
         // Arrange
         var service = new AzureOpenAIAudioToTextService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient);
@@ -129,7 +123,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var settings = new AzureOpenAIAudioToTextExecutionSettings("file.mp3") { Granularities = granularities };
+        var settings = new AzureOpenAIAudioToTextExecutionSettings("file.mp3") { ResponseFormat = format };
         var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), settings);
 
         // Assert
@@ -139,39 +133,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         var multiPartData = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         var multiPartBreak = multiPartData.Substring(0, multiPartData.IndexOf("\r\n", StringComparison.OrdinalIgnoreCase));
 
-        foreach (var granularity in expectedGranularities)
-        {
-            var expectedMultipart = $"{granularity}\r\n{multiPartBreak}";
-            Assert.Contains(expectedMultipart, multiPartData);
-        }
-    }
-
-    [Theory]
-    [InlineData(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose, "verbose_json")]
-    [InlineData(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple, "json")]
-    [InlineData(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Vtt, "vtt")]
-    [InlineData(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Srt, "srt")]
-    public async Task ItRespectResultFormatExecutionSettingAsync(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat responseFormat, string expectedFormat)
-    {
-        // Arrange
-        var service = new AzureOpenAIAudioToTextService("deployment", "https://endpoint", "api-key", httpClient: this._httpClient);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent("Test audio-to-text response")
-        };
-
-        // Act
-        var settings = new AzureOpenAIAudioToTextExecutionSettings("file.mp3") { ResponseFormat = responseFormat };
-        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), settings);
-
-        // Assert
-        Assert.NotNull(this._messageHandlerStub.RequestContent);
-        Assert.NotNull(result);
-
-        var multiPartData = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        var multiPartBreak = multiPartData.Substring(0, multiPartData.IndexOf("\r\n", StringComparison.OrdinalIgnoreCase));
-
-        Assert.Contains($"{expectedFormat}\r\n{multiPartBreak}", multiPartData);
+        Assert.Contains($"{format}\r\n{multiPartBreak}", multiPartData);
     }
 
     [Fact]

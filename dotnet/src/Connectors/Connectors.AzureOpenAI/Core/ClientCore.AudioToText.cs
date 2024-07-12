@@ -51,34 +51,12 @@ internal partial class ClientCore
     private static AudioTranscriptionOptions AudioOptionsFromExecutionSettings(AzureOpenAIAudioToTextExecutionSettings executionSettings)
         => new()
         {
-            Granularities = ConvertToAudioTimestampGranularities(executionSettings!.Granularities),
+            Granularities = AudioTimestampGranularities.Default,
             Language = executionSettings.Language,
             Prompt = executionSettings.Prompt,
             Temperature = executionSettings.Temperature,
             ResponseFormat = ConvertResponseFormat(executionSettings.ResponseFormat)
         };
-
-    private static AudioTimestampGranularities ConvertToAudioTimestampGranularities(IEnumerable<AzureOpenAIAudioToTextExecutionSettings.TimeStampGranularities>? granularities)
-    {
-        AudioTimestampGranularities result = AudioTimestampGranularities.Default;
-
-        if (granularities is not null)
-        {
-            foreach (var granularity in granularities)
-            {
-                var openAIGranularity = granularity switch
-                {
-                    AzureOpenAIAudioToTextExecutionSettings.TimeStampGranularities.Word => AudioTimestampGranularities.Word,
-                    AzureOpenAIAudioToTextExecutionSettings.TimeStampGranularities.Segment => AudioTimestampGranularities.Segment,
-                    _ => AudioTimestampGranularities.Default
-                };
-
-                result |= openAIGranularity;
-            }
-        }
-
-        return result;
-    }
 
     private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)
         => new(3)
@@ -88,19 +66,14 @@ internal partial class ClientCore
             [nameof(audioTranscription.Segments)] = audioTranscription.Segments
         };
 
-    private static AudioTranscriptionFormat? ConvertResponseFormat(AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat? responseFormat)
+    private static AudioTranscriptionFormat ConvertResponseFormat(string responseFormat)
     {
-        if (responseFormat is null)
-        {
-            return null;
-        }
-
         return responseFormat switch
         {
-            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Simple => AudioTranscriptionFormat.Simple,
-            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Verbose => AudioTranscriptionFormat.Verbose,
-            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Vtt => AudioTranscriptionFormat.Vtt,
-            AzureOpenAIAudioToTextExecutionSettings.AudioTranscriptionFormat.Srt => AudioTranscriptionFormat.Srt,
+            "json" => AudioTranscriptionFormat.Simple,
+            "verbose_json" => AudioTranscriptionFormat.Verbose,
+            "vtt" => AudioTranscriptionFormat.Vtt,
+            "srt" => AudioTranscriptionFormat.Srt,
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
         };
     }

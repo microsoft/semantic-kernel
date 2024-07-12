@@ -26,7 +26,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
-    private const string ContentTokenLogProbabilitiesKey = "ContentTokenLogProbabilities";
     private const string ModelProvider = "openai";
     private record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
 
@@ -97,7 +96,7 @@ internal partial class ClientCore
 
             // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
             { nameof(completions.FinishReason), completions.FinishReason.ToString() },
-            { ContentTokenLogProbabilitiesKey, completions.ContentTokenLogProbabilities },
+            { nameof(completions.ContentTokenLogProbabilities), completions.ContentTokenLogProbabilities },
         };
     }
 
@@ -249,7 +248,7 @@ internal partial class ClientCore
                 }
 
                 // Find the function in the kernel and populate the arguments.
-                if (!kernel!.Plugins.TryGetOpenAIFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
+                if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
                     AddResponseMessage(chatForRequest, chat, result: null, "Error: Requested function could not be found.", functionToolCall, this.Logger);
                     continue;
@@ -516,7 +515,7 @@ internal partial class ClientCore
                 }
 
                 // Find the function in the kernel and populate the arguments.
-                if (!kernel!.Plugins.TryGetOpenAIFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
+                if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
                     AddResponseMessage(chatForRequest, chat, result: null, "Error: Requested function could not be found.", toolCall, this.Logger);
                     continue;
