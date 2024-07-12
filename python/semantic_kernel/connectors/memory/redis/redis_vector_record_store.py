@@ -22,7 +22,7 @@ from semantic_kernel.data.models.vector_store_record_fields import (
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.data.vector_store_collection_base import VectorStoreCollectionBase
+from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -33,7 +33,7 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class RedisVectorRecordStore(VectorStoreCollectionBase[str, TModel]):
+class RedisVectorRecordStore(VectorStoreRecordCollection[str, TModel]):
     """A memory store implementation using Redis."""
 
     def __init__(

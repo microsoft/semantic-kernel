@@ -32,11 +32,13 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 
     # Override this in subclass to return the proper prompt execution type the
     # service is expecting.
-    def get_prompt_execution_settings_class(self) -> type[PromptExecutionSettings]:
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         """Get the request settings class."""
+        from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
         return PromptExecutionSettings
 
-    def instantiate_prompt_execution_settings(self, **kwargs) -> PromptExecutionSettings:
+    def instantiate_prompt_execution_settings(self, **kwargs) -> "PromptExecutionSettings":
         """Create a request settings object.
 
         All arguments are passed to the constructor of the request settings object.

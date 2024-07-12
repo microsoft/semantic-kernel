@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Any, Protocol
+from typing import Any, Protocol, runtime_checkable
 
 from semantic_kernel.data.models.vector_store_record_fields import (
     VectorStoreRecordDataField,
@@ -13,18 +13,22 @@ from semantic_kernel.data.models.vector_store_record_fields import (
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
 
 
+@runtime_checkable
 class ToDictProtocol(Protocol):
     def __call__(self, record: Any, **kwargs: Any) -> list[dict[str, Any]]: ...  # noqa: D102
 
 
+@runtime_checkable
 class FromDictProtocol(Protocol):
     def __call__(self, records: list[dict[str, Any]], **kwargs: Any) -> Any: ...  # noqa: D102
 
 
+@runtime_checkable
 class SerializeProtocol(Protocol):
     def __call__(self, record: Any, **kwargs: Any) -> Any: ...  # noqa: D102
 
 
+@runtime_checkable
 class DeserializeProtocol(Protocol):
     def __call__(self, records: Any, **kwargs: Any) -> Any: ...  # noqa: D102
 

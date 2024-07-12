@@ -4,22 +4,20 @@ from abc import ABC
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, TypeVar
+from typing import Any
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
-T = TypeVar("T")
-
 
 class IndexKind(str, Enum):
-    hnsw = "hnsw"
-    flat = "flat"
+    HNSW = "hnsw"
+    FLAT = "flat"
 
 
 class DistanceFunction(str, Enum):
-    cosine = "cosine"
-    dot_prod = "dot_prod"
-    euclidean = "euclidean"
+    COSINE = "cosine"
+    DOT_PROD = "dot_prod"
+    EUCLIDEAN = "euclidean"
 
 
 @dataclass
@@ -59,7 +57,7 @@ class VectorStoreRecordVectorField(VectorStoreRecordField):
     local_embedding: bool = True
     dimensions: int | None = None
     index_kind: IndexKind | None = None  # hnsw, flat, etc.
-    distance_function: DistanceFunction | None = None  # cosine, dot prod, euclidan
+    distance_function: DistanceFunction | None = None  # cosine, dot prod, euclidean
     embedding_settings: dict[str, PromptExecutionSettings] = field(default_factory=dict)
     cast_function: Callable[[list[float]], Any] | None = None
 
