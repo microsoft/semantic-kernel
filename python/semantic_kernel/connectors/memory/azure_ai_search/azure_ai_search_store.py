@@ -101,7 +101,7 @@ class AzureAISearchStore(VectorStore):
             **kwargs: Additional keyword arguments, passed to the search client constructor.
         """
         if collection_name not in self.vector_record_collections:
-            self.vector_record_collections[collection_name] = AzureAISearchCollection[TModel](
+            self.vector_record_collections[collection_name] = AzureAISearchCollection(
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
                 search_index_client=self.search_index_client,
