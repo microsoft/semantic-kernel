@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Memory;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure OpenAI and AzureOpenAI connectors.
+/// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure OpenAI connector.
 /// </summary>
 public static class OpenAIMemoryBuilderExtensions
 {
