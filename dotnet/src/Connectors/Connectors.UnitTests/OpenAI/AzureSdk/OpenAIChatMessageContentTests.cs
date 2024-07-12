@@ -44,8 +44,8 @@ public sealed class OpenAIChatMessageContentTests
         var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content", "model-id", []);
 
         // Act
-        var actualToolCalls1 = content1.GetFunctionToolCalls();
-        var actualToolCalls2 = content2.GetFunctionToolCalls();
+        var actualToolCalls1 = content1.GetOpenAIFunctionToolCalls();
+        var actualToolCalls2 = content2.GetOpenAIFunctionToolCalls();
 
         // Assert
         Assert.Equal(2, actualToolCalls1.Count);
