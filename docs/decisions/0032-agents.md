@@ -27,7 +27,7 @@ Fundamentally an agent possesses the following characteristics:
 Various agents specializations might include:
 - System Instructions: A set of directives that guide the agent's behavior.
 - Tools/Functions: Enables the agent to perform specific tasks or actions.
-- Settings: Agent specific settings.  For a chat-completion agents this might include LLM settings - such as Temperature, TopP, StopSequence, etc
+- Settings: Agent specific settings.  For chat-completion agents this might include LLM settings - such as Temperature, TopP, StopSequence, etc
 
 
 ### **Agent Modalities**
