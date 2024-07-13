@@ -65,12 +65,6 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
         this.CreatedAt = response.CreatedAt;
     }
 
-    internal OllamaMetadata(ChatResponseStream message) : base(new Dictionary<string, object?>())
-    {
-        this.CreatedAt = message.CreatedAt;
-        this.Done = message.Done;
-    }
-
     /// <summary>
     /// Time spent in nanoseconds evaluating the prompt
     /// </summary>
