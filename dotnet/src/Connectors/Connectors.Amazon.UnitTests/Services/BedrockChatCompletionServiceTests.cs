@@ -28,7 +28,7 @@ public class BedrockChatCompletionServiceTests
     }
 
     [Fact]
-    public async Task GetChatMessageContentsAsync_ShouldReturnChatMessageContents()
+    public async Task GetChatMessageContentsAsyncShouldReturnChatMessageContents()
     {
         // Arrange
         string modelId = "amazon.titan-embed-text-v1:0";
