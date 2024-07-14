@@ -203,4 +203,29 @@ internal sealed class Database
         cmd.Parameters.Add(new DuckDBParameter(nameof(key), key));
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    public async Task DeleteBatchAsync(DuckDBConnection conn, string collectionName, string[] keys, CancellationToken cancellationToken = default)
+    {
+        if (keys.Length == 0)
+        {
+            return;
+        }
+
+        using var cmd = conn.CreateCommand();
+        var keyPlaceholders = string.Join(", ", keys.Select((k) => "?"));
+
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+        cmd.CommandText = $@"
+         DELETE FROM {TableName}
+         WHERE collection={collectionName}
+            AND key IN ({keyPlaceholders});";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+        // Add the key parameters
+        foreach (var key in keys)
+        {
+            cmd.Parameters.Add(new DuckDBParameter { Value = key });
+        }
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
 }
