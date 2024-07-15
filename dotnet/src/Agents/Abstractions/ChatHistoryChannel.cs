@@ -60,7 +60,7 @@ public class ChatHistoryChannel : AgentChannel
         // Function content not visible, unless result is the final message.
         bool IsMessageVisible(ChatMessageContent message) =>
             (!message.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent) ||
-              messageQueue.Count > 0);
+              messageQueue.Count == 0);
     }
 
     /// <inheritdoc/>
