@@ -8,9 +8,9 @@ using Microsoft.SemanticKernel.Data;
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
-/// Options when creating a <see cref="AzureAISearchVectorRecordStore{TRecord}"/>.
+/// Options when creating a <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
-public sealed class AzureAISearchVectorRecordStoreOptions<TRecord>
+public sealed class AzureAISearchVectorStoreRecordCollectionOptions<TRecord>
     where TRecord : class
 {
     /// <summary>

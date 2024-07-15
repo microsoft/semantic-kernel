@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// An interface for adding, updating, deleting and retrieving records from a vector store.
+/// An interface for managing a collection of records in a vector store.
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The record data model to use for adding, updating and retrieving data from the store.</typeparam>
 [Experimental("SKEXP0001")]
-public interface IVectorRecordStore<TKey, TRecord>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+public interface IVectorStoreRecordCollection<TKey, TRecord>
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
     /// <summary>

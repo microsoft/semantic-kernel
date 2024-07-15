@@ -21,7 +21,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// Service for storing and retrieving vector records, that uses Azure AI Search as the underlying storage.
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
-public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore<string, TRecord>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -69,11 +71,11 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     /// <summary>Azure AI Search client that can be used to manage data in an Azure AI Search Service index.</summary>
     private readonly SearchClient _searchClient;
 
-    /// <summary>The name of the collection that this <see cref="AzureAISearchVectorRecordStore{TRecord}"/> will access.</summary>
+    /// <summary>The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly AzureAISearchVectorRecordStoreOptions<TRecord> _options;
+    private readonly AzureAISearchVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The name of the key field for the collections that this class is used with.</summary>
     private readonly string _keyPropertyName;
@@ -82,14 +84,14 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
     private readonly List<string> _nonVectorPropertyNames;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureAISearchVectorRecordStore{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
     /// <param name="searchIndexClient">Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorRecordStore{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="searchIndexClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when options are misconfigured.</exception>
-    public AzureAISearchVectorRecordStore(SearchIndexClient searchIndexClient, string collectionName, AzureAISearchVectorRecordStoreOptions<TRecord>? options = default)
+    public AzureAISearchVectorStoreRecordCollection(SearchIndexClient searchIndexClient, string collectionName, AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(searchIndexClient);
@@ -98,13 +100,13 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         // Assign.
         this._searchIndexClient = searchIndexClient;
         this._collectionName = collectionName;
-        this._options = options ?? new AzureAISearchVectorRecordStoreOptions<TRecord>();
+        this._options = options ?? new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>();
         this._searchClient = this._searchIndexClient.GetSearchClient(collectionName);
 
         // Verify custom mapper.
         if (this._options.MapperType == AzureAISearchRecordMapperType.JsonObjectCustomMapper && this._options.JsonObjectCustomMapper is null)
         {
-            throw new ArgumentException($"The {nameof(AzureAISearchVectorRecordStoreOptions<TRecord>.JsonObjectCustomMapper)} option needs to be set if a {nameof(AzureAISearchVectorRecordStoreOptions<TRecord>.MapperType)} of {nameof(AzureAISearchRecordMapperType.JsonObjectCustomMapper)} has been chosen.", nameof(options));
+            throw new ArgumentException($"The {nameof(AzureAISearchVectorStoreRecordCollectionOptions<TRecord>.JsonObjectCustomMapper)} option needs to be set if a {nameof(AzureAISearchVectorStoreRecordCollectionOptions<TRecord>.MapperType)} of {nameof(AzureAISearchRecordMapperType.JsonObjectCustomMapper)} has been chosen.", nameof(options));
         }
 
         // Enumerate public properties using configuration or attributes.

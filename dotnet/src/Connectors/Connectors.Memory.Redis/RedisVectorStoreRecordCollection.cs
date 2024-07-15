@@ -20,7 +20,9 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// Service for storing and retrieving vector records, that uses Redis as the underlying storage.
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
-public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string, TRecord>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+public sealed class RedisVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -44,11 +46,11 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
 
-    /// <summary>The name of the collection that this <see cref="RedisVectorRecordStore{TRecord}"/> will access.</summary>
+    /// <summary>The name of the collection that this <see cref="RedisVectorStoreRecordCollection{TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly RedisVectorRecordStoreOptions<TRecord> _options;
+    private readonly RedisVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
@@ -66,13 +68,13 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RedisVectorRecordStore{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="RedisVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
     /// <param name="database">The Redis database to read/write records from.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="RedisVectorRecordStore{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="RedisVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
-    public RedisVectorRecordStore(IDatabase database, string collectionName, RedisVectorRecordStoreOptions<TRecord>? options = null)
+    public RedisVectorStoreRecordCollection(IDatabase database, string collectionName, RedisVectorStoreRecordCollectionOptions<TRecord>? options = null)
     {
         // Verify.
         Verify.NotNull(database);
@@ -81,7 +83,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         // Assign.
         this._database = database;
         this._collectionName = collectionName;
-        this._options = options ?? new RedisVectorRecordStoreOptions<TRecord>();
+        this._options = options ?? new RedisVectorStoreRecordCollectionOptions<TRecord>();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
 
         // Enumerate public properties using configuration or attributes.
@@ -112,7 +114,7 @@ public sealed class RedisVectorRecordStore<TRecord> : IVectorRecordStore<string,
         {
             if (this._options.JsonNodeCustomMapper is null)
             {
-                throw new ArgumentException($"The {nameof(RedisVectorRecordStoreOptions<TRecord>.JsonNodeCustomMapper)} option needs to be set if a {nameof(RedisVectorRecordStoreOptions<TRecord>.MapperType)} of {nameof(RedisRecordMapperType.JsonNodeCustomMapper)} has been chosen.", nameof(options));
+                throw new ArgumentException($"The {nameof(RedisVectorStoreRecordCollectionOptions<TRecord>.JsonNodeCustomMapper)} option needs to be set if a {nameof(RedisVectorStoreRecordCollectionOptions<TRecord>.MapperType)} of {nameof(RedisRecordMapperType.JsonNodeCustomMapper)} has been chosen.", nameof(options));
             }
 
             this._mapper = this._options.JsonNodeCustomMapper;

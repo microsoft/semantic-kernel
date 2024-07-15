@@ -37,7 +37,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<AzureAISearchVectorRecordStoreTests>()
+        .AddUserSecrets<AzureAISearchVectorStoreRecordCollectionTests>()
         .Build();
 
     /// <summary>

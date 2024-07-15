@@ -5,7 +5,7 @@ using Qdrant.Client.Grpc;
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
-/// The types of mapper supported by <see cref="QdrantVectorRecordStore{TRecord}"/>.
+/// The types of mapper supported by <see cref="QdrantVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
 public enum QdrantRecordMapperType
 {
