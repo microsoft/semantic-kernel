@@ -78,6 +78,16 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
         settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
     ) -> ndarray:
+        raw_embeddings = await self.generate_raw_embeddings(texts, settings, **kwargs)
+        return array(raw_embeddings)
+
+    @override
+    async def generate_raw_embeddings(
+        self,
+        texts: list[str],
+        settings: "PromptExecutionSettings | None" = None,
+        **kwargs: Any,
+    ) -> Any:
         if not settings:
             settings = OllamaEmbeddingPromptExecutionSettings()
         else:
@@ -92,4 +102,4 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
             )
             result.append(response_object["embedding"])
 
-        return array(result)
+        return result
