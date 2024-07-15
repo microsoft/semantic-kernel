@@ -94,7 +94,7 @@ The following table describes the purpose of diagramed methods on the `OpenAIAss
 
 _Vector Store_ support is required in order to enable usage of the `file-search` tool.  
 
-In alignment with V2 treaming of the `FileClient`, the caller may also directly target `VectorStoreClient` from the _OpenAI SDK_.
+In alignment with V2 streaming of the `FileClient`, the caller may also directly target `VectorStoreClient` from the _OpenAI SDK_.
 
 
 ### Class Inventory
