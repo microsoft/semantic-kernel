@@ -217,10 +217,10 @@ internal sealed class Database
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
         cmd.CommandText = $@"
          DELETE FROM {TableName}
-         WHERE collection={collectionName}
+         WHERE collection=?
             AND key IN ({keyPlaceholders});";
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
-
+        cmd.Parameters.Add(new DuckDBParameter { Value = collectionName });
         // Add the key parameters
         foreach (var key in keys)
         {
