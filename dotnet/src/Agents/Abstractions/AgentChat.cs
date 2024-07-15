@@ -255,7 +255,7 @@ public abstract class AgentChat
 
                 if (this.History.Count > 0)
                 {
-                    // Sync channel with existing history (user and assistant messages only / no function content)
+                    // Sync channel with existing history
                     await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
                 }
 
