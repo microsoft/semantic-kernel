@@ -54,8 +54,6 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         Assert.Equal(hotel.ParkingIncluded, getResult.ParkingIncluded);
         Assert.Equal(hotel.LastRenovationDate, getResult.LastRenovationDate);
         Assert.Equal(hotel.Rating, getResult.Rating);
-        Assert.Equal(hotel.Address.City, getResult.Address.City);
-        Assert.Equal(hotel.Address.Country, getResult.Address.Country);
 
         // Output
         output.WriteLine(upsertResult);
@@ -123,8 +121,6 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         Assert.False(getResult.ParkingIncluded);
         Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), getResult.LastRenovationDate);
         Assert.Equal(3.6, getResult.Rating);
-        Assert.Equal("New York", getResult.Address.City);
-        Assert.Equal("USA", getResult.Address.Country);
 
         // Output
         output.WriteLine(getResult.ToString());
@@ -245,12 +241,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
         Tags = ["pool", "air conditioning", "concierge"],
         ParkingIncluded = true,
         LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
-        Rating = 3.6,
-        Address = new Address
-        {
-            City = "New York",
-            Country = "USA"
-        }
+        Rating = 3.6
     };
 
     private sealed class FailingMapper : IVectorStoreRecordMapper<Hotel, JsonObject>

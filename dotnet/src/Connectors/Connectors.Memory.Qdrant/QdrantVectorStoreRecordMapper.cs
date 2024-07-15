@@ -29,12 +29,6 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     /// <summary>A set of types that data properties on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedDataTypes =
     [
-        typeof(List<string>),
-        typeof(List<int>),
-        typeof(List<long>),
-        typeof(List<float>),
-        typeof(List<double>),
-        typeof(List<bool>),
         typeof(string),
         typeof(int),
         typeof(long),
@@ -98,7 +92,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
 
         // Validate property types and store for later use.
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, s_supportedDataTypes, "Data");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
 
         this._keyPropertyInfo = properties.keyProperty;

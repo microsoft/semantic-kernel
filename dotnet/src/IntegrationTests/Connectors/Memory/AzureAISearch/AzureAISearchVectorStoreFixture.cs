@@ -60,8 +60,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("Tags"),
                 new VectorStoreRecordDataProperty("ParkingIncluded"),
                 new VectorStoreRecordDataProperty("LastRenovationDate"),
-                new VectorStoreRecordDataProperty("Rating"),
-                new VectorStoreRecordDataProperty("Address")
+                new VectorStoreRecordDataProperty("Rating")
             }
         };
     }
@@ -139,7 +138,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         definition.VectorSearch.Algorithms.Add(new HnswAlgorithmConfiguration("my-hnsw-vector-config-1") { Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine } });
         definition.VectorSearch.Profiles.Add(new VectorSearchProfile("my-vector-profile", "my-hnsw-vector-config-1"));
 
-        var suggester = new SearchSuggester("sg", new[] { "HotelName", "Address/City" });
+        var suggester = new SearchSuggester("sg", new[] { "HotelName" });
         definition.Suggesters.Add(suggester);
 
         await adminClient.CreateOrUpdateIndexAsync(definition);
@@ -162,12 +161,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     Tags = new[] { "pool", "air conditioning", "concierge" },
                     ParkingIncluded = false,
                     LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
-                    Rating = 3.6,
-                    Address = new Address()
-                    {
-                        City = "New York",
-                        Country = "USA"
-                    }
+                    Rating = 3.6
                 }),
             IndexDocumentsAction.Upload(
                 new Hotel()
@@ -179,12 +173,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     Tags = new[] { "pool", "free wifi", "concierge" },
                     ParkingIncluded = false,
                     LastRenovationDate = new DateTimeOffset(1979, 2, 18, 0, 0, 0, TimeSpan.Zero),
-                    Rating = 3.60,
-                    Address = new Address()
-                    {
-                        City = "Sarasota",
-                        Country = "USA"
-                    }
+                    Rating = 3.60
                 }),
             IndexDocumentsAction.Upload(
                 new Hotel()
@@ -196,12 +185,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     Tags = new[] { "air conditioning", "bar", "continental breakfast" },
                     ParkingIncluded = true,
                     LastRenovationDate = new DateTimeOffset(2015, 9, 20, 0, 0, 0, TimeSpan.Zero),
-                    Rating = 4.80,
-                    Address = new Address()
-                    {
-                        City = "Atlanta",
-                        Country = "USA"
-                    }
+                    Rating = 4.80
                 }),
             IndexDocumentsAction.Upload(
                 new Hotel()
@@ -213,12 +197,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     Tags = new[] { "concierge", "view", "24-hour front desk service" },
                     ParkingIncluded = true,
                     LastRenovationDate = new DateTimeOffset(1960, 2, 06, 0, 0, 0, TimeSpan.Zero),
-                    Rating = 4.60,
-                    Address = new Address()
-                    {
-                        City = "San Antonio",
-                        Country = "USA"
-                    }
+                    Rating = 4.60
                 })
             );
 
@@ -261,19 +240,6 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
         [VectorStoreRecordData]
         public double? Rating { get; set; }
-
-        [SearchableField]
-        [VectorStoreRecordData]
-        public Address Address { get; set; }
-    }
-
-    public record Address
-    {
-        [SearchableField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-        public string City { get; set; }
-
-        [SearchableField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-        public string Country { get; set; }
     }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }
