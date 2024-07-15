@@ -132,6 +132,40 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
     /// <inheritdoc />
+    public string CollectionName => this._collectionName;
+
+    /// <inheritdoc />
+    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var getResult = await this._searchIndexClient.GetIndexAsync(this._collectionName, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return false;
+        }
+        catch (RequestFailedException ex)
+        {
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                VectorStoreType = DatabaseName,
+                CollectionName = this._collectionName,
+                OperationName = "GetIndex"
+            };
+        }
+    }
+
+    /// <inheritdoc />
+    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    {
+        return this.RunOperationAsync(
+            "DeleteIndex",
+            () => this._searchIndexClient.DeleteIndexAsync(this._collectionName, cancellationToken));
+    }
+
+    /// <inheritdoc />
     public Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);

@@ -19,6 +19,25 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     where TRecord : class
 {
     /// <summary>
+    /// Gets the name of the collection.
+    /// </summary>
+    public string CollectionName { get; }
+
+    /// <summary>
+    /// Check if the collection exists in the vector store.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns><see langword="true"/> if the collection exists, <see langword="false"/> otherwise.</returns>
+    Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete the collection from the vector store.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that completes when the collection has been deleted.</returns>
+    Task DeleteCollectionAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets a record from the vector store. Does not guarantee that the collection exists.
     /// Returns null if the record is not found.
     /// </summary>

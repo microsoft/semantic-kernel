@@ -22,6 +22,39 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant;
 public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper output, QdrantVectorStoreFixture fixture)
 {
     [Theory]
+    [InlineData("singleVectorHotels", true)]
+    [InlineData("nonexistentcollection", false)]
+    public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
+    {
+        // Arrange.
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName);
+
+        // Act.
+        var actual = await sut.CollectionExistsAsync();
+
+        // Assert.
+        Assert.Equal(expectedExists, actual);
+    }
+
+    [Fact]
+    public async Task ItCanDeleteCollectionAsync()
+    {
+        // Arrange
+        var tempCollectionName = "temp-test";
+        await fixture.QdrantClient.CreateCollectionAsync(
+            tempCollectionName,
+            new VectorParams { Size = 4, Distance = Distance.Cosine });
+
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, tempCollectionName);
+
+        // Act
+        await sut.DeleteCollectionAsync();
+
+        // Assert
+        Assert.False(await sut.CollectionExistsAsync());
+    }
+
+    [Theory]
     [InlineData(true, "singleVectorHotels", false)]
     [InlineData(false, "singleVectorHotels", false)]
     [InlineData(true, "namedVectorsHotels", true)]
