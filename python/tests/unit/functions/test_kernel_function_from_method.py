@@ -11,6 +11,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -86,6 +87,7 @@ def test_init_native_function_from_kernel_function_decorator():
     assert native_function.parameters[0].default_value == "test_default_value"
     assert native_function.parameters[0].type_ == "str"
     assert native_function.parameters[0].is_required is False
+    assert type(native_function.return_parameter) is KernelParameterMetadata
 
 
 def test_init_native_function_from_kernel_function_decorator_defaults():
