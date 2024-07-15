@@ -41,7 +41,6 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         return OpenAITextPromptExecutionSettings
 
-
     @override
     @trace_text_completion(MODEL_PROVIDER_NAME)
     async def get_text_contents(
