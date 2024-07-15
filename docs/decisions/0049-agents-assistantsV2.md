@@ -17,19 +17,11 @@ Migrating to Assistant V2 API is a breaking change to the existing package due t
 - Underlying capability differences (e.g. `file-search` vs `retrieval`)
 - Underlying V2 SDK is version incompatible with V1 (`OpenAI` and `Azure.AI.OpenAI`)
 
+
 ### Configuration Classes
 
 Specific configuration/setttings classes are introduced to support the ability to define assistant behavior at each of the supported articulation points (i.e. _assistant_, _thread_, & _run_).
 
-#### Service Configuration
-
-The `OpenAIServiceConfiguration` defines how to connect to a specific remote service, whether it be OpenAI, Azure, or proxy.  This eliminates the need to define multiple overloads for each call site that results in a connection to the remote API service (i.e. create a _client)_.
-
-> Note: This was previously named `OpenAIAssistantConfiguration`, but is not necessarily assistant specific.
-
-<p align="center">
-<kbd><img src="diagrams/assistant-serviceconfig.png"  style="width: 360pt;"></kbd>
-</p>
 
 #### Assistant Definition
 
@@ -40,6 +32,7 @@ This includes optional _execution_settings_ for defining default _run_ behavior.
 <p align="center">
 <kbd><img src="diagrams/assistant-definition.png"  style="width: 360pt;"></kbd>
 </p>
+
 
 #### Assistant Invocation Settings
 
@@ -57,6 +50,18 @@ When invoking an `OpenAIAssistantAgent` directly (no-chat), a thread must be exp
 <p align="center">
 <kbd><img src="diagrams/assistant-threadcreationsettings.png" style="width: 132pt;"></kbd>
 </p>
+
+
+#### Service Configuration
+
+The `OpenAIServiceConfiguration` defines how to connect to a specific remote service, whether it be OpenAI, Azure, or proxy.  This eliminates the need to define multiple overloads for each call site that results in a connection to the remote API service (i.e. create a _client)_.
+
+> Note: This was previously named `OpenAIAssistantConfiguration`, but is not necessarily assistant specific.
+
+<p align="center">
+<kbd><img src="diagrams/assistant-serviceconfig.png"  style="width: 360pt;"></kbd>
+</p>
+
 
 ### Agent Implementation
 
