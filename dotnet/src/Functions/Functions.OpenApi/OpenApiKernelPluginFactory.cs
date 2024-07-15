@@ -17,7 +17,7 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// Provides static factory methods for creating Open API plugin implementations.
+/// Provides static factory methods for creating OpenAPI KernelPlugin implementations.
 /// </summary>
 public static partial class OpenApiKernelPluginFactory
 {
@@ -25,10 +25,10 @@ public static partial class OpenApiKernelPluginFactory
     /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
-    /// <param name="filePath">The file path to the AI Plugin</param>
+    /// <param name="filePath">The file path to the OpenAPI Plugin.</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A collection of invocable functions</returns>
+    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
     public static async Task<KernelPlugin> CreateFromOpenApiAsync(
         string pluginName,
         string filePath,
@@ -58,10 +58,10 @@ public static partial class OpenApiKernelPluginFactory
     /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
-    /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
+    /// <param name="uri">A local or remote URI referencing the OpenAPI Plugin.</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A collection of invocable functions</returns>
+    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
     public static async Task<KernelPlugin> CreateFromOpenApiAsync(
         string pluginName,
         Uri uri,
@@ -95,10 +95,10 @@ public static partial class OpenApiKernelPluginFactory
     /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
-    /// <param name="stream">A stream representing the AI Plugin</param>
+    /// <param name="stream">A stream representing the OpenAPI Plugin.</param>
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A collection of invocable functions</returns>
+    /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
     public static async Task<KernelPlugin> CreateFromOpenApiAsync(
         string pluginName,
         Stream stream,
