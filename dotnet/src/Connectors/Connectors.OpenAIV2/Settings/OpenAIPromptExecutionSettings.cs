@@ -11,10 +11,6 @@ using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/* Phase 06 
-- Drop FromExecutionSettingsWithData Azure specific method
-*/
-
 /// <summary>
 /// Execution settings for an OpenAI completion request.
 /// </summary>

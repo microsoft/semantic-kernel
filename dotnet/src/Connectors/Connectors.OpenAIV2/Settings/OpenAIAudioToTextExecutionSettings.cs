@@ -148,32 +148,6 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
         return openAIExecutionSettings!;
     }
 
-    /// <summary>
-    /// Specifies the format of the audio transcription.
-    /// </summary>
-    public enum AudioTranscriptionFormat
-    {
-        /// <summary>
-        /// Response body that is a JSON object containing a single 'text' field for the transcription.
-        /// </summary>
-        Simple,
-
-        /// <summary>
-        /// Use a response body that is a JSON object containing transcription text along with timing, segments, and other metadata.
-        /// </summary>
-        Verbose,
-
-        /// <summary>
-        /// Response body that is plain text in SubRip (SRT) format that also includes timing information.
-        /// </summary>
-        Srt,
-
-        /// <summary>
-        /// Response body that is plain text in Web Video Text Tracks (VTT) format that also includes timing information.
-        /// </summary>
-        Vtt,
-    }
-
     #region private ================================================================================
 
     private const string DefaultFilename = "file.mp3";

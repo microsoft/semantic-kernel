@@ -364,12 +364,8 @@ public sealed class AzureOpenAIPromptExecutionSettings : PromptExecutionSettings
         var json = JsonSerializer.Serialize(executionSettings);
 
         var openAIExecutionSettings = JsonSerializer.Deserialize<AzureOpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-        if (openAIExecutionSettings is not null)
-        {
-            return openAIExecutionSettings;
-        }
 
-        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureOpenAIPromptExecutionSettings)}", nameof(executionSettings));
+        return openAIExecutionSettings!;
     }
 
     /// <summary>
