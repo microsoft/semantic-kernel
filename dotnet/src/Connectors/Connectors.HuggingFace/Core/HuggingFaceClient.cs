@@ -301,7 +301,7 @@ internal sealed class HuggingFaceClient
     }
 
     private Uri GetEmbeddingGenerationEndpoint(string modelId)
-        => new($"{this.Endpoint}{this.Separator}pipeline/feature-extraction/{modelId}");
+        => string.IsNullOrEmpty(modelId) ? this.Endpoint : new($"{this.Endpoint}{this.Separator}pipeline/feature-extraction/{modelId}");
 
     #endregion
 
@@ -338,7 +338,7 @@ internal sealed class HuggingFaceClient
     }
 
     private Uri GetImageToTextGenerationEndpoint(string modelId)
-        => new($"{this.Endpoint}{this.Separator}models/{modelId}");
+        => string.IsNullOrEmpty(modelId) ? this.Endpoint : new($"{this.Endpoint}{this.Separator}models/{modelId}");
 
     #endregion
 }
