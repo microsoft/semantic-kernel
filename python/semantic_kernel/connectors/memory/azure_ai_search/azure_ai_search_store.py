@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import TYPE_CHECKING, Any, TypeVar
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.aio import SearchClient
@@ -81,6 +87,7 @@ class AzureAISearchStore(VectorStore):
 
         super().__init__(search_index_client=search_index_client)
 
+    @override
     def get_collection(
         self,
         collection_name: str,
@@ -92,13 +99,12 @@ class AzureAISearchStore(VectorStore):
         """Get a AzureAISearchCollection tied to a collection.
 
         Args:
+            collection_name (str): The name of the collection.
             data_model_type (type[TModel]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
-            collection_name (str): The name of the collection.
-            vector_store_kwargs (dict[str, Any]): Additional keyword arguments,
-                passed to the vector store as kwargs.
-            search_client (SearchClient | None): The search client for interacting with Azure AI Search.
-            **kwargs: Additional keyword arguments, passed to the search client constructor.
+            search_client (SearchClient | None): The search client for interacting with Azure AI Search,
+                will be created if not supplied.
+            **kwargs: Additional keyword arguments, passed to the collection constructor.
         """
         if collection_name not in self.vector_record_collections:
             self.vector_record_collections[collection_name] = AzureAISearchCollection(
@@ -111,14 +117,14 @@ class AzureAISearchStore(VectorStore):
             )
         return self.vector_record_collections[collection_name]
 
+    @override
     async def list_collection_names(self, **kwargs: Any) -> list[str]:
-        """Get the names of all collections."""
         if "params" not in kwargs:
             kwargs["params"] = {"select": ["name"]}
         return [index async for index in self.search_index_client.list_index_names(**kwargs)]
 
+    @override
     async def close(self) -> None:
-        """Close the connections."""
         await self.search_index_client.close()
         for collection in self.vector_record_collections.values():
             await collection.close()

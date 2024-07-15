@@ -1,0 +1,133 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import logging
+import sys
+from typing import TYPE_CHECKING, Any, TypeVar
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+from qdrant_client.async_qdrant_client import AsyncQdrantClient
+
+from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
+from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
+from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
+from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store import VectorStore
+from semantic_kernel.exceptions import MemoryConnectorInitializationError
+from semantic_kernel.utils.experimental_decorator import experimental_class
+
+if TYPE_CHECKING:
+    from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+TModel = TypeVar("TModel")
+TKey = TypeVar("TKey", str, int)
+
+
+@experimental_class
+class QdrantStore(VectorStore):
+    qdrant_client: AsyncQdrantClient
+
+    def __init__(
+        self,
+        url: str | None = None,
+        api_key: str | None = None,
+        host: str | None = None,
+        port: int | None = None,
+        grpc_port: int | None = None,
+        path: str | None = None,
+        location: str | None = None,
+        prefer_grpc: bool | None = None,
+        client: AsyncQdrantClient | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Initializes a new instance of the QdrantVectorRecordStore.
+
+        When using qdrant client, make sure to supply url and api_key.
+        When using qdrant server, make sure to supply url or host and optionally port.
+        When using qdrant local, either supply path to use a persisted qdrant instance
+            or set location to ":memory:" to use an in-memory qdrant instance.
+        When nothing is supplied, it defaults to an in-memory qdrant instance.
+        You can also supply a async qdrant client directly.
+
+        Args:
+            url (str): The URL of the Qdrant server (default: {None}).
+            api_key (str): The API key for the Qdrant server (default: {None}).
+            host (str): The host of the Qdrant server (default: {None}).
+            port (int): The port of the Qdrant server (default: {None}).
+            grpc_port (int): The gRPC port of the Qdrant server (default: {None}).
+            path (str): The path of the Qdrant server (default: {None}).
+            location (str): The location of the Qdrant server (default: {None}).
+            prefer_grpc (bool): If true, gRPC will be preferred (default: {None}).
+            client (AsyncQdrantClient): The Qdrant client to use (default: {None}).
+            env_file_path (str): Use the environment settings file as a fallback to environment variables.
+            env_file_encoding (str): The encoding of the environment settings file.
+            **kwargs: Additional keyword arguments passed to the client constructor.
+
+        """
+        if client:
+            super().__init__(qdrant_client=client, **kwargs)
+            return
+
+        from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
+
+        settings = QdrantSettings.create(
+            url=url,
+            api_key=api_key,
+            host=host,
+            port=port,
+            grpc_port=grpc_port,
+            path=path,
+            location=location,
+            prefer_grpc=prefer_grpc,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
+        try:
+            if APP_INFO:
+                kwargs.setdefault("metadata", {})
+                kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(kwargs["metadata"])
+            super().__init__(qdrant_client=AsyncQdrantClientWrapper(**settings.model_dump(exclude_none=True), **kwargs))
+        except ValueError as ex:
+            raise MemoryConnectorInitializationError("Failed to create Qdrant client.", ex) from ex
+
+    def get_collection(
+        self,
+        collection_name: str,
+        data_model_type: type[TModel],
+        data_model_definition: VectorStoreRecordDefinition | None = None,
+        **kwargs: Any,
+    ) -> "VectorStoreRecordCollection":
+        """Get a QdrantCollection tied to a collection.
+
+        Args:
+            collection_name (str): The name of the collection.
+            data_model_type (type[TModel]): The type of the data model.
+            data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
+            **kwargs: Additional keyword arguments, passed to the collection constructor.
+        """
+        if collection_name not in self.vector_record_collections:
+            self.vector_record_collections[collection_name] = QdrantCollection[TModel](
+                data_model_type=data_model_type,
+                data_model_definition=data_model_definition,
+                client=self.qdrant_client,
+                collection_name=collection_name,
+                **kwargs,
+            )
+        return self.vector_record_collections[collection_name]
+
+    @override
+    async def list_collection_names(self, **kwargs: Any) -> list[str]:
+        collections = await self.qdrant_client.get_collections()
+        return [collection.name for collection in collections]
+
+    @override
+    async def close(self) -> None:
+        """Closes the Qdrant client."""
+        await self.qdrant_client.close()

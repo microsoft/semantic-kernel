@@ -28,6 +28,10 @@ class MemoryConnectorResourceNotFound(MemoryConnectorException):
     pass
 
 
+class VectorStoreModelValidationError(VectorStoreModelException):
+    pass
+
+
 __all__ = [
     "MemoryConnectorException",
     "MemoryConnectorInitializationError",
@@ -35,4 +39,5 @@ __all__ = [
     "VectorStoreModelDeserializationException",
     "VectorStoreModelException",
     "VectorStoreModelSerializationException",
+    "VectorStoreModelValidationError",
 ]

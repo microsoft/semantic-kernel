@@ -28,6 +28,7 @@ from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,
+    VectorStoreModelValidationError,
 )
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -137,7 +138,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         model_sig = signature(self.data_model_type)
         key_type = model_sig.parameters[self._key_field].annotation.__args__[0]  # type: ignore
         if self.supported_key_types and key_type not in self.supported_key_types:
-            raise ValueError(f"Key field must be one of {self.supported_key_types}")
+            raise VectorStoreModelValidationError(f"Key field must be one of {self.supported_key_types}")
         if not self.supported_vector_types:
             return
         for field_name, field in self.data_model_definition.fields.items():
@@ -146,7 +147,9 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                 if field_type.__class__ is types.UnionType:
                     field_type = field_type.__args__[0]
                 if field_type not in self.supported_vector_types:
-                    raise ValueError(f"Vector field {field_name} must be one of {self.supported_vector_types}")
+                    raise VectorStoreModelValidationError(
+                        f"Vector field {field_name} must be one of {self.supported_vector_types}"
+                    )
         return
 
     @abstractmethod
@@ -165,14 +168,20 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """
         ...
 
-    async def create_collection_if_not_exists(self, **kwargs: Any):
-        """Create the collection in the service, first uses does_collection_exist to check if it exists."""
+    async def create_collection_if_not_exists(self, **kwargs: Any) -> bool:
+        """Create the collection in the service if it does not exists.
+
+        First uses does_collection_exist to check if it exists, if it does returns False.
+        Otherwise, creates the collection and returns True.
+
+        """
         if await self.does_collection_exist(**kwargs):
-            return
+            return False
         await self.create_collection(**kwargs)
+        return True
 
     @abstractmethod
-    async def create_collection(self, **kwargs: Any):
+    async def create_collection(self, **kwargs: Any) -> None:
         """Create the collection in the service."""
         ...
 
@@ -182,7 +191,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         ...
 
     @abstractmethod
-    async def delete_collection(self, **kwargs: Any):
+    async def delete_collection(self, **kwargs: Any) -> None:
         """Delete the collection."""
         ...
 
