@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
-/// The types of mapper supported by <see cref="RedisVectorRecordStore{TRecord}"/>.
+/// The types of mapper supported by <see cref="RedisVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
 public enum RedisRecordMapperType
 {

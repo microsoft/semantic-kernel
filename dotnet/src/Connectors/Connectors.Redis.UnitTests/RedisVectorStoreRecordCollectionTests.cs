@@ -14,9 +14,9 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="RedisVectorRecordStore{TRecord}"/> class.
+/// Contains tests for the <see cref="RedisVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
-public class RedisVectorRecordStoreTests
+public class RedisVectorStoreRecordCollectionTests
 {
     private const string TestCollectionName = "testcollection";
     private const string TestRecordKey1 = "testid1";
@@ -24,7 +24,7 @@ public class RedisVectorRecordStoreTests
 
     private readonly Mock<IDatabase> _redisDatabaseMock;
 
-    public RedisVectorRecordStoreTests()
+    public RedisVectorStoreRecordCollectionTests()
     {
         this._redisDatabaseMock = new Mock<IDatabase>(MockBehavior.Strict);
 
@@ -141,7 +141,7 @@ public class RedisVectorRecordStoreTests
             .Returns(CreateModel(TestRecordKey1, true));
 
         // Arrange target with custom mapper.
-        var sut = new RedisVectorRecordStore<SinglePropsModel>(
+        var sut = new RedisVectorStoreRecordCollection<SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()
@@ -289,7 +289,7 @@ public class RedisVectorRecordStoreTests
             .Returns((TestRecordKey1, JsonNode.Parse(jsonNode)!));
 
         // Arrange target with custom mapper.
-        var sut = new RedisVectorRecordStore<SinglePropsModel>(
+        var sut = new RedisVectorStoreRecordCollection<SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()
@@ -310,9 +310,9 @@ public class RedisVectorRecordStoreTests
                 Times.Once);
     }
 
-    private RedisVectorRecordStore<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
+    private RedisVectorStoreRecordCollection<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
     {
-        return new RedisVectorRecordStore<SinglePropsModel>(
+        return new RedisVectorStoreRecordCollection<SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()

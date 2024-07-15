@@ -19,9 +19,9 @@ using Xunit;
 namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="AzureAISearchVectorRecordStore{TRecord}"/> class.
+/// Contains tests for the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
-public class AzureAISearchVectorRecordStoreTests
+public class AzureAISearchVectorStoreRecordCollectionTests
 {
     private const string TestCollectionName = "testcollection";
     private const string TestRecordKey1 = "testid1";
@@ -32,7 +32,7 @@ public class AzureAISearchVectorRecordStoreTests
 
     private readonly CancellationToken _testCancellationToken = new(false);
 
-    public AzureAISearchVectorRecordStoreTests()
+    public AzureAISearchVectorStoreRecordCollectionTests()
     {
         this._searchClientMock = new Mock<SearchClient>(MockBehavior.Strict);
         this._searchIndexClientMock = new Mock<SearchIndexClient>(MockBehavior.Strict);
@@ -150,7 +150,7 @@ public class AzureAISearchVectorRecordStoreTests
             .Returns(CreateModel(TestRecordKey1, true));
 
         // Arrange target with custom mapper.
-        var sut = new AzureAISearchVectorRecordStore<SinglePropsModel>(
+        var sut = new AzureAISearchVectorStoreRecordCollection<SinglePropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new()
@@ -364,7 +364,7 @@ public class AzureAISearchVectorRecordStoreTests
             .Returns(storageObject);
 
         // Arrange target with custom mapper.
-        var sut = new AzureAISearchVectorRecordStore<SinglePropsModel>(
+        var sut = new AzureAISearchVectorStoreRecordCollection<SinglePropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new()
@@ -386,9 +386,9 @@ public class AzureAISearchVectorRecordStoreTests
                 Times.Once);
     }
 
-    private AzureAISearchVectorRecordStore<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
+    private AzureAISearchVectorStoreRecordCollection<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
     {
-        return new AzureAISearchVectorRecordStore<SinglePropsModel>(
+        return new AzureAISearchVectorStoreRecordCollection<SinglePropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new()

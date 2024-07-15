@@ -17,7 +17,9 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// Service for storing and retrieving vector records, that uses Qdrant as the underlying storage.
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
-public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong, TRecord>, IVectorRecordStore<Guid, TRecord>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<ulong, TRecord>, IVectorStoreRecordCollection<Guid, TRecord>
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -32,37 +34,37 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
     private readonly MockableQdrantClient _qdrantClient;
 
-    /// <summary>The name of the collection that this <see cref="QdrantVectorRecordStore{TRecord}"/> will access.</summary>
+    /// <summary>The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly QdrantVectorRecordStoreOptions<TRecord> _options;
+    private readonly QdrantVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>A mapper to use for converting between qdrant point and consumer models.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, PointStruct> _mapper;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="QdrantVectorRecordStore{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorRecordStore{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    public QdrantVectorRecordStore(QdrantClient qdrantClient, string collectionName, QdrantVectorRecordStoreOptions<TRecord>? options = null)
+    public QdrantVectorStoreRecordCollection(QdrantClient qdrantClient, string collectionName, QdrantVectorStoreRecordCollectionOptions<TRecord>? options = null)
         : this(new MockableQdrantClient(qdrantClient), collectionName, options)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="QdrantVectorRecordStore{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorRecordStore{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    internal QdrantVectorRecordStore(MockableQdrantClient qdrantClient, string collectionName, QdrantVectorRecordStoreOptions<TRecord>? options = null)
+    internal QdrantVectorStoreRecordCollection(MockableQdrantClient qdrantClient, string collectionName, QdrantVectorStoreRecordCollectionOptions<TRecord>? options = null)
     {
         // Verify.
         Verify.NotNull(qdrantClient);
@@ -71,7 +73,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
         // Assign.
         this._qdrantClient = qdrantClient;
         this._collectionName = collectionName;
-        this._options = options ?? new QdrantVectorRecordStoreOptions<TRecord>();
+        this._options = options ?? new QdrantVectorStoreRecordCollectionOptions<TRecord>();
 
         // Assign Mapper.
         if (this._options.MapperType == QdrantRecordMapperType.QdrantPointStructCustomMapper)
@@ -79,7 +81,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
             // Custom Mapper.
             if (this._options.PointStructCustomMapper is null)
             {
-                throw new ArgumentException($"The {nameof(QdrantVectorRecordStoreOptions<TRecord>.PointStructCustomMapper)} option needs to be set if a {nameof(QdrantVectorRecordStoreOptions<TRecord>.MapperType)} of {nameof(QdrantRecordMapperType.QdrantPointStructCustomMapper)} has been chosen.", nameof(options));
+                throw new ArgumentException($"The {nameof(QdrantVectorStoreRecordCollectionOptions<TRecord>.PointStructCustomMapper)} option needs to be set if a {nameof(QdrantVectorStoreRecordCollectionOptions<TRecord>.MapperType)} of {nameof(QdrantRecordMapperType.QdrantPointStructCustomMapper)} has been chosen.", nameof(options));
             }
 
             this._mapper = this._options.PointStructCustomMapper;
@@ -201,7 +203,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     }
 
     /// <inheritdoc />
-    async Task<Guid> IVectorRecordStore<Guid, TRecord>.UpsertAsync(TRecord record, UpsertRecordOptions? options, CancellationToken cancellationToken)
+    async Task<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertAsync(TRecord record, UpsertRecordOptions? options, CancellationToken cancellationToken)
     {
         Verify.NotNull(record);
 
@@ -243,7 +245,7 @@ public sealed class QdrantVectorRecordStore<TRecord> : IVectorRecordStore<ulong,
     }
 
     /// <inheritdoc />
-    async IAsyncEnumerable<Guid> IVectorRecordStore<Guid, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+    async IAsyncEnumerable<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Verify.NotNull(records);
 

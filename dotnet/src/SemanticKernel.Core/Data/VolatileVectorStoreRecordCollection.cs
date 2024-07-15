@@ -16,16 +16,18 @@ namespace Microsoft.SemanticKernel.Data;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 [Experimental("SKEXP0001")]
-public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<string, TRecord>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TRecord : class
 {
-    /// <summary>Internal storage for the record store.</summary>
+    /// <summary>Internal storage for the record collection.</summary>
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, TRecord>> _internalCollection;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly VolatileVectorRecordStoreOptions _options;
+    private readonly VolatileVectorStoreRecordCollectionOptions _options;
 
-    /// <summary>The name of the collection that this <see cref="VolatileVectorRecordStore{TRecord}"/> will access.</summary>
+    /// <summary>The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
     /// <summary>A set of types that a key on the provided model may have.</summary>
@@ -38,11 +40,11 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     private readonly PropertyInfo _keyPropertyInfo;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VolatileVectorRecordStore{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
-    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorRecordStore{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public VolatileVectorRecordStore(string collectionName, VolatileVectorRecordStoreOptions? options = default)
+    public VolatileVectorStoreRecordCollection(string collectionName, VolatileVectorStoreRecordCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -50,7 +52,7 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
         // Assign.
         this._collectionName = collectionName;
         this._internalCollection = new();
-        this._options = options ?? new VolatileVectorRecordStoreOptions();
+        this._options = options ?? new VolatileVectorStoreRecordCollectionOptions();
 
         // Enumerate public properties using configuration or attributes.
         (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
@@ -69,12 +71,12 @@ public sealed class VolatileVectorRecordStore<TRecord> : IVectorRecordStore<stri
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VolatileVectorRecordStore{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> class.
     /// </summary>
     /// <param name="internalCollection">Allows passing in the dictionary used for storage, for testing purposes.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorRecordStore{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    internal VolatileVectorRecordStore(ConcurrentDictionary<string, ConcurrentDictionary<string, TRecord>> internalCollection, string collectionName, VolatileVectorRecordStoreOptions? options = default)
+    internal VolatileVectorStoreRecordCollection(ConcurrentDictionary<string, ConcurrentDictionary<string, TRecord>> internalCollection, string collectionName, VolatileVectorStoreRecordCollectionOptions? options = default)
         : this(collectionName, options)
     {
         this._internalCollection = internalCollection;

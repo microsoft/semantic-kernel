@@ -13,9 +13,9 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="QdrantVectorRecordStore{TRecord}"/> class.
+/// Contains tests for the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
-public class QdrantVectorRecordStoreTests
+public class QdrantVectorStoreRecordCollectionTests
 {
     private const string TestCollectionName = "testcollection";
     private const ulong UlongTestRecordKey1 = 1;
@@ -27,7 +27,7 @@ public class QdrantVectorRecordStoreTests
 
     private readonly CancellationToken _testCancellationToken = new(false);
 
-    public QdrantVectorRecordStoreTests()
+    public QdrantVectorStoreRecordCollectionTests()
     {
         this._qdrantClientMock = new Mock<MockableQdrantClient>(MockBehavior.Strict);
     }
@@ -155,7 +155,7 @@ public class QdrantVectorRecordStoreTests
             .Returns(CreateModel(UlongTestRecordKey1, true));
 
         // Arrange target with custom mapper.
-        var sut = new QdrantVectorRecordStore<SinglePropsModel<ulong>>(
+        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
             new()
@@ -382,7 +382,7 @@ public class QdrantVectorRecordStoreTests
             .Returns(pointStruct);
 
         // Arrange target with custom mapper.
-        var sut = new QdrantVectorRecordStore<SinglePropsModel<ulong>>(
+        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
             new()
@@ -512,16 +512,16 @@ public class QdrantVectorRecordStoreTests
         return point;
     }
 
-    private IVectorRecordStore<T, SinglePropsModel<T>> CreateVectorRecordStore<T>(bool useDefinition, bool hasNamedVectors)
+    private IVectorStoreRecordCollection<T, SinglePropsModel<T>> CreateVectorRecordStore<T>(bool useDefinition, bool hasNamedVectors)
     {
-        var store = new QdrantVectorRecordStore<SinglePropsModel<T>>(
+        var store = new QdrantVectorStoreRecordCollection<SinglePropsModel<T>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
             new()
             {
                 VectorStoreRecordDefinition = useDefinition ? this._singlePropsDefinition : null,
                 HasNamedVectors = hasNamedVectors
-            }) as IVectorRecordStore<T, SinglePropsModel<T>>;
+            }) as IVectorStoreRecordCollection<T, SinglePropsModel<T>>;
         return store!;
     }
 
