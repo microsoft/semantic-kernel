@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
 using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
 
@@ -74,16 +75,16 @@ public sealed class AzureOpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Retrieve the resulting function from the chat result.
     /// </summary>
-    /// <returns>The <see cref="AzureOpenAIFunctionToolCall"/>, or null if no function was returned by the model.</returns>
-    public IReadOnlyList<AzureOpenAIFunctionToolCall> GetFunctionToolCalls()
+    /// <returns>The <see cref="OpenAIFunctionToolCall"/>, or null if no function was returned by the model.</returns>
+    public IReadOnlyList<OpenAIFunctionToolCall> GetFunctionToolCalls()
     {
-        List<AzureOpenAIFunctionToolCall>? functionToolCallList = null;
+        List<OpenAIFunctionToolCall>? functionToolCallList = null;
 
         foreach (var toolCall in this.ToolCalls)
         {
             if (toolCall.Kind == ChatToolCallKind.Function)
             {
-                (functionToolCallList ??= []).Add(new AzureOpenAIFunctionToolCall(toolCall));
+                (functionToolCallList ??= []).Add(new OpenAIFunctionToolCall(toolCall));
             }
         }
 

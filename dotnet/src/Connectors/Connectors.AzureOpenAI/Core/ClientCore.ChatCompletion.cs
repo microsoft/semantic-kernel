@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using OpenAI.Chat;
 using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
@@ -233,10 +234,10 @@ internal partial class ClientCore
                 }
 
                 // Parse the function call arguments.
-                AzureOpenAIFunctionToolCall? azureOpenAIFunctionToolCall;
+                OpenAIFunctionToolCall? openAIFunctionToolCall;
                 try
                 {
-                    azureOpenAIFunctionToolCall = new(functionToolCall);
+                    openAIFunctionToolCall = new(functionToolCall);
                 }
                 catch (JsonException)
                 {
@@ -248,14 +249,14 @@ internal partial class ClientCore
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
                 if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
-                    !IsRequestableTool(chatOptions, azureOpenAIFunctionToolCall))
+                    !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
                     AddResponseMessage(chatForRequest, chat, result: null, "Error: Function call request for a function that wasn't defined.", functionToolCall, this.Logger);
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
-                if (!kernel!.Plugins.TryGetFunctionAndArguments(azureOpenAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
+                if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
                     AddResponseMessage(chatForRequest, chat, result: null, "Error: Requested function could not be found.", functionToolCall, this.Logger);
                     continue;
@@ -418,7 +419,7 @@ internal partial class ClientCore
                                 }
                             }
 
-                            AzureOpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                         }
 
                         var openAIStreamingChatMessageContent = new AzureOpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, this.DeploymentName, metadata);
@@ -446,7 +447,7 @@ internal partial class ClientCore
                     }
 
                     // Translate all entries into ChatCompletionsFunctionToolCall instances.
-                    toolCalls = AzureOpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(
+                    toolCalls = OpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(
                         ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
 
                     // Translate all entries into FunctionCallContent instances for diagnostics purposes.
@@ -500,7 +501,7 @@ internal partial class ClientCore
                 }
 
                 // Parse the function call arguments.
-                AzureOpenAIFunctionToolCall? openAIFunctionToolCall;
+                OpenAIFunctionToolCall? openAIFunctionToolCall;
                 try
                 {
                     openAIFunctionToolCall = new(toolCall);
@@ -622,7 +623,7 @@ internal partial class ClientCore
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
-    private static bool IsRequestableTool(ChatCompletionOptions options, AzureOpenAIFunctionToolCall ftc)
+    private static bool IsRequestableTool(ChatCompletionOptions options, OpenAIFunctionToolCall ftc)
     {
         IList<ChatTool> tools = options.Tools;
         for (int i = 0; i < tools.Count; i++)
@@ -753,7 +754,7 @@ internal partial class ClientCore
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
-    private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message, AzureOpenAIToolCallBehavior? toolCallBehavior)
+    private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
     {
         if (message.Role == AuthorRole.System)
         {
@@ -872,7 +873,7 @@ internal partial class ClientCore
 
                 var argument = JsonSerializer.Serialize(callRequest.Arguments);
 
-                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, AzureOpenAIFunction.NameSeparator), argument ?? string.Empty));
+                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
             }
 
             return [new AssistantChatMessage(toolCalls, message.Content) { ParticipantName = message.AuthorName }];
@@ -975,7 +976,7 @@ internal partial class ClientCore
                     }
                 }
 
-                var functionName = FunctionName.Parse(toolCall.FunctionName, AzureOpenAIFunction.NameSeparator);
+                var functionName = FunctionName.Parse(toolCall.FunctionName, OpenAIFunction.NameSeparator);
 
                 var functionCallContent = new FunctionCallContent(
                     functionName: functionName.Name,
@@ -1014,7 +1015,7 @@ internal partial class ClientCore
         {
             // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
             // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
-            var functionName = FunctionName.Parse(toolCall.FunctionName, AzureOpenAIFunction.NameSeparator);
+            var functionName = FunctionName.Parse(toolCall.FunctionName, OpenAIFunction.NameSeparator);
             message.Items.Add(new FunctionResultContent(functionName.Name, functionName.PluginName, toolCall.Id, result));
         }
 
@@ -1059,7 +1060,7 @@ internal partial class ClientCore
     /// <param name="functionResult">The result of the function call.</param>
     /// <param name="toolCallBehavior">The ToolCallBehavior object containing optional settings like JsonSerializerOptions.TypeInfoResolver.</param>
     /// <returns>A string representation of the function result.</returns>
-    private static string? ProcessFunctionResult(object functionResult, AzureOpenAIToolCallBehavior? toolCallBehavior)
+    private static string? ProcessFunctionResult(object functionResult, ToolCallBehavior? toolCallBehavior)
     {
         if (functionResult is string stringResult)
         {

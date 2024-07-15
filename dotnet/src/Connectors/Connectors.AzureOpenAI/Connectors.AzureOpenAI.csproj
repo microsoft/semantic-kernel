@@ -12,8 +12,6 @@
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/openai/OpenAIUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -31,5 +29,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\Connectors.OpenAIV2\Connectors.OpenAIV2.csproj" />
   </ItemGroup>
 </Project>
