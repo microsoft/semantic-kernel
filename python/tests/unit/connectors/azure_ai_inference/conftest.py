@@ -1,7 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import datetime
+from collections.abc import AsyncGenerator, AsyncIterator
+from unittest.mock import MagicMock
+
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient, EmbeddingsClient
+from azure.ai.inference.models import (
+    ChatChoice,
+    ChatCompletions,
+    ChatCompletionsFunctionToolCall,
+    ChatResponseMessage,
+    CompletionsUsage,
+    FunctionCall,
+    StreamingChatChoiceUpdate,
+    StreamingChatCompletionsUpdate,
+)
 from azure.core.credentials import AzureKeyCredential
 
 from semantic_kernel.connectors.ai.azure_ai_inference import (
@@ -77,3 +91,151 @@ def azure_ai_inference_service(azure_ai_inference_unit_test_env, model_id, reque
         return AzureAIInferenceTextEmbedding(model_id, api_key=api_key, endpoint=endpoint)
 
     raise ValueError(f"Service {request.param} not supported.")
+
+
+@pytest.fixture()
+def mock_azure_ai_inference_chat_completion_response(model_id) -> ChatCompletions:
+    return ChatCompletions(
+        id="test_id",
+        created=datetime.datetime.now(),
+        model=model_id,
+        usage=CompletionsUsage(
+            completion_tokens=0,
+            prompt_tokens=0,
+            total_tokens=0,
+        ),
+        choices=[
+            ChatChoice(
+                index=0,
+                finish_reason="stop",
+                message=ChatResponseMessage(
+                    role="assistant",
+                    content="Hello",
+                ),
+            )
+        ],
+    )
+
+
+@pytest.fixture()
+def mock_azure_ai_inference_chat_completion_response_with_tool_call(model_id) -> ChatCompletions:
+    return ChatCompletions(
+        id="test_id",
+        created=datetime.datetime.now(),
+        model=model_id,
+        usage=CompletionsUsage(
+            completion_tokens=0,
+            prompt_tokens=0,
+            total_tokens=0,
+        ),
+        choices=[
+            ChatChoice(
+                index=0,
+                finish_reason="tool_calls",
+                message=ChatResponseMessage(
+                    role="assistant",
+                    tool_calls=[
+                        ChatCompletionsFunctionToolCall(
+                            id="test_id",
+                            function=FunctionCall(
+                                name="test_function",
+                                arguments={"test_arg": "test_value"},
+                            ),
+                        ),
+                    ],
+                ),
+            )
+        ],
+    )
+
+
+@pytest.fixture()
+def mock_azure_ai_inference_streaming_chat_completion_response(model_id) -> AsyncIterator:
+    streaming_chat_response = MagicMock(spec=AsyncGenerator)
+    streaming_chat_response.__aiter__.return_value = [
+        StreamingChatCompletionsUpdate(
+            id="test_id",
+            created=datetime.datetime.now(),
+            model=model_id,
+            usage=CompletionsUsage(
+                completion_tokens=0,
+                prompt_tokens=0,
+                total_tokens=0,
+            ),
+            choices=[
+                # Empty choice
+            ],
+        ),
+        StreamingChatCompletionsUpdate(
+            id="test_id",
+            created=datetime.datetime.now(),
+            model=model_id,
+            usage=CompletionsUsage(
+                completion_tokens=0,
+                prompt_tokens=0,
+                total_tokens=0,
+            ),
+            choices=[
+                StreamingChatChoiceUpdate(
+                    index=0,
+                    finish_reason="stop",
+                    delta=ChatResponseMessage(
+                        role="assistant",
+                        content="Hello",
+                    ),
+                )
+            ],
+        ),
+    ]
+
+    return streaming_chat_response
+
+
+@pytest.fixture()
+def mock_azure_ai_inference_streaming_chat_completion_response_with_tool_call(model_id) -> AsyncIterator:
+    streaming_chat_response = MagicMock(spec=AsyncGenerator)
+    streaming_chat_response.__aiter__.return_value = [
+        StreamingChatCompletionsUpdate(
+            id="test_id",
+            created=datetime.datetime.now(),
+            model=model_id,
+            usage=CompletionsUsage(
+                completion_tokens=0,
+                prompt_tokens=0,
+                total_tokens=0,
+            ),
+            choices=[
+                # Empty choice
+            ],
+        ),
+        StreamingChatCompletionsUpdate(
+            id="test_id",
+            created=datetime.datetime.now(),
+            model=model_id,
+            usage=CompletionsUsage(
+                completion_tokens=0,
+                prompt_tokens=0,
+                total_tokens=0,
+            ),
+            choices=[
+                StreamingChatChoiceUpdate(
+                    index=0,
+                    finish_reason="tool_calls",
+                    delta=ChatResponseMessage(
+                        role="assistant",
+                        tool_calls=[
+                            ChatCompletionsFunctionToolCall(
+                                id="test_id",
+                                function=FunctionCall(
+                                    name="test_function",
+                                    arguments={"test_arg": "test_value"},
+                                ),
+                            ),
+                        ],
+                    ),
+                )
+            ],
+        ),
+    ]
+
+    return streaming_chat_response
