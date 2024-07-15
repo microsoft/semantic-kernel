@@ -233,7 +233,7 @@ public abstract class AgentChat
                 this._agentChannels
                     .Where(kvp => kvp.Value != channel)
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
-            this._broadcastQueue.Enqueue(channelRefs, messages); // %%% BROADCAST ALL
+            this._broadcastQueue.Enqueue(channelRefs, messages);
 
             this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
         }
