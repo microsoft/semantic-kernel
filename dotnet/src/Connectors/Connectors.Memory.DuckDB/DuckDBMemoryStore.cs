@@ -167,7 +167,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(k => this._dbConnector.DeleteAsync(this._dbConnection, collectionName, k, cancellationToken))).ConfigureAwait(false);
+        await this._dbConnector.DeleteBatchAsync(this._dbConnection, collectionName, keys.ToArray(), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -271,8 +271,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
 
     private static DateTimeOffset? ParseTimestamp(string? str)
     {
-        if (!string.IsNullOrEmpty(str)
-            && DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset timestamp))
+        if (DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset timestamp))
         {
             return timestamp;
         }
