@@ -135,7 +135,7 @@ public class NexusRaven_HuggingFaceTextGeneration(ITestOutputHelper output) : Ba
     /// <summary>
     /// Function definition for use with Nexus Raven.
     /// </summary>
-    private class FunctionDefinition
+    private sealed class FunctionDefinition
     {
         public string Name { get; init; }
         public string Signature { get; init; }

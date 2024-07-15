@@ -59,7 +59,6 @@ internal sealed class TextGenerationRequest
                 Details = executionSettings.Details,
                 ReturnFullText = executionSettings.ReturnFullText,
                 DoSample = executionSettings.DoSample,
-
             },
             Options = new()
             {
