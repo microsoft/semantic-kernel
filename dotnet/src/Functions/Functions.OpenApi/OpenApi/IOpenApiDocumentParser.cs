@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -22,7 +23,7 @@ internal interface IOpenApiDocumentParser
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>List of rest operations.</returns>
-    Task<IList<RestApiOperation>> ParseAsync(
+    Task<(RestApiInfo, IList<RestApiOperation>)> ParseAsync(
         Stream stream,
         bool ignoreNonCompliantErrors = false,
         IList<string>? operationsToExclude = null,

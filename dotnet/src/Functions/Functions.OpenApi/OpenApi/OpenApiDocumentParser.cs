@@ -18,6 +18,7 @@ using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Writers;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -28,7 +29,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null) : IOpenApiDocumentParser
 {
     /// <inheritdoc/>
-    public async Task<IList<RestApiOperation>> ParseAsync(
+    public async Task<(RestApiInfo, IList<RestApiOperation>)> ParseAsync(
         Stream stream,
         bool ignoreNonCompliantErrors = false,
         IList<string>? operationsToExclude = null,
@@ -42,7 +43,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger);
+        return (ExtractRestApiInfo(result.OpenApiDocument), ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
     }
 
     #region private
@@ -130,6 +131,21 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj)));
 
         return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Parses an OpenAPI document and extracts REST API information.
+    /// </summary>
+    /// <param name="document">The OpenAPI document.</param>
+    /// <returns>Rest API information.</returns>
+    private static RestApiInfo ExtractRestApiInfo(OpenApiDocument document)
+    {
+        return new()
+        {
+            Title = document.Info.Title,
+            Description = document.Info.Description,
+            Version = document.Info.Version,
+        };
     }
 
     /// <summary>
