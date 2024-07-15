@@ -4,6 +4,7 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 
 | Features | Description |
 | -------- | ----------- |
+| Agents | Creating and using agents in Semantic Kernel |
 | AutoFunctionCalling | Using `Auto Function Calling` to allow function call capable models to invoke Kernel Functions automatically |
 | ChatCompletion | Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) messaging capable service with models  |
 | Filtering | Creating and using Filters |

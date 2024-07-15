@@ -28,12 +28,25 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     public static async Task<DuckDBMemoryStore> ConnectAsync(string filename,
         CancellationToken cancellationToken = default)
     {
-        var memoryStore = new DuckDBMemoryStore(filename);
+        var memoryStore = new DuckDBMemoryStore(filename, null);
         return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Connect a in memory DuckDB database
+    /// Connect a DuckDB database
+    /// </summary>
+    /// <param name="filename">Path to the database file. If file does not exist, it will be created.</param>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task<DuckDBMemoryStore> ConnectAsync(string filename, int vectorSize,
+        CancellationToken cancellationToken = default)
+    {
+        var memoryStore = new DuckDBMemoryStore(filename, vectorSize);
+        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Connect an in memory DuckDB database
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static Task<DuckDBMemoryStore> ConnectAsync(
@@ -43,7 +56,18 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <summary>
-    /// Connect a in memory DuckDB database
+    /// Connect an in memory DuckDB database
+    /// </summary>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static Task<DuckDBMemoryStore> ConnectAsync(int vectorSize,
+        CancellationToken cancellationToken = default)
+    {
+        return ConnectAsync(":memory:", vectorSize, cancellationToken);
+    }
+
+    /// <summary>
+    /// Connect an in memory DuckDB database
     /// </summary>
     /// <param name="connection">An already established connection.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -51,6 +75,19 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default)
     {
         var memoryStore = new DuckDBMemoryStore(connection);
+        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Connect an in memory DuckDB database
+    /// </summary>
+    /// <param name="connection">An already established connection.</param>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task<DuckDBMemoryStore> ConnectAsync(DuckDBConnection connection, int vectorSize,
+        CancellationToken cancellationToken = default)
+    {
+        var memoryStore = new DuckDBMemoryStore(connection, vectorSize);
         return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
     }
 
@@ -207,9 +244,10 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// Constructor
     /// </summary>
     /// <param name="filename">DuckDB db filename.</param>
-    private DuckDBMemoryStore(string filename)
+    /// <param name="vectorSize">Embedding vector size. If provided, the database will be used ARRAY type to store embeddings. If not, the database will fall back to LIST.</param>
+    private DuckDBMemoryStore(string filename, int? vectorSize = null)
     {
-        this._dbConnector = new Database();
+        this._dbConnector = new Database(vectorSize);
         this._dbConnection = new DuckDBConnection($"Data Source={filename};");
         this._disposedValue = false;
     }
@@ -218,9 +256,10 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// Constructor
     /// </summary>
     /// <param name="connection"></param>
-    private DuckDBMemoryStore(DuckDBConnection connection)
+    /// <param name="vectorSize">Embedding vector size. If provided, the database will be used ARRAY type to store embeddings. If not, the database will fall back to LIST.</param>
+    private DuckDBMemoryStore(DuckDBConnection connection, int? vectorSize = null)
     {
-        this._dbConnector = new Database();
+        this._dbConnector = new Database(vectorSize);
         this._dbConnection = connection;
         this._disposedValue = false;
     }
