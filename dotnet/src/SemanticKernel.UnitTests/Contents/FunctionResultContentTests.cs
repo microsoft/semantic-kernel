@@ -100,8 +100,7 @@ public class FunctionResultContentTests
 
         // Assert
         Assert.NotNull(chatMessageContent);
-        Assert.Equal(2, chatMessageContent.Items.Count);
-        Assert.Single(chatMessageContent.Items.OfType<FunctionResultContent>());
-        Assert.Same(sut, chatMessageContent.Items.OfType<FunctionResultContent>().Single());
+        Assert.Single(chatMessageContent.Items);
+        Assert.Same(sut, chatMessageContent.Items[0]);
     }
 }
