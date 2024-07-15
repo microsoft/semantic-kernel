@@ -1206,6 +1206,38 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal(options.KernelArguments, kernelFunctionContext.Arguments);
     }
 
+    [Fact]
+    public async Task ItShouldIncludeRequestDataWhenOperationCanceledExceptionIsThrownAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ExceptionToThrow = new OperationCanceledException();
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            [],
+            payload: null
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "payload", JsonSerializer.Serialize(new { value = "fake-value" }) },
+            { "content-type", "application/json" }
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act & Assert
+        var canceledException = await Assert.ThrowsAsync<OperationCanceledException>(() => sut.RunAsync(operation, arguments));
+        Assert.Equal("The operation was canceled.", canceledException.Message);
+        Assert.Equal("POST", canceledException.Data["http.request.method"]);
+        Assert.Equal("https://fake-random-test-host/fake-path", canceledException.Data["url.full"]);
+        Assert.Equal("{\"value\":\"fake-value\"}", canceledException.Data["http.request.body"]);
+    }
+
     public class SchemaTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
@@ -1302,6 +1334,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         public HttpResponseMessage ResponseToReturn { get; set; }
 
+        public Exception? ExceptionToThrow { get; set; }
+
         public HttpMessageHandlerStub()
         {
             this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -1312,6 +1346,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (this.ExceptionToThrow is not null)
+            {
+                throw this.ExceptionToThrow;
+            }
+
             this.RequestMessage = request;
             this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
 

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -17,7 +18,7 @@ public class RepairServiceTests
     {
         // Arrange
         var kernel = new Kernel();
-        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
+        using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
@@ -73,7 +74,7 @@ public class RepairServiceTests
     {
         // Arrange
         var kernel = new Kernel();
-        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
+        using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
@@ -108,11 +109,53 @@ public class RepairServiceTests
     }
 
     [Fact(Skip = "This test is for manual verification.")]
+    public async Task KernelFunctionCanceledExceptionIncludeRequestInfoAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
+        using HttpClient httpClient = new();
+
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
+            "RepairService",
+            stream,
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+
+        var arguments = new KernelArguments
+        {
+            ["payload"] = """{ "title": "Engine oil change", "description": "Need to drain the old engine oil and replace it with fresh oil.", "assignedTo": "", "date": "", "image": "" }"""
+        };
+
+        var id = 99999;
+
+        // Update Repair
+        arguments = new KernelArguments
+        {
+            ["payload"] = $"{{ \"id\": {id}, \"assignedTo\": \"Karin Blair\", \"date\": \"2024-04-16\", \"image\": \"https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg\" }}"
+        };
+
+        try
+        {
+            httpClient.Timeout = TimeSpan.FromMilliseconds(10); // Force a timeout
+
+            await plugin["updateRepair"].InvokeAsync(kernel, arguments);
+            Assert.Fail("Expected KernelFunctionCanceledException");
+        }
+        catch (KernelFunctionCanceledException ex)
+        {
+            Assert.Equal("The invocation of function 'updateRepair' was canceled.", ex.Message);
+            Assert.NotNull(ex.InnerException);
+            Assert.Equal("Patch", ex.InnerException.Data["http.request.method"]);
+            Assert.Equal("https://piercerepairsapi.azurewebsites.net/repairs", ex.InnerException.Data["url.full"]);
+        }
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task UseDelegatingHandlerAsync()
     {
         // Arrange
         var kernel = new Kernel();
-        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
+        using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
 
         using var httpHandler = new HttpClientHandler();
         using var customHandler = new CustomHandler(httpHandler);
