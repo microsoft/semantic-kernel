@@ -46,7 +46,7 @@ public sealed class OpenAIAudioToTextTests()
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = "Re-enable when Azure OpenAPI service is available.")]
     public async Task AzureOpenAIAudioToTextTestAsync()
     {
         // Arrange
