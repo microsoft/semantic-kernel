@@ -184,7 +184,7 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
         return records
 
     @override
-    async def create_collection(self, **kwargs) -> SearchIndex:
+    async def create_collection(self, **kwargs) -> None:
         """Create a new collection in Azure AI Search.
 
         Args:
@@ -197,9 +197,10 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
         """
         if index := kwargs.pop("index", None):
             if isinstance(index, SearchIndex):
-                return await self.search_index_client.create_index(index=index, **kwargs)
+                await self.search_index_client.create_index(index=index, **kwargs)
+                return
             raise MemoryConnectorException("Invalid index type supplied.")
-        return await self.search_index_client.create_index(
+        await self.search_index_client.create_index(
             index=data_model_definition_to_azure_ai_search_index(
                 collection_name=self.collection_name,
                 definition=self.data_model_definition,

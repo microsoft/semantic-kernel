@@ -48,6 +48,7 @@
         "endregion",
         "serde",
         "datamodel",
-        "vectorstoremodel"
+        "vectorstoremodel",
+        "qdrant"
     ]
 }

@@ -18,6 +18,7 @@ class DistanceFunction(str, Enum):
     COSINE = "cosine"
     DOT_PROD = "dot_prod"
     EUCLIDEAN = "euclidean"
+    MANHATTAN = "manhattan"
 
 
 @dataclass
