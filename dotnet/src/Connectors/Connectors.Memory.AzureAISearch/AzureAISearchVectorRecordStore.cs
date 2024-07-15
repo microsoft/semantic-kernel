@@ -33,6 +33,24 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         typeof(string)
     ];
 
+    /// <summary>A set of types that data properties on the provided model may have.</summary>
+    private static readonly HashSet<Type> s_supportedDataTypes =
+    [
+        typeof(string),
+        typeof(int),
+        typeof(long),
+        typeof(double),
+        typeof(float),
+        typeof(bool),
+        typeof(DateTimeOffset),
+        typeof(int?),
+        typeof(long?),
+        typeof(double?),
+        typeof(float?),
+        typeof(bool?),
+        typeof(DateTimeOffset?),
+    ];
+
     /// <summary>A set of types that vectors on the provided model may have.</summary>
     /// <remarks>
     /// Azure AI Search is adding support for more types than just float32, but these are not available for use via the
@@ -103,6 +121,7 @@ public sealed class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore
         // Validate property types and store for later use.
         var jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
         this._keyPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(jsonSerializerOptions, properties.keyProperty);
 
