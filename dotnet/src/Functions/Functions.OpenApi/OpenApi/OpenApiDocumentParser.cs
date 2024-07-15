@@ -28,7 +28,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null) : IOpenApiDocumentParser
 {
     /// <inheritdoc/>
-    public async Task<(RestApiInfo, IList<RestApiOperation>)> ParseAsync(
+    public async Task<RestApiSpecification> ParseAsync(
         Stream stream,
         bool ignoreNonCompliantErrors = false,
         IList<string>? operationsToExclude = null,
@@ -42,7 +42,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return (ExtractRestApiInfo(result.OpenApiDocument), ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
+        return new(ExtractRestApiInfo(result.OpenApiDocument), ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
     }
 
     #region private
