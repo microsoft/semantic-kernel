@@ -20,7 +20,7 @@ public static class OpenApiKernelExtensions
     // TODO: Revise XML comments
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI specifciation and adds it to the kernel's plugins collection.
+    /// Creates a plugin from an OpenAPI specification and adds it to the kernel's plugins collection.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -41,7 +41,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI specifciation and adds it to the kernel's plugins collection.
+    /// Creates a plugin from an OpenAPI specification and adds it to the kernel's plugins collection.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -62,7 +62,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI specifciation and adds it to the kernel's plugins collection.
+    /// Creates a plugin from an OpenAPI specification and adds it to the kernel's plugins collection.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -83,7 +83,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI specifciation.
+    /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -120,7 +120,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI specifciation.
+    /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
@@ -161,7 +161,7 @@ public static class OpenApiKernelExtensions
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI specifciation.
+    /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="pluginName">Plugin name.</param>
