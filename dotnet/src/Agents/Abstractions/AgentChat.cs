@@ -214,7 +214,6 @@ public abstract class AgentChat
             {
                 this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, message);
 
-                // %%% Broadcast everything
                 messages.Add(message);
 
                 // Add to primary history
