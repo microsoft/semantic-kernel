@@ -11,9 +11,9 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Data;
 
 /// <summary>
-/// Contains tests for the <see cref="VolatileVectorRecordStore{TRecord}"/> class.
+/// Contains tests for the <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
-public class VolatileVectorRecordStoreTests
+public class VolatileVectorStoreRecordCollectionTests
 {
     private const string TestCollectionName = "testcollection";
     private const string TestRecordKey1 = "testid1";
@@ -23,7 +23,7 @@ public class VolatileVectorRecordStoreTests
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, SinglePropsModel>> _collectionStore;
 
-    public VolatileVectorRecordStoreTests()
+    public VolatileVectorStoreRecordCollectionTests()
     {
         this._collectionStore = new();
     }
@@ -205,9 +205,9 @@ public class VolatileVectorRecordStoreTests
         };
     }
 
-    private VolatileVectorRecordStore<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
+    private VolatileVectorStoreRecordCollection<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
     {
-        return new VolatileVectorRecordStore<SinglePropsModel>(
+        return new VolatileVectorStoreRecordCollection<SinglePropsModel>(
             this._collectionStore,
             TestCollectionName,
             new()

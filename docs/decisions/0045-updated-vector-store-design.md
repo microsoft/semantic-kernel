@@ -18,7 +18,7 @@ The current abstractions are experimental and the purpose of this ADR is to prog
 
 ### Problems with current design
 
-1. The `IMemoryStore` interface has four responsibilities with different cardinalities.
+1. The `IMemoryStore` interface has four responsibilities with different cardinalities. Some are schema aware and others schema agnostic.
 2. The `IMemoryStore` interface only supports a fixed schema for data storage, retrieval and search, which limits its usability by customers with existing data sets.
 2. The `IMemoryStore` implementations are opinionated around key encoding / decoding and collection name sanitization, which limits its usability by customers with existing data sets.
 
@@ -70,10 +70,10 @@ interface IMemoryStore
 
 ### Actions
 
-1. The `IMemoryStore` should be split into four different interfaces, one for each responsibility.
+1. The `IMemoryStore` should be split into different interfaces, so that schema aware and schema agnostic operations are separated.
 2. The **Data Storage and Retrieval** and **Vector Search** areas should allow typed access to data and support any schema that is currently available in the customer's data store.
-3. The collection / index create functionality should allow developers to create their own implementations and support creating first party collections for built in functionality. Each implementation would be for a specific schema and data store type.
-4. The collection / index list/exists/delete functionality should allow management of any collection regardless of schema. There should be one implementation for each data store type.
+3. The collection / index create functionality should allow developers to use a common definition that is part of the abstraction to create collections.
+4. The collection / index list/exists/delete functionality should allow management of any collection regardless of schema.
 5. Remove opinionated behaviors from connectors. The opinionated behavior limits the ability of these connectors to be used with pre-existing vector databases. As far as possible these behaviors should be moved into decorators or be injectable.  Examples of opinionated behaviors:
     1. The AzureAISearch connector encodes keys before storing and decodes them after retrieval since keys in Azure AI Search supports a limited set of characters.
     2. The AzureAISearch connector sanitizes collection names before using them, since Azure AI Search supports a limited set of characters.
@@ -282,7 +282,7 @@ Footnotes:
 |Id Type|String|UUID|string with collection name prefix|string||string|UUID|64Bit Int / UUID / ULID|64Bit Unsigned Int / UUID|Int64 / varchar|
 |Supported Vector Types|[Collection(Edm.Byte) / Collection(Edm.Single) / Collection(Edm.Half) / Collection(Edm.Int16) / Collection(Edm.SByte)](https://learn.microsoft.com/en-us/rest/api/searchservice/supported-data-types)|float32|FLOAT32 and FLOAT64|||[Rust f32](https://docs.pinecone.io/troubleshooting/embedding-values-changed-when-upserted)||[single-precision (4 byte float) / half-precision (2 byte float) / binary (1bit) / sparse vectors (4 bytes)](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|UInt8 / Float32|Binary / Float32 / Float16 / BFloat16 / SparseFloat|
 |Supported Distance Functions|[Cosine / dot prod / euclidean dist (l2 norm)](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#similarity-metrics-used-to-measure-nearness)|[Cosine dist / dot prod / Squared L2 dist / hamming (num of diffs) / manhattan dist](https://weaviate.io/developers/weaviate/config-refs/distances#available-distance-metrics)|[Euclidean dist (L2) / Inner prod (IP) / Cosine dist](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/)|[Squared L2 / Inner prod / Cosine similarity](https://docs.trychroma.com/guides#changing-the-distance-function)||[cosine sim / euclidean dist / dot prod](https://docs.pinecone.io/reference/api/control-plane/create_index)||[L2 dist / inner prod / cosine dist / L1 dist / Hamming dist / Jaccard dist (NB: Specified at query time, not index creation time)](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|[Dot prod / Cosine sim / Euclidean dist (L2) / Manhattan dist](https://qdrant.tech/documentation/concepts/search/)|[Cosine sim / Euclidean dist / Inner Prod](https://milvus.io/docs/index-vector-fields.md)|
-|Supported index types|[Exhaustive KNN / HNSW](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#algorithms-used-in-vector-search)|[HNSW / Flat / Dynamic](https://weaviate.io/developers/weaviate/config-refs/schema/vector-index)|[HNSW / FLAT](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/#create-a-vector-field)|[HNSW not configurable](https://cookbook.chromadb.dev/core/concepts/#vector-index-hnsw-index)||[PGA](https://www.pinecone.io/blog/hnsw-not-enough/)||[HNSW / IVFFlat](https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing)|[HNSW for dense](https://qdrant.tech/documentation/concepts/indexing/#vector-index)|<p>[In Memory: FLAT / IVF_FLAT / IVF_SQ8 / IVF_PQ / HNSW / SCANN](https://milvus.io/docs/index.md)</p><p>[On Disk: DiskANN](https://milvus.io/docs/disk_index.md)</p><p>[GPU: GPU_CAGRA / GPU_IVF_FLAT / GPU_IVF_PQ / GPU_BRUTE_FORCE](https://milvus.io/docs/gpu_index.md)</p>|
+|Supported index types|[Exhaustive KNN (FLAT) / HNSW](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#algorithms-used-in-vector-search)|[HNSW / Flat / Dynamic](https://weaviate.io/developers/weaviate/config-refs/schema/vector-index)|[HNSW / FLAT](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/#create-a-vector-field)|[HNSW not configurable](https://cookbook.chromadb.dev/core/concepts/#vector-index-hnsw-index)||[PGA](https://www.pinecone.io/blog/hnsw-not-enough/)||[HNSW / IVFFlat](https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing)|[HNSW for dense](https://qdrant.tech/documentation/concepts/indexing/#vector-index)|<p>[In Memory: FLAT / IVF_FLAT / IVF_SQ8 / IVF_PQ / HNSW / SCANN](https://milvus.io/docs/index.md)</p><p>[On Disk: DiskANN](https://milvus.io/docs/disk_index.md)</p><p>[GPU: GPU_CAGRA / GPU_IVF_FLAT / GPU_IVF_PQ / GPU_BRUTE_FORCE](https://milvus.io/docs/gpu_index.md)</p>|
 
 Footnotes:
 - HNSW = Hierarchical Navigable Small World (HNSW performs an [approximate nearest neighbor (ANN)](https://learn.microsoft.com/en-us/azure/search/vector-search-overview#approximate-nearest-neighbors) search)
@@ -310,7 +310,7 @@ Footnotes:
 
 Mapping between data models and the storage models can also require custom logic depending on the type of data model and storage model involved.
 
-I'm therefore proposing that we allow mappers to be injectable for each `VectorRecordStore` instance. The interfaces for these would vary depending
+I'm therefore proposing that we allow mappers to be injectable for each `VectorStoreCollection` instance. The interfaces for these would vary depending
 on the storage models used by each vector store and any unique capabilities that each vector store may have, e.g. qdrant can operate in `single` or
 `multiple named vector` modes, which means the mapper needs to know whether to set a single vector or fill a vector map.
 
@@ -390,7 +390,7 @@ consistency and scalability.
 |Criteria|Current SK Implementation|Proposed SK Implementation|Spring AI|LlamaIndex|Langchain|
 |-|-|-|-|-|-|
 |Support for Custom Schemas|N|Y|N|N|N|
-|Naming of store|MemoryStore|VectorRecordStore, VectorCollectionCreate, VectorCollectionNonSchema, VectorCollectionStore, VectorStore|VectorStore|VectorStore|VectorStore|
+|Naming of store|MemoryStore|VectorStore, VectorStoreCollection|VectorStore|VectorStore|VectorStore|
 |MultiVector support|N|Y|N|N|N|
 |Support Multiple Collections via SDK params|Y|Y|N (via app config)|Y|Y|
 
@@ -580,6 +580,39 @@ internal class VectorStore<TRecord>(IVectorCollectionCreate create, IVectorColle
 
 ```
 
+#### Option 6 - Collection store acts as factory for record store.
+
+`IVectorStore` acts as a factory for `IVectorStoreCollection`, and any schema agnostic multi-collection operations are kept on `IVectorStore`.
+
+
+```cs
+public interface IVectorStore
+{
+    IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null);
+    IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default));
+}
+
+public interface IVectorStoreCollection<TKey, TRecord>
+{
+    public string Name { get; }
+
+    // Collection Operations
+    Task CreateCollectionAsync();
+    Task<bool> CreateCollectionIfNotExistsAsync();
+    Task<bool> CollectionExistsAsync();
+    Task DeleteCollectionAsync();
+
+    // Data manipulation
+    Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task DeleteAsync(TKey key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
+}
+```
+
+
 #### Decision Outcome
 
 Option 1 is problematic on its own, since we have to allow consumers to create custom implementations of collection create for break glass scenarios. With
@@ -597,14 +630,10 @@ as input, e.g. Azure-ML YAML. Therefore separating create, which may have many i
 Option 3 provides us this separation, but Option 4 + 5 builds on top of this, and allows us to combine different implementations together for simpler
 consumption.
 
-Chosen option: 4 + 5.
+Chosen option: 6
 
-- Collection create, configuration and supported options vary considerably across different schemas and database types.
-- Collection list, exists and delete is the same across different schemas, but varies by database type.
-- Vector storage, even with custom schemas can be supported using a single implementation per database type.
-- We will need to support multiple collection create implementations per store type, a single collection nonschema implementation per store type, and a single vector store implementation per store type.
-- At the same time we can layer interfaces on top that allow easy combined access to collection and record management.
-
+- Easy to use, and similar to many SDk implementations.
+- Can pass a single object around for both collection and record access.
 
 ###  Question 2: Collection name and key value normalization in store, decorator or via injection.
 
@@ -614,7 +643,7 @@ Chosen option: 4 + 5.
 - Cons: The normalization needs to vary separately from the record store, so this will not work
 
 ```cs
-    public class AzureAISearchVectorRecordStore<TRecord> : IVectorRecordStore<TRecord>
+    public class AzureAISearchVectorStoreCollection<TRecord> : IVectorStoreCollection<TRecord>
     {
         ...
 
@@ -637,24 +666,24 @@ Chosen option: 4 + 5.
 - Pros: No code executed when no normalization required.
 - Pros: Easy to package matching encoders/decoders together.
 - Pros: Easier to obsolete encoding/normalization as a concept.
-- Cons: Not a major con, but need to implement the full VectorRecordStore interface, instead of e.g. just providing the two translation functions, if we go with option 3.
+- Cons: Not a major con, but need to implement the full VectorStoreCollection interface, instead of e.g. just providing the two translation functions, if we go with option 3.
 - Cons: Hard to have a generic implementation that can work with any model, without either changing the data in the provided object on upsert or doing cloning in an expensive way.
 
 ```cs
-    new KeyNormalizingAISearchVectorRecordStore<MyModel>(
+    new KeyNormalizingAISearchVectorStoreCollection<MyModel>(
         "keyField",
-         new AzureAISearchVectorRecordStore<MyModel>(...));
+         new AzureAISearchVectorStoreCollection<MyModel>(...));
 ```
 
 #### Option 3 - Normalization via optional function parameters to record store constructor
 
 - Pros: Allows normalization to vary separately from the record store.
-- Pros: No need to implement the full VectorRecordStore interface.
+- Pros: No need to implement the full VectorStoreCollection interface.
 - Pros: Can modify values on serialization without changing the incoming record, if supported by DB SDK.
 - Cons: Harder to package matching encoders/decoders together.
 
 ```cs
-public class AzureAISearchVectorRecordStore<TRecord>(StoreOptions options);
+public class AzureAISearchVectorStoreCollection<TRecord>(StoreOptions options);
 
 public class StoreOptions
 {
@@ -686,7 +715,7 @@ provide their own encoding / decoding behavior.
 #### Option 1 - Collection name as method param
 
 ```cs
-public class MyVectorRecordStore()
+public class MyVectorStoreCollection()
 {
     public async Task<TRecord?> GetAsync(string collectionName, string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 }
@@ -695,7 +724,7 @@ public class MyVectorRecordStore()
 #### Option 2 - Collection name via constructor
 
 ```cs
-public class MyVectorRecordStore(string defaultCollectionName)
+public class MyVectorStoreCollection(string defaultCollectionName)
 {
     public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 }
@@ -704,7 +733,7 @@ public class MyVectorRecordStore(string defaultCollectionName)
 #### Option 3 - Collection name via either
 
 ```cs
-public class MyVectorRecordStore(string defaultCollectionName)
+public class MyVectorStoreCollection(string defaultCollectionName)
 {
     public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 }
@@ -717,7 +746,7 @@ public class GetRecordOptions
 
 #### Decision Outcome
 
-Chosen option 3, to allow developers more choice.
+Chosen option 2. None of the other options work with the decision outcome of Question 1, since that design requires the `VectorStoreCollection` to be tied to a single collection instance.
 
 ### Question 4: How to normalize ids across different vector stores where different types are supported.
 
@@ -846,117 +875,70 @@ interface IMemoryCollectionCreateService {}
 ### Option 3 - VectorStore
 
 ```cs
-interface IVectorRecordStore {}
+interface IVectorRecordStore<TRecord> {}
 interface IVectorCollectionNonSchema {}
 interface IVectorCollectionCreate {}
 interface IVectorCollectionStore {}: IVectorCollectionCreate, IVectorCollectionNonSchema
-interface IVectorStore {}: IVectorCollectionStore, IVectorRecordStore
+interface IVectorStore<TRecord> {}: IVectorCollectionStore, IVectorRecordStore<TRecord>
+```
+
+### Option 4 - VectorStore + VectorStoreCollection
+
+```cs
+interface IVectorStore
+{
+    IVectorStoreCollection GetCollection()
+}
+interface IVectorStoreCollection
+{
+    Get()
+    Delete()
+    Upsert()
+}
 ```
 
 #### Decision Outcome
 
-Chosen option 3. The word memory is broad enough to encompass any data, so using it seems arbitrary. All competitors are using the term vector store, so using something similar is good for recognition.
+Chosen option 4. The word memory is broad enough to encompass any data, so using it seems arbitrary. All competitors are using the term vector store, so using something similar is good for recognition.
+Option 4 also matches our design as chosen in question 1.
 
 ## Usage Examples
-
-Common Code across all examples
-
-```cs
-class CacheEntryModel(string prompt, string result, ReadOnlyMemory<float> promptEmbedding);
-
-class SemanticTextMemory<TDataType>(IVectorRecordStore<TDataType> recordStore, IVectorCollectionStore collectionStore, ITextEmbeddingGenerationService embeddingGenerator): ISemanticTextMemory;
-
-class CacheSetFunctionFilter(ISemanticTextMemory<CacheEntryModel> memory); // Saves results to cache.
-class CacheGetPromptFilter(ISemanticTextMemory<CacheEntryModel> memory);   // Check cache for entries.
-
-var builder = Kernel.CreateBuilder();
-```
-
-### DI Framework: Named Instances
-
-Similar to HttpClient, register implementations using names, that can only be constructed again
-using a specific factory implementation.
-
-```cs
-builder
-    .AddAzureOpenAITextEmbeddingGeneration(textEmbeddingDeploymentName, azureAIEndpoint, apiKey)
-
-    // Collection Registration:
-    // Variant 1: Register just create.
-    .AddNamedAzureAISearchCollectionCreate(name: "CacheCreate", azureAISearchEndpoint, apiKey, createConfiguration)         // Config
-    .AddNamedAzureAISearchCollectionCreate(name: "CacheCreate", sp => new CacheCreate(...));                                // Custom implementation
-    // Create combined collection management that references the previously registered create instance.
-    .AddNamedAzureAISearchCollectionStore(name: "Cache", azureAISearchEndpoint, apiKey, createName: "CacheCreate")
-
-    // Variant 2: Register collection store in one line with config or custom create implementation.
-    .AddNamedAzureAISearchCollectionStore(name: "Cache", azureAISearchEndpoint, apiKey, createConfiguration)              // Config
-    .AddNamedAzureAISearchCollectionStore(name: "Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...))       // Custom implementation
-
-    // Record Registration with variants 1 and 2:
-    // Add record stores.
-    .AddAzureAISearchRecordStore<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey)
-
-    // Variant 3: Register collection and record store in one line with config or custom create implementation.
-    // Does all of the preious variants in one line.
-    .AddAzureAISearchVectorStore<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey, createConfiguration)         // Config
-    .AddAzureAISearchVectorStore<CacheEntryModel>(name: "Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...))  // Custom implementation
-
-    // Add semantic text memory referencing collection and record stores.
-    // This would register ISemanticTextMemory<CacheEntryModel> in the services container.
-    .AddSemanticTextMemory<CacheEntryModel>(collectionStoreName: "Cache", recordServiceName: "Cache");
-
-// Add filter to retrieve items from cache and one to add items to cache.
-// Since these filters depend on ISemanticTextMemory<CacheEntryModel> and that is already registered, it should get matched automatically.
-builder.Services.AddTransient<IPromptRenderFilter, CacheGetPromptFilter>();
-builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>();
-
-var kernel =
-    .Build();
-
-var vectorStoreFactory = kernel.Services.GetRequiredService<IVectorStoreFactory>();
-var cacheCollectionStore = vectorStoreFactory.CreateCollectionStore(name: "Cache");
-var cacheRecordStore = vectorStoreFactory.CreateRecordStore<CacheEntryModel>(name: "Cache");
-```
-
-### DI Framework: Registration based on consumer type.
-
-Similar to `AddHttpClient<TTargetService>`, this approach will register a specific implementation of
-the storage implementations, for a provided consumer type.
-
-```cs
-builder
-    .AddAzureOpenAITextEmbeddingGeneration(textEmbeddingDeploymentName, azureAIEndpoint, apiKey)
-    
-    // Collection and record registration with config or custom create implementation.
-    // This will register both IVectorCollectionStore and IVectorRecordStore<CacheEntryModel> and tie it to usage with SemanticTextMemory<CacheEntryModel>.
-    .AddAzureAISearchStorage<SemanticTextMemory<CacheEntryModel>>(azureAISearchEndpoint, apiKey, createConfiguration)           // Config
-    .AddAzureAISearchStorage<SemanticTextMemory<CacheEntryModel>>(azureAISearchEndpoint, apiKey, sp => new CacheCreate(...));   // Custom implementation
-
-// Add Semantic Cache Memory for the cache entry model.
-builder.Services.AddTransient<ISemanticTextMemory<CacheEntryModel>, SemanticTextMemory<CacheEntryModel>>();
-
-// Add filter to retrieve items from cache and one to add items to cache.
-// Since these filters depend on ISemanticTextMemory<CacheEntryModel> and that is already registered, it should get matched automatically.
-builder.Services.AddTransient<IPromptRenderFilter, CacheGetPromptFilter>();
-builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>();
-```
 
 ### DI Framework: .net 8 Keyed Services
 
 ```cs
-builder
-    .AddAzureOpenAITextEmbeddingGeneration(textEmbeddingDeploymentName, azureAIEndpoint, apiKey)
+class CacheEntryModel(string prompt, string result, ReadOnlyMemory<float> promptEmbedding);
 
-    // Collection and record registration with config or custom create implementation.
-    .AddAzureAISearchVectorStoreKeyedTransient<CacheEntryModel>("Cache", azureAISearchEndpoint, apiKey, createConfiguration)
-    .AddAzureAISearchVectorStoreKeyedTransient<CacheEntryModel>("Cache", azureAISearchEndpoint, apiKey, sp => new CacheCreate(...));
+class SemanticTextMemory(IVectorStore configuredVectorStore, VectorStoreRecordDefinition? vectorStoreRecordDefinition): ISemanticTextMemory
+{
+    public async Task SaveInformation<TDataType>(string collectionName, TDataType record)
+    {
+        var collection = vectorStore.GetCollection<TDataType>(collectionName, vectorStoreRecordDefinition);
+        if (!await collection.CollectionExists())
+        {
+            await collection.CreateCollection();
+        }
+        await collection.UpsertAsync(record);
+    }
+}
+
+class CacheSetFunctionFilter(ISemanticTextMemory memory); // Saves results to cache.
+class CacheGetPromptFilter(ISemanticTextMemory memory);   // Check cache for entries.
+
+var builder = Kernel.CreateBuilder();
+
+builder
+    // Existing registration:
+    .AddAzureOpenAITextEmbeddingGeneration(textEmbeddingDeploymentName, azureAIEndpoint, apiKey, serviceId: "AzureOpenAI:text-embedding-ada-002")
+
+    // Register an IVectorStore implementation under the given key.
+    .AddAzureAISearch("Cache", azureAISearchEndpoint, apiKey, new Options() { withEmbeddingGeneration = true });
 
 // Add Semantic Cache Memory for the cache entry model.
-builder.Services.AddTransient<ISemanticTextMemory<CacheEntryModel>>(sp => {
-    return new SemanticTextMemory<CacheEntryModel>(
-        sp.GetKeyedService<IVectorRecordStore<CacheEntryModel>>("Cache"),
-        sp.GetKeyedService<IVectorCollectionStore>("Cache"),
-        sp.GetRequiredService<ITextEmbeddingGenerationService>());
+builder.Services.AddTransient<ISemanticTextMemory>(sp => {
+    return new SemanticTextMemory(
+        sp.GetKeyedService<IVectorStore>("Cache"),
+        cacheRecordDefinition);
 });
 
 // Add filter to retrieve items from cache and one to add items to cache.
@@ -969,9 +951,9 @@ builder.Services.AddTransient<IFunctionInvocationFilter, CacheSetFunctionFilter>
 
 ### Record Management
 
-1. Release VectorRecordStore public interface and implementations for Azure AI Search, Qdrant and Redis.
+1. Release VectorStoreCollection public interface and implementations for Azure AI Search, Qdrant and Redis.
 2. Add support for registering record stores with SK container to allow automatic dependency injection.
-3. Add VectorRecordStore implementations for remaining stores.
+3. Add VectorStoreCollection implementations for remaining stores.
 
 ### Collection Management
 

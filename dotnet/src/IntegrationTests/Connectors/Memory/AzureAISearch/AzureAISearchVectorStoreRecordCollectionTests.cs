@@ -15,11 +15,11 @@ using static SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch.Azu
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 
 /// <summary>
-/// Integration tests for <see cref="AzureAISearchVectorRecordStore{TRecord}"/> class.
+/// Integration tests for <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> class.
 /// Tests work with Azure AI Search Instance.
 /// </summary>
 [Collection("AzureAISearchVectorStoreCollection")]
-public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output, AzureAISearchVectorStoreFixture fixture) : IClassFixture<AzureAISearchVectorStoreFixture>
+public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHelper output, AzureAISearchVectorStoreFixture fixture) : IClassFixture<AzureAISearchVectorStoreFixture>
 {
     // If null, all tests will be enabled
     private const string SkipReason = null; //"Requires Azure AI Search Service instance up and running";
@@ -30,11 +30,11 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange
-        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
+        var options = new AzureAISearchVectorStoreRecordCollectionOptions<Hotel>
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
         // Act
         var hotel = CreateTestHotel("Upsert-1");
@@ -64,7 +64,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     public async Task ItCanUpsertManyDocumentsToVectorStoreAsync()
     {
         // Arrange
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
 
         // Act
         var results = sut.UpsertBatchAsync(
@@ -98,11 +98,11 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     public async Task ItCanGetDocumentFromVectorStoreAsync(bool includeVectors, bool useRecordDefinition)
     {
         // Arrange
-        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
+        var options = new AzureAISearchVectorStoreRecordCollectionOptions<Hotel>
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
         // Act
         var getResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = includeVectors });
@@ -130,7 +130,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
@@ -154,11 +154,11 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange
-        var options = new AzureAISearchVectorRecordStoreOptions<Hotel>
+        var options = new AzureAISearchVectorStoreRecordCollectionOptions<Hotel>
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
         await sut.UpsertAsync(CreateTestHotel("Remove-1"));
 
         // Act
@@ -174,7 +174,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-1"));
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-2"));
         await sut.UpsertAsync(CreateTestHotel("RemoveMany-3"));
@@ -193,7 +193,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
     {
         // Arrange
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName);
 
         // Act & Assert
         Assert.Null(await sut.GetAsync("BaseSet-5", new GetRecordOptions { IncludeVectors = true }));
@@ -204,7 +204,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     {
         // Arrange
         var searchIndexClient = new SearchIndexClient(new Uri("https://localhost:12345"), new AzureKeyCredential("12345"));
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(searchIndexClient, fixture.TestIndexName);
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(searchIndexClient, fixture.TestIndexName);
 
         // Act & Assert
         await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
@@ -215,7 +215,7 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     {
         // Arrange
         var searchIndexClient = new SearchIndexClient(new Uri(fixture.Config.ServiceUrl), new AzureKeyCredential("12345"));
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(searchIndexClient, fixture.TestIndexName);
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(searchIndexClient, fixture.TestIndexName);
 
         // Act & Assert
         await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
@@ -225,8 +225,8 @@ public sealed class AzureAISearchVectorRecordStoreTests(ITestOutputHelper output
     public async Task ItThrowsMappingExceptionForFailedMapperAsync()
     {
         // Arrange
-        var options = new AzureAISearchVectorRecordStoreOptions<Hotel> { MapperType = AzureAISearchRecordMapperType.JsonObjectCustomMapper, JsonObjectCustomMapper = new FailingMapper() };
-        var sut = new AzureAISearchVectorRecordStore<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
+        var options = new AzureAISearchVectorStoreRecordCollectionOptions<Hotel> { MapperType = AzureAISearchRecordMapperType.JsonObjectCustomMapper, JsonObjectCustomMapper = new FailingMapper() };
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
         // Act & Assert
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));

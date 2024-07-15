@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Optional options when calling <see cref="IVectorRecordStore{TKey, TDataModel}.UpsertAsync"/>.
+/// Optional options when calling <see cref="IVectorStoreRecordCollection{TKey, TDataModel}.UpsertAsync"/>.
 /// Reserved for future use.
 /// </summary>
 [Experimental("SKEXP0001")]

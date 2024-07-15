@@ -14,12 +14,12 @@ using static SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant.QdrantVect
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant;
 
 /// <summary>
-/// Contains tests for the <see cref="QdrantVectorRecordStore{TRecord}"/> class.
+/// Contains tests for the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
 /// <param name="output">Used for logging.</param>
 /// <param name="fixture">Qdrant setup and teardown.</param>
 [Collection("QdrantVectorStoreCollection")]
-public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, QdrantVectorStoreFixture fixture)
+public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper output, QdrantVectorStoreFixture fixture)
 {
     [Theory]
     [InlineData(true, "singleVectorHotels", false)]
@@ -29,12 +29,12 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantVectorRecordStoreOptions<HotelInfo>
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, collectionName, options);
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         var record = this.CreateTestHotel(20);
 
@@ -64,8 +64,8 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
     public async Task ItCanUpsertAndRemoveDocumentWithGuidIdToVectorStoreAsync()
     {
         // Arrange.
-        var options = new QdrantVectorRecordStoreOptions<HotelInfoWithGuidId> { HasNamedVectors = false };
-        IVectorRecordStore<Guid, HotelInfoWithGuidId> sut = new QdrantVectorRecordStore<HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfoWithGuidId> { HasNamedVectors = false };
+        IVectorStoreRecordCollection<Guid, HotelInfoWithGuidId> sut = new QdrantVectorStoreRecordCollection<HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
 
         var record = new HotelInfoWithGuidId
         {
@@ -108,12 +108,12 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
     public async Task ItCanGetDocumentFromVectorStoreAsync(bool useRecordDefinition, bool withEmbeddings, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantVectorRecordStoreOptions<HotelInfo>
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, collectionName, options);
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         // Act.
         var getResult = await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = withEmbeddings });
@@ -149,12 +149,12 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
     public async Task ItCanGetDocumentWithGuidIdFromVectorStoreAsync(bool useRecordDefinition, bool withEmbeddings)
     {
         // Arrange.
-        var options = new QdrantVectorRecordStoreOptions<HotelInfoWithGuidId>
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfoWithGuidId>
         {
             HasNamedVectors = false,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelWithGuidIdVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorRecordStore<HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
 
         // Act.
         var getResult = await sut.GetAsync(Guid.Parse("11111111-1111-1111-1111-111111111111"), new GetRecordOptions { IncludeVectors = withEmbeddings });
@@ -180,8 +180,8 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
     public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
-        var options = new QdrantVectorRecordStoreOptions<HotelInfo> { HasNamedVectors = true };
-        var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo> { HasNamedVectors = true };
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
@@ -207,12 +207,12 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
     public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantVectorRecordStoreOptions<HotelInfo>
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, collectionName, options);
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         await sut.UpsertAsync(this.CreateTestHotel(20));
 
@@ -233,12 +233,12 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
     public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantVectorRecordStoreOptions<HotelInfo>
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, collectionName, options);
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         await sut.UpsertAsync(this.CreateTestHotel(20));
 
@@ -254,8 +254,8 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
     public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
     {
         // Arrange
-        var options = new QdrantVectorRecordStoreOptions<HotelInfo> { HasNamedVectors = false };
-        var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo> { HasNamedVectors = false };
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
 
         // Act & Assert
         Assert.Null(await sut.GetAsync(15, new GetRecordOptions { IncludeVectors = true }));
@@ -265,8 +265,8 @@ public sealed class QdrantVectorRecordStoreTests(ITestOutputHelper output, Qdran
     public async Task ItThrowsMappingExceptionForFailedMapperAsync()
     {
         // Arrange
-        var options = new QdrantVectorRecordStoreOptions<HotelInfo> { MapperType = QdrantRecordMapperType.QdrantPointStructCustomMapper, PointStructCustomMapper = new FailingMapper() };
-        var sut = new QdrantVectorRecordStore<HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo> { MapperType = QdrantRecordMapperType.QdrantPointStructCustomMapper, PointStructCustomMapper = new FailingMapper() };
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
 
         // Act & Assert
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = true }));

@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
-/// The types of mapper supported by <see cref="AzureAISearchVectorRecordStore{TRecord}"/>.
+/// The types of mapper supported by <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
 public enum AzureAISearchRecordMapperType
 {

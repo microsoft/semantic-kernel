@@ -7,9 +7,9 @@ using Microsoft.SemanticKernel.Data;
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
-/// Options when creating a <see cref="RedisVectorRecordStore{TRecord}"/>.
+/// Options when creating a <see cref="RedisVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
-public sealed class RedisVectorRecordStoreOptions<TRecord>
+public sealed class RedisVectorStoreRecordCollectionOptions<TRecord>
     where TRecord : class
 {
     /// <summary>
