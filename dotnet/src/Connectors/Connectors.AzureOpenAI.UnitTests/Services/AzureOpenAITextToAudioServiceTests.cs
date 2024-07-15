@@ -10,6 +10,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
@@ -58,7 +59,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
     public async Task GetAudioContentWithInvalidSettingsThrowsExceptionAsync()
     {
         // Arrange
-        var settingsWithInvalidVoice = new AzureOpenAITextToAudioExecutionSettings("");
+        var settingsWithInvalidVoice = new OpenAITextToAudioExecutionSettings("");
 
         var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
         await using var stream = new MemoryStream(new byte[] { 0x00, 0x00, 0xFF, 0x7F });
@@ -87,7 +88,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetAudioContentsAsync("Some text", new AzureOpenAITextToAudioExecutionSettings("Nova"));
+        var result = await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings("Nova"));
 
         // Assert
         var audioData = result[0].Data!.Value;
@@ -115,7 +116,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetAudioContentsAsync("Some text", new AzureOpenAITextToAudioExecutionSettings(voice) { ResponseFormat = format });
+        var result = await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings(voice) { ResponseFormat = format });
 
         // Assert
         var requestBody = JsonSerializer.Deserialize<JsonObject>(this._messageHandlerStub.RequestContent!);
@@ -137,7 +138,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await service.GetAudioContentsAsync("Some text", new AzureOpenAITextToAudioExecutionSettings("voice")));
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings("voice")));
     }
 
     [Fact]
@@ -149,7 +150,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await service.GetAudioContentsAsync("Some text", new AzureOpenAITextToAudioExecutionSettings() { ResponseFormat = "not supported" }));
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings() { ResponseFormat = "not supported" }));
     }
 
     [Theory]
@@ -174,7 +175,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetAudioContentsAsync("Some text", new AzureOpenAITextToAudioExecutionSettings("Nova"));
+        var result = await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings("Nova"));
 
         // Assert
         Assert.StartsWith(expectedBaseAddress, this._messageHandlerStub.RequestUri!.AbsoluteUri, StringComparison.InvariantCulture);
@@ -199,7 +200,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetAudioContentsAsync("Some text", new AzureOpenAITextToAudioExecutionSettings("Nova") { ModelId = modelInSettings });
+        var result = await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings("Nova") { ModelId = modelInSettings });
 
         // Assert
         var requestBody = JsonSerializer.Deserialize<JsonObject>(this._messageHandlerStub.RequestContent!);

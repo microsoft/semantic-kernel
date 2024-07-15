@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// Execution settings for OpenAI text-to-audio request.
 /// </summary>
 [Experimental("SKEXP0001")]
-public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
+public class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// The voice to use when generating the audio. Supported voices are alloy, echo, fable, onyx, nova, and shimmer.
@@ -98,7 +98,7 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <param name="executionSettings">Instance of <see cref="PromptExecutionSettings"/>.</param>
     /// <returns>Instance of <see cref="OpenAITextToAudioExecutionSettings"/>.</returns>
-    public static OpenAITextToAudioExecutionSettings? FromExecutionSettings(PromptExecutionSettings? executionSettings)
+    public static OpenAITextToAudioExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         if (executionSettings is null)
         {

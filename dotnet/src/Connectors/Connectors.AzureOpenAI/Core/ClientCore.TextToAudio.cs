@@ -5,6 +5,7 @@ using System.ClientModel;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Audio;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -30,7 +31,7 @@ internal partial class ClientCore
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
-        AzureOpenAITextToAudioExecutionSettings audioExecutionSettings = AzureOpenAITextToAudioExecutionSettings.FromExecutionSettings(executionSettings);
+        OpenAITextToAudioExecutionSettings audioExecutionSettings = OpenAITextToAudioExecutionSettings.FromExecutionSettings(executionSettings);
 
         var (responseFormat, mimeType) = GetGeneratedSpeechFormatAndMimeType(audioExecutionSettings.ResponseFormat);
 
@@ -71,7 +72,7 @@ internal partial class ClientCore
             _ => throw new NotSupportedException($"The format '{format}' is not supported.")
         };
 
-    private string GetModelId(AzureOpenAITextToAudioExecutionSettings executionSettings, string? modelId)
+    private string GetModelId(OpenAITextToAudioExecutionSettings executionSettings, string? modelId)
     {
         return
             !string.IsNullOrWhiteSpace(modelId) ? modelId! :
