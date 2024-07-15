@@ -53,7 +53,8 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         results = await self.get_chat_message_contents(chat_history, settings, **kwargs)
         if results:
             return results[0]
-        return None
+        # this should not happen, should error out before returning an empty list
+        return None  # pragma: no cover
 
     @abstractmethod
     def get_streaming_chat_message_contents(
@@ -98,7 +99,8 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             if streaming_chat_message_contents:
                 yield streaming_chat_message_contents[0]
             else:
-                yield None
+                # this should not happen, should error out before returning an empty list
+                yield None  # pragma: no cover
 
     def _prepare_chat_history_for_request(
         self,
