@@ -243,6 +243,6 @@ class OllamaChatCompletion(OllamaBase, TextCompletionClientBase, ChatCompletionC
             ]
 
     @override
-    def get_prompt_execution_settings_class(self) -> type[PromptExecutionSettings]:
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         """Get the request settings class."""
         return OllamaChatPromptExecutionSettings

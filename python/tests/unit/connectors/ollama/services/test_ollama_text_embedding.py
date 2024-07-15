@@ -2,6 +2,7 @@
 
 from unittest.mock import patch
 
+import numpy
 import pytest
 from numpy import array
 
@@ -57,5 +58,64 @@ async def test_embedding(mock_embedding_client, model_id, prompt):
         [prompt],
         settings=settings,
     )
+
     assert response.all() == array([0.1, 0.2, 0.3]).all()
     mock_embedding_client.assert_called_once_with(model=model_id, prompt=prompt, options=settings.options)
+
+
+@pytest.mark.asyncio
+@patch("ollama.AsyncClient.embeddings")
+async def test_embedding_list_input(mock_embedding_client, model_id, prompt):
+    """Test that the service initializes and generates embeddings correctly with a list of prompts."""
+    mock_embedding_client.return_value = {"embedding": [0.1, 0.2, 0.3]}
+    settings = OllamaEmbeddingPromptExecutionSettings()
+    settings.options = {"test_key": "test_value"}
+
+    ollama = OllamaTextEmbedding(ai_model_id=model_id)
+    responses = await ollama.generate_embeddings(
+        [prompt, prompt],
+        settings=settings,
+    )
+
+    assert len(responses) == 2
+    assert type(responses) is numpy.ndarray
+    assert all(type(response) is numpy.ndarray for response in responses)
+    assert mock_embedding_client.call_count == 2
+    mock_embedding_client.assert_called_with(model=model_id, prompt=prompt, options=settings.options)
+
+
+@pytest.mark.asyncio
+@patch("ollama.AsyncClient.embeddings")
+async def test_raw_embedding(mock_embedding_client, model_id, prompt):
+    """Test that the service initializes and generates embeddings correctly."""
+    mock_embedding_client.return_value = {"embedding": [0.1, 0.2, 0.3]}
+    settings = OllamaEmbeddingPromptExecutionSettings()
+    settings.options = {"test_key": "test_value"}
+
+    ollama = OllamaTextEmbedding(ai_model_id=model_id)
+    response = await ollama.generate_raw_embeddings(
+        [prompt],
+        settings=settings,
+    )
+
+    assert response == [[0.1, 0.2, 0.3]]
+    mock_embedding_client.assert_called_once_with(model=model_id, prompt=prompt, options=settings.options)
+
+
+@pytest.mark.asyncio
+@patch("ollama.AsyncClient.embeddings")
+async def test_raw_embedding_list_input(mock_embedding_client, model_id, prompt):
+    """Test that the service initializes and generates embeddings correctly with a list of prompts."""
+    mock_embedding_client.return_value = {"embedding": [0.1, 0.2, 0.3]}
+    settings = OllamaEmbeddingPromptExecutionSettings()
+    settings.options = {"test_key": "test_value"}
+
+    ollama = OllamaTextEmbedding(ai_model_id=model_id)
+    responses = await ollama.generate_raw_embeddings(
+        [prompt, prompt],
+        settings=settings,
+    )
+
+    assert responses == [[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]
+    assert mock_embedding_client.call_count == 2
+    mock_embedding_client.assert_called_with(model=model_id, prompt=prompt, options=settings.options)

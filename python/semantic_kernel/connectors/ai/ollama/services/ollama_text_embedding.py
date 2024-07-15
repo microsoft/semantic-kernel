@@ -103,3 +103,7 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
             result.append(response_object["embedding"])
 
         return result
+
+    @override
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        return OllamaEmbeddingPromptExecutionSettings
