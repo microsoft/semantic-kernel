@@ -159,7 +159,7 @@ internal partial class ClientCore
 
             // Make the request.
             OpenAIChatCompletion? chatCompletion = null;
-            AzureOpenAIChatMessageContent chatMessageContent;
+            OpenAIChatMessageContent chatMessageContent;
             using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentName, ModelProvider, chat, chatExecutionSettings))
             {
                 try
@@ -323,7 +323,7 @@ internal partial class ClientCore
         }
     }
 
-    internal async IAsyncEnumerable<AzureOpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+    internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
@@ -384,7 +384,7 @@ internal partial class ClientCore
                 }
 
                 var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
-                List<AzureOpenAIStreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+                List<OpenAIStreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
                 try
                 {
                     while (true)
@@ -422,7 +422,7 @@ internal partial class ClientCore
                             OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                         }
 
-                        var openAIStreamingChatMessageContent = new AzureOpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, this.DeploymentName, metadata);
+                        var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, this.DeploymentName, metadata);
 
                         foreach (var functionCallUpdate in chatCompletionUpdate.ToolCallUpdates)
                         {
@@ -586,7 +586,7 @@ internal partial class ClientCore
 
                     var lastChatMessage = chat.Last();
 
-                    yield return new AzureOpenAIStreamingChatMessageContent(lastChatMessage.Role, lastChatMessage.Content);
+                    yield return new OpenAIStreamingChatMessageContent(lastChatMessage.Role, lastChatMessage.Content);
                     yield break;
                 }
             }
@@ -765,7 +765,7 @@ internal partial class ClientCore
         {
             // Handling function results represented by the TextContent type.
             // Example: new ChatMessageContent(AuthorRole.Tool, content, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } })
-            if (message.Metadata?.TryGetValue(AzureOpenAIChatMessageContent.ToolIdProperty, out object? toolId) is true &&
+            if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolIdProperty, out object? toolId) is true &&
                 toolId?.ToString() is string toolIdString)
             {
                 return [new ToolChatMessage(toolIdString, message.Content)];
@@ -825,8 +825,8 @@ internal partial class ClientCore
             // Handling function calls supplied via either:  
             // ChatCompletionsToolCall.ToolCalls collection items or  
             // ChatMessageContent.Metadata collection item with 'ChatResponseMessage.FunctionToolCalls' key.
-            IEnumerable<ChatToolCall>? tools = (message as AzureOpenAIChatMessageContent)?.ToolCalls;
-            if (tools is null && message.Metadata?.TryGetValue(AzureOpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
+            IEnumerable<ChatToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
+            if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
             {
                 tools = toolCallsObject as IEnumerable<ChatToolCall>;
                 if (tools is null && toolCallsObject is JsonElement { ValueKind: JsonValueKind.Array } array)
@@ -917,18 +917,18 @@ internal partial class ClientCore
         throw new NotSupportedException($"Role {completion.Role} is not supported.");
     }
 
-    private AzureOpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion)
+    private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion)
     {
-        var message = new AzureOpenAIChatMessageContent(completion, this.DeploymentName, GetChatCompletionMetadata(completion));
+        var message = new OpenAIChatMessageContent(completion, this.DeploymentName, GetChatCompletionMetadata(completion));
 
         message.Items.AddRange(this.GetFunctionCallContents(completion.ToolCalls));
 
         return message;
     }
 
-    private AzureOpenAIChatMessageContent CreateChatMessageContent(ChatMessageRole chatRole, string content, ChatToolCall[] toolCalls, FunctionCallContent[]? functionCalls, IReadOnlyDictionary<string, object?>? metadata, string? authorName)
+    private OpenAIChatMessageContent CreateChatMessageContent(ChatMessageRole chatRole, string content, ChatToolCall[] toolCalls, FunctionCallContent[]? functionCalls, IReadOnlyDictionary<string, object?>? metadata, string? authorName)
     {
-        var message = new AzureOpenAIChatMessageContent(chatRole, content, this.DeploymentName, toolCalls, metadata)
+        var message = new OpenAIChatMessageContent(chatRole, content, this.DeploymentName, toolCalls, metadata)
         {
             AuthorName = authorName,
         };
@@ -1009,7 +1009,7 @@ internal partial class ClientCore
         chatMessages.Add(new ToolChatMessage(toolCall.Id, result));
 
         // Add the tool response message to the chat history.
-        var message = new ChatMessageContent(role: AuthorRole.Tool, content: result, metadata: new Dictionary<string, object?> { { AzureOpenAIChatMessageContent.ToolIdProperty, toolCall.Id } });
+        var message = new ChatMessageContent(role: AuthorRole.Tool, content: result, metadata: new Dictionary<string, object?> { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } });
 
         if (toolCall.Kind == ChatToolCallKind.Function)
         {

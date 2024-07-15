@@ -202,7 +202,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
         // Current way of handling function calls manually using connector specific chat message content class.
-        var toolCalls = ((AzureOpenAIChatMessageContent)result).ToolCalls.OfType<ChatToolCall>().ToList();
+        var toolCalls = ((OpenAIChatMessageContent)result).ToolCalls.OfType<ChatToolCall>().ToList();
 
         while (toolCalls.Count > 0)
         {
@@ -220,12 +220,12 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
                 chatHistory.Add(new ChatMessageContent(
                     AuthorRole.Tool,
                     content,
-                    metadata: new Dictionary<string, object?>(1) { { AzureOpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
+                    metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
             }
 
             // Sending the functions invocation results back to the LLM to get the final response
             result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            toolCalls = ((AzureOpenAIChatMessageContent)result).ToolCalls.OfType<ChatToolCall>().ToList();
+            toolCalls = ((OpenAIChatMessageContent)result).ToolCalls.OfType<ChatToolCall>().ToList();
         }
 
         // Assert
