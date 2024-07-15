@@ -278,7 +278,7 @@ internal static class AssistantThreadActions
                             {
                                 ++messageCount;
 
-                                yield return (IsVisible: false, Message: content);
+                                yield return (IsVisible: true, Message: content);
                             }
                         }
                     }
