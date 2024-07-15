@@ -17,9 +17,9 @@ def test_init_empty_service_id(model_id):
     assert ollama.service_id == model_id
 
 
-def test_custom_client(custom_client):
+def test_custom_client(model_id, custom_client):
     """Test that the service initializes correctly with a custom client."""
-    ollama = OllamaTextEmbedding(client=custom_client)
+    ollama = OllamaTextEmbedding(ai_model_id=model_id, client=custom_client)
     assert ollama.client == custom_client
 
 
