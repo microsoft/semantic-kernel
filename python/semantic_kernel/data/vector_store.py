@@ -2,11 +2,12 @@
 
 
 from abc import abstractmethod
+from collections.abc import Sequence
 from typing import Any
 
 from pydantic import Field
 
-from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -30,7 +31,7 @@ class VectorStore(KernelBaseModel):
         ...
 
     @abstractmethod
-    async def list_collection_names(self, **kwargs) -> list[str]:
+    async def list_collection_names(self, **kwargs) -> Sequence[str]:
         """Get the names of all collections."""
         ...
 

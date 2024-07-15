@@ -5,24 +5,24 @@ import contextlib
 import logging
 import types
 from abc import abstractmethod
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from inspect import signature
 from typing import Any, Generic, TypeVar
 
 from pydantic import model_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.data.models.vector_store_model_definition import (
+from semantic_kernel.data.vector_store_model_definition import (
     VectorStoreRecordDefinition,
 )
-from semantic_kernel.data.models.vector_store_record_fields import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordVectorField,
-)
-from semantic_kernel.data.protocols.vector_store_model_serde_protocols import (
+from semantic_kernel.data.vector_store_model_protocols import (
     VectorStoreModelFunctionSerdeProtocol,
     VectorStoreModelPydanticProtocol,
     VectorStoreModelToDictFromDictProtocol,
+)
+from semantic_kernel.data.vector_store_record_fields import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
@@ -81,13 +81,13 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     @abstractmethod
     async def _inner_upsert(
         self,
-        records: list[Any],
+        records: Sequence[Any],
         **kwargs: Any,
-    ) -> list[TKey]:
+    ) -> Sequence[TKey]:
         """Upsert the records, this should be overridden by the child class.
 
         Args:
-            records (list[Any]): The records, the format is specific to the store.
+            records (Sequence[Any]): The records, the format is specific to the store.
             **kwargs (Any): Additional arguments, to be passed to the store.
 
         Returns:
@@ -96,11 +96,11 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         ...
 
     @abstractmethod
-    async def _inner_get(self, keys: list[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
+    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
         """Get the records, this should be overridden by the child class.
 
         Args:
-            keys (list[TKey]): The keys to get.
+            keys (Sequence[TKey]): The keys to get.
             **kwargs (Any): Additional arguments.
 
         Returns:
@@ -109,22 +109,22 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         ...
 
     @abstractmethod
-    async def _inner_delete(self, keys: list[TKey], **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         """Delete the records, this should be overridden by the child class.
 
         Args:
-            keys (list[TKey]): The keys.
+            keys (Sequence[TKey]): The keys.
             **kwargs (Any): Additional arguments.
         """
         ...
 
     @property
-    def supported_key_types(self) -> list[type] | None:
+    def supported_key_types(self) -> Sequence[type] | None:
         """Supply the types that keys are allowed to have. None means any."""
         return None
 
     @property
-    def supported_vector_types(self) -> list[type] | None:
+    def supported_vector_types(self) -> Sequence[type] | None:
         """Supply the types that vectors are allowed to have. None means any."""
         return None
 
@@ -153,7 +153,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         return
 
     @abstractmethod
-    def _serialize_dicts_to_store_models(self, records: list[dict[str, Any]], **kwargs: Any) -> list[Any]:
+    def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
         """Serialize a list of dicts of the data to the store model.
 
         This method should be overridden by the child class to convert the dict to the store model.
@@ -161,7 +161,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         ...
 
     @abstractmethod
-    def _deserialize_store_models_to_dicts(self, records: list[Any], **kwargs: Any) -> list[dict[str, Any]]:
+    def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
         """Deserialize the store models to a list of dicts.
 
         This method should be overridden by the child class to convert the store model to a list of dicts.
@@ -218,7 +218,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         if generate_embeddings:
             await self._add_vector_to_records(record)
         data = self.serialize(record)
-        if not isinstance(data, list):
+        if not isinstance(data, Sequence):
             data = [data]
         try:
             results = await self._inner_upsert(data, **kwargs)
@@ -233,18 +233,18 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         records: OneOrMany[TModel],
         generate_embeddings: bool = False,
         **kwargs: Any,
-    ) -> list[TKey]:
+    ) -> Sequence[TKey]:
         """Upsert a batch of records.
 
         Args:
-            records (list[TModel] | TModel): The records to upsert, can be a list of records, or a single container.
+            records (Sequence[TModel] | TModel): The records to upsert, can be a list of records, or a single container.
             generate_embeddings (bool): Whether to generate vectors. Defaults to True.
                 If there are no vector fields in the model or the vectors are created
                 by the service, this is ignored, defaults to False.
             **kwargs (Any): Additional arguments.
 
         Returns:
-            list[TKey]: The keys of the upserted records, this is always a list,
+            Sequence[TKey]: The keys of the upserted records, this is always a list,
             corresponds to the input or the items in the container.
         """
         if generate_embeddings:
@@ -273,17 +273,17 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             return None
         try:
             model_records = self.deserialize(records, keys=[key], **kwargs)
-            if isinstance(model_records, list):
+            if isinstance(model_records, Sequence):
                 return model_records[0]
             return model_records
         except Exception as exc:
             raise MemoryConnectorException(f"Error deserializing record: {exc}") from exc
 
-    async def get_batch(self, keys: list[TKey], **kwargs: Any) -> OneOrMany[TModel] | None:
+    async def get_batch(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[TModel] | None:
         """Get a batch of records.
 
         Args:
-            keys (list[TKey]): The keys.
+            keys (Sequence[TKey]): The keys.
             **kwargs (Any): Additional arguments.
 
         Returns:
@@ -313,11 +313,11 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         except Exception as exc:
             raise MemoryConnectorException(f"Error deleting record: {exc}") from exc
 
-    async def delete_batch(self, keys: list[TKey], **kwargs: Any) -> None:
+    async def delete_batch(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         """Delete a batch of records.
 
         Args:
-            keys (list[TKey]): The keys.
+            keys (Sequence[TKey]): The keys.
             **kwargs (Any): Additional arguments.
 
         """
@@ -343,11 +343,11 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """
         if serialized := self._serialize_data_model_to_store_model(records):
             return serialized
-        if isinstance(records, list):
+        if isinstance(records, Sequence):
             dict_records = [self._serialize_data_model_to_dict(rec) for rec in records]
             return self._serialize_dicts_to_store_models(dict_records, **kwargs)  # type: ignore
         dict_records = self._serialize_data_model_to_dict(records)  # type: ignore
-        if isinstance(dict_records, list):
+        if isinstance(dict_records, Sequence):
             # most likely this is a container, so we return all records as a list
             # can also be a single record, but the to_dict returns a list
             # hence we will treat it as a container.
@@ -366,7 +366,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """
         if deserialized := self._deserialize_store_model_to_data_model(records, **kwargs):
             return deserialized
-        if isinstance(records, list):
+        if isinstance(records, Sequence):
             dict_records = self._deserialize_store_models_to_dicts(records, **kwargs)
             return [self._deserialize_dict_to_data_model(rec, **kwargs) for rec in dict_records]
         dict_records = self._deserialize_store_models_to_dicts([records], **kwargs)
@@ -383,7 +383,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
         The developer is responsible for correctly serializing for the specific data source.
         """
-        if isinstance(record, list):
+        if isinstance(record, Sequence):
             result = [self._serialize_data_model_to_store_model(rec, **kwargs) for rec in record]
             if not all(result):
                 return None
@@ -409,14 +409,14 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             return self.data_model_definition.deserialize(record, **kwargs)
         if isinstance(self.data_model_type, VectorStoreModelFunctionSerdeProtocol):
             try:
-                if isinstance(record, list):
+                if isinstance(record, Sequence):
                     return [self.data_model_type.deserialize(rec, **kwargs) for rec in record]
                 return self.data_model_type.deserialize(record, **kwargs)
             except Exception as exc:
                 raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
         return None
 
-    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> dict[str, Any] | list[dict[str, Any]]:
+    def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrMany[dict[str, Any]]:
         """This function is used if no serialize method is found on the data model.
 
         This will generally serialize the data model to a dict, should not be overridden by child classes.
@@ -463,17 +463,17 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         The input of this should come from the _deserialized_store_model_to_dict function.
         """
         if self._container_mode and self.data_model_definition.from_dict:
-            if not isinstance(record, list):
+            if not isinstance(record, Sequence):
                 record = [record]
             return self.data_model_definition.from_dict(record, **kwargs)
-        if isinstance(record, list):
+        if isinstance(record, Sequence):
             if len(record) > 1:
                 raise ValueError(
                     "Cannot deserialize multiple records to a single record unless you are using a container."
                 )
             record = record[0]
-        if isinstance(self.data_model_type, dict):
-            return record
+        if self.data_model_type is dict:
+            return record  # type: ignore
         if isinstance(self.data_model_type, VectorStoreModelPydanticProtocol):
             try:
                 return self.data_model_type.model_validate(record)

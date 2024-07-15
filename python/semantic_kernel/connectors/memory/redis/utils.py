@@ -7,7 +7,15 @@ from typing import Any
 import numpy as np
 from redis import Redis
 from redis.commands.search.document import Document
+from redis.commands.search.field import Field as RedisField
+from redis.commands.search.field import TextField, VectorField
 
+from semantic_kernel.connectors.memory.azure_ai_search.const import DISTANCE_FUNCTION_MAP
+from semantic_kernel.connectors.memory.redis.const import TYPE_MAPPER_VECTOR
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_record_fields import (
+    VectorStoreRecordVectorField,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
@@ -107,3 +115,30 @@ def deserialize_document_to_record(
         record._embedding = np.frombuffer(eb, dtype=vector_type).astype(float)
 
     return record
+
+
+class RedisWrapper(Redis):
+    def __del__(self) -> None:
+        """Close connection, done when the object is deleted, used when SK creates a client."""
+        self.close()
+
+
+def data_model_definition_to_redis_fields(data_model_definition: VectorStoreRecordDefinition) -> list[RedisField]:
+    """Create a list of fields for Redis from a data_model_definition."""
+    fields: list[RedisField] = []
+    for name, field in data_model_definition.fields.items():
+        if isinstance(field, VectorStoreRecordVectorField):
+            fields.append(
+                VectorField(
+                    name=name,
+                    algorithm=field.index_kind.value.upper() if field.index_kind else "HNSW",
+                    attributes={
+                        "type": TYPE_MAPPER_VECTOR[field.property_type or "default"],
+                        "dim": field.dimensions,
+                        "distance_metric": DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
+                    },
+                )
+            )
+            continue
+        fields.append(TextField(name=name))
+    return fields

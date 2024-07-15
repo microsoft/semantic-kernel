@@ -2,7 +2,7 @@
 
 from qdrant_client.models import Datatype, Distance
 
-from semantic_kernel.data.models.vector_store_record_fields import DistanceFunction
+from semantic_kernel.data.const import DistanceFunction
 
 DISTANCE_FUNCTION_MAP = {
     DistanceFunction.COSINE: Distance.COSINE,

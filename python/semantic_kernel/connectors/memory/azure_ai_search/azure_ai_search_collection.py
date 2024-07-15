@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import sys
+from collections.abc import Sequence
 from typing import Any, Generic, TypeVar
 
 from pydantic import ValidationError
@@ -23,7 +24,7 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
-from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.exceptions import MemoryConnectorException, MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -42,9 +43,9 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
         self,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
         search_index_client: SearchIndexClient | None = None,
         search_client: SearchClient | None = None,
-        collection_name: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the AzureAISearchCollection class.
@@ -56,11 +57,11 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
         Args:
             data_model_type (type[TModel]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
+            collection_name (str): The name of the collection, optional.
             search_index_client (SearchIndexClient): The search index client for interacting with Azure AI Search,
                 used for creating and deleting indexes.
             search_client (SearchClient): The search client for interacting with Azure AI Search,
                 used for record operations.
-            collection_name (str): The name of the collection, optional.
             **kwargs: Additional keyword arguments, including:
             The first set are the same keyword arguments used for AzureAISearchVectorStore.
                 search_endpoint: str | None = None,
@@ -140,35 +141,37 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
     @override
     async def _inner_upsert(
         self,
-        records: list[Any],
+        records: Sequence[Any],
         **kwargs: Any,
-    ) -> list[str]:
+    ) -> Sequence[str]:
+        if not isinstance(records, list):
+            records = list(records)
         results = await self.search_client.merge_or_upload_documents(documents=records, **kwargs)
         return [result.key for result in results]  # type: ignore
 
     @override
-    async def _inner_get(self, keys: list[str], **kwargs: Any) -> list[dict[str, Any]]:
+    async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Sequence[dict[str, Any]]:
         client = self.search_client
         return await asyncio.gather(
             *[client.get_document(key=key, selected_fields=kwargs.get("selected_fields", ["*"])) for key in keys]
         )
 
     @override
-    async def _inner_delete(self, keys: list[str], **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
         await self.search_client.delete_documents(documents=[{self._key_field: key} for key in keys])
 
     @override
     @property
-    def supported_key_types(self) -> list[type] | None:
+    def supported_key_types(self) -> Sequence[type] | None:
         return [str]
 
     @override
     @property
-    def supported_vector_types(self) -> list[type] | None:
+    def supported_vector_types(self) -> Sequence[type] | None:
         return [list[float], list[int]]
 
     @override
-    def _serialize_dicts_to_store_models(self, records: list[dict[str, Any]], **kwargs: Any) -> list[Any]:
+    def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
         """Serialize a dict of the data to the store model.
 
         This method should be overridden by the child class to convert the dict to the store model.
@@ -176,7 +179,7 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
         return records
 
     @override
-    def _deserialize_store_models_to_dicts(self, records: list[Any], **kwargs: Any) -> list[dict[str, Any]]:
+    def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
         """Deserialize the store model to a dict.
 
         This method should be overridden by the child class to convert the store model to a dict.
@@ -211,7 +214,6 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
-        """Check if the collection exists in Azure AI Search."""
         if "params" not in kwargs:
             kwargs["params"] = {"select": ["name"]}
         return self.collection_name in [
@@ -220,5 +222,4 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
 
     @override
     async def delete_collection(self, **kwargs) -> None:
-        """Delete the collection in Azure AI Search."""
         await self.search_index_client.delete_index(self.collection_name, **kwargs)

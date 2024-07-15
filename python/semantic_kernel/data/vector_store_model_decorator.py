@@ -4,8 +4,8 @@ import logging
 from inspect import signature
 from typing import Any
 
-from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.models.vector_store_record_fields import VectorStoreRecordField
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordField
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,6 @@ def vectorstoremodel(
 
     This decorator makes a class a vector store model.
     There are three things being checked:
-    - The class must implement the serialize and deserialize methods as defined in the DataModelSerdeProtocol.
     - The class must have at least one field with a VectorStoreRecordField annotation.
     - The class must have one field with the VectorStoreRecordKeyField annotation.
 
@@ -73,10 +72,10 @@ def vectorstoremodel(
 
         return cls
 
-    # See if we're being called as @datamodel or @datamodel().
+    # See if we're being called as @vectorstoremodel or @vectorstoremodel().
     if cls is None:
         # We're called with parens.
         return wrap
 
-    # We're called as @datamodel without parens.
+    # We're called as @vectorstoremodel without parens.
     return wrap(cls)
