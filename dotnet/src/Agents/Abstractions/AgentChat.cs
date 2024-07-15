@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Extensions;
-using Microsoft.SemanticKernel.Agents.Filters;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -50,21 +49,6 @@ public abstract class AgentChat
     /// Exposes the internal history to subclasses.
     /// </summary>
     protected ChatHistory History { get; }
-
-    /// <summary>
-    /// %%%
-    /// </summary>
-    public IAssistantMessageFilter? AssistantMessageFilter { get; set; }
-
-    /// <summary>
-    /// %%%
-    /// </summary>
-    public IManualFunctionCallProcessor? ManualFunctionCallProcessor { get; set; } = new HackFunctionCallProcessor(); // %%% HACK
-
-    /// <summary>
-    /// %%%
-    /// </summary>
-    public ITerminatedFunctionResultProcessor? TerminatedFunctionResultProcessor { get; set; } // = new HackTerminatedFunctionResultProcessor(); // %%% HACK
 
     /// <summary>
     /// Process a series of interactions between the agents participating in this chat.
@@ -231,19 +215,16 @@ public abstract class AgentChat
             {
                 this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, message);
 
-                // Capture potential message replacement
-                ChatMessageContent effectiveMessage = await this.OnAgentInvokedFilterAsync(agent, this.History, message, cancellationToken).ConfigureAwait(false);
-
                 // %%% Broadcast everything
-                messages.Add(effectiveMessage);
+                messages.Add(message);
 
                 // Add to primary history
-                this.History.Add(effectiveMessage);
+                this.History.Add(message);
 
-                if (!effectiveMessage.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+                if (!message.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
                 {
                     // Yield message to caller
-                    yield return effectiveMessage;
+                    yield return message;
                 }
             }
 
@@ -271,8 +252,6 @@ public abstract class AgentChat
                 this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
                 channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
-                channel.ManualFunctionCallProcessor = this.ManualFunctionCallProcessor; // %%% HACK
-                channel.TerminatedFunctionResultProcessor = this.TerminatedFunctionResultProcessor; // %%% HACK
 
                 this._agentChannels.Add(channelKey, channel);
 
@@ -296,28 +275,6 @@ public abstract class AgentChat
     {
         // Note: Interlocked is the absolute lightest synchronization mechanism available in dotnet.
         Interlocked.Exchange(ref this._isActive, 0);
-    }
-
-    /// <summary>
-    /// %%%
-    /// </summary>
-    /// <param name="agent"></param>
-    /// <param name="history"></param>
-    /// <param name="message"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    private async Task<ChatMessageContent> OnAgentInvokedFilterAsync(Agent agent, ChatHistory history, ChatMessageContent message, CancellationToken cancellationToken)
-    {
-        if (this.AssistantMessageFilter != null)
-        {
-            AssistantMessageContext context = new(agent, history, message) { CancellationToken = cancellationToken };
-            IEnumerable<KernelContent> content = await this.AssistantMessageFilter.OnFilterAssistantMessage(context).ConfigureAwait(false);
-
-            return new(message.Role, [.. content], message.ModelId, message.InnerContent, message.Encoding, message.Metadata); // %%%
-        }
-
-        return message;
     }
 
     /// <summary>
@@ -373,24 +330,5 @@ public abstract class AgentChat
         this._broadcastQueue = new();
         this._channelMap = [];
         this.History = [];
-    }
-
-    private sealed class HackFunctionCallProcessor : IManualFunctionCallProcessor // %%% HACK
-    {
-        /// <inheritdoc/>
-        public async Task OnProcessFunctionCallAsync(ManualFunctionCallContext context)
-        {
-            context.Result = await context.Function.InvokeAsync(context.Kernel, context.Arguments).ConfigureAwait(false);
-        }
-    }
-
-    private class HackTerminatedFunctionResultProcessor : ITerminatedFunctionResultProcessor
-    {
-        public Task OnProcessTerminatedFunctionResultAsync(TerminatedFunctionResultContext context)
-        {
-            context.TransformedContent = context.FunctionResults.Select(r => new TextContent(r.ToString())).ToArray();
-
-            return Task.CompletedTask;
-        }
     }
 }

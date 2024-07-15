@@ -62,22 +62,22 @@ public class ChatHistoryChannel : AgentChannel
                 yield return yieldMessage;
             }
 
-            if (yieldMessage != null)
-            {
-                // Process manual Function Invocation
-                if (yieldMessage.Items.Any(i => i is FunctionCallContent))
-                {
-                    ChatMessageContent functionResultContent = await this.OnManualFunctionCallAsync(agent, yieldMessage, cancellationToken).ConfigureAwait(false);
-                    yield return functionResultContent;
-                    didPostFunctionResult = true;
-                }
+            //if (yieldMessage != null) %%%
+            //{
+            //    // Process manual Function Invocation
+            //    if (yieldMessage.Items.Any(i => i is FunctionCallContent))
+            //    {
+            //        ChatMessageContent functionResultContent = await this.OnManualFunctionCallAsync(agent, yieldMessage, cancellationToken).ConfigureAwait(false);
+            //        yield return functionResultContent;
+            //        didPostFunctionResult = true;
+            //    }
 
-                // Autocomplete Function Termination, et al...
-                if (yieldMessage.Items.Any(i => i is FunctionResultContent))
-                {
-                    yield return await this.OnTerminatedFunctionResultAsync(agent, yieldMessage, cancellationToken).ConfigureAwait(false);
-                }
-            }
+            //    // Autocomplete Function Termination, et al...
+            //    if (yieldMessage.Items.Any(i => i is FunctionResultContent))
+            //    {
+            //        yield return await this.OnTerminatedFunctionResultAsync(agent, yieldMessage, cancellationToken).ConfigureAwait(false);
+            //    }
+            //}
         }
         while (didPostFunctionResult);
     }
@@ -94,14 +94,6 @@ public class ChatHistoryChannel : AgentChannel
     protected internal sealed override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._history.ToDescendingAsync();
-    }
-
-    /// <inheritdoc/>
-    protected internal override Task CaptureFunctionResultAsync(ChatMessageContent functionResultsMessage, CancellationToken cancellationToken = default)
-    {
-        this._history.Add(functionResultsMessage);
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
