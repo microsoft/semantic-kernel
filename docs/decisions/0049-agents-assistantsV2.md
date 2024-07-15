@@ -35,7 +35,7 @@ This includes optional _execution_settings_ for defining default _run_ behavior.
 
 #### Assistant Invocation Settings
 
-When invoking an `OpenAIAssistantAgent` directly (no-chat), settings that only apply to a discrete run may be specified.  These settings are defined as `OpenAIAssistantInvocationSettings`.
+When invoking an `OpenAIAssistantAgent` directly (no-chat), settings that only apply to a discrete run may be specified.  These settings are defined as `OpenAIAssistantInvocationSettings` and ovetake precedence over any corresponding assistent or thread settings.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 220pt;"></kbd>
@@ -44,7 +44,7 @@ When invoking an `OpenAIAssistantAgent` directly (no-chat), settings that only a
 
 #### Thread Creation Settings
 
-When invoking an `OpenAIAssistantAgent` directly (no-chat), a thread must be explicitly managed.  When doing so, thread specific settings may be specified.  These settings are defined as `OpenAIThreadCreationSettings`.
+When invoking an `OpenAIAssistantAgent` directly (no-chat), a thread must be explicitly managed.  When doing so, thread specific settings may be specified.  These settings are defined as `OpenAIThreadCreationSettings` and take precedence over any corresponding assistent settings.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-threadcreationsettings.png" style="width: 132pt;"></kbd>
