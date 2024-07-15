@@ -18,7 +18,6 @@ using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Writers;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;

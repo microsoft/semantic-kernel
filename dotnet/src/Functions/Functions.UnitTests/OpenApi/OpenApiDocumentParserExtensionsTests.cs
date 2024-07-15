@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -39,7 +40,9 @@ public class OpenApiDocumentParserExtensionsTests
         using var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentName);
 
         // Act.
-        var operations = await this._sut.ParseAsync(openApiDocument);
+        RestApiInfo? apiInfo = null;
+        IList<RestApiOperation>? operations = null;
+        (apiInfo, operations) = await this._sut.ParseAsync(openApiDocument);
 
         // Assert.
         Assert.NotNull(operations);
