@@ -88,11 +88,9 @@ The following table describes the purpose of diagramed methods on the `OpenAIAss
 
 ### Vector Store Support
 
-_Vector Store_ support is provided in order to enable usage of the `file-search` tool.  While the _playground_ and API support implicit creation of a vector-store when providing only a list of file identifiers, the _Agent Framework_ encourages creation of vector-store separate from the agent lifecycle.
+_Vector Store_ support is required in order to enable usage of the `file-search` tool.  
 
-<p align="center">
-<kbd><img src="diagrams/assistant-vectorstore.png"  style="width: 720pt;"></kbd>
-</p>
+In alignment with V2 treaming of the `FileClient`, the caller may also directly target `VectorStoreClient` from the _OpenAI SDK_.
 
 
 ### Class Inventory
@@ -106,8 +104,6 @@ This section provides an overview / inventory of all the public surface area des
 **OpenAIAssistantExecutionSettings**|Setting that affect the _run_, but defined globally for the agent/assistant.
 **OpenAIAssistantInvocationSettings**|Settings bound to a discrete run, used for direct (no chat) invocation.
 **OpenAIServiceConfiguration**|Describes the service connection and used to create the `OpenAIClient`
-**OpenAIVectorStore**|Used to query and manipulate a vector-store.  Also supports listing available vector-stores (static).
-**OpenAIVectorStoreBuilder**|Supports creation of an vector-store.
 
 ### Run Processing
 
