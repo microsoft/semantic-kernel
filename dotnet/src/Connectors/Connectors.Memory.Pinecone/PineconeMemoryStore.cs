@@ -423,7 +423,18 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async Task RemoveBatchFromNamespaceAsync(string indexName, string indexNamespace, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(async k => await this.RemoveFromNamespaceAsync(indexName, indexNamespace, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
+        try
+        {
+            await this._pineconeClient.DeleteAsync(indexName,
+                keys,
+                indexNamespace,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpOperationException ex)
+        {
+            this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+            throw;
+        }
     }
 
     /// <inheritdoc />
