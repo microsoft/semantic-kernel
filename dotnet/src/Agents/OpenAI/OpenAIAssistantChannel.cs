@@ -25,7 +25,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     }
 
     /// <inheritdoc/>
-    protected override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    protected override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         OpenAIAssistantAgent agent,
         CancellationToken cancellationToken)
     {

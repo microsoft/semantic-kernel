@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ public class ChatHistoryChannel : AgentChannel
     private readonly ChatHistory _history;
 
     /// <inheritdoc/>
-    protected internal sealed override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    protected internal sealed override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -25,60 +26,48 @@ public class ChatHistoryChannel : AgentChannel
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
-        bool didPostFunctionResult;
-        do
+        int messageCount = this._history.Count;
+        HashSet<ChatMessageContent> mutatedHistory = [];
+
+        Queue<ChatMessageContent> messageQueue = [];
+        ChatMessageContent? yieldMessage = null;
+        await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
         {
-            didPostFunctionResult = false; // Clear on each iteration
-
-            int messageCount = this._history.Count;
-            HashSet<ChatMessageContent> mutatedHistory = [];
-
-            Queue<ChatMessageContent> messageQueue = [];
-            ChatMessageContent? yieldMessage = null;
-            await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
+            for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)
             {
-                for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)
-                {
-                    ChatMessageContent mutatedMessage = this._history[messageIndex];
-                    mutatedHistory.Add(mutatedMessage);
-                    messageQueue.Enqueue(mutatedMessage);
-                }
-
-                if (!mutatedHistory.Contains(responseMessage))
-                {
-                    this._history.Add(responseMessage);
-                    messageQueue.Enqueue(responseMessage);
-                }
-
-                yieldMessage = messageQueue.Dequeue();
-                yield return yieldMessage;
+                ChatMessageContent mutatedMessage = this._history[messageIndex];
+                mutatedHistory.Add(mutatedMessage);
+                messageQueue.Enqueue(mutatedMessage);
             }
 
-            while (messageQueue.Count > 0)
+            if (!mutatedHistory.Contains(responseMessage))
             {
-                yieldMessage = messageQueue.Dequeue();
-
-                yield return yieldMessage;
+                this._history.Add(responseMessage);
+                messageQueue.Enqueue(responseMessage);
             }
 
-            //if (yieldMessage != null) %%%
-            //{
-            //    // Process manual Function Invocation
-            //    if (yieldMessage.Items.Any(i => i is FunctionCallContent))
-            //    {
-            //        ChatMessageContent functionResultContent = await this.OnManualFunctionCallAsync(agent, yieldMessage, cancellationToken).ConfigureAwait(false);
-            //        yield return functionResultContent;
-            //        didPostFunctionResult = true;
-            //    }
-
-            //    // Autocomplete Function Termination, et al...
-            //    if (yieldMessage.Items.Any(i => i is FunctionResultContent))
-            //    {
-            //        yield return await this.OnTerminatedFunctionResultAsync(agent, yieldMessage, cancellationToken).ConfigureAwait(false);
-            //    }
-            //}
+            yieldMessage = messageQueue.Dequeue();
+            yield return (IsMessageVisible(yieldMessage), yieldMessage);
         }
-        while (didPostFunctionResult);
+
+        while (messageQueue.Count > 0)
+        {
+            yieldMessage = messageQueue.Dequeue();
+
+            yield return (IsMessageVisible(yieldMessage), yieldMessage);
+        }
+
+        bool IsMessageVisible(ChatMessageContent message)
+        {
+            // Process manual Function Invocation
+            if (message.Items.Any(i => i is FunctionCallContent) ||
+                message.Items.Any(i => i is FunctionResultContent) && messageQueue.Count == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 
     /// <inheritdoc/>

@@ -18,7 +18,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
         return this._chat.GetChatMessagesAsync(cancellationToken);
     }
 
-    protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(AggregatorAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    protected internal override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(AggregatorAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ChatMessageContent? lastMessage = null;
 
@@ -27,7 +27,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
             // For AggregatorMode.Flat, the entire aggregated chat is merged into the owning chat.
             if (agent.Mode == AggregatorMode.Flat)
             {
-                yield return message;
+                yield return (IsVisible: true, message);
             }
 
             lastMessage = message;
@@ -43,7 +43,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
                     AuthorName = agent.Name
                 };
 
-            yield return message;
+            yield return (IsVisible: true, message);
         }
     }
 
