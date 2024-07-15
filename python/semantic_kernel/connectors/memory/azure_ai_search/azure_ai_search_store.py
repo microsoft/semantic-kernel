@@ -18,8 +18,8 @@ from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collectio
     AzureAISearchCollection,
 )
 from semantic_kernel.connectors.memory.azure_ai_search.utils import get_search_client, get_search_index_client
-from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store import VectorStore
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 

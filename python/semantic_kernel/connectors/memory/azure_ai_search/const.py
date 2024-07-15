@@ -9,7 +9,7 @@ from azure.search.documents.indexes.models import (
     VectorSearchAlgorithmMetric,
 )
 
-from semantic_kernel.data.models.vector_store_record_fields import DistanceFunction, IndexKind
+from semantic_kernel.data.const import DistanceFunction, IndexKind
 
 INDEX_ALGORITHM_MAP = {
     IndexKind.HNSW: (HnswAlgorithmConfiguration, HnswParameters),

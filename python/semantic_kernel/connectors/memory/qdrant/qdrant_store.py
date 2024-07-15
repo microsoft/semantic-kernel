@@ -2,6 +2,7 @@
 
 import logging
 import sys
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, TypeVar
 
 if sys.version_info >= (3, 12):
@@ -14,8 +15,8 @@ from qdrant_client.async_qdrant_client import AsyncQdrantClient
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
-from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store import VectorStore
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -113,21 +114,16 @@ class QdrantStore(VectorStore):
             **kwargs: Additional keyword arguments, passed to the collection constructor.
         """
         if collection_name not in self.vector_record_collections:
-            self.vector_record_collections[collection_name] = QdrantCollection[TModel](
+            self.vector_record_collections[collection_name] = QdrantCollection[data_model_type](
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
-                client=self.qdrant_client,
                 collection_name=collection_name,
+                client=self.qdrant_client,
                 **kwargs,
             )
         return self.vector_record_collections[collection_name]
 
     @override
-    async def list_collection_names(self, **kwargs: Any) -> list[str]:
+    async def list_collection_names(self, **kwargs: Any) -> Sequence[str]:
         collections = await self.qdrant_client.get_collections()
         return [collection.name for collection in collections]
-
-    @override
-    async def close(self) -> None:
-        """Closes the Qdrant client."""
-        await self.qdrant_client.close()

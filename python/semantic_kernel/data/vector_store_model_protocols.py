@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import Sequence
 from typing import Any, Protocol, TypeVar, runtime_checkable
 
 TModel = TypeVar("TModel", bound=object)
@@ -49,3 +50,23 @@ class VectorStoreModelToDictFromDictProtocol(Protocol):
     def from_dict(cls: type[TModel], *args: Any, **kwargs: Any) -> TModel:
         """Deserialize the output of the data store to an object."""
         ...
+
+
+@runtime_checkable
+class ToDictProtocol(Protocol):
+    def __call__(self, record: Any, **kwargs: Any) -> Sequence[dict[str, Any]]: ...  # noqa: D102
+
+
+@runtime_checkable
+class FromDictProtocol(Protocol):
+    def __call__(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Any: ...  # noqa: D102
+
+
+@runtime_checkable
+class SerializeProtocol(Protocol):
+    def __call__(self, record: Any, **kwargs: Any) -> Any: ...  # noqa: D102
+
+
+@runtime_checkable
+class DeserializeProtocol(Protocol):
+    def __call__(self, records: Any, **kwargs: Any) -> Any: ...  # noqa: D102

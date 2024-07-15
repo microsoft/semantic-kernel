@@ -25,8 +25,8 @@ from semantic_kernel.connectors.memory.azure_ai_search.const import (
     TYPE_MAPPER_VECTOR,
 )
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
-from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.models.vector_store_record_fields import (
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,

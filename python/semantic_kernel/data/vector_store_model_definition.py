@@ -2,35 +2,20 @@
 
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import Any, Protocol, runtime_checkable
 
-from semantic_kernel.data.models.vector_store_record_fields import (
+from semantic_kernel.data.vector_store_model_protocols import (
+    DeserializeProtocol,
+    FromDictProtocol,
+    SerializeProtocol,
+    ToDictProtocol,
+)
+from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
-
-
-@runtime_checkable
-class ToDictProtocol(Protocol):
-    def __call__(self, record: Any, **kwargs: Any) -> list[dict[str, Any]]: ...  # noqa: D102
-
-
-@runtime_checkable
-class FromDictProtocol(Protocol):
-    def __call__(self, records: list[dict[str, Any]], **kwargs: Any) -> Any: ...  # noqa: D102
-
-
-@runtime_checkable
-class SerializeProtocol(Protocol):
-    def __call__(self, record: Any, **kwargs: Any) -> Any: ...  # noqa: D102
-
-
-@runtime_checkable
-class DeserializeProtocol(Protocol):
-    def __call__(self, records: Any, **kwargs: Any) -> Any: ...  # noqa: D102
 
 
 @dataclass
@@ -67,7 +52,6 @@ class VectorStoreRecordDefinition:
             DataModelException: If a field does not have a name.
             DataModelException: If there is a field with an embedding property name but no corresponding vector field.
             DataModelException: If there is no key field.
-
         """
         for name, value in self.fields.items():
             if name is None:

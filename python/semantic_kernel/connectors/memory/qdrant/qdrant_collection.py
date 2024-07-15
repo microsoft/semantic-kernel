@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Any, TypeVar
 
 if sys.version_info >= (3, 12):
@@ -16,9 +16,9 @@ from qdrant_client.models import PointStruct, UpdateStatus, VectorParams
 from semantic_kernel.connectors.memory.qdrant.const import DISTANCE_FUNCTION_MAP, TYPE_MAPPER_VECTOR
 from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
-from semantic_kernel.data.models.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.models.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import (
     MemoryConnectorInitializationError,
     ServiceResponseException,
@@ -94,8 +94,8 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                 data_model_definition=data_model_definition,
                 collection_name=collection_name,
                 kernel=kernel,
-                qdrant_client=client,
-                named_vectors=named_vectors,
+                qdrant_client=client,  # type: ignore
+                named_vectors=named_vectors,  # type: ignore
             )
             return
 
@@ -123,8 +123,8 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                 data_model_definition=data_model_definition,
                 collection_name=collection_name,
                 kernel=kernel,
-                qdrant_client=AsyncQdrantClientWrapper(**settings.model_dump(exclude_none=True), **kwargs),
-                named_vectors=named_vectors,
+                qdrant_client=AsyncQdrantClientWrapper(**settings.model_dump(exclude_none=True), **kwargs),  # type: ignore
+                named_vectors=named_vectors,  # type: ignore
             )
         except ValueError as ex:
             raise MemoryConnectorInitializationError("Failed to create Qdrant client.", ex) from ex
@@ -136,9 +136,9 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
     @override
     async def _inner_upsert(
         self,
-        records: list[PointStruct],
+        records: Sequence[PointStruct],
         **kwargs: Any,
-    ) -> list[TKey]:
+    ) -> Sequence[TKey]:
         result = await self.qdrant_client.upsert(
             collection_name=self.collection_name,
             points=records,
@@ -149,7 +149,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         raise ServiceResponseException("Upsert failed")
 
     @override
-    async def _inner_get(self, keys: list[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
+    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
         if "with_vectors" not in kwargs:
             kwargs["with_vectors"] = True
         return await self.qdrant_client.retrieve(
@@ -159,7 +159,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         )
 
     @override
-    async def _inner_delete(self, keys: list[TKey], **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         result = await self.qdrant_client.delete(
             collection_name=self.collection_name,
             points_selector=keys,
@@ -171,9 +171,9 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
     @override
     def _serialize_dicts_to_store_models(
         self,
-        records: list[dict[str, Any]],
+        records: Sequence[dict[str, Any]],
         **kwargs: Any,
-    ) -> list[PointStruct]:
+    ) -> Sequence[PointStruct]:
         return [
             PointStruct(
                 id=record.pop(self._key_field),
@@ -188,9 +188,9 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
     @override
     def _deserialize_store_models_to_dicts(
         self,
-        records: list[PointStruct],
+        records: Sequence[PointStruct],
         **kwargs: Any,
-    ) -> list[dict[str, Any]]:
+    ) -> Sequence[dict[str, Any]]:
         return [
             {
                 self._key_field: record.id,
@@ -206,12 +206,12 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
 
     @override
     @property
-    def supported_key_types(self) -> list[type] | None:
+    def supported_key_types(self) -> Sequence[type] | None:
         return [str, int]
 
     @override
     @property
-    def supported_vector_types(self) -> list[type] | None:
+    def supported_vector_types(self) -> Sequence[type] | None:
         return [list[float], list[int]]
 
     @override

@@ -3,22 +3,10 @@
 from abc import ABC
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Any
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-
-
-class IndexKind(str, Enum):
-    HNSW = "hnsw"
-    FLAT = "flat"
-
-
-class DistanceFunction(str, Enum):
-    COSINE = "cosine"
-    DOT_PROD = "dot_prod"
-    EUCLIDEAN = "euclidean"
-    MANHATTAN = "manhattan"
+from semantic_kernel.data.const import DistanceFunction, IndexKind
 
 
 @dataclass
