@@ -7,7 +7,7 @@ Open AI has release the _Assistants V2_ API.  This builds on top of the V1 _assi
 
 ### Open Issues
 - **Streaming:** To be addressed as a discrete feature
-- **Polling:** Associate with execution settings?
+
 
 ## Design
 
