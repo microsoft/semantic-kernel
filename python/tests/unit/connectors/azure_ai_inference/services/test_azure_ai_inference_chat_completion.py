@@ -99,7 +99,7 @@ async def test_azure_ai_inference_chat_completion(
 
     mock_complete.return_value = mock_azure_ai_inference_chat_completion_response
 
-    responses = await azure_ai_inference_service.get_chat_message_contents(chat_history, settings)
+    responses = await azure_ai_inference_service.get_chat_message_contents(chat_history=chat_history, settings=settings)
 
     mock_complete.assert_awaited_once_with(
         messages=[UserMessage(content=user_message_content)],
@@ -140,7 +140,7 @@ async def test_azure_ai_inference_chat_completion_with_standard_parameters(
 
     mock_complete.return_value = mock_azure_ai_inference_chat_completion_response
 
-    responses = await azure_ai_inference_service.get_chat_message_contents(chat_history, settings)
+    responses = await azure_ai_inference_service.get_chat_message_contents(chat_history=chat_history, settings=settings)
 
     mock_complete.assert_awaited_once_with(
         messages=[UserMessage(content=user_message_content)],
@@ -180,7 +180,7 @@ async def test_azure_ai_inference_chat_completion_with_extra_parameters(
 
     mock_complete.return_value = mock_azure_ai_inference_chat_completion_response
 
-    responses = await azure_ai_inference_service.get_chat_message_contents(chat_history, settings)
+    responses = await azure_ai_inference_service.get_chat_message_contents(chat_history=chat_history, settings=settings)
 
     mock_complete.assert_awaited_once_with(
         messages=[UserMessage(content=user_message_content)],
@@ -211,8 +211,8 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_
             function_choice_behavior=FunctionChoiceBehavior.Auto(),
         )
         await azure_ai_inference_service.get_chat_message_contents(
-            chat_history,
-            settings,
+            chat_history=chat_history,
+            settings=settings,
             arguments=KernelArguments(),
         )
 
@@ -223,8 +223,8 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_
             extra_parameters={"n": 2},
         )
         await azure_ai_inference_service.get_chat_message_contents(
-            chat_history,
-            settings,
+            chat_history=chat_history,
+            settings=settings,
             kernel=kernel,
             arguments=KernelArguments(),
         )
@@ -256,8 +256,8 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior(
     mock_complete.return_value = mock_azure_ai_inference_chat_completion_response_with_tool_call
 
     responses = await azure_ai_inference_service.get_chat_message_contents(
-        chat_history,
-        settings,
+        chat_history=chat_history,
+        settings=settings,
         kernel=kernel,
         arguments=KernelArguments(),
     )
@@ -296,8 +296,8 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_
     mock_complete.return_value = mock_azure_ai_inference_chat_completion_response
 
     responses = await azure_ai_inference_service.get_chat_message_contents(
-        chat_history,
-        settings,
+        chat_history=chat_history,
+        settings=settings,
         kernel=kernel,
         arguments=KernelArguments(),
     )

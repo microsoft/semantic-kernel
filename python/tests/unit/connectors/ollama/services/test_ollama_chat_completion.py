@@ -24,8 +24,10 @@ async def test_complete_chat(mock_post):
     chat_history = ChatHistory()
     chat_history.add_user_message("test_prompt")
     response = await ollama.get_chat_message_contents(
-        chat_history,
-        OllamaChatPromptExecutionSettings(service_id="test_model", ai_model_id="test_model", options={"test": "test"}),
+        chat_history=chat_history,
+        settings=OllamaChatPromptExecutionSettings(
+            service_id="test_model", ai_model_id="test_model", options={"test": "test"}
+        ),
     )
     assert response[0].content == "test_response"
     mock_post.assert_called_once_with(
@@ -45,8 +47,10 @@ async def test_complete(mock_post):
     mock_post.return_value = MockResponse(response={"message": {"content": "test_response"}})
     ollama = OllamaChatCompletion(ai_model_id="test_model")
     response = await ollama.get_text_contents(
-        "test_prompt",
-        OllamaChatPromptExecutionSettings(service_id="test_model", ai_model_id="test_model", options={"test": "test"}),
+        prompt="test_prompt",
+        settings=OllamaChatPromptExecutionSettings(
+            service_id="test_model", ai_model_id="test_model", options={"test": "test"}
+        ),
     )
     assert response[0].text == "test_response"
 
