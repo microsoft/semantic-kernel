@@ -10,6 +10,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 
 
@@ -108,3 +109,22 @@ async def test_embedding_fail(mock_create, openai_unit_test_env) -> None:
     )
     with pytest.raises(ServiceResponseException):
         await openai_text_embedding.generate_embeddings(texts, dimensions=embedding_dimensions)
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
+async def test_embedding_pes(mock_create, openai_unit_test_env) -> None:
+    ai_model_id = "test_model_id"
+    texts = ["hello world", "goodbye world"]
+    embedding_dimensions = 1536
+    pes = PromptExecutionSettings(ai_model_id=ai_model_id, dimensions=embedding_dimensions)
+
+    openai_text_embedding = OpenAITextEmbedding(ai_model_id=ai_model_id)
+
+    await openai_text_embedding.generate_raw_embeddings(texts, pes)
+
+    mock_create.assert_awaited_once_with(
+        input=texts,
+        model=ai_model_id,
+        dimensions=embedding_dimensions,
+    )

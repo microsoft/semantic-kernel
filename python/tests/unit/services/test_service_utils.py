@@ -121,6 +121,24 @@ def test_bool_schema(setup_kernel):
     assert boolean_schema == expected_schema
 
 
+def test_bool_schema_no_plugins(setup_kernel):
+    kernel = setup_kernel
+    kernel.plugins = None
+
+    boolean_func_metadata = kernel.get_list_of_function_metadata_bool()
+
+    assert boolean_func_metadata == []
+
+
+def test_bool_schema_with_plugins(setup_kernel):
+    kernel = setup_kernel
+
+    boolean_func_metadata = kernel.get_list_of_function_metadata_bool()
+
+    assert boolean_func_metadata is not None
+    assert len(boolean_func_metadata) > 0
+
+
 def test_string_schema(setup_kernel):
     kernel = setup_kernel
 
@@ -147,6 +165,32 @@ def test_string_schema(setup_kernel):
     }
 
     assert string_schema == expected_schema
+
+
+def test_string_schema_filter_functions(setup_kernel):
+    kernel = setup_kernel
+
+    string_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_functions": ["random"]})
+
+    assert string_func_metadata == []
+
+
+def test_string_schema_throws_included_and_excluded_plugins(setup_kernel):
+    kernel = setup_kernel
+
+    with pytest.raises(ValueError):
+        _ = kernel.get_list_of_function_metadata_filters(
+            filters={"included_plugins": ["StringPlugin"], "excluded_plugins": ["BooleanPlugin"]}
+        )
+
+
+def test_string_schema_throws_included_and_excluded_functions(setup_kernel):
+    kernel = setup_kernel
+
+    with pytest.raises(ValueError):
+        _ = kernel.get_list_of_function_metadata_filters(
+            filters={"included_functions": ["function1"], "excluded_functions": ["function2"]}
+        )
 
 
 def test_complex_schema(setup_kernel):
