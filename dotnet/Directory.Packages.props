@@ -73,7 +73,7 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.1" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
-    <PackageVersion Include="MongoDB.Driver" Version="2.25.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="2.27.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.14" />
