@@ -269,10 +269,10 @@ public class RepairServiceTests
         public string? Title { get; set; }
 
         [JsonPropertyName("description")]
-        public string? description { get; set; }
+        public string? Description { get; set; }
 
         [JsonPropertyName("assignedTo")]
-        public string? assignedTo { get; set; }
+        public string? AssignedTo { get; set; }
 
         [JsonPropertyName("date")]
         public string? Date { get; set; }

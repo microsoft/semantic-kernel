@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 public static partial class OpenApiKernelPluginFactory
 {
     /// <summary>
-    /// Creates a plugin from an OpenAPI v3 endpoint.
+    /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="filePath">The file path to the OpenAPI Plugin.</param>
@@ -55,7 +55,7 @@ public static partial class OpenApiKernelPluginFactory
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI v3 endpoint.
+    /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="uri">A local or remote URI referencing the OpenAPI Plugin.</param>
@@ -92,7 +92,7 @@ public static partial class OpenApiKernelPluginFactory
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI v3 endpoint.
+    /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="stream">A stream representing the OpenAPI Plugin.</param>
@@ -122,7 +122,7 @@ public static partial class OpenApiKernelPluginFactory
     }
 
     /// <summary>
-    /// Creates a plugin from an OpenAPI v3 endpoint.
+    /// Creates a plugin from an OpenAPI specification.
     /// </summary>
     internal static async Task<KernelPlugin> CreateOpenApiPluginAsync(
         string pluginName,
