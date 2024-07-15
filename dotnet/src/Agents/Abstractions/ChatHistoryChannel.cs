@@ -57,7 +57,7 @@ public class ChatHistoryChannel : AgentChannel
             yield return (IsMessageVisible(yieldMessage), yieldMessage);
         }
 
-        // Function content not visibile, unless result is the final message.
+        // Function content not visible, unless result is the final message.
         bool IsMessageVisible(ChatMessageContent message) =>
             (message.Items.Any(i => i is FunctionCallContent) ||
             (message.Items.Any(i => i is FunctionResultContent) && messageQueue.Count > 0));
