@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// The REST API information.
 /// </summary>
-public sealed class RestApiInfo
+internal sealed class RestApiInfo
 {
     /// <summary>
     /// The title of the application.
@@ -18,7 +18,7 @@ public sealed class RestApiInfo
     public string? Description { get; init; }
 
     /// <summary>
-    /// REQUIRED. The version of the OpenAPI document.
+    /// The version of the OpenAPI document.
     /// </summary>
     public string? Version { get; init; }
 }

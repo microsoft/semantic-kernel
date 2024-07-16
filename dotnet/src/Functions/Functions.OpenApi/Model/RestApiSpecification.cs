@@ -7,17 +7,17 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// The REST API specification.
 /// </summary>
-public sealed class RestApiSpecification
+internal sealed class RestApiSpecification
 {
     /// <summary>
     /// The REST API information.
     /// </summary>
-    public RestApiInfo Info { get; init; }
+    public RestApiInfo Info { get; private set; }
 
     /// <summary>
     /// The REST API operations.
     /// </summary>
-    public IList<RestApiOperation> Operations { get; init; }
+    public IList<RestApiOperation> Operations { get; private set; }
 
     /// <summary>
     /// Construct an instance of <see cref="RestApiSpecification"/>
