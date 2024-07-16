@@ -49,7 +49,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// Map form a <see cref="VectorStoreRecordVectorProperty"/> to an Azure AI Search <see cref="VectorSearchField"/> and generate the required index configuration.
     /// </summary>
     /// <param name="vectorProperty">The vector property definition.</param>
-    /// <returns>The <see cref="VectorSearchField"/> and requried index configuration.</returns>
+    /// <returns>The <see cref="VectorSearchField"/> and required index configuration.</returns>
     /// <exception cref="InvalidOperationException">Throws when the definition is missing required information, or unsupported options are configured.</exception>
     public static (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) MapVectorField(VectorStoreRecordVectorProperty vectorProperty)
     {
@@ -100,7 +100,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// </summary>
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The chosen <see cref="VectorSearchAlgorithmMetric"/>.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't suported by Azure AI Search.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't supported by Azure AI Search.</exception>
     public static VectorSearchAlgorithmMetric GetSDKDistanceAlgorithm(VectorStoreRecordVectorProperty vectorProperty)
     {
         if (vectorProperty.DistanceFunction is null)

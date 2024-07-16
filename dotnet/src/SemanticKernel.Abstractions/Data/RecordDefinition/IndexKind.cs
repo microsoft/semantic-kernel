@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Data;
 public static class IndexKind
 {
     /// <summary>
-    /// Hierarchical Navigable Small World, which performs an aproximate nearest neighbour (ANN) search.
+    /// Hierarchical Navigable Small World, which performs an approximate nearest neighbour (ANN) search.
     /// </summary>
     /// <remarks>
     /// Lower accuracy than exhaustive k nearest neighbor, but faster and more efficient.
