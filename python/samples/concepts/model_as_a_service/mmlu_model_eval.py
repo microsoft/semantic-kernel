@@ -22,7 +22,7 @@ from semantic_kernel.kernel import Kernel
 
 
 def setup_kernel():
-    """Set up the kernel."""
+    """Set up the kernel with AI services."""
     kernel = Kernel()
     kernel.add_service(
         AzureAIInferenceChatCompletion(
