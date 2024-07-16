@@ -40,6 +40,8 @@ public class ChatHistoryChannel : AgentChannel
                 messageQueue.Enqueue(mutatedMessage);
             }
 
+            messageCount = this._history.Count;
+
             if (!mutatedHistory.Contains(responseMessage))
             {
                 this._history.Add(responseMessage);
