@@ -6,13 +6,14 @@ using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace LocalModels;
+namespace FunctionCalling;
 
 /// <summary>
-/// The following example shows how to use Semantic Kernel with the HuggingFace <see cref="HuggingFaceTextGenerationService"/>.
+/// The following example shows how to use Semantic Kernel with the HuggingFace <see cref="HuggingFaceTextGenerationService"/>
+/// to implement function calling with the Nexus Raven model.
 /// </summary>
 /// <param name="output">The test output helper.</param>
-public class NexusRaven_HuggingFaceTextGeneration(ITestOutputHelper output) : BaseTest(output)
+public class NexusRaven_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Nexus Raven endpoint
@@ -57,6 +58,10 @@ public class NexusRaven_HuggingFaceTextGeneration(ITestOutputHelper output) : Ba
         var plugin = ImportFunctions(kernel);
         var textGeneration = kernel.GetRequiredService<ITextGenerationService>();
 
+        // This Handlebars template is used to format the available KernelFunctions so
+        // they can be understood by the NexusRaven model. The function name, signature and
+        // description must be provided. NexusRaven can reason over the list of functions and
+        // determine which ones need to be called for the current query.
         var template =
         """"
         {{#each (functions)}}
@@ -90,7 +95,7 @@ public class NexusRaven_HuggingFaceTextGeneration(ITestOutputHelper output) : Ba
         Console.WriteLine(result.ToString());
     }
 
-    // Needs Work: The signature must be Python compliant
+    // The signature must be Python compliant and currently only supports primitive values
     private static string CreateSignature(KernelFunction function)
     {
         var signature = new StringBuilder();
