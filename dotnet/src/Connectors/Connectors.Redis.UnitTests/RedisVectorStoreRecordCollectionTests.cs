@@ -33,6 +33,58 @@ public class RedisVectorStoreRecordCollectionTests
     }
 
     [Theory]
+    [InlineData(TestCollectionName, true)]
+    [InlineData("nonexistentcollection", false)]
+    public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
+    {
+        // Arrange
+        if (expectedExists)
+        {
+            SetupExecuteMock(this._redisDatabaseMock, ["index_name", collectionName]);
+        }
+        else
+        {
+            SetupExecuteMock(this._redisDatabaseMock, new RedisServerException("Unknown index name"));
+        }
+        var sut = new RedisVectorStoreRecordCollection<SinglePropsModel>(
+            this._redisDatabaseMock.Object,
+            collectionName);
+
+        // Act
+        var actual = await sut.CollectionExistsAsync();
+
+        // Assert
+        var expectedArgs = new object[] { collectionName };
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "FT.INFO",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
+        Assert.Equal(expectedExists, actual);
+    }
+
+    [Fact]
+    public async Task CanDeleteCollectionAsync()
+    {
+        // Arrange
+        SetupExecuteMock(this._redisDatabaseMock, string.Empty);
+        var sut = this.CreateRecordCollection(false);
+
+        // Act
+        await sut.DeleteCollectionAsync();
+
+        // Assert
+        var expectedArgs = new object[] { TestCollectionName };
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "FT.DROPINDEX",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task CanGetRecordWithVectorsAsync(bool useDefinition)
@@ -40,7 +92,7 @@ public class RedisVectorStoreRecordCollectionTests
         // Arrange
         var redisResultString = """{ "Data": "data 1", "Vector": [1, 2, 3, 4] }""";
         SetupExecuteMock(this._redisDatabaseMock, redisResultString);
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
@@ -70,7 +122,7 @@ public class RedisVectorStoreRecordCollectionTests
         // Arrange
         var redisResultString = """{ "Data": "data 1" }""";
         SetupExecuteMock(this._redisDatabaseMock, redisResultString);
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
@@ -101,7 +153,7 @@ public class RedisVectorStoreRecordCollectionTests
         var redisResultString1 = """{ "Data": "data 1", "Vector": [1, 2, 3, 4] }""";
         var redisResultString2 = """{ "Data": "data 2", "Vector": [5, 6, 7, 8] }""";
         SetupExecuteMock(this._redisDatabaseMock, [redisResultString1, redisResultString2]);
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.GetBatchAsync(
@@ -176,7 +228,7 @@ public class RedisVectorStoreRecordCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "200");
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         await sut.DeleteAsync(TestRecordKey1);
@@ -198,7 +250,7 @@ public class RedisVectorStoreRecordCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "200");
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         await sut.DeleteBatchAsync([TestRecordKey1, TestRecordKey2]);
@@ -227,7 +279,7 @@ public class RedisVectorStoreRecordCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "OK");
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
         var model = CreateModel(TestRecordKey1, true);
 
         // Act
@@ -251,7 +303,7 @@ public class RedisVectorStoreRecordCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "OK");
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         var model1 = CreateModel(TestRecordKey1, true);
         var model2 = CreateModel(TestRecordKey2, true);
@@ -310,7 +362,7 @@ public class RedisVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
-    private RedisVectorStoreRecordCollection<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
+    private RedisVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
     {
         return new RedisVectorStoreRecordCollection<SinglePropsModel>(
             this._redisDatabaseMock.Object,
@@ -319,6 +371,16 @@ public class RedisVectorStoreRecordCollectionTests
             {
                 VectorStoreRecordDefinition = useDefinition ? this._singlePropsDefinition : null
             });
+    }
+
+    private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, Exception exception)
+    {
+        redisDatabaseMock
+            .Setup(
+                x => x.ExecuteAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<object[]>()))
+            .ThrowsAsync(exception);
     }
 
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, IEnumerable<string> redisResultStrings)

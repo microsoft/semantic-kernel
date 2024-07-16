@@ -29,6 +29,42 @@ public class VolatileVectorStoreRecordCollectionTests
     }
 
     [Theory]
+    [InlineData(TestCollectionName, true)]
+    [InlineData("nonexistentcollection", false)]
+    public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
+    {
+        // Arrange
+        var collection = new ConcurrentDictionary<string, SinglePropsModel>();
+        this._collectionStore.TryAdd(TestCollectionName, collection);
+
+        var sut = new VolatileVectorStoreRecordCollection<SinglePropsModel>(
+            this._collectionStore,
+            collectionName);
+
+        // Act
+        var actual = await sut.CollectionExistsAsync(this._testCancellationToken);
+
+        // Assert
+        Assert.Equal(expectedExists, actual);
+    }
+
+    [Fact]
+    public async Task DeleteCollectionRemovesCollectionFromDictionaryAsync()
+    {
+        // Arrange
+        var collection = new ConcurrentDictionary<string, SinglePropsModel>();
+        this._collectionStore.TryAdd(TestCollectionName, collection);
+
+        var sut = this.CreateRecordCollection(false);
+
+        // Act
+        await sut.DeleteCollectionAsync(this._testCancellationToken);
+
+        // Assert
+        Assert.Empty(this._collectionStore);
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task CanGetRecordWithVectorsAsync(bool useDefinition)
@@ -39,7 +75,7 @@ public class VolatileVectorStoreRecordCollectionTests
         collection.TryAdd(TestRecordKey1, record);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
@@ -72,7 +108,7 @@ public class VolatileVectorStoreRecordCollectionTests
         collection.TryAdd(TestRecordKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.GetBatchAsync(
@@ -105,7 +141,7 @@ public class VolatileVectorStoreRecordCollectionTests
         collection.TryAdd(TestRecordKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         await sut.DeleteAsync(
@@ -130,7 +166,7 @@ public class VolatileVectorStoreRecordCollectionTests
         collection.TryAdd(TestRecordKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         await sut.DeleteBatchAsync(
@@ -152,7 +188,7 @@ public class VolatileVectorStoreRecordCollectionTests
         var collection = new ConcurrentDictionary<string, SinglePropsModel>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var upsertResult = await sut.UpsertAsync(
@@ -177,7 +213,7 @@ public class VolatileVectorStoreRecordCollectionTests
         var collection = new ConcurrentDictionary<string, SinglePropsModel>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.UpsertBatchAsync(
@@ -205,7 +241,7 @@ public class VolatileVectorStoreRecordCollectionTests
         };
     }
 
-    private VolatileVectorStoreRecordCollection<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
+    private VolatileVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
     {
         return new VolatileVectorStoreRecordCollection<SinglePropsModel>(
             this._collectionStore,

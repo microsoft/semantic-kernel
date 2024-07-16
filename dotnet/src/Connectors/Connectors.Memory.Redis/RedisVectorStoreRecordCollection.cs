@@ -126,6 +126,38 @@ public sealed class RedisVectorStoreRecordCollection<TRecord> : IVectorStoreReco
     }
 
     /// <inheritdoc />
+    public string CollectionName => this._collectionName;
+
+    /// <inheritdoc />
+    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await this._database.FT().InfoAsync(this._collectionName).ConfigureAwait(false);
+            return true;
+        }
+        catch (RedisServerException ex) when (ex.Message.Contains("Unknown index name"))
+        {
+            return false;
+        }
+        catch (RedisConnectionException ex)
+        {
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                VectorStoreType = DatabaseName,
+                CollectionName = this._collectionName,
+                OperationName = "FT.INFO"
+            };
+        }
+    }
+
+    /// <inheritdoc />
+    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    {
+        return this.RunOperationAsync("FT.DROPINDEX", () => this._database.FT().DropIndexAsync(this._collectionName));
+    }
+
+    /// <inheritdoc />
     public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
@@ -329,6 +361,29 @@ public sealed class RedisVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         }
 
         return key;
+    }
+
+    /// <summary>
+    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreOperationException"/>."/>
+    /// </summary>
+    /// <param name="operationName">The type of database operation being run.</param>
+    /// <param name="operation">The operation to run.</param>
+    /// <returns>The result of the operation.</returns>
+    private async Task RunOperationAsync(string operationName, Func<Task> operation)
+    {
+        try
+        {
+            await operation.Invoke().ConfigureAwait(false);
+        }
+        catch (RedisConnectionException ex)
+        {
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                VectorStoreType = DatabaseName,
+                CollectionName = this._collectionName,
+                OperationName = operationName
+            };
+        }
     }
 
     /// <summary>

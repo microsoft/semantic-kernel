@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Data;
@@ -40,6 +41,53 @@ public class AzureAISearchVectorStoreRecordCollectionTests
     }
 
     [Theory]
+    [InlineData(TestCollectionName, true)]
+    [InlineData("nonexistentcollection", false)]
+    public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
+    {
+        this._searchIndexClientMock.Setup(x => x.GetSearchClient(collectionName)).Returns(this._searchClientMock.Object);
+
+        // Arrange.
+        if (expectedExists)
+        {
+            this._searchIndexClientMock
+                .Setup(x => x.GetIndexAsync(collectionName, this._testCancellationToken))
+                .Returns(Task.FromResult<Response<SearchIndex>?>(null));
+        }
+        else
+        {
+            this._searchIndexClientMock
+                .Setup(x => x.GetIndexAsync(collectionName, this._testCancellationToken))
+                .ThrowsAsync(new RequestFailedException(404, "Index not found"));
+        }
+
+        var sut = new AzureAISearchVectorStoreRecordCollection<SinglePropsModel>(this._searchIndexClientMock.Object, collectionName);
+
+        // Act.
+        var actual = await sut.CollectionExistsAsync(this._testCancellationToken);
+
+        // Assert.
+        Assert.Equal(expectedExists, actual);
+    }
+
+    [Fact]
+    public async Task CanDeleteCollectionAsync()
+    {
+        // Arrange.
+        this._searchIndexClientMock
+            .Setup(x => x.DeleteIndexAsync(TestCollectionName, this._testCancellationToken))
+            .Returns(Task.FromResult<Response?>(null));
+
+        var sut = this.CreateRecordCollection(false);
+
+        // Act.
+        await sut.DeleteCollectionAsync(this._testCancellationToken);
+
+        // Assert.
+        this._searchIndexClientMock.Verify(x => x.DeleteIndexAsync(TestCollectionName, this._testCancellationToken), Times.Once);
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task CanGetRecordWithVectorsAsync(bool useDefinition)
@@ -52,7 +100,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(CreateModel(TestRecordKey1, true), Mock.Of<Response>()));
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
         var actual = await sut.GetAsync(
@@ -82,7 +130,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(CreateModel(TestRecordKey1, true), Mock.Of<Response>()));
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
         var actual = await sut.GetAsync(
@@ -112,7 +160,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 return Response.FromValue(CreateModel(id, true), Mock.Of<Response>());
             });
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
         var actual = await sut.GetBatchAsync(
@@ -187,7 +235,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
         await sut.DeleteAsync(
@@ -222,7 +270,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
         await sut.DeleteBatchAsync(
@@ -261,7 +309,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
         // Arrange sut.
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         var model = CreateModel(TestRecordKey1, true);
 
@@ -306,7 +354,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
         // Arrange sut.
-        var sut = this.CreateVectorRecordStore(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition);
 
         var model1 = CreateModel(TestRecordKey1, true);
         var model2 = CreateModel(TestRecordKey2, true);
@@ -386,7 +434,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
-    private AzureAISearchVectorStoreRecordCollection<SinglePropsModel> CreateVectorRecordStore(bool useDefinition)
+    private AzureAISearchVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
     {
         return new AzureAISearchVectorStoreRecordCollection<SinglePropsModel>(
             this._searchIndexClientMock.Object,

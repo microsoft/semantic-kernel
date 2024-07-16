@@ -33,10 +33,57 @@ public class QdrantVectorStoreRecordCollectionTests
     }
 
     [Theory]
+    [InlineData(TestCollectionName, true)]
+    [InlineData("nonexistentcollection", false)]
+    public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
+    {
+        // Arrange.
+        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(this._qdrantClientMock.Object, collectionName);
+
+        this._qdrantClientMock
+            .Setup(x => x.CollectionExistsAsync(
+                It.IsAny<string>(),
+                this._testCancellationToken))
+            .ReturnsAsync(expectedExists);
+
+        // Act.
+        var actual = await sut.CollectionExistsAsync(this._testCancellationToken);
+
+        // Assert.
+        Assert.Equal(expectedExists, actual);
+    }
+
+    [Fact]
+    public async Task CanDeleteCollectionAsync()
+    {
+        // Arrange.
+        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
+
+        this._qdrantClientMock
+            .Setup(x => x.DeleteCollectionAsync(
+                It.IsAny<string>(),
+                null,
+                this._testCancellationToken))
+            .Returns(Task.CompletedTask);
+
+        // Act.
+        await sut.DeleteCollectionAsync(this._testCancellationToken);
+
+        // Assert.
+        this._qdrantClientMock
+            .Verify(
+                x => x.DeleteCollectionAsync(
+                    TestCollectionName,
+                    null,
+                    this._testCancellationToken),
+                Times.Once);
+    }
+
+    [Theory]
     [MemberData(nameof(TestOptions))]
     public async Task CanGetRecordWithVectorsAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
     {
-        var sut = this.CreateVectorRecordStore<TKey>(useDefinition, hasNamedVectors);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
 
         // Arrange.
         var retrievedPoint = CreateRetrievedPoint(hasNamedVectors, testRecordKey);
@@ -72,7 +119,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanGetRecordWithoutVectorsAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
     {
         // Arrange.
-        var sut = this.CreateVectorRecordStore<TKey>(useDefinition, hasNamedVectors);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
         var retrievedPoint = CreateRetrievedPoint(hasNamedVectors, testRecordKey);
         this.SetupRetrieveMock([retrievedPoint]);
 
@@ -106,7 +153,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanGetManyRecordsWithVectorsAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey[] testRecordKeys)
     {
         // Arrange.
-        var sut = this.CreateVectorRecordStore<TKey>(useDefinition, hasNamedVectors);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
         var retrievedPoint1 = CreateRetrievedPoint(hasNamedVectors, UlongTestRecordKey1);
         var retrievedPoint2 = CreateRetrievedPoint(hasNamedVectors, UlongTestRecordKey2);
         this.SetupRetrieveMock(testRecordKeys.Select(x => CreateRetrievedPoint(hasNamedVectors, x)).ToList());
@@ -193,7 +240,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanDeleteUlongRecordAsync(bool useDefinition, bool hasNamedVectors)
     {
         // Arrange
-        var sut = this.CreateVectorRecordStore<ulong>(useDefinition, hasNamedVectors);
+        var sut = this.CreateRecordCollection<ulong>(useDefinition, hasNamedVectors);
         this.SetupDeleteMocks();
 
         // Act
@@ -222,7 +269,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanDeleteGuidRecordAsync(bool useDefinition, bool hasNamedVectors)
     {
         // Arrange
-        var sut = this.CreateVectorRecordStore<Guid>(useDefinition, hasNamedVectors);
+        var sut = this.CreateRecordCollection<Guid>(useDefinition, hasNamedVectors);
         this.SetupDeleteMocks();
 
         // Act
@@ -251,7 +298,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanDeleteManyUlongRecordsAsync(bool useDefinition, bool hasNamedVectors)
     {
         // Arrange
-        var sut = this.CreateVectorRecordStore<ulong>(useDefinition, hasNamedVectors);
+        var sut = this.CreateRecordCollection<ulong>(useDefinition, hasNamedVectors);
         this.SetupDeleteMocks();
 
         // Act
@@ -280,7 +327,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanDeleteManyGuidRecordsAsync(bool useDefinition, bool hasNamedVectors)
     {
         // Arrange
-        var sut = this.CreateVectorRecordStore<Guid>(useDefinition, hasNamedVectors);
+        var sut = this.CreateRecordCollection<Guid>(useDefinition, hasNamedVectors);
         this.SetupDeleteMocks();
 
         // Act
@@ -306,7 +353,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanUpsertRecordAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
     {
         // Arrange
-        var sut = this.CreateVectorRecordStore<TKey>(useDefinition, hasNamedVectors);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
         this.SetupUpsertMock();
 
         // Act
@@ -332,7 +379,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanUpsertManyRecordsAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey[] testRecordKeys)
     {
         // Arrange
-        var sut = this.CreateVectorRecordStore<TKey>(useDefinition, hasNamedVectors);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
         this.SetupUpsertMock();
 
         var models = testRecordKeys.Select(x => CreateModel(x, true));
@@ -512,7 +559,7 @@ public class QdrantVectorStoreRecordCollectionTests
         return point;
     }
 
-    private IVectorStoreRecordCollection<T, SinglePropsModel<T>> CreateVectorRecordStore<T>(bool useDefinition, bool hasNamedVectors)
+    private IVectorStoreRecordCollection<T, SinglePropsModel<T>> CreateRecordCollection<T>(bool useDefinition, bool hasNamedVectors)
     {
         var store = new QdrantVectorStoreRecordCollection<SinglePropsModel<T>>(
             this._qdrantClientMock.Object,
