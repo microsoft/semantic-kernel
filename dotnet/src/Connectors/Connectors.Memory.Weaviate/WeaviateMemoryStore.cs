@@ -355,7 +355,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName, nameof(collectionName));
-        Verify.NotNull(key, nameof(key));
+        Verify.NotNullOrWhiteSpace(key, nameof(key));
 
         string className = ToWeaviateFriendlyClassName(collectionName);
 
