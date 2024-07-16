@@ -17,8 +17,6 @@
     <None Remove="Planners\StepwisePlanner\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Planners\Handlebars\HandlebarsPlannerTests.cs" />
-    <Compile Remove="Planners\Handlebars\HandlebarsPlanTests.cs" />
     <Compile Remove="Planners\PlanTests.cs" />
     <Compile Remove="Planners\Stepwise\FunctionCallingStepwisePlannerTests.cs" />
   </ItemGroup>
@@ -156,8 +154,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Planners\Handlebars\HandlebarsPlannerTests.cs" />
-    <None Include="Planners\Handlebars\HandlebarsPlanTests.cs" />
     <None Include="Planners\Stepwise\FunctionCallingStepwisePlannerTests.cs" />
   </ItemGroup>
 
