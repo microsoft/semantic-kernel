@@ -58,7 +58,8 @@ Follow the steps [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to
 1. Deploy the required models. Follow the steps [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless?tabs=azure-ai-studio).
 2. Fill in the API keys and endpoints in the script.
 3. Open a terminal and activate your virtual environment for the Semantic Kernel project.
-4. Run `python mmlu_model_eval.py`
+4. Run `pip install datasets` to install the HuggingFace `datasets` module.
+5. Run `python mmlu_model_eval.py`
 
 > If you are using VS code, you can simply select the interpreter in your virtual environment and click the run icon on the top right corner of the file panel when you focus on the script file.
 

@@ -43,7 +43,6 @@ azure-cosmos = { version = "^4.7.0", optional = true}
 # chroma
 chromadb = { version = ">=0.4.13,<0.6.0", optional = true}
 # hugging face
-datasets = { version = "^2.20.0", optional = true}
 transformers = { version = "^4.28.1", extras=["torch"], optional = true}
 sentence-transformers = { version = "^2.2.2", optional = true}
 # mongo
@@ -136,7 +135,7 @@ all = ["transformers", "sentence-transformers", "qdrant-client", "chromadb", "py
 
 azure = ["azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "msgraph-sdk"]
 chromadb = ["chromadb"]
-hugging_face = ["datasets", "transformers", "sentence-transformers"]
+hugging_face = ["transformers", "sentence-transformers"]
 milvus = ["pymilvus", "milvus"]
 mistralai = ["mistralai"]
 mongo = ["motor"]
