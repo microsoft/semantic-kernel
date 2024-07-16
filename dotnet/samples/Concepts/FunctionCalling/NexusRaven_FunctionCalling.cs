@@ -27,9 +27,7 @@ public class NexusRaven_FunctionCalling(ITestOutputHelper output) : BaseTest(out
     public async Task InvokeTextGenerationAsync()
     {
         Kernel kernel = Kernel.CreateBuilder()
-            .AddHuggingFaceTextGeneration(
-                model: string.Empty,
-                endpoint: RavenEndpoint)
+            .AddHuggingFaceTextGeneration(endpoint: RavenEndpoint)
             .Build();
 
         var textGeneration = kernel.GetRequiredService<ITextGenerationService>();
@@ -51,7 +49,6 @@ public class NexusRaven_FunctionCalling(ITestOutputHelper output) : BaseTest(out
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(
-                model: string.Empty,
                 endpoint: RavenEndpoint,
                 httpClient: httpClient)
             .Build();
