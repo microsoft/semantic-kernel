@@ -26,6 +26,7 @@ public class ChatHistoryChannel : AgentChannel
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
+        // Capture the current message count to evaluate history mutation.
         int messageCount = this._history.Count;
         HashSet<ChatMessageContent> mutatedHistory = [];
 
