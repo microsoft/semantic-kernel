@@ -66,13 +66,9 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
         // Otherwise, only the properties ServiceId and ModelId from the public API of the PromptExecutionSettings class will be serialized.
         var json = JsonSerializer.Serialize<object>(executionSettings);
 
-        var azureOpenAIExecutionSettings = JsonSerializer.Deserialize<AzureOpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-        if (azureOpenAIExecutionSettings is not null)
-        {
-            return azureOpenAIExecutionSettings;
-        }
+        var openAIExecutionSettings = JsonSerializer.Deserialize<AzureOpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
-        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureOpenAIPromptExecutionSettings)}", nameof(executionSettings));
+        return openAIExecutionSettings!;
     }
 
     /// <summary>
