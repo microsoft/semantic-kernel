@@ -122,6 +122,7 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
 
         foreach (var item in streamingResponse.Body)
         {
+            Console.WriteLine("item: " + item);
             var chunk = JsonSerializer.Deserialize<JsonNode>((item as PayloadPart).Bytes);
             IEnumerable<string> texts = this._ioService.GetTextStreamOutput(chunk);
             foreach (var text in texts)
