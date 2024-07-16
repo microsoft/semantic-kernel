@@ -165,10 +165,20 @@ public class VectorStoreRecordPropertyReaderTests
         var data1 = (VectorStoreRecordDataProperty)definition.Properties[1];
         var data2 = (VectorStoreRecordDataProperty)definition.Properties[2];
 
+        Assert.True(data1.IsFilterable);
+        Assert.False(data2.IsFilterable);
+
         Assert.True(data1.HasEmbedding);
         Assert.False(data2.HasEmbedding);
 
         Assert.Equal("Vector1", data1.EmbeddingPropertyName);
+
+        Assert.Equal(typeof(string), data1.PropertyType);
+        Assert.Equal(typeof(string), data2.PropertyType);
+
+        var vector1 = (VectorStoreRecordVectorProperty)definition.Properties[3];
+
+        Assert.Equal(4, vector1.Dimensions);
     }
 
     [Fact]
@@ -323,13 +333,13 @@ public class VectorStoreRecordPropertyReaderTests
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "Vector1")]
+        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "Vector1", IsFilterable = true)]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]
         public string Data2 { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(4, IndexKind.Flat, DistanceFunction.DotProductSimilarity)]
         public ReadOnlyMemory<float> Vector1 { get; set; }
 
         [VectorStoreRecordVector]
@@ -344,9 +354,9 @@ public class VectorStoreRecordPropertyReaderTests
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("Data1") { HasEmbedding = true, EmbeddingPropertyName = "Vector1" },
+            new VectorStoreRecordDataProperty("Data1") { HasEmbedding = true, EmbeddingPropertyName = "Vector1", IsFilterable = true },
             new VectorStoreRecordDataProperty("Data2") { StoragePropertyName = "data_2" },
-            new VectorStoreRecordVectorProperty("Vector1"),
+            new VectorStoreRecordVectorProperty("Vector1") { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity },
             new VectorStoreRecordVectorProperty("Vector2")
         ]
     };

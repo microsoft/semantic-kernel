@@ -219,6 +219,8 @@ internal static class VectorStoreRecordPropertyReader
                 {
                     HasEmbedding = dataAttribute.HasEmbedding,
                     EmbeddingPropertyName = dataAttribute.EmbeddingPropertyName,
+                    IsFilterable = dataAttribute.IsFilterable,
+                    PropertyType = dataProperty.PropertyType,
                     StoragePropertyName = dataAttribute.StoragePropertyName
                 });
             }
@@ -232,6 +234,9 @@ internal static class VectorStoreRecordPropertyReader
             {
                 definitionProperties.Add(new VectorStoreRecordVectorProperty(vectorProperty.Name)
                 {
+                    Dimensions = vectorAttribute.Dimensions,
+                    IndexKind = vectorAttribute.IndexKind,
+                    DistanceFunction = vectorAttribute.DistanceFunction,
                     StoragePropertyName = vectorAttribute.StoragePropertyName
                 });
             }
