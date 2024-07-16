@@ -39,13 +39,13 @@ public class OpenApiDocumentParserExtensionsTests
         using var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentName);
 
         // Act.
-        var operations = await this._sut.ParseAsync(openApiDocument);
+        var restApi = await this._sut.ParseAsync(openApiDocument);
 
         // Assert.
-        Assert.NotNull(operations);
-        Assert.True(operations.Any());
+        Assert.NotNull(restApi.Operations);
+        Assert.True(restApi.Operations.Any());
 
-        var operation = operations.Single(o => o.Id == "OpenApiExtensions");
+        var operation = restApi.Operations.Single(o => o.Id == "OpenApiExtensions");
         Assert.NotNull(operation);
 
         // Check the different extension types.
