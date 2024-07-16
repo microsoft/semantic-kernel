@@ -29,10 +29,13 @@ public class ChatHistoryChannel : AgentChannel
         int messageCount = this._history.Count;
         HashSet<ChatMessageContent> mutatedHistory = [];
 
+        // Utilize a queue as a "read-ahead" cache to evaluate message sequencing (i.e., which message is final).
         Queue<ChatMessageContent> messageQueue = [];
+
         ChatMessageContent? yieldMessage = null;
         await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
         {
+            // Capture all messages that have been included in the mutated the history.
             for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)
             {
                 ChatMessageContent mutatedMessage = this._history[messageIndex];
@@ -40,18 +43,22 @@ public class ChatHistoryChannel : AgentChannel
                 messageQueue.Enqueue(mutatedMessage);
             }
 
+            // Update the message count pointer to reflect the current history.
             messageCount = this._history.Count;
 
+            // Avoid duplicating any message included in the mutated history and also returned by the enumeration result.
             if (!mutatedHistory.Contains(responseMessage))
             {
                 this._history.Add(responseMessage);
                 messageQueue.Enqueue(responseMessage);
             }
 
+            // Dequeue the next message to yield.
             yieldMessage = messageQueue.Dequeue();
             yield return (IsMessageVisible(yieldMessage), yieldMessage);
         }
 
+        // Dequeue any remaining messages to yield.
         while (messageQueue.Count > 0)
         {
             yieldMessage = messageQueue.Dequeue();
