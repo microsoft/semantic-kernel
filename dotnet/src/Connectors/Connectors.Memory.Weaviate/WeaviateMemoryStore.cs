@@ -386,7 +386,29 @@ public partial class WeaviateMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(async k => await this.RemoveAsync(collectionName, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(collectionName, "Collection name is empty");
+        Verify.NotNull(keys, "Key is NULL");
+        var keyArray = keys.ToArray();
+        if (keyArray.Length == 0)
+        {
+            return;
+        }
+
+        string className = ToWeaviateFriendlyClassName(collectionName);
+        var requestBuilder = BatchDeleteRequest.Create(collectionName, keyArray);
+        using HttpRequestMessage request = requestBuilder.Build();
+
+        try
+        {
+            await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+            this._logger.LogDebug("Vectors deleted");
+        }
+        catch (HttpOperationException e)
+        {
+            this._logger.LogError(e, "Request to batch delete collection: {CollectionName}, with class name: {ClassName} failed.", collectionName, className);
+            throw;
+        }
     }
 
     /// <inheritdoc />
