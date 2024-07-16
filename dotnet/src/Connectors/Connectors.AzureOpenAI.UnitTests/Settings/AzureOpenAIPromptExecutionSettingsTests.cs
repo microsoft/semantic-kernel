@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Settings;
 
@@ -91,7 +92,6 @@ public class AzureOpenAIPromptExecutionSettingsTests
                 { "top_p", 0.7 },
                 { "frequency_penalty", 0.7 },
                 { "presence_penalty", 0.7 },
-                { "results_per_prompt", 2 },
                 { "stop_sequences", new [] { "foo", "bar" } },
                 { "chat_system_prompt", "chat system prompt" },
                 { "max_tokens", 128 },
@@ -121,7 +121,6 @@ public class AzureOpenAIPromptExecutionSettingsTests
                 { "top_p", "0.7" },
                 { "frequency_penalty", "0.7" },
                 { "presence_penalty", "0.7" },
-                { "results_per_prompt", "2" },
                 { "stop_sequences", new [] { "foo", "bar" } },
                 { "chat_system_prompt", "chat system prompt" },
                 { "max_tokens", "128" },
@@ -246,6 +245,32 @@ public class AzureOpenAIPromptExecutionSettingsTests
 #pragma warning restore CS0618
         // Assert
         Assert.Null(executionSettingsWithData.StopSequences);
+    }
+
+    [Fact]
+    public void FromExecutionSettingsCreateAzureOpenAIPromptExecutionSettingsFromOpenAIPromptExecutionSettings()
+    {
+        // Arrange
+        OpenAIPromptExecutionSettings originalSettings = new()
+        {
+            Temperature = 0.7,
+            TopP = 0.7,
+            FrequencyPenalty = 0.7,
+            PresencePenalty = 0.7,
+            StopSequences = new string[] { "foo", "bar" },
+            ChatSystemPrompt = "chat system prompt",
+            TokenSelectionBiases = new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } },
+            MaxTokens = 128,
+            Logprobs = true,
+            Seed = 123456,
+            TopLogprobs = 5
+        };
+
+        // Act
+        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings);
+
+        // Assert
+        AssertExecutionSettings(executionSettings);
     }
 
     private static void AssertExecutionSettings(AzureOpenAIPromptExecutionSettings executionSettings)

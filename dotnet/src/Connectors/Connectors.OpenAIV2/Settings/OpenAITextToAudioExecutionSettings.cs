@@ -98,7 +98,7 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <param name="executionSettings">Instance of <see cref="PromptExecutionSettings"/>.</param>
     /// <returns>Instance of <see cref="OpenAITextToAudioExecutionSettings"/>.</returns>
-    public static OpenAITextToAudioExecutionSettings? FromExecutionSettings(PromptExecutionSettings? executionSettings)
+    public static OpenAITextToAudioExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
         if (executionSettings is null)
         {

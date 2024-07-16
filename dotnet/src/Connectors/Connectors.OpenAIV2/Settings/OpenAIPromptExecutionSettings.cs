@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// Execution settings for an OpenAI completion request.
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
+public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -293,25 +293,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
-        return new OpenAIPromptExecutionSettings()
-        {
-            ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            Temperature = this.Temperature,
-            TopP = this.TopP,
-            PresencePenalty = this.PresencePenalty,
-            FrequencyPenalty = this.FrequencyPenalty,
-            MaxTokens = this.MaxTokens,
-            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
-            Seed = this.Seed,
-            ResponseFormat = this.ResponseFormat,
-            TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
-            ToolCallBehavior = this.ToolCallBehavior,
-            User = this.User,
-            ChatSystemPrompt = this.ChatSystemPrompt,
-            Logprobs = this.Logprobs,
-            TopLogprobs = this.TopLogprobs
-        };
+        return this.Clone<OpenAIPromptExecutionSettings>();
     }
 
     /// <summary>
@@ -345,6 +327,34 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
 
         return openAIExecutionSettings!;
+    }
+
+    /// <summary>
+    /// Clone the settings object.
+    /// </summary>
+    /// <typeparam name="T">The type of the settings object to clone.</typeparam>
+    /// <returns>A new instance of the settings object.</returns>
+    protected T Clone<T>() where T : OpenAIPromptExecutionSettings, new()
+    {
+        return new T()
+        {
+            ModelId = this.ModelId,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            Temperature = this.Temperature,
+            TopP = this.TopP,
+            PresencePenalty = this.PresencePenalty,
+            FrequencyPenalty = this.FrequencyPenalty,
+            MaxTokens = this.MaxTokens,
+            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
+            Seed = this.Seed,
+            ResponseFormat = this.ResponseFormat,
+            TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
+            ToolCallBehavior = this.ToolCallBehavior,
+            User = this.User,
+            ChatSystemPrompt = this.ChatSystemPrompt,
+            Logprobs = this.Logprobs,
+            TopLogprobs = this.TopLogprobs
+        };
     }
 
     #region private ================================================================================
