@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-using Xunit;
-using Microsoft.SemanticKernel.Data;
-using Azure.Search.Documents.Indexes.Models;
 using System;
 using System.Collections.Generic;
+using Azure.Search.Documents.Indexes.Models;
+using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Microsoft.SemanticKernel.Data;
+using Xunit;
 
 namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 
