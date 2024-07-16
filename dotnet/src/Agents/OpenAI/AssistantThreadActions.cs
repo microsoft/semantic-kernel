@@ -20,12 +20,6 @@ internal static class AssistantThreadActions
 {
     private const string FunctionDelimiter = "-";
 
-    private static readonly HashSet<AuthorRole> s_messageRoles =
-        [
-            AuthorRole.User,
-            AuthorRole.Assistant,
-        ];
-
     private static readonly HashSet<RunStatus> s_pollingStatuses =
         [
             RunStatus.Queued,
@@ -50,12 +44,8 @@ internal static class AssistantThreadActions
     /// <throws><see cref="KernelException"/> if a system message is present, without taking any other action</throws>
     public static async Task CreateMessageAsync(AssistantsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
     {
-        if (!s_messageRoles.Contains(message.Role))
-        {
-            throw new KernelException($"Invalid message role: {message.Role}");
-        }
-
-        if (string.IsNullOrWhiteSpace(message.Content))
+        if (string.IsNullOrEmpty(message.Content) ||
+            message.Items.Any(i => i is FunctionCallContent))
         {
             return;
         }
