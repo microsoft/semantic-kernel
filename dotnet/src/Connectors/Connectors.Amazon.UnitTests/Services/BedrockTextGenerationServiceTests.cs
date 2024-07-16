@@ -8,6 +8,7 @@ using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.EventStreams;
 using Amazon.Runtime.EventStreams.Internal;
+using Connectors.Amazon.Extensions;
 using Connectors.Amazon.Models.Amazon;
 using Connectors.Amazon.Services;
 using Microsoft.Extensions.Logging;

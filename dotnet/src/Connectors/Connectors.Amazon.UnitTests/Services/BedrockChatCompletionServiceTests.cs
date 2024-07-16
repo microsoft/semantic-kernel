@@ -5,6 +5,7 @@ using System.Text.Json;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.EventStreams.Internal;
+using Connectors.Amazon.Extensions;
 using Connectors.Amazon.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
