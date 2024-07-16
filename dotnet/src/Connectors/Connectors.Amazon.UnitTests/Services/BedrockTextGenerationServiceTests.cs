@@ -25,12 +25,12 @@ public class BedrockTextGenerationServiceTests
     [Fact]
     public void AttributesShouldContainModelId()
     {
-        // Arrange
+        // Arrange & Act
         string modelId = "amazon.titan-text-premier-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var service = new BedrockTextGenerationService(modelId, mockBedrockApi.Object);
 
-        // Act & Assert
+        // Assert
         Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 

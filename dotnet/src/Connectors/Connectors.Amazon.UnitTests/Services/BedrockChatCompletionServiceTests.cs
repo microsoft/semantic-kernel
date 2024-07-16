@@ -5,7 +5,6 @@ using System.Text.Json;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.EventStreams.Internal;
-using Connectors.Amazon.Models.Mistral;
 using Connectors.Amazon.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -22,12 +21,12 @@ public class BedrockChatCompletionServiceTests
     [Fact]
     public void AttributesShouldContainModelId()
     {
-        // Arrange
+        // Arrange & Act
         string modelId = "amazon.titan-embed-text-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
 
-        // Act & Assert
+        // Assert
         Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 
@@ -176,5 +175,115 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["topP"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsAsyncShouldAssignCorrectRoles()
+    {
+        // Arrange
+        string modelId = "amazon.titan-embed-text-v1:0";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConverseResponse
+            {
+                Output = new ConverseOutput
+                {
+                    Message = new Message
+                    {
+                        Role = ConversationRole.Assistant,
+                        Content = new List<ContentBlock> { new ContentBlock { Text = "I'm doing well." } }
+                    }
+                },
+                Metrics = new ConverseMetrics(),
+                StopReason = StopReason.Max_tokens,
+                Usage = new TokenUsage()
+            });
+        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal(AuthorRole.Assistant, result[0].Role);
+        Assert.Single(result[0].Items);
+        Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
+    }
+
+    [Fact]
+    public async Task GetChatMessageContentsAsyncShouldHaveProperChatHistory()
+    {
+        // Arrange
+        string modelId = "amazon.titan-embed-text-v1:0";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+
+        // Set up the mock ConverseAsync to return multiple responses
+        mockBedrockApi.SetupSequence(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConverseResponse
+            {
+                Output = new ConverseOutput
+                {
+                    Message = new Message
+                    {
+                        Role = ConversationRole.Assistant,
+                        Content = new List<ContentBlock> { new ContentBlock { Text = "I'm doing well." } }
+                    }
+                },
+                Metrics = new ConverseMetrics(),
+                StopReason = StopReason.Max_tokens,
+                Usage = new TokenUsage()
+            })
+            .ReturnsAsync(new ConverseResponse
+            {
+                Output = new ConverseOutput
+                {
+                    Message = new Message
+                    {
+                        Role = ConversationRole.User,
+                        Content = new List<ContentBlock> { new ContentBlock { Text = "That's great to hear!" } }
+                    }
+                },
+                Metrics = new ConverseMetrics(),
+                StopReason = StopReason.Max_tokens,
+                Usage = new TokenUsage()
+            });
+
+        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result1 = await service.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
+        var result2 = await service.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
+
+        // Assert
+        Assert.NotNull(result1[0].Content);
+        chatHistory.AddAssistantMessage(result1[0].Content);
+        Assert.NotNull(result2[0].Content);
+        chatHistory.AddUserMessage(result2[0].Content);
+        Assert.Equal(2, result1.Count + result2.Count);
+
+        // Check the first result
+        Assert.Equal(AuthorRole.Assistant, result1[0].Role);
+        Assert.Single(result1[0].Items);
+        Assert.Equal("I'm doing well.", result1[0].Items[0].ToString());
+
+        // Check the second result
+        Assert.Equal(AuthorRole.User, result2[0].Role);
+        Assert.Single(result2[0].Items);
+        Assert.Equal("That's great to hear!", result2[0].Items[0].ToString());
+
+        // Check the chat history
+        Assert.Equal(5, chatHistory.Count); // Use the Count property to get the number of messages
+        Assert.Equal(AuthorRole.User, chatHistory[0].Role); // Use the indexer to access individual messages
+        Assert.Equal("Hello", chatHistory[0].Items[0].ToString());
+        Assert.Equal(AuthorRole.Assistant, chatHistory[1].Role);
+        Assert.Equal("Hi", chatHistory[1].Items[0].ToString());
+        Assert.Equal(AuthorRole.User, chatHistory[2].Role);
+        Assert.Equal("How are you?", chatHistory[2].Items[0].ToString());
+        Assert.Equal(AuthorRole.Assistant, chatHistory[3].Role);
+        Assert.Equal("I'm doing well.", chatHistory[3].Items[0].ToString());
+        Assert.Equal(AuthorRole.User, chatHistory[4].Role);
+        Assert.Equal("That's great to hear!", chatHistory[4].Items[0].ToString());
     }
 }
