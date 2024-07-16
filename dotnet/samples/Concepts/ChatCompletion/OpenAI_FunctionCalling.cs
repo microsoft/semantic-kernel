@@ -67,6 +67,24 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         Console.WriteLine(chatPromptResult);
     }
 
+    [Fact]
+    public async Task AutoInvokeLightPluginAsync()
+    {
+        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        Kernel kernel = CreateKernelWithPlugin<LightPlugin>();
+
+        // Invoke chat prompt with auto invocation of functions enabled
+        const string ChatPrompt = """
+            <message role="user">Turn on the light?</message>
+        """;
+        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
+            ChatPrompt, executionSettings);
+        var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
+
+        Console.WriteLine(chatPromptResult);
+    }
+
     public sealed class WeatherPlugin
     {
         [KernelFunction]
@@ -92,6 +110,26 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
 
         [Description("The date when the holiday period ends in ISO 8601 format")]
         public string EndDate { get; set; } = string.Empty;
+    }
+
+    public class LightPlugin
+    {
+        public bool IsOn { get; set; } = false;
+
+#pragma warning disable CA1024 // Use properties where appropriate
+        [KernelFunction]
+        [Description("Gets the state of the light.")]
+        public string GetState() => IsOn ? "on" : "off";
+#pragma warning restore CA1024 // Use properties where appropriate
+
+        [KernelFunction]
+        [Description("Changes the state of the light.'")]
+        public string ChangeState(bool newState)
+        {
+            this.IsOn = newState;
+            var state = GetState();
+            return state;
+        }
     }
 
     private Kernel CreateKernelWithPlugin<T>()
