@@ -70,13 +70,17 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           cd python
           poetry install --with tests
-      - name: Install Ollama docker
+      - name: Install Ollama
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
-          docker exec ollama ollama pull ${{ vars.OLLAMA_MODEL }}
-      - name: Display downloaded Ollama models
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+      - name: Pull model in Ollama
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          docker exec ollama ollama list
+          ollama pull ${{ vars.OLLAMA_MODEL }}
+          ollama list
       - name: Run Integration Tests
         id: run_tests
         shell: bash
@@ -105,7 +109,7 @@ jobs:
           ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
           MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
           MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
-          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }} # phi3
+          OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
@@ -147,14 +151,18 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           cd python && poetry install --with tests
 
-      - name: Install Ollama docker
+      - name: Install Ollama
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
-          docker exec ollama ollama pull ${{ vars.OLLAMA_MODEL }}
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
 
-      - name: Display downloaded Ollama models
+      - name: Pull model in Ollama
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          docker exec ollama ollama list
+          ollama pull ${{ vars.OLLAMA_MODEL }}
+          ollama list
 
       - name: Run Integration Tests
         id: run_tests
@@ -184,7 +192,7 @@ jobs:
           ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
           MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
           MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
-          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }} # phi3
+          OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
