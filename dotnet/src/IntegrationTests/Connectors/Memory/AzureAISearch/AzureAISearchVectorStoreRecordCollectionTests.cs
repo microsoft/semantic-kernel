@@ -40,6 +40,33 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Equal(expectedExists, actual);
     }
 
+    [Theory(Skip = SkipReason)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItCanCreateACollectionAsync(bool useRecordDefinition)
+    {
+        // Arrange
+        var testCollectionName = $"{fixture.TestIndexName}-createtest";
+        var options = new AzureAISearchVectorStoreRecordCollectionOptions<Hotel>
+        {
+            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+        };
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, testCollectionName, options);
+
+        await sut.DeleteCollectionAsync();
+
+        // Act
+        await sut.CreateCollectionAsync();
+
+        // Assert
+        var existResult = await sut.CollectionExistsAsync();
+        Assert.True(existResult);
+        await sut.DeleteCollectionAsync();
+
+        // Output
+        output.WriteLine(existResult.ToString());
+    }
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteCollectionAsync()
     {

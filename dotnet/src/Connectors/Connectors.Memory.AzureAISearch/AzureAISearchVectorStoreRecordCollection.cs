@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.SemanticKernel.Data;
 
@@ -77,6 +78,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     /// <summary>Optional configuration options for this class.</summary>
     private readonly AzureAISearchVectorStoreRecordCollectionOptions<TRecord> _options;
 
+    /// <summary>A definition of the current storage model.</summary>
+    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+
     /// <summary>The name of the key field for the collections that this class is used with.</summary>
     private readonly string _keyPropertyName;
 
@@ -102,6 +106,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         this._collectionName = collectionName;
         this._options = options ?? new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>();
         this._searchClient = this._searchIndexClient.GetSearchClient(collectionName);
+        this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 
         // Verify custom mapper.
         if (this._options.MapperType == AzureAISearchRecordMapperType.JsonObjectCustomMapper && this._options.JsonObjectCustomMapper is null)
@@ -154,6 +159,57 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
                 CollectionName = this._collectionName,
                 OperationName = "GetIndex"
             };
+        }
+    }
+
+    /// <inheritdoc />
+    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    {
+        var vectorSearchConfig = new VectorSearch();
+        var searchFields = new List<SearchField>();
+
+        // Loop through all properties and create the search fields.
+        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        {
+            // Key property.
+            if (property is VectorStoreRecordKeyProperty keyProperty)
+            {
+                searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapKeyField(keyProperty));
+            }
+
+            // Data property.
+            if (property is VectorStoreRecordDataProperty dataProperty)
+            {
+                searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty));
+            }
+
+            // Vector property.
+            if (property is VectorStoreRecordVectorProperty vectorProperty)
+            {
+                (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty);
+
+                // Add the search field, plus its profile and algorithm configuration to the search config.
+                searchFields.Add(vectorSearchField);
+                vectorSearchConfig.Algorithms.Add(algorithmConfiguration);
+                vectorSearchConfig.Profiles.Add(vectorSearchProfile);
+            }
+        }
+
+        // Create the index.
+        var searchIndex = new SearchIndex(this._collectionName, searchFields);
+        searchIndex.VectorSearch = vectorSearchConfig;
+
+        return this.RunOperationAsync(
+            "CreateIndex",
+            () => this._searchIndexClient.CreateIndexAsync(searchIndex, cancellationToken));
+    }
+
+    /// <inheritdoc />
+    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    {
+        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 

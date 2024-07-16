@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -40,4 +41,14 @@ public sealed class VectorStoreRecordDataProperty : VectorStoreRecordProperty
     /// Gets or sets the name of the property that contains the embedding for this data property.
     /// </summary>
     public string? EmbeddingPropertyName { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this data property is filterable.
+    /// </summary>
+    public bool IsFilterable { get; init; }
+
+    /// <summary>
+    /// Gets or sets the type of the data property.
+    /// </summary>
+    public Type? PropertyType { get; init; }
 }
