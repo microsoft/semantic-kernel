@@ -876,6 +876,13 @@ internal partial class ClientCore
                 toolCalls.Add(ChatToolCall.CreateFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
             }
 
+            // This check is necessary to prevent an exception that will be thrown if the toolCalls collection is empty.
+            // HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'  
+            if (toolCalls.Count == 0)
+            {
+                return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
+            }
+
             return [new AssistantChatMessage(toolCalls, message.Content) { ParticipantName = message.AuthorName }];
         }
 

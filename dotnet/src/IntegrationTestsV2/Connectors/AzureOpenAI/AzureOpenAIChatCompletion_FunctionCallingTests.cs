@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -697,6 +698,108 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         // Assert
         Assert.Contains("tornado", result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItShouldSupportOldFunctionCallingModelSerializedIntoChatHistoryByPreviousVersionOfSKAsync()
+    {
+        // Arrange
+        var chatHistory = JsonSerializer.Deserialize<ChatHistory>(File.ReadAllText("./TestData/serializedChatHistoryV1_15_1.json"));
+
+        // Remove connector-agnostic function-calling items to check if the old function-calling model, which relies on function information in metadata, is handled correctly.
+        foreach (var chatMessage in chatHistory!)
+        {
+            var index = 0;
+            while (index < chatMessage.Items.Count)
+            {
+                var item = chatMessage.Items[index];
+                if (item is FunctionCallContent || item is FunctionResultContent)
+                {
+                    chatMessage.Items.Remove(item);
+                    continue;
+                }
+                index++;
+            }
+        }
+
+        string? emailBody = null, emailRecipient = null;
+
+        var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+        kernel.ImportPluginFromFunctions("EmailPlugin", [KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail")]);
+
+        // The deserialized chat history contains a list of function calls and the final answer to the question regarding the color of the sky in Boston.
+        chatHistory.AddUserMessage("Send it to my email: abc@domain.com");
+
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        // Act
+        var result = await kernel.GetRequiredService<IChatCompletionService>().GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.Equal("abc@domain.com", emailRecipient);
+        Assert.Equal("Given the current weather in Boston is 61\u00B0F and rainy, the likely color of the sky would be gray or overcast due to the presence of rain clouds.", emailBody);
+    }
+
+    [Fact]
+    public async Task ItShouldSupportNewFunctionCallingModelSerializedIntoChatHistoryByPreviousVersionOfSKAsync()
+    {
+        // Arrange
+        var chatHistory = JsonSerializer.Deserialize<ChatHistory>(File.ReadAllText("./TestData/serializedChatHistoryV1_15_1.json"));
+
+        // Remove metadata related to the old function-calling model to check if the new model, which relies on function call content/result classes, is handled correctly.
+        foreach (var chatMessage in chatHistory!)
+        {
+            if (chatMessage.Metadata is not null)
+            {
+                var metadata = new Dictionary<string, object?>(chatMessage.Metadata);
+                metadata.Remove(OpenAIChatMessageContent.ToolIdProperty);
+                metadata.Remove("ChatResponseMessage.FunctionToolCalls");
+                chatMessage.Metadata = metadata;
+            }
+        }
+
+        string? emailBody = null, emailRecipient = null;
+
+        var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+        kernel.ImportPluginFromFunctions("EmailPlugin", [KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail")]);
+
+        // The deserialized chat history contains a list of function calls and the final answer to the question regarding the color of the sky in Boston.
+        chatHistory.AddUserMessage("Send it to my email: abc@domain.com");
+
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        // Act
+        var result = await kernel.GetRequiredService<IChatCompletionService>().GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.Equal("abc@domain.com", emailRecipient);
+        Assert.Equal("Given the current weather in Boston is 61\u00B0F and rainy, the likely color of the sky would be gray or overcast due to the presence of rain clouds.", emailBody);
+    }
+
+    /// <summary>
+    /// This test verifies that the connector can handle the scenario where the assistance response message is added to the chat history.
+    /// The assistance response message with no function calls added to chat history caused the error: HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'
+    /// </summary>
+    [Fact]
+    public async Task AssistanceResponseAddedToChatHistoryShouldBeHandledCorrectlyAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var assistanceResponse = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        chatHistory.Add(assistanceResponse); // Adding assistance response to chat history.
+        chatHistory.AddUserMessage("Return only the color name.");
+
+        await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
     }
 
     private Kernel CreateAndInitializeKernel(bool importHelperPlugin = false)
