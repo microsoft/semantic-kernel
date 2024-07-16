@@ -70,6 +70,81 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         Assert.Equal(expectedExists, actual);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateCollectionCallsSDKAsync(bool useDefinition)
+    {
+        // Arrange.
+        this._searchIndexClientMock
+            .Setup(x => x.CreateIndexAsync(It.IsAny<SearchIndex>(), this._testCancellationToken))
+            .ReturnsAsync(Response.FromValue(new SearchIndex(TestCollectionName), Mock.Of<Response>()));
+
+        var sut = this.CreateRecordCollection(useDefinition);
+
+        // Act.
+        await sut.CreateCollectionAsync();
+
+        // Assert.
+        this._searchIndexClientMock
+            .Verify(
+                x => x.CreateIndexAsync(
+                    It.Is<SearchIndex>(si => si.Fields.Count == 3 && si.Name == TestCollectionName && si.VectorSearch.Profiles.Count == 1 && si.VectorSearch.Algorithms.Count == 1),
+                    this._testCancellationToken),
+                Times.Once);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task CreateCollectionIfNotExistsSDKAsync(bool useDefinition, bool expectedExists)
+    {
+        // Arrange.
+        if (expectedExists)
+        {
+            this._searchIndexClientMock
+                .Setup(x => x.GetIndexAsync(TestCollectionName, this._testCancellationToken))
+                .Returns(Task.FromResult<Response<SearchIndex>?>(null));
+        }
+        else
+        {
+            this._searchIndexClientMock
+                .Setup(x => x.GetIndexAsync(TestCollectionName, this._testCancellationToken))
+                .ThrowsAsync(new RequestFailedException(404, "Index not found"));
+        }
+
+        this._searchIndexClientMock
+            .Setup(x => x.CreateIndexAsync(It.IsAny<SearchIndex>(), this._testCancellationToken))
+            .ReturnsAsync(Response.FromValue(new SearchIndex(TestCollectionName), Mock.Of<Response>()));
+
+        var sut = this.CreateRecordCollection(useDefinition);
+
+        // Act.
+        await sut.CreateCollectionIfNotExistsAsync();
+
+        // Assert.
+        if (expectedExists)
+        {
+            this._searchIndexClientMock
+                .Verify(
+                    x => x.CreateIndexAsync(
+                        It.IsAny<SearchIndex>(),
+                        this._testCancellationToken),
+                    Times.Never);
+        }
+        else
+        {
+            this._searchIndexClientMock
+                .Verify(
+                    x => x.CreateIndexAsync(
+                        It.Is<SearchIndex>(si => si.Fields.Count == 3 && si.Name == TestCollectionName && si.VectorSearch.Profiles.Count == 1 && si.VectorSearch.Algorithms.Count == 1),
+                        this._testCancellationToken),
+                    Times.Once);
+        }
+    }
+
     [Fact]
     public async Task CanDeleteCollectionAsync()
     {
@@ -461,8 +536,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("Data"),
-            new VectorStoreRecordVectorProperty("Vector")
+            new VectorStoreRecordDataProperty("Data") { PropertyType = typeof(string) },
+            new VectorStoreRecordVectorProperty("Vector") { Dimensions = 4 }
         ]
     };
 
@@ -474,7 +549,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         [VectorStoreRecordData]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

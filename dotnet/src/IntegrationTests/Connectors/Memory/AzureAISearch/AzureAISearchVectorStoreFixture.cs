@@ -54,13 +54,13 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
             Properties = new List<VectorStoreRecordProperty>
             {
                 new VectorStoreRecordKeyProperty("HotelId"),
-                new VectorStoreRecordDataProperty("HotelName"),
-                new VectorStoreRecordDataProperty("Description"),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding"),
-                new VectorStoreRecordDataProperty("Tags"),
-                new VectorStoreRecordDataProperty("ParkingIncluded"),
-                new VectorStoreRecordDataProperty("LastRenovationDate"),
-                new VectorStoreRecordDataProperty("Rating")
+                new VectorStoreRecordDataProperty("HotelName") { PropertyType = typeof(string) },
+                new VectorStoreRecordDataProperty("Description") { PropertyType = typeof(string) },
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding") { Dimensions = 4 },
+                new VectorStoreRecordDataProperty("Tags") { PropertyType = typeof(string[]) },
+                new VectorStoreRecordDataProperty("ParkingIncluded") { PropertyType = typeof(bool?) },
+                new VectorStoreRecordDataProperty("LastRenovationDate") { PropertyType = typeof(DateTimeOffset?) },
+                new VectorStoreRecordDataProperty("Rating") { PropertyType = typeof(float?) }
             }
         };
     }
@@ -219,7 +219,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding")]
         public string Description { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(4)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 
         [SearchableField(IsFilterable = true, IsFacetable = true)]
