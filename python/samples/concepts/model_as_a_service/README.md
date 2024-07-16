@@ -4,7 +4,7 @@ This sample contains a script to run multiple models against the popular [**Meas
 
 You can use this script as a start point if you are planning to do the followings:
 1. You are developing a new dataset or augmenting an existing dataset for benchmarking Large Language Models.
-2. You would like to reproduce results from acamdemic papers with exisiting datasets and models available on Azure AI Studio, such as the Phi series of models, or larger models like the Llama series and the Mistral large model. You can find model availabilities [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless-availability).
+2. You would like to reproduce results from acamdemic papers with existing datasets and models available on Azure AI Studio, such as the Phi series of models, or larger models like the Llama series and the Mistral large model. You can find model availabilities [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless-availability).
 
 ## Dataset
 
@@ -57,7 +57,7 @@ Follow the steps [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to
 ## Running the sample
 1. Deploy the required models. Follow the steps [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless?tabs=azure-ai-studio).
 2. Fill in the API keys and endpoints in the script.
-3. Open a terminal and activate your virutal environment for the Semantic Kernel project.
+3. Open a terminal and activate your virtual environment for the Semantic Kernel project.
 4. Run `python mmlu_model_eval.py`
 
 > If you are using VS code, you can simply select the interpreter in your virtual environment and click the run icon on the top right corner of the file panel when you focus on the script file.
