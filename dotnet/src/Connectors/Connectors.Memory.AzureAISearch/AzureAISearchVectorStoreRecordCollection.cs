@@ -139,7 +139,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
     {
         try
         {
-            var getResult = await this._searchIndexClient.GetIndexAsync(this._collectionName, cancellationToken).ConfigureAwait(false);
+            await this._searchIndexClient.GetIndexAsync(this._collectionName, cancellationToken).ConfigureAwait(false);
             return true;
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
