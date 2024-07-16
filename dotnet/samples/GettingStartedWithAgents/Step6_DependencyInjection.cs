@@ -82,7 +82,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         {
             Console.WriteLine($"# {AuthorRole.User}: {input}");
 
-            await foreach (var content in agentClient.RunDemoAsync(input))
+            await foreach (ChatMessageContent content in agentClient.RunDemoAsync(input))
             {
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }

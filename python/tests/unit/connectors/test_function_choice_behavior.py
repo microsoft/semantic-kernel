@@ -13,7 +13,9 @@ from semantic_kernel.connectors.ai.function_choice_behavior import (
     DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS,
     FunctionChoiceBehavior,
     FunctionChoiceType,
+    _combine_filter_dicts,
 )
+from semantic_kernel.exceptions import ServiceInitializationError
 
 
 @pytest.fixture
@@ -55,6 +57,14 @@ def test_from_function_call_behavior_kernel_functions():
     assert new_behavior.auto_invoke_kernel_functions is True
 
 
+def test_from_function_call_behavior_required():
+    behavior = FunctionCallBehavior.RequiredFunction(auto_invoke=True, function_fully_qualified_name="plugin1-func1")
+    new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
+    assert new_behavior.type == FunctionChoiceType.REQUIRED
+    assert new_behavior.auto_invoke_kernel_functions is True
+    assert new_behavior.filters == {"included_functions": ["plugin1-func1"]}
+
+
 def test_from_function_call_behavior_enabled_functions():
     expected_filters = {"included_functions": ["plugin1-func1"]}
     behavior = FunctionCallBehavior.EnableFunctions(auto_invoke=True, filters=expected_filters)
@@ -62,6 +72,14 @@ def test_from_function_call_behavior_enabled_functions():
     assert new_behavior.type == FunctionChoiceType.AUTO
     assert new_behavior.auto_invoke_kernel_functions is True
     assert new_behavior.filters == expected_filters
+
+
+def test_from_function_call_behavior():
+    behavior = FunctionCallBehavior()
+    new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
+    assert new_behavior is not None
+    assert new_behavior.enable_kernel_functions == behavior.enable_kernel_functions
+    assert new_behavior.maximum_auto_invoke_attempts == behavior.max_auto_invoke_attempts
 
 
 @pytest.mark.parametrize(("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)])
@@ -214,3 +232,34 @@ def test_configure_required_function_skip(update_settings_callback, kernel: "Ker
     fcb.enable_kernel_functions = False
     fcb.configure(kernel, update_settings_callback, None)
     assert not update_settings_callback.called
+
+
+def test_service_initialization_error():
+    dict1 = {"filter1": ["a", "b", "c"]}
+    dict2 = {"filter1": "not_a_list"}  # This should trigger the error
+
+    with pytest.raises(ServiceInitializationError, match="Values for filter key 'filter1' are not lists."):
+        _combine_filter_dicts(dict1, dict2)
+
+
+def test_from_string_auto():
+    auto = FunctionChoiceBehavior.from_string("auto")
+    assert auto == FunctionChoiceBehavior.Auto()
+
+
+def test_from_string_none():
+    none = FunctionChoiceBehavior.from_string("none")
+    assert none == FunctionChoiceBehavior.NoneInvoke()
+
+
+def test_from_string_required():
+    required = FunctionChoiceBehavior.from_string("required")
+    assert required == FunctionChoiceBehavior.Required()
+
+
+def test_from_string_invalid():
+    with pytest.raises(
+        ServiceInitializationError,
+        match="The specified type `invalid` is not supported. Allowed types are: `auto`, `none`, `required`.",
+    ):
+        FunctionChoiceBehavior.from_string("invalid")

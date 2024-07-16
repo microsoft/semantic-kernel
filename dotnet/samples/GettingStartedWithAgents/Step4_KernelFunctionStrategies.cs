@@ -120,7 +120,7 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
         Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-        await foreach (var content in chat.InvokeAsync())
+        await foreach (ChatMessageContent content in chat.InvokeAsync())
         {
             Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }

@@ -1,14 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class with data related to prompt rendering.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class PromptRenderContext
 {
     private string? _renderedPrompt;
