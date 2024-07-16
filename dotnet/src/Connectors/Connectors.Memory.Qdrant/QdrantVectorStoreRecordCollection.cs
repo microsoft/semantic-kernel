@@ -98,6 +98,25 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
+    public string CollectionName => this._collectionName;
+
+    /// <inheritdoc />
+    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    {
+        return this.RunOperationAsync(
+            "CollectionExists",
+            () => this._qdrantClient.CollectionExistsAsync(this._collectionName, cancellationToken));
+    }
+
+    /// <inheritdoc />
+    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    {
+        return this.RunOperationAsync(
+            "DeleteCollection",
+            () => this._qdrantClient.DeleteCollectionAsync(this._collectionName, null, cancellationToken));
+    }
+
+    /// <inheritdoc />
     public async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
@@ -313,6 +332,29 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 this._collectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
+        }
+    }
+
+    /// <summary>
+    /// Run the given operation and wrap any <see cref="RpcException"/> with <see cref="VectorStoreOperationException"/>."/>
+    /// </summary>
+    /// <param name="operationName">The type of database operation being run.</param>
+    /// <param name="operation">The operation to run.</param>
+    /// <returns>The result of the operation.</returns>
+    private async Task RunOperationAsync(string operationName, Func<Task> operation)
+    {
+        try
+        {
+            await operation.Invoke().ConfigureAwait(false);
+        }
+        catch (RpcException ex)
+        {
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                VectorStoreType = DatabaseName,
+                CollectionName = this._collectionName,
+                OperationName = operationName
+            };
         }
     }
 

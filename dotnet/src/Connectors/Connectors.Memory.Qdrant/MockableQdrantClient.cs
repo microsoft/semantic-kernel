@@ -37,13 +37,39 @@ internal class MockableQdrantClient
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     /// <summary>
+    /// Check if a collection exists.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="cancellationToken">
+    /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
+    /// </param>
+    public virtual Task<bool> CollectionExistsAsync(
+        string collectionName,
+        CancellationToken cancellationToken = default)
+        => this._qdrantClient.CollectionExistsAsync(collectionName, cancellationToken);
+
+    /// <summary>
+    /// Drop a collection and all its associated data.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="timeout">Wait timeout for operation commit in seconds, if not specified - default value will be supplied</param>
+    /// <param name="cancellationToken">
+    /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
+    /// </param>
+    public virtual Task DeleteCollectionAsync(
+        string collectionName,
+        TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default)
+        => this._qdrantClient.DeleteCollectionAsync(collectionName, timeout, cancellationToken);
+
+    /// <summary>
     /// Delete a point.
     /// </summary>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="id">The ID to delete.</param>
     /// <param name="wait">Whether to wait until the changes have been applied. Defaults to <c>true</c>.</param>
-	/// <param name="ordering">Write ordering guarantees. Defaults to <c>Weak</c>.</param>
-	/// <param name="shardKeySelector">Option for custom sharding to specify used shard keys.</param>
+    /// <param name="ordering">Write ordering guarantees. Defaults to <c>Weak</c>.</param>
+    /// <param name="shardKeySelector">Option for custom sharding to specify used shard keys.</param>
     /// <param name="cancellationToken">
     /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
     /// </param>

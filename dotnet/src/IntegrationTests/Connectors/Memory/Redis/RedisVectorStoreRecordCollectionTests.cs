@@ -6,6 +6,8 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Data;
+using NRedisStack.RedisStackCommands;
+using NRedisStack.Search;
 using Xunit;
 using Xunit.Abstractions;
 using static SemanticKernel.IntegrationTests.Connectors.Memory.Redis.RedisVectorStoreFixture;
@@ -20,6 +22,41 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 [Collection("RedisVectorStoreCollection")]
 public sealed class RedisVectorStoreRecordCollectionTests(ITestOutputHelper output, RedisVectorStoreFixture fixture)
 {
+    [Theory]
+    [InlineData("hotels", true)]
+    [InlineData("nonexistentcollection", false)]
+    public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
+    {
+        // Arrange.
+        var sut = new RedisVectorStoreRecordCollection<Hotel>(fixture.Database, collectionName);
+
+        // Act.
+        var actual = await sut.CollectionExistsAsync();
+
+        // Assert.
+        Assert.Equal(expectedExists, actual);
+    }
+
+    [Fact]
+    public async Task ItCanDeleteCollectionAsync()
+    {
+        // Arrange
+        var tempCollectionName = "temp-test";
+        var schema = new Schema();
+        schema.AddTextField("HotelName");
+        var createParams = new FTCreateParams();
+        createParams.AddPrefix(tempCollectionName);
+        await fixture.Database.FT().CreateAsync(tempCollectionName, createParams, schema);
+
+        var sut = new RedisVectorStoreRecordCollection<Hotel>(fixture.Database, tempCollectionName);
+
+        // Act
+        await sut.DeleteCollectionAsync();
+
+        // Assert
+        Assert.False(await sut.CollectionExistsAsync());
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

@@ -27,6 +27,37 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
+    public async Task CollectionExistsReturnsCollectionStateAsync(bool expectedExists)
+    {
+        // Arrange.
+        var collectionName = expectedExists ? fixture.TestIndexName : "nonexistentcollection";
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, collectionName);
+
+        // Act.
+        var actual = await sut.CollectionExistsAsync();
+
+        // Assert.
+        Assert.Equal(expectedExists, actual);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanDeleteCollectionAsync()
+    {
+        // Arrange
+        var tempCollectionName = fixture.TestIndexName + "-delete";
+        await AzureAISearchVectorStoreFixture.CreateIndexAsync(tempCollectionName, fixture.SearchIndexClient);
+        var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, tempCollectionName);
+
+        // Act
+        await sut.DeleteCollectionAsync();
+
+        // Assert
+        Assert.False(await sut.CollectionExistsAsync());
+    }
+
+    [Theory(Skip = SkipReason)]
+    [InlineData(true)]
+    [InlineData(false)]
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange
