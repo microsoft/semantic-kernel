@@ -55,6 +55,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
 
             await foreach (ChatMessageContent content in agent.InvokeAsync(chat))
             {
+                // Do not add a message implicitly added to the history.
                 if (!content.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
                 {
                     chat.Add(content);
