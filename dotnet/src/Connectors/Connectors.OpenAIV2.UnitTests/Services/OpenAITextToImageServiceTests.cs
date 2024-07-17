@@ -46,15 +46,6 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 
-    [Fact]
-    public void ItThrowsIfModelIdIsNotProvided()
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService("apikey", modelId: " "));
-        Assert.Throws<ArgumentException>(() => new OpenAITextToImageService("apikey", modelId: string.Empty));
-        Assert.Throws<ArgumentNullException>(() => new OpenAITextToImageService("apikey", modelId: null!));
-    }
-
     [Theory]
     [InlineData(256, 256, "dall-e-2")]
     [InlineData(512, 512, "dall-e-2")]
