@@ -4,16 +4,20 @@ classDiagram
     OpenAIAssistantDefinition
     OpenAIAssistantDefinition --> OpenAIExecutionSettings
     OpenAIExecutionSettings
+    OpenAIExecutionSettings --> AssistantToolCallBehavior
     OpenAIServiceConfiguration
     OpenAIAssistantInvocationSettings
+    OpenAIAssistantInvocationSettings --> AssistantToolCallBehavior
     OpenAIThreadCreationSettings
 
     KernelAgent <|-- OpenAIAssistantAgent
+    OpenAIAssistantAgent ..> OpenAIServiceConfiguration
+    OpenAIAssistantAgent ..> FileClient
+    OpenAIAssistantAgent ..> VectorStoreClient
+    OpenAIAssistantAgent -- OpenAIAssistantChannel
     OpenAIAssistantAgent --> OpenAIAssistantDefinition
     OpenAIAssistantAgent ..> OpenAIAssistantInvocationSettings
     OpenAIAssistantAgent ..> OpenAIThreadCreationSettings
-    OpenAIAssistantAgent ..> OpenAIServiceConfiguration
-    OpenAIAssistantAgent -- OpenAIAssistantChannel
     class OpenAIAssistantAgent {
         +OpenAIAssistantDefinition Definition
         +bool IsDeleted
@@ -21,6 +25,8 @@ classDiagram
         +Task~OpenAIAssistantAgent~ Create(Kernel kernel, OpenAIServiceConfiguration config, OpenAIAssistantDefinition definition)$
         +AsyncEnumerable~OpenAIAssistantDefinition~ ListDefinitions(OpenAIServiceConfiguration config)$
         +Task~OpenAIAssistantAgent~ Retrieve(Kernel kernel, OpenAIServiceConfiguration config, string id)$
+        +FileClient CreateFileClient(OpenAIServiceConfiguration config)$
+        +VectorStoreClient CreateVectorStoreClient(OpenAIServiceConfiguration config)$
         +Task~string~ CreateThread()
         +Task~string~ CreateThread(OpenAIThreadCreationSettings? settings)
         +Task~bool~ DeleteThread(string threadId)
@@ -38,4 +44,12 @@ classDiagram
         #Task Receive(IReadOnlyList<ChatMessageContent> history)
         #AsyncEnumerable<ChatMessageContent> Invoke(OpenAIAssistantAgent agent)
         #AsyncEnumerable<ChatMessageContent> GetHistory()
+    }
+
+    class FileClient {
+        <<OpenAI>>
+    }
+
+    class VectorStoreClient {
+        <<OpenAI>>
     }

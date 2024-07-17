@@ -1,5 +1,6 @@
 classDiagram
 
+    OpenAIAssistantInvocationSettings --> AssistantToolCallBehavior
     class OpenAIAssistantInvocationSettings {
         string? ModelName
         bool? EnableCodeInterpreter
@@ -12,4 +13,11 @@ classDiagram
         float? Temperature
         float? TopP
         Dictionary~string, string~? Metadata
+        AssistantToolCallBehavior? ToolCallBehavior
+    }
+
+    class AssistantToolCallBehavior {
+        AssistantToolCallBehavior RequireCodeInterpreter()$
+        AssistantToolCallBehavior RequireFunction(KernelFunction function)$
+        AssistantToolCallBehavior RequireFileSearch()$
     }

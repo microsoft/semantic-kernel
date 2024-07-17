@@ -17,9 +17,17 @@ classDiagram
         OpenAIAssistantExecutionSettings? ExecutionSettings
     }
 
+    OpenAIAssistantExecutionSettings --> AssistantToolCallBehavior
     class OpenAIAssistantExecutionSettings {
         int? MaxCompletionTokens
         int? MaxPromptTokens
         bool? ParallelToolCallsEnabled
         int? TruncationMessageCount
+        AssistantToolCallBehavior? ToolCallBehavior
+    }
+
+    class AssistantToolCallBehavior {
+        AssistantToolCallBehavior RequireCodeInterpreter()$
+        AssistantToolCallBehavior RequireFunction(KernelFunction function)$
+        AssistantToolCallBehavior RequireFileSearch()$
     }

@@ -12,7 +12,6 @@ Open AI has release the _Assistants V2_ API.  This builds on top of the V1 _assi
 ## Design
 
 Migrating to Assistant V2 API is a breaking change to the existing package due to:
-- Class definition changes
 - Underlying capability differences (e.g. `file-search` vs `retrieval`)
 - Underlying V2 SDK is version incompatible with V1 (`OpenAI` and `Azure.AI.OpenAI`)
 
@@ -29,7 +28,7 @@ The `OpenAIAssistantDefinition` was previously used only when enumerating a list
 This includes optional _execution_settings_ for defining default _run_ behavior.  Since these execution settings are not part of the remote assistant definition, they are persisted in the assistant metadata for when an existing agent is retrieved.
 
 <p align="center">
-<kbd><img src="diagrams/assistant-definition.png"  style="width: 360pt;"></kbd>
+<kbd><img src="diagrams/assistant-definition.png"  style="width: 500pt;"></kbd>
 </p>
 
 
@@ -38,7 +37,7 @@ This includes optional _execution_settings_ for defining default _run_ behavior.
 When invoking an `OpenAIAssistantAgent` directly (no-chat), settings that only apply to a discrete run may be specified.  These settings are defined as `OpenAIAssistantInvocationSettings` and ovetake precedence over any corresponding assistant or thread settings.
 
 <p align="center">
-<kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 220pt;"></kbd>
+<kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 370pt;"></kbd>
 </p>
 
 
@@ -58,7 +57,7 @@ The `OpenAIServiceConfiguration` defines how to connect to a specific remote ser
 > Note: This was previously named `OpenAIAssistantConfiguration`, but is not necessarily assistant specific.
 
 <p align="center">
-<kbd><img src="diagrams/assistant-serviceconfig.png"  style="width: 360pt;"></kbd>
+<kbd><img src="diagrams/assistant-serviceconfig.png"  style="width: 400pt;"></kbd>
 </p>
 
 
@@ -69,8 +68,15 @@ The `OpenAIAssistant` agent is roughly equivalent to its V1 form save for:
 - Supports settings for _assistant_, _thread_, and _run_
 - Agent definition shifts to `Definition` property
 
+Previously, the agent definition as exposed via direct properties such as:
+
+- `FileIds`
+- `Metadata`
+
+This has all been shifted and expanded upon via the `Definition` property which is of the same type (`OpenAIAssistantDefinition`) utilized to create and query an assistant.
+
 <p align="center">
-<kbd><img src="diagrams/assistant-agent.png"  style="width: 720pt;"></kbd>
+<kbd><img src="diagrams/assistant-agent.png"  style="width: 780pt;"></kbd>
 </p>
 
 The following table describes the purpose of diagramed methods on the `OpenAIAssistantAgent`.
