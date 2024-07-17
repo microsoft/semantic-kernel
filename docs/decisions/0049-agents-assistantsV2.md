@@ -25,7 +25,9 @@ Specific configuration/setttings classes are introduced to support the ability t
 
 The `OpenAIAssistantDefinition` was previously used only when enumerating a list of stored agents.  It has been evolved to also be used as input for creating and agent and exposed as a discrete property on the `OpenAIAssistantAgent` instance.
 
-This includes optional _execution_settings_ for defining default _run_ behavior.  Since these execution settings are not part of the remote assistant definition, they are persisted in the assistant metadata for when an existing agent is retrieved.
+This includes optional `ExecutionSettings` which define default _run_ behavior.  Since these execution settings are not part of the remote assistant definition, they are persisted in the assistant metadata for when an existing agent is retrieved.  `AssistantToolCallBehavior` is included as part of the _execution settings_ and modeled in alignment with the `ToolCallBehavior` associated with _AI Connectors_.
+
+> Note: Manual function calling isn't currently supported for `OpenAIAssistantAgent` or `AgentChat`  and is planned to be addressed as an enhancement.  When this supported is introduced, `AssistantToolCallBehavior` will determine the function calling behavior (also in alignment with the `ToolCallBehavior` associated with _AI Connectors_).
 
 <p align="center">
 <kbd><img src="diagrams/assistant-definition.png"  style="width: 500pt;"></kbd>
