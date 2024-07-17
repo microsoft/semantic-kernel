@@ -100,11 +100,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resources\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Agents\ChatCompletion_FunctionTermination.cs" />
     <Compile Remove="Agents\ChatCompletion_Streaming.cs" />
     <Compile Remove="Agents\ComplexChat_NestedShopper.cs" />
     <Compile Remove="Agents\Legacy_AgentAuthoring.cs" />
@@ -143,6 +149,7 @@
     <Compile Remove="ChatCompletion\OpenAI_ReasonedFunctionCalling.cs" />
     <Compile Remove="ChatCompletion\OpenAI_RepeatedFunctionCalling.cs" />
     <Compile Remove="ChatCompletion\OpenAI_UsingLogitBias.cs" />
+    <Compile Remove="Planners\AutoFunctionCallingPlanning.cs" />
     <Compile Remove="PromptTemplates\ChatCompletionPrompts.cs" />
     <Compile Remove="PromptTemplates\ChatWithPrompts.cs" />
     <Compile Remove="PromptTemplates\LiquidPrompts.cs" />
@@ -162,6 +169,7 @@
     <Compile Remove="TextToImage\OpenAI_TextToImageDalle3.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Agents\ChatCompletion_FunctionTermination.cs" />
     <None Include="Agents\ChatCompletion_Streaming.cs" />
     <None Include="Agents\ComplexChat_NestedShopper.cs" />
     <None Include="Agents\Legacy_AgentAuthoring.cs" />
@@ -200,6 +208,7 @@
     <None Include="ChatCompletion\OpenAI_ReasonedFunctionCalling.cs" />
     <None Include="ChatCompletion\OpenAI_RepeatedFunctionCalling.cs" />
     <None Include="ChatCompletion\OpenAI_UsingLogitBias.cs" />
+    <None Include="Planners\AutoFunctionCallingPlanning.cs" />
     <None Include="PromptTemplates\ChatCompletionPrompts.cs" />
     <None Include="PromptTemplates\ChatWithPrompts.cs" />
     <None Include="PromptTemplates\LiquidPrompts.cs" />
@@ -217,10 +226,5 @@
     <None Include="TextGeneration\OpenAI_TextGenerationStreaming.cs" />
     <None Include="TextToAudio\OpenAI_TextToAudio.cs" />
     <None Include="TextToImage\OpenAI_TextToImageDalle3.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>
