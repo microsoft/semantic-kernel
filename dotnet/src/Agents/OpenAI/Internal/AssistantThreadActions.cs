@@ -42,10 +42,10 @@ internal static class AssistantThreadActions
     /// <param name="message">The message to add</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <throws><see cref="KernelException"/> if a system message is present, without taking any other action</throws>
+    public static async Task CreateMessageAsync(AssistantClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
+    {
         if (string.IsNullOrEmpty(message.Content) ||
             message.Items.Any(i => i is FunctionCallContent))
-
-        if (string.IsNullOrWhiteSpace(message.Content))
         {
             return;
         }
@@ -224,10 +224,10 @@ internal static class AssistantThreadActions
                         ChatMessageContent? content = null;
 
                         // Process code-interpreter content
+                        if (toolCall.ToolKind == RunStepToolCallKind.CodeInterpreter)
+                        {
                             content = GenerateCodeInterpreterContent(agent.GetName(), toolCall.CodeInterpreterInput);
                             isVisible = true;
-                        {
-                            content = GenerateCodeInterpreterContent(agent.GetName(), toolCodeInterpreter);
                         }
                         // Process function result content
                         else if (toolCall.ToolKind == RunStepToolCallKind.Function)

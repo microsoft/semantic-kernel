@@ -247,7 +247,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     {
         this.ThrowIfDeleted();
 
-        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, cancellationToken).ConfigureAwait(false))
+        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, settings, this.Logger, cancellationToken).ConfigureAwait(false))
         {
             if (isVisible)
             {
