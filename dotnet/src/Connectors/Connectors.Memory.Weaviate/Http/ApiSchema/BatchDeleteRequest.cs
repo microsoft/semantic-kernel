@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Linq;
 using System.Net.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -16,11 +17,8 @@ internal sealed class BatchDeleteRequest
 
     public static BatchDeleteRequest Create(string @class, string[] ids)
     {
-        for (int i = 0; i < ids.Length; i++)
-        {
-            ids[i] = ToWeaviateFriendlyId(ids[i]);
-        }
-        return new(@class, ids);
+        var friendlyIds = ids.Select(ToWeaviateFriendlyId).ToArray();
+        return new(@class, friendlyIds);
     }
 
     private static string ToWeaviateFriendlyId(string id)
