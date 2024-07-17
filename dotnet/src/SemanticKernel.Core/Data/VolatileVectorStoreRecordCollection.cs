@@ -92,6 +92,22 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
+    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    {
+        this._internalCollection.TryAdd(this._collectionName, new ConcurrentDictionary<string, TRecord>());
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    {
+        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         this._internalCollection.TryRemove(this._collectionName, out _);
