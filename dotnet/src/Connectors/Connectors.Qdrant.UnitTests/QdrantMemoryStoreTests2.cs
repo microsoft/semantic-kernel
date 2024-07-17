@@ -485,10 +485,11 @@ public class QdrantMemoryStoreTests2
     public async Task ItCanRemoveAVectorUsingMetadataIdAsync()
     {
         // Arrange
+        string[] ids = [this._id];
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task>(x =>
-                x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                x.DeleteVectorByPayloadIdsAsync(It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
@@ -498,7 +499,7 @@ public class QdrantMemoryStoreTests2
 
         // Assert
         mockQdrantClient.Verify<Task>(x =>
-            x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<CancellationToken>()), Times.Once());
+            x.DeleteVectorByPayloadIdsAsync(It.IsAny<string>(), ids, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
