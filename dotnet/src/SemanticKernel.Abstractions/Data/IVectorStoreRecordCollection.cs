@@ -31,10 +31,24 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Create this collection in the vector store.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A <see cref="Task"/> that completes when the collection has been created.</returns>
+    Task CreateCollectionAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Create this collection in the vector store if it does not already exist.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A <see cref="Task"/> that completes when the collection has been created.</returns>
+    Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Delete the collection from the vector store.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that completes when the collection has been deleted.</returns>
+    /// <returns>A <see cref="Task"/> that completes when the collection has been deleted.</returns>
     Task DeleteCollectionAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -82,6 +96,7 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     /// <param name="keys">The unique ids associated with the records to remove.</param>
     /// <param name="options">Optional options for removing the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A <see cref="Task"/> that completes when the records have been deleted.</returns>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason other than that a record does not exist.</exception>
     Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
 
