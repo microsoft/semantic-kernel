@@ -28,13 +28,20 @@ internal class MockableQdrantClient
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
     /// <summary>
     /// Constructor for mocking purposes only.
     /// </summary>
     internal MockableQdrantClient()
     {
     }
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+    /// <summary>
+    /// Gets the internal <see cref="QdrantClient"/> that this mockable instance wraps.
+    /// </summary>
+    public QdrantClient QdrantClient => this._qdrantClient;
 
     /// <summary>
     /// Check if a collection exists.
@@ -49,6 +56,62 @@ internal class MockableQdrantClient
         => this._qdrantClient.CollectionExistsAsync(collectionName, cancellationToken);
 
     /// <summary>
+    /// Creates a new collection with the given parameters.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection to be created.</param>
+    /// <param name="vectorsConfig">
+    /// Configuration of the vector storage. Vector params contains size and distance for the vector storage.
+    /// This overload creates a single anonymous vector storage.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
+    /// </param>
+    public virtual Task CreateCollectionAsync(
+        string collectionName,
+        VectorParams vectorsConfig,
+        CancellationToken cancellationToken = default)
+        => this._qdrantClient.CreateCollectionAsync(
+            collectionName,
+            vectorsConfig,
+            cancellationToken: cancellationToken);
+
+    /// <summary>
+    /// Creates a new collection with the given parameters.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection to be created.</param>
+    /// <param name="vectorsConfig">
+    /// Configuration of the vector storage. Vector params contains size and distance for the vector storage.
+    /// This overload creates a vector storage for each key in the provided map.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
+    /// </param>
+    public virtual Task CreateCollectionAsync(
+        string collectionName,
+        VectorParamsMap? vectorsConfig = null,
+        CancellationToken cancellationToken = default)
+        => this._qdrantClient.CreateCollectionAsync(
+            collectionName,
+            vectorsConfig,
+            cancellationToken: cancellationToken);
+
+    /// <summary>
+    /// Creates a payload field index in a collection.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="fieldName">Field name to index.</param>
+    /// <param name="schemaType">The schema type of the field.</param>
+    /// <param name="cancellationToken">
+    /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
+    /// </param>
+    public virtual Task<UpdateResult> CreatePayloadIndexAsync(
+        string collectionName,
+        string fieldName,
+        PayloadSchemaType schemaType = PayloadSchemaType.Keyword,
+        CancellationToken cancellationToken = default)
+        => this._qdrantClient.CreatePayloadIndexAsync(collectionName, fieldName, schemaType, cancellationToken: cancellationToken);
+
+    /// <summary>
     /// Drop a collection and all its associated data.
     /// </summary>
     /// <param name="collectionName">The name of the collection.</param>
@@ -61,6 +124,15 @@ internal class MockableQdrantClient
         TimeSpan? timeout = null,
         CancellationToken cancellationToken = default)
         => this._qdrantClient.DeleteCollectionAsync(collectionName, timeout, cancellationToken);
+
+    /// <summary>
+    /// Gets the names of all existing collections.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
+    /// </param>
+    public virtual Task<IReadOnlyList<string>> ListCollectionsAsync(CancellationToken cancellationToken = default)
+        => this._qdrantClient.ListCollectionsAsync(cancellationToken);
 
     /// <summary>
     /// Delete a point.

@@ -19,13 +19,6 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, PointStruct>
     where TRecord : class
 {
-    /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes =
-    [
-        typeof(ulong),
-        typeof(Guid)
-    ];
-
     /// <summary>A set of types that data properties on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedDataTypes =
     [
@@ -55,51 +48,40 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         typeof(ReadOnlyMemory<double>?)
     ];
 
-    /// <summary>A list of property info objects that point at the payload properties in the current model, and allows easy reading and writing of these properties.</summary>
-    private readonly List<PropertyInfo> _payloadPropertiesInfo = new();
+    /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
+    private readonly PropertyInfo _keyPropertyInfo;
+
+    /// <summary>A list of property info objects that point at the data properties in the current model, and allows easy reading and writing of these properties.</summary>
+    private readonly List<PropertyInfo> _dataPropertiesInfo = new();
 
     /// <summary>A list of property info objects that point at the vector properties in the current model, and allows easy reading and writing of these properties.</summary>
     private readonly List<PropertyInfo> _vectorPropertiesInfo = new();
 
-    /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
-    private readonly PropertyInfo _keyPropertyInfo;
-
     /// <summary>A dictionary that maps from a property name to the configured name that should be used when storing it.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = new();
 
-    /// <summary>Configuration options for this class.</summary>
-    private readonly QdrantVectorStoreRecordMapperOptions _options;
+    /// <summary>A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</summary>
+    private readonly bool _hasNamedVectors;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordMapper{TDataModel}"/> class.
     /// </summary>
-    /// <param name="options">Options to use when doing the model conversion.</param>
-    public QdrantVectorStoreRecordMapper(QdrantVectorStoreRecordMapperOptions options)
+    /// <param name="hasNamedVectors">A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</param>
+    /// <param name="keyProperty">A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</param>
+    /// <param name="dataProperties">A list of property info objects that point at the data properties in the current model, and allows easy reading and writing of these properties.</param>
+    /// <param name="vectorProperties">A list of property info objects that point at the vector properties in the current model, and allows easy reading and writing of these properties.</param>
+    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
+    public QdrantVectorStoreRecordMapper(bool hasNamedVectors, PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties, Dictionary<string, string> storagePropertyNames)
     {
-        Verify.NotNull(options);
-        this._options = options;
-
-        // Enumerate public properties using configuration or attributes.
-        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
-        if (this._options.VectorStoreRecordDefinition is not null)
-        {
-            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), this._options.VectorStoreRecordDefinition, supportsMultipleVectors: this._options.HasNamedVectors);
-        }
-        else
-        {
-            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), supportsMultipleVectors: this._options.HasNamedVectors);
-        }
+        this._hasNamedVectors = hasNamedVectors;
+        this._keyPropertyInfo = keyProperty;
+        this._dataPropertiesInfo = dataProperties;
+        this._vectorPropertiesInfo = vectorProperties;
+        this._storagePropertyNames = storagePropertyNames;
 
         // Validate property types and store for later use.
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
-
-        this._keyPropertyInfo = properties.keyProperty;
-        this._payloadPropertiesInfo = properties.dataProperties;
-        this._vectorPropertiesInfo = properties.vectorProperties;
-
-        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._options.VectorStoreRecordDefinition);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(vectorProperties, s_supportedVectorTypes, "Vector");
     }
 
     /// <inheritdoc />
@@ -130,15 +112,15 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         };
 
         // Add point payload.
-        foreach (var payloadPropertyInfo in this._payloadPropertiesInfo)
+        foreach (var dataPropertyInfo in this._dataPropertiesInfo)
         {
-            var propertyName = this._storagePropertyNames[payloadPropertyInfo.Name];
-            var propertyValue = payloadPropertyInfo.GetValue(dataModel);
+            var propertyName = this._storagePropertyNames[dataPropertyInfo.Name];
+            var propertyValue = dataPropertyInfo.GetValue(dataModel);
             pointStruct.Payload.Add(propertyName, ConvertToGrpcFieldValue(propertyValue));
         }
 
         // Add vectors.
-        if (this._options.HasNamedVectors)
+        if (this._hasNamedVectors)
         {
             var namedVectors = new NamedVectors();
             foreach (var vectorPropertyInfo in this._vectorPropertiesInfo)
@@ -191,7 +173,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
             {
                 var propertyName = this._storagePropertyNames[vectorProperty.Name];
 
-                if (this._options.HasNamedVectors)
+                if (this._hasNamedVectors)
                 {
                     if (storageModel.Vectors.Vectors_.Vectors.TryGetValue(propertyName, out var vector))
                     {
@@ -205,13 +187,13 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
             }
         }
 
-        // Add each payload property.
-        foreach (var payloadProperty in this._payloadPropertiesInfo)
+        // Add each data property.
+        foreach (var dataProperty in this._dataPropertiesInfo)
         {
-            var propertyName = this._storagePropertyNames[payloadProperty.Name];
+            var propertyName = this._storagePropertyNames[dataProperty.Name];
             if (storageModel.Payload.TryGetValue(propertyName, out var value))
             {
-                outputJsonObject.Add(payloadProperty.Name, ConvertFromGrpcFieldValueToJsonNode(value));
+                outputJsonObject.Add(dataProperty.Name, ConvertFromGrpcFieldValueToJsonNode(value));
             }
         }
 

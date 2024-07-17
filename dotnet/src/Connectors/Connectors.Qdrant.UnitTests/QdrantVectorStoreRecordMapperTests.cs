@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client.Grpc;
@@ -21,7 +22,8 @@ public class QdrantVectorStoreRecordMapperTests
     public void MapsSinglePropsFromDataToStorageModelWithUlong(bool hasNamedVectors)
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(new() { HasNamedVectors = hasNamedVectors });
+        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(SinglePropsModel<ulong>), supportsMultipleVectors: hasNamedVectors);
+        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(hasNamedVectors, keyProperty, dataProperties, vectorProperties, s_singlePropsModelStorageNamesMap);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateSinglePropsModel<ulong>(5ul));
@@ -30,11 +32,11 @@ public class QdrantVectorStoreRecordMapperTests
         Assert.NotNull(actual);
         Assert.Equal(5ul, actual.Id.Num);
         Assert.Single(actual.Payload);
-        Assert.Equal("data", actual.Payload["Data"].StringValue);
+        Assert.Equal("data value", actual.Payload["data"].StringValue);
 
         if (hasNamedVectors)
         {
-            Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vectors.Vectors_.Vectors["Vector"].Data.ToArray());
+            Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vectors.Vectors_.Vectors["vector"].Data.ToArray());
         }
         else
         {
@@ -48,7 +50,8 @@ public class QdrantVectorStoreRecordMapperTests
     public void MapsSinglePropsFromDataToStorageModelWithGuid(bool hasNamedVectors)
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(new() { HasNamedVectors = hasNamedVectors });
+        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(SinglePropsModel<Guid>), supportsMultipleVectors: hasNamedVectors);
+        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(hasNamedVectors, keyProperty, dataProperties, vectorProperties, s_singlePropsModelStorageNamesMap);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateSinglePropsModel<Guid>(Guid.Parse("11111111-1111-1111-1111-111111111111")));
@@ -57,7 +60,7 @@ public class QdrantVectorStoreRecordMapperTests
         Assert.NotNull(actual);
         Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), Guid.Parse(actual.Id.Uuid));
         Assert.Single(actual.Payload);
-        Assert.Equal("data", actual.Payload["Data"].StringValue);
+        Assert.Equal("data value", actual.Payload["data"].StringValue);
     }
 
     [Theory]
@@ -68,7 +71,8 @@ public class QdrantVectorStoreRecordMapperTests
     public void MapsSinglePropsFromStorageToDataModelWithUlong(bool hasNamedVectors, bool includeVectors)
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(new() { HasNamedVectors = hasNamedVectors });
+        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(SinglePropsModel<ulong>), supportsMultipleVectors: hasNamedVectors);
+        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(hasNamedVectors, keyProperty, dataProperties, vectorProperties, s_singlePropsModelStorageNamesMap);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(CreateSinglePropsPointStruct(5, hasNamedVectors), new() { IncludeVectors = includeVectors });
@@ -76,7 +80,7 @@ public class QdrantVectorStoreRecordMapperTests
         // Assert.
         Assert.NotNull(actual);
         Assert.Equal(5ul, actual.Key);
-        Assert.Equal("data", actual.Data);
+        Assert.Equal("data value", actual.Data);
 
         if (includeVectors)
         {
@@ -96,7 +100,8 @@ public class QdrantVectorStoreRecordMapperTests
     public void MapsSinglePropsFromStorageToDataModelWithGuid(bool hasNamedVectors, bool includeVectors)
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(new() { HasNamedVectors = hasNamedVectors });
+        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(SinglePropsModel<Guid>), supportsMultipleVectors: hasNamedVectors);
+        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(hasNamedVectors, keyProperty, dataProperties, vectorProperties, s_singlePropsModelStorageNamesMap);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(CreateSinglePropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111"), hasNamedVectors), new() { IncludeVectors = includeVectors });
@@ -104,7 +109,7 @@ public class QdrantVectorStoreRecordMapperTests
         // Assert.
         Assert.NotNull(actual);
         Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), actual.Key);
-        Assert.Equal("data", actual.Data);
+        Assert.Equal("data value", actual.Data);
 
         if (includeVectors)
         {
@@ -120,7 +125,8 @@ public class QdrantVectorStoreRecordMapperTests
     public void MapsMultiPropsFromDataToStorageModelWithUlong()
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(new() { HasNamedVectors = true });
+        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(MultiPropsModel<ulong>), supportsMultipleVectors: true);
+        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(true, keyProperty, dataProperties, vectorProperties, s_multiPropsModelStorageNamesMap);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateMultiPropsModel<ulong>(5ul));
@@ -129,22 +135,23 @@ public class QdrantVectorStoreRecordMapperTests
         Assert.NotNull(actual);
         Assert.Equal(5ul, actual.Id.Num);
         Assert.Equal(7, actual.Payload.Count);
-        Assert.Equal("data 1", actual.Payload["DataString"].StringValue);
-        Assert.Equal(5, actual.Payload["DataInt"].IntegerValue);
-        Assert.Equal(5, actual.Payload["DataLong"].IntegerValue);
-        Assert.Equal(5.5f, actual.Payload["DataFloat"].DoubleValue);
-        Assert.Equal(5.5d, actual.Payload["DataDouble"].DoubleValue);
-        Assert.True(actual.Payload["DataBool"].BoolValue);
-        Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.Payload["DataArrayInt"].ListValue.Values.Select(x => (int)x.IntegerValue).ToArray());
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vectors.Vectors_.Vectors["Vector1"].Data.ToArray());
-        Assert.Equal(new float[] { 5, 6, 7, 8 }, actual.Vectors.Vectors_.Vectors["Vector2"].Data.ToArray());
+        Assert.Equal("data 1", actual.Payload["dataString"].StringValue);
+        Assert.Equal(5, actual.Payload["dataInt"].IntegerValue);
+        Assert.Equal(5, actual.Payload["dataLong"].IntegerValue);
+        Assert.Equal(5.5f, actual.Payload["dataFloat"].DoubleValue);
+        Assert.Equal(5.5d, actual.Payload["dataDouble"].DoubleValue);
+        Assert.True(actual.Payload["dataBool"].BoolValue);
+        Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.Payload["dataArrayInt"].ListValue.Values.Select(x => (int)x.IntegerValue).ToArray());
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vectors.Vectors_.Vectors["vector1"].Data.ToArray());
+        Assert.Equal(new float[] { 5, 6, 7, 8 }, actual.Vectors.Vectors_.Vectors["vector2"].Data.ToArray());
     }
 
     [Fact]
     public void MapsMultiPropsFromDataToStorageModelWithGuid()
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(new() { HasNamedVectors = true });
+        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(MultiPropsModel<Guid>), supportsMultipleVectors: true);
+        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(true, keyProperty, dataProperties, vectorProperties, s_multiPropsModelStorageNamesMap);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateMultiPropsModel<Guid>(Guid.Parse("11111111-1111-1111-1111-111111111111")));
@@ -153,15 +160,15 @@ public class QdrantVectorStoreRecordMapperTests
         Assert.NotNull(actual);
         Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), Guid.Parse(actual.Id.Uuid));
         Assert.Equal(7, actual.Payload.Count);
-        Assert.Equal("data 1", actual.Payload["DataString"].StringValue);
-        Assert.Equal(5, actual.Payload["DataInt"].IntegerValue);
-        Assert.Equal(5, actual.Payload["DataLong"].IntegerValue);
-        Assert.Equal(5.5f, actual.Payload["DataFloat"].DoubleValue);
-        Assert.Equal(5.5d, actual.Payload["DataDouble"].DoubleValue);
-        Assert.True(actual.Payload["DataBool"].BoolValue);
-        Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.Payload["DataArrayInt"].ListValue.Values.Select(x => (int)x.IntegerValue).ToArray());
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vectors.Vectors_.Vectors["Vector1"].Data.ToArray());
-        Assert.Equal(new float[] { 5, 6, 7, 8 }, actual.Vectors.Vectors_.Vectors["Vector2"].Data.ToArray());
+        Assert.Equal("data 1", actual.Payload["dataString"].StringValue);
+        Assert.Equal(5, actual.Payload["dataInt"].IntegerValue);
+        Assert.Equal(5, actual.Payload["dataLong"].IntegerValue);
+        Assert.Equal(5.5f, actual.Payload["dataFloat"].DoubleValue);
+        Assert.Equal(5.5d, actual.Payload["dataDouble"].DoubleValue);
+        Assert.True(actual.Payload["dataBool"].BoolValue);
+        Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.Payload["dataArrayInt"].ListValue.Values.Select(x => (int)x.IntegerValue).ToArray());
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vectors.Vectors_.Vectors["vector1"].Data.ToArray());
+        Assert.Equal(new float[] { 5, 6, 7, 8 }, actual.Vectors.Vectors_.Vectors["vector2"].Data.ToArray());
     }
 
     [Theory]
@@ -170,7 +177,8 @@ public class QdrantVectorStoreRecordMapperTests
     public void MapsMultiPropsFromStorageToDataModelWithUlong(bool includeVectors)
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(new() { HasNamedVectors = true });
+        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(MultiPropsModel<ulong>), supportsMultipleVectors: true);
+        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(true, keyProperty, dataProperties, vectorProperties, s_multiPropsModelStorageNamesMap);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(CreateMultiPropsPointStruct(5), new() { IncludeVectors = includeVectors });
@@ -204,7 +212,8 @@ public class QdrantVectorStoreRecordMapperTests
     public void MapsMultiPropsFromStorageToDataModelWithGuid(bool includeVectors)
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(new() { HasNamedVectors = true });
+        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(MultiPropsModel<Guid>), supportsMultipleVectors: true);
+        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(true, keyProperty, dataProperties, vectorProperties, s_multiPropsModelStorageNamesMap);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(CreateMultiPropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111")), new() { IncludeVectors = includeVectors });
@@ -237,7 +246,7 @@ public class QdrantVectorStoreRecordMapperTests
         return new SinglePropsModel<TKey>
         {
             Key = key,
-            Data = "data",
+            Data = "data value",
             Vector = new float[] { 1, 2, 3, 4 },
             NotAnnotated = "notAnnotated",
         };
@@ -279,12 +288,12 @@ public class QdrantVectorStoreRecordMapperTests
 
     private static void AddDataToSinglePropsPointStruct(PointStruct pointStruct, bool hasNamedVectors)
     {
-        pointStruct.Payload.Add("Data", "data");
+        pointStruct.Payload.Add("data", "data value");
 
         if (hasNamedVectors)
         {
             var namedVectors = new NamedVectors();
-            namedVectors.Vectors.Add("Vector", new[] { 1f, 2f, 3f, 4f });
+            namedVectors.Vectors.Add("vector", new[] { 1f, 2f, 3f, 4f });
             pointStruct.Vectors = new Vectors() { Vectors_ = namedVectors };
         }
         else
@@ -311,25 +320,32 @@ public class QdrantVectorStoreRecordMapperTests
 
     private static void AddDataToMultiPropsPointStruct(PointStruct pointStruct)
     {
-        pointStruct.Payload.Add("DataString", "data 1");
-        pointStruct.Payload.Add("DataInt", 5);
-        pointStruct.Payload.Add("DataLong", 5L);
-        pointStruct.Payload.Add("DataFloat", 5.5f);
-        pointStruct.Payload.Add("DataDouble", 5.5d);
-        pointStruct.Payload.Add("DataBool", true);
+        pointStruct.Payload.Add("dataString", "data 1");
+        pointStruct.Payload.Add("dataInt", 5);
+        pointStruct.Payload.Add("dataLong", 5L);
+        pointStruct.Payload.Add("dataFloat", 5.5f);
+        pointStruct.Payload.Add("dataDouble", 5.5d);
+        pointStruct.Payload.Add("dataBool", true);
 
         var dataIntArray = new ListValue();
         dataIntArray.Values.Add(1);
         dataIntArray.Values.Add(2);
         dataIntArray.Values.Add(3);
         dataIntArray.Values.Add(4);
-        pointStruct.Payload.Add("DataArrayInt", new Value { ListValue = dataIntArray });
+        pointStruct.Payload.Add("dataArrayInt", new Value { ListValue = dataIntArray });
 
         var namedVectors = new NamedVectors();
-        namedVectors.Vectors.Add("Vector1", new[] { 1f, 2f, 3f, 4f });
-        namedVectors.Vectors.Add("Vector2", new[] { 5f, 6f, 7f, 8f });
+        namedVectors.Vectors.Add("vector1", new[] { 1f, 2f, 3f, 4f });
+        namedVectors.Vectors.Add("vector2", new[] { 5f, 6f, 7f, 8f });
         pointStruct.Vectors = new Vectors() { Vectors_ = namedVectors };
     }
+
+    private static readonly Dictionary<string, string> s_singlePropsModelStorageNamesMap = new()
+    {
+        { "Key", "key" },
+        { "Data", "data" },
+        { "Vector", "vector" },
+    };
 
     private sealed class SinglePropsModel<TKey>
     {
@@ -344,6 +360,20 @@ public class QdrantVectorStoreRecordMapperTests
 
         public string NotAnnotated { get; set; } = string.Empty;
     }
+
+    private static readonly Dictionary<string, string> s_multiPropsModelStorageNamesMap = new()
+    {
+        { "Key", "key" },
+        { "DataString", "dataString" },
+        { "DataInt", "dataInt" },
+        { "DataLong", "dataLong" },
+        { "DataFloat", "dataFloat" },
+        { "DataDouble", "dataDouble" },
+        { "DataBool", "dataBool" },
+        { "DataArrayInt", "dataArrayInt" },
+        { "Vector1", "vector1" },
+        { "Vector2", "vector2" },
+    };
 
     private sealed class MultiPropsModel<TKey>
     {

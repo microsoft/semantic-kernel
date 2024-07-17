@@ -54,6 +54,49 @@ public class QdrantVectorStoreRecordCollectionTests
     }
 
     [Fact]
+    public async Task CanCreateCollectionAsync()
+    {
+        // Arrange.
+        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
+
+        this._qdrantClientMock
+            .Setup(x => x.CreateCollectionAsync(
+                It.IsAny<string>(),
+                It.IsAny<VectorParams>(),
+                this._testCancellationToken))
+            .Returns(Task.CompletedTask);
+
+        this._qdrantClientMock
+            .Setup(x => x.CreatePayloadIndexAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<PayloadSchemaType>(),
+                this._testCancellationToken))
+            .ReturnsAsync(new UpdateResult());
+
+        // Act.
+        await sut.CreateCollectionAsync(this._testCancellationToken);
+
+        // Assert.
+        this._qdrantClientMock
+            .Verify(
+                x => x.CreateCollectionAsync(
+                    TestCollectionName,
+                    It.Is<VectorParams>(x => x.Size == 4),
+                    this._testCancellationToken),
+                Times.Once);
+
+        this._qdrantClientMock
+            .Verify(
+                x => x.CreatePayloadIndexAsync(
+                    TestCollectionName,
+                    "Data",
+                    PayloadSchemaType.Text,
+                    this._testCancellationToken),
+                Times.Once);
+    }
+
+    [Fact]
     public async Task CanDeleteCollectionAsync()
     {
         // Arrange.
@@ -598,10 +641,10 @@ public class QdrantVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public required T Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true)]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }
