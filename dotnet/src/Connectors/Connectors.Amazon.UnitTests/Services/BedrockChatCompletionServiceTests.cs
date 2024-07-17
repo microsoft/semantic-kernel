@@ -53,7 +53,7 @@ public class BedrockChatCompletionServiceTests
                 Usage = new TokenUsage()
             });
         var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
-        var chatHistory = new ChatHistory();
+        var chatHistory = CreateSampleChatHistory();
 
         // Act
         var result = await service.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
@@ -286,5 +286,34 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal("I'm doing well.", chatHistory[3].Items[0].ToString());
         Assert.Equal(AuthorRole.User, chatHistory[4].Role);
         Assert.Equal("That's great to hear!", chatHistory[4].Items[0].ToString());
+    }
+
+    [Fact]
+    public async Task ShouldThrowArgumentExceptionIfChatHistoryIsEmptyAsync()
+    {
+        // Arrange
+        string modelId = "amazon.titan-embed-text-v1:0";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var chatHistory = new ChatHistory();
+        mockBedrockApi.SetupSequence(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConverseResponse
+            {
+                Output = new ConverseOutput
+                {
+                    Message = new Message
+                    {
+                        Role = ConversationRole.Assistant,
+                        Content = new List<ContentBlock> { new ContentBlock { Text = "sample" } }
+                    }
+                },
+                Metrics = new ConverseMetrics(),
+                StopReason = StopReason.Max_tokens,
+                Usage = new TokenUsage()
+            });
+        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.GetChatMessageContentsAsync(chatHistory)).ConfigureAwait(true);
     }
 }

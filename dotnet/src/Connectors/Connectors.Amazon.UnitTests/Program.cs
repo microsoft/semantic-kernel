@@ -94,30 +94,52 @@ Console.WriteLine("Hello, World!");
 
 
 
-string modelId = "amazon.titan-embed-text-v1:0";
+// string modelId = "amazon.titan-embed-text-v1:0";
+// var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+// var test = new ContentBlockDeltaEvent()
+// {
+//     Delta = new ContentBlockDelta()
+//     {
+//         Text = "hello"
+//     }
+// };
+// var byteTest = JsonSerializer.SerializeToUtf8Bytes(test);
+//
+// mockBedrockApi.Setup(m => m.ConverseStreamAsync(It.IsAny<ConverseStreamRequest>(), It.IsAny<CancellationToken>()))
+//     .ReturnsAsync(new ConverseStreamResponse
+//     {
+//         Stream = new ConverseStreamOutput(new MemoryStream())
+//     });
+//
+// var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+// var chatHistory = new ChatHistory();
+//
+// // Act
+// List<StreamingChatMessageContent> output = new List<StreamingChatMessageContent>();
+// var result = service.GetStreamingChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
+// await foreach (var item in result)
+// {
+//     output.Add(item);
+// }
+
+
+string modelId = "amazon.titan-text-premier-v1:0";
+string prompt = "Write a short greeting.";
+
 var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-var test = new ContentBlockDeltaEvent()
-{
-    Delta = new ContentBlockDelta()
+mockBedrockApi.Setup(m => m.InvokeModelWithResponseStreamAsync(It.IsAny<InvokeModelWithResponseStreamRequest>(), It.IsAny<CancellationToken>()))
+    .ReturnsAsync(new InvokeModelWithResponseStreamResponse()
     {
-        Text = "hello"
-    }
-};
-var byteTest = JsonSerializer.SerializeToUtf8Bytes(test);
-
-mockBedrockApi.Setup(m => m.ConverseStreamAsync(It.IsAny<ConverseStreamRequest>(), It.IsAny<CancellationToken>()))
-    .ReturnsAsync(new ConverseStreamResponse
-    {
-        Stream = new ConverseStreamOutput(new MemoryStream())
+        Body = new ResponseStream(new MemoryStream()),
+        ContentType = "application/json"
     });
-
-var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
-var chatHistory = new ChatHistory();
+var service = new BedrockTextGenerationService(modelId, mockBedrockApi.Object);
 
 // Act
-List<StreamingChatMessageContent> output = new List<StreamingChatMessageContent>();
-var result = service.GetStreamingChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
-await foreach (var item in result)
+List<StreamingTextContent> result = new List<StreamingTextContent>();
+var output = service.GetStreamingTextContentsAsync(prompt).ConfigureAwait(true);
+await foreach (var item in output)
 {
-    output.Add(item);
+    Console.Write(item.Text);
+    result.Add(item);
 }

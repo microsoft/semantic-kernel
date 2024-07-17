@@ -34,6 +34,12 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     private readonly IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse> _ioService;
     private readonly Uri _chatGenerationEndpoint;
 
+    /// <summary>
+    /// Represents a client for interacting with the chat completion through Bedrock.
+    /// </summary>
+    /// <param name="modelId"></param>
+    /// <param name="bedrockApi"></param>
+    /// <exception cref="ArgumentException"></exception>
     public BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockApi)
     {
         this._modelId = modelId;
@@ -90,6 +96,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
+        Verify.NotNullOrEmpty(chatHistory);
         ConverseResponse response;
         using (var activity = ModelDiagnostics.StartCompletionActivity(
                    this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings))
