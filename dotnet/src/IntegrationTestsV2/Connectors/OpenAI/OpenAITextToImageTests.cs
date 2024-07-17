@@ -39,4 +39,25 @@ public sealed class OpenAITextToImageTests
         Assert.NotNull(result);
         Assert.NotEmpty(result);
     }
+
+    [Fact]
+    public async Task OpenAITextToImageUseDallE2ByDefaultAsync()
+    {
+        // Arrange
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAITextToImage").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAITextToImage(apiKey: openAIConfiguration.ApiKey, modelId: null)
+            .Build();
+
+        var service = kernel.GetRequiredService<ITextToImageService>();
+
+        // Act
+        var result = await service.GenerateImageAsync("The sun rises in the east and sets in the west.", 256, 256);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotEmpty(result);
+    }
 }

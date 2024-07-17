@@ -100,11 +100,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resources\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Agents\ChatCompletion_FunctionTermination.cs" />
     <Compile Remove="Agents\ChatCompletion_Streaming.cs" />
     <Compile Remove="Agents\ComplexChat_NestedShopper.cs" />
     <Compile Remove="Agents\Legacy_AgentAuthoring.cs" />
@@ -120,48 +126,9 @@
     <Compile Remove="Agents\OpenAIAssistant_FileManipulation.cs" />
     <Compile Remove="Agents\OpenAIAssistant_FileService.cs" />
     <Compile Remove="Agents\OpenAIAssistant_Retrieval.cs" />
-    <Compile Remove="ChatCompletion\AzureOpenAIWithData_ChatCompletion.cs" />
-    <Compile Remove="ChatCompletion\ChatHistoryAuthorName.cs" />
-    <Compile Remove="ChatCompletion\ChatHistorySerialization.cs" />
-    <Compile Remove="ChatCompletion\Connectors_CustomHttpClient.cs" />
-    <Compile Remove="ChatCompletion\Connectors_KernelStreaming.cs" />
-    <Compile Remove="ChatCompletion\Connectors_WithMultipleLLMs.cs" />
-    <Compile Remove="ChatCompletion\Google_GeminiChatCompletion.cs" />
-    <Compile Remove="ChatCompletion\Google_GeminiChatCompletionStreaming.cs" />
-    <Compile Remove="ChatCompletion\Google_GeminiGetModelResult.cs" />
-    <Compile Remove="ChatCompletion\Google_GeminiVision.cs" />
-    <Compile Remove="ChatCompletion\MistralAI_ChatPrompt.cs" />
-    <Compile Remove="ChatCompletion\MistralAI_FunctionCalling.cs" />
-    <Compile Remove="ChatCompletion\MistralAI_StreamingFunctionCalling.cs" />
-    <Compile Remove="ChatCompletion\OpenAI_ChatCompletion.cs" />
-    <Compile Remove="ChatCompletion\OpenAI_ChatCompletionMultipleChoices.cs" />
-    <Compile Remove="ChatCompletion\OpenAI_ChatCompletionStreaming.cs" />
-    <Compile Remove="ChatCompletion\OpenAI_ChatCompletionStreamingMultipleChoices.cs" />
-    <Compile Remove="ChatCompletion\OpenAI_ChatCompletionWithVision.cs" />
-    <Compile Remove="ChatCompletion\OpenAI_CustomAzureOpenAIClient.cs" />
-    <Compile Remove="ChatCompletion\OpenAI_FunctionCalling.cs" />
-    <Compile Remove="ChatCompletion\OpenAI_ReasonedFunctionCalling.cs" />
-    <Compile Remove="ChatCompletion\OpenAI_RepeatedFunctionCalling.cs" />
-    <Compile Remove="ChatCompletion\OpenAI_UsingLogitBias.cs" />
-    <Compile Remove="PromptTemplates\ChatCompletionPrompts.cs" />
-    <Compile Remove="PromptTemplates\ChatWithPrompts.cs" />
-    <Compile Remove="PromptTemplates\LiquidPrompts.cs" />
-    <Compile Remove="PromptTemplates\MultiplePromptTemplates.cs" />
-    <Compile Remove="PromptTemplates\PromptFunctionsWithChatGPT.cs" />
-    <Compile Remove="PromptTemplates\PromptyFunction.cs" />
-    <Compile Remove="PromptTemplates\TemplateLanguage.cs" />
-    <Compile Remove="RAG\WithFunctionCallingStepwisePlanner.cs" />
-    <Compile Remove="RAG\WithPlugins.cs" />
-    <Compile Remove="Search\BingAndGooglePlugins.cs" />
-    <Compile Remove="Search\MyAzureAISearchPlugin.cs" />
-    <Compile Remove="Search\WebSearchQueriesPlugin.cs" />
-    <Compile Remove="TextGeneration\Custom_TextGenerationService.cs" />
-    <Compile Remove="TextGeneration\HuggingFace_TextGeneration.cs" />
-    <Compile Remove="TextGeneration\OpenAI_TextGenerationStreaming.cs" />
-    <Compile Remove="TextToAudio\OpenAI_TextToAudio.cs" />
-    <Compile Remove="TextToImage\OpenAI_TextToImageDalle3.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Agents\ChatCompletion_FunctionTermination.cs" />
     <None Include="Agents\ChatCompletion_Streaming.cs" />
     <None Include="Agents\ComplexChat_NestedShopper.cs" />
     <None Include="Agents\Legacy_AgentAuthoring.cs" />
@@ -177,45 +144,5 @@
     <None Include="Agents\OpenAIAssistant_FileManipulation.cs" />
     <None Include="Agents\OpenAIAssistant_FileService.cs" />
     <None Include="Agents\OpenAIAssistant_Retrieval.cs" />
-    <None Include="ChatCompletion\AzureOpenAIWithData_ChatCompletion.cs" />
-    <None Include="ChatCompletion\ChatHistoryAuthorName.cs" />
-    <None Include="ChatCompletion\ChatHistorySerialization.cs" />
-    <None Include="ChatCompletion\Connectors_CustomHttpClient.cs" />
-    <None Include="ChatCompletion\Connectors_KernelStreaming.cs" />
-    <None Include="ChatCompletion\Connectors_WithMultipleLLMs.cs" />
-    <None Include="ChatCompletion\Google_GeminiChatCompletion.cs" />
-    <None Include="ChatCompletion\Google_GeminiChatCompletionStreaming.cs" />
-    <None Include="ChatCompletion\Google_GeminiGetModelResult.cs" />
-    <None Include="ChatCompletion\Google_GeminiVision.cs" />
-    <None Include="ChatCompletion\MistralAI_ChatPrompt.cs" />
-    <None Include="ChatCompletion\MistralAI_FunctionCalling.cs" />
-    <None Include="ChatCompletion\MistralAI_StreamingFunctionCalling.cs" />
-    <None Include="ChatCompletion\OpenAI_ChatCompletion.cs" />
-    <None Include="ChatCompletion\OpenAI_ChatCompletionMultipleChoices.cs" />
-    <None Include="ChatCompletion\OpenAI_ChatCompletionStreaming.cs" />
-    <None Include="ChatCompletion\OpenAI_ChatCompletionStreamingMultipleChoices.cs" />
-    <None Include="ChatCompletion\OpenAI_ChatCompletionWithVision.cs" />
-    <None Include="ChatCompletion\OpenAI_CustomAzureOpenAIClient.cs" />
-    <None Include="ChatCompletion\OpenAI_FunctionCalling.cs" />
-    <None Include="ChatCompletion\OpenAI_ReasonedFunctionCalling.cs" />
-    <None Include="ChatCompletion\OpenAI_RepeatedFunctionCalling.cs" />
-    <None Include="ChatCompletion\OpenAI_UsingLogitBias.cs" />
-    <None Include="PromptTemplates\ChatCompletionPrompts.cs" />
-    <None Include="PromptTemplates\ChatWithPrompts.cs" />
-    <None Include="PromptTemplates\LiquidPrompts.cs" />
-    <None Include="PromptTemplates\MultiplePromptTemplates.cs" />
-    <None Include="PromptTemplates\PromptFunctionsWithChatGPT.cs" />
-    <None Include="PromptTemplates\PromptyFunction.cs" />
-    <None Include="PromptTemplates\TemplateLanguage.cs" />
-    <None Include="RAG\WithFunctionCallingStepwisePlanner.cs" />
-    <None Include="RAG\WithPlugins.cs" />
-    <None Include="Search\BingAndGooglePlugins.cs" />
-    <None Include="Search\MyAzureAISearchPlugin.cs" />
-    <None Include="Search\WebSearchQueriesPlugin.cs" />
-    <None Include="TextGeneration\Custom_TextGenerationService.cs" />
-    <None Include="TextGeneration\HuggingFace_TextGeneration.cs" />
-    <None Include="TextGeneration\OpenAI_TextGenerationStreaming.cs" />
-    <None Include="TextToAudio\OpenAI_TextToAudio.cs" />
-    <None Include="TextToImage\OpenAI_TextToImageDalle3.cs" />
   </ItemGroup>
 </Project>

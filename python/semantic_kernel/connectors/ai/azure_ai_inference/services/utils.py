@@ -1,12 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 from collections.abc import Callable
 
 from azure.ai.inference.models import (
     AssistantMessage,
     ChatCompletionsFunctionToolCall,
+    ChatCompletionsToolCall,
     ChatRequestMessage,
+    ContentItem,
     FunctionCall,
     ImageContentItem,
     ImageDetailLevel,
@@ -54,13 +57,15 @@ def _format_user_message(message: ChatMessageContent) -> UserMessage:
     if not any(isinstance(item, (ImageContent)) for item in message.items):
         return UserMessage(content=message.content)
 
-    contentItems = []
+    contentItems: list[ContentItem] = []
     for item in message.items:
         if isinstance(item, TextContent):
             contentItems.append(TextContentItem(text=item.text))
         elif isinstance(item, ImageContent) and (item.data_uri or item.uri):
             contentItems.append(
-                ImageContentItem(image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto))
+                ImageContentItem(
+                    image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto.value)
+                )
             )
         else:
             logger.warning(
@@ -80,16 +85,23 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
     Returns:
         The formatted assistant message.
     """
-    contentItems = []
-    toolCalls = []
+    toolCalls: list[ChatCompletionsToolCall] = []
 
     for item in message.items:
         if isinstance(item, TextContent):
-            contentItems.append(TextContentItem(text=item.text))
-        elif isinstance(item, FunctionCallContent):
+            # Assuming the assistant message will have only one text content item
+            # and we assign the content directly to the message content, which is a string.
+            continue
+        if isinstance(item, FunctionCallContent):
             toolCalls.append(
                 ChatCompletionsFunctionToolCall(
-                    id=item.id, function=FunctionCall(name=item.name, arguments=item.arguments)
+                    id=item.id or "",
+                    function=FunctionCall(
+                        name=item.name or "",
+                        arguments=json.dumps(item.arguments)
+                        if isinstance(item.arguments, dict)
+                        else item.arguments or "",
+                    ),
                 )
             )
         else:
@@ -99,7 +111,7 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
             )
 
     # tollCalls cannot be an empty list, so we need to set it to None if it is empty
-    return AssistantMessage(content=contentItems, tool_calls=toolCalls if toolCalls else None)
+    return AssistantMessage(content=message.content, tool_calls=toolCalls if toolCalls else None)
 
 
 def _format_tool_message(message: ChatMessageContent) -> ToolMessage:
@@ -118,10 +130,7 @@ def _format_tool_message(message: ChatMessageContent) -> ToolMessage:
         )
 
     if not isinstance(message.items[0], FunctionResultContent):
-        logger.warning(
-            "Unsupported item type in Tool message while formatting chat history for Azure AI"
-            f" Inference: {type(message.items[0])}"
-        )
+        raise ValueError("No FunctionResultContent found in the message items")
 
     # The API expects the result to be a string, so we need to convert it to a string
     return ToolMessage(content=str(message.items[0].result), tool_call_id=message.items[0].id)

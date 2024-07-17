@@ -50,7 +50,6 @@ public class OpenAITextToImageService : ITextToImageService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
         this._client = new(modelId, apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
     }
 
