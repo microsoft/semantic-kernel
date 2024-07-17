@@ -56,6 +56,30 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HuggingFaceChatCompletionService"/> class.
+    /// </summary>
+    /// <param name="endpoint">The uri endpoint including the port where HuggingFace server is hosted</param>
+    /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
+    /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public HuggingFaceChatCompletionService(
+        Uri endpoint,
+        string? apiKey = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(endpoint);
+
+        this.Client = new HuggingFaceMessageApiClient(
+            modelId: null,
+            endpoint: endpoint,
+            apiKey: apiKey,
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
+        );
+    }
+
     /// <inheritdoc />
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this.Client.CompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
