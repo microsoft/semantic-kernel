@@ -1,5 +1,8 @@
 # Semantic Kernel
 
+## I fix a little issue, in the readme, commit and push to github
+
+
 ## Status
 
  - Python <br/>
