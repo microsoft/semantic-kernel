@@ -6,8 +6,11 @@ using System.Threading;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Interface for managing the collections and records in a vector store.
+/// Interface for accessing the list of collections in a vector store.
 /// </summary>
+/// <remarks>
+/// This interface can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
+/// </remarks>
 public interface IVectorStore
 {
     /// <summary>
@@ -18,6 +21,13 @@ public interface IVectorStore
     /// <param name="name">The name of the collection.</param>
     /// <param name="vectorStoreRecordDefinition">Defines the schema of the record type.</param>
     /// <returns>A new <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> instance for managing the records in the collection.</returns>
+    /// <remarks>
+    /// To successfully request a collection, either <typeparamref name="TRecord"/> must be annotated with attributes that define the schema of
+    /// the record type, or <paramref name="vectorStoreRecordDefinition"/> must be provided.
+    /// </remarks>
+    /// <seealso cref="VectorStoreRecordKeyAttribute"/>
+    /// <seealso cref="VectorStoreRecordDataAttribute"/>
+    /// <seealso cref="VectorStoreRecordVectorAttribute"/>
     IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TRecord : class;
 

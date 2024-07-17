@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// Service for storing and retrieving vector records, and managing vector record collections, that uses an in memory dictionary as the underlying storage.
 /// </summary>
 [Experimental("SKEXP0001")]
-public class VolatileVectorStore : IVectorStore
+public sealed class VolatileVectorStore : IVectorStore
 {
     /// <summary>Internal storage for the record collection.</summary>
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _internalCollection;
