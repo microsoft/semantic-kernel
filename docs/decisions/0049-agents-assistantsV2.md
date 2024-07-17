@@ -78,6 +78,7 @@ The `OpenAIAssistant` agent is roughly equivalent to its V1 form save for:
 
 - Supports settings for _assistant_, _thread_, and _run_
 - Agent definition shifts to `Definition` property
+- Convenience methods for producing an OpenAI client
 
 Previously, the agent definition as exposed via direct properties such as:
 
