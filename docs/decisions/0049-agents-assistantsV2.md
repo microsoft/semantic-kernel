@@ -20,6 +20,15 @@ Migrating to Assistant V2 API is a breaking change to the existing package due t
 
 Specific configuration/setttings classes are introduced to support the ability to define assistant behavior at each of the supported articulation points (i.e. _assistant_, _thread_, & _run_).
 
+|Class|Raison d'Être|
+|---|---|
+|`OpenAIAssistantDefinition`|Definition of the assistant.  Used when creating a new assistant, inspecting an assistant-agent instance, or querying assistant definitions.|
+|`OpenAIAssistantExecutionSetings`|Settings that affect run execution, defined within assistant scope.|
+|`OpenAIAssistantInvocationSettings`|Run level settings that take precedence over assistant settings, when specified.|
+|`AssistantToolCallBehavior`|Informs tool-call behavior for the associated scope: assistant or run.|
+|`OpenAIThreadCreationSettings`|Thread scoped settings that take precedence over assistant settings, when specified.|
+|`OpenAIServiceConfiguration`|Informs the which service to target, and how.|
+
 
 #### Assistant Definition
 
