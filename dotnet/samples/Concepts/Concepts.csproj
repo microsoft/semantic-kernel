@@ -100,11 +100,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resources\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Agents\ChatCompletion_FunctionTermination.cs" />
     <Compile Remove="Agents\ChatCompletion_Streaming.cs" />
     <Compile Remove="Agents\ComplexChat_NestedShopper.cs" />
     <Compile Remove="Agents\Legacy_AgentAuthoring.cs" />
@@ -122,6 +128,7 @@
     <Compile Remove="Agents\OpenAIAssistant_Retrieval.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Agents\ChatCompletion_FunctionTermination.cs" />
     <None Include="Agents\ChatCompletion_Streaming.cs" />
     <None Include="Agents\ComplexChat_NestedShopper.cs" />
     <None Include="Agents\Legacy_AgentAuthoring.cs" />
