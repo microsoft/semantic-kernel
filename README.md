@@ -2,6 +2,7 @@
 
 ## I fix a little issue, in the readme, commit and push to github
 
+## I fix a second thing
 
 ## Status
 
