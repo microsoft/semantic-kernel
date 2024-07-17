@@ -139,7 +139,7 @@ public static partial class OpenApiKernelPluginFactory
 
         var parser = new OpenApiDocumentParser(loggerFactory);
 
-        var operations = await parser.ParseAsync(
+        var restApi = await parser.ParseAsync(
             documentStream,
             executionParameters?.IgnoreNonCompliantErrors ?? false,
             executionParameters?.OperationsToExclude,
@@ -154,7 +154,7 @@ public static partial class OpenApiKernelPluginFactory
 
         var functions = new List<KernelFunction>();
         ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
-        foreach (var operation in operations)
+        foreach (var operation in restApi.Operations)
         {
             try
             {
@@ -169,7 +169,7 @@ public static partial class OpenApiKernelPluginFactory
             }
         }
 
-        return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
+        return KernelPluginFactory.CreateFromFunctions(pluginName, restApi.Info.Description, functions);
     }
 
     /// <summary>
