@@ -38,10 +38,10 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             Properties = new List<VectorStoreRecordProperty>
             {
                 new VectorStoreRecordKeyProperty("HotelId"),
-                new VectorStoreRecordDataProperty("HotelName"),
-                new VectorStoreRecordDataProperty("HotelCode"),
+                new VectorStoreRecordDataProperty("HotelName") { IsFilterable = true, PropertyType = typeof(string) },
+                new VectorStoreRecordDataProperty("HotelCode") { IsFilterable = true, PropertyType = typeof(int) },
                 new VectorStoreRecordDataProperty("Description"),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding"),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding") { Dimensions = 4 },
                 new VectorStoreRecordDataProperty("Tags"),
                 new VectorStoreRecordDataProperty("ParkingIncluded"),
                 new VectorStoreRecordDataProperty("LastRenovationDate"),
@@ -166,16 +166,16 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordKey]
         public string HotelId { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true)]
         public string HotelName { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true)]
         public int HotelCode { get; init; }
 
         [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding")]
         public string Description { get; init; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(4)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; init; }
 
 #pragma warning disable CA1819 // Properties should not return arrays
