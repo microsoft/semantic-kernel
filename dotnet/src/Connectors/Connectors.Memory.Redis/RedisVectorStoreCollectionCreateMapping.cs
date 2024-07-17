@@ -58,6 +58,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
             if (property is VectorStoreRecordKeyProperty keyProperty)
             {
                 // Do nothing, since key is not stored as part of the payload and therefore doesn't have to be added to the index.
+                continue;
             }
 
             // Data property.
@@ -77,6 +78,8 @@ internal static class RedisVectorStoreCollectionCreateMapping
                 {
                     schema.AddNumericField(new FieldName($"$.{dataProperty.PropertyName}", dataProperty.PropertyName));
                 }
+
+                continue;
             }
 
             // Vector property.
