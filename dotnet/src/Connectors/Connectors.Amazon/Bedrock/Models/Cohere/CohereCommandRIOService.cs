@@ -156,9 +156,9 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
         PresencePenalty = this.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", 0.0),
         Seed = this.GetExtensionDataValue(settings?.ExtensionData, "seed", 0),
         ReturnPrompt = this.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", false),
-        Tools = this.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", []),
-        ToolResults = this.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", []),
-        StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []),
+        Tools = this.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", null),
+        ToolResults = this.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", null),
+        StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
         RawPrompting = this.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", false)
     };
     var converseRequest = new ConverseRequest
@@ -179,7 +179,7 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
             {
                 { "title", d.Title },
                 { "snippet", d.Snippet }
-            }).ToList()) },
+            }).ToList() ?? new List<Document>()) },
             { "search_queries_only", cohereRequest.SearchQueriesOnly },
             { "preamble", cohereRequest.Preamble },
             { "k", cohereRequest.TopK },
@@ -188,7 +188,7 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
             { "presence_penalty", cohereRequest.PresencePenalty },
             { "seed", cohereRequest.Seed },
             { "return_prompt", cohereRequest.ReturnPrompt },
-            { "stop_sequences", new Document(cohereRequest.StopSequences.Select(s => new Document(s)).ToList()) },
+            { "stop_sequences", new Document(cohereRequest.StopSequences?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
             { "raw_prompting", cohereRequest.RawPrompting }
         },
         AdditionalModelResponseFieldPaths = new List<string>(),

@@ -12,7 +12,7 @@ namespace Connectors.Amazon.Models.Meta;
 public class LlamaChatRequest : IChatCompletionRequest
 {
     /// <summary>
-    /// (Required) The prompt that you want to pass to the model. With Llama 2 Chat, format the conversation with the following template.
+    /// (Required) The prompt that you want to pass to the model.
     /// </summary>
     public string? Prompt { get; set; }
     /// <summary>
@@ -27,38 +27,41 @@ public class LlamaChatRequest : IChatCompletionRequest
     /// Specify the maximum number of tokens to use in the generated response. The model truncates the response once the generated text exceeds max_gen_len.
     /// </summary>
     public int MaxGenLen { get; set; }
+    private List<Message>? _messages;
+
     /// <summary>
-    /// List of messages to be passed into the request.
+    /// List of messages.
     /// </summary>
-    private List<Message> _messages;
-    /// <inheritdoc />
     public List<Message> Messages
     {
         get
         {
-            this._messages = new List<Message>();
-            if (!string.IsNullOrEmpty(this.Prompt))
+            if (this._messages == null)
             {
-                var role = ConversationRole.User;
-                string? systemPrompt = null;
-                if (this.Prompt.StartsWith("<s>[INST]"))
+                this._messages = new List<Message>();
+                if (!string.IsNullOrEmpty(this.Prompt))
                 {
-                    var parts = this.Prompt.Split("[/INST]", StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length > 0)
+                    var role = ConversationRole.User;
+                    string systemPrompt = null;
+                    if (Prompt.StartsWith("<s>[INST]"))
                     {
-                        systemPrompt = parts[0].Trim('<', 's', '[', 'I', 'N', 'S', 'T', ']', ' ');
-                        this.Prompt = string.Join("[/INST]", parts.Skip(1));
+                        var parts = this.Prompt.Split("[/INST]", StringSplitOptions.RemoveEmptyEntries);
+                        if (parts.Length > 0)
+                        {
+                            systemPrompt = parts[0].Trim('<', 's', '[', 'I', 'N', 'S', 'T', ']', ' ');
+                            this.Prompt = string.Join("[/INST]", parts.Skip(1));
+                        }
                     }
-                }
 
-                this._messages.Add(new Message
-                {
-                    Role = role,
-                    Content = new List<ContentBlock> { new ContentBlock { Text = this.Prompt } }
-                });
-                if (!string.IsNullOrEmpty(systemPrompt))
-                {
-                    this.System = new List<SystemContentBlock> { new SystemContentBlock { Text = systemPrompt } };
+                    this._messages.Add(new Message
+                    {
+                        Role = role,
+                        Content = new List<ContentBlock> { new ContentBlock { Text = this.Prompt } }
+                    });
+                    if (!string.IsNullOrEmpty(systemPrompt))
+                    {
+                        this.System = new List<SystemContentBlock> { new SystemContentBlock { Text = systemPrompt } };
+                    }
                 }
             }
 

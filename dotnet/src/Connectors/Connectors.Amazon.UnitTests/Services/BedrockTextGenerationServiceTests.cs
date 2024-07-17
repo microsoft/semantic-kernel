@@ -1,24 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
-using Amazon.Runtime.EventStreams;
-using Amazon.Runtime.EventStreams.Internal;
-using Connectors.Amazon.Extensions;
 using Connectors.Amazon.Models.Amazon;
 using Connectors.Amazon.Services;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Amazon.Core;
-using Microsoft.SemanticKernel.Connectors.Amazon.Services;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
+
 namespace Connectors.Amazon.UnitTests.Services;
 
 public class BedrockTextGenerationServiceTests
@@ -78,13 +70,13 @@ public class BedrockTextGenerationServiceTests
         string prompt = "Write a short greeting.";
 
         // Attempt 1
-        // List<PayloadPart> payloadParts = new List<PayloadPart>
-        // {
-        //     new PayloadPart { Bytes = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new JsonObject { { "outputText", "Hello" } })) },
-        //     new PayloadPart { Bytes = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new JsonObject { { "outputText", ", world!" } })) }
-        // };
-        // byte[] byteResponseStream = payloadParts.SelectMany(p => p.Bytes.ToArray()).ToArray();
-        // var mockResponseStream = new MemoryStream(byteResponseStream);
+        List<PayloadPart> payloadParts = new List<PayloadPart>
+        {
+            new PayloadPart { Bytes = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new JsonObject { { "outputText", "Hello" } })) },
+            new PayloadPart { Bytes = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new JsonObject { { "outputText", ", world!" } })) }
+        };
+        byte[] byteResponseStream = payloadParts.SelectMany(p => p.Bytes.ToArray()).ToArray();
+        var mockResponseStream = new MemoryStream(byteResponseStream);
 
         // Attempt 2
         // string mockResponseJson = @"{

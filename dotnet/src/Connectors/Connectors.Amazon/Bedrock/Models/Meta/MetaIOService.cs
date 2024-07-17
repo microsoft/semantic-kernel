@@ -85,7 +85,7 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var llamaRequest = new LlamaChatRequest
+        var llamaRequest = new LlamaChatRequest()
         {
             Messages = chatHistory.Select(m => new Message
             {
@@ -93,9 +93,9 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
                 Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
-            Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5),
-            TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9),
-            MaxGenLen = this.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
+            Temperature = this.GetExtensionDataValue<double>(settings?.ExtensionData, "temperature", 0.5),
+            TopP = this.GetExtensionDataValue<double>(settings?.ExtensionData, "top_p", 0.9),
+            MaxGenLen = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_gen_len", 512)
         };
         var converseRequest = new ConverseRequest
         {
