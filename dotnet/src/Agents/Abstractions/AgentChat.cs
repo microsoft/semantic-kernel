@@ -209,22 +209,21 @@ public abstract class AgentChat
 
             // Invoke agent & process response
             List<ChatMessageContent> messages = [];
-            await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
+
+            await foreach ((bool isVisible, ChatMessageContent message) in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
                 this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, message);
 
-                // Add to primary history
-                this.History.Add(message);
                 messages.Add(message);
 
-                // Don't expose function-call and function-result messages to caller.
-                if (message.Items.All(i => i is FunctionCallContent || i is FunctionResultContent))
-                {
-                    continue;
-                }
+                // Add to primary history
+                this.History.Add(message);
 
-                // Yield message to caller
-                yield return message;
+                if (isVisible)
+                {
+                    // Yield message to caller
+                    yield return message;
+                }
             }
 
             // Broadcast message to other channels (in parallel)
@@ -233,7 +232,7 @@ public abstract class AgentChat
                 this._agentChannels
                     .Where(kvp => kvp.Value != channel)
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
-            this._broadcastQueue.Enqueue(channelRefs, messages.Where(m => m.Role != AuthorRole.Tool).ToArray());
+            this._broadcastQueue.Enqueue(channelRefs, messages);
 
             this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
         }
@@ -256,6 +255,7 @@ public abstract class AgentChat
 
                 if (this.History.Count > 0)
                 {
+                    // Sync channel with existing history
                     await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
                 }
 
