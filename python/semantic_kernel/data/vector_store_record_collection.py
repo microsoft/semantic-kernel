@@ -55,7 +55,9 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     def validate_data_model_definition(cls, data: dict[str, Any]) -> dict[str, Any]:
         """Validate the data model definition, if it isn't passed, try to get it from the data model type."""
         if not data.get("data_model_definition"):
-            data["data_model_definition"] = getattr(data["data_model_type"], "__kernel_data_model_fields__", None)
+            data["data_model_definition"] = getattr(
+                data["data_model_type"], "__kernel_vectorstoremodel_definition__", None
+            )
         return data
 
     def model_post_init(self, __context: object | None = None):
@@ -65,7 +67,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         self._key_field = self.data_model_definition.key_field.name
         self._container_mode = self.data_model_definition.container_mode
 
-        if hasattr(self.data_model_type, "__kernel_data_model__"):
+        if hasattr(self.data_model_type, "__kernel_vectorstoremodel__"):
             self._validate_data_model()
         else:
             logger.debug(
@@ -142,6 +144,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         if not self.supported_vector_types:
             return
         for field_name, field in self.data_model_definition.fields.items():
+            # TODO (eavanvalkenburg): redo with property types
             if isinstance(field, VectorStoreRecordVectorField):
                 field_type = model_sig.parameters[field_name].annotation.__args__[0]
                 if field_type.__class__ is types.UnionType:

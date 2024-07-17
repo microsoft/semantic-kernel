@@ -98,15 +98,15 @@ if __name__ == "__main__":
     )
     print("item1 details:")
     item = "item1"
-    print(f"{data_item1.__kernel_data_model_fields__=}")
-    print(f"{data_item2.__kernel_data_model_fields__=}")
-    print(f"{data_item3.__kernel_data_model_fields__=}")
-    print(f"{data_item4.__kernel_data_model_fields__=}")
+    print(f"{data_item1.__kernel_vectorstoremodel_definition__=}")
+    print(f"{data_item2.__kernel_vectorstoremodel_definition__=}")
+    print(f"{data_item3.__kernel_vectorstoremodel_definition__=}")
+    print(f"{data_item4.__kernel_vectorstoremodel_definition__=}")
     if (
-        data_item1.__kernel_data_model_fields__
-        == data_item2.__kernel_data_model_fields__
-        == data_item3.__kernel_data_model_fields__
-        == data_item4.__kernel_data_model_fields__
+        data_item1.__kernel_vectorstoremodel_definition__
+        == data_item2.__kernel_vectorstoremodel_definition__
+        == data_item3.__kernel_vectorstoremodel_definition__
+        == data_item4.__kernel_vectorstoremodel_definition__
     ):
         print("All data models are the same")
     else:

@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from inspect import signature
+from inspect import _empty, signature
+from types import NoneType
 from typing import Any
 
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
@@ -38,37 +39,8 @@ def vectorstoremodel(
     def wrap(cls: Any):
         # get fields and annotations
         cls_sig = signature(cls)
-        fields = {}
-        for field in cls_sig.parameters.values():
-            annotation = field.annotation
-            if getattr(annotation, "_name", "") == "Optional":
-                annotation = annotation.__args__[0]
-            if hasattr(annotation, "__metadata__"):
-                annotations = annotation.__metadata__
-                for annotation in annotations:
-                    if isinstance(annotation, VectorStoreRecordField):
-                        field_type = annotation
-                        break
-                    if isinstance(annotation, type(VectorStoreRecordField)):
-                        field_type = annotation(name=field.name)
-                        break
-            else:
-                logger.info(
-                    f'Field "{field.name}" does not have a VectorStoreRecordField '
-                    "annotation, will not be part of the record."
-                )
-                continue
-            if field_type.name is None or field_type.name != field.name:
-                field_type.name = field.name
-            fields[field_type.name] = field_type
-        if not fields and len(cls_sig.parameters.values()) > 0:
-            raise VectorStoreModelException(
-                "There must be at least one field with a VectorStoreRecordField annotation."
-            )
-        model = VectorStoreRecordDefinition(fields=fields)
-
-        setattr(cls, "__kernel_data_model__", True)
-        setattr(cls, "__kernel_data_model_fields__", model)
+        setattr(cls, "__kernel_vectorstoremodel__", True)
+        setattr(cls, "__kernel_vectorstoremodel_definition__", _parse_signature_to_definition(cls_sig.parameters))
 
         return cls
 
@@ -79,3 +51,53 @@ def vectorstoremodel(
 
     # We're called as @vectorstoremodel without parens.
     return wrap(cls)
+
+
+def _parse_signature_to_definition(parameters) -> VectorStoreRecordDefinition:
+    if len(parameters) == 0:
+        raise VectorStoreModelException(
+            "There must be at least one field in the datamodel. If you are using this with a @dataclass, "
+            "you might have inverted the order of the decorators, the vectorstoremodel decorator should be the top one."
+        )
+    fields: dict[str, VectorStoreRecordField] = {}
+    for field in parameters.values():
+        annotation = field.annotation
+        # check first if there are any annotations
+        if not hasattr(annotation, "__metadata__"):
+            if field._default is _empty:
+                raise VectorStoreModelException(
+                    "Fields that do not have a VectorStoreRecord* annotation must have a default value."
+                )
+            logger.info(
+                f'Field "{field.name}" does not have a VectorStoreRecord* '
+                "annotation, will not be part of the record."
+            )
+            continue
+        property_type = annotation.__origin__
+        if (args := getattr(property_type, "__args__", None)) and NoneType in args and len(args) == 2:
+            property_type = args[0]
+        metadata = annotation.__metadata__
+        field_type = None
+        for item in metadata:
+            if isinstance(item, VectorStoreRecordField):
+                field_type = item
+                if not field_type.name or field_type.name != field.name:
+                    field_type.name = field.name
+                if not field_type.property_type:
+                    field_type.property_type = property_type
+            elif isinstance(item, type(VectorStoreRecordField)):
+                field_type = item(name=field.name, property_type=property_type)
+        if not field_type:
+            if field._default is _empty:
+                raise VectorStoreModelException(
+                    "Fields that do not have a VectorStoreRecord* annotation must have a default value."
+                )
+            logger.info(
+                f'Field "{field.name}" does not have a VectorStoreRecord* '
+                "annotation, will not be part of the record."
+            )
+            continue
+        # field name is set either when not None or by instantiating a new field
+        assert field_type.name is not None  # nosec
+        fields[field_type.name] = field_type
+    return VectorStoreRecordDefinition(fields=fields)

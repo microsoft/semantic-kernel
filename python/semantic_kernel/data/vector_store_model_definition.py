@@ -53,12 +53,21 @@ class VectorStoreRecordDefinition:
             DataModelException: If there is a field with an embedding property name but no corresponding vector field.
             DataModelException: If there is no key field.
         """
+        if len(self.fields) == 0:
+            raise VectorStoreModelException(
+                "There must be at least one field with a VectorStoreRecordField annotation."
+            )
+        self.key_field_name = ""
         for name, value in self.fields.items():
-            if name is None:
+            if not name:
                 raise VectorStoreModelException("Fields must have a name.")
             if value.name is None:
                 value.name = name
-            if isinstance(value, VectorStoreRecordDataField) and value.embedding_property_name not in self.field_names:
+            if (
+                isinstance(value, VectorStoreRecordDataField)
+                and value.has_embedding
+                and value.embedding_property_name not in self.field_names
+            ):
                 raise VectorStoreModelException(
                     "Data field with embedding property name must refer to a existing vector field."
                 )
