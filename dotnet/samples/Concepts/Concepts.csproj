@@ -155,11 +155,6 @@
     <Compile Remove="Search\BingAndGooglePlugins.cs" />
     <Compile Remove="Search\MyAzureAISearchPlugin.cs" />
     <Compile Remove="Search\WebSearchQueriesPlugin.cs" />
-    <Compile Remove="TextGeneration\Custom_TextGenerationService.cs" />
-    <Compile Remove="TextGeneration\HuggingFace_TextGeneration.cs" />
-    <Compile Remove="TextGeneration\OpenAI_TextGenerationStreaming.cs" />
-    <Compile Remove="TextToAudio\OpenAI_TextToAudio.cs" />
-    <Compile Remove="TextToImage\OpenAI_TextToImageDalle3.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Agents\ChatCompletion_Streaming.cs" />
@@ -212,10 +207,5 @@
     <None Include="Search\BingAndGooglePlugins.cs" />
     <None Include="Search\MyAzureAISearchPlugin.cs" />
     <None Include="Search\WebSearchQueriesPlugin.cs" />
-    <None Include="TextGeneration\Custom_TextGenerationService.cs" />
-    <None Include="TextGeneration\HuggingFace_TextGeneration.cs" />
-    <None Include="TextGeneration\OpenAI_TextGenerationStreaming.cs" />
-    <None Include="TextToAudio\OpenAI_TextToAudio.cs" />
-    <None Include="TextToImage\OpenAI_TextToImageDalle3.cs" />
   </ItemGroup>
 </Project>
