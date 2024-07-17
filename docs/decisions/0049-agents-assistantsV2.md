@@ -96,6 +96,8 @@ The following table describes the purpose of diagramed methods on the `OpenAIAss
 **Invoke**|Invoke the assistant agent (no chat)
 **GetChannelKeys**|Inherited from `Agent`
 **CreateChannel**|Inherited from `Agent`
+**CreateFileClient**|Convenience method for producing a `FileClient` which is implemented in the _Open AI SDK_
+**CreateVectorStoreClient**|Convenience method for producing a `VectorStoreClient` which is implemented in the _Open AI SDK_
 
 
 ### Vector Store Support
