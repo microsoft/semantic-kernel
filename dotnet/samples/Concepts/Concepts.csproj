@@ -153,6 +153,7 @@
     <Compile Remove="TextToAudio\OpenAI_TextToAudio.cs" />
     <Compile Remove="TextToImage\OpenAI_TextToImageDalle3.cs" />
   </ItemGroup>
+  <ItemGroup>
     <None Include="AudioToText\OpenAI_AudioToText.cs" />
     <None Include="Caching\SemanticCachingWithFilters.cs" />
     <None Include="Caching\SemanticCachingWithFilters.cs" />
