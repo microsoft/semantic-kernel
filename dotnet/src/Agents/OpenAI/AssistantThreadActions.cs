@@ -20,12 +20,6 @@ internal static class AssistantThreadActions
 {
     private const string FunctionDelimiter = "-";
 
-    private static readonly HashSet<AuthorRole> s_messageRoles =
-        [
-            AuthorRole.User,
-            AuthorRole.Assistant,
-        ];
-
     private static readonly HashSet<RunStatus> s_pollingStatuses =
         [
             RunStatus.Queued,
@@ -50,12 +44,8 @@ internal static class AssistantThreadActions
     /// <throws><see cref="KernelException"/> if a system message is present, without taking any other action</throws>
     public static async Task CreateMessageAsync(AssistantsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
     {
-        if (!s_messageRoles.Contains(message.Role))
-        {
-            throw new KernelException($"Invalid message role: {message.Role}");
-        }
-
-        if (string.IsNullOrWhiteSpace(message.Content))
+        if (string.IsNullOrEmpty(message.Content) ||
+            message.Items.Any(i => i is FunctionCallContent))
         {
             return;
         }
@@ -136,7 +126,7 @@ internal static class AssistantThreadActions
     /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public static async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    public static async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         OpenAIAssistantAgent agent,
         AssistantsClient client,
         string threadId,
@@ -190,7 +180,7 @@ internal static class AssistantThreadActions
                 if (activeFunctionSteps.Length > 0)
                 {
                     // Emit function-call content
-                    yield return GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps);
+                    yield return (IsVisible: false, Message: GenerateFunctionCallContent(agent.GetName(), activeFunctionSteps));
 
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
@@ -224,12 +214,14 @@ internal static class AssistantThreadActions
 
                     foreach (RunStepToolCall toolCall in toolCallDetails.ToolCalls)
                     {
+                        bool isVisible = false;
                         ChatMessageContent? content = null;
 
                         // Process code-interpreter content
                         if (toolCall is RunStepCodeInterpreterToolCall toolCodeInterpreter)
                         {
                             content = GenerateCodeInterpreterContent(agent.GetName(), toolCodeInterpreter);
+                            isVisible = true;
                         }
                         // Process function result content
                         else if (toolCall is RunStepFunctionToolCall toolFunction)
@@ -242,7 +234,7 @@ internal static class AssistantThreadActions
                         {
                             ++messageCount;
 
-                            yield return content;
+                            yield return (isVisible, Message: content);
                         }
                     }
                 }
@@ -276,7 +268,7 @@ internal static class AssistantThreadActions
                             {
                                 ++messageCount;
 
-                                yield return content;
+                                yield return (IsVisible: true, Message: content);
                             }
                         }
                     }
