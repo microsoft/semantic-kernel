@@ -16,12 +16,12 @@ class VectorStoreModelFunctionSerdeProtocol(Protocol):
 
     def serialize(self, **kwargs: Any) -> Any:
         """Serialize the object to the format required by the data store."""
-        ...
+        ...  # pragma: no cover
 
     @classmethod
     def deserialize(cls: type[TModel], obj: Any, **kwargs: Any) -> TModel:
         """Deserialize the output of the data store to an object."""
-        ...
+        ...  # pragma: no cover
 
 
 @runtime_checkable
@@ -30,12 +30,12 @@ class VectorStoreModelPydanticProtocol(Protocol):
 
     def model_dump(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Serialize the object to the format required by the data store."""
-        ...
+        ...  # pragma: no cover
 
     @classmethod
     def model_validate(cls: type[TModel], *args: Any, **kwargs: Any) -> TModel:
         """Deserialize the output of the data store to an object."""
-        ...
+        ...  # pragma: no cover
 
 
 @runtime_checkable
@@ -44,17 +44,17 @@ class VectorStoreModelToDictFromDictProtocol(Protocol):
 
     def to_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Serialize the object to the format required by the data store."""
-        ...
+        ...  # pragma: no cover
 
     @classmethod
     def from_dict(cls: type[TModel], *args: Any, **kwargs: Any) -> TModel:
         """Deserialize the output of the data store to an object."""
-        ...
+        ...  # pragma: no cover
 
 
 @runtime_checkable
 class ToDictProtocol(Protocol):
-    def __call__(self, record: Any, **kwargs: Any) -> Sequence[dict[str, Any]]: ...  # noqa: D102
+    def __call__(self, record: Any, **kwargs: Any) -> Sequence[dict[str, Any]]: ...  # pragma: no cover  # noqa: D102
 
 
 @runtime_checkable
