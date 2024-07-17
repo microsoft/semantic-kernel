@@ -46,5 +46,5 @@ extend-ignore-re = [
 
 [type.global]
 extend-exclude = [
-    'Raison d'Être', # Ignore globally used phrase from french
+    "Raison d'Être", # Ignore globally used phrase from french
 ]
