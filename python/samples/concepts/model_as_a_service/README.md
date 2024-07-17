@@ -2,7 +2,7 @@
 
 This sample contains a script to run multiple models against the popular [**Measuring Massive Multitask Language Understanding** (MMLU)](https://en.wikipedia.org/wiki/MMLU) dataset and produces results for benchmarking.
 
-You can use this script as a start point if you are planning to do the followings:
+You can use this script as a starting point if you are planning to do the followings:
 1. You are developing a new dataset or augmenting an existing dataset for benchmarking Large Language Models.
 2. You would like to reproduce results from academic papers with existing datasets and models available on Azure AI Studio, such as the Phi series of models, or larger models like the Llama series and the Mistral large model. You can find model availabilities [here](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless-availability).
 
