@@ -24,10 +24,10 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
         Console.WriteLine("======== Azure OpenAI - Text Generation - Raw Streaming ========");
 
         var textGeneration = new AzureOpenAIChatCompletionService(
-            deploymentName: TestConfiguration.AzureOpenAI.DeploymentName,
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
             endpoint: TestConfiguration.AzureOpenAI.Endpoint,
             apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-            modelId: TestConfiguration.AzureOpenAI.ModelId);
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
         return this.TextGenerationStreamAsync(textGeneration);
     }
@@ -37,7 +37,7 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
     {
         Console.WriteLine("======== Open AI - Text Generation - Raw Streaming ========");
 
-        var textGeneration = new OpenAIChatCompletionService("gpt-3.5-turbo-instruct", TestConfiguration.OpenAI.ApiKey);
+        var textGeneration = new OpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         return this.TextGenerationStreamAsync(textGeneration);
     }
