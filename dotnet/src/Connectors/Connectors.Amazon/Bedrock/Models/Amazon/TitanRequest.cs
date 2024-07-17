@@ -1,40 +1,46 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Amazon;
-
-public class TitanRequest
+/// <summary>
+/// The Amazon Titan Request objects.
+/// </summary>
+public static class TitanRequest
 {
+    /// <summary>
+    /// The Amazon Titan Text Generation Request object.
+    /// </summary>
     [Serializable]
-    public class TitanTextGenerationRequest : ITextGenerationRequest
+    public sealed class TitanTextGenerationRequest : ITextGenerationRequest
     {
+        /// <summary>
+        /// The provided input text string for text generation response.
+        /// </summary>
         [JsonPropertyName("inputText")]
         public required string InputText { get; set; }
-
+        /// <summary>
+        /// Text generation configurations as required by Amazon Titan request body.
+        /// </summary>
         [JsonPropertyName("textGenerationConfig")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public AmazonTitanTextGenerationConfig? TextGenerationConfig { get; set; }
 
-        int? ITextGenerationRequest.MaxTokens => TextGenerationConfig?.MaxTokenCount;
+        int? ITextGenerationRequest.MaxTokens => this.TextGenerationConfig?.MaxTokenCount;
 
-        double? ITextGenerationRequest.TopP => TextGenerationConfig?.TopP;
+        double? ITextGenerationRequest.TopP => this.TextGenerationConfig?.TopP;
 
-        double? ITextGenerationRequest.Temperature => TextGenerationConfig?.Temperature;
+        double? ITextGenerationRequest.Temperature => this.TextGenerationConfig?.Temperature;
 
-        IList<string>? ITextGenerationRequest.StopSequences => TextGenerationConfig?.StopSequences;
+        IList<string>? ITextGenerationRequest.StopSequences => this.TextGenerationConfig?.StopSequences;
     }
-
+    /// <summary>
+    /// Amazon Titan Text Generation Configurations.
+    /// </summary>
+    [Serializable]
     public class AmazonTitanTextGenerationConfig
     {
         /// <summary>
@@ -65,16 +71,26 @@ public class TitanRequest
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public IList<string>? StopSequences { get; set; } = new List<string>();
     }
-
+    /// <summary>
+    /// Amazon Titan Chat Completion Parameters for the Converse Request object.
+    /// </summary>
     public class TitanChatCompletionRequest : IChatCompletionRequest
     {
-        public List<Message> Messages { get; set; }
-        public List<SystemContentBlock> System { get; set; }
-        public InferenceConfiguration InferenceConfig { get; set; }
+        /// <inheritdoc />
+        public List<Message>? Messages { get; set; }
+        /// <inheritdoc />
+        public List<SystemContentBlock>? System { get; set; }
+        /// <inheritdoc />
+        public InferenceConfiguration? InferenceConfig { get; set; }
+        /// <inheritdoc />
         public Document AdditionalModelRequestFields { get; set; }
-        public List<string> AdditionalModelResponseFieldPaths { get; set; }
-        public GuardrailConfiguration GuardrailConfig { get; set; }
-        public string ModelId { get; set; }
-        public ToolConfiguration ToolConfig { get; set; }
+        /// <inheritdoc />
+        public List<string>? AdditionalModelResponseFieldPaths { get; set; }
+        /// <inheritdoc />
+        public GuardrailConfiguration? GuardrailConfig { get; set; }
+        /// <inheritdoc />
+        public string? ModelId { get; set; }
+        /// <inheritdoc />
+        public ToolConfiguration? ToolConfig { get; set; }
     }
 }

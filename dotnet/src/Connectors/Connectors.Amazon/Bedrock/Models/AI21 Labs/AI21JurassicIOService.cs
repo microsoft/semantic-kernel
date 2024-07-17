@@ -9,11 +9,19 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.AI21;
-
+/// <summary>
+/// Input-output service for AI21 Labs Jurassic.
+/// </summary>
 public class AI21JurassicIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
+    /// <summary>
+    /// Builds InvokeModelRequest Body parameter to be serialized.
+    /// </summary>
+    /// <param name="prompt">The input prompt for text generation.</param>
+    /// <param name="executionSettings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
     {
         double? temperature = 0.5; // AI21 Jurassic default
         double? topP = 0.5; // AI21 Jurassic default
@@ -61,7 +69,11 @@ public class AI21JurassicIOService : IBedrockModelIOService<IChatCompletionReque
 
         return requestBody;
     }
-
+    /// <summary>
+    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
+    /// </summary>
+    /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
+    /// <returns></returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using (var memoryStream = new MemoryStream())
@@ -77,10 +89,7 @@ public class AI21JurassicIOService : IBedrockModelIOService<IChatCompletionReque
                 {
                     foreach (var completion in responseBody.Completions)
                     {
-                        if (completion.Data != null)
-                        {
-                            textContents.Add(new TextContent(completion.Data.Text));
-                        }
+                        textContents.Add(new TextContent(completion.Data.Text));
                     }
                 }
 
@@ -88,19 +97,36 @@ public class AI21JurassicIOService : IBedrockModelIOService<IChatCompletionReque
             }
         }
     }
-    // Jurassic does not support converse.
+    /// <summary>
+    /// Jurassic does not support converse.
+    /// </summary>
+    /// <param name="modelId">The model ID.</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         throw new NotImplementedException();
     }
-
-    // Jurassic does not support streaming.
+    /// <summary>
+    /// Jurassic does not support streaming.
+    /// </summary>
+    /// <param name="chunk"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
         throw new NotImplementedException();
     }
-
-    // Jurassic does not support converse (or streaming for that matter).
+    /// <summary>
+    /// Jurassic does not support converse (or streaming for that matter).
+    /// </summary>
+    /// <param name="modelId"></param>
+    /// <param name="chatHistory"></param>
+    /// <param name="settings"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
         throw new NotImplementedException();

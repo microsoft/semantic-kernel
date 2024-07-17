@@ -1,16 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading;
-using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
-using Amazon.Runtime.EventStreams;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
 using Connectors.Amazon.Models;
@@ -20,10 +13,13 @@ using Connectors.Amazon.Models.Anthropic;
 using Connectors.Amazon.Models.Cohere;
 using Connectors.Amazon.Models.Meta;
 using Connectors.Amazon.Models.Mistral;
-using Microsoft.SemanticKernel;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
-
+/// <summary>
+/// Represents a client for interacting with the text generation through Bedrock.
+/// </summary>
+/// <typeparam name="TRequest"> Request object which is an ITextGenerationRequest. </typeparam>
+/// <typeparam name="TResponse"> Response object which is an ITextGenerationResponse. </typeparam>
 public abstract class BedrockTextGenerationClient<TRequest, TResponse>
     where TRequest : ITextGenerationRequest
     where TResponse : ITextGenerationResponse
@@ -32,6 +28,12 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
     private readonly IAmazonBedrockRuntime _bedrockApi;
     private readonly IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse> _ioService;
 
+    /// <summary>
+    /// Builds the client object and registers the model input-output service given the user's passed in model ID.
+    /// </summary>
+    /// <param name="modelId"></param>
+    /// <param name="bedrockApi"></param>
+    /// <exception cref="ArgumentException"></exception>
     protected BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockApi)
     {
         this._modelId = modelId;
@@ -81,7 +83,10 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
         }
     }
 
-    private protected async Task<IReadOnlyList<TextContent>> InvokeBedrockModelAsync(string prompt, PromptExecutionSettings executionSettings, CancellationToken cancellationToken = default)
+    private protected async Task<IReadOnlyList<TextContent>> InvokeBedrockModelAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
     {
         var requestBody = this._ioService.GetInvokeModelRequestBody(prompt, executionSettings);
         var invokeRequest = new InvokeModelRequest
@@ -108,7 +113,7 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
             ContentType = "application/json",
             Body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(requestBody))
         };
-        InvokeModelWithResponseStreamResponse streamingResponse = null;
+        InvokeModelWithResponseStreamResponse streamingResponse;
         try
         {
             // Send the request to the Bedrock Runtime and wait for the response.

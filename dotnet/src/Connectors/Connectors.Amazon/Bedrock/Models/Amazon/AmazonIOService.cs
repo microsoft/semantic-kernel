@@ -1,28 +1,29 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
-using Amazon.Runtime.EventStreams;
-using Amazon.Runtime.EventStreams.Internal;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
-using Microsoft.Extensions.Azure;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Amazon;
-
+/// <summary>
+/// Input-output service for Amazon Titan model.
+/// </summary>
 public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
+    /// <summary>
+    /// Builds InvokeModel request Body parameter with structure as required by Amazon Titan.
+    /// </summary>
+    /// <param name="prompt">The input prompt for text generation.</param>
+    /// <param name="executionSettings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
     {
         double? temperature = 0.7;
         double? topP = 0.9;
@@ -56,7 +57,11 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
         };
         return requestBody;
     }
-
+    /// <summary>
+    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
+    /// </summary>
+    /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
+    /// <returns></returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using (var memoryStream = new MemoryStream())
@@ -70,14 +75,20 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
 
                 if (responseBody?.Results != null && responseBody.Results.Count > 0)
                 {
-                    string outputText = responseBody.Results[0].OutputText;
+                    string? outputText = responseBody.Results[0].OutputText;
                     textContents.Add(new TextContent(outputText));
                 }
-
                 return textContents;
             }
         }
     }
+    /// <summary>
+    /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Amazon Titan.
+    /// </summary>
+    /// <param name="modelId">The model ID.</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
         var titanRequest = new TitanRequest.TitanChatCompletionRequest
@@ -90,9 +101,9 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
             System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 0.7f),
-                TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "topP", 0.9f),
-                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "maxTokenCount", 512),
+                Temperature = this.GetExtensionDataValue(settings.ExtensionData, "temperature", 0.7f),
+                TopP = this.GetExtensionDataValue(settings.ExtensionData, "topP", 0.9f),
+                MaxTokens = this.GetExtensionDataValue(settings.ExtensionData, "maxTokenCount", 512),
             },
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()
@@ -144,15 +155,26 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
             _ => throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}")
         };
     }
+    /// <summary>
+    /// Extracts the text generation streaming output from the Amazon Titan response object structure.
+    /// </summary>
+    /// <param name="chunk"></param>
+    /// <returns></returns>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
-        var text = chunk?["outputText"]?.ToString();
+        var text = chunk["outputText"]?.ToString();
         if (!string.IsNullOrEmpty(text))
         {
             yield return text;
         }
     }
-
+    /// <summary>
+    /// Builds the ConverseStreamRequest object for the Converse Bedrock API call, including building the Amazon Titan Request object and mapping parameters to the ConverseStreamRequest object.
+    /// </summary>
+    /// <param name="modelId">The model ID.</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
         var titanRequest = new TitanRequest.TitanChatCompletionRequest
@@ -165,9 +187,9 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
             System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 0.7f),
-                TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "topP", 0.9f),
-                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "maxTokenCount", 512),
+                Temperature = this.GetExtensionDataValue(settings.ExtensionData, "temperature", 0.7f),
+                TopP = this.GetExtensionDataValue(settings.ExtensionData, "topP", 0.9f),
+                MaxTokens = this.GetExtensionDataValue(settings.ExtensionData, "maxTokenCount", 512),
             },
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()

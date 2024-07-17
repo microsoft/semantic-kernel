@@ -1,20 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
-using Connectors.Amazon.Core;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
-using Connectors.Amazon.Models;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Services;
 

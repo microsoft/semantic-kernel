@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime;
@@ -12,11 +11,19 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Meta;
-
+/// <summary>
+/// Input-output service for Meta Llama.
+/// </summary>
 public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
+    /// <summary>
+    /// Builds InvokeModel request Body parameter with structure as required by Meta Llama.
+    /// </summary>
+    /// <param name="prompt">The input prompt for text generation.</param>
+    /// <param name="executionSettings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
     {
         double? temperature = 0.5; // Llama default
         double? topP = 0.9; // Llama default
@@ -44,6 +51,11 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
 
         return requestBody;
     }
+    /// <summary>
+    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
+    /// </summary>
+    /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
+    /// <returns></returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using (var memoryStream = new MemoryStream())
@@ -64,9 +76,16 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
             }
         }
     }
+    /// <summary>
+    /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Meta Llama.
+    /// </summary>
+    /// <param name="modelId">The model ID.</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var llamaRequest = new LlamaRequest
+        var llamaRequest = new LlamaChatRequest
         {
             Messages = chatHistory.Select(m => new Message
             {
@@ -74,9 +93,9 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
                 Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
-            Temperature = this.GetExtensionDataValue<double>(settings?.ExtensionData, "temperature", 0.5),
-            TopP = this.GetExtensionDataValue<double>(settings?.ExtensionData, "top_p", 0.9),
-            MaxGenLen = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_gen_len", 512)
+            Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5),
+            TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9),
+            MaxGenLen = this.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
         };
         var converseRequest = new ConverseRequest
         {
@@ -131,43 +150,33 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
 
         return defaultValue;
     }
-
-    private string GetLlamaPrompt(List<Message> messages, List<SystemContentBlock> system)
-    {
-        var prompt = new StringBuilder();
-
-        if (system?.Any() == true)
-        {
-            prompt.Append("<s>[INST] <<SYS>>");
-            prompt.Append(system.First().Text);
-            prompt.Append("<</SYS>>");
-            prompt.AppendLine();
-        }
-
-        foreach (var message in messages)
-        {
-            if (message.Role == ConversationRole.User)
-            {
-                prompt.Append(message.Content.First().Text);
-                prompt.Append(" [/INST]");
-            }
-        }
-
-        return prompt.ToString();
-    }
-
+    /// <summary>
+    /// Extracts the text generation streaming output from the Meta Llama response object structure.
+    /// </summary>
+    /// <param name="chunk"></param>
+    /// <returns></returns>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
-        var generation = chunk?["generation"]?.ToString();
+        var generation = chunk["generation"]?.ToString();
         if (!string.IsNullOrEmpty(generation))
         {
             yield return generation;
         }
     }
 
-    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    /// <summary>
+    /// Builds the ConverseStreamRequest object for the Converse Bedrock API call, including building the Meta Llama Request object and mapping parameters to the ConverseStreamRequest object.
+    /// </summary>
+    /// <param name="modelId">The model ID.</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    public ConverseStreamRequest GetConverseStreamRequest(
+        string modelId,
+        ChatHistory chatHistory,
+        PromptExecutionSettings? settings = null)
     {
-        var llamaRequest = new LlamaRequest
+        var llamaRequest = new LlamaChatRequest
         {
             Messages = chatHistory.Select(m => new Message
             {
@@ -175,9 +184,9 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
                 Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
-            Temperature = this.GetExtensionDataValue<double>(settings?.ExtensionData, "temperature", 0.5),
-            TopP = this.GetExtensionDataValue<double>(settings?.ExtensionData, "top_p", 0.9),
-            MaxGenLen = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_gen_len", 512)
+            Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5),
+            TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9),
+            MaxGenLen = this.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
         };
         var converseStreamRequest = new ConverseStreamRequest
         {

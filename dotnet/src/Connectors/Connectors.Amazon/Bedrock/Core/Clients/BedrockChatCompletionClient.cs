@@ -1,13 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Core.Requests;
@@ -23,7 +14,11 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
-
+/// <summary>
+/// Represents a client for interacting with the chat completion through Bedrock.
+/// </summary>
+/// <typeparam name="TRequest"> Request object which is an IChatCompletionRequest. </typeparam>
+/// <typeparam name="TResponse"> Response object which is an IChatCompletionResponse. </typeparam>
 public class BedrockChatCompletionClient<TRequest, TResponse>
     where TRequest : IChatCompletionRequest
     where TResponse : IChatCompletionResponse
@@ -35,7 +30,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     private readonly Uri _chatGenerationEndpoint;
 
     /// <summary>
-    /// Represents a client for interacting with the chat completion through Bedrock.
+    /// Builds the client object and registers the model input-output service given the user's passed in model ID.
     /// </summary>
     /// <param name="modelId"></param>
     /// <param name="bedrockApi"></param>
@@ -85,6 +80,13 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                 throw new ArgumentException($"Unsupported model provider: {modelProvider}");
         }
     }
+    /// <summary>
+    /// Builds the convert request body given the model ID (as stored in ioService object) and calls the ConverseAsync Bedrock Runtime action to get the result.
+    /// </summary>
+    /// <param name="chatHistory"> The chat history containing the conversation data. </param>
+    /// <param name="executionSettings"> Optional settings for prompt execution. </param>
+    /// <param name="cancellationToken"> A cancellation token to cancel the operation. </param>
+    /// <returns></returns>
     private async Task<ConverseResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
     {
         var converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory, executionSettings);
@@ -111,17 +113,22 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                 throw;
             }
             IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
+            IReadOnlyList<ChatMessageContent> chatMessagesList = chat.ToList();
             // Per other sample Connector demos, we are letting the user add the response to the ChatHistory. Otherwise, it could be done as below:
             // foreach (var message in chat)
             // {
             //     chatHistory.AddMessage(AuthorRole.Assistant, message.Content);
             // }
-            activity?.SetCompletionResponse(chat);
-            return chat.ToList();
+            activity?.SetCompletionResponse(chatMessagesList);
+            return chatMessagesList;
         }
     }
-
-    public static IEnumerable<ChatMessageContent> ConvertToMessageContent(ConverseResponse response)
+    /// <summary>
+    /// Converts the ConverseResponse object as outputted by the Bedrock Runtime API call to a ChatMessageContent for the Semantic Kernel.
+    /// </summary>
+    /// <param name="response"> ConverseResponse object outputted by Bedrock. </param>
+    /// <returns></returns>
+    private static IEnumerable<ChatMessageContent> ConvertToMessageContent(ConverseResponse response)
     {
         if (response.Output.Message != null)
         {
@@ -139,7 +146,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     }
     private static AuthorRole MapRole(string role)
     {
-        return role.ToLowerInvariant() switch
+        return role switch
         {
             "user" => AuthorRole.User,
             "assistant" => AuthorRole.Assistant,
@@ -176,7 +183,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         {
             try
             {
-                response = await this.StreamConverseBedrockModel(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
+                response = await this.StreamConverseBedrockModelAsync(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
             }
             catch (AmazonBedrockRuntimeException e)
             {
@@ -195,7 +202,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         {
             if (chunk is ContentBlockDeltaEvent)
             {
-                var c = (chunk as ContentBlockDeltaEvent).Delta.Text;
+                var c = (chunk as ContentBlockDeltaEvent)?.Delta.Text;
                 var content = new StreamingChatMessageContent(AuthorRole.Assistant, c);
                 streamedContents?.Add(content);
                 yield return content;
@@ -203,7 +210,10 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         }
         activity?.EndStreaming(streamedContents);
     }
-    private async Task<ConverseStreamResponse> StreamConverseBedrockModel(ChatHistory chatHistory, PromptExecutionSettings executionSettings, CancellationToken cancellationToken)
+    private async Task<ConverseStreamResponse> StreamConverseBedrockModelAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings executionSettings,
+        CancellationToken cancellationToken)
     {
         var converseRequest = this._ioService.GetConverseStreamRequest(this._modelId, chatHistory, executionSettings);
         return await this._bedrockApi.ConverseStreamAsync(converseRequest, cancellationToken).ConfigureAwait(true);

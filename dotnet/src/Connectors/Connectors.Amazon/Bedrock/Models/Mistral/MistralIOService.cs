@@ -1,23 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Mistral;
-
+/// <summary>
+/// Input-output service for Mistral.
+/// </summary>
 public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
+    /// <summary>
+    /// Builds InvokeModel request Body parameter with structure as required by Mistral.
+    /// </summary>
+    /// <param name="prompt">The input prompt for text generation.</param>
+    /// <param name="executionSettings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
     {
         double? temperature = 0.5; // Mistral default [0.7 for the non-instruct versions. need to fix]
         double? topP = 0.9; // Mistral default
@@ -55,7 +60,11 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
 
         return requestBody;
     }
-
+    /// <summary>
+    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
+    /// </summary>
+    /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
+    /// <returns>A list of text content objects as required by the semantic kernel.</returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using (var memoryStream = new MemoryStream())
@@ -78,7 +87,13 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
             }
         }
     }
-
+    /// <summary>
+    /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Mistral.
+    /// </summary>
+    /// <param name="modelId">The model ID.</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(settings);
@@ -96,7 +111,7 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
             {
                 Temperature = (float)request.Temperature,
                 TopP = (float)request.TopP,
-                MaxTokens = (int)request.MaxTokens
+                MaxTokens = request.MaxTokens
             },
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()
@@ -104,7 +119,12 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
         return converseRequest;
     }
 
-    private MistralRequest.MistralChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings executionSettings, Kernel? kernel = null)
+    private MistralRequest.MistralChatCompletionRequest CreateChatCompletionRequest(
+        string modelId,
+        bool stream,
+        ChatHistory chatHistory,
+        MistralAIPromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null)
     {
         var request = new MistralRequest.MistralChatCompletionRequest(modelId)
         {
@@ -186,7 +206,7 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
         return [new MistralRequest.MistralChatMessage(content.Role.ToString(), content.Content ?? string.Empty)];
     }
 
-    private static string? ProcessFunctionResult(object functionResult, MistralAIToolCallBehavior? toolCallBehavior)
+    private static string ProcessFunctionResult(object functionResult, MistralAIToolCallBehavior? toolCallBehavior)
     {
         if (functionResult is string stringResult)
         {
@@ -206,10 +226,14 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
     }
-
+    /// <summary>
+    /// Extracts the text generation streaming output from the Mistral response object structure.
+    /// </summary>
+    /// <param name="chunk"></param>
+    /// <returns></returns>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
-        var outputs = chunk?["outputs"]?.AsArray();
+        var outputs = chunk["outputs"]?.AsArray();
         if (outputs != null)
         {
             foreach (var output in outputs)
@@ -222,7 +246,13 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
             }
         }
     }
-
+    /// <summary>
+    /// Builds the ConverseStreamRequest object for the Converse Bedrock API call, including building the Mistral Request object and mapping parameters to the ConverseStreamRequest object.
+    /// </summary>
+    /// <param name="modelId">The model ID.</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(settings);
@@ -240,7 +270,7 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
             {
                 Temperature = (float)request.Temperature,
                 TopP = (float)request.TopP,
-                MaxTokens = (int)request.MaxTokens
+                MaxTokens = request.MaxTokens
             },
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()

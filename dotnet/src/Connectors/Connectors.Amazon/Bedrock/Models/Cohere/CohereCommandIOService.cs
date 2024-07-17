@@ -2,31 +2,37 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
-using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Cohere;
-
+/// <summary>
+/// Input-output service for Cohere Command.
+/// </summary>
 public class CohereCommandIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
+    /// <summary>
+    /// Builds InvokeModel request Body parameter with structure as required by Cohere Command.
+    /// </summary>
+    /// <param name="prompt">The input prompt for text generation.</param>
+    /// <param name="executionSettings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
     {
         double? temperature = 0.9; // Cohere default
         double? topP = 0.75; // Cohere default
         int? maxTokens = 20; // Cohere default
         List<string>? stopSequences = null;
         double? topK = 0; // Cohere default
-        string returnLikelihoods = "NONE"; // Cohere default
+        string? returnLikelihoods = "NONE"; // Cohere default
         bool? stream = false; // Cohere default
         int? numGenerations = 1; // Cohere default
-        Dictionary<int, double> logitBias = null;
-        string truncate = "END"; // Cohere default
+        Dictionary<int, double>? logitBias = null;
+        string? truncate = "END"; // Cohere default
 
         if (executionSettings != null && executionSettings.ExtensionData != null)
         {
@@ -78,6 +84,11 @@ public class CohereCommandIOService : IBedrockModelIOService<IChatCompletionRequ
 
         return requestBody;
     }
+    /// <summary>
+    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
+    /// </summary>
+    /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
+    /// <returns>A list of text content objects as required by the semantic kernel.</returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using (var memoryStream = new MemoryStream())
@@ -103,10 +114,14 @@ public class CohereCommandIOService : IBedrockModelIOService<IChatCompletionRequ
             }
         }
     }
-
+    /// <summary>
+    /// Extracts the text generation streaming output from the Cohere Command response object structure.
+    /// </summary>
+    /// <param name="chunk"></param>
+    /// <returns></returns>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
-        var generations = chunk?["generations"]?.AsArray();
+        var generations = chunk["generations"]?.AsArray();
         if (generations != null)
         {
             foreach (var generation in generations)
@@ -120,13 +135,26 @@ public class CohereCommandIOService : IBedrockModelIOService<IChatCompletionRequ
         }
     }
 
-    // Command does not support Converse (only Command R): "Limited. No chat support." - https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features
+    /// <summary>
+    /// Command does not support Converse (only Command R): "Limited. No chat support." - https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features
+    /// </summary>
+    /// <param name="modelId"></param>
+    /// <param name="chatHistory"></param>
+    /// <param name="settings"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         throw new NotImplementedException();
     }
-
-    // Command does not support ConverseStream (only Command R): "Limited. No chat support." - https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features
+    /// <summary>
+    /// Command does not support ConverseStream (only Command R): "Limited. No chat support." - https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features
+    /// </summary>
+    /// <param name="modelId"></param>
+    /// <param name="chatHistory"></param>
+    /// <param name="settings"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
     {
         throw new NotImplementedException();

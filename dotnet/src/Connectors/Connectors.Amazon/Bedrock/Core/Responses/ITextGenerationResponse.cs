@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using Microsoft.SemanticKernel;
-
 namespace Connectors.Amazon.Core.Responses;
 
-// Variation too high between different models. Each model will just address their own response parameter requirements.
+/// <summary>
+/// Text generation response object. Variation too high between different models. Each model will just address their own response parameter requirements.
+/// </summary>
 public interface ITextGenerationResponse
 {
+    /// <summary>
+    /// Number of tokens in the response.
+    /// </summary>
+    public int TokenCount { get; set; }
 }

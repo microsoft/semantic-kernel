@@ -11,18 +11,26 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Cohere;
-
+/// <summary>
+/// Input-output service for Cohere Command R.
+/// </summary>
 public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public object GetInvokeModelRequestBody(string text, PromptExecutionSettings executionSettings)
+    /// <summary>
+    /// Builds InvokeModel request Body parameter with structure as required by Cohere Command R.
+    /// </summary>
+    /// <param name="prompt">The input prompt for text generation.</param>
+    /// <param name="executionSettings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
     {
         double? temperature = 0.3; // Cohere default
         double? topP = 0.75; // Cohere default
         int? maxTokens = null; // Cohere default
         List<string>? stopSequences = null;
         double? topK = 0; // Cohere default
-        string promptTruncation = "OFF"; // Cohere default
+        string? promptTruncation = "OFF"; // Cohere default
         double? frequencyPenalty = 0; // Cohere default
         double? presencePenalty = 0; // Cohere default
         int? seed = null;
@@ -75,7 +83,7 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
 
         var requestBody = new CommandRTextRequest.CommandRTextGenerationRequest
         {
-            Message = text,
+            Message = prompt,
             Temperature = temperature,
             TopP = topP,
             TopK = topK,
@@ -93,7 +101,11 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
 
         return requestBody;
     }
-
+    /// <summary>
+    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
+    /// </summary>
+    /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
+    /// <returns></returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using (var memoryStream = new MemoryStream())
@@ -114,6 +126,13 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
             }
         }
     }
+    /// <summary>
+    /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Cohere Command R.
+    /// </summary>
+    /// <param name="modelId">The model ID</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         var cohereRequest = new CohereCommandRequest
@@ -128,19 +147,19 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
             Role = MapRole(m.Role),
             Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
         }).ToList(),
-        Temperature = this.GetExtensionDataValue<double>(settings?.ExtensionData, "temperature", 0.3),
-        TopP = this.GetExtensionDataValue<double>(settings?.ExtensionData, "p", 0.75),
-        TopK = this.GetExtensionDataValue<double>(settings?.ExtensionData, "k", 0.0),
-        MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 512),
+        Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.3),
+        TopP = this.GetExtensionDataValue(settings?.ExtensionData, "p", 0.75),
+        TopK = this.GetExtensionDataValue(settings?.ExtensionData, "k", 0.0),
+        MaxTokens = this.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512),
         PromptTruncation = this.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", "OFF"),
-        FrequencyPenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "frequency_penalty", 0.0),
-        PresencePenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "presence_penalty", 0.0),
-        Seed = this.GetExtensionDataValue<int>(settings?.ExtensionData, "seed", 0),
-        ReturnPrompt = this.GetExtensionDataValue<bool>(settings?.ExtensionData, "return_prompt", false),
-        Tools = this.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", null),
-        ToolResults = this.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", null),
-        StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
-        RawPrompting = this.GetExtensionDataValue<bool>(settings?.ExtensionData, "raw_prompting", false)
+        FrequencyPenalty = this.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", 0.0),
+        PresencePenalty = this.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", 0.0),
+        Seed = this.GetExtensionDataValue(settings?.ExtensionData, "seed", 0),
+        ReturnPrompt = this.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", false),
+        Tools = this.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", []),
+        ToolResults = this.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", []),
+        StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []),
+        RawPrompting = this.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", false)
     };
     var converseRequest = new ConverseRequest
     {
@@ -160,7 +179,7 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
             {
                 { "title", d.Title },
                 { "snippet", d.Snippet }
-            }).ToList() ?? new List<Document>()) },
+            }).ToList()) },
             { "search_queries_only", cohereRequest.SearchQueriesOnly },
             { "preamble", cohereRequest.Preamble },
             { "k", cohereRequest.TopK },
@@ -169,7 +188,7 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
             { "presence_penalty", cohereRequest.PresencePenalty },
             { "seed", cohereRequest.Seed },
             { "return_prompt", cohereRequest.ReturnPrompt },
-            { "stop_sequences", new Document(cohereRequest.StopSequences?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
+            { "stop_sequences", new Document(cohereRequest.StopSequences.Select(s => new Document(s)).ToList()) },
             { "raw_prompting", cohereRequest.RawPrompting }
         },
         AdditionalModelResponseFieldPaths = new List<string>(),
@@ -259,16 +278,27 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
 
         return defaultValue;
     }
-
+    /// <summary>
+    /// Extracts the text generation streaming output from the Cohere Command R response object structure.
+    /// </summary>
+    /// <param name="chunk"></param>
+    /// <returns></returns>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
-        var text = chunk?["text"]?.ToString();
+        var text = chunk["text"]?.ToString();
         if (!string.IsNullOrEmpty(text))
         {
             yield return text;
         }
     }
-    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    /// <summary>
+    /// Builds the ConverseStreamRequest object for the Converse Bedrock API call, including building the Cohere Command R Request object and mapping parameters to the ConverseStreamRequest object.
+    /// </summary>
+    /// <param name="modelId">The model ID.</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         var cohereRequest = new CohereCommandRequest
     {
@@ -282,19 +312,19 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
             Role = MapRole(m.Role),
             Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
         }).ToList(),
-        Temperature = this.GetExtensionDataValue<double>(settings?.ExtensionData, "temperature", 0.3),
-        TopP = this.GetExtensionDataValue<double>(settings?.ExtensionData, "p", 0.75),
-        TopK = this.GetExtensionDataValue<double>(settings?.ExtensionData, "k", 0.0),
-        MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 512),
+        Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.3),
+        TopP = this.GetExtensionDataValue(settings?.ExtensionData, "p", 0.75),
+        TopK = this.GetExtensionDataValue(settings?.ExtensionData, "k", 0.0),
+        MaxTokens = this.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512),
         PromptTruncation = this.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", "OFF"),
-        FrequencyPenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "frequency_penalty", 0.0),
-        PresencePenalty = this.GetExtensionDataValue<double>(settings?.ExtensionData, "presence_penalty", 0.0),
-        Seed = this.GetExtensionDataValue<int>(settings?.ExtensionData, "seed", 0),
-        ReturnPrompt = this.GetExtensionDataValue<bool>(settings?.ExtensionData, "return_prompt", false),
-        Tools = this.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", null),
-        ToolResults = this.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", null),
-        StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
-        RawPrompting = this.GetExtensionDataValue<bool>(settings?.ExtensionData, "raw_prompting", false)
+        FrequencyPenalty = this.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", 0.0),
+        PresencePenalty = this.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", 0.0),
+        Seed = this.GetExtensionDataValue(settings?.ExtensionData, "seed", 0),
+        ReturnPrompt = this.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", false),
+        Tools = this.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", []),
+        ToolResults = this.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", []),
+        StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []),
+        RawPrompting = this.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", false)
     };
     var converseStreamRequest = new ConverseStreamRequest
     {
@@ -314,7 +344,7 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
             {
                 { "title", d.Title },
                 { "snippet", d.Snippet }
-            }).ToList() ?? new List<Document>()) },
+            }).ToList()) },
             { "search_queries_only", cohereRequest.SearchQueriesOnly },
             { "preamble", cohereRequest.Preamble },
             { "k", cohereRequest.TopK },
@@ -323,7 +353,7 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
             { "presence_penalty", cohereRequest.PresencePenalty },
             { "seed", cohereRequest.Seed },
             { "return_prompt", cohereRequest.ReturnPrompt },
-            { "stop_sequences", new Document(cohereRequest.StopSequences?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
+            { "stop_sequences", new Document(cohereRequest.StopSequences.Select(s => new Document(s)).ToList()) },
             { "raw_prompting", cohereRequest.RawPrompting }
         },
         AdditionalModelResponseFieldPaths = new List<string>(),

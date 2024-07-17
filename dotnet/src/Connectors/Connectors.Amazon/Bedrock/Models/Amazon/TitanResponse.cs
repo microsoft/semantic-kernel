@@ -1,110 +1,81 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
 
 namespace Connectors.Amazon.Models.Amazon;
-
+/// <summary>
+/// Amazon Titan Chat Completion Response object.
+/// </summary>
 public class TitanChatResponse
 {
+    /// <summary>
+    /// The number of tokens in the prompt.
+    /// </summary>
     [JsonPropertyName("inputTextTokenCount")]
     public int InputTextTokenCount { get; set; }
-
+    /// <summary>
+    /// The result object from the chat completion.
+    /// </summary>
     [JsonPropertyName("results")]
     public required IReadOnlyList<AmazonTitanChatCompletionResult> Results { get; set; }
-
-    public IReadOnlyList<ChatMessageContent> GetResults()
-    {
-        return Results;
-    }
 }
-
+/// <summary>
+/// Amazon Titan chat completion result object.
+/// </summary>
 public class AmazonTitanChatCompletionResult : ChatMessageContent
 {
+    /// <summary>
+    /// The number of tokens in the response.
+    /// </summary>
     [JsonPropertyName("tokenCount")]
     public int TokenCount { get; set; }
-
+    /// <summary>
+    /// The text in the response.
+    /// </summary>
     [JsonPropertyName("outputText")]
     public required string OutputText { get; set; }
-
+    /// <summary>
+    /// The reason the response finished being generated.
+    /// </summary>
     [JsonPropertyName("completionReason")]
     public string? CompletionReason { get; set; }
-
-    // ModelResult ITextResult.ModelResult => new(OutputText);
-    //
-    // Task<string> ITextResult.GetCompletionAsync(CancellationToken cancellationToken)
-    // {
-    //     return Task.FromResult(OutputText);
-    // }
 }
-
+/// <summary>
+/// The Amazon Titan Text response object when deserialized from Invoke Model call.
+/// </summary>
 [Serializable]
 public class TitanTextResponse
 {
+    /// <summary>
+    /// The number of tokens in the prompt.
+    /// </summary>
     [JsonPropertyName("inputTextTokenCount")]
     public int InputTextTokenCount { get; set; }
-
+    /// <summary>
+    /// The list of result objects.
+    /// </summary>
     [JsonPropertyName("results")]
-    public List<Result> Results { get; set; }
-
+    public List<Result>? Results { get; set; }
+    /// <summary>
+    /// The result object.
+    /// </summary>
     public class Result
     {
+        /// <summary>
+        /// The number of tokens in the prompt.
+        /// </summary>
         [JsonPropertyName("tokenCount")]
         public int TokenCount { get; set; }
-
+        /// <summary>
+        /// The text in the response.
+        /// </summary>
         [JsonPropertyName("outputText")]
-        public string OutputText { get; set; }
-
+        public string? OutputText { get; set; }
+        /// <summary>
+        /// The reason the response finished being generated.
+        /// </summary>
         [JsonPropertyName("completionReason")]
-        public string CompletionReason { get; set; }
-    }
-
-    public class TitanStreamResponse
-    {
-        [JsonPropertyName("chunk")]
-        public Chunk Chunks { get; set; }
-
-        public class Chunk
-        {
-            [JsonPropertyName("bytes")]
-            public string BytesBase64 { get; set; }
-
-            public byte[] Bytes
-            {
-                get
-                {
-                    return Convert.FromBase64String(BytesBase64);
-                }
-            }
-        }
-
-        public class DecodedResponse
-        {
-            [JsonPropertyName("index")]
-            public int Index { get; set; }
-
-            [JsonPropertyName("inputTextTokenCount")]
-            public int InputTextTokenCount { get; set; }
-
-            [JsonPropertyName("totalOutputTextTokenCount")]
-            public int TotalOutputTextTokenCount { get; set; }
-
-            [JsonPropertyName("outputText")]
-            public string OutputText { get; set; }
-
-            [JsonPropertyName("completionReason")]
-            public string CompletionReason { get; set; }
-        }
-
-        public DecodedResponse GetDecodedResponse()
-        {
-            string jsonString = Encoding.UTF8.GetString(Chunks.Bytes);
-            return JsonSerializer.Deserialize<DecodedResponse>(jsonString);
-        }
+        public string? CompletionReason { get; set; }
     }
 }

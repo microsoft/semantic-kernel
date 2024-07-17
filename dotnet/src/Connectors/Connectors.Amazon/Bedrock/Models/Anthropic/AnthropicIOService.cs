@@ -11,16 +11,25 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Anthropic;
-
+/// <summary>
+/// Input-output service for Anthropic Claude model.
+/// </summary>
 public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings executionSettings)
+    /// <summary>
+    /// Builds InvokeModel request Body parameter with structure as required by Anthropic Claude.
+    /// </summary>
+    /// <param name="prompt">The input prompt for text generation.</param>
+    /// <param name="executionSettings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
     {
         double? temperature = 1.0; // Claude default
         double? topP = 1.0; // Claude default
         int? maxTokensToSample = 200; // Claude default
         List<string>? stopSequences = new List<string> { "\n\nHuman:" }; // Claude default
+        int? topK = 250; // Claude default
 
         if (executionSettings != null && executionSettings.ExtensionData != null)
         {
@@ -36,8 +45,8 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
             executionSettings.ExtensionData.TryGetValue("stop_sequences", out var stopSequencesValue);
             stopSequences = stopSequencesValue as List<string>;
 
-            executionSettings.ExtensionData.TryGetValue("top_k", out var topKV);
-            int? topK = topKV as int?;
+            executionSettings.ExtensionData.TryGetValue("top_k", out var topKValue);
+            topK = topKValue as int?;
         }
 
         var requestBody = new ClaudeRequest.ClaudeTextGenerationRequest()
@@ -47,12 +56,16 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
             StopSequences = stopSequences,
             Temperature = temperature,
             TopP = topP,
-            TopK = executionSettings?.ExtensionData?.TryGetValue("top_k", out var topKValue) == true ? topKValue as int? : null
+            TopK = topK
         };
 
         return requestBody;
     }
-
+    /// <summary>
+    /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
+    /// </summary>
+    /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
+    /// <returns></returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using (var memoryStream = new MemoryStream())
@@ -73,7 +86,14 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
             }
         }
     }
-    // NOTE: default max_tokens differs between different Claude versions. Will need to address differentiation.
+
+    /// <summary>
+    /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Anthropic Claude.
+    /// </summary>
+    /// <param name="modelId">The model ID.</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         var claudeRequest = new ClaudeRequest.ClaudeChatCompletionRequest
@@ -86,12 +106,12 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
             System = this.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1f),
-                TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 0.999f),
-                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 512)
+                Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 1f),
+                TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.999f),
+                MaxTokens = this.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512)
             },
             // AnthropicVersion = "bedrock-2023-05-31", // NOTE: documentation states anthropic_version required and value must be 'bedrock-2023-05-31' but BedrockRuntime ValidationException with this field present.
-            Tools = this.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
+            Tools = this.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", []),
             ToolChoice = this.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null)
         };
 
@@ -164,18 +184,28 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
 
         return defaultValue;
     }
-
+    /// <summary>
+    /// Extracts the text generation streaming output from the Anthropic Claude response object structure.
+    /// </summary>
+    /// <param name="chunk"></param>
+    /// <returns></returns>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
-        var text = chunk?["completion"]?.ToString();
+        var text = chunk["completion"]?.ToString();
         if (!string.IsNullOrEmpty(text))
         {
             yield return text;
         }
     }
 
-    // NOTE: default max_tokens differs between different Claude versions. Will need to address differentiation.
-    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    /// <summary>
+    /// Builds the ConverseStreamRequest object for the Converse Bedrock API call, including building the Anthropic Claude Request object and mapping parameters to the ConverseStreamRequest object.
+    /// </summary>
+    /// <param name="modelId">The model ID.</param>
+    /// <param name="chatHistory">The messages between assistant and user.</param>
+    /// <param name="settings">Optional prompt execution settings.</param>
+    /// <returns></returns>
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         var claudeRequest = new ClaudeRequest.ClaudeChatCompletionRequest
         {
@@ -187,12 +217,12 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
             System = this.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1f),
-                TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 0.999f),
-                MaxTokens = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_tokens", 512)
+                Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 1f),
+                TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.999f),
+                MaxTokens = this.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512)
             },
             // AnthropicVersion = "bedrock-2023-05-31",
-            Tools = this.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
+            Tools = this.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", []),
             ToolChoice = this.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null)
         };
 
