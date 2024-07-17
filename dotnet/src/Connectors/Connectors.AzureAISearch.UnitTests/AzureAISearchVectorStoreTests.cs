@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
+using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Microsoft.SemanticKernel.Data;
 using Moq;
 using Xunit;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-using Azure;
-using Microsoft.SemanticKernel.Data;
-using Azure.Search.Documents;
 
 namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 
