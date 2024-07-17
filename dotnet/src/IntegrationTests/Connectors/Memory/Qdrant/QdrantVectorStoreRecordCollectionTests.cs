@@ -36,6 +36,37 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(expectedExists, actual);
     }
 
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task ItCanCreateACollectionAsync(bool hasNamedVectors, bool useRecordDefinition)
+    {
+        // Arrange
+        var collectionNamePostfix1 = useRecordDefinition ? "WithDefinition" : "WithType";
+        var collectionNamePostfix2 = hasNamedVectors ? "HasNamedVectors" : "SingleUnnamedVector";
+        var testCollectionName = $"createtest{collectionNamePostfix1}{collectionNamePostfix2}";
+
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        {
+            HasNamedVectors = hasNamedVectors,
+            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+        };
+        var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, testCollectionName, options);
+
+        // Act
+        await sut.CreateCollectionAsync();
+
+        // Assert
+        var existResult = await sut.CollectionExistsAsync();
+        Assert.True(existResult);
+        await sut.DeleteCollectionAsync();
+
+        // Output
+        output.WriteLine(existResult.ToString());
+    }
+
     [Fact]
     public async Task ItCanDeleteCollectionAsync()
     {
