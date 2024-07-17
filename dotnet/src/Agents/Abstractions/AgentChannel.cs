@@ -23,7 +23,7 @@ public abstract class AgentChannel
     /// </summary>
     /// <param name="history">The chat history at the point the channel is created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    protected internal abstract Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default);
+    protected internal abstract Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Perform a discrete incremental interaction between a single <see cref="Agent"/> and <see cref="AgentChat"/>.
@@ -31,7 +31,7 @@ public abstract class AgentChannel
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    protected internal abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    protected internal abstract IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
         CancellationToken cancellationToken = default);
 
@@ -59,12 +59,12 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    protected internal abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    protected internal abstract IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         TAgent agent,
         CancellationToken cancellationToken = default);
 
     /// <inheritdoc/>
-    protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
         CancellationToken cancellationToken = default)
     {

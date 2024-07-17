@@ -218,4 +218,9 @@
     <None Include="TextToAudio\OpenAI_TextToAudio.cs" />
     <None Include="TextToImage\OpenAI_TextToImageDalle3.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
