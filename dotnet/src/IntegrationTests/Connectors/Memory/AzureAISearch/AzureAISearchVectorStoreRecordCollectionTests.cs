@@ -16,7 +16,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 
 /// <summary>
 /// Integration tests for <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> class.
-/// Tests work with Azure AI Search Instance.
+/// Tests work with an Azure AI Search Instance.
 /// </summary>
 [Collection("AzureAISearchVectorStoreCollection")]
 public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHelper output, AzureAISearchVectorStoreFixture fixture)
