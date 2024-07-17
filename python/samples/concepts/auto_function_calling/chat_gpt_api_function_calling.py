@@ -3,7 +3,7 @@
 import asyncio
 import os
 from functools import reduce
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
@@ -11,11 +11,31 @@ from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
+
+
+class SearchRequest(KernelBaseModel):
+    first_name: str
+    last_name: str
+
+
+class SearchPlugin:
+    @kernel_function(
+        name="Search",
+        description="Search for people",
+    )
+    def find_person(
+        self,
+        queries: Annotated[list[SearchRequest], "The search queries"],
+    ) -> str:
+        for query in queries:
+            print(f"Query: {query} of TYPE {type(query)}")
+        return "nothing found"
 
 
 system_message = """
@@ -42,8 +62,9 @@ kernel.add_service(OpenAIChatCompletion(service_id="chat"))
 
 plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
-kernel.add_plugin(MathPlugin(), plugin_name="math")
-kernel.add_plugin(TimePlugin(), plugin_name="time")
+# kernel.add_plugin(MathPlugin(), plugin_name="math")
+# kernel.add_plugin(TimePlugin(), plugin_name="time")
+kernel.add_plugin(SearchPlugin(), plugin_name="search")
 
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
