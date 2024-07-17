@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Audio;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -31,7 +32,7 @@ internal partial class ClientCore
             throw new ArgumentException("The input audio content is not readable.", nameof(input));
         }
 
-        AzureOpenAIAudioToTextExecutionSettings audioExecutionSettings = AzureOpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings)!;
+        OpenAIAudioToTextExecutionSettings audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings)!;
         AudioTranscriptionOptions audioOptions = AudioOptionsFromExecutionSettings(audioExecutionSettings);
 
         Verify.ValidFilename(audioExecutionSettings?.Filename);
@@ -44,11 +45,11 @@ internal partial class ClientCore
     }
 
     /// <summary>
-    /// Converts <see cref="AzureOpenAIAudioToTextExecutionSettings"/> to <see cref="AudioTranscriptionOptions"/> type.
+    /// Converts <see cref="OpenAIAudioToTextExecutionSettings"/> to <see cref="AudioTranscriptionOptions"/> type.
     /// </summary>
-    /// <param name="executionSettings">Instance of <see cref="AzureOpenAIAudioToTextExecutionSettings"/>.</param>
+    /// <param name="executionSettings">Instance of <see cref="OpenAIAudioToTextExecutionSettings"/>.</param>
     /// <returns>Instance of <see cref="AudioTranscriptionOptions"/>.</returns>
-    private static AudioTranscriptionOptions AudioOptionsFromExecutionSettings(AzureOpenAIAudioToTextExecutionSettings executionSettings)
+    private static AudioTranscriptionOptions AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
         => new()
         {
             Granularities = AudioTimestampGranularities.Default,

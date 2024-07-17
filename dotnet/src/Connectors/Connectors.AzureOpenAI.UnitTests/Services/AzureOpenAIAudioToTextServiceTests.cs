@@ -9,6 +9,7 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 
@@ -91,7 +92,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
 
     [Theory]
     [MemberData(nameof(ExecutionSettings))]
-    public async Task GetTextContentWithInvalidSettingsThrowsExceptionAsync(AzureOpenAIAudioToTextExecutionSettings? settings, Type expectedExceptionType)
+    public async Task GetTextContentWithInvalidSettingsThrowsExceptionAsync(OpenAIAudioToTextExecutionSettings? settings, Type expectedExceptionType)
     {
         // Arrange
         var service = new AzureOpenAIAudioToTextService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
@@ -123,7 +124,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var settings = new AzureOpenAIAudioToTextExecutionSettings("file.mp3") { ResponseFormat = format };
+        var settings = new OpenAIAudioToTextExecutionSettings("file.mp3") { ResponseFormat = format };
         var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), settings);
 
         // Assert
@@ -147,7 +148,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), new AzureOpenAIAudioToTextExecutionSettings("file.mp3"));
+        var result = await service.GetTextContentsAsync(new AudioContent(new BinaryData("data"), mimeType: null), new OpenAIAudioToTextExecutionSettings("file.mp3"));
 
         // Assert
         Assert.NotNull(result);
@@ -160,9 +161,9 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         this._messageHandlerStub.Dispose();
     }
 
-    public static TheoryData<AzureOpenAIAudioToTextExecutionSettings?, Type> ExecutionSettings => new()
+    public static TheoryData<OpenAIAudioToTextExecutionSettings?, Type> ExecutionSettings => new()
     {
-        { new AzureOpenAIAudioToTextExecutionSettings(""), typeof(ArgumentException) },
-        { new AzureOpenAIAudioToTextExecutionSettings("file"), typeof(ArgumentException) }
+        { new OpenAIAudioToTextExecutionSettings(""), typeof(ArgumentException) },
+        { new OpenAIAudioToTextExecutionSettings("file"), typeof(ArgumentException) }
     };
 }
