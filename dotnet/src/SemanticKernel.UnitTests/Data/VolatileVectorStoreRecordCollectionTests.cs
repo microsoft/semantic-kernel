@@ -49,6 +49,19 @@ public class VolatileVectorStoreRecordCollectionTests
     }
 
     [Fact]
+    public async Task CanCreateCollectionAsync()
+    {
+        // Arrange
+        var sut = this.CreateRecordCollection(false);
+
+        // Act
+        await sut.CreateCollectionAsync(this._testCancellationToken);
+
+        // Assert
+        Assert.True(this._collectionStore.ContainsKey(TestCollectionName));
+    }
+
+    [Fact]
     public async Task DeleteCollectionRemovesCollectionFromDictionaryAsync()
     {
         // Arrange
