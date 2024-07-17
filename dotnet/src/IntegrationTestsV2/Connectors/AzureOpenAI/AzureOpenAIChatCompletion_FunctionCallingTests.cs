@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -33,7 +35,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
         kernel.FunctionInvocationFilters.Add(filter);
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var result = await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings));
@@ -59,7 +61,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
         kernel.FunctionInvocationFilters.Add(filter);
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         var stringBuilder = new StringBuilder();
 
@@ -81,7 +83,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var result = await kernel.InvokePromptAsync("What is the current temperature in Dublin, Ireland, in Fahrenheit?", new(settings));
@@ -97,7 +99,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var result = await kernel.InvokePromptAsync("Convert 50 degrees Fahrenheit to Celsius.", new(settings));
@@ -113,7 +115,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var result = await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings));
@@ -139,7 +141,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
             "Delivers up-to-date news content.",
             [promptFunction]));
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var result = await kernel.InvokePromptAsync("Show me the latest news as they are.", new(settings));
@@ -165,7 +167,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
             "Delivers up-to-date news content.",
             [promptFunction]));
 
-        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        AzureOpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
         var streamingResult = kernel.InvokePromptStreamingAsync("Show me the latest news as they are.", new(settings));
@@ -193,7 +195,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -201,7 +203,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
         // Current way of handling function calls manually using connector specific chat message content class.
-        var toolCalls = ((AzureOpenAIChatMessageContent)result).ToolCalls.OfType<ChatToolCall>().ToList();
+        var toolCalls = ((OpenAIChatMessageContent)result).ToolCalls.OfType<ChatToolCall>().ToList();
 
         while (toolCalls.Count > 0)
         {
@@ -219,12 +221,12 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
                 chatHistory.Add(new ChatMessageContent(
                     AuthorRole.Tool,
                     content,
-                    metadata: new Dictionary<string, object?>(1) { { AzureOpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
+                    metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
             }
 
             // Sending the functions invocation results back to the LLM to get the final response
             result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            toolCalls = ((AzureOpenAIChatMessageContent)result).ToolCalls.OfType<ChatToolCall>().ToList();
+            toolCalls = ((OpenAIChatMessageContent)result).ToolCalls.OfType<ChatToolCall>().ToList();
         }
 
         // Assert
@@ -240,7 +242,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -281,7 +283,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         chatHistory.AddSystemMessage("Add the \"Error\" keyword to the response, if you are unable to answer a question or an error has happen.");
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         var completionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -325,7 +327,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         chatHistory.AddSystemMessage("if there's a tornado warning, please add the 'tornado' keyword to the response.");
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         var completionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -373,7 +375,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         var completionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -397,7 +399,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -457,7 +459,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -516,7 +518,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -581,7 +583,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -639,7 +641,7 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
 
-        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = AzureOpenAIToolCallBehavior.EnableKernelFunctions };
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -696,6 +698,108 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
 
         // Assert
         Assert.Contains("tornado", result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItShouldSupportOldFunctionCallingModelSerializedIntoChatHistoryByPreviousVersionOfSKAsync()
+    {
+        // Arrange
+        var chatHistory = JsonSerializer.Deserialize<ChatHistory>(File.ReadAllText("./TestData/serializedChatHistoryV1_15_1.json"));
+
+        // Remove connector-agnostic function-calling items to check if the old function-calling model, which relies on function information in metadata, is handled correctly.
+        foreach (var chatMessage in chatHistory!)
+        {
+            var index = 0;
+            while (index < chatMessage.Items.Count)
+            {
+                var item = chatMessage.Items[index];
+                if (item is FunctionCallContent || item is FunctionResultContent)
+                {
+                    chatMessage.Items.Remove(item);
+                    continue;
+                }
+                index++;
+            }
+        }
+
+        string? emailBody = null, emailRecipient = null;
+
+        var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+        kernel.ImportPluginFromFunctions("EmailPlugin", [KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail")]);
+
+        // The deserialized chat history contains a list of function calls and the final answer to the question regarding the color of the sky in Boston.
+        chatHistory.AddUserMessage("Send it to my email: abc@domain.com");
+
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        // Act
+        var result = await kernel.GetRequiredService<IChatCompletionService>().GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.Equal("abc@domain.com", emailRecipient);
+        Assert.Equal("Given the current weather in Boston is 61\u00B0F and rainy, the likely color of the sky would be gray or overcast due to the presence of rain clouds.", emailBody);
+    }
+
+    [Fact]
+    public async Task ItShouldSupportNewFunctionCallingModelSerializedIntoChatHistoryByPreviousVersionOfSKAsync()
+    {
+        // Arrange
+        var chatHistory = JsonSerializer.Deserialize<ChatHistory>(File.ReadAllText("./TestData/serializedChatHistoryV1_15_1.json"));
+
+        // Remove metadata related to the old function-calling model to check if the new model, which relies on function call content/result classes, is handled correctly.
+        foreach (var chatMessage in chatHistory!)
+        {
+            if (chatMessage.Metadata is not null)
+            {
+                var metadata = new Dictionary<string, object?>(chatMessage.Metadata);
+                metadata.Remove(OpenAIChatMessageContent.ToolIdProperty);
+                metadata.Remove("ChatResponseMessage.FunctionToolCalls");
+                chatMessage.Metadata = metadata;
+            }
+        }
+
+        string? emailBody = null, emailRecipient = null;
+
+        var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+        kernel.ImportPluginFromFunctions("EmailPlugin", [KernelFunctionFactory.CreateFromMethod((string body, string recipient) => { emailBody = body; emailRecipient = recipient; }, "SendEmail")]);
+
+        // The deserialized chat history contains a list of function calls and the final answer to the question regarding the color of the sky in Boston.
+        chatHistory.AddUserMessage("Send it to my email: abc@domain.com");
+
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        // Act
+        var result = await kernel.GetRequiredService<IChatCompletionService>().GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.Equal("abc@domain.com", emailRecipient);
+        Assert.Equal("Given the current weather in Boston is 61\u00B0F and rainy, the likely color of the sky would be gray or overcast due to the presence of rain clouds.", emailBody);
+    }
+
+    /// <summary>
+    /// This test verifies that the connector can handle the scenario where the assistant response message is added to the chat history.
+    /// The assistant response message with no function calls added to chat history caused the error: HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'
+    /// </summary>
+    [Fact]
+    public async Task AssistantResponseAddedToChatHistoryShouldBeHandledCorrectlyAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        var settings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var assistanceResponse = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        chatHistory.Add(assistanceResponse); // Adding assistance response to chat history.
+        chatHistory.AddUserMessage("Return only the color name.");
+
+        await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
     }
 
     private Kernel CreateAndInitializeKernel(bool importHelperPlugin = false)
