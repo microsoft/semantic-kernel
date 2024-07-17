@@ -30,7 +30,6 @@ arange = "arange"         # Method in Python numpy package
 prompty = "prompty"       # prompty is a format name.
 ist = "ist"               # German language
 dall = "dall"             # OpenAI model name
-Raison d'Être = "Raison d'Être" # Well known phrase from french
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
@@ -43,4 +42,9 @@ extend-ignore-re = [
 [type.msbuild]
 extend-ignore-re = [
     'Version=".*"', # ignore package version numbers
+]
+
+[type.global]
+extend-ignore-re = [
+    'Raison d'Être', # Ignore globally used phrase from french
 ]
