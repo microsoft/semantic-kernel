@@ -100,6 +100,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\Plugins\RepairServicePlugin\repair-service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resources\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -110,7 +115,6 @@
   <ItemGroup>
     <Compile Remove="Agents\OpenAIAssistant_FileService.cs" />
     <Compile Remove="AudioToText\OpenAI_AudioToText.cs" />
-    <Compile Remove="Caching\SemanticCachingWithFilters.cs" />
     <Compile Remove="Caching\SemanticCachingWithFilters.cs" />
     <Compile Remove="ChatCompletion\AzureOpenAIWithData_ChatCompletion.cs" />
     <Compile Remove="ChatCompletion\ChatHistoryAuthorName.cs" />
@@ -135,6 +139,7 @@
     <Compile Remove="ChatCompletion\OpenAI_ReasonedFunctionCalling.cs" />
     <Compile Remove="ChatCompletion\OpenAI_RepeatedFunctionCalling.cs" />
     <Compile Remove="ChatCompletion\OpenAI_UsingLogitBias.cs" />
+    <Compile Remove="Planners\AutoFunctionCallingPlanning.cs" />
     <Compile Remove="PromptTemplates\ChatCompletionPrompts.cs" />
     <Compile Remove="PromptTemplates\ChatWithPrompts.cs" />
     <Compile Remove="PromptTemplates\LiquidPrompts.cs" />
@@ -155,7 +160,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioToText\OpenAI_AudioToText.cs" />
-    <None Include="Caching\SemanticCachingWithFilters.cs" />
     <None Include="Caching\SemanticCachingWithFilters.cs" />
     <None Include="ChatCompletion\AzureOpenAIWithData_ChatCompletion.cs" />
     <None Include="ChatCompletion\ChatHistoryAuthorName.cs" />
@@ -180,6 +184,7 @@
     <None Include="ChatCompletion\OpenAI_ReasonedFunctionCalling.cs" />
     <None Include="ChatCompletion\OpenAI_RepeatedFunctionCalling.cs" />
     <None Include="ChatCompletion\OpenAI_UsingLogitBias.cs" />
+    <None Include="Planners\AutoFunctionCallingPlanning.cs" />
     <None Include="PromptTemplates\ChatCompletionPrompts.cs" />
     <None Include="PromptTemplates\ChatWithPrompts.cs" />
     <None Include="PromptTemplates\LiquidPrompts.cs" />

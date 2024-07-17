@@ -2372,7 +2372,6 @@ python-versions = ">=3.7"
 files = [
     {file = "milvus_lite-2.4.7-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:c828190118b104b05b8c8e0b5a4147811c86b54b8fb67bc2e726ad10fc0b544e"},
     {file = "milvus_lite-2.4.7-py3-none-macosx_11_0_arm64.whl", hash = "sha256:e1537633c39879714fb15082be56a4b97f74c905a6e98e302ec01320561081af"},
-    {file = "milvus_lite-2.4.7-py3-none-manylinux2014_aarch64.whl", hash = "sha256:fcb909d38c83f21478ca9cb500c84264f988c69f62715ae9462e966767fb76dd"},
     {file = "milvus_lite-2.4.7-py3-none-manylinux2014_x86_64.whl", hash = "sha256:f016474d663045787dddf1c3aad13b7d8b61fd329220318f858184918143dcbf"},
 ]
 
@@ -3141,6 +3140,20 @@ files = [
 rsa = ["cryptography (>=3.0.0)"]
 signals = ["blinker (>=1.4.0)"]
 signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
+
+[[package]]
+name = "ollama"
+version = "0.2.1"
+description = "The official Python client for Ollama."
+optional = false
+python-versions = "<4.0,>=3.8"
+files = [
+    {file = "ollama-0.2.1-py3-none-any.whl", hash = "sha256:b6e2414921c94f573a903d1069d682ba2fb2607070ea9e19ca4a7872f2a460ec"},
+    {file = "ollama-0.2.1.tar.gz", hash = "sha256:fa316baa9a81eac3beb4affb0a17deb3008fdd6ed05b123c26306cfbe4c349b6"},
+]
+
+[package.dependencies]
+httpx = ">=0.27.0,<0.28.0"
 
 [[package]]
 name = "onnxruntime"
@@ -6844,7 +6857,7 @@ doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linke
 test = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-itertools", "pytest (>=6,!=8.1.*)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [extras]
-all = ["azure-ai-inference", "azure-core", "azure-cosmos", "azure-identity", "azure-search-documents", "chromadb", "ipykernel", "milvus", "mistralai", "motor", "pinecone-client", "psycopg", "pyarrow", "pymilvus", "qdrant-client", "redis", "sentence-transformers", "transformers", "usearch", "weaviate-client"]
+all = ["azure-ai-inference", "azure-core", "azure-cosmos", "azure-identity", "azure-search-documents", "chromadb", "ipykernel", "milvus", "mistralai", "motor", "ollama", "pinecone-client", "psycopg", "pyarrow", "pymilvus", "qdrant-client", "redis", "sentence-transformers", "transformers", "usearch", "weaviate-client"]
 azure = ["azure-ai-inference", "azure-core", "azure-cosmos", "azure-identity", "azure-search-documents"]
 chromadb = ["chromadb"]
 hugging-face = ["sentence-transformers", "transformers"]
@@ -6852,6 +6865,7 @@ milvus = ["milvus", "pymilvus"]
 mistralai = ["mistralai"]
 mongo = ["motor"]
 notebooks = ["ipykernel"]
+ollama = ["ollama"]
 pinecone = ["pinecone-client"]
 postgres = ["psycopg"]
 qdrant = ["qdrant-client"]
@@ -6862,4 +6876,4 @@ weaviate = ["weaviate-client"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "3d6338982c9871c48bb1ed02967504967163767b0afaf50e96a1b14aa2fe0344"
+content-hash = "c16c2c216ef84d091aa8f5327d75ba8a45c713f351953f53c2045bad734528c9"

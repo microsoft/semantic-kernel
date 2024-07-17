@@ -240,14 +240,20 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="settings">Optional invocation settings</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         OpenAIAssistantInvocationSettings? settings,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
-        return AssistantThreadActions.InvokeAsync(this, this._client, threadId, settings, this.Logger, cancellationToken);
+        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, cancellationToken).ConfigureAwait(false))
+        {
+            if (isVisible)
+            {
+                yield return message;
+            }
+        }
     }
 
     /// <inheritdoc/>

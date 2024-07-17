@@ -84,6 +84,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType());
 
+        await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
+        {
+            // TODO: MESSAGE SOURCE - ISSUE #5731
+            message.AuthorName = this.Name;
+
+            yield return message;
+        }
+
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
         {
@@ -92,14 +100,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             message.AuthorName = this.Name;
 
             history.Add(message);
-        }
-
-        await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
-        {
-            // TODO: MESSAGE SOURCE - ISSUE #5731
-            message.AuthorName = this.Name;
-
-            yield return message;
         }
     }
 

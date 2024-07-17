@@ -70,6 +70,17 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           cd python
           poetry install --with tests
+      - name: Install Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+      - name: Pull model in Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          ollama pull ${{ vars.OLLAMA_MODEL }}
+          ollama list
       - name: Run Integration Tests
         id: run_tests
         shell: bash
@@ -98,6 +109,7 @@ jobs:
           ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
           MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
           MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
+          OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
@@ -139,6 +151,19 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           cd python && poetry install --with tests
 
+      - name: Install Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+
+      - name: Pull model in Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          ollama pull ${{ vars.OLLAMA_MODEL }}
+          ollama list
+
       - name: Run Integration Tests
         id: run_tests
         shell: bash
@@ -167,6 +192,7 @@ jobs:
           ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
           MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
           MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
+          OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
