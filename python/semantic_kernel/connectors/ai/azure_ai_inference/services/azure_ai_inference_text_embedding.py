@@ -68,6 +68,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
             client = EmbeddingsClient(
                 endpoint=str(azure_ai_inference_settings.endpoint),
                 credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
+                user_agent=self._APPLICATION_ID,
             )
 
         super().__init__(

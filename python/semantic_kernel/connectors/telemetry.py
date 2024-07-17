@@ -6,6 +6,7 @@ from typing import Any
 
 from semantic_kernel.const import USER_AGENT
 
+# Note that if this environment variable does not exist, telemetry is enabled.
 TELEMETRY_DISABLED_ENV_VAR = "AZURE_TELEMETRY_DISABLED"
 
 IS_TELEMETRY_ENABLED = os.environ.get(TELEMETRY_DISABLED_ENV_VAR, "false").lower() not in ["true", "1"]
