@@ -65,6 +65,26 @@ public class RedisVectorStoreRecordCollectionTests
     }
 
     [Fact]
+    public async Task CanCreateCollectionAsync()
+    {
+        // Arrange.
+        SetupExecuteMock(this._redisDatabaseMock, string.Empty);
+        var sut = new RedisVectorStoreRecordCollection<SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
+
+        // Act.
+        await sut.CreateCollectionAsync();
+
+        // Assert.
+        var expectedArgs = new object[] { "testcollection", "ON", "JSON", "PREFIX", 1, "testcollection:", "SCHEMA", "$.Vector", "AS", "Vector", "VECTOR", "HNSW", 6, "TYPE", "FLOAT32", "DIM", "4", "DISTANCE_METRIC", "COSINE" };
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "FT.CREATE",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
+    }
+
+    [Fact]
     public async Task CanDeleteCollectionAsync()
     {
         // Arrange
@@ -435,7 +455,7 @@ public class RedisVectorStoreRecordCollectionTests
         [VectorStoreRecordData]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

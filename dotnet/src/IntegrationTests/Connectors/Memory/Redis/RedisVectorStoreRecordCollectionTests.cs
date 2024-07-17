@@ -37,6 +37,34 @@ public sealed class RedisVectorStoreRecordCollectionTests(ITestOutputHelper outp
         Assert.Equal(expectedExists, actual);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItCanCreateACollectionAsync(bool useRecordDefinition)
+    {
+        // Arrange
+        var collectionNamePostfix = useRecordDefinition ? "WithDefinition" : "WithType";
+        var testCollectionName = $"createtest{collectionNamePostfix}";
+
+        var options = new RedisVectorStoreRecordCollectionOptions<Hotel>
+        {
+            PrefixCollectionNameToKeyNames = true,
+            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+        };
+        var sut = new RedisVectorStoreRecordCollection<Hotel>(fixture.Database, testCollectionName, options);
+
+        // Act
+        await sut.CreateCollectionAsync();
+
+        // Assert
+        var existResult = await sut.CollectionExistsAsync();
+        Assert.True(existResult);
+        await sut.DeleteCollectionAsync();
+
+        // Output
+        output.WriteLine(existResult.ToString());
+    }
+
     [Fact]
     public async Task ItCanDeleteCollectionAsync()
     {

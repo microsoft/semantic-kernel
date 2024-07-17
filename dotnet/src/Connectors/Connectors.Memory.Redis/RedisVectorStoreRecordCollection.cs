@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Data;
 using NRedisStack.Json.DataTypes;
 using NRedisStack.RedisStackCommands;
+using NRedisStack.Search.Literals.Enums;
+using NRedisStack.Search;
 using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -52,6 +54,9 @@ public sealed class RedisVectorStoreRecordCollection<TRecord> : IVectorStoreReco
     /// <summary>Optional configuration options for this class.</summary>
     private readonly RedisVectorStoreRecordCollectionOptions<TRecord> _options;
 
+    /// <summary>A definition of the current storage model.</summary>
+    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
+
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
@@ -85,6 +90,7 @@ public sealed class RedisVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         this._collectionName = collectionName;
         this._options = options ?? new RedisVectorStoreRecordCollectionOptions<TRecord>();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
+        this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 
         // Enumerate public properties using configuration or attributes.
         (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
@@ -148,6 +154,31 @@ public sealed class RedisVectorStoreRecordCollection<TRecord> : IVectorStoreReco
                 CollectionName = this._collectionName,
                 OperationName = "FT.INFO"
             };
+        }
+    }
+
+    /// <inheritdoc />
+    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    {
+        // Map the record definition to a schema.
+        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties);
+
+        // Create the index creation params.
+        // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
+        var createParams = new FTCreateParams()
+            .AddPrefix($"{this._collectionName}:")
+            .On(IndexDataType.JSON);
+
+        // Create the index.
+        return this.RunOperationAsync("FT.CREATE", () => this._database.FT().CreateAsync(this._collectionName, createParams, schema));
+    }
+
+    /// <inheritdoc />
+    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    {
+        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 
