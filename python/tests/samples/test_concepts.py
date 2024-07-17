@@ -84,7 +84,14 @@ concepts = [
         ["Create a secret with the name 'Foo' and value 'Bar'", "exit"],
         id="openai_plugin_azure_key_vault",
     ),
-    param(openai_plugin_klarna, [], id="openai_plugin_klarna"),
+    param(
+        openai_plugin_klarna,
+        [],
+        id="openai_plugin_klarna",
+        marks=pytest.mark.skip(
+            reason="Temporarily: https://www.klarna.com/us/shopping/public/openai/v0/api-docs/ returns 404"
+        ),
+    ),
     param(plugins_from_dir, [], id="plugins_from_dir"),
     param(azure_chat_gpt_api_handlebars, ["What is 3+3?", "exit"], id="azure_chat_gpt_api_handlebars"),
     param(azure_chat_gpt_api_jinja2, ["What is 3+3?", "exit"], id="azure_chat_gpt_api_jinja2"),
