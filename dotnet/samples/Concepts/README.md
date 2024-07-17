@@ -112,6 +112,7 @@ Down below you can find the code snippets that demonstrate the usage of many Sem
 
 ## Planners - Examples on using `Planners`
 
+- [AutoFunctionCallingPlanning](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Planners/AutoFunctionCallingPlanning.cs)
 - [FunctionCallStepwisePlanning](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Planners/FunctionCallStepwisePlanning.cs)
 - [HandlebarsPlanning](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Planners/HandlebarsPlanning.cs)
 
