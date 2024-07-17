@@ -22,6 +22,8 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
     MistralAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -46,6 +48,13 @@ try:
         mistral_ai_setup = True
 except KeyError:
     mistral_ai_setup = False
+
+ollama_setup: bool = False
+try:
+    if os.environ["OLLAMA_MODEL"]:
+        ollama_setup = True
+except KeyError:
+    ollama_setup = False
 
 
 def setup(
@@ -101,6 +110,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
         "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
         "mistral_ai": (MistralAIChatCompletion() if mistral_ai_setup else None, MistralAIChatPromptExecutionSettings),
+        "ollama": (OllamaChatCompletion(), OllamaChatPromptExecutionSettings),
     }
 
 
@@ -431,6 +441,17 @@ pytestmark = pytest.mark.parametrize(
             ["Hello", "well"],
             marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
             id="mistral_ai_text_input",
+        ),
+        pytest.param(
+            "ollama",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            id="ollama_text_input",
         ),
     ],
 )
