@@ -248,7 +248,7 @@ public class AzureOpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public void FromExecutionSettingsCreateAzureOpenAIPromptExecutionSettingsFromOpenAIPromptExecutionSettings()
+    public void ItCanCreateAzureOpenAIPromptExecutionSettingsFromOpenAIPromptExecutionSettings()
     {
         // Arrange
         OpenAIPromptExecutionSettings originalSettings = new()
