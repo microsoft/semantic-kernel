@@ -776,11 +776,11 @@ public sealed class OpenAIChatCompletionFunctionCallingTests : BaseIntegrationTe
     }
 
     /// <summary>
-    /// This test verifies that the connector can handle the scenario where the assistance response message is added to the chat history.
-    /// The assistance response message with no function calls added to chat history caused the error: HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'
+    /// This test verifies that the connector can handle the scenario where the assistant response message is added to the chat history.
+    /// The assistant response message with no function calls added to chat history caused the error: HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'
     /// </summary>
     [Fact]
-    public async Task AssistanceResponseAddedToChatHistoryShouldBeHandledCorrectlyAsync()
+    public async Task AssistantResponseAddedToChatHistoryShouldBeHandledCorrectlyAsync()
     {
         // Arrange
         var kernel = this.CreateAndInitializeKernel(importHelperPlugin: true);
