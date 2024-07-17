@@ -248,7 +248,15 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(async k => await this.RemoveAsync(collectionName, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
+        try
+        {
+            await this._qdrantClient.DeleteVectorByPayloadIdsAsync(collectionName, keys.ToArray(), cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpOperationException ex)
+        {
+            this._logger.LogError(ex, "Failed to remove vectors data: {Message}", ex.Message);
+            throw;
+        }
     }
 
     /// <summary>
