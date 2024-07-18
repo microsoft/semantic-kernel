@@ -300,6 +300,11 @@ public static partial class OpenApiKernelPluginFactory
     /// <returns>Valid KernelFunction name.</returns>
     private static string ConvertOperationIdToValidFunctionName(string operationId, ILogger logger)
     {
+        if (string.IsNullOrEmpty(operationId))
+        {
+            return CreateRandomFunctionName();
+        }
+
         try
         {
             Verify.ValidFunctionName(operationId);
@@ -338,6 +343,11 @@ public static partial class OpenApiKernelPluginFactory
     private static Regex RemoveInvalidCharsRegex() => s_removeInvalidCharsRegex;
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
 #endif
+
+    /// <summary>
+    /// Create a random, valid function name.
+    /// </summary>
+    internal static string CreateRandomFunctionName(string? prefix = "Function") => $"{prefix}_{Guid.NewGuid():N}";
 
     #endregion
 
