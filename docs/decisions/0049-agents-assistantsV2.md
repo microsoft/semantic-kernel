@@ -15,6 +15,43 @@ Migrating to Assistant V2 API is a breaking change to the existing package due t
 - Underlying capability differences (e.g. `file-search` vs `retrieval`)
 - Underlying V2 SDK is version incompatible with V1 (`OpenAI` and `Azure.AI.OpenAI`)
 
+### Agent Implementation
+
+The `OpenAIAssistant` agent is roughly equivalent to its V1 form save for:
+
+- Supports settings for _assistant_, _thread_, and _run_
+- Agent definition shifts to `Definition` property
+- Convenience methods for producing an OpenAI client
+
+Previously, the agent definition as exposed via direct properties such as:
+
+- `FileIds`
+- `Metadata`
+
+This has all been shifted and expanded upon via the `Definition` property which is of the same type (`OpenAIAssistantDefinition`) utilized to create and query an assistant.
+
+<p align="center">
+<kbd><img src="diagrams/assistant-agent.png"  style="width: 780pt;"></kbd>
+</p>
+
+The following table describes the purpose of diagramed methods on the `OpenAIAssistantAgent`.
+
+|Method Name|Description|
+---|---
+**Create**|Create a new assistant agent
+**ListDefinitions**|List existing assistant definitions
+**Retrieve**|Retrieve an existing assistant
+**CreateThread**|Create an assistant thread
+**DeleteThread**|Delete an assistant thread
+**AddChatMessage**|Add a message to an assistant thread
+**GetThreadMessages**|Retrieve all messages from an assistant thread
+**Delete**|Delete the assistant agent's definition (puts agent into a terminal state)
+**Invoke**|Invoke the assistant agent (no chat)
+**GetChannelKeys**|Inherited from `Agent`
+**CreateChannel**|Inherited from `Agent`
+**CreateFileClient**|Convenience method for producing a `FileClient` which is implemented in the _Open AI SDK_
+**CreateVectorStoreClient**|Convenience method for producing a `VectorStoreClient` which is implemented in the _Open AI SDK_
+
 
 ### Configuration Classes
 
@@ -77,44 +114,6 @@ The `OpenAIServiceConfiguration` defines how to connect to a specific remote ser
 <p align="center">
 <kbd><img src="diagrams/assistant-serviceconfig.png"  style="width: 400pt;"></kbd>
 </p>
-
-
-### Agent Implementation
-
-The `OpenAIAssistant` agent is roughly equivalent to its V1 form save for:
-
-- Supports settings for _assistant_, _thread_, and _run_
-- Agent definition shifts to `Definition` property
-- Convenience methods for producing an OpenAI client
-
-Previously, the agent definition as exposed via direct properties such as:
-
-- `FileIds`
-- `Metadata`
-
-This has all been shifted and expanded upon via the `Definition` property which is of the same type (`OpenAIAssistantDefinition`) utilized to create and query an assistant.
-
-<p align="center">
-<kbd><img src="diagrams/assistant-agent.png"  style="width: 780pt;"></kbd>
-</p>
-
-The following table describes the purpose of diagramed methods on the `OpenAIAssistantAgent`.
-
-|Method Name|Description|
----|---
-**Create**|Create a new assistant agent
-**ListDefinitions**|List existing assistant definitions
-**Retrieve**|Retrieve an existing assistant
-**CreateThread**|Create an assistant thread
-**DeleteThread**|Delete an assistant thread
-**AddChatMessage**|Add a message to an assistant thread
-**GetThreadMessages**|Retrieve all messages from an assistant thread
-**Delete**|Delete the assistant agent's definition (puts agent into a terminal state)
-**Invoke**|Invoke the assistant agent (no chat)
-**GetChannelKeys**|Inherited from `Agent`
-**CreateChannel**|Inherited from `Agent`
-**CreateFileClient**|Convenience method for producing a `FileClient` which is implemented in the _Open AI SDK_
-**CreateVectorStoreClient**|Convenience method for producing a `VectorStoreClient` which is implemented in the _Open AI SDK_
 
 
 ### Vector Store Support
