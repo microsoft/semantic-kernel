@@ -334,7 +334,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <typeparam name="T">The type of the settings object to clone.</typeparam>
     /// <returns>A new instance of the settings object.</returns>
-    protected T Clone<T>() where T : OpenAIPromptExecutionSettings, new()
+    protected internal T Clone<T>() where T : OpenAIPromptExecutionSettings, new()
     {
         return new T()
         {

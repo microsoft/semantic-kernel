@@ -18,6 +18,7 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
     [Fact]
     public async Task UploadAndRetrieveFilesAsync()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
         BinaryContent[] files = [
@@ -62,5 +63,7 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
             // Delete the test file remotely
             await fileService.DeleteFileAsync(fileReference.Id);
         }
+
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

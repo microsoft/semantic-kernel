@@ -82,6 +82,7 @@ Sum      426  1622     856 2904
     }
 
     private FileClient CreateFileClient()
+
     {
         OpenAIClient client =
             this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
@@ -90,6 +91,7 @@ Sum      426  1622     856 2904
 
         return client.GetFileClient();
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     private AgentBuilder CreateAgentBuilder()
     {

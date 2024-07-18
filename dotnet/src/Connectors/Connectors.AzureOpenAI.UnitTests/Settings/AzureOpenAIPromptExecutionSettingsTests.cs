@@ -248,7 +248,7 @@ public class AzureOpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    public void FromExecutionSettingsCreateAzureOpenAIPromptExecutionSettingsFromOpenAIPromptExecutionSettings()
+    public void ItCanCreateAzureOpenAIPromptExecutionSettingsFromOpenAIPromptExecutionSettings()
     {
         // Arrange
         OpenAIPromptExecutionSettings originalSettings = new()
@@ -263,7 +263,8 @@ public class AzureOpenAIPromptExecutionSettingsTests
             MaxTokens = 128,
             Logprobs = true,
             Seed = 123456,
-            TopLogprobs = 5
+            TopLogprobs = 5,
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         };
 
         // Act

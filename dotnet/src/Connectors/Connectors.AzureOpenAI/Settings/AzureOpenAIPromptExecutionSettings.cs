@@ -62,6 +62,11 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
             return settings;
         }
 
+        if (executionSettings is OpenAIPromptExecutionSettings openAISettings)
+        {
+            return openAISettings.Clone<AzureOpenAIPromptExecutionSettings>();
+        }
+
         // Having the object as the type of the value to serialize is important to ensure all properties of the settings are serialized.
         // Otherwise, only the properties ServiceId and ModelId from the public API of the PromptExecutionSettings class will be serialized.
         var json = JsonSerializer.Serialize<object>(executionSettings);

@@ -45,7 +45,11 @@ internal partial class ClientCore
             ResponseFormat = GeneratedImageFormat.Uri
         };
 
-        ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client.GetImageClient(this.ModelId).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
+        // The model is not required by the OpenAI API and defaults to the DALL-E 2 server-side - https://platform.openai.com/docs/api-reference/images/create#images-create-model.
+        // However, considering that the model is required by the OpenAI SDK and the ModelId property is optional, it defaults to DALL-E 2 in the line below.
+        var model = string.IsNullOrEmpty(this.ModelId) ? "dall-e-2" : this.ModelId;
+
+        ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client.GetImageClient(model).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
         var generatedImage = response.Value;
 
         return generatedImage.ImageUri?.ToString() ?? throw new KernelException("The generated image is not in url format");
