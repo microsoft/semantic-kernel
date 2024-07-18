@@ -1,24 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections;
-using System.Text.Json;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
-using Amazon.Runtime.EventStreams.Internal;
-using Connectors.Amazon.Extensions;
-using Connectors.Amazon.Services;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Connectors.Amazon.Services;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 namespace Connectors.Amazon.UnitTests.Services;
-
+/// <summary>
+/// Unit tests for Bedrock Chat Completion Service.
+/// </summary>
 public class BedrockChatCompletionServiceTests
 {
+    /// <summary>
+    /// Checks that modelID is added to the list of service attributes when service is registered.
+    /// </summary>
     [Fact]
     public void AttributesShouldContainModelId()
     {
@@ -30,9 +28,11 @@ public class BedrockChatCompletionServiceTests
         // Assert
         Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
     }
-
+    /// <summary>
+    /// Checks that GetChatMessageContentsAsync calls and correctly handles outputs from ConverseAsync.
+    /// </summary>
     [Fact]
-    public async Task GetChatMessageContentsAsyncShouldReturnChatMessageContents()
+    public async Task GetChatMessageContentsAsyncShouldReturnChatMessageContentsAsync()
     {
         // Arrange
         string modelId = "amazon.titan-embed-text-v1:0";
@@ -64,32 +64,34 @@ public class BedrockChatCompletionServiceTests
         Assert.Single(result[0].Items);
         Assert.Equal("Hello, world!", result[0].Items[0].ToString());
     }
-
+    /// <summary>
+    /// Checks that GetStreamingChatMessageContentsAsync calls and correctly handles outputs from ConverseStreamAsync.
+    /// </summary>
     [Fact]
-    public async Task GetStreamingChatMessageContentsAsyncShouldReturnStreamedChatMessageContents()
+    public async Task GetStreamingChatMessageContentsAsyncShouldReturnStreamedChatMessageContentsAsync()
     {
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var events = new List<ContentBlockDeltaEvent>
-        {
-            new ContentBlockDeltaEvent
-            {
-                Delta = new ContentBlockDelta
-                {
-                    Text = "hello"
-                }
-            },
-            new ContentBlockDeltaEvent
-            {
-                Delta = new ContentBlockDelta
-                {
-                    Text = " world"
-                }
-            }
-        };
-        var byteEvents = events.SelectMany(e => JsonSerializer.SerializeToUtf8Bytes(e)).ToArray();
-        var memoryStream = new MemoryStream(byteEvents);
+        // var events = new List<ContentBlockDeltaEvent>
+        // {
+        //     new ContentBlockDeltaEvent
+        //     {
+        //         Delta = new ContentBlockDelta
+        //         {
+        //             Text = "hello"
+        //         }
+        //     },
+        //     new ContentBlockDeltaEvent
+        //     {
+        //         Delta = new ContentBlockDelta
+        //         {
+        //             Text = " world"
+        //         }
+        //     }
+        // };
+        // var byteEvents = events.SelectMany(e => JsonSerializer.SerializeToUtf8Bytes(e)).ToArray();
+        // var memoryStream = new MemoryStream(byteEvents);
 
         mockBedrockApi.Setup(m => m.ConverseStreamAsync(It.IsAny<ConverseStreamRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseStreamResponse
@@ -125,9 +127,11 @@ public class BedrockChatCompletionServiceTests
         chatHistory.AddUserMessage("How are you?");
         return chatHistory;
     }
-
+    /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the chat completion call.
+    /// </summary>
     [Fact]
-    public async Task GetChatMessageContentsAsyncShouldUsePromptExecutionSettings()
+    public async Task GetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
@@ -164,7 +168,7 @@ public class BedrockChatCompletionServiceTests
         var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
 
         // Assert
-        ConverseRequest converseRequest = null;
+        ConverseRequest converseRequest = new ConverseRequest();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "ConverseAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
@@ -177,9 +181,11 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(executionSettings.ExtensionData["topP"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
     }
-
+    /// <summary>
+    /// Checks that the roles from the chat history are correctly assigned and labeled for the converse calls.
+    /// </summary>
     [Fact]
-    public async Task GetChatMessageContentsAsyncShouldAssignCorrectRoles()
+    public async Task GetChatMessageContentsAsyncShouldAssignCorrectRolesAsync()
     {
         // Arrange
         string modelId = "amazon.titan-embed-text-v1:0";
@@ -211,9 +217,11 @@ public class BedrockChatCompletionServiceTests
         Assert.Single(result[0].Items);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
     }
-
+    /// <summary>
+    /// Checks that the chat history is given the correct values through calling GetChatMessageContentsAsync.
+    /// </summary>
     [Fact]
-    public async Task GetChatMessageContentsAsyncShouldHaveProperChatHistory()
+    public async Task GetChatMessageContentsAsyncShouldHaveProperChatHistoryAsync()
     {
         // Arrange
         string modelId = "amazon.titan-embed-text-v1:0";
@@ -258,10 +266,12 @@ public class BedrockChatCompletionServiceTests
         var result2 = await service.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
 
         // Assert
-        Assert.NotNull(result1[0].Content);
-        chatHistory.AddAssistantMessage(result1[0].Content);
-        Assert.NotNull(result2[0].Content);
-        chatHistory.AddUserMessage(result2[0].Content);
+        string? chatResult1 = result1[0].Content;
+        Assert.NotNull(chatResult1);
+        chatHistory.AddAssistantMessage(chatResult1);
+        string? chatResult2 = result2[0].Content;
+        Assert.NotNull(chatResult2);
+        chatHistory.AddUserMessage(chatResult2);
         Assert.Equal(2, result1.Count + result2.Count);
 
         // Check the first result
@@ -287,7 +297,9 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(AuthorRole.User, chatHistory[4].Role);
         Assert.Equal("That's great to hear!", chatHistory[4].Items[0].ToString());
     }
-
+    /// <summary>
+    /// Checks that error handling present for empty chat history.
+    /// </summary>
     [Fact]
     public async Task ShouldThrowArgumentExceptionIfChatHistoryIsEmptyAsync()
     {
