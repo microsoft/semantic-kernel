@@ -6,19 +6,10 @@ from pydantic import Field
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class OpenAIAssistantDefinition(KernelBaseModel):
-    ai_model_id: str | None = None
-    description: str | None = None
-    id: str | None = Field(None)
-    instructions: str | None = Field(None)
-    name: str | None = Field(None)
-    enable_code_interpreter: bool = Field(False)
-    enable_file_search: bool = Field(False)
-    file_ids: list[str] = Field(default_factory=list)
+class OpenAIAssistantExecutionSettings(KernelBaseModel):
+    max_completion_tokens: int | None = Field(None)
+    max_prompt_tokens: int | None = Field(None)
+    parallel_tool_calls_enabled: bool | None = Field(False)
+    truncation_message_count: int | None = Field(None)
 
-    """
-    A set of up to 16 key/value pairs that can be attached to an agent, used for
-    storing additional information about that object in a structured format.
-    Keys may be up to 64 characters in length and values may be up to 512 characters in length.
-    """
-    metadata: dict[str, str] = Field(default_factory=dict)
+    # tool_choice_behavior

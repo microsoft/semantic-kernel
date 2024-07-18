@@ -14,7 +14,11 @@ class OpenAIAssistantDefinition(KernelBaseModel):
     name: str | None = Field(None)
     enable_code_interpreter: bool = Field(False)
     enable_file_search: bool = Field(False)
+    enable_json_response: bool = Field(False)
     file_ids: list[str] = Field(default_factory=list)
+    temperature: float = Field(None)
+    top_p: float = Field(None)
+    vector_store_id: str | None = Field(None)
 
     """
     A set of up to 16 key/value pairs that can be attached to an agent, used for

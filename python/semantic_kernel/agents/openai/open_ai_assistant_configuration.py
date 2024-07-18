@@ -4,12 +4,12 @@ from collections.abc import Mapping
 from datetime import timedelta
 
 from openai import AsyncOpenAI
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class PollingConfiguration(BaseModel):
+class PollingConfiguration(KernelBaseModel):
     """Configuration and defaults associated with polling behavior for Assistant API requests."""
 
     default_polling_interval: timedelta = Field(default=timedelta(milliseconds=500))
