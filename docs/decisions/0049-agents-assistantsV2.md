@@ -37,6 +37,10 @@ The `OpenAIAssistantDefinition` was previously used only when enumerating a list
 This includes optional `ExecutionSettings` which define default _run_ behavior.  Since these execution settings are not part of the remote assistant definition, they are persisted in the assistant metadata for when an existing agent is retrieved.  `AssistantToolCallBehavior` is included as part of the _execution settings_ and modeled in alignment with the `ToolCallBehavior` associated with _AI Connectors_.
 
 > Note: Manual function calling isn't currently supported for `OpenAIAssistantAgent` or `AgentChat`  and is planned to be addressed as an enhancement.  When this supported is introduced, `AssistantToolCallBehavior` will determine the function calling behavior (also in alignment with the `ToolCallBehavior` associated with _AI Connectors_).
+** Alternative (Future?) **
+
+A pending change has been authored that introduces `FunctionChoiceBehavior` as a property of the base / abstract `PromptExecutionSettings`.  Once realized, it may make sense to evaluate integrating this pattern for `OpenAIAssistantAgent`.  This may also imply in inheritance relationship of `PromptExecutionSettings` for both `OpenAIAssistantExecutionSettings` and `OpenAIAssistantInvocationSettings` (next section).
+
 
 <p align="center">
 <kbd><img src="diagrams/assistant-definition.png"  style="width: 500pt;"></kbd>
@@ -46,6 +50,8 @@ This includes optional `ExecutionSettings` which define default _run_ behavior. 
 #### Assistant Invocation Settings
 
 When invoking an `OpenAIAssistantAgent` directly (no-chat), settings that only apply to a discrete run may be specified.  These settings are defined as `OpenAIAssistantInvocationSettings` and ovetake precedence over any corresponding assistant or thread settings.
+
+> Note: These settings are also impacted by the `ToolCallBehavior` / `FunctionChoiceBehavior` quadary.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 370pt;"></kbd>
