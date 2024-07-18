@@ -240,13 +240,19 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="threadId">The thread identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
-        return AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, cancellationToken);
+        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, cancellationToken).ConfigureAwait(false))
+        {
+            if (isVisible)
+            {
+                yield return message;
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -282,17 +288,19 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <inheritdoc/>
     protected override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        this.Logger.LogDebug("[{MethodName}] Creating assistant thread", nameof(CreateChannelAsync));
+        this.Logger.LogOpenAIAssistantAgentCreatingChannel(nameof(CreateChannelAsync), nameof(OpenAIAssistantChannel));
 
         AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
-
-        return
-            new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling)
+        OpenAIAssistantChannel channel =
+            new(this._client, thread.Id, this._config.Polling)
             {
                 Logger = this.LoggerFactory.CreateLogger<OpenAIAssistantChannel>()
             };
+
+        this.Logger.LogOpenAIAssistantAgentCreatedChannel(nameof(CreateChannelAsync), nameof(OpenAIAssistantChannel), thread.Id);
+
+        return channel;
     }
 
     internal void ThrowIfDeleted()
