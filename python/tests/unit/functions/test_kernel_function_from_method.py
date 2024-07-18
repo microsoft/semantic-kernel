@@ -1,11 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 from collections.abc import AsyncGenerator, Iterable
 from typing import Annotated, Any
+from unittest.mock import Mock
 
 import pytest
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
+from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.kernel_filters_extension import _rebuild_function_invocation_context
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -14,6 +17,38 @@ from semantic_kernel.functions.kernel_function_from_method import KernelFunction
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+
+class CustomType(KernelBaseModel):
+    id: str
+    name: str
+
+
+class CustomTypeNonPydantic:
+    id: str
+    name: str
+
+    def __init__(self, id: str, name: str):
+        self.id = id
+        self.name = name
+
+
+@pytest.fixture
+def get_custom_type_function_pydantic():
+    @kernel_function
+    def func_default(param: list[CustomType]):
+        return input
+
+    return KernelFunction.from_method(func_default, "test")
+
+
+@pytest.fixture
+def get_custom_type_function_nonpydantic():
+    @kernel_function
+    def func_default(param: list[CustomTypeNonPydantic]):
+        return input
+
+    return KernelFunction.from_method(func_default, "test")
 
 
 def test_init_native_function_with_input_description():
@@ -449,3 +484,79 @@ async def test_default_handling_2(kernel: Kernel):
 
     res = await kernel.invoke(func, base="base")
     assert str(res) == "test"
+
+
+def test_parse_list_of_objects(get_custom_type_function_pydantic):
+    func = get_custom_type_function_pydantic
+
+    param_type = list[CustomType]
+    value = [{"id": "1", "name": "John"}, {"id": "2", "name": "Jane"}]
+    result = func._parse_parameter(value, param_type)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert all(isinstance(item, CustomType) for item in result)
+
+
+def test_parse_individual_object(get_custom_type_function_pydantic):
+    value = {"id": "2", "name": "Jane"}
+    func = get_custom_type_function_pydantic
+    result = func._parse_parameter(value, CustomType)
+    assert isinstance(result, CustomType)
+    assert result.id == "2"
+    assert result.name == "Jane"
+
+
+def test_parse_non_list_raises_exception(get_custom_type_function_pydantic):
+    func = get_custom_type_function_pydantic
+    param_type = list[CustomType]
+    value = {"id": "2", "name": "Jane"}
+    with pytest.raises(FunctionExecutionException, match=r"Expected a list for .*"):
+        func._parse_parameter(value, param_type)
+
+
+def test_parse_invalid_dict_raises_exception(get_custom_type_function_pydantic):
+    func = get_custom_type_function_pydantic
+    value = {"id": "1"}
+    with pytest.raises(FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"):
+        func._parse_parameter(value, CustomType)
+
+
+def test_parse_invalid_value_raises_exception(get_custom_type_function_pydantic):
+    func = get_custom_type_function_pydantic
+    value = "invalid_value"
+    with pytest.raises(FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"):
+        func._parse_parameter(value, CustomType)
+
+
+def test_parse_invalid_list_raises_exception(get_custom_type_function_pydantic):
+    func = get_custom_type_function_pydantic
+    param_type = list[CustomType]
+    value = ["invalid_value"]
+    with pytest.raises(FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"):
+        func._parse_parameter(value, param_type)
+
+
+def test_parse_dict_with_init_non_pydantic(get_custom_type_function_nonpydantic):
+    func = get_custom_type_function_nonpydantic
+    value = {"id": "3", "name": "Alice"}
+    result = func._parse_parameter(value, CustomTypeNonPydantic)
+    assert isinstance(result, CustomTypeNonPydantic)
+    assert result.id == "3"
+    assert result.name == "Alice"
+
+
+def test_parse_invalid_dict_raises_exception_new(get_custom_type_function_nonpydantic):
+    func = get_custom_type_function_nonpydantic
+    value = {"wrong_key": "3", "name": "Alice"}
+    with pytest.raises(FunctionExecutionException, match=r"Parameter is expected to be parsed to .*"):
+        func._parse_parameter(value, CustomTypeNonPydantic)
+
+
+def test_gather_function_parameters_exception_handling(get_custom_type_function_pydantic):
+    kernel = Mock(spec=Kernel)  # Mock kernel
+    func = get_custom_type_function_pydantic
+    _rebuild_function_invocation_context()
+    context = FunctionInvocationContext(kernel=kernel, function=func, arguments=KernelArguments(param="test"))
+
+    with pytest.raises(FunctionExecutionException, match=r"Parameter param is expected to be parsed to .* but is not."):
+        func.gather_function_parameters(context)
