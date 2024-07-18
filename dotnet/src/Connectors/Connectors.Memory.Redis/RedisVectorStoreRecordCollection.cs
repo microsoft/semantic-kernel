@@ -406,7 +406,7 @@ public sealed class RedisVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         {
             await operation.Invoke().ConfigureAwait(false);
         }
-        catch (RedisConnectionException ex)
+        catch (RedisException ex)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
@@ -430,7 +430,7 @@ public sealed class RedisVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         {
             return await operation.Invoke().ConfigureAwait(false);
         }
-        catch (RedisConnectionException ex)
+        catch (RedisException ex)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
