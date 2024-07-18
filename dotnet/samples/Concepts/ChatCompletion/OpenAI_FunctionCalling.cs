@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -72,6 +73,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     {
         // Create a kernel with MistralAI chat completion and WeatherPlugin
         Kernel kernel = CreateKernelWithPlugin<LightPlugin>();
+        kernel.FunctionInvocationFilters.Add(new FunctionFilterExample(this.Output));
 
         // Invoke chat prompt with auto invocation of functions enabled
         const string ChatPrompt = """
@@ -147,5 +149,15 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         kernelBuilder.Plugins.AddFromType<T>();
         Kernel kernel = kernelBuilder.Build();
         return kernel;
+    }
+
+    private sealed class FunctionFilterExample(ITestOutputHelper output) : IFunctionInvocationFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            output.WriteLine($"Function {context.Function.Name} is being invoked with arguments: {JsonSerializer.Serialize(context.Arguments)}");
+
+            await next(context);
+        }
     }
 }
