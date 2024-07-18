@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client.Grpc;
@@ -383,6 +384,7 @@ public class QdrantVectorStoreRecordMapperTests
         [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "Vector1")]
         public string DataString { get; set; } = string.Empty;
 
+        [JsonPropertyName("data_int_json")]
         [VectorStoreRecordData]
         public int DataInt { get; set; } = 0;
 
