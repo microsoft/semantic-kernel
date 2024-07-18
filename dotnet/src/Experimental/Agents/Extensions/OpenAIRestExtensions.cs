@@ -92,7 +92,7 @@ internal static partial class OpenAIRestExtensions
     {
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
         request.Headers.Add(HeaderNameUserAgent, HttpHeaderConstant.Values.UserAgent);
-        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIFileService)));
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIChatCompletionService)));
 
         if (context.HasVersion)
         {

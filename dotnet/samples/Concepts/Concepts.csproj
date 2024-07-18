@@ -48,7 +48,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\..\src\Agents\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
-    <!--ProjectReference Include="..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" /-->
+    <ProjectReference Include="..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
@@ -64,7 +64,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAIV2\Connectors.OpenAIV2.csproj" />
-    <!--ProjectReference Include="..\..\src\Experimental\Agents\Experimental.Agents.csproj" /-->
+    <ProjectReference Include="..\..\src\Experimental\Agents\Experimental.Agents.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj" />
@@ -108,41 +108,5 @@
     <EmbeddedResource Include="Resources\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Agents\ChatCompletion_FunctionTermination.cs" />
-    <Compile Remove="Agents\ChatCompletion_Streaming.cs" />
-    <Compile Remove="Agents\ComplexChat_NestedShopper.cs" />
-    <Compile Remove="Agents\Legacy_AgentAuthoring.cs" />
-    <Compile Remove="Agents\Legacy_AgentCharts.cs" />
-    <Compile Remove="Agents\Legacy_AgentCollaboration.cs" />
-    <Compile Remove="Agents\Legacy_AgentDelegation.cs" />
-    <Compile Remove="Agents\Legacy_Agents.cs" />
-    <Compile Remove="Agents\Legacy_AgentTools.cs" />
-    <Compile Remove="Agents\Legacy_ChatCompletionAgent.cs" />
-    <Compile Remove="Agents\MixedChat_Agents.cs" />
-    <Compile Remove="Agents\OpenAIAssistant_ChartMaker.cs" />
-    <Compile Remove="Agents\OpenAIAssistant_CodeInterpreter.cs" />
-    <Compile Remove="Agents\OpenAIAssistant_FileManipulation.cs" />
-    <Compile Remove="Agents\OpenAIAssistant_FileService.cs" />
-    <Compile Remove="Agents\OpenAIAssistant_Retrieval.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Agents\ChatCompletion_FunctionTermination.cs" />
-    <None Include="Agents\ChatCompletion_Streaming.cs" />
-    <None Include="Agents\ComplexChat_NestedShopper.cs" />
-    <None Include="Agents\Legacy_AgentAuthoring.cs" />
-    <None Include="Agents\Legacy_AgentCharts.cs" />
-    <None Include="Agents\Legacy_AgentCollaboration.cs" />
-    <None Include="Agents\Legacy_AgentDelegation.cs" />
-    <None Include="Agents\Legacy_Agents.cs" />
-    <None Include="Agents\Legacy_AgentTools.cs" />
-    <None Include="Agents\Legacy_ChatCompletionAgent.cs" />
-    <None Include="Agents\MixedChat_Agents.cs" />
-    <None Include="Agents\OpenAIAssistant_ChartMaker.cs" />
-    <None Include="Agents\OpenAIAssistant_CodeInterpreter.cs" />
-    <None Include="Agents\OpenAIAssistant_FileManipulation.cs" />
-    <None Include="Agents\OpenAIAssistant_FileService.cs" />
-    <None Include="Agents\OpenAIAssistant_Retrieval.cs" />
   </ItemGroup>
 </Project>

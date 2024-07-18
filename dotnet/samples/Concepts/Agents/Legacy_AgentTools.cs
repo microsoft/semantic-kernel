@@ -80,11 +80,13 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         }
 
         Kernel kernel = CreateFileEnabledKernel();
+#pragma warning disable CS0618 // Type or member is obsolete
         var fileService = kernel.GetRequiredService<OpenAIFileService>();
         var result =
             await fileService.UploadContentAsync(
                 new BinaryContent(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!, "text/plain"),
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
+#pragma warning restore CS0618 // Type or member is obsolete
 
         var fileId = result.Id;
         Console.WriteLine($"! {fileId}");
@@ -167,10 +169,12 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
 
     private static Kernel CreateFileEnabledKernel()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         return
             ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
                 Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build() :
-                Kernel.CreateBuilder().AddAzureOpenAIFiles(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey).Build();
+                throw new NotImplementedException("The file service is being deprecated and was not moved to AzureOpenAI connector.");
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private static AgentBuilder CreateAgentBuilder()
