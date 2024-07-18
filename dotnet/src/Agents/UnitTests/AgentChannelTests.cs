@@ -40,11 +40,11 @@ public class AgentChannelTests
     {
         public int InvokeCount { get; private set; }
 
-        public IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(Agent agent, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAgentAsync(Agent agent, CancellationToken cancellationToken = default)
             => base.InvokeAsync(agent, cancellationToken);
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(TestAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        protected internal override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(TestAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             this.InvokeCount++;
@@ -57,7 +57,7 @@ public class AgentChannelTests
             throw new NotImplementedException();
         }
 
-        protected internal override Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
