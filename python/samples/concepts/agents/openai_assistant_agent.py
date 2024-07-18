@@ -59,15 +59,15 @@ async def main():
     # Create the agent
     configuration = OpenAIAssistantConfiguration(service_id=service_id)
     definition = OpenAIAssistantDefinition(name=HOST_NAME, instructions=HOST_INSTRUCTIONS)
-    agent = OpenAIAssistantAgent(
+
+    agent = await OpenAIAssistantAgent.create(
         kernel=kernel,
         name=HOST_NAME,
         instructions=HOST_INSTRUCTIONS,
         service_id=service_id,
         configuration=configuration,
+        definition=definition,
     )
-
-    await agent.create(definition=definition)
 
     thread_id = await agent.create_thread()
 
