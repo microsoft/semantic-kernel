@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -274,7 +275,7 @@ public static partial class OpenApiKernelPluginFactory
             method: ExecuteAsync,
             new KernelFunctionFromMethodOptions
             {
-                FunctionName = ConvertOperationIdToValidFunctionName(operation.Id, logger),
+                FunctionName = ConvertOperationToValidFunctionName(operation, logger),
                 Description = operation.Description,
                 Parameters = parameters,
                 ReturnParameter = returnParameter,
@@ -295,16 +296,42 @@ public static partial class OpenApiKernelPluginFactory
     /// Converts operation id to valid <see cref="KernelFunction"/> name.
     /// A function name can contain only ASCII letters, digits, and underscores.
     /// </summary>
+    /// <param name="operation">The REST API operation.</param>
+    /// <param name="logger">The logger.</param>
+    /// <returns>Valid KernelFunction name.</returns>
+    private static string ConvertOperationToValidFunctionName(RestApiOperation operation, ILogger logger)
+    {
+        if (!string.IsNullOrWhiteSpace(operation.Id))
+        {
+            return ConvertOperationIdToValidFunctionName(operationId: operation.Id, logger: logger);
+        }
+
+        // Tokenize operation path on forward and back slashes
+        string[] tokens = operation.Path.Split('/', '\\');
+        StringBuilder result = new();
+        result.Append(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(operation.Method.ToString()));
+
+        foreach (string token in tokens)
+        {
+            // Removes all characters that are not ASCII letters, digits, and underscores.
+            string formattedToken = RemoveInvalidCharsRegex().Replace(token, "");
+            result.Append(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture)));
+        }
+
+        logger.LogInformation("""Operation method "{0}" with path "{1}" converted to "{2}" to comply with SK Function name requirements. Use "{2}" when invoking function.""", operation.Method, operation.Path, result, result);
+
+        return result.ToString();
+    }
+
+    /// <summary>
+    /// Converts operation id to valid <see cref="KernelFunction"/> name.
+    /// A function name can contain only ASCII letters, digits, and underscores.
+    /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="logger">The logger.</param>
     /// <returns>Valid KernelFunction name.</returns>
     private static string ConvertOperationIdToValidFunctionName(string operationId, ILogger logger)
     {
-        if (string.IsNullOrEmpty(operationId))
-        {
-            return CreateRandomFunctionName();
-        }
-
         try
         {
             Verify.ValidFunctionName(operationId);
@@ -341,13 +368,8 @@ public static partial class OpenApiKernelPluginFactory
     private static partial Regex RemoveInvalidCharsRegex();
 #else
     private static Regex RemoveInvalidCharsRegex() => s_removeInvalidCharsRegex;
-    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_./-/{/}]", RegexOptions.Compiled);
 #endif
-
-    /// <summary>
-    /// Create a random, valid function name.
-    /// </summary>
-    internal static string CreateRandomFunctionName(string? prefix = "Function") => $"{prefix}_{Guid.NewGuid():N}";
 
     #endregion
 

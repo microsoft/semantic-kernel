@@ -313,7 +313,7 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         // Assert
         Assert.Equal(5, plugin.Count());
-        Assert.Single(plugin.Where(f => f.Name.StartsWith("Function_", StringComparison.Ordinal)));
+        Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
     }
 
     [Fact]
@@ -332,7 +332,7 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         // Assert
         Assert.Equal(5, plugin.Count());
-        Assert.Single(plugin.Where(f => f.Name.StartsWith("Function_", StringComparison.Ordinal)));
+        Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
     }
 
     [Fact]
