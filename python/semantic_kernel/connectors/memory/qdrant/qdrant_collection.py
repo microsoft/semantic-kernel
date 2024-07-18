@@ -176,7 +176,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
     ) -> Sequence[PointStruct]:
         return [
             PointStruct(
-                id=record.pop(self._key_field),
+                id=record.pop(self._key_field_name),
                 vector=record.pop(self.data_model_definition.vector_fields[0])
                 if self.named_vectors
                 else {field: record.pop(field) for field in self.data_model_definition.vector_fields},
@@ -193,7 +193,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
     ) -> Sequence[dict[str, Any]]:
         return [
             {
-                self._key_field: record.id,
+                self._key_field_name: record.id,
                 **(record.payload if record.payload else {}),
                 **(
                     record.vector

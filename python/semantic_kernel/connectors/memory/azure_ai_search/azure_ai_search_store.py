@@ -122,9 +122,3 @@ class AzureAISearchStore(VectorStore):
         if "params" not in kwargs:
             kwargs["params"] = {"select": ["name"]}
         return [index async for index in self.search_index_client.list_index_names(**kwargs)]
-
-    @override
-    async def close(self) -> None:
-        await self.search_index_client.close()
-        for collection in self.vector_record_collections.values():
-            await collection.close()

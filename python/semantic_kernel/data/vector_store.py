@@ -28,13 +28,9 @@ class VectorStore(KernelBaseModel):
         **kwargs: Any,
     ) -> VectorStoreRecordCollection:
         """Get a vector record store."""
-        ...
+        ...  # pragma: no cover
 
     @abstractmethod
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
         """Get the names of all collections."""
-        ...
-
-    async def close(self) -> None:
-        """Close the connections."""
-        return
+        ...  # pragma: no cover
