@@ -4,7 +4,7 @@ set -e
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/"
 cd "$HERE"
-
+echo "$HERE"
 cd dotnet
 
 # Release config triggers also "dotnet format"

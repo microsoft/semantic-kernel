@@ -79,6 +79,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
+        Console.WriteLine($"Upserting record: {record}");
         record.Key = record.Metadata.Id;
         var filter = Builders<MongoDBMemoryEntry>.Filter.Eq(m => m.Id, record.Key);
 
@@ -263,3 +264,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
 
     #endregion
 }
+
+
+
+
