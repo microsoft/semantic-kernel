@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Models.Amazon;
@@ -12,9 +11,14 @@ using Moq;
 using Xunit;
 
 namespace Connectors.Amazon.UnitTests.Services;
-
+/// <summary>
+/// Unit tests for BedrockTextGenerationService.
+/// </summary>
 public class BedrockTextGenerationServiceTests
 {
+    /// <summary>
+    /// Checks that modelID is added to the list of service attributes when service is registered.
+    /// </summary>
     [Fact]
     public void AttributesShouldContainModelId()
     {
@@ -27,8 +31,11 @@ public class BedrockTextGenerationServiceTests
         Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 
+    /// <summary>
+    /// Checks that GetTextContentsAsync calls and correctly handles outputs from InvokeModelAsync.
+    /// </summary>
     [Fact]
-    public async Task GetTextContentsAsyncShouldReturnTextContents()
+    public async Task GetTextContentsAsyncShouldReturnTextContentsAsync()
     {
         // Arrange
         string modelId = "amazon.titan-text-premier-v1:0";
@@ -62,21 +69,24 @@ public class BedrockTextGenerationServiceTests
         Assert.Equal("This is a mock output.", result[0].Text);
     }
 
+    /// <summary>
+    /// Checks that GetStreamingTextContentsAsync calls and correctly handles outputs from InvokeModelAsync.
+    /// </summary>
     [Fact]
-    public async Task GetStreamingTextContentsAsyncShouldReturnStreamedTextContents()
+    public async Task GetStreamingTextContentsAsyncShouldReturnStreamedTextContentsAsync()
     {
         // Arrange
         string modelId = "amazon.titan-text-premier-v1:0";
         string prompt = "Write a short greeting.";
 
         // Attempt 1
-        List<PayloadPart> payloadParts = new List<PayloadPart>
-        {
-            new PayloadPart { Bytes = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new JsonObject { { "outputText", "Hello" } })) },
-            new PayloadPart { Bytes = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new JsonObject { { "outputText", ", world!" } })) }
-        };
-        byte[] byteResponseStream = payloadParts.SelectMany(p => p.Bytes.ToArray()).ToArray();
-        var mockResponseStream = new MemoryStream(byteResponseStream);
+        // List<PayloadPart> payloadParts = new List<PayloadPart>
+        // {
+        //     new PayloadPart { Bytes = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new JsonObject { { "outputText", "Hello" } })) },
+        //     new PayloadPart { Bytes = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new JsonObject { { "outputText", ", world!" } })) }
+        // };
+        // byte[] byteResponseStream = payloadParts.SelectMany(p => p.Bytes.ToArray()).ToArray();
+        // var mockResponseStream = new MemoryStream(byteResponseStream);
 
         // Attempt 2
         // string mockResponseJson = @"{
@@ -135,8 +145,11 @@ public class BedrockTextGenerationServiceTests
         Assert.NotNull(service.GetModelId());
     }
 
+    /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the text generation call.
+    /// </summary>
     [Fact]
-    public async Task GetTextContentsAsyncShouldUsePromptExecutionSettings()
+    public async Task GetTextContentsAsyncShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
@@ -177,7 +190,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = null;
+        InvokeModelRequest invokeModelRequest = new InvokeModelRequest();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -190,7 +203,7 @@ public class BedrockTextGenerationServiceTests
         Assert.NotNull(invokeModelRequest);
 
         using var requestBodyStream = invokeModelRequest.Body;
-        var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(false);
+        var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
         Assert.True(requestBodyRoot.TryGetProperty("textGenerationConfig", out var textGenerationConfig));
         if (textGenerationConfig.TryGetProperty("temperature", out var temperatureProperty))
