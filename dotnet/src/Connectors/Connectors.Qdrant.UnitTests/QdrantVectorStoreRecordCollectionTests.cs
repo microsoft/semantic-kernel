@@ -251,7 +251,6 @@ public class QdrantVectorStoreRecordCollectionTests
             new()
             {
                 HasNamedVectors = true,
-                MapperType = QdrantRecordMapperType.QdrantPointStructCustomMapper,
                 PointStructCustomMapper = mapperMock.Object
             });
 
@@ -478,7 +477,6 @@ public class QdrantVectorStoreRecordCollectionTests
             new()
             {
                 HasNamedVectors = false,
-                MapperType = QdrantRecordMapperType.QdrantPointStructCustomMapper,
                 PointStructCustomMapper = mapperMock.Object
             });
 

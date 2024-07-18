@@ -18,15 +18,10 @@ public sealed class QdrantVectorStoreRecordCollectionOptions<TRecord>
     public bool HasNamedVectors { get; set; } = false;
 
     /// <summary>
-    /// Gets or sets the choice of mapper to use when converting between the data model and the qdrant point.
-    /// </summary>
-    public QdrantRecordMapperType MapperType { get; init; } = QdrantRecordMapperType.Default;
-
-    /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the qdrant point.
     /// </summary>
     /// <remarks>
-    /// Set <see cref="MapperType"/> to <see cref="QdrantRecordMapperType.QdrantPointStructCustomMapper"/> to use this mapper."/>
+    /// If not set, a default mapper that uses json as an intermediary to allow automatic mapping to a wide variety of types will be used.
     /// </remarks>
     public IVectorStoreRecordMapper<TRecord, PointStruct>? PointStructCustomMapper { get; init; } = null;
 

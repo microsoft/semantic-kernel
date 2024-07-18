@@ -108,14 +108,9 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._options.VectorStoreRecordDefinition);
 
         // Assign Mapper.
-        if (this._options.MapperType == QdrantRecordMapperType.QdrantPointStructCustomMapper)
+        if (this._options.PointStructCustomMapper is not null)
         {
             // Custom Mapper.
-            if (this._options.PointStructCustomMapper is null)
-            {
-                throw new ArgumentException($"The {nameof(QdrantVectorStoreRecordCollectionOptions<TRecord>.PointStructCustomMapper)} option needs to be set if a {nameof(QdrantVectorStoreRecordCollectionOptions<TRecord>.MapperType)} of {nameof(QdrantRecordMapperType.QdrantPointStructCustomMapper)} has been chosen.", nameof(options));
-            }
-
             this._mapper = this._options.PointStructCustomMapper;
         }
         else
