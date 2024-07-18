@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// An interface for managing a collection of records in a vector store.
+/// A schema aware interface for managing a named collection of records in a vector store and for creating or deleting the collection itself.
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The record data model to use for adding, updating and retrieving data from the store.</typeparam>
