@@ -17,6 +17,7 @@ public static class TextSearchKernelPluginFactory
     /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
+    /// <param name="options">Optional function creation options.</param>
     /// <returns>A KernelPlugin instance whose functions correspond to the OpenAPI operations.</returns>
     public static KernelPlugin CreateFromTextSearch<T>(ITextSearch<T> textSearch, string pluginName, string? description = null, KernelFunctionFromMethodOptions? options = null) where T : class
     {
@@ -54,10 +55,9 @@ public static class TextSearchKernelPluginFactory
 
     private static KernelFunctionFromMethodOptions CreateDefaultMethodOptions<T>(ITextSearch<T> textSearch) where T : class
     {
-        var functionName = nameof(ITextSearch<T>.SearchAsync);
         return new()
         {
-            FunctionName = functionName,
+            FunctionName = "Search",
             Description = "Perform a search for content related to the specified query",
             Parameters =
             [
