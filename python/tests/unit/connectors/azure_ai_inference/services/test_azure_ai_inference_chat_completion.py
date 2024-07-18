@@ -13,7 +13,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
 )
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.telemetry import APPLICATION_ID
+from semantic_kernel.connectors.telemetry import SEMANTIC_KERNEL_USER_AGENT
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
@@ -49,7 +49,7 @@ def test_azure_ai_inference_chat_completion_client_init(
     assert mock_client.call_args.kwargs["endpoint"] == str(settings.endpoint)
     assert isinstance(mock_client.call_args.kwargs["credential"], AzureKeyCredential)
     assert mock_client.call_args.kwargs["credential"].key == settings.api_key.get_secret_value()
-    assert mock_client.call_args.kwargs["user_agent"] == APPLICATION_ID
+    assert mock_client.call_args.kwargs["user_agent"] == SEMANTIC_KERNEL_USER_AGENT
 
 
 def test_azure_ai_inference_chat_completion_init_with_service_id(

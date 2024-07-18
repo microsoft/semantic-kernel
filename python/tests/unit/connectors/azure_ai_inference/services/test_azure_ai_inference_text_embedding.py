@@ -11,7 +11,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceTextEmbedding,
 )
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
-from semantic_kernel.connectors.telemetry import APPLICATION_ID
+from semantic_kernel.connectors.telemetry import SEMANTIC_KERNEL_USER_AGENT
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
@@ -38,7 +38,7 @@ def test_azure_ai_inference_text_embedding_client_init(mock_client, azure_ai_inf
     assert mock_client.call_args.kwargs["endpoint"] == str(settings.endpoint)
     assert isinstance(mock_client.call_args.kwargs["credential"], AzureKeyCredential)
     assert mock_client.call_args.kwargs["credential"].key == settings.api_key.get_secret_value()
-    assert mock_client.call_args.kwargs["user_agent"] == APPLICATION_ID
+    assert mock_client.call_args.kwargs["user_agent"] == SEMANTIC_KERNEL_USER_AGENT
 
 
 def test_azure_ai_inference_text_embedding_init_with_service_id(

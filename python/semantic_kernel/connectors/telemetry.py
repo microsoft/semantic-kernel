@@ -27,7 +27,7 @@ APP_INFO = (
 )
 
 
-APPLICATION_ID = f"{HTTP_USER_AGENT}/{version_info}"
+SEMANTIC_KERNEL_USER_AGENT = f"{HTTP_USER_AGENT}/{version_info}"
 
 
 def prepend_semantic_kernel_to_user_agent(headers: dict[str, Any]):
@@ -39,6 +39,8 @@ def prepend_semantic_kernel_to_user_agent(headers: dict[str, Any]):
     Returns:
         The modified headers dictionary with "semantic-kernel-python/{version}" prepended to the User-Agent.
     """
-    headers[USER_AGENT] = f"{APPLICATION_ID} {headers[USER_AGENT]}" if USER_AGENT in headers else APPLICATION_ID
+    headers[USER_AGENT] = (
+        f"{SEMANTIC_KERNEL_USER_AGENT} {headers[USER_AGENT]}" if USER_AGENT in headers else SEMANTIC_KERNEL_USER_AGENT
+    )
 
     return headers
