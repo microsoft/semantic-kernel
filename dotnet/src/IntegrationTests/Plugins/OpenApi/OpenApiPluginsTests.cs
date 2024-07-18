@@ -11,7 +11,7 @@ namespace SemanticKernel.IntegrationTests.Plugins.OpenApi;
 
 public class PluginTests
 {
-    [Theory]
+    [Theory(Skip = "Add a valid plugin endpoint.")]
     [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
     public async Task QueryKlarnaOpenApiPluginRunAsync(
         string pluginEndpoint,

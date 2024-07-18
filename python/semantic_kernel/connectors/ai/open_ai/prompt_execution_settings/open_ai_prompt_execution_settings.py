@@ -91,7 +91,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
 
         if isinstance(data, dict) and "function_call_behavior" in data.get("extension_data", {}):
             data["function_choice_behavior"] = FunctionChoiceBehavior.from_function_call_behavior(
-                data.get("extension_data").get("function_call_behavior")
+                data.get("extension_data", {}).get("function_call_behavior")
             )
         return data
 
