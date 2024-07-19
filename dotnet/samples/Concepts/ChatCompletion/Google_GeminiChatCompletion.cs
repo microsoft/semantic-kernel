@@ -89,7 +89,7 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
     {
         Console.WriteLine("======== Simple Chat ========");
 
-        var chatHistory = new ChatHistory();
+        var chatHistory = new ChatHistory("You are an expert in the tool shop.");
         var chat = kernel.GetRequiredService<IChatCompletionService>();
 
         // First user message

@@ -322,6 +322,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Anthropic", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Anthropic.UnitTests", "src\Connectors\Connectors.Anthropic.UnitTests\Connectors.Anthropic.UnitTests.csproj", "{3186E348-3558-42E6-B1DE-D24B816F46C5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -803,6 +805,12 @@ Global
 		{3186E348-3558-42E6-B1DE-D24B816F46C5}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{3186E348-3558-42E6-B1DE-D24B816F46C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3186E348-3558-42E6-B1DE-D24B816F46C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38374C62-0263-4FE8-A18C-70FC8132912B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38374C62-0263-4FE8-A18C-70FC8132912B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38374C62-0263-4FE8-A18C-70FC8132912B}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{38374C62-0263-4FE8-A18C-70FC8132912B}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{38374C62-0263-4FE8-A18C-70FC8132912B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38374C62-0263-4FE8-A18C-70FC8132912B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -913,6 +921,7 @@ Global
 		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{A77031AC-5A71-4061-9451-923D3A5541E4} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 		{3186E348-3558-42E6-B1DE-D24B816F46C5} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
+		{38374C62-0263-4FE8-A18C-70FC8132912B} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

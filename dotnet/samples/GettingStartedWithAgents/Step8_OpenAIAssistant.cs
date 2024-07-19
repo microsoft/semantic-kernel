@@ -36,8 +36,8 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
-        // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        // Create a thread for the agent interaction.
+        string threadId = await agent.CreateThreadAsync();
 
         // Respond to user input
         try
@@ -49,19 +49,23 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         }
         finally
         {
+            await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
         }
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            await agent.AddChatMessageAsync(threadId, new ChatMessageContent(AuthorRole.User, input));
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent content in agent.InvokeAsync(threadId))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                if (content.Role != AuthorRole.Tool)
+                {
+                    Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                }
             }
         }
     }

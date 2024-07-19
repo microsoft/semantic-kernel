@@ -3,7 +3,8 @@
 import json
 import logging
 from collections import OrderedDict
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
+from inspect import isawaitable
 from typing import Any
 from urllib.parse import urlparse, urlunparse
 
@@ -34,13 +35,13 @@ class OpenApiRunner:
     def __init__(
         self,
         parsed_openapi_document: Mapping[str, str],
-        auth_callback: Callable[[dict[str, str]], dict[str, str]] | None = None,
+        auth_callback: Callable[..., dict[str, str] | Awaitable[dict[str, str]]] | None = None,
         http_client: httpx.AsyncClient | None = None,
         enable_dynamic_payload: bool = True,
         enable_payload_namespacing: bool = False,
     ):
         """Initialize the OpenApiRunner."""
-        self.spec = Spec.from_dict(parsed_openapi_document)
+        self.spec = Spec.from_dict(parsed_openapi_document)  # type: ignore
         self.auth_callback = auth_callback
         self.http_client = http_client
         self.enable_dynamic_payload = enable_dynamic_payload
@@ -99,11 +100,17 @@ class OpenApiRunner:
                 )
         return result
 
-    def build_operation_payload(self, operation: RestApiOperation, arguments: KernelArguments) -> tuple[str, str]:
+    def build_operation_payload(
+        self, operation: RestApiOperation, arguments: KernelArguments
+    ) -> tuple[str, str] | tuple[None, None]:
         """Build the operation payload."""
         if operation.request_body is None and self.payload_argument_name not in arguments:
             return None, None
-        return self.build_json_payload(operation.request_body, arguments)
+
+        if operation.request_body is not None:
+            return self.build_json_payload(operation.request_body, arguments)
+
+        return None, None
 
     def get_argument_name_for_payload(self, property_name, property_namespace=None):
         """Get argument name for the payload."""
@@ -111,7 +118,9 @@ class OpenApiRunner:
             return property_name
         return f"{property_namespace}.{property_name}" if property_namespace else property_name
 
-    def _get_first_response_media_type(self, responses: OrderedDict[str, RestApiOperationExpectedResponse]) -> str:
+    def _get_first_response_media_type(
+        self, responses: OrderedDict[str, RestApiOperationExpectedResponse] | None
+    ) -> str:
         if responses:
             first_response = next(iter(responses.values()))
             return first_response.media_type if first_response.media_type else self.media_type_application_json
@@ -123,30 +132,36 @@ class OpenApiRunner:
         arguments: KernelArguments | None = None,
         options: RestApiOperationRunOptions | None = None,
     ) -> str:
-        """Run the operation."""
+        """Runs the operation defined in the OpenAPI manifest."""
+        if not arguments:
+            arguments = KernelArguments()
         url = self.build_operation_url(
             operation=operation,
             arguments=arguments,
-            server_url_override=options.server_url_override,
-            api_host_url=options.api_host_url,
+            server_url_override=options.server_url_override if options else None,
+            api_host_url=options.api_host_url if options else None,
         )
         headers = operation.build_headers(arguments=arguments)
         payload, _ = self.build_operation_payload(operation=operation, arguments=arguments)
 
-        """Runs the operation defined in the OpenAPI manifest"""
-        if headers is None:
-            headers = {}
-
         if self.auth_callback:
-            headers_update = await self.auth_callback(headers=headers)
-            headers.update(headers_update)
+            headers_update = self.auth_callback(**headers)
+            if isawaitable(headers_update):
+                headers_update = await headers_update
+            # at this point, headers_update is a valid dictionary
+            headers.update(headers_update)  # type: ignore
 
         if APP_INFO:
             headers.update(APP_INFO)
             headers = prepend_semantic_kernel_to_user_agent(headers)
 
         if "Content-Type" not in headers:
-            headers["Content-Type"] = self._get_first_response_media_type(operation.responses)
+            responses = (
+                operation.responses
+                if isinstance(operation.responses, OrderedDict)
+                else OrderedDict(operation.responses or {})
+            )
+            headers["Content-Type"] = self._get_first_response_media_type(responses)
 
         async def fetch():
             async def make_request(client: httpx.AsyncClient):

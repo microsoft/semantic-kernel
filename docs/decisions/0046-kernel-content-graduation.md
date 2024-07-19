@@ -85,7 +85,7 @@ Pros:
 - With no deferred content we have simpler API and a single responsibility for contents.
 - Can be written and read in both `Data` or `DataUri` formats.
 - Can have a `Uri` reference property, which is common for specialized contexts.
-- Fully serializeable.
+- Fully serializable.
 - Data Uri parameters support (serialization included).
 - Data Uri and Base64 validation checks
 - Data Uri and Data can be dynamically generated
@@ -197,7 +197,7 @@ Pros:
 - Can be used as a `BinaryContent` type
 - Can be written and read in both `Data` or `DataUri` formats.
 - Can have a `Uri` dedicated for referenced location.
-- Fully serializeable.
+- Fully serializable.
 - Data Uri parameters support (serialization included).
 - Data Uri and Base64 validation checks
 - Can be retrieved
@@ -254,7 +254,7 @@ Pros:
 - Can be used as a `BinaryContent` type
 - Can be written and read in both `Data` or `DataUri` formats.
 - Can have a `Uri` dedicated for referenced location.
-- Fully serializeable.
+- Fully serializable.
 - Data Uri parameters support (serialization included).
 - Data Uri and Base64 validation checks
 - Can be retrieved

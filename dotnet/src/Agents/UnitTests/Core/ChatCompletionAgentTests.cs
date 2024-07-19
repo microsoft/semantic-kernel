@@ -73,6 +73,48 @@ public class ChatCompletionAgentTests
             Times.Once);
     }
 
+    /// <summary>
+    /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatCompletionAgentStreamingAsync()
+    {
+        StreamingChatMessageContent[] returnContent =
+            [
+                new(AuthorRole.Assistant, "wh"),
+                new(AuthorRole.Assistant, "at?"),
+            ];
+
+        var mockService = new Mock<IChatCompletionService>();
+        mockService.Setup(
+            s => s.GetStreamingChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>())).Returns(returnContent.ToAsyncEnumerable());
+
+        var agent =
+            new ChatCompletionAgent()
+            {
+                Instructions = "test instructions",
+                Kernel = CreateKernel(mockService.Object),
+                ExecutionSettings = new(),
+            };
+
+        var result = await agent.InvokeStreamingAsync([]).ToArrayAsync();
+
+        Assert.Equal(2, result.Length);
+
+        mockService.Verify(
+            x =>
+                x.GetStreamingChatMessageContentsAsync(
+                    It.IsAny<ChatHistory>(),
+                    It.IsAny<PromptExecutionSettings>(),
+                    It.IsAny<Kernel>(),
+                    It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
     private static Kernel CreateKernel(IChatCompletionService chatCompletionService)
     {
         var builder = Kernel.CreateBuilder();

@@ -4,7 +4,7 @@ import logging
 from collections import OrderedDict
 from collections.abc import Callable
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Literal
 
 from pydantic.dataclasses import dataclass
 from typing_extensions import deprecated
@@ -51,7 +51,7 @@ def _combine_filter_dicts(*dicts: dict[str, list[str]]) -> dict:
     keys = set().union(*(d.keys() for d in dicts))
 
     for key in keys:
-        combined_functions = OrderedDict()
+        combined_functions: OrderedDict[str, None] = OrderedDict()
         for d in dicts:
             if key in d:
                 if isinstance(d[key], list):
@@ -121,9 +121,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         if isinstance(behavior, (RequiredFunction)):
             return cls.Required(
                 auto_invoke=behavior.auto_invoke_kernel_functions,
-                function_fully_qualified_names=[behavior.function_fully_qualified_name]
-                if hasattr(behavior, "function_fully_qualified_name")
-                else None,
+                filters={"included_functions": [behavior.function_fully_qualified_name]},
             )
         return cls(
             enable_kernel_functions=behavior.enable_kernel_functions,
@@ -141,7 +139,12 @@ class FunctionChoiceBehavior(KernelBaseModel):
         self.maximum_auto_invoke_attempts = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if value else 0
 
     def _check_and_get_config(
-        self, kernel: "Kernel", filters: dict[str, Any] | None = {}
+        self,
+        kernel: "Kernel",
+        filters: dict[
+            Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
+        ]
+        | None = {},
     ) -> FunctionCallChoiceConfiguration:
         """Check for missing functions and get the function call choice configuration."""
         if filters:
@@ -258,7 +261,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
             else:
                 filters = {"included_functions": valid_fqns}
 
-        return type_map[behavior_type](
+        return type_map[behavior_type](  # type: ignore
             auto_invoke=auto_invoke,
             filters=filters,
             **data,
