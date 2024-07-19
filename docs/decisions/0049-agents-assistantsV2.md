@@ -61,6 +61,7 @@ This section provides an overview / inventory of all the public surface area des
 **OpenAIAssistantDefinition**|All of the metadata / definition for an Open AI Assistant.  Unable to use the _Open AI API_ model due to implementation constraints (constructor not public).
 **OpenAIAssistantExecutionOptions**|Options that affect the _run_, but defined globally for the agent/assistant.
 **OpenAIAssistantInvocationOptions**|Options bound to a discrete run, used for direct (no chat) invocation.
+**OpenAIThreadCreationOptions**|Options for creating a thread that take precedence over assistant definition, when specified.
 **OpenAIServiceConfiguration**|Describes the service connection and used to create the `OpenAIClient`
 
 
