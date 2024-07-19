@@ -126,47 +126,50 @@ public class AstraDBMemoryStoreTests
     }
   }
 
-  // [Fact(Skip = null)]
-  // public async Task ItCanGetRecordAsync()
-  // {
-  //   // Arrange: Create a collection and insert a record
-  //   string collection = "get_test_collection";
-  //   await this._astraDbMemoryStore.CreateCollectionAsync(collection);
+  [Fact(Skip = SkipReason)]
+  public async Task ItCanGetRecordAsync()
+  {
+    // Arrange: Create a collection and insert a record
+    string collection = "get_test_collection";
+    await this._astraDbMemoryStore.CreateCollectionAsync(collection);
 
-  //   var testRecord = MemoryRecord.LocalRecord(
-  //       id: "test_id",
-  //       text: "test_text",
-  //       description: "test_description",
-  //       embedding: new float[] { 1, 2, 3, 4, 5 });
+    var testRecord = MemoryRecord.LocalRecord(
+        id: "test_id",
+        text: "test_text",
+        description: "test_description",
+        embedding: new float[] { 1, 2, 3, 4, 5 });
 
-  //   await this._astraDbMemoryStore.UpsertAsync(collection, testRecord);
+    await this._astraDbMemoryStore.UpsertAsync(collection, testRecord);
 
-  //   // Act: Get the record
-  //   var fetchedRecord = await this._astraDbMemoryStore.GetAsync(collection, testRecord.Key);
-  //   _output.WriteLine($"Retrieved Record: {fetchedRecord}");
+    // Act: Get the record
+    var fetchedRecord = await this._astraDbMemoryStore.GetAsync(collection, testRecord.Key);
+    _output.WriteLine($"Retrieved Record: {fetchedRecord}");
+    _output.WriteLine($"Retrieved testRecord.Embedding.ToArray(): {testRecord.Embedding}");
+    _output.WriteLine($"Retrieved fetchedRecord.Embedding.ToArray(): {fetchedRecord.Embedding}");
 
-  //   // Assert: Ensure the record was fetched correctly
-  //   Assert.NotNull(fetchedRecord);
-  //   // Assert.Equal(testRecord.Key, fetchedRecord.Key);
-  //   // Assert.Equal(testRecord.Metadata.Id, fetchedRecord.Metadata.Id);
-  //   // Assert.Equal(testRecord.Metadata.Text, fetchedRecord.Metadata.Text);
-  //   // Assert.Equal(testRecord.Metadata.Description, fetchedRecord.Metadata.Description);
-  //   // Assert.Equal(testRecord.Embedding, fetchedRecord.Embedding);
-  // }
+    // Assert: Ensure the record was fetched correctly
+    Assert.NotNull(fetchedRecord);
+    Assert.Equal(testRecord.Key, fetchedRecord.Key);
+    Assert.Equal(testRecord.Metadata.Id, fetchedRecord.Metadata.Id);
+    Assert.Equal(testRecord.Metadata.Text, fetchedRecord.Metadata.Text);
+    Assert.Equal(testRecord.Metadata.Description, fetchedRecord.Metadata.Description);
+    Assert.Equal(testRecord.Embedding.ToArray(), fetchedRecord.Embedding.ToArray());
+  }
 
-  // [Fact(Skip = SkipReason)]
-  // public async Task GetAsync_ReturnsNullIfCollectionDoesNotExist()
-  // {
-  //   // Arrange: Use a non-existing collection name
-  //   string collection = "non_existing_collection";
-  //   string recordKey = "non_existing_key";
+  [Fact(Skip = SkipReason)]
+  public async Task GetAsync_ReturnsNullIfCollectionDoesNotExist()
+  {
+    // Arrange: Use a non-existing collection name
+    string collection = "non_existing_collection";
+    string recordKey = "non_existing_key";
 
-  //   // Act: Try to get a record from a non-existing collection
-  //   var fetchedRecord = await this._astraDbMemoryStore.GetAsync(collection, recordKey);
+    // Act: Try to get a record from a non-existing collection
+    var fetchedRecord = await this._astraDbMemoryStore.GetAsync(collection, recordKey);
 
-  //   // Assert: Ensure the method returns null
-  //   Assert.Null(fetchedRecord);
-  // }
+    // Assert: Ensure the method returns null
+    Assert.Null(fetchedRecord);
+  }
+
 
   #region private ================================================================================
 

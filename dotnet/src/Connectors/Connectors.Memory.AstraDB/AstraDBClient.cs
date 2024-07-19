@@ -144,7 +144,7 @@ namespace Microsoft.SemanticKernel.Connectors.AstraDB
     }
 
     /// <inheritdoc />
-    public async Task<string?> FindOneAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<MemoryRecord?> FindOneAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
       var requestUrl = $"{GetApiBaseUrl()}/{_keySpace}/{collectionName}";
 
@@ -154,7 +154,8 @@ namespace Microsoft.SemanticKernel.Connectors.AstraDB
       var jsonContent = $@"
                 {{
                     ""findOne"": {{
-                        ""filter"": {{ ""id"": ""{key}"" }}
+                        ""filter"": {{ ""id"": ""{key}"" }},
+                        ""projection"": {{ ""$vector"": 1 }}
                     }}
                 }}";
       var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
@@ -165,10 +166,19 @@ namespace Microsoft.SemanticKernel.Connectors.AstraDB
       if (response.IsSuccessStatusCode)
       {
         var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        // return JsonSerializer.Deserialize<MemoryRecord>(responseContent);
-        return responseContent;
-      }
+        var document = JsonSerializer.Deserialize<AstraDBMemoryResponse>(responseContent);
 
+        if (document?.Data?.Document != null)
+        {
+          var metadata = MemoryRecord.FromJsonMetadata(
+                json: document.Data.Document.MetadataString,
+                embedding: document.Data.Document.Vector?.ToArray() ?? new float[0], // Adjust if embedding is provided
+                key: document.Data.Document.Id,
+                timestamp: null // Assuming no timestamp is available
+            );
+          return metadata;
+        }
+      }
       return null;
     }
     #region Private Fields

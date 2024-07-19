@@ -93,7 +93,7 @@ public class AstraDBMemoryStore
     }
   }
 
-  public async Task<string?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
+  public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
   {
     if (await DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
     {

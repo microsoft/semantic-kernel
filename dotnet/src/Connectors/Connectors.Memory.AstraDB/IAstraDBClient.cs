@@ -54,6 +54,6 @@ namespace Microsoft.SemanticKernel.Connectors.AstraDB
     /// <param name="key">The key of the document to find.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The found document as a JSON string, or null if not found.</returns>
-    Task<string?> FindOneAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default);
+    Task<MemoryRecord?> FindOneAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default);
   }
 }
