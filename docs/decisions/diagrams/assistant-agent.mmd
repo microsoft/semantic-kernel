@@ -2,22 +2,20 @@ classDiagram
 
     KernelAgent
     OpenAIAssistantDefinition
-    OpenAIAssistantDefinition --> OpenAIExecutionSettings
-    OpenAIExecutionSettings
-    OpenAIExecutionSettings --> AssistantToolCallBehavior
+    OpenAIAssistantDefinition --> OpenAIExecutionOptions
+    OpenAIExecutionOptions
+    OpenAIExecutionOptions --> AssistantToolCallBehavior
     OpenAIServiceConfiguration
-    OpenAIAssistantInvocationSettings
-    OpenAIAssistantInvocationSettings --> AssistantToolCallBehavior
-    OpenAIThreadCreationSettings
+    OpenAIAssistantInvocationOptions
+    OpenAIAssistantInvocationOptions --> AssistantToolCallBehavior
+    OpenAIThreadCreationOptions
 
     KernelAgent <|-- OpenAIAssistantAgent
     OpenAIAssistantAgent ..> OpenAIServiceConfiguration
-    OpenAIAssistantAgent ..> FileClient
-    OpenAIAssistantAgent ..> VectorStoreClient
     OpenAIAssistantAgent -- OpenAIAssistantChannel
     OpenAIAssistantAgent --> OpenAIAssistantDefinition
-    OpenAIAssistantAgent ..> OpenAIAssistantInvocationSettings
-    OpenAIAssistantAgent ..> OpenAIThreadCreationSettings
+    OpenAIAssistantAgent ..> OpenAIAssistantInvocationOptions
+    OpenAIAssistantAgent ..> OpenAIThreadCreationOptions
     class OpenAIAssistantAgent {
         +OpenAIAssistantDefinition Definition
         +bool IsDeleted
@@ -25,16 +23,14 @@ classDiagram
         +Task~OpenAIAssistantAgent~ Create(Kernel kernel, OpenAIServiceConfiguration config, OpenAIAssistantDefinition definition)$
         +AsyncEnumerable~OpenAIAssistantDefinition~ ListDefinitions(OpenAIServiceConfiguration config)$
         +Task~OpenAIAssistantAgent~ Retrieve(Kernel kernel, OpenAIServiceConfiguration config, string id)$
-        +FileClient CreateFileClient(OpenAIServiceConfiguration config)$
-        +VectorStoreClient CreateVectorStoreClient(OpenAIServiceConfiguration config)$
         +Task~string~ CreateThread()
-        +Task~string~ CreateThread(OpenAIThreadCreationSettings? settings)
+        +Task~string~ CreateThread(OpenAIThreadCreationOptions? Options)
         +Task~bool~ DeleteThread(string threadId)
         +Task AddChatMessage(string threadId, ChatMessageContent message)
         +AsyncEnumerable~ChatMessageContent~ GetThreadMessages(string threadId)
         +Task~bool~ Delete()
         +AsyncEnumerable~ChatMessageContent~ Invoke(string threadId)
-        +AsyncEnumerable~ChatMessageContent~ Invoke(string threadId, OpenAIAssistantInvocationSettings? settings)
+        +AsyncEnumerable~ChatMessageContent~ Invoke(string threadId, OpenAIAssistantInvocationOptions? Options)
         #AsyncEnumerable~string~ GetChannelKeys()
         #Task~AgentChannel~ CreateChannel()
     }
@@ -46,10 +42,3 @@ classDiagram
         #AsyncEnumerable<ChatMessageContent> GetHistory()
     }
 
-    class FileClient {
-        <<OpenAI>>
-    }
-
-    class VectorStoreClient {
-        <<OpenAI>>
-    }

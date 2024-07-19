@@ -19,7 +19,7 @@ Migrating to Assistant V2 API is a breaking change to the existing package due t
 
 The `OpenAIAssistant` agent is roughly equivalent to its V1 form save for:
 
-- Supports settings for _assistant_, _thread_, and _run_
+- Supports options for _assistant_, _thread_, and _run_
 - Agent definition shifts to `Definition` property
 - Convenience methods for producing an OpenAI client
 
@@ -31,7 +31,7 @@ Previously, the agent definition as exposed via direct properties such as:
 This has all been shifted and expanded upon via the `Definition` property which is of the same type (`OpenAIAssistantDefinition`) utilized to create and query an assistant.
 
 <p align="center">
-<kbd><img src="diagrams/assistant-agent.png"  style="width: 780pt;"></kbd>
+<kbd><img src="diagrams/assistant-agent.png"  style="width: 720pt;"></kbd>
 </p>
 
 The following table describes the purpose of diagramed methods on the `OpenAIAssistantAgent`.
@@ -49,78 +49,6 @@ The following table describes the purpose of diagramed methods on the `OpenAIAss
 **Invoke**|Invoke the assistant agent (no chat)
 **GetChannelKeys**|Inherited from `Agent`
 **CreateChannel**|Inherited from `Agent`
-**CreateFileClient**|Convenience method for producing a `FileClient` which is implemented in the _Open AI SDK_
-**CreateVectorStoreClient**|Convenience method for producing a `VectorStoreClient` which is implemented in the _Open AI SDK_
-
-
-### Configuration Classes
-
-Specific configuration/setttings classes are introduced to support the ability to define assistant behavior at each of the supported articulation points (i.e. _assistant_, _thread_, & _run_).
-
-|Class|Purpose|
-|---|---|
-|`OpenAIAssistantDefinition`|Definition of the assistant.  Used when creating a new assistant, inspecting an assistant-agent instance, or querying assistant definitions.|
-|`OpenAIAssistantExecutionSettings`|Settings that affect run execution, defined within assistant scope.|
-|`OpenAIAssistantInvocationSettings`|Run level settings that take precedence over assistant settings, when specified.|
-|`AssistantToolCallBehavior`|Informs tool-call behavior for the associated scope: assistant or run.|
-|`OpenAIThreadCreationSettings`|Thread scoped settings that take precedence over assistant settings, when specified.|
-|`OpenAIServiceConfiguration`|Informs the which service to target, and how.|
-
-
-#### Assistant Definition
-
-The `OpenAIAssistantDefinition` was previously used only when enumerating a list of stored agents.  It has been evolved to also be used as input for creating and agent and exposed as a discrete property on the `OpenAIAssistantAgent` instance.
-
-This includes optional `ExecutionSettings` which define default _run_ behavior.  Since these execution settings are not part of the remote assistant definition, they are persisted in the assistant metadata for when an existing agent is retrieved.  `AssistantToolCallBehavior` is included as part of the _execution settings_ and modeled in alignment with the `ToolCallBehavior` associated with _AI Connectors_.
-
-> Note: Manual function calling isn't currently supported for `OpenAIAssistantAgent` or `AgentChat`  and is planned to be addressed as an enhancement.  When this supported is introduced, `AssistantToolCallBehavior` will determine the function calling behavior (also in alignment with the `ToolCallBehavior` associated with _AI Connectors_).
-
-**Alternative (Future?)**
-
-A pending change has been authored that introduces `FunctionChoiceBehavior` as a property of the base / abstract `PromptExecutionSettings`.  Once realized, it may make sense to evaluate integrating this pattern for `OpenAIAssistantAgent`.  This may also imply in inheritance relationship of `PromptExecutionSettings` for both `OpenAIAssistantExecutionSettings` and `OpenAIAssistantInvocationSettings` (next section).
-
-
-<p align="center">
-<kbd><img src="diagrams/assistant-definition.png"  style="width: 500pt;"></kbd>
-</p>
-
-
-#### Assistant Invocation Settings
-
-When invoking an `OpenAIAssistantAgent` directly (no-chat), settings that only apply to a discrete run may be specified.  These settings are defined as `OpenAIAssistantInvocationSettings` and ovetake precedence over any corresponding assistant or thread settings.
-
-> Note: These settings are also impacted by the `ToolCallBehavior` / `FunctionChoiceBehavior` quadary.
-
-<p align="center">
-<kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 370pt;"></kbd>
-</p>
-
-
-#### Thread Creation Settings
-
-When invoking an `OpenAIAssistantAgent` directly (no-chat), a thread must be explicitly managed.  When doing so, thread specific settings may be specified.  These settings are defined as `OpenAIThreadCreationSettings` and take precedence over any corresponding assistant settings.
-
-<p align="center">
-<kbd><img src="diagrams/assistant-threadcreationsettings.png" style="width: 132pt;"></kbd>
-</p>
-
-
-#### Service Configuration
-
-The `OpenAIServiceConfiguration` defines how to connect to a specific remote service, whether it be OpenAI, Azure, or proxy.  This eliminates the need to define multiple overloads for each call site that results in a connection to the remote API service (i.e. create a _client)_.
-
-> Note: This was previously named `OpenAIAssistantConfiguration`, but is not necessarily assistant specific.
-
-<p align="center">
-<kbd><img src="diagrams/assistant-serviceconfig.png"  style="width: 400pt;"></kbd>
-</p>
-
-
-### Vector Store Support
-
-_Vector Store_ support is required in order to enable usage of the `file-search` tool.  
-
-In alignment with V2 streaming of the `FileClient`, the caller may also directly target `VectorStoreClient` from the _OpenAI SDK_.
 
 
 ### Class Inventory
@@ -131,9 +59,10 @@ This section provides an overview / inventory of all the public surface area des
 **OpenAIAssistantAgent**|An `Agent` based on the Open AI Assistant API
 **OpenAIAssistantChannel**|An 'AgentChannel' for `OpenAIAssistantAgent` (associated with a _thread-id_.)
 **OpenAIAssistantDefinition**|All of the metadata / definition for an Open AI Assistant.  Unable to use the _Open AI API_ model due to implementation constraints (constructor not public).
-**OpenAIAssistantExecutionSettings**|Setting that affect the _run_, but defined globally for the agent/assistant.
-**OpenAIAssistantInvocationSettings**|Settings bound to a discrete run, used for direct (no chat) invocation.
+**OpenAIAssistantExecutionOptions**|Options that affect the _run_, but defined globally for the agent/assistant.
+**OpenAIAssistantInvocationOptions**|Options bound to a discrete run, used for direct (no chat) invocation.
 **OpenAIServiceConfiguration**|Describes the service connection and used to create the `OpenAIClient`
+
 
 ### Run Processing
 
@@ -151,7 +80,7 @@ Initiate processing using:
 - `agent` -> `OpenAIAssistantAgent`
 - `client` -> `AssistantClient`
 - `threadid` -> `string`
-- `settings` -> `OpenAIAssistantInvocationSettings` (optional)
+- `options` -> `OpenAIAssistantInvocationOptions` (optional)
 
 
 Perform processing:
@@ -180,4 +109,74 @@ Perform processing:
         - else if (`step` is message) generate and yield message content
 
     while (`run` status is not completed)
+
+
+### Vector Store Support
+
+_Vector Store_ support is required in order to enable usage of the `file-search` tool.  
+
+In alignment with V2 streaming of the `FileClient`, the caller may also directly target `VectorStoreClient` from the _OpenAI SDK_.
+
+
+### Definition / Options Classes
+
+Specific configuration/options classes are introduced to support the ability to define assistant behavior at each of the supported articulation points (i.e. _assistant_, _thread_, & _run_).
+
+|Class|Purpose|
+|---|---|
+|`OpenAIAssistantDefinition`|Definition of the assistant.  Used when creating a new assistant, inspecting an assistant-agent instance, or querying assistant definitions.|
+|`OpenAIAssistantExecutionOptions`|Options that affect run execution, defined within assistant scope.|
+|`OpenAIAssistantInvocationOptions`|Run level options that take precedence over assistant definition, when specified.|
+|`OpenAIAssistantToolCallBehavior`|Informs tool-call behavior for the associated scope: assistant or run.|
+|`OpenAIThreadCreationOptions`|Thread scoped options that take precedence over assistant definition, when specified.|
+|`OpenAIServiceConfiguration`|Informs the which service to target, and how.|
+
+
+#### Assistant Definition
+
+The `OpenAIAssistantDefinition` was previously used only when enumerating a list of stored agents.  It has been evolved to also be used as input for creating and agent and exposed as a discrete property on the `OpenAIAssistantAgent` instance.
+
+This includes optional `ExecutionOptions` which define default _run_ behavior.  Since these execution options are not part of the remote assistant definition, they are persisted in the assistant metadata for when an existing agent is retrieved.  `OpenAIAssistantToolCallBehavior` is included as part of the _execution options_ and modeled in alignment with the `ToolCallBehavior` associated with _AI Connectors_.
+
+> Note: Manual function calling isn't currently supported for `OpenAIAssistantAgent` or `AgentChat`  and is planned to be addressed as an enhancement.  When this supported is introduced, `OpenAIAssistantToolCallBehavior` will determine the function calling behavior (also in alignment with the `ToolCallBehavior` associated with _AI Connectors_).
+
+**Alternative (Future?)**
+
+A pending change has been authored that introduces `FunctionChoiceBehavior` as a property of the base / abstract `PromptExecutionSettings`.  Once realized, it may make sense to evaluate integrating this pattern for `OpenAIAssistantAgent`.  This may also imply in inheritance relationship of `PromptExecutionSettings` for both `OpenAIAssistantExecutionOptions` and `OpenAIAssistantInvocationOptions` (next section).
+
+
+<p align="center">
+<kbd><img src="diagrams/assistant-definition.png"  style="width: 500pt;"></kbd>
+</p>
+
+
+#### Assistant Invocation Options
+
+When invoking an `OpenAIAssistantAgent` directly (no-chat), definition that only apply to a discrete run may be specified.  These definition are defined as `OpenAIAssistantInvocationOptions` and ovetake precedence over any corresponding assistant or thread definition.
+
+> Note: These definition are also impacted by the `ToolCallBehavior` / `FunctionChoiceBehavior` quadary.
+
+<p align="center">
+<kbd><img src="diagrams/assistant-invocationsettings.png" style="width: 370pt;"></kbd>
+</p>
+
+
+#### Thread Creation Options
+
+When invoking an `OpenAIAssistantAgent` directly (no-chat), a thread must be explicitly managed.  When doing so, thread specific options may be specified.  These options are defined as `OpenAIThreadCreationOptions` and take precedence over any corresponding assistant definition.
+
+<p align="center">
+<kbd><img src="diagrams/assistant-threadcreationsettings.png" style="width: 132pt;"></kbd>
+</p>
+
+
+#### Service Configuration
+
+The `OpenAIServiceConfiguration` defines how to connect to a specific remote service, whether it be OpenAI, Azure, or proxy.  This eliminates the need to define multiple overloads for each call site that results in a connection to the remote API service (i.e. create a _client)_.
+
+> Note: This was previously named `OpenAIAssistantConfiguration`, but is not necessarily assistant specific.
+
+<p align="center">
+<kbd><img src="diagrams/assistant-serviceconfig.png"  style="width: 520pt;"></kbd>
+</p>
 

@@ -1,10 +1,10 @@
 classDiagram
 
-    OpenAIAssistantDefinition --> OpenAIAssistantExecutionSettings
+    OpenAIAssistantDefinition --> OpenAIAssistantExecutionOptions
     class OpenAIAssistantDefinition {
-        string? ModelName
+        string ModelName
         string? Description
-        string? Id
+        string Id
         string? Instructions
         string? Name
         List~string~? CodeInterpterFileIds
@@ -14,19 +14,19 @@ classDiagram
         float? Temperature
         float? TopP
         string? VectorStoreId
-        OpenAIAssistantExecutionSettings? ExecutionSettings
+        OpenAIAssistantExecutionOptions? ExecutionOptions
     }
 
-    OpenAIAssistantExecutionSettings --> AssistantToolCallBehavior
-    class OpenAIAssistantExecutionSettings {
+    OpenAIAssistantExecutionOptions --> OpenAIAssistantToolCallBehavior
+    class OpenAIAssistantExecutionOptions {
         int? MaxCompletionTokens
         int? MaxPromptTokens
         bool? ParallelToolCallsEnabled
         int? TruncationMessageCount
-        AssistantToolCallBehavior? ToolCallBehavior
+        OpenAIAssistantToolCallBehavior? ToolCallBehavior
     }
 
-    class AssistantToolCallBehavior {
+    class OpenAIAssistantToolCallBehavior {
         AssistantToolCallBehavior RequireCodeInterpreter()$
         AssistantToolCallBehavior RequireFunction(KernelFunction function)$
         AssistantToolCallBehavior RequireFileSearch()$
