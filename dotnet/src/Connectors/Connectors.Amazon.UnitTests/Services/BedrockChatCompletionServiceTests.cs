@@ -134,7 +134,7 @@ public class BedrockChatCompletionServiceTests
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
     [Fact]
-    public async Task TitanGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    public async Task TitanGetChatMessageContentsAsyncShouldReturnChatMessageWithPromptExecutionSettingsAsync()
     {
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
@@ -180,6 +180,7 @@ public class BedrockChatCompletionServiceTests
             converseRequest = (ConverseRequest)invocation.Arguments[0];
         }
         Assert.Single(result);
+        Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["topP"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
@@ -335,7 +336,7 @@ public class BedrockChatCompletionServiceTests
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
     [Fact]
-    public async Task ClaudeGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    public async Task ClaudeGetChatMessageContentsAsyncShouldReturnChatMessageWithPromptExecutionSettingsAsync()
     {
         // Arrange
         string modelId = "anthropic.claude-chat-completion";
@@ -381,6 +382,7 @@ public class BedrockChatCompletionServiceTests
             converseRequest = (ConverseRequest)invocation.Arguments[0];
         }
         Assert.Single(result);
+        Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
@@ -389,7 +391,7 @@ public class BedrockChatCompletionServiceTests
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
     [Fact]
-    public async Task LlamaGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    public async Task LlamaGetChatMessageContentsAsyncShouldReturnChatMessageWithPromptExecutionSettingsAsync()
     {
         // Arrange
         string modelId = "meta.llama3-text-lite-v1";
@@ -435,6 +437,7 @@ public class BedrockChatCompletionServiceTests
             converseRequest = (ConverseRequest)invocation.Arguments[0];
         }
         Assert.Single(result);
+        Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["topP"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
@@ -443,7 +446,7 @@ public class BedrockChatCompletionServiceTests
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
     [Fact]
-    public async Task MistralGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    public async Task MistralGetChatMessageContentsAsyncShouldReturnChatMessageWithPromptExecutionSettingsAsync()
     {
         // Arrange
         string modelId = "mistral.mistral-text-lite-v1";
@@ -489,6 +492,7 @@ public class BedrockChatCompletionServiceTests
             converseRequest = (ConverseRequest)invocation.Arguments[0];
         }
         Assert.Single(result);
+        Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
@@ -497,7 +501,7 @@ public class BedrockChatCompletionServiceTests
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
     [Fact]
-    public async Task CommandRGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    public async Task CommandRGetChatMessageContentsAsyncShouldReturnChatMessageWithPromptExecutionSettingsAsync()
     {
         // Arrange
         string modelId = "cohere.command-r-chat-stuff";
@@ -543,6 +547,7 @@ public class BedrockChatCompletionServiceTests
             converseRequest = (ConverseRequest)invocation.Arguments[0];
         }
         Assert.Single(result);
+        Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
@@ -551,7 +556,7 @@ public class BedrockChatCompletionServiceTests
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
     [Fact]
-    public async Task JambaGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    public async Task JambaGetChatMessageContentsAsyncShouldReturnChatMessageWithPromptExecutionSettingsAsync()
     {
         // Arrange
         string modelId = "ai21.jamba-chat-stuff";
@@ -597,6 +602,7 @@ public class BedrockChatCompletionServiceTests
             converseRequest = (ConverseRequest)invocation.Arguments[0];
         }
         Assert.Single(result);
+        Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
