@@ -46,12 +46,14 @@ def create_functions_from_openapi(
         list[KernelFunctionFromMethod]: the operations as functions
     """
     parser = OpenApiParser()
-    parsed_doc = parser.parse(openapi_document_path)
+    if (parsed_doc := parser.parse(openapi_document_path)) is None:
+        raise FunctionExecutionException(f"Error parsing OpenAPI document: {openapi_document_path}")
     operations = parser.create_rest_api_operations(parsed_doc, execution_settings=execution_settings)
 
     auth_callback = None
     if execution_settings and execution_settings.auth_callback:
         auth_callback = execution_settings.auth_callback
+
     openapi_runner = OpenApiRunner(
         parsed_openapi_document=parsed_doc,
         auth_callback=auth_callback,
@@ -129,11 +131,13 @@ def _create_function_from_operation(
             description=f"{p.description or p.name}",
             default_value=p.default_value or "",
             is_required=p.is_required,
-            type_=p.type if p.type is not None else TYPE_MAPPING.get(p.type, None),
+            type_=p.type if p.type is not None else TYPE_MAPPING.get(p.type, "object"),
             schema_data=(
                 p.schema
                 if p.schema is not None and isinstance(p.schema, dict)
-                else {"type": f"{p.type}"} if p.type else None
+                else {"type": f"{p.type}"}
+                if p.type
+                else None
             ),
         )
         for p in rest_operation_params

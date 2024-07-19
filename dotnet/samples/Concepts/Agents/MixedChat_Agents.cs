@@ -33,7 +33,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgentAsync()
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =
@@ -55,9 +55,9 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
                     ModelId = this.Model,
                 });
 
-        // Create a nexus for agent interaction.
-        var chat =
-            new AgentGroupChat(agentWriter, agentReviewer)
+        // Create a chat for agent interaction.
+        AgentGroupChat chat =
+            new(agentWriter, agentReviewer)
             {
                 ExecutionSettings =
                     new()
@@ -80,7 +80,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
         Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-        await foreach (var content in chat.InvokeAsync())
+        await foreach (ChatMessageContent content in chat.InvokeAsync())
         {
             Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }

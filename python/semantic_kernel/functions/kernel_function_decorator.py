@@ -4,7 +4,7 @@ import logging
 import types
 from collections.abc import Callable
 from inspect import Parameter, Signature, isasyncgenfunction, isclass, isgeneratorfunction, signature
-from typing import Any, ForwardRef, Union, get_args
+from typing import Annotated, Any, ForwardRef, Union, get_args, get_origin
 
 NoneType = type(None)
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ def kernel_function(
     The name and description can be left empty, and then the function name and docstring will be used.
 
     The parameters are parsed from the function signature, use typing.Annotated to provide a description for the
-    parameter, in python 3.8, use typing_extensions.Annotated.
+    parameter.
 
     To parse the type, first it checks if the parameter is annotated, and get's the description from there.
     After that it checks recursively until it reaches the lowest level, and it combines
@@ -103,7 +103,10 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
         annotation = arg.annotation
         default = arg.default if arg.default != arg.empty else None
         parsed_annotation = _parse_parameter(arg.name, annotation, default)
-        underlying_type = _get_underlying_type(annotation)
+        if get_origin(annotation) is Annotated or get_origin(annotation) in {Union, types.UnionType}:
+            underlying_type = _get_underlying_type(annotation)
+        else:
+            underlying_type = annotation
         parsed_annotation["type_object"] = underlying_type
         annotations.append(parsed_annotation)
 
@@ -115,7 +118,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
     logger.debug(f"Parsing param: {name}")
     logger.debug(f"Parsing annotation: {param}")
     ret: dict[str, Any] = {"name": name}
-    if default:
+    if default is not None:
         ret["default_value"] = default
         ret["is_required"] = False
     else:
@@ -140,9 +143,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
                     arg = arg.__forward_arg__
                 args.append(_parse_parameter(name, arg, default))
             if ret.get("type_") in ["list", "dict"]:
-                ret["type_"] = (
-                    f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
-                )
+                ret["type_"] = f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
             elif len(args) > 1:
                 ret["type_"] = ", ".join([arg["type_"] for arg in args])
             else:

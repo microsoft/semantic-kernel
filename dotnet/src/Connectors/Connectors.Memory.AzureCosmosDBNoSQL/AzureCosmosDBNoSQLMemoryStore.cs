@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -22,10 +23,61 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// </summary>
 public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 {
+    private const string EmbeddingPath = "/embedding";
+
     private readonly CosmosClient _cosmosClient;
     private readonly VectorEmbeddingPolicy _vectorEmbeddingPolicy;
     private readonly IndexingPolicy _indexingPolicy;
     private readonly string _databaseName;
+
+    /// <summary>
+    /// Initiates a AzureCosmosDBNoSQLMemoryStore instance using a Azure Cosmos DB connection string
+    /// and other properties required for vector search.
+    /// </summary>
+    /// <param name="connectionString">Connection string required to connect to Azure Cosmos DB.</param>
+    /// <param name="databaseName">The database name to connect to.</param>
+    /// <param name="dimensions">The number of dimensions the embedding vectors to be stored.</param>
+    /// <param name="vectorDataType">The data type of the embedding vectors to be stored.</param>
+    /// <param name="vectorIndexType">The type of index to use for the embedding vectors to be stored.</param>
+    /// <param name="applicationName">The application name to use in requests.</param>
+    public AzureCosmosDBNoSQLMemoryStore(
+        string connectionString,
+        string databaseName,
+        ulong dimensions,
+        VectorDataType vectorDataType,
+        VectorIndexType vectorIndexType,
+        string? applicationName = null)
+        : this(
+            new CosmosClient(
+                connectionString,
+                new CosmosClientOptions
+                {
+                    ApplicationName = applicationName ?? HttpHeaderConstant.Values.UserAgent,
+                    Serializer = new CosmosSystemTextJsonSerializer(JsonSerializerOptions.Default),
+                }),
+            databaseName,
+            new VectorEmbeddingPolicy(
+                [
+                    new Embedding
+                    {
+                        DataType = vectorDataType,
+                        Dimensions = dimensions,
+                        DistanceFunction = DistanceFunction.Cosine,
+                        Path = EmbeddingPath,
+                    }
+                ]),
+            new IndexingPolicy
+            {
+                VectorIndexes = new Collection<VectorIndexPath> {
+                    new()
+                    {
+                        Path = EmbeddingPath,
+                        Type = vectorIndexType,
+                    },
+                },
+            })
+    {
+    }
 
     /// <summary>
     /// Initiates a AzureCosmosDBNoSQLMemoryStore instance using a Azure Cosmos DB connection string
@@ -71,12 +123,27 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         VectorEmbeddingPolicy vectorEmbeddingPolicy,
         IndexingPolicy indexingPolicy)
     {
-        if (!vectorEmbeddingPolicy.Embeddings.Any(e => e.Path == "/embedding"))
+        var embedding = vectorEmbeddingPolicy.Embeddings.FirstOrDefault(e => e.Path == EmbeddingPath);
+        if (embedding is null)
         {
             throw new InvalidOperationException($"""
                 In order for {nameof(GetNearestMatchAsync)} to function, {nameof(vectorEmbeddingPolicy)} should
-                contain an embedding path at /embedding. It's also recommended to include a that path in the
+                contain an embedding path at {EmbeddingPath}. It's also recommended to include that path in the
                 {nameof(indexingPolicy)} to improve performance and reduce cost for searches.
+                """);
+        }
+        else if (embedding.DistanceFunction != DistanceFunction.Cosine)
+        {
+            throw new InvalidOperationException($"""
+                In order for {nameof(GetNearestMatchAsync)} to reliably return relevance information, the {nameof(DistanceFunction)} should
+                be specified as {nameof(DistanceFunction)}.{nameof(DistanceFunction.Cosine)}.
+                """);
+        }
+        else if (embedding.DataType != VectorDataType.Float16 && embedding.DataType != VectorDataType.Float32)
+        {
+            throw new NotSupportedException($"""
+                Only {nameof(VectorDataType)}.{nameof(VectorDataType.Float16)} and {nameof(VectorDataType)}.{nameof(VectorDataType.Float32)}
+                are supported.
                 """);
         }
         this._cosmosClient = cosmosClient;
@@ -164,6 +231,12 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
+        // In some cases we're expected to generate the key to use. Do so if one isn't provided.
+        if (string.IsNullOrEmpty(record.Key))
+        {
+            record.Key = Guid.NewGuid().ToString();
+        }
+
         var result = await this._cosmosClient
             .GetDatabase(this._databaseName)
             .GetContainer(collectionName)
@@ -193,6 +266,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
+        // TODO: Consider using a query when `withEmbedding` is false to avoid passing it over the wire.
         var result = await this._cosmosClient
          .GetDatabase(this._databaseName)
          .GetContainer(collectionName)
@@ -330,9 +404,10 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         {
             foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
             {
-                if (memoryRecord.SimilarityScore >= minRelevanceScore)
+                var relevanceScore = (memoryRecord.SimilarityScore + 1) / 2;
+                if (relevanceScore >= minRelevanceScore)
                 {
-                    yield return (memoryRecord, memoryRecord.SimilarityScore);
+                    yield return (memoryRecord, relevanceScore);
                 }
             }
         }

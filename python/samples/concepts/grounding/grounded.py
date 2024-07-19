@@ -2,8 +2,9 @@
 
 import asyncio
 import logging
+import os
 
-from samples.utils import Colors
+from samples.concepts.resources.utils import Colors
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.functions import KernelArguments
@@ -70,7 +71,7 @@ def setup(use_azure: bool = False, plugin_name: str = "GroundingPlugin"):
         )
 
     # note: using plugins from the samples folder
-    plugins_directory = "../samples/plugins/"
+    plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 
     kernel.add_plugin(parent_directory=plugins_directory, plugin_name=plugin_name)
 
@@ -173,5 +174,9 @@ Now, let us start calling individual semantic functions.{Colors.CEND.value}"""
     print(f"{Colors.CBOLD.value}Finished!{Colors.CEND.value}")
 
 
+async def main() -> None:
+    await run_grounding(use_azure=False)
+
+
 if __name__ == "__main__":
-    asyncio.run(run_grounding(use_azure=True))
+    asyncio.run(main())

@@ -6,8 +6,8 @@ from functools import reduce
 from samples.sk_service_configurator import add_service
 from semantic_kernel import Kernel
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 
 # Initialize the kernel

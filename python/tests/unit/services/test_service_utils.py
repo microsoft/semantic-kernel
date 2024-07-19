@@ -5,8 +5,8 @@ from typing import Annotated
 import pytest
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.open_ai.services.utils import (
-    kernel_function_metadata_to_openai_tool_format,
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    kernel_function_metadata_to_function_call_format,
 )
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
@@ -17,9 +17,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 class BooleanPlugin:
     @kernel_function(name="GetBoolean", description="Get a boolean value.")
-    def get_boolean(
-        self, value: Annotated[bool, "The boolean value."]
-    ) -> Annotated[bool, "The boolean value."]:
+    def get_boolean(self, value: Annotated[bool, "The boolean value."]) -> Annotated[bool, "The boolean value."]:
         return value
 
 
@@ -105,9 +103,7 @@ def test_bool_schema(setup_kernel):
         filters={"included_plugins": ["BooleanPlugin"]}
     )
 
-    boolean_schema = kernel_function_metadata_to_openai_tool_format(
-        boolean_func_metadata[0]
-    )
+    boolean_schema = kernel_function_metadata_to_function_call_format(boolean_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -116,9 +112,7 @@ def test_bool_schema(setup_kernel):
             "description": "Get a boolean value.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "value": {"type": "boolean", "description": "The boolean value."}
-                },
+                "properties": {"value": {"type": "boolean", "description": "The boolean value."}},
                 "required": ["value"],
             },
         },
@@ -127,16 +121,30 @@ def test_bool_schema(setup_kernel):
     assert boolean_schema == expected_schema
 
 
+def test_bool_schema_no_plugins(setup_kernel):
+    kernel = setup_kernel
+    kernel.plugins = None
+
+    boolean_func_metadata = kernel.get_list_of_function_metadata_bool()
+
+    assert boolean_func_metadata == []
+
+
+def test_bool_schema_with_plugins(setup_kernel):
+    kernel = setup_kernel
+
+    boolean_func_metadata = kernel.get_list_of_function_metadata_bool()
+
+    assert boolean_func_metadata is not None
+    assert len(boolean_func_metadata) > 0
+
+
 def test_string_schema(setup_kernel):
     kernel = setup_kernel
 
-    string_func_metadata = kernel.get_list_of_function_metadata_filters(
-        filters={"included_plugins": ["StringPlugin"]}
-    )
+    string_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["StringPlugin"]})
 
-    string_schema = kernel_function_metadata_to_openai_tool_format(
-        string_func_metadata[0]
-    )
+    string_schema = kernel_function_metadata_to_function_call_format(string_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -159,6 +167,32 @@ def test_string_schema(setup_kernel):
     assert string_schema == expected_schema
 
 
+def test_string_schema_filter_functions(setup_kernel):
+    kernel = setup_kernel
+
+    string_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_functions": ["random"]})
+
+    assert string_func_metadata == []
+
+
+def test_string_schema_throws_included_and_excluded_plugins(setup_kernel):
+    kernel = setup_kernel
+
+    with pytest.raises(ValueError):
+        _ = kernel.get_list_of_function_metadata_filters(
+            filters={"included_plugins": ["StringPlugin"], "excluded_plugins": ["BooleanPlugin"]}
+        )
+
+
+def test_string_schema_throws_included_and_excluded_functions(setup_kernel):
+    kernel = setup_kernel
+
+    with pytest.raises(ValueError):
+        _ = kernel.get_list_of_function_metadata_filters(
+            filters={"included_functions": ["function1"], "excluded_functions": ["function2"]}
+        )
+
+
 def test_complex_schema(setup_kernel):
     kernel = setup_kernel
 
@@ -166,9 +200,7 @@ def test_complex_schema(setup_kernel):
         filters={"included_plugins": ["ComplexTypePlugin"]}
     )
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
-        complex_func_metadata[0]
-    )
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -205,13 +237,9 @@ def test_complex_schema(setup_kernel):
 def test_list_schema(setup_kernel):
     kernel = setup_kernel
 
-    complex_func_metadata = kernel.get_list_of_function_metadata_filters(
-        filters={"included_plugins": ["ListPlugin"]}
-    )
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["ListPlugin"]})
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
-        complex_func_metadata[0]
-    )
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -236,16 +264,11 @@ def test_list_schema(setup_kernel):
 
 
 def test_list_of_items_plugin(setup_kernel):
-
     kernel = setup_kernel
 
-    complex_func_metadata = kernel.get_list_of_function_metadata_filters(
-        filters={"included_plugins": ["ItemsPlugin"]}
-    )
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["ItemsPlugin"]})
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
-        complex_func_metadata[0]
-    )
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
 
     expected_schema = {
         "type": "function",
