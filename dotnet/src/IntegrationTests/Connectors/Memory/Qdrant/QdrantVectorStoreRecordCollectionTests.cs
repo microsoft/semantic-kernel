@@ -329,7 +329,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItThrowsMappingExceptionForFailedMapperAsync()
     {
         // Arrange
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo> { MapperType = QdrantRecordMapperType.QdrantPointStructCustomMapper, PointStructCustomMapper = new FailingMapper() };
+        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo> { PointStructCustomMapper = new FailingMapper() };
         var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
 
         // Act & Assert

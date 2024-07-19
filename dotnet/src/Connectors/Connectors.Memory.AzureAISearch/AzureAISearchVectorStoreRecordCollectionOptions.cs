@@ -14,15 +14,10 @@ public sealed class AzureAISearchVectorStoreRecordCollectionOptions<TRecord>
     where TRecord : class
 {
     /// <summary>
-    /// Gets or sets the choice of mapper to use when converting between the data model and the Azure AI Search record.
-    /// </summary>
-    public AzureAISearchRecordMapperType MapperType { get; init; } = AzureAISearchRecordMapperType.Default;
-
-    /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Azure AI Search record.
     /// </summary>
     /// <remarks>
-    /// Set <see cref="MapperType"/> to <see cref="AzureAISearchRecordMapperType.JsonObjectCustomMapper"/> to use this mapper."/>
+    /// If not set, the default mapper that is provided by the Azure AI Search client SDK will be used.
     /// </remarks>
     public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
 

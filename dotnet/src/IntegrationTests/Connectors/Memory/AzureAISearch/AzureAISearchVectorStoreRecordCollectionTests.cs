@@ -283,7 +283,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     public async Task ItThrowsMappingExceptionForFailedMapperAsync()
     {
         // Arrange
-        var options = new AzureAISearchVectorStoreRecordCollectionOptions<Hotel> { MapperType = AzureAISearchRecordMapperType.JsonObjectCustomMapper, JsonObjectCustomMapper = new FailingMapper() };
+        var options = new AzureAISearchVectorStoreRecordCollectionOptions<Hotel> { JsonObjectCustomMapper = new FailingMapper() };
         var sut = new AzureAISearchVectorStoreRecordCollection<Hotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
         // Act & Assert

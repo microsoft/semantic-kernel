@@ -278,7 +278,6 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             TestCollectionName,
             new()
             {
-                MapperType = AzureAISearchRecordMapperType.JsonObjectCustomMapper,
                 JsonObjectCustomMapper = mapperMock.Object
             });
 
@@ -492,7 +491,6 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             TestCollectionName,
             new()
             {
-                MapperType = AzureAISearchRecordMapperType.JsonObjectCustomMapper,
                 JsonObjectCustomMapper = mapperMock.Object
             });
 

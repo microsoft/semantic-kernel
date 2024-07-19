@@ -108,12 +108,6 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         this._searchClient = this._searchIndexClient.GetSearchClient(collectionName);
         this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 
-        // Verify custom mapper.
-        if (this._options.MapperType == AzureAISearchRecordMapperType.JsonObjectCustomMapper && this._options.JsonObjectCustomMapper is null)
-        {
-            throw new ArgumentException($"The {nameof(AzureAISearchVectorStoreRecordCollectionOptions<TRecord>.JsonObjectCustomMapper)} option needs to be set if a {nameof(AzureAISearchVectorStoreRecordCollectionOptions<TRecord>.MapperType)} of {nameof(AzureAISearchRecordMapperType.JsonObjectCustomMapper)} has been chosen.", nameof(options));
-        }
-
         // Enumerate public properties using configuration or attributes.
         (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
         if (this._options.VectorStoreRecordDefinition is not null)
@@ -323,7 +317,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         const string OperationName = "GetDocument";
 
         // Use the user provided mapper.
-        if (this._options.MapperType == AzureAISearchRecordMapperType.JsonObjectCustomMapper)
+        if (this._options.JsonObjectCustomMapper is not null)
         {
             var jsonObject = await this.RunOperationAsync(
                 OperationName,
@@ -362,7 +356,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         const string OperationName = "UploadDocuments";
 
         // Use the user provided mapper.
-        if (this._options.MapperType == AzureAISearchRecordMapperType.JsonObjectCustomMapper)
+        if (this._options.JsonObjectCustomMapper is not null)
         {
             var jsonObjects = VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,

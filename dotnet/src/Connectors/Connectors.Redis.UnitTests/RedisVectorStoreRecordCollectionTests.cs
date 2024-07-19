@@ -218,7 +218,6 @@ public class RedisVectorStoreRecordCollectionTests
             TestCollectionName,
             new()
             {
-                MapperType = RedisRecordMapperType.JsonNodeCustomMapper,
                 JsonNodeCustomMapper = mapperMock.Object
             });
 
@@ -366,7 +365,6 @@ public class RedisVectorStoreRecordCollectionTests
             TestCollectionName,
             new()
             {
-                MapperType = RedisRecordMapperType.JsonNodeCustomMapper,
                 JsonNodeCustomMapper = mapperMock.Object
             });
 
@@ -389,6 +387,7 @@ public class RedisVectorStoreRecordCollectionTests
             TestCollectionName,
             new()
             {
+                PrefixCollectionNameToKeyNames = false,
                 VectorStoreRecordDefinition = useDefinition ? this._singlePropsDefinition : null
             });
     }
