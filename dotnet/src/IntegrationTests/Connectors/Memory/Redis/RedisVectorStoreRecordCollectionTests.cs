@@ -305,7 +305,6 @@ public sealed class RedisVectorStoreRecordCollectionTests(ITestOutputHelper outp
         var options = new RedisVectorStoreRecordCollectionOptions<Hotel>
         {
             PrefixCollectionNameToKeyNames = true,
-            MapperType = RedisRecordMapperType.JsonNodeCustomMapper,
             JsonNodeCustomMapper = new FailingMapper()
         };
         var sut = new RedisVectorStoreRecordCollection<Hotel>(fixture.Database, "hotels", options);

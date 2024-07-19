@@ -116,13 +116,8 @@ public sealed class RedisVectorStoreRecordCollection<TRecord> : IVectorStoreReco
             .ToArray();
 
         // Assign Mapper.
-        if (this._options.MapperType == RedisRecordMapperType.JsonNodeCustomMapper)
+        if (this._options.JsonNodeCustomMapper is not null)
         {
-            if (this._options.JsonNodeCustomMapper is null)
-            {
-                throw new ArgumentException($"The {nameof(RedisVectorStoreRecordCollectionOptions<TRecord>.JsonNodeCustomMapper)} option needs to be set if a {nameof(RedisVectorStoreRecordCollectionOptions<TRecord>.MapperType)} of {nameof(RedisRecordMapperType.JsonNodeCustomMapper)} has been chosen.", nameof(options));
-            }
-
             this._mapper = this._options.JsonNodeCustomMapper;
         }
         else
