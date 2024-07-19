@@ -5,13 +5,13 @@ import contextlib
 import logging
 import types
 from abc import abstractmethod
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from inspect import signature
 from typing import Any, Generic, TypeVar
 
 from pydantic import model_validator
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.data.utils import add_vector_to_records
 from semantic_kernel.data.vector_store_model_definition import (
     VectorStoreRecordDefinition,
 )
@@ -21,7 +21,6 @@ from semantic_kernel.data.vector_store_model_protocols import (
     VectorStoreModelToDictFromDictProtocol,
 )
 from semantic_kernel.data.vector_store_record_fields import (
-    VectorStoreRecordDataField,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions.memory_connector_exceptions import (
@@ -220,15 +219,19 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         Returns:
             The key of the upserted record or a list of keys, when a container type is used.
         """
-        if generate_embeddings:
-            await self._add_vector_to_records(record)
-        data = self.serialize(record)
-        if not isinstance(data, Sequence):
-            data = [data]
+        if generate_embeddings and self.kernel:
+            await add_vector_to_records(self.kernel, self.data_model_definition, record, self._container_mode)
+
         try:
-            results = await self._inner_upsert(data, **kwargs)
+            data = self.serialize(record)
+        except Exception as exc:
+            raise MemoryConnectorException(f"Error serializing record: {exc}") from exc
+
+        try:
+            results = await self._inner_upsert(data if isinstance(data, Sequence) else [data], **kwargs)
         except Exception as exc:
             raise MemoryConnectorException(f"Error upserting record: {exc}") from exc
+
         if self._container_mode:
             return results
         return results[0]
@@ -252,9 +255,14 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             Sequence[TKey]: The keys of the upserted records, this is always a list,
             corresponds to the input or the items in the container.
         """
-        if generate_embeddings:
-            await self._add_vector_to_records(records)
-        data = self.serialize(records)
+        if generate_embeddings and self.kernel:
+            await add_vector_to_records(self.kernel, self.data_model_definition, records, self._container_mode)
+
+        try:
+            data = self.serialize(records)
+        except Exception as exc:
+            raise MemoryConnectorException(f"Error serializing records: {exc}") from exc
+
         try:
             return await self._inner_upsert(data, **kwargs)  # type: ignore
         except Exception as exc:
@@ -274,15 +282,18 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             records = await self._inner_get([key])
         except Exception as exc:
             raise MemoryConnectorException(f"Error getting record: {exc}") from exc
+
         if not records:
             return None
+
         try:
             model_records = self.deserialize(records[0], keys=[key], **kwargs)
-            if isinstance(model_records, Sequence):
-                return model_records[0]
-            return model_records
         except Exception as exc:
             raise MemoryConnectorException(f"Error deserializing record: {exc}") from exc
+
+        if isinstance(model_records, Sequence):
+            return model_records[0]
+        return model_records
 
     async def get_batch(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[TModel] | None:
         """Get a batch of records.
@@ -298,8 +309,10 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             records = await self._inner_get(keys)
         except Exception as exc:
             raise MemoryConnectorException(f"Error getting records: {exc}") from exc
+
         if not records:
             return None
+
         try:
             return self.deserialize(records, keys=keys, **kwargs)
         except Exception as exc:
@@ -506,38 +519,3 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """Delete the instance."""
         with contextlib.suppress(Exception):
             asyncio.get_running_loop().create_task(self.close())
-
-    async def _add_vector_to_records(self, records: OneOrMany[TModel], **kwargs) -> OneOrMany[TModel]:
-        """Vectorize the vector record."""
-        # dict of embedding_field.name and tuple of record, settings, field_name
-        embeddings_to_make: list[tuple[str, str, dict[str, PromptExecutionSettings], Callable | None]] = []
-
-        for name, field in self.data_model_definition.fields.items():  # type: ignore
-            if (
-                not isinstance(field, VectorStoreRecordDataField)
-                or not field.has_embedding
-                or not field.embedding_property_name
-            ):
-                continue
-            embedding_field_name = field.embedding_property_name
-            embedding_field = self.data_model_definition.fields.get(embedding_field_name)
-            assert isinstance(embedding_field, VectorStoreRecordVectorField)  # nosec
-            if not embedding_field.local_embedding:
-                continue
-            settings = embedding_field.embedding_settings
-            cast_callable = embedding_field.cast_function
-            embeddings_to_make.append((name, embedding_field_name, settings, cast_callable))
-
-        for field_to_embed, field_to_store, settings, cast_callable in embeddings_to_make:
-            if not self.kernel:
-                raise MemoryConnectorException("Kernel is required to create embeddings.")
-            await self.kernel.add_embedding_to_object(
-                inputs=records,
-                field_to_embed=field_to_embed,
-                field_to_store=field_to_store,
-                execution_settings=settings,
-                container_mode=self._container_mode,
-                cast_function=cast_callable,
-                **kwargs,
-            )
-        return records
