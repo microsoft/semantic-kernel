@@ -2,12 +2,14 @@
 
 
 from collections.abc import Mapping, Sequence
-from typing import Any
+from dataclasses import dataclass
+from typing import Annotated, Any
 from unittest.mock import AsyncMock, MagicMock
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pytest import fixture, mark, raises
 
+from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.data.vector_store_record_fields import (
@@ -161,6 +163,107 @@ def data_model_container_serialize_definition() -> object:
     )
 
 
+@fixture
+def data_model_type_vanilla():
+    @vectorstoremodel
+    class DataModelClass:
+        def __init__(
+            self,
+            content: Annotated[str, VectorStoreRecordDataField()],
+            vector: Annotated[list[float], VectorStoreRecordVectorField()],
+            id: Annotated[str, VectorStoreRecordKeyField()],
+        ):
+            self.content = content
+            self.vector = vector
+            self.id = id
+
+        def __eq__(self, other) -> bool:
+            return self.content == other.content and self.id == other.id and self.vector == other.vector
+
+    return DataModelClass
+
+
+@fixture
+def data_model_type_vanilla_serialize():
+    @vectorstoremodel
+    class DataModelClass:
+        def __init__(
+            self,
+            content: Annotated[str, VectorStoreRecordDataField()],
+            vector: Annotated[list[float], VectorStoreRecordVectorField()],
+            id: Annotated[str, VectorStoreRecordKeyField()],
+        ):
+            self.content = content
+            self.vector = vector
+            self.id = id
+
+        def serialize(self, **kwargs: Any) -> Any:
+            """Serialize the object to the format required by the data store."""
+            return {"id": self.id, "content": self.content, "vector": self.vector}
+
+        @classmethod
+        def deserialize(cls, obj: Any, **kwargs: Any) -> "DataModelClass":
+            """Deserialize the output of the data store to an object."""
+            return cls(**obj)
+
+        def __eq__(self, other) -> bool:
+            return self.content == other.content and self.id == other.id and self.vector == other.vector
+
+    return DataModelClass
+
+
+@fixture
+def data_model_type_vanilla_to_from_dict():
+    @vectorstoremodel
+    class DataModelClass:
+        def __init__(
+            self,
+            content: Annotated[str, VectorStoreRecordDataField()],
+            vector: Annotated[list[float], VectorStoreRecordVectorField()],
+            id: Annotated[str, VectorStoreRecordKeyField()],
+        ):
+            self.content = content
+            self.vector = vector
+            self.id = id
+
+        def to_dict(self, **kwargs: Any) -> Any:
+            """Serialize the object to the format required by the data store."""
+            return {"id": self.id, "content": self.content, "vector": self.vector}
+
+        @classmethod
+        def from_dict(cls, *args: Any, **kwargs: Any) -> "DataModelClass":
+            """Deserialize the output of the data store to an object."""
+            return cls(**args[0])
+
+        def __eq__(self, other) -> bool:
+            return self.content == other.content and self.id == other.id and self.vector == other.vector
+
+    return DataModelClass
+
+
+@fixture
+def data_model_type_pydantic():
+    @vectorstoremodel
+    class DataModelClass(BaseModel):
+        content: Annotated[str, VectorStoreRecordDataField()]
+        vector: Annotated[list[float], VectorStoreRecordVectorField()]
+        id: Annotated[str, VectorStoreRecordKeyField()]
+
+    return DataModelClass
+
+
+@fixture
+def data_model_type_dataclass():
+    @vectorstoremodel
+    @dataclass
+    class DataModelClass:
+        content: Annotated[str, VectorStoreRecordDataField()]
+        vector: Annotated[list[float], VectorStoreRecordVectorField()]
+        id: Annotated[str, VectorStoreRecordKeyField()]
+
+    return DataModelClass
+
+
 @fixture(scope="function")
 def vector_store_record_collection(
     DictVectorStoreRecordCollection,
@@ -169,9 +272,15 @@ def vector_store_record_collection(
     data_model_to_from_dict_definition,
     data_model_container_definition,
     data_model_container_serialize_definition,
+    data_model_type_vanilla,
+    data_model_type_vanilla_serialize,
+    data_model_type_vanilla_to_from_dict,
+    data_model_type_pydantic,
+    data_model_type_dataclass,
     request,
 ) -> VectorStoreRecordCollection:
     idx = request.param if request and hasattr(request, "param") else 0
+
     defs = [
         data_model_definition,
         data_model_serialize_definition,
@@ -179,10 +288,23 @@ def vector_store_record_collection(
         data_model_container_definition,
         data_model_container_serialize_definition,
     ]
+    if idx < len(defs):
+        return DictVectorStoreRecordCollection(
+            collection_name="test",
+            data_model_type=dict,
+            data_model_definition=defs[idx],
+        )
+    idx -= len(defs)
+    types = [
+        data_model_type_vanilla,
+        data_model_type_vanilla_serialize,
+        data_model_type_vanilla_to_from_dict,
+        data_model_type_pydantic,
+        data_model_type_dataclass,
+    ]
     return DictVectorStoreRecordCollection(
         collection_name="test",
-        data_model_type=dict,
-        data_model_definition=defs[idx],
+        data_model_type=types[idx],
     )
 
 
@@ -203,18 +325,42 @@ def test_init(DictVectorStoreRecordCollection, data_model_definition):
 @mark.asyncio
 @mark.parametrize(
     "vector_store_record_collection",
-    [0, 1, 2],
-    ids=["none", "serialize", "to_from_dict"],
+    [
+        0,
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+    ],
+    ids=[
+        "none",
+        "serialize",
+        "to_from_dict",
+        "vanilla_type",
+        "vanilla_type_serialize",
+        "vanilla_type_to_from_dict",
+        "pydantic",
+        "dataclass",
+    ],
     indirect=True,
 )
 async def test_crud_operations(vector_store_record_collection):
     id = "test_id"
     record = {"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    if vector_store_record_collection.data_model_type is not dict:
+        model = vector_store_record_collection.data_model_type
+        record = model(**record)
     no_records = await vector_store_record_collection.get(id)
     assert no_records is None
     await vector_store_record_collection.upsert(record)
     assert len(vector_store_record_collection.inner_storage) == 1
-    assert vector_store_record_collection.inner_storage[id] == record
+    if vector_store_record_collection.data_model_type is dict:
+        assert vector_store_record_collection.inner_storage[id] == record
+    else:
+        assert vector_store_record_collection.inner_storage[id]["content"] == record.content
     record_2 = await vector_store_record_collection.get(id)
     assert record_2 == record
     await vector_store_record_collection.delete(id)
@@ -275,8 +421,26 @@ async def test_delete_fail(DictVectorStoreRecordCollection, data_model_definitio
 @mark.asyncio
 @mark.parametrize(
     "vector_store_record_collection",
-    [0, 1, 2],
-    ids=["none", "serialize", "to_from_dict"],
+    [
+        0,
+        1,
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+    ],
+    ids=[
+        "none",
+        "serialize",
+        "to_from_dict",
+        "vanilla_type",
+        "vanilla_type_serialize",
+        "vanilla_type_to_from_dict",
+        "pydantic",
+        "dataclass",
+    ],
     indirect=True,
 )
 async def test_crud_batch_operations(vector_store_record_collection):
@@ -285,11 +449,17 @@ async def test_crud_batch_operations(vector_store_record_collection):
         {"id": ids[0], "content": "test_content", "vector": [1.0, 2.0, 3.0]},
         {"id": ids[1], "content": "test_content", "vector": [1.0, 2.0, 3.0]},
     ]
+    if vector_store_record_collection.data_model_type is not dict:
+        model = vector_store_record_collection.data_model_type
+        batch = [model(**record) for record in batch]
     no_records = await vector_store_record_collection.get_batch(ids)
     assert no_records is None
     await vector_store_record_collection.upsert_batch(batch)
     assert len(vector_store_record_collection.inner_storage) == 2
-    assert vector_store_record_collection.inner_storage[ids[0]] == batch[0]
+    if vector_store_record_collection.data_model_type is dict:
+        assert vector_store_record_collection.inner_storage[ids[0]] == batch[0]
+    else:
+        assert vector_store_record_collection.inner_storage[ids[0]]["content"] == batch[0].content
     records = await vector_store_record_collection.get_batch(ids)
     assert records == batch
     await vector_store_record_collection.delete_batch(ids)
@@ -370,8 +540,5 @@ async def test_collection_create_if_not_exists(DictVectorStoreRecordCollection, 
 
 
 # TODO (eavanvalkenburg): exceptions during serialization, pydantic, to_dict
-# TODO (eavanvalkenburg): data model protocol usage for:
-# - serialize methods 402-405, 421-426
-# - to_dict/from_dict methods 445-449
-# - pydantic 440-442
 # TODO (eavanvalkenburg): vectorizing
+# TODO (eavanvalkenburg): pandas container test
