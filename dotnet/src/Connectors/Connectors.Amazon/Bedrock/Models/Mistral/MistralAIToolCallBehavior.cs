@@ -261,4 +261,3 @@ public abstract class MistralAIToolCallBehavior
         return new MistralTool("function", new MistralFunction(metadata));
     }
 }
-

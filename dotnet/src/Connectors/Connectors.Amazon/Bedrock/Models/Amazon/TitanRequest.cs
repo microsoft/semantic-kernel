@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
 using Amazon.BedrockRuntime.Model;
@@ -6,6 +6,7 @@ using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.Amazon;
+
 /// <summary>
 /// The Amazon Titan Request objects.
 /// </summary>

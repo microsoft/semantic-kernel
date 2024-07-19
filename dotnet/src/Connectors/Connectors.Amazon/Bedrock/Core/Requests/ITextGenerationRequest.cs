@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Connectors.Amazon.Core.Requests;
+
 /// <summary>
 /// Request object for text generation, essentially the base parameters for an InvokeModel request with Bedrock API.
 /// </summary>

@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.Cohere;
+
 /// <summary>
 /// Request body for Cohere Command.
 /// </summary>

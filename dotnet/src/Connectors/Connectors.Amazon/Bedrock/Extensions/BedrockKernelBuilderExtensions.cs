@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Amazon;
 using Amazon.BedrockRuntime;
@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Connectors.Amazon.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Connectors.Amazon.Extensions;
+
 /// <summary>
 /// Extensions for adding Bedrock services to the application.
 /// </summary>

@@ -3,6 +3,7 @@
 using System.Text.Json.Serialization;
 
 namespace Connectors.Amazon.Models.Cohere;
+
 /// <summary>
 /// The Command Text Generation Response body.
 /// </summary>

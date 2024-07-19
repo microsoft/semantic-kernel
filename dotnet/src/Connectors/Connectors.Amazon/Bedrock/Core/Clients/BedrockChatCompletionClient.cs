@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Core.Requests;
@@ -12,8 +13,10 @@ using Connectors.Amazon.Models.Meta;
 using Connectors.Amazon.Models.Mistral;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
+
 /// <summary>
 /// Represents a client for interacting with the chat completion through Bedrock.
 /// </summary>
@@ -39,45 +42,62 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     {
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
-        this._chatGenerationEndpoint = new Uri("https://bedrock-runtime.us-east-1.amazonaws.com");
-        int periodIndex = modelId.IndexOf('.'); //modelId looks like "amazon.titan-embed-text-v1:0"
-        string modelProvider = periodIndex >= 0 ? modelId.Substring(0, periodIndex) : modelId;
-        this._modelProvider = modelProvider;
-        switch (modelProvider)
+        var regionEndpoint = bedrockApi.DetermineServiceOperationEndpoint(new AmazonBedrockRuntimeRequest()).URL;
+        this._chatGenerationEndpoint = new Uri(regionEndpoint);
+        string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-embed-text-v1:0"
+        this._modelProvider = parts[0];
+        string modelName = parts.Length > 1 ? parts[1] : string.Empty;
+        switch (this._modelProvider)
         {
             case "ai21":
-                if (modelId.Contains("jamba"))
+                if (modelName.StartsWith("jamba", StringComparison.OrdinalIgnoreCase))
                 {
                     this._ioService = new AI21JambaIOService();
                     break;
                 }
-                if (modelId.Contains("j2-"))
+                if (modelName.StartsWith("j2-", StringComparison.OrdinalIgnoreCase))
                 {
                     this._ioService = new AI21JurassicIOService();
                     break;
                 }
                 throw new ArgumentException($"Unsupported AI21 model: {modelId}");
             case "amazon":
-                this._ioService = new AmazonIOService();
-                break;
+                if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._ioService = new AmazonIOService();
+                    break;
+                }
+                throw new ArgumentException($"Unsupported Amazon model: {modelId}");
             case "anthropic":
-                this._ioService = new AnthropicIOService();
-                break;
+                if (modelName.StartsWith("claude-", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._ioService = new AnthropicIOService();
+                    break;
+                }
+                throw new ArgumentException($"Unsupported Anthropic model: {modelId}");
             case "cohere":
-                if (modelId.Contains("command-r"))
+                if (modelName.StartsWith("command-r", StringComparison.OrdinalIgnoreCase))
                 {
                     this._ioService = new CohereCommandRIOService();
                     break;
                 }
                 throw new ArgumentException($"Unsupported Cohere model: {modelId}");
-            case "meta":
-                this._ioService = new MetaIOService();
-                break;
+            case "meta": //llama2 will be deprecated in August 2024 so not supporting
+                if (modelName.StartsWith("llama3-", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._ioService = new MetaIOService();
+                    break;
+                }
+                throw new ArgumentException($"Unsupported Meta model: {modelId}");
             case "mistral":
-                this._ioService = new MistralIOService();
-                break;
+                if (modelName.StartsWith("mistral-", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._ioService = new MistralIOService();
+                    break;
+                }
+                throw new ArgumentException($"Unsupported Mistral model: {modelId}");
             default:
-                throw new ArgumentException($"Unsupported model provider: {modelProvider}");
+                throw new ArgumentException($"Unsupported model provider: {this._modelProvider}");
         }
     }
     /// <summary>

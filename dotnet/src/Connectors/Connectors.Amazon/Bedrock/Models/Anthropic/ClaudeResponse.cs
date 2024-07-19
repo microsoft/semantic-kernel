@@ -3,6 +3,7 @@
 using System.Text.Json.Serialization;
 
 namespace Connectors.Amazon.Models.Anthropic;
+
 /// <summary>
 /// Anthropic Claude completion response.
 /// </summary>

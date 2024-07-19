@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Cohere;
+
 /// <summary>
 /// Input-output service for Cohere Command.
 /// </summary>

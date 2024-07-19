@@ -38,46 +38,63 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
     {
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
-        int periodIndex = modelId.IndexOf('.'); //modelId looks like "amazon.titan-embed-text-v1"
-        string modelProvider = periodIndex >= 0 ? modelId.Substring(0, periodIndex) : modelId;
+        string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-embed-text-v1:0"
+        string modelProvider = parts[0];
+        string modelName = parts.Length > 1 ? parts[1] : string.Empty;
         switch (modelProvider)
         {
             case "ai21":
-                if (modelId.Contains("jamba"))
+                if (modelName.StartsWith("jamba", StringComparison.OrdinalIgnoreCase))
                 {
                     this._ioService = new AI21JambaIOService();
                     break;
                 }
-                if (modelId.Contains("j2-"))
+                if (modelName.StartsWith("j2-", StringComparison.OrdinalIgnoreCase))
                 {
                     this._ioService = new AI21JurassicIOService();
                     break;
                 }
                 throw new ArgumentException($"Unsupported AI21 model: {modelId}");
             case "amazon":
-                this._ioService = new AmazonIOService();
-                break;
+                if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._ioService = new AmazonIOService();
+                    break;
+                }
+                throw new ArgumentException($"Unsupported Amazon model: {modelId}");
             case "anthropic":
-                this._ioService = new AnthropicIOService();
-                break;
+                if (modelName.StartsWith("claude-", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._ioService = new AnthropicIOService();
+                    break;
+                }
+                throw new ArgumentException($"Unsupported Anthropic model: {modelId}");
             case "cohere":
-                if (modelId.Contains("command-r"))
+                if (modelName.StartsWith("command-r", StringComparison.OrdinalIgnoreCase))
                 {
                     this._ioService = new CohereCommandRIOService();
                     break;
                 }
-                if (modelId.Contains("command"))
+                if (modelName.StartsWith("command-", StringComparison.OrdinalIgnoreCase))
                 {
                     this._ioService = new CohereCommandIOService();
                     break;
                 }
                 throw new ArgumentException($"Unsupported Cohere model: {modelId}");
-            case "meta":
-                this._ioService = new MetaIOService();
-                break;
+            case "meta": //llama2 will be deprecated in August 2024 so not supporting
+                if (modelName.StartsWith("llama3-", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._ioService = new MetaIOService();
+                    break;
+                }
+                throw new ArgumentException($"Unsupported Meta model: {modelId}");
             case "mistral":
-                this._ioService = new MistralIOService();
-                break;
+                if (modelName.StartsWith("mistral-", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._ioService = new MistralIOService();
+                    break;
+                }
+                throw new ArgumentException($"Unsupported Mistral model: {modelId}");
             default:
                 throw new ArgumentException($"Unsupported model provider: {modelProvider}");
         }

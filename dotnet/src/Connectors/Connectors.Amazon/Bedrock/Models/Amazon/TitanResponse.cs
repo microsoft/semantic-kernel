@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel;
 
 namespace Connectors.Amazon.Models.Amazon;
+
 /// <summary>
 /// Amazon Titan Chat Completion Response object.
 /// </summary>

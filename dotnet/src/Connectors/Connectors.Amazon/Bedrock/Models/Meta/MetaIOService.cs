@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Meta;
+
 /// <summary>
 /// Input-output service for Meta Llama.
 /// </summary>
@@ -90,12 +91,12 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
             Messages = chatHistory.Select(m => new Message
             {
                 Role = MapRole(m.Role),
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
-            Temperature = this.GetExtensionDataValue<double>(settings?.ExtensionData, "temperature", 0.5),
-            TopP = this.GetExtensionDataValue<double>(settings?.ExtensionData, "top_p", 0.9),
-            MaxGenLen = this.GetExtensionDataValue<int>(settings?.ExtensionData, "max_gen_len", 512)
+            Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5),
+            TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9),
+            MaxGenLen = this.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
         };
         var converseRequest = new ConverseRequest
         {
@@ -181,7 +182,7 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
             Messages = chatHistory.Select(m => new Message
             {
                 Role = MapRole(m.Role),
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
             Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5),

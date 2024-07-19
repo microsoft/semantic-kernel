@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Amazon;
+
 /// <summary>
 /// Input-output service for Amazon Titan model.
 /// </summary>
@@ -96,7 +97,7 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
             Messages = chatHistory.Select(m => new Message
             {
                 Role = MapRole(m.Role),
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
             InferenceConfig = new InferenceConfiguration
@@ -182,7 +183,7 @@ public class AmazonIOService : IBedrockModelIOService<IChatCompletionRequest, IC
             Messages = chatHistory.Select(m => new Message
             {
                 Role = MapRole(m.Role),
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
             InferenceConfig = new InferenceConfiguration

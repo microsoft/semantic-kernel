@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.AI21;
+
 /// <summary>
 /// Input-output service for AI21 Labs Jurassic.
 /// </summary>
@@ -89,7 +90,7 @@ public class AI21JurassicIOService : IBedrockModelIOService<IChatCompletionReque
                 {
                     foreach (var completion in responseBody.Completions)
                     {
-                        textContents.Add(new TextContent(completion.Data.Text));
+                        textContents.Add(new TextContent(completion.Data?.Text));
                     }
                 }
 

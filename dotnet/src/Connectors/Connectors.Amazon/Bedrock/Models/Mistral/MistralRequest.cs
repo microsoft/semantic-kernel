@@ -5,6 +5,7 @@ using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.Mistral;
+
 /// <summary>
 /// Mistral request bodies.
 /// </summary>

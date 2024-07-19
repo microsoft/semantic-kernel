@@ -6,6 +6,7 @@ using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.AI21;
+
 /// <summary>
 /// AI21 Labs Request objects.
 /// </summary>

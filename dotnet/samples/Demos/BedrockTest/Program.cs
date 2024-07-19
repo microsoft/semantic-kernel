@@ -1,4 +1,5 @@
-﻿using Connectors.Amazon.Extensions;
+﻿using Amazon;
+using Connectors.Amazon.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -35,7 +36,7 @@ while (!int.TryParse(Console.ReadLine(), out chosenModel) || !modelOptions.Conta
     Console.Write("Enter the number of the model you want to use: ");
 }
 
-var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelOptions[chosenModel]).Build();
+var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelOptions[chosenModel], RegionEndpoint.USEast1).Build();
 
 do
 {

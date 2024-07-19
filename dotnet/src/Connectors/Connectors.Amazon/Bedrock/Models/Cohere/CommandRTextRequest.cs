@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.Cohere;
+
 /// <summary>
 /// Cohere Command R Text Generation Request object for Invoke Model Bedrock API call.
 /// </summary>

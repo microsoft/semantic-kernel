@@ -6,6 +6,7 @@ using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.Cohere;
+
 /// <summary>
 /// Cohere Command Chat Completion Request body.
 /// </summary>

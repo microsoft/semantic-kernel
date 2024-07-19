@@ -3,6 +3,7 @@
 using System.Text.Json.Serialization;
 
 namespace Connectors.Amazon.Models.Meta;
+
 /// <summary>
 /// Text generation response object for Meta Llama.
 /// </summary>

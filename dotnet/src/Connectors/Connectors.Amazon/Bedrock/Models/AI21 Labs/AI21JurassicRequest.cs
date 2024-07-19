@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.AI21;
+
 /// <summary>
 /// The AI21 Labs Jurassic Request objects.
 /// </summary>

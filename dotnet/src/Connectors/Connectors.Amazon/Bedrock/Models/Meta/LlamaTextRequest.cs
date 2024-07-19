@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.Meta;
+
 /// <summary>
 /// Text generation body for Meta Llama.
 /// </summary>

@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Connectors.Amazon.Models.Mistral;
 
+/// <summary>
+/// Mistral Tool object.
+/// </summary>
 public class MistralTool
 {
     /// <summary>
@@ -21,7 +24,7 @@ public class MistralTool
     /// <summary>
     /// Construct an instance of <see cref="MistralTool"/>.
     /// </summary>
-    [JsonConstructorAttribute]
+    [JsonConstructor]
     public MistralTool(string type, MistralFunction function)
     {
         this.Type = type;

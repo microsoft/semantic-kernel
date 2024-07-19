@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.AI21;
+
 /// <summary>
 /// Input-output service for AI21 Labs Jamba model.
 /// </summary>
@@ -26,7 +27,7 @@ public class AI21JambaIOService : IBedrockModelIOService<IChatCompletionRequest,
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        List<AI21JambaRequest.Msg> messages = new List<AI21JambaRequest.Msg>
+        List<AI21JambaRequest.Msg> messages = new()
         {
             new AI21JambaRequest.Msg
             {
@@ -124,7 +125,7 @@ public class AI21JambaIOService : IBedrockModelIOService<IChatCompletionRequest,
             Messages = chatHistory.Select(m => new Message
             {
                 Role = MapRole(m.Role),
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
             InferenceConfig = new InferenceConfiguration
@@ -220,7 +221,7 @@ public class AI21JambaIOService : IBedrockModelIOService<IChatCompletionRequest,
             Messages = chatHistory.Select(m => new Message
             {
                 Role = MapRole(m.Role),
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
             InferenceConfig = new InferenceConfiguration

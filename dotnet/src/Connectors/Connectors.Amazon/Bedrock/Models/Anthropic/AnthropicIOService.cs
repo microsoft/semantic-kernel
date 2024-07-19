@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Anthropic;
+
 /// <summary>
 /// Input-output service for Anthropic Claude model.
 /// </summary>
@@ -28,7 +29,7 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
         double? temperature = 1.0; // Claude default
         double? topP = 1.0; // Claude default
         int? maxTokensToSample = 200; // Claude default
-        List<string>? stopSequences = new List<string> { "\n\nHuman:" }; // Claude default
+        List<string>? stopSequences = new() { "\n\nHuman:" }; // Claude default
         int? topK = 250; // Claude default
 
         if (executionSettings != null && executionSettings.ExtensionData != null)
@@ -101,7 +102,7 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
             Messages = chatHistory.Select(m => new Message
             {
                 Role = MapRole(m.Role),
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = this.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
             InferenceConfig = new InferenceConfiguration
@@ -212,7 +213,7 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
             Messages = chatHistory.Select(m => new Message
             {
                 Role = MapRole(m.Role),
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = this.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
             InferenceConfig = new InferenceConfiguration

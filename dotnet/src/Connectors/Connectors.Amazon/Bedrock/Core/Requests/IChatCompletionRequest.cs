@@ -1,8 +1,9 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 namespace Connectors.Amazon.Core.Requests;
+
 /// <summary>
 /// Request object for chat completion, essentially a ConverseRequest.
 /// </summary>

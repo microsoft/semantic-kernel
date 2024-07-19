@@ -1,8 +1,9 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Amazon.BedrockRuntime.Model;
 
 namespace Connectors.Amazon.Core.Responses;
+
 /// <summary>
 /// Chat completion response object, essentially a ConverseResponse object as outputted by the Bedrock Converse API call.
 /// </summary>

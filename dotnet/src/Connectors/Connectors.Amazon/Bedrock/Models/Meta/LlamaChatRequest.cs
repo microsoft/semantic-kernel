@@ -6,6 +6,7 @@ using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.Meta;
+
 /// <summary>
 /// Meta Llama chat completion request body.
 /// </summary>
@@ -43,7 +44,7 @@ public class LlamaChatRequest : IChatCompletionRequest
                 {
                     var role = ConversationRole.User;
                     string systemPrompt = null;
-                    if (Prompt.StartsWith("<s>[INST]"))
+                    if (this.Prompt.StartsWith("<s>[INST]"))
                     {
                         var parts = this.Prompt.Split("[/INST]", StringSplitOptions.RemoveEmptyEntries);
                         if (parts.Length > 0)
@@ -56,11 +57,11 @@ public class LlamaChatRequest : IChatCompletionRequest
                     this._messages.Add(new Message
                     {
                         Role = role,
-                        Content = new List<ContentBlock> { new ContentBlock { Text = this.Prompt } }
+                        Content = new List<ContentBlock> { new() { Text = this.Prompt } }
                     });
                     if (!string.IsNullOrEmpty(systemPrompt))
                     {
-                        this.System = new List<SystemContentBlock> { new SystemContentBlock { Text = systemPrompt } };
+                        this.System = new List<SystemContentBlock> { new() { Text = systemPrompt } };
                     }
                 }
             }

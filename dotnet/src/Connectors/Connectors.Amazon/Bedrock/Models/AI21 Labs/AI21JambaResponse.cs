@@ -3,6 +3,7 @@
 using System.Text.Json.Serialization;
 
 namespace Connectors.Amazon.Models.AI21;
+
 /// <summary>
 /// AI21JambaResponse objects for Bedrock Runtime actions.
 /// </summary>

@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models.Mistral;
+
 /// <summary>
 /// Input-output service for Mistral.
 /// </summary>
@@ -104,7 +105,7 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
             Messages = request.Messages.Select(m => new Message
             {
                 Role = m.Role,
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
             InferenceConfig = new InferenceConfiguration
@@ -263,7 +264,7 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
             Messages = request.Messages.Select(m => new Message
             {
                 Role = m.Role,
-                Content = new List<ContentBlock> { new ContentBlock { Text = m.Content } }
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
             InferenceConfig = new InferenceConfiguration

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models;
+
 /// <summary>
 /// Bedrock input-output service to build the request and response bodies as required by the given model.
 /// </summary>
