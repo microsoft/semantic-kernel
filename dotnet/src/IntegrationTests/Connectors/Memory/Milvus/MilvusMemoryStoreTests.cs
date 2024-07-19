@@ -220,6 +220,45 @@ public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture
             });
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetNearestMatchesWithMetricTypeAsync(bool withEmbeddings)
+    {
+        //Create collection with default, Ip metric
+        await this.Store.CreateCollectionAsync(CollectionName);
+        await this.InsertSampleDataAsync();
+        await this.Store.Client.FlushAsync([CollectionName]);
+
+        //Search with Ip metric, run correctly
+        List<(MemoryRecord Record, double SimilarityScore)> ipResults =
+            this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToEnumerable().ToList();
+
+        Assert.All(ipResults, t => Assert.True(t.SimilarityScore > 0));
+
+        //Set the store to Cosine metric, without recreate collection
+        this.Store = new(this._milvusFixture.Host, vectorSize: 5, port: this._milvusFixture.Port, metricType: SimilarityMetricType.Cosine, consistencyLevel: ConsistencyLevel.Strong);
+
+        //An exception will be thrown here, the exception message includes "metric type not match"
+        MilvusException milvusException = Assert.Throws<MilvusException>(() => this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToEnumerable().ToList());
+
+        Assert.NotNull(milvusException);
+
+        Assert.Contains("metric type not match", milvusException.Message);
+
+        //Recreate collection with Cosine metric
+        await this.Store.DeleteCollectionAsync(CollectionName);
+        await this.Store.CreateCollectionAsync(CollectionName);
+        await this.InsertSampleDataAsync();
+        await this.Store.Client.FlushAsync([CollectionName]);
+
+        //Search with Ip metric, run correctly
+        List<(MemoryRecord Record, double SimilarityScore)> cosineResults =
+            this.Store.GetNearestMatchesAsync(CollectionName, new[] { 5f, 6f, 7f, 8f, 9f }, limit: 2, withEmbeddings: withEmbeddings).ToEnumerable().ToList();
+
+        Assert.All(cosineResults, t => Assert.True(t.SimilarityScore > 0));
+    }
+
     [Fact]
     public async Task GetNearestMatchesWithMinRelevanceScoreAsync()
     {

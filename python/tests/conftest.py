@@ -3,8 +3,11 @@
 import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING
+from unittest.mock import MagicMock
 
 import pytest
+
+from semantic_kernel.contents.function_call_content import FunctionCallContent
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
@@ -135,6 +138,24 @@ def create_mock_function() -> Callable:
 
 
 @pytest.fixture(scope="function")
+def get_tool_call_mock():
+    tool_call_mock = MagicMock(spec=FunctionCallContent)
+    tool_call_mock.split_name_dict.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.to_kernel_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.name = "test-function"
+    tool_call_mock.function_name = "function"
+    tool_call_mock.plugin_name = "test"
+    tool_call_mock.arguments = {"arg_name": "arg_value"}
+    tool_call_mock.ai_model_id = None
+    tool_call_mock.metadata = {}
+    tool_call_mock.index = 0
+    tool_call_mock.parse_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.id = "test_id"
+
+    return tool_call_mock
+
+
+@pytest.fixture(scope="function")
 def chat_history() -> "ChatHistory":
     from semantic_kernel.contents.chat_history import ChatHistory
 
@@ -250,6 +271,28 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 
 
 @pytest.fixture()
+def mistralai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for MistralAISettings."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {"MISTRALAI_CHAT_MODEL_ID": "test_chat_model_id", "MISTRALAI_API_KEY": "test_api_key"}
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@pytest.fixture()
 def aca_python_sessions_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     """Fixture to set environment variables for ACA Python Unit Tests."""
     if exclude_list is None:
@@ -286,6 +329,56 @@ def azure_ai_search_unit_test_env(monkeypatch, exclude_list, override_env_param_
         "AZURE_AI_SEARCH_API_KEY": "test-api-key",
         "AZURE_AI_SEARCH_ENDPOINT": "https://test-endpoint.com",
         "AZURE_AI_SEARCH_INDEX_NAME": "test-index-name",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@pytest.fixture()
+def bing_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for BingConnector."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "BING_API_KEY": "test_api_key",
+        "BING_CUSTOM_CONFIG": "test_org_id",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@pytest.fixture()
+def google_search_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for the Google Search Connector."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "GOOGLE_SEARCH_API_KEY": "test_api_key",
+        "GOOGLE_SEARCH_ENGINE_ID": "test_id",
     }
 
     env_vars.update(override_env_param_dict)

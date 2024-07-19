@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Awaitable, Callable, Mapping
+from copy import copy
 
 from openai import AsyncAzureOpenAI
 from pydantic import ConfigDict, validate_call
@@ -32,7 +33,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         ad_token: str | None = None,
         ad_token_provider: Callable[[], str | Awaitable[str]] | None = None,
         default_headers: Mapping[str, str] | None = None,
-        async_client: AsyncAzureOpenAI | None = None,
+        client: AsyncAzureOpenAI | None = None,
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
 
@@ -42,51 +43,44 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         Args:
             deployment_name (str): Name of the deployment.
             ai_model_type (OpenAIModelTypes): The type of OpenAI model to deploy.
-            endpoint (Optional[HttpsUrl]): The specific endpoint URL for the deployment. (Optional)
-            base_url (Optional[HttpsUrl]): The base URL for Azure services. (Optional)
+            endpoint (HttpsUrl): The specific endpoint URL for the deployment. (Optional)
+            base_url (HttpsUrl): The base URL for Azure services. (Optional)
             api_version (str): Azure API version. Defaults to the defined DEFAULT_AZURE_API_VERSION.
-            service_id (Optional[str]): Service ID for the deployment. (Optional)
-            api_key (Optional[str]): API key for Azure services. (Optional)
-            ad_token (Optional[str]): Azure AD token for authentication. (Optional)
-            ad_token_provider (Optional[Callable[[], Union[str, Awaitable[str]]]]): A callable
+            service_id (str): Service ID for the deployment. (Optional)
+            api_key (str): API key for Azure services. (Optional)
+            ad_token (str): Azure AD token for authentication. (Optional)
+            ad_token_provider (Callable[[], Union[str, Awaitable[str]]]): A callable
                 or coroutine function providing Azure AD tokens. (Optional)
             default_headers (Union[Mapping[str, str], None]): Default headers for HTTP requests. (Optional)
-            async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
+            client (AsyncAzureOpenAI): An existing client to use. (Optional)
 
         """
         # Merge APP_INFO into the headers if it exists
-        merged_headers = default_headers.copy() if default_headers else {}
+        merged_headers = dict(copy(default_headers)) if default_headers else {}
         if APP_INFO:
             merged_headers.update(APP_INFO)
             merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
-        if not async_client:
+        if not client:
             if not api_key and not ad_token and not ad_token_provider:
-                raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
-            if base_url:
-                async_client = AsyncAzureOpenAI(
-                    base_url=str(base_url),
-                    api_version=api_version,
-                    api_key=api_key,
-                    azure_ad_token=ad_token,
-                    azure_ad_token_provider=ad_token_provider,
-                    default_headers=merged_headers,
+                raise ServiceInitializationError(
+                    "Please provide either api_key, ad_token or ad_token_provider or a client."
                 )
-            else:
+            if not base_url:
                 if not endpoint:
-                    raise ServiceInitializationError("Please provide either base_url or endpoint")
-                async_client = AsyncAzureOpenAI(
-                    azure_endpoint=str(endpoint).rstrip("/"),
-                    azure_deployment=deployment_name,
-                    api_version=api_version,
-                    api_key=api_key,
-                    azure_ad_token=ad_token,
-                    azure_ad_token_provider=ad_token_provider,
-                    default_headers=merged_headers,
-                )
+                    raise ServiceInitializationError("Please provide an endpoint or a base_url")
+                base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}")
+            client = AsyncAzureOpenAI(
+                base_url=str(base_url),
+                api_version=api_version,
+                api_key=api_key,
+                azure_ad_token=ad_token,
+                azure_ad_token_provider=ad_token_provider,
+                default_headers=merged_headers,
+            )
         args = {
             "ai_model_id": deployment_name,
-            "client": async_client,
+            "client": client,
             "ai_model_type": ai_model_type,
         }
         if service_id:
@@ -99,8 +93,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             "base_url": str(self.client.base_url),
             "api_version": self.client._custom_query["api-version"],
             "api_key": self.client.api_key,
-            "ad_token": self.client._azure_ad_token,
-            "ad_token_provider": self.client._azure_ad_token_provider,
+            "ad_token": getattr(self.client, "_azure_ad_token", None),
+            "ad_token_provider": getattr(self.client, "_azure_ad_token_provider", None),
             "default_headers": {k: v for k, v in self.client.default_headers.items() if k != USER_AGENT},
         }
         base = self.model_dump(

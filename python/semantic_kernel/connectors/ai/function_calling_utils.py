@@ -1,31 +1,23 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import logging
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIChatPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-
-if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.function_choice_behavior import (
-        FunctionCallChoiceConfiguration,
-    )
-    from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-        OpenAIChatPromptExecutionSettings,
-    )
-
-logger = logging.getLogger(__name__)
 
 
 def update_settings_from_function_call_configuration(
-    function_choice_configuration: "FunctionCallChoiceConfiguration",
-    settings: "OpenAIChatPromptExecutionSettings",
+    function_choice_configuration: FunctionCallChoiceConfiguration,
+    settings: PromptExecutionSettings,
     type: str,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
-    if function_choice_configuration.available_functions:
+    if (
+        function_choice_configuration.available_functions
+        and hasattr(settings, "tool_choice")
+        and hasattr(settings, "tools")
+    ):
         settings.tool_choice = type
         settings.tools = [
             kernel_function_metadata_to_function_call_format(f)

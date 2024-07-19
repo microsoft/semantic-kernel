@@ -3,7 +3,7 @@ import json
 import logging
 from collections.abc import Mapping
 from copy import deepcopy
-from typing import Any
+from typing import Any, TypeVar
 from uuid import uuid4
 
 from openai import AsyncAzureOpenAI
@@ -29,9 +29,10 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+TChatMessageContent = TypeVar("TChatMessageContent", ChatMessageContent, StreamingChatMessageContent)
 
 
 class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
@@ -93,13 +94,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
 
-        if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
-            raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
-
-        if azure_openai_settings.endpoint and azure_openai_settings.chat_deployment_name:
-            azure_openai_settings.base_url = HttpsUrl(
-                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.chat_deployment_name}"
-            )
         super().__init__(
             deployment_name=azure_openai_settings.chat_deployment_name,
             endpoint=azure_openai_settings.endpoint,
@@ -111,11 +105,11 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.CHAT,
-            async_client=async_client,
+            client=async_client,
         )
 
     @classmethod
-    def from_dict(cls, settings: dict[str, str]) -> "AzureChatCompletion":
+    def from_dict(cls, settings: dict[str, Any]) -> "AzureChatCompletion":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
         Args:
@@ -136,7 +130,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             env_file_path=settings.get("env_file_path"),
         )
 
-    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
         """Create a request settings object."""
         return AzureChatPromptExecutionSettings
 
@@ -155,37 +149,41 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     ) -> "StreamingChatMessageContent":
         """Create an Azure streaming chat message content object from a choice."""
         content = super()._create_streaming_chat_message_content(chunk, choice, chunk_metadata)
+        assert isinstance(content, StreamingChatMessageContent) and isinstance(choice, ChunkChoice)  # nosec
         return self._add_tool_message_to_chat_message_content(content, choice)
 
     def _add_tool_message_to_chat_message_content(
-        self, content: ChatMessageContent | StreamingChatMessageContent, choice: Choice
-    ) -> "ChatMessageContent | StreamingChatMessageContent":
+        self,
+        content: TChatMessageContent,
+        choice: Choice | ChunkChoice,
+    ) -> TChatMessageContent:
         if tool_message := self._get_tool_message_from_chat_choice(choice=choice):
-            try:
-                tool_message_dict = json.loads(tool_message)
-            except json.JSONDecodeError:
-                logger.error("Failed to parse tool message JSON: %s", tool_message)
-                tool_message_dict = {"citations": tool_message}
-
+            if not isinstance(tool_message, dict):
+                # try to json, to ensure it is a dictionary
+                try:
+                    tool_message = json.loads(tool_message)
+                except json.JSONDecodeError:
+                    logger.warning("Tool message is not a dictionary, ignore context.")
+                    return content
             function_call = FunctionCallContent(
                 id=str(uuid4()),
                 name="Azure-OnYourData",
-                arguments=json.dumps({"query": tool_message_dict.get("intent", [])}),
+                arguments=json.dumps({"query": tool_message.get("intent", [])}),
             )
             result = FunctionResultContent.from_function_call_content_and_result(
-                result=tool_message_dict["citations"], function_call_content=function_call
+                result=tool_message["citations"], function_call_content=function_call
             )
             content.items.insert(0, function_call)
             content.items.insert(1, result)
         return content
 
-    def _get_tool_message_from_chat_choice(self, choice: Choice | ChunkChoice) -> str | None:
+    def _get_tool_message_from_chat_choice(self, choice: Choice | ChunkChoice) -> dict[str, Any] | None:
         """Get the tool message from a choice."""
         content = choice.message if isinstance(choice, Choice) else choice.delta
-        if content.model_extra is not None and "context" in content.model_extra:
-            return json.dumps(content.model_extra["context"])
-
-        return None
+        if content.model_extra is not None:
+            return content.model_extra.get("context", None)
+        # openai allows extra content, so model_extra will be a dict, but we need to check anyway, but no way to test.
+        return None  # pragma: no cover
 
     @staticmethod
     def split_message(message: "ChatMessageContent") -> list["ChatMessageContent"]:
