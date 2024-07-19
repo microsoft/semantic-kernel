@@ -54,6 +54,17 @@ public sealed class OllamaMetadata : ReadOnlyDictionary<string, object?>
         }
     }
 
+    internal OllamaMetadata(ChatResponse response) : base(new Dictionary<string, object?>())
+    {
+        this.TotalDuration = response.TotalDuration;
+        this.EvalCount = response.EvalCount;
+        this.EvalDuration = response.EvalDuration;
+        this.CreatedAt = response.CreatedAt;
+        this.LoadDuration = response.LoadDuration;
+        this.PromptEvalDuration = response.PromptEvalDuration;
+        this.CreatedAt = response.CreatedAt;
+    }
+
     /// <summary>
     /// Time spent in nanoseconds evaluating the prompt
     /// </summary>

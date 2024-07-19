@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Ollama;
@@ -46,7 +47,7 @@ public class OllamaPromptExecutionSettingsTests
     {
         string jsonSettings = """
                                 {
-                                    "stop": "stop me",
+                                    "stop": ["stop me"],
                                     "temperature": 0.5,
                                     "top_p": 0.9,
                                     "top_k": 100
@@ -56,7 +57,7 @@ public class OllamaPromptExecutionSettingsTests
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(jsonSettings);
         var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
-        Assert.Equal("stop me", ollamaExecutionSettings.Stop);
+        Assert.Equal("stop me", ollamaExecutionSettings.Stop?.FirstOrDefault());
         Assert.Equal(0.5f, ollamaExecutionSettings.Temperature);
         Assert.Equal(0.9f, ollamaExecutionSettings.TopP!.Value, 0.1f);
         Assert.Equal(100, ollamaExecutionSettings.TopK);

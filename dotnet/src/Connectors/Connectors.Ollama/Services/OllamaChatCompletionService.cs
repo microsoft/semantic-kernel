@@ -63,17 +63,14 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         var settings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
         var request = CreateChatRequest(chatHistory, settings, this._client.SelectedModel);
 
-        var answer = await this._client.SendChat(request, _ => { }, cancellationToken).ConfigureAwait(false);
-
-        // Ollama Client gives back the same requested history with added message at the end
-        // To be compatible with this API behavior, we only return the added message (last).
-        var message = answer.Last();
+        var response = await this._client.Chat(request, cancellationToken).ConfigureAwait(false);
 
         return [new ChatMessageContent(
-            role: GetAuthorRole(message.Role) ?? AuthorRole.Assistant,
-            content: message.Content,
-            modelId: this._client.SelectedModel,
-            innerContent: message)]; // Currently the Ollama Message does not provide any metadata
+            role: GetAuthorRole(response.Message.Role) ?? AuthorRole.Assistant,
+            content: response.Message.Content,
+            modelId: response.Model,
+            innerContent: response,
+            metadata: new OllamaMetadata(response))];
     }
 
     /// <inheritdoc />
@@ -89,9 +86,9 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
         await foreach (var message in this._client.StreamChat(request, cancellationToken).ConfigureAwait(false))
         {
             yield return new StreamingChatMessageContent(
-                GetAuthorRole(message?.Message.Role),
-                message?.Message.Content,
-                modelId: message?.Model,
+                role: GetAuthorRole(message!.Message.Role),
+                content: message.Message.Content,
+                modelId: message.Model,
                 innerContent: message,
                 metadata: new OllamaMetadata(message));
         }
@@ -130,7 +127,7 @@ public sealed class OllamaChatCompletionService : ServiceBase, IChatCompletionSe
                 Temperature = settings.Temperature,
                 TopP = settings.TopP,
                 TopK = settings.TopK,
-                Stop = settings.Stop
+                Stop = settings.Stop?.ToArray()
             },
             Messages = messages.ToList(),
             Model = selectedModel,
