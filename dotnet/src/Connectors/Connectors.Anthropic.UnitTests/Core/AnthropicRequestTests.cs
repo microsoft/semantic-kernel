@@ -146,8 +146,8 @@ public sealed class AnthropicRequestTests
             c => Assert.Equal(chatHistory[1].Content, ((AnthropicTextContent)c.Contents[0]).Text),
             c =>
             {
-                Assert.Equal(chatHistory[2].Items.Cast<ImageContent>().Single().MimeType, ((AnthropicImageContent)c.Contents[0]).Source.MediaType);
-                Assert.True(imageAsBytes.ToArray().SequenceEqual(Convert.FromBase64String(((AnthropicImageContent)c.Contents[0]).Source.Data)));
+                Assert.Equal(chatHistory[2].Items.Cast<ImageContent>().Single().MimeType, ((AnthropicImageContent)c.Contents[0]).Source!.MediaType);
+                Assert.True(imageAsBytes.ToArray().SequenceEqual(Convert.FromBase64String(((AnthropicImageContent)c.Contents[0]).Source!.Data!)));
             });
     }
 
