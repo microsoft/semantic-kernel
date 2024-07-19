@@ -13,7 +13,6 @@ using Connectors.Amazon.Models.Meta;
 using Connectors.Amazon.Models.Mistral;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
@@ -42,8 +41,15 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     {
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
-        var regionEndpoint = bedrockApi.DetermineServiceOperationEndpoint(new AmazonBedrockRuntimeRequest()).URL;
-        this._chatGenerationEndpoint = new Uri(regionEndpoint);
+        if (bedrockApi.Config != null) // This should only be null when runtime object is Mock<IAmazonBedrockRuntime>() for testing.
+        {
+            var regionEndpoint = bedrockApi.DetermineServiceOperationEndpoint(new AmazonBedrockRuntimeRequest()).URL;
+            this._chatGenerationEndpoint = new Uri(regionEndpoint);
+        }
+        else
+        {
+            this._chatGenerationEndpoint = new Uri("https://bedrock-runtime.us-east-1.amazonaws.com");
+        }
         string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-embed-text-v1:0"
         this._modelProvider = parts[0];
         string modelName = parts.Length > 1 ? parts[1] : string.Empty;

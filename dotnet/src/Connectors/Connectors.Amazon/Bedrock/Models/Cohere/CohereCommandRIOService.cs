@@ -148,9 +148,9 @@ public class CohereCommandRIOService : IBedrockModelIOService<IChatCompletionReq
                 Role = MapRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
-            Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.3),
-            TopP = this.GetExtensionDataValue(settings?.ExtensionData, "p", 0.75),
-            TopK = this.GetExtensionDataValue(settings?.ExtensionData, "k", 0.0),
+            Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.3f),
+            TopP = this.GetExtensionDataValue(settings?.ExtensionData, "p", 0.75f),
+            TopK = this.GetExtensionDataValue(settings?.ExtensionData, "k", 0.0f),
             MaxTokens = this.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512),
             PromptTruncation = this.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", "OFF"),
             FrequencyPenalty = this.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", 0.0),

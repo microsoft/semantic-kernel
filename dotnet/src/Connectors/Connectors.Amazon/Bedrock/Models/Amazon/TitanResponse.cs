@@ -42,6 +42,7 @@ public class AmazonTitanChatCompletionResult : ChatMessageContent
     [JsonPropertyName("completionReason")]
     public string? CompletionReason { get; set; }
 }
+
 /// <summary>
 /// The Amazon Titan Text response object when deserialized from Invoke Model call.
 /// </summary>

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Amazon;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Microsoft.SemanticKernel;
@@ -8,7 +9,9 @@ using Microsoft.SemanticKernel.Connectors.Amazon.Services;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
+
 namespace Connectors.Amazon.UnitTests.Services;
+
 /// <summary>
 /// Unit tests for Bedrock Chat Completion Service.
 /// </summary>
@@ -21,7 +24,7 @@ public class BedrockChatCompletionServiceTests
     public void AttributesShouldContainModelId()
     {
         // Arrange & Act
-        string modelId = "amazon.titan-embed-text-v1:0";
+        string modelId = "amazon.titan-text-premier-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
 
@@ -131,7 +134,7 @@ public class BedrockChatCompletionServiceTests
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
     [Fact]
-    public async Task GetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    public async Task TitanGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
@@ -327,5 +330,275 @@ public class BedrockChatCompletionServiceTests
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
             () => service.GetChatMessageContentsAsync(chatHistory)).ConfigureAwait(true);
+    }
+    /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the chat completion call.
+    /// </summary>
+    [Fact]
+    public async Task ClaudeGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    {
+        // Arrange
+        string modelId = "anthropic.claude-chat-completion";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var executionSettings = new PromptExecutionSettings()
+        {
+            ModelId = modelId,
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.7f },
+                { "top_p", 0.7f },
+                { "maxTokenCount", 512 }
+            }
+        };
+        mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConverseResponse
+            {
+                Output = new ConverseOutput
+                {
+                    Message = new Message
+                    {
+                        Role = ConversationRole.Assistant,
+                        Content = new List<ContentBlock> { new ContentBlock { Text = "I'm doing well." } }
+                    }
+                },
+                Metrics = new ConverseMetrics(),
+                StopReason = StopReason.Max_tokens,
+                Usage = new TokenUsage()
+            });
+        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
+
+        // Assert
+        ConverseRequest converseRequest = new ConverseRequest();
+        var invocation = mockBedrockApi.Invocations
+            .Where(i => i.Method.Name == "ConverseAsync")
+            .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
+        if (invocation != null)
+        {
+            converseRequest = (ConverseRequest)invocation.Arguments[0];
+        }
+        Assert.Single(result);
+        Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
+        Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
+        Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
+    }
+    /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the chat completion call.
+    /// </summary>
+    [Fact]
+    public async Task LlamaGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    {
+        // Arrange
+        string modelId = "meta.llama3-text-lite-v1";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var executionSettings = new PromptExecutionSettings()
+        {
+            ModelId = modelId,
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.7f },
+                { "topP", 0.9f },
+                { "maxTokenCount", 512 }
+            }
+        };
+        mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConverseResponse
+            {
+                Output = new ConverseOutput
+                {
+                    Message = new Message
+                    {
+                        Role = ConversationRole.Assistant,
+                        Content = new List<ContentBlock> { new ContentBlock { Text = "I'm doing well." } }
+                    }
+                },
+                Metrics = new ConverseMetrics(),
+                StopReason = StopReason.Max_tokens,
+                Usage = new TokenUsage()
+            });
+        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
+
+        // Assert
+        ConverseRequest converseRequest = new ConverseRequest();
+        var invocation = mockBedrockApi.Invocations
+            .Where(i => i.Method.Name == "ConverseAsync")
+            .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
+        if (invocation != null)
+        {
+            converseRequest = (ConverseRequest)invocation.Arguments[0];
+        }
+        Assert.Single(result);
+        Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
+        Assert.Equal(executionSettings.ExtensionData["topP"], converseRequest?.InferenceConfig.TopP);
+        Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
+    }
+    /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the chat completion call.
+    /// </summary>
+    [Fact]
+    public async Task MistralGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    {
+        // Arrange
+        string modelId = "mistral.mistral-text-lite-v1";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var executionSettings = new PromptExecutionSettings()
+        {
+            ModelId = modelId,
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.5f },
+                { "top_p", .9f },
+                { "max_tokens", 512 }
+            }
+        };
+        mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConverseResponse
+            {
+                Output = new ConverseOutput
+                {
+                    Message = new Message
+                    {
+                        Role = ConversationRole.Assistant,
+                        Content = new List<ContentBlock> { new ContentBlock { Text = "I'm doing well." } }
+                    }
+                },
+                Metrics = new ConverseMetrics(),
+                StopReason = StopReason.Max_tokens,
+                Usage = new TokenUsage()
+            });
+        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
+
+        // Assert
+        ConverseRequest converseRequest = new ConverseRequest();
+        var invocation = mockBedrockApi.Invocations
+            .Where(i => i.Method.Name == "ConverseAsync")
+            .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
+        if (invocation != null)
+        {
+            converseRequest = (ConverseRequest)invocation.Arguments[0];
+        }
+        Assert.Single(result);
+        Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
+        Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
+        Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
+    }
+    /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the chat completion call.
+    /// </summary>
+    [Fact]
+    public async Task CommandRGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    {
+        // Arrange
+        string modelId = "cohere.command-r-chat-stuff";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var executionSettings = new PromptExecutionSettings()
+        {
+            ModelId = modelId,
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.7f },
+                { "p", 0.9f },
+                { "max_tokens", 202 }
+            }
+        };
+        mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConverseResponse
+            {
+                Output = new ConverseOutput
+                {
+                    Message = new Message
+                    {
+                        Role = ConversationRole.Assistant,
+                        Content = new List<ContentBlock> { new ContentBlock { Text = "I'm doing well." } }
+                    }
+                },
+                Metrics = new ConverseMetrics(),
+                StopReason = StopReason.Max_tokens,
+                Usage = new TokenUsage()
+            });
+        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
+
+        // Assert
+        ConverseRequest converseRequest = new ConverseRequest();
+        var invocation = mockBedrockApi.Invocations
+            .Where(i => i.Method.Name == "ConverseAsync")
+            .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
+        if (invocation != null)
+        {
+            converseRequest = (ConverseRequest)invocation.Arguments[0];
+        }
+        Assert.Single(result);
+        Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
+        Assert.Equal(executionSettings.ExtensionData["p"], converseRequest?.InferenceConfig.TopP);
+        Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
+    }
+    /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the chat completion call.
+    /// </summary>
+    [Fact]
+    public async Task JambaGetChatMessageContentsAsyncShouldUsePromptExecutionSettingsAsync()
+    {
+        // Arrange
+        string modelId = "ai21.jamba-chat-stuff";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var executionSettings = new PromptExecutionSettings()
+        {
+            ModelId = modelId,
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.7f },
+                { "top_p", 0.9f },
+                { "max_tokens", 202 }
+            }
+        };
+        mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConverseResponse
+            {
+                Output = new ConverseOutput
+                {
+                    Message = new Message
+                    {
+                        Role = ConversationRole.Assistant,
+                        Content = new List<ContentBlock> { new ContentBlock { Text = "I'm doing well." } }
+                    }
+                },
+                Metrics = new ConverseMetrics(),
+                StopReason = StopReason.Max_tokens,
+                Usage = new TokenUsage()
+            });
+        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
+
+        // Assert
+        ConverseRequest converseRequest = new ConverseRequest();
+        var invocation = mockBedrockApi.Invocations
+            .Where(i => i.Method.Name == "ConverseAsync")
+            .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
+        if (invocation != null)
+        {
+            converseRequest = (ConverseRequest)invocation.Arguments[0];
+        }
+        Assert.Single(result);
+        Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
+        Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
+        Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
     }
 }

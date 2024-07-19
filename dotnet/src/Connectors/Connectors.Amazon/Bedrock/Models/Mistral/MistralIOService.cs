@@ -25,8 +25,8 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = 0.5; // Mistral default [0.7 for the non-instruct versions. need to fix]
-        double? topP = 0.9; // Mistral default
+        double? temperature = 0.5f; // Mistral default [0.7 for the non-instruct versions. need to fix]
+        double? topP = 0.9f; // Mistral default
         int? maxTokens = 512; // Mistral default [8192 for the non-instruct versions. need to fix]
         List<string>? stop = null;
         int? topK = 50; // Mistral default [disabled for non-instruct. likely just ignored since still functional]
@@ -131,8 +131,8 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
         {
             Stream = stream,
             Messages = chatHistory.SelectMany(chatMessage => this.ToMistralChatMessages(chatMessage, executionSettings?.ToolCallBehavior)).ToList(),
-            Temperature = executionSettings?.Temperature ?? 0.7,
-            TopP = executionSettings?.TopP ?? 1,
+            Temperature = executionSettings?.Temperature ?? 0.7f,
+            TopP = executionSettings?.TopP ?? 1.0f,
             MaxTokens = executionSettings?.MaxTokens ?? 8192,
             SafePrompt = executionSettings?.SafePrompt ?? false,
             RandomSeed = executionSettings?.RandomSeed
@@ -277,5 +277,20 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
             AdditionalModelResponseFieldPaths = new List<string>()
         };
         return converseStreamRequest;
+    }
+
+    private TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
+    {
+        if (extensionData == null || !extensionData.TryGetValue(key, out object? value))
+        {
+            return defaultValue;
+        }
+
+        if (value is TValue typedValue)
+        {
+            return typedValue;
+        }
+
+        return defaultValue;
     }
 }

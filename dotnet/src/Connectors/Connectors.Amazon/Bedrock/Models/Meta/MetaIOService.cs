@@ -94,8 +94,8 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
-            Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5),
-            TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9),
+            Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5f),
+            TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9f),
             MaxGenLen = this.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
         };
         var converseRequest = new ConverseRequest
