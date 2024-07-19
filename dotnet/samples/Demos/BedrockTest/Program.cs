@@ -1,6 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using Connectors.Amazon.Extensions;
+﻿using Connectors.Amazon.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -8,134 +6,201 @@ using Microsoft.SemanticKernel.TextGeneration;
 // ----------------------------CHAT COMPLETION----------------------------
 string userInput;
 ChatHistory chatHistory = new ChatHistory();
+
+// List of available models
+Dictionary<int, string> modelOptions = new Dictionary<int, string>()
+{
+    { 1, "amazon.titan-text-premier-v1:0" },
+    { 2, "anthropic.claude-3-sonnet-20240229-v1:0" },
+    { 3, "anthropic.claude-3-haiku-20240307-v1:0" },
+    { 4, "anthropic.claude-v2:1" },
+    { 5, "ai21.jamba-instruct-v1:0" },
+    { 6, "cohere.command-r-plus-v1:0" },
+    { 7, "meta.llama3-8b-instruct-v1:0" },
+    { 8, "mistral.mistral-7b-instruct-v0:2" }
+};
+
+// Display the model options
+Console.WriteLine("Available models:");
+foreach (var option in modelOptions)
+{
+    Console.WriteLine($"{option.Key}. {option.Value}");
+}
+
+Console.Write("Enter the number of the model you want to use: ");
+int chosenModel;
+while (!int.TryParse(Console.ReadLine(), out chosenModel) || !modelOptions.ContainsKey(chosenModel))
+{
+    Console.WriteLine("Invalid input. Please enter a valid number from the list.");
+    Console.Write("Enter the number of the model you want to use: ");
+}
+
+var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelOptions[chosenModel]).Build();
+
 do
 {
     Console.Write("Enter a prompt (or 'exit' to quit): ");
-    userInput = Console.ReadLine();
+    userInput = Console.ReadLine() ?? "exit";
 
-    if (userInput.ToLower() != "exit")
+    if (!string.Equals(userInput, "exit", StringComparison.OrdinalIgnoreCase))
     {
         chatHistory.AddMessage(AuthorRole.User, userInput);
 
-        // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
-        // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-sonnet-20240229-v1:0").Build();
-        // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-haiku-20240307-v1:0").Build();
-        // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-v2:1").Build();
-        // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("ai21.jamba-instruct-v1:0").Build();
-        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("cohere.command-r-plus-v1:0").Build(); //FAILING
-        // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("meta.llama3-8b-instruct-v1:0").Build();
-        // var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build();
-
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
         var result = await chatCompletionService.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(false);
-
+        string output = "";
         foreach (var message in result)
         {
-            chatHistory.AddMessage(AuthorRole.Assistant, message.Content);
+            output += message.Content;
             Console.WriteLine($"Chat Completion Answer: {message.Content}");
             Console.WriteLine();
         }
+        chatHistory.AddMessage(AuthorRole.Assistant, output);
     }
-} while (userInput.ToLower() != "exit");
-
-
-
+} while (!string.Equals(userInput, "exit", StringComparison.OrdinalIgnoreCase));
 
 // ----------------------------TEXT GENERATION----------------------------
-// Console.Write("Text Generation Prompt: ");
-// string UserPrompt2 = Console.ReadLine();
-// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
-// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("mistral.mistral-7b-instruct-v0:2").Build();
-// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.jamba-instruct-v1:0").Build();
-// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("anthropic.claude-v2:1").Build();
-// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-text-v14").Build();
-// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("meta.llama3-8b-instruct-v1:0").Build();
-// var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-r-plus-v1:0").Build();
-// // var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.j2-ultra-v1").Build();
-//
-// var textGenerationService = kernel2.GetRequiredService<ITextGenerationService>();
-// var textGeneration = await textGenerationService.GetTextContentsAsync(UserPrompt2).ConfigureAwait(false);
-// if (textGeneration.Count > 0)
-// {
-//     var firstTextContent = textGeneration.FirstOrDefault();
-//     if (firstTextContent != null)
-//     {
-//         Console.WriteLine("Text Generation Answer: " + firstTextContent.Text);
-//     }
-//     else
-//     {
-//         Console.WriteLine("Text Generation Answer: (none)");
-//     }
-// }
-// else
-// {
-//     Console.WriteLine("Text Generation Answer: (No output text)");
-// }
+// List of available text generation models
+Dictionary<int, string> textGenerationModelOptions = new Dictionary<int, string>()
+{
+    { 1, "amazon.titan-text-premier-v1:0" },
+    { 2, "mistral.mistral-7b-instruct-v0:2" },
+    { 3, "ai21.jamba-instruct-v1:0" },
+    { 4, "anthropic.claude-v2:1" },
+    { 5, "cohere.command-text-v14" },
+    { 6, "meta.llama3-8b-instruct-v1:0" },
+    { 7, "cohere.command-r-plus-v1:0" },
+    { 8, "ai21.j2-ultra-v1" }
+};
 
+// Display the text generation model options
+Console.WriteLine("Available text generation models:");
+foreach (var option in textGenerationModelOptions)
+{
+    Console.WriteLine($"{option.Key}. {option.Value}");
+}
 
+Console.Write("Enter the number of the text generation model you want to use: ");
+int chosenTextGenerationModel;
+while (!int.TryParse(Console.ReadLine(), out chosenTextGenerationModel) || !textGenerationModelOptions.ContainsKey(chosenTextGenerationModel))
+{
+    Console.WriteLine("Invalid input. Please enter a valid number from the list.");
+    Console.Write("Enter the number of the text generation model you want to use: ");
+}
 
+Console.Write("Text Generation Prompt: ");
+string UserPrompt2 = Console.ReadLine() ?? "";
 
+var kernel2 = Kernel.CreateBuilder().AddBedrockTextGenerationService(textGenerationModelOptions[chosenTextGenerationModel]).Build();
+
+var textGenerationService = kernel2.GetRequiredService<ITextGenerationService>();
+var textGeneration = await textGenerationService.GetTextContentsAsync(UserPrompt2).ConfigureAwait(false);
+if (textGeneration.Count > 0)
+{
+    var firstTextContent = textGeneration[0];
+    if (firstTextContent != null)
+    {
+        Console.WriteLine("Text Generation Answer: " + firstTextContent.Text);
+    }
+    else
+    {
+        Console.WriteLine("Text Generation Answer: (none)");
+    }
+}
+else
+{
+    Console.WriteLine("Text Generation Answer: (No output text)");
+}
 
 // ----------------------------STREAM TEXT GENERATION----------------------------
-// Console.Write("Stream Text Generation Prompt: ");
-// string UserPrompt3 = Console.ReadLine();
-// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0").Build();
-// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("anthropic.claude-v2").Build();
-// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("mistral.mistral-7b-instruct-v0:2").Build();
-// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-text-v14").Build();
-// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("cohere.command-r-plus-v1:0").Build();
-// var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("meta.llama3-8b-instruct-v1:0").Build();
-//
-// // AI21Labs Jurassic and Jamba models do not support streaming
-// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.j2-ultra-v1").Build();
-// // var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService("ai21.jamba-instruct-v1:0").Build();
-//
-// var streamTextGenerationService = kernel3.GetRequiredService<ITextGenerationService>();
-// var streamTextGeneration = streamTextGenerationService.GetStreamingTextContentsAsync(UserPrompt3).ConfigureAwait(true);
-// await foreach (var textContent in streamTextGeneration)
-// {
-//     Console.Write(textContent.Text);
-// }
+// List of available stream text generation models
+Dictionary<int, string> streamTextGenerationModelOptions = new Dictionary<int, string>()
+{
+    { 1, "amazon.titan-text-premier-v1:0" },
+    { 2, "anthropic.claude-v2" },
+    { 3, "mistral.mistral-7b-instruct-v0:2" },
+    { 4, "cohere.command-text-v14" },
+    { 5, "cohere.command-r-plus-v1:0" },
+    { 6, "meta.llama3-8b-instruct-v1:0" }
+};
 
+// Display the stream text generation model options
+Console.WriteLine("Available stream text generation models:");
+foreach (var option in streamTextGenerationModelOptions)
+{
+    Console.WriteLine($"{option.Key}. {option.Value}");
+}
 
+Console.Write("Enter the number of the stream text generation model you want to use: ");
+int chosenStreamTextGenerationModel;
+while (!int.TryParse(Console.ReadLine(), out chosenStreamTextGenerationModel) || !streamTextGenerationModelOptions.ContainsKey(chosenStreamTextGenerationModel))
+{
+    Console.WriteLine("Invalid input. Please enter a valid number from the list.");
+    Console.Write("Enter the number of the stream text generation model you want to use: ");
+}
 
+Console.Write("Stream Text Generation Prompt: ");
+string UserPrompt3 = Console.ReadLine() ?? "";
 
+var kernel3 = Kernel.CreateBuilder().AddBedrockTextGenerationService(streamTextGenerationModelOptions[chosenStreamTextGenerationModel]).Build();
 
+var streamTextGenerationService = kernel3.GetRequiredService<ITextGenerationService>();
+var streamTextGeneration = streamTextGenerationService.GetStreamingTextContentsAsync(UserPrompt3).ConfigureAwait(true);
+await foreach (var textContent in streamTextGeneration)
+{
+    Console.Write(textContent.Text);
+}
 
 // ----------------------------STREAM CHAT COMPLETION----------------------------
-// string userInput;
-// ChatHistory chatHistory = new ChatHistory();
-// do
-// {
-//     Console.Write("Enter a prompt (or 'exit' to quit): ");
-//     userInput = Console.ReadLine();
-//
-//     if (userInput.ToLower() != "exit")
-//     {
-//         chatHistory.AddMessage(AuthorRole.User, userInput);
-//         // Console.WriteLine($"Stream Chat Completion Question: {userInput}");
-//
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("mistral.mistral-7b-instruct-v0:2").Build();
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0").Build();
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-v2").Build();
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("anthropic.claude-3-sonnet-20240229-v1:0").Build();
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("cohere.command-r-plus-v1:0").Build(); //FAILING
-//         var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("meta.llama3-8b-instruct-v1:0").Build();
-//
-//         // AI21 Labs does not support streaming
-//         // var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService("ai21.jamba-instruct-v1:0").Build();
-//
-//
-//
-//         var chatCompletionService = kernel4.GetRequiredService<IChatCompletionService>();
-//         var result = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory).ConfigureAwait(false);
-//         string output = "";
-//         await foreach (var message in result)
-//         {
-//             Console.Write($"{message.Content}");
-//             output += message.Content;
-//         }
-//         Console.WriteLine();
-//         chatHistory.AddMessage(AuthorRole.Assistant, output);
-//     }
-// } while (userInput.ToLower() != "exit");
+string userInput2;
+ChatHistory chatHistory2 = new ChatHistory();
+
+// List of available stream chat completion models
+Dictionary<int, string> streamChatCompletionModelOptions = new Dictionary<int, string>()
+{
+    { 1, "mistral.mistral-7b-instruct-v0:2" },
+    { 2, "amazon.titan-text-premier-v1:0" },
+    { 3, "anthropic.claude-v2" },
+    { 4, "anthropic.claude-3-sonnet-20240229-v1:0" },
+    { 5, "cohere.command-r-plus-v1:0" },
+    { 6, "meta.llama3-8b-instruct-v1:0" }
+};
+
+// Display the stream chat completion model options
+Console.WriteLine("Available stream chat completion models:");
+foreach (var option in streamChatCompletionModelOptions)
+{
+    Console.WriteLine($"{option.Key}. {option.Value}");
+}
+
+Console.Write("Enter the number of the stream chat completion model you want to use: ");
+int chosenStreamChatCompletionModel;
+while (!int.TryParse(Console.ReadLine(), out chosenStreamChatCompletionModel) || !streamChatCompletionModelOptions.ContainsKey(chosenStreamChatCompletionModel))
+{
+    Console.WriteLine("Invalid input. Please enter a valid number from the list.");
+    Console.Write("Enter the number of the stream chat completion model you want to use: ");
+}
+
+var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService(streamChatCompletionModelOptions[chosenStreamChatCompletionModel]).Build();
+
+do
+{
+    Console.Write("Enter a prompt (or 'exit' to quit): ");
+    userInput2 = Console.ReadLine() ?? "exit";
+
+    if (!string.Equals(userInput, "exit", StringComparison.OrdinalIgnoreCase))
+    {
+        chatHistory2.AddMessage(AuthorRole.User, userInput2);
+
+        var chatCompletionService = kernel4.GetRequiredService<IChatCompletionService>();
+        var result = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory2).ConfigureAwait(false);
+        string output = "";
+        await foreach (var message in result)
+        {
+            Console.Write($"{message.Content}");
+            output += message.Content;
+        }
+        Console.WriteLine();
+        chatHistory2.AddMessage(AuthorRole.Assistant, output);
+    }
+} while (!string.Equals(userInput, "exit", StringComparison.OrdinalIgnoreCase));
