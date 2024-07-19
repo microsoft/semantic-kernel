@@ -2,6 +2,7 @@
 
 from typing import Any, Union, get_args, get_origin, get_type_hints
 
+from semantic_kernel.const import UNION_DELIMITER
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 TYPE_MAPPING = {
@@ -105,10 +106,17 @@ class KernelJsonSchemaBuilder:
         Returns:
             dict[str, Any]: The JSON schema for the parameter type.
         """
-        type_name = TYPE_MAPPING.get(parameter_type, "object")
-        schema = {"type": type_name}
-        if description:
-            schema["description"] = description
+        schema: dict[str, Any] = {}
+        if UNION_DELIMITER in parameter_type:
+            # this means it is a Union or | so need to build with "anyOf"
+            types = parameter_type.split(UNION_DELIMITER)
+            schemas = [cls.build_from_type_name(t.strip(), description) for t in types]
+            schema["anyOf"] = schemas
+        else:
+            type_name = TYPE_MAPPING.get(parameter_type, "object")
+            schema["type"] = type_name
+            if description:
+                schema["description"] = description  # type: ignore
         return schema
 
     @classmethod
@@ -168,9 +176,6 @@ class KernelJsonSchemaBuilder:
                 if description:
                     schema["description"] = description
                 return schema
-            schemas = [cls.build(arg) for arg in args]
-            schema = {"anyOf": schemas}  # type: ignore
-            if description:
-                schema["description"] = description
-            return schema
+            schemas = [cls.build(arg, description) for arg in args]
+            return {"anyOf": schemas}  # type: ignore
         return cls.get_json_schema(parameter_type)

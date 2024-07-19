@@ -78,6 +78,18 @@ class ListPlugin:
         return [item for item in items if item in ["skip"]]
 
 
+class UnionTypePluginLegacySyntax:
+    @kernel_function(name="union_legacy", description="Union type")
+    def union(self, value: Annotated[str | int, "The union value"]) -> Annotated[str | int, "The union value"]:
+        return value
+
+
+class UnionTypePlugin:
+    @kernel_function(name="union", description="Union type")
+    def union(self, value: Annotated[str | int, "The union value"]) -> Annotated[str | int, "The union value"]:
+        return value
+
+
 @pytest.fixture
 def setup_kernel():
     kernel = Kernel()
@@ -88,6 +100,8 @@ def setup_kernel():
             "ComplexTypePlugin": ComplexTypePlugin(),
             "ListPlugin": ListPlugin(),
             "ItemsPlugin": ItemsPlugin(),
+            "UnionPlugin": UnionTypePlugin(),
+            "UnionPluginLegacy": UnionTypePluginLegacySyntax(),
         }
     )
     return kernel
@@ -300,3 +314,42 @@ def test_list_of_items_plugin(setup_kernel):
     }
 
     assert complex_schema == expected_schema
+
+
+@pytest.mark.parametrize(
+    ("plugin_name", "function_name"), [("UnionPlugin", "union"), ("UnionPluginLegacy", "union_legacy")]
+)
+def test_union_plugin(setup_kernel, plugin_name, function_name):
+    kernel = setup_kernel
+
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(
+        filters={"included_plugins": ["UnionPlugin", "UnionPluginLegacy"]}
+    )
+
+    complex_schema_1 = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
+    complex_schema_2 = kernel_function_metadata_to_function_call_format(complex_func_metadata[1])
+
+    expected_schema = {
+        "type": "function",
+        "function": {
+            "name": f"{plugin_name}-{function_name}",
+            "description": "Union type",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "anyOf": [
+                            {"type": "string", "description": "The union value"},
+                            {"type": "integer", "description": "The union value"},
+                        ]
+                    }
+                },
+                "required": ["value"],
+            },
+        },
+    }
+
+    if plugin_name == "UnionPlugin":
+        assert complex_schema_1 == expected_schema
+    else:
+        assert complex_schema_2 == expected_schema
