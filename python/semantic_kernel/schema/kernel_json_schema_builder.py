@@ -2,7 +2,7 @@
 
 from typing import Any, Union, get_args, get_origin, get_type_hints
 
-from semantic_kernel.const import UNION_DELIMITER
+from semantic_kernel.const import PARSED_ANNOTATION_UNION_DELIMITER
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 TYPE_MAPPING = {
@@ -107,9 +107,9 @@ class KernelJsonSchemaBuilder:
             dict[str, Any]: The JSON schema for the parameter type.
         """
         schema: dict[str, Any] = {}
-        if UNION_DELIMITER in parameter_type:
+        if PARSED_ANNOTATION_UNION_DELIMITER in parameter_type:
             # this means it is a Union or | so need to build with "anyOf"
-            types = parameter_type.split(UNION_DELIMITER)
+            types = parameter_type.split(PARSED_ANNOTATION_UNION_DELIMITER)
             schemas = [cls.build_from_type_name(t.strip(), description) for t in types]
             schema["anyOf"] = schemas
         else:
