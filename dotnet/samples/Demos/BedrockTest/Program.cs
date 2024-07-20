@@ -28,7 +28,7 @@ foreach (var option in modelOptions)
     Console.WriteLine($"{option.Key}. {option.Value}");
 }
 
-Console.Write("Enter the number of the model you want to use: ");
+Console.Write("Enter the number of the model you want to use for chat completion: ");
 int chosenModel;
 while (!int.TryParse(Console.ReadLine(), out chosenModel) || !modelOptions.ContainsKey(chosenModel))
 {
@@ -151,6 +151,7 @@ await foreach (var textContent in streamTextGeneration)
 {
     Console.Write(textContent.Text);
 }
+Console.WriteLine();
 
 // ----------------------------STREAM CHAT COMPLETION----------------------------
 string userInput2;
@@ -189,7 +190,7 @@ do
     Console.Write("Enter a prompt (or 'exit' to quit): ");
     userInput2 = Console.ReadLine() ?? "exit";
 
-    if (!string.Equals(userInput, "exit", StringComparison.OrdinalIgnoreCase))
+    if (!string.Equals(userInput2, "exit", StringComparison.OrdinalIgnoreCase))
     {
         chatHistory2.AddMessage(AuthorRole.User, userInput2);
 
@@ -204,4 +205,4 @@ do
         Console.WriteLine();
         chatHistory2.AddMessage(AuthorRole.Assistant, output);
     }
-} while (!string.Equals(userInput, "exit", StringComparison.OrdinalIgnoreCase));
+} while (!string.Equals(userInput2, "exit", StringComparison.OrdinalIgnoreCase));
