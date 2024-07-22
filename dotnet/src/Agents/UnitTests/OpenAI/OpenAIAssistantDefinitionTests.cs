@@ -18,7 +18,7 @@ public class OpenAIAssistantDefinitionTests
     {
         OpenAIAssistantDefinition definition = new();
 
-        Assert.Null(definition.Id);
+        Assert.Equal(string.Empty, definition.Id);
         Assert.Null(definition.Name);
         Assert.Null(definition.ModelName);
         Assert.Null(definition.Instructions);
