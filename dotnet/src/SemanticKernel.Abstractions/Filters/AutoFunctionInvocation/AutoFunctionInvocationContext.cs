@@ -63,6 +63,11 @@ public class AutoFunctionInvocationContext
     public int FunctionCount { get; init; }
 
     /// <summary>
+    /// The ID of the tool call.
+    /// </summary>
+    public string? ToolCallId { get; init; }
+
+    /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> associated with automatic function invocation.
     /// </summary>
     public ChatHistory ChatHistory { get; }

@@ -174,6 +174,7 @@ internal sealed class MistralClient
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
                 AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory)
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
@@ -406,6 +407,7 @@ internal sealed class MistralClient
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
                 AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory)
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
