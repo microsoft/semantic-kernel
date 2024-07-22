@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction.FromPromptBuilder;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceCollection;
@@ -161,6 +162,24 @@ public class Kernel {
      */
     public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt) {
         return invokeAsync(KernelFunction.<T>createFromPrompt(prompt).build());
+    }
+
+    public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt,
+        @Nonnull KernelFunctionArguments arguments) {
+        KernelFunction<T> function = KernelFunction.<T>createFromPrompt(prompt).build();
+
+        return function.invokeAsync(this)
+            .withArguments(arguments);
+    }
+
+    public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt,
+        @Nonnull KernelFunctionArguments arguments, @Nonnull InvocationContext invocationContext) {
+
+        KernelFunction<T> function = KernelFunction.<T>createFromPrompt(prompt).build();
+
+        return function.invokeAsync(this)
+            .withArguments(arguments)
+            .withInvocationContext(invocationContext);
     }
 
     /**
