@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// Defines agent execution options for each invocation.
 /// </summary>
 /// <remarks>
-/// These options are persisted as a single entry of the agent's metadata with key: "__settings"
+/// These options are persisted as a single entry of the agent's metadata with key: "__run_options"
 /// </remarks>
 public sealed class OpenAIAssistantExecutionOptions
 {

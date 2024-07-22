@@ -8,15 +8,15 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 /// <summary>
-/// Unit testing of <see cref="OpenAIThreadCreationOptions"/>.
+/// Unit testing of <see cref="RunPollingOptions"/>.
 /// </summary>
-public class OpenAIThreadCreationOptionsTests
+public class RunPollingOptionsTests
 {
     /// <summary>
     /// Verify initial state.
     /// </summary>
     [Fact]
-    public void OpenAIThreadCreationOptionsInitialState()
+    public void RunPollingOptionsInitialState()
     {
         OpenAIThreadCreationOptions options = new();
 
@@ -27,11 +27,11 @@ public class OpenAIThreadCreationOptionsTests
         Assert.False(options.EnableCodeInterpreter);
     }
 
-    /// <summary>
+    /// <summary>s
     /// Verify initialization.
     /// </summary>
     [Fact]
-    public void OpenAIThreadCreationOptionsAssignment()
+    public void RunPollingOptionsAssignment()
     {
         OpenAIThreadCreationOptions definition =
             new()

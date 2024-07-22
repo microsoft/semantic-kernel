@@ -4,6 +4,7 @@ using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI;
 using OpenAI.Files;
@@ -24,7 +25,9 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
     [Fact]
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
-        FileClient fileClient = CreateFileClient();
+        OpenAIServiceConfiguration config = GetOpenAIConfiguration();
+
+        FileClient fileClient = config.CreateFileClient();
 
         OpenAIFileInfo uploadFile =
             await fileClient.UploadFileAsync(
@@ -36,7 +39,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: GetOpenAIConfiguration(),
+                config,
                 new()
                 {
                     CodeInterpterFileIds = [uploadFile.Id],
@@ -86,14 +89,4 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
             this.UseOpenAIConfig ?
                 OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
                 OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
-
-    private FileClient CreateFileClient()
-    {
-        OpenAIClient client =
-            this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new OpenAIClient(TestConfiguration.OpenAI.ApiKey) :
-                new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), TestConfiguration.AzureOpenAI.ApiKey);
-
-        return client.GetFileClient();
-    }
 }

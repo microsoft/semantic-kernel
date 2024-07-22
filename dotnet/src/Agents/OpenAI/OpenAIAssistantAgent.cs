@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 public sealed class OpenAIAssistantAgent : KernelAgent
 {
-    private const string SettingsMetadataKey = "__settings";
+    private const string OptionsMetadataKey = "__run_options";
 
     private readonly Assistant _assistant;
     private readonly AssistantClient _client;
@@ -131,33 +131,33 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
     public Task<string> CreateThreadAsync(CancellationToken cancellationToken = default)
-        => this.CreateThreadAsync(settings: null, cancellationToken);
+        => this.CreateThreadAsync(options: null, cancellationToken);
 
     /// <summary>
     /// Create a new assistant thread.
     /// </summary>
-    /// <param name="settings">%%%</param>
+    /// <param name="options">%%%</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
-    public async Task<string> CreateThreadAsync(OpenAIThreadCreationOptions? settings, CancellationToken cancellationToken = default)
+    public async Task<string> CreateThreadAsync(OpenAIThreadCreationOptions? options, CancellationToken cancellationToken = default)
     {
-        ThreadCreationOptions options =
+        ThreadCreationOptions createOptions =
             new()
             {
-                ToolResources = GenerateToolResources(settings?.VectorStoreId, settings?.CodeInterpterFileIds),
+                ToolResources = GenerateToolResources(options?.VectorStoreId, options?.CodeInterpterFileIds),
             };
 
         //options.InitialMessages, // %%% TODO
 
-        if (settings?.Metadata != null)
+        if (options?.Metadata != null)
         {
-            foreach (KeyValuePair<string, string> item in settings.Metadata)
+            foreach (KeyValuePair<string, string> item in options.Metadata)
             {
-                options.Metadata[item.Key] = item.Value;
+                createOptions.Metadata[item.Key] = item.Value;
             }
         }
 
-        AssistantThread thread = await this._client.CreateThreadAsync(options, cancellationToken).ConfigureAwait(false);
+        AssistantThread thread = await this._client.CreateThreadAsync(createOptions, cancellationToken).ConfigureAwait(false);
 
         return thread.Id;
     }
@@ -231,23 +231,23 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         CancellationToken cancellationToken = default)
-            => this.InvokeAsync(threadId, settings: null, cancellationToken);
+            => this.InvokeAsync(threadId, options: null, cancellationToken);
 
     /// <summary>
     /// Invoke the assistant on the specified thread.
     /// </summary>
     /// <param name="threadId">The thread identifier</param>
-    /// <param name="settings">Optional invocation settings</param>
+    /// <param name="options">Optional invocation options</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
-        OpenAIAssistantInvocationOptions? settings,
+        OpenAIAssistantInvocationOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
-        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, settings, this.Logger, cancellationToken).ConfigureAwait(false))
+        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, options, this.Logger, cancellationToken).ConfigureAwait(false))
         {
             if (isVisible)
             {
@@ -309,11 +309,11 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     private static OpenAIAssistantDefinition CreateAssistantDefinition(Assistant model)
     {
-        OpenAIAssistantExecutionOptions? settings = null;
+        OpenAIAssistantExecutionOptions? options = null;
 
-        if (model.Metadata.TryGetValue(SettingsMetadataKey, out string? settingsJson))
+        if (model.Metadata.TryGetValue(OptionsMetadataKey, out string? optionsJson))
         {
-            settings = JsonSerializer.Deserialize<OpenAIAssistantExecutionOptions>(settingsJson);
+            options = JsonSerializer.Deserialize<OpenAIAssistantExecutionOptions>(optionsJson);
         }
 
         IReadOnlyList<string>? fileIds = (IReadOnlyList<string>?)model.ToolResources?.CodeInterpreter?.FileIds;
@@ -335,7 +335,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 TopP = model.NucleusSamplingFactor,
                 Temperature = model.Temperature,
                 VectorStoreId = vectorStoreId,
-                ExecutionOptions = settings,
+                ExecutionOptions = options,
             };
     }
 
@@ -363,8 +363,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         if (definition.ExecutionOptions != null)
         {
-            string settingsJson = JsonSerializer.Serialize(definition.ExecutionOptions);
-            assistantCreationOptions.Metadata[SettingsMetadataKey] = settingsJson;
+            string optionsJson = JsonSerializer.Serialize(definition.ExecutionOptions);
+            assistantCreationOptions.Metadata[OptionsMetadataKey] = optionsJson;
         }
 
         if (definition.EnableCodeInterpreter)

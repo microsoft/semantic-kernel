@@ -3,6 +3,7 @@ using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI;
 using OpenAI.Files;
@@ -24,7 +25,9 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task UseRetrievalToolWithOpenAIAssistantAgentAsync()
     {
-        FileClient fileClient = CreateFileClient();
+        OpenAIServiceConfiguration config = GetOpenAIConfiguration();
+
+        FileClient fileClient = config.CreateFileClient();
 
         OpenAIFileInfo uploadFile =
             await fileClient.UploadFileAsync(
@@ -32,18 +35,19 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
                 "travelinfo.txt",
                 FileUploadPurpose.Assistants);
 
-        VectorStore vectorStore =
-            await new OpenAIVectorStoreBuilder(GetOpenAIConfiguration())
-                .AddFile(uploadFile.Id)
-                .CreateAsync();
-
-        OpenAIVectorStore openAIStore = new(vectorStore.Id, GetOpenAIConfiguration());
+        VectorStoreClient vectorStoreClient = config.CreateVectorStoreClient();
+        VectorStoreCreationOptions vectorStoreOptions =
+            new()
+            {
+                FileIds = [uploadFile.Id]
+            };
+        VectorStore vectorStore = await vectorStoreClient.CreateVectorStoreAsync(vectorStoreOptions);
 
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: GetOpenAIConfiguration(),
+                config,
                 new()
                 {
                     ModelName = this.Model,
@@ -63,8 +67,8 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
         finally
         {
             await agent.DeleteAsync();
-            await openAIStore.DeleteAsync();
-            await fileClient.DeleteFileAsync(uploadFile.Id);
+            await vectorStoreClient.DeleteVectorStoreAsync(vectorStore);
+            await fileClient.DeleteFileAsync(uploadFile);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -86,14 +90,4 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
             this.UseOpenAIConfig ?
                 OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
                 OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
-
-    private FileClient CreateFileClient()
-    {
-        OpenAIClient client =
-            this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new OpenAIClient(TestConfiguration.OpenAI.ApiKey) :
-                new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), TestConfiguration.AzureOpenAI.ApiKey);
-
-        return client.GetFileClient();
-    }
 }

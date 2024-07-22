@@ -14,30 +14,30 @@ public class OpenAIAssistantInvocationOptionsTests
     /// Verify initial state.
     /// </summary>
     [Fact]
-    public void OpenAIAssistantInvocationSettingsInitialState()
+    public void OpenAIAssistantInvocationOptionsInitialState()
     {
-        OpenAIAssistantInvocationOptions settings = new();
+        OpenAIAssistantInvocationOptions options = new();
 
-        Assert.Null(settings.ModelName);
-        Assert.Null(settings.Metadata);
-        Assert.Null(settings.Temperature);
-        Assert.Null(settings.TopP);
-        Assert.Null(settings.ParallelToolCallsEnabled);
-        Assert.Null(settings.MaxCompletionTokens);
-        Assert.Null(settings.MaxPromptTokens);
-        Assert.Null(settings.TruncationMessageCount);
-        Assert.Null(settings.EnableJsonResponse);
-        Assert.False(settings.EnableCodeInterpreter);
-        Assert.False(settings.EnableFileSearch);
+        Assert.Null(options.ModelName);
+        Assert.Null(options.Metadata);
+        Assert.Null(options.Temperature);
+        Assert.Null(options.TopP);
+        Assert.Null(options.ParallelToolCallsEnabled);
+        Assert.Null(options.MaxCompletionTokens);
+        Assert.Null(options.MaxPromptTokens);
+        Assert.Null(options.TruncationMessageCount);
+        Assert.Null(options.EnableJsonResponse);
+        Assert.False(options.EnableCodeInterpreter);
+        Assert.False(options.EnableFileSearch);
     }
 
     /// <summary>
     /// Verify initialization.
     /// </summary>
     [Fact]
-    public void OpenAIAssistantInvocationSettingsAssignment()
+    public void OpenAIAssistantInvocationOptionsAssignment()
     {
-        OpenAIAssistantInvocationOptions settings =
+        OpenAIAssistantInvocationOptions options =
             new()
             {
                 ModelName = "testmodel",
@@ -53,16 +53,16 @@ public class OpenAIAssistantInvocationOptionsTests
                 EnableFileSearch = true,
             };
 
-        Assert.Equal("testmodel", settings.ModelName);
-        Assert.Equal(2, settings.Temperature);
-        Assert.Equal(0, settings.TopP);
-        Assert.Equal(1000, settings.MaxCompletionTokens);
-        Assert.Equal(1000, settings.MaxPromptTokens);
-        Assert.Equal(12, settings.TruncationMessageCount);
-        Assert.False(settings.ParallelToolCallsEnabled);
-        Assert.Single(settings.Metadata);
-        Assert.True(settings.EnableCodeInterpreter);
-        Assert.True(settings.EnableJsonResponse);
-        Assert.True(settings.EnableFileSearch);
+        Assert.Equal("testmodel", options.ModelName);
+        Assert.Equal(2, options.Temperature);
+        Assert.Equal(0, options.TopP);
+        Assert.Equal(1000, options.MaxCompletionTokens);
+        Assert.Equal(1000, options.MaxPromptTokens);
+        Assert.Equal(12, options.TruncationMessageCount);
+        Assert.False(options.ParallelToolCallsEnabled);
+        Assert.Single(options.Metadata);
+        Assert.True(options.EnableCodeInterpreter);
+        Assert.True(options.EnableJsonResponse);
+        Assert.True(options.EnableFileSearch);
     }
 }
