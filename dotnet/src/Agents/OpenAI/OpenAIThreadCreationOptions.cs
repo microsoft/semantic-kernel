@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Thread creation settings.
+/// Thread creation options.
 /// </summary>
-public sealed class OpenAIThreadCreationSettings
+public sealed class OpenAIThreadCreationOptions
 {
     /// <summary>
     /// Optional file-ids made available to the code_interpreter tool, if enabled.

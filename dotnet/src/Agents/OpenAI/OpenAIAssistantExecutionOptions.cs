@@ -2,12 +2,12 @@
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Defines agent execution settings for each invocation.
+/// Defines agent execution options for each invocation.
 /// </summary>
 /// <remarks>
-/// These settings are persisted as a single entry of the agent's metadata with key: "__settings"
+/// These options are persisted as a single entry of the agent's metadata with key: "__settings"
 /// </remarks>
-public sealed class OpenAIAssistantExecutionSettings
+public sealed class OpenAIAssistantExecutionOptions
 {
     /// <summary>
     /// The maximum number of completion tokens that may be used over the course of the run.

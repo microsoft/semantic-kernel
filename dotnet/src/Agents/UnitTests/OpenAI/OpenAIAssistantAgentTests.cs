@@ -164,7 +164,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 EnableJsonResponse = true,
                 CodeInterpterFileIds = ["file1", "file2"],
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
-                ExecutionSettings = new(),
+                ExecutionOptions = new(),
             };
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentWithEverything);

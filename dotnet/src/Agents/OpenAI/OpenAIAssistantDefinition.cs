@@ -76,7 +76,7 @@ public sealed class OpenAIAssistantDefinition
     public string? VectorStoreId { get; init; }
 
     /// <summary>
-    /// Default execution settings for each agent invocation.
+    /// Default execution options for each agent invocation.
     /// </summary>
-    public OpenAIAssistantExecutionSettings? ExecutionSettings { get; init; }
+    public OpenAIAssistantExecutionOptions? ExecutionOptions { get; init; }
 }

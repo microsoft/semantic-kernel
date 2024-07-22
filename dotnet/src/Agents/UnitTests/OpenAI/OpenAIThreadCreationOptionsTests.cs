@@ -8,9 +8,9 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 /// <summary>
-/// Unit testing of <see cref="OpenAIThreadCreationSettings"/>.
+/// Unit testing of <see cref="OpenAIThreadCreationOptions"/>.
 /// </summary>
-public class OpenAIThreadCreationSettingsTests
+public class OpenAIThreadCreationOptionsTests
 {
     /// <summary>
     /// Verify initial state.
@@ -18,7 +18,7 @@ public class OpenAIThreadCreationSettingsTests
     [Fact]
     public void OpenAIThreadCreationSettingsInitialState()
     {
-        OpenAIThreadCreationSettings settings = new();
+        OpenAIThreadCreationOptions settings = new();
 
         Assert.Null(settings.Messages);
         Assert.Null(settings.Metadata);
@@ -33,7 +33,7 @@ public class OpenAIThreadCreationSettingsTests
     [Fact]
     public void OpenAIThreadCreationSettingsAssignment()
     {
-        OpenAIThreadCreationSettings definition =
+        OpenAIThreadCreationOptions definition =
             new()
             {
                 Messages = [new ChatMessageContent(AuthorRole.User, "test")],

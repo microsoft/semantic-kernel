@@ -24,7 +24,7 @@ public class OpenAIAssistantDefinitionTests
         Assert.Null(definition.Instructions);
         Assert.Null(definition.Description);
         Assert.Null(definition.Metadata);
-        Assert.Null(definition.ExecutionSettings);
+        Assert.Null(definition.ExecutionOptions);
         Assert.Null(definition.Temperature);
         Assert.Null(definition.TopP);
         Assert.Null(definition.VectorStoreId);
@@ -51,7 +51,7 @@ public class OpenAIAssistantDefinitionTests
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 Temperature = 2,
                 TopP = 0,
-                ExecutionSettings =
+                ExecutionOptions =
                     new()
                     {
                         MaxCompletionTokens = 1000,
@@ -72,11 +72,11 @@ public class OpenAIAssistantDefinitionTests
         Assert.Equal("#vs", definition.VectorStoreId);
         Assert.Equal(2, definition.Temperature);
         Assert.Equal(0, definition.TopP);
-        Assert.NotNull(definition.ExecutionSettings);
-        Assert.Equal(1000, definition.ExecutionSettings.MaxCompletionTokens);
-        Assert.Equal(1000, definition.ExecutionSettings.MaxPromptTokens);
-        Assert.Equal(12, definition.ExecutionSettings.TruncationMessageCount);
-        Assert.False(definition.ExecutionSettings.ParallelToolCallsEnabled);
+        Assert.NotNull(definition.ExecutionOptions);
+        Assert.Equal(1000, definition.ExecutionOptions.MaxCompletionTokens);
+        Assert.Equal(1000, definition.ExecutionOptions.MaxPromptTokens);
+        Assert.Equal(12, definition.ExecutionOptions.TruncationMessageCount);
+        Assert.False(definition.ExecutionOptions.ParallelToolCallsEnabled);
         Assert.Single(definition.Metadata);
         Assert.Single(definition.CodeInterpterFileIds);
         Assert.True(definition.EnableCodeInterpreter);

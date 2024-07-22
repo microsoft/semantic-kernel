@@ -145,7 +145,7 @@ internal static class AssistantThreadActions
         OpenAIAssistantAgent agent,
         AssistantClient client,
         string threadId,
-        OpenAIAssistantInvocationSettings? invocationSettings,
+        OpenAIAssistantInvocationOptions? invocationSettings,
         ILogger logger,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -286,7 +286,7 @@ internal static class AssistantThreadActions
             do
             {
                 // Reduce polling frequency after a couple attempts
-                await Task.Delay(count >= 2 ? agent.Polling.RunPollingInterval : agent.Polling.RunPollingBackoff, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(count >= 2 ? agent.PollingOptions.RunPollingInterval : agent.PollingOptions.RunPollingBackoff, cancellationToken).ConfigureAwait(false);
                 ++count;
 
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -355,7 +355,7 @@ internal static class AssistantThreadActions
 
                 if (retry)
                 {
-                    await Task.Delay(agent.Polling.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(agent.PollingOptions.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
                 }
 
                 ++count;
@@ -489,18 +489,18 @@ internal static class AssistantThreadActions
         return toolOutputs;
     }
 
-    private static RunCreationOptions GenerateRunCreationOptions(OpenAIAssistantAgent agent, OpenAIAssistantInvocationSettings? invocationSettings)
+    private static RunCreationOptions GenerateRunCreationOptions(OpenAIAssistantAgent agent, OpenAIAssistantInvocationOptions? invocationSettings)
     {
-        int? truncationMessageCount = ResolveExecutionSetting(invocationSettings?.TruncationMessageCount, agent.Definition.ExecutionSettings?.TruncationMessageCount);
+        int? truncationMessageCount = ResolveExecutionSetting(invocationSettings?.TruncationMessageCount, agent.Definition.ExecutionOptions?.TruncationMessageCount);
 
         RunCreationOptions options =
             new()
             {
-                MaxCompletionTokens = ResolveExecutionSetting(invocationSettings?.MaxCompletionTokens, agent.Definition.ExecutionSettings?.MaxCompletionTokens),
-                MaxPromptTokens = ResolveExecutionSetting(invocationSettings?.MaxPromptTokens, agent.Definition.ExecutionSettings?.MaxPromptTokens),
+                MaxCompletionTokens = ResolveExecutionSetting(invocationSettings?.MaxCompletionTokens, agent.Definition.ExecutionOptions?.MaxCompletionTokens),
+                MaxPromptTokens = ResolveExecutionSetting(invocationSettings?.MaxPromptTokens, agent.Definition.ExecutionOptions?.MaxPromptTokens),
                 ModelOverride = invocationSettings?.ModelName,
                 NucleusSamplingFactor = ResolveExecutionSetting(invocationSettings?.TopP, agent.Definition.TopP),
-                ParallelToolCallsEnabled = ResolveExecutionSetting(invocationSettings?.ParallelToolCallsEnabled, agent.Definition.ExecutionSettings?.ParallelToolCallsEnabled),
+                ParallelToolCallsEnabled = ResolveExecutionSetting(invocationSettings?.ParallelToolCallsEnabled, agent.Definition.ExecutionOptions?.ParallelToolCallsEnabled),
                 ResponseFormat = ResolveExecutionSetting(invocationSettings?.EnableJsonResponse, agent.Definition.EnableJsonResponse) ?? false ? AssistantResponseFormat.JsonObject : null,
                 Temperature = ResolveExecutionSetting(invocationSettings?.Temperature, agent.Definition.Temperature),
                 //ToolConstraint // %%% TODO

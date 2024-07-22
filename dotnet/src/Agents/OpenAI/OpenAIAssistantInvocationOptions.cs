@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Defines per invocation execution settings that override the assistant's default settings.
+/// Defines per invocation execution options that override the assistant definition.
 /// </summary>
 /// <remarks>
 /// Not applicable to <see cref="AgentChat"/> usage.
 /// </remarks>
-public sealed class OpenAIAssistantInvocationSettings
+public sealed class OpenAIAssistantInvocationOptions
 {
     /// <summary>
     /// Override the AI model targeted by the agent.

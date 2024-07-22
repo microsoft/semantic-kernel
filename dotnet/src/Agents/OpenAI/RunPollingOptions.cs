@@ -6,7 +6,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Configuration and defaults associated with polling behavior for Assistant API run processing.
 /// </summary>
-public sealed class RunPollingConfiguration
+public sealed class RunPollingOptions
 {
     /// <summary>
     /// The default polling interval when monitoring thread-run status.

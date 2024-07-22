@@ -6,9 +6,9 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 /// <summary>
-/// Unit testing of <see cref="OpenAIAssistantInvocationSettings"/>.
+/// Unit testing of <see cref="OpenAIAssistantInvocationOptions"/>.
 /// </summary>
-public class OpenAIAssistantInvocationSettingsTests
+public class OpenAIAssistantInvocationOptionsTests
 {
     /// <summary>
     /// Verify initial state.
@@ -16,7 +16,7 @@ public class OpenAIAssistantInvocationSettingsTests
     [Fact]
     public void OpenAIAssistantInvocationSettingsInitialState()
     {
-        OpenAIAssistantInvocationSettings settings = new();
+        OpenAIAssistantInvocationOptions settings = new();
 
         Assert.Null(settings.ModelName);
         Assert.Null(settings.Metadata);
@@ -37,7 +37,7 @@ public class OpenAIAssistantInvocationSettingsTests
     [Fact]
     public void OpenAIAssistantInvocationSettingsAssignment()
     {
-        OpenAIAssistantInvocationSettings settings =
+        OpenAIAssistantInvocationOptions settings =
             new()
             {
                 ModelName = "testmodel",

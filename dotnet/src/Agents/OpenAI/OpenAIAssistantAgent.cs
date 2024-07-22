@@ -36,7 +36,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Defines polling behavior for run processing
     /// </summary>
-    public RunPollingConfiguration Polling { get; } = new();
+    public RunPollingOptions PollingOptions { get; } = new();
 
     /// <summary>
     /// Expose predefined tools merged with available kernel functions.
@@ -139,7 +139,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="settings">%%%</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
-    public async Task<string> CreateThreadAsync(OpenAIThreadCreationSettings? settings, CancellationToken cancellationToken = default)
+    public async Task<string> CreateThreadAsync(OpenAIThreadCreationOptions? settings, CancellationToken cancellationToken = default)
     {
         ThreadCreationOptions options =
             new()
@@ -242,7 +242,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <returns>Asynchronous enumeration of messages.</returns>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
-        OpenAIAssistantInvocationSettings? settings,
+        OpenAIAssistantInvocationOptions? settings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
@@ -309,11 +309,11 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     private static OpenAIAssistantDefinition CreateAssistantDefinition(Assistant model)
     {
-        OpenAIAssistantExecutionSettings? settings = null;
+        OpenAIAssistantExecutionOptions? settings = null;
 
         if (model.Metadata.TryGetValue(SettingsMetadataKey, out string? settingsJson))
         {
-            settings = JsonSerializer.Deserialize<OpenAIAssistantExecutionSettings>(settingsJson);
+            settings = JsonSerializer.Deserialize<OpenAIAssistantExecutionOptions>(settingsJson);
         }
 
         IReadOnlyList<string>? fileIds = (IReadOnlyList<string>?)model.ToolResources?.CodeInterpreter?.FileIds;
@@ -335,7 +335,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 TopP = model.NucleusSamplingFactor,
                 Temperature = model.Temperature,
                 VectorStoreId = vectorStoreId,
-                ExecutionSettings = settings,
+                ExecutionOptions = settings,
             };
     }
 
@@ -361,9 +361,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             }
         }
 
-        if (definition.ExecutionSettings != null)
+        if (definition.ExecutionOptions != null)
         {
-            string settingsJson = JsonSerializer.Serialize(definition.ExecutionSettings);
+            string settingsJson = JsonSerializer.Serialize(definition.ExecutionOptions);
             assistantCreationOptions.Metadata[SettingsMetadataKey] = settingsJson;
         }
 
