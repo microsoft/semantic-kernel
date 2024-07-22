@@ -26,4 +26,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="$(RepoRoot)/dotnet/samples/Demos/CreateChatGptPlugin/*.md" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>
