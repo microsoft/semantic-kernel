@@ -15,9 +15,7 @@ else:
 
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
-from azure.search.documents.indexes.models import (
-    SearchIndex,
-)
+from azure.search.documents.indexes.models import SearchIndex
 
 from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     data_model_definition_to_azure_ai_search_index,

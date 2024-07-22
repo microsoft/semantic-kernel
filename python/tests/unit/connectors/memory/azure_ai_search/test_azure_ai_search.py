@@ -1,11 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from pytest import fixture, mark, raises
 
+from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_store import AzureAISearchStore
+from semantic_kernel.connectors.memory.azure_ai_search.utils import get_search_index_client
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
 class AsyncIter:
@@ -59,3 +62,26 @@ def test_get_collection(vector_store, data_model_definition):
     assert collection.search_client is not None
     assert collection.search_client._endpoint == vector_store.search_index_client._endpoint
     assert vector_store.vector_record_collections["test"] == collection
+
+
+@mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_API_KEY"]], indirect=True)
+def test_get_search_index_client(azure_ai_search_unit_test_env):
+    from azure.core.credentials import AzureKeyCredential, TokenCredential
+
+    settings = AzureAISearchSettings.create(**azure_ai_search_unit_test_env, env_file_path="test.env")
+
+    azure_credential = MagicMock(spec=AzureKeyCredential)
+    client = get_search_index_client(settings, azure_credential=azure_credential)
+    assert client is not None
+    assert client._credential == azure_credential
+
+    token_credential = MagicMock(spec=TokenCredential)
+    client2 = get_search_index_client(
+        settings,
+        token_credential=token_credential,
+    )
+    assert client2 is not None
+    assert client2._credential == token_credential
+
+    with raises(ServiceInitializationError):
+        get_search_index_client(settings)
