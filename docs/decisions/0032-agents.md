@@ -35,7 +35,7 @@ An _Agent_ can be of various modalities.  Modalities are asymmetrical with regar
 
 - **SemanticKernel - IChatCompletionService**: An _Agent_ based solely on the *SemanticKernel* `IChatCompletionService`.
 - **OpenAI Assistants**: A hosted _Agent_ solution supported the _OpenAI Assistant API_ (both OpenAI & Azure OpenAI).
-- **Custom**: An custom agent developed by extending the _Agent Framework_.
+- **Custom**: A custom agent developed by extending the _Agent Framework_.
 - **Future**: Yet to be announced, such as a HuggingFace Assistant API (they already have assistants, but yet to publish an API.)
 
 
