@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 import google.generativeai as genai
 from google.generativeai import GenerativeModel
 from google.generativeai.protos import Candidate
-from google.generativeai.types import AsyncGenerateContentResponse, GenerationConfig
+from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
@@ -131,11 +131,62 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
-        pass
+        settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, GoogleAITextPromptExecutionSettings)  # nosec
+
+        async_generator = self._send_streaming_request(prompt, settings)
+
+        async for text_contents in async_generator:
+            yield text_contents
+
+    async def _send_streaming_request(
+        self, prompt: str, settings: GoogleAITextPromptExecutionSettings
+    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
+        """Send a text generation request to the Google AI service."""
+        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
+        model = GenerativeModel(
+            self.service_settings.ai_model_id,
+        )
+
+        response: AsyncGenerateContentResponse = await model.generate_content_async(
+            contents=prompt,
+            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
+            stream=True,
+        )
+
+        async for chunk in response:
+            yield [self._create_streaming_text_content(chunk, candidate) for candidate in chunk.candidates]
+
+    def _create_streaming_text_content(
+        self, chunk: GenerateContentResponse, candidate: Candidate
+    ) -> StreamingTextContent:
+        """Create a streaming text content object.
+
+        Args:
+            chunk: The response from the service.
+            candidate: The candidate from the response.
+
+        Returns:
+            A streaming text content object.
+        """
+        # Best effort conversion of finish reason. The raw value will be available in metadata.
+        response_metadata = self._get_metadata_from_response(chunk)
+        response_metadata.update(self._get_metadata_from_candidate(candidate))
+
+        return StreamingTextContent(
+            ai_model_id=self.ai_model_id,
+            choice_index=candidate.index,
+            text=candidate.content.parts[0].text,
+            inner_content=chunk,
+            metadata=response_metadata,
+        )
 
     # endregion
 
-    def _get_metadata_from_response(self, response: AsyncGenerateContentResponse) -> dict[str, Any]:
+    def _get_metadata_from_response(
+        self,
+        response: AsyncGenerateContentResponse | GenerateContentResponse,
+    ) -> dict[str, Any]:
         """Get metadata from the response.
 
         Args:
