@@ -53,7 +53,7 @@ def test_vanilla():
     assert data_model_definition.fields["optional_content"].property_type is str
     assert data_model_definition.key_field_name == "id"
     assert data_model_definition.container_mode is False
-    assert data_model_definition.vector_fields == ["vector"]
+    assert data_model_definition.vector_field_names == ["vector"]
 
 
 def test_vanilla_2():
@@ -99,7 +99,7 @@ def test_dataclass():
     assert data_model_definition.fields["optional_content"].property_type is str
     assert data_model_definition.key_field_name == "id"
     assert data_model_definition.container_mode is False
-    assert data_model_definition.vector_fields == ["vector"]
+    assert data_model_definition.vector_field_names == ["vector"]
 
 
 def test_dataclass_inverse_fail():
@@ -137,7 +137,7 @@ def test_pydantic_base_model():
     assert data_model_definition.fields["optional_content"].property_type is str
     assert data_model_definition.key_field_name == "id"
     assert data_model_definition.container_mode is False
-    assert data_model_definition.vector_fields == ["vector"]
+    assert data_model_definition.vector_field_names == ["vector"]
 
 
 def test_pydantic_dataclass():
@@ -166,7 +166,7 @@ def test_pydantic_dataclass():
     assert data_model_definition.fields["optional_content"].property_type is str
     assert data_model_definition.key_field_name == "id"
     assert data_model_definition.container_mode is False
-    assert data_model_definition.vector_fields == ["vector"]
+    assert data_model_definition.vector_field_names == ["vector"]
 
 
 def test_empty_model():

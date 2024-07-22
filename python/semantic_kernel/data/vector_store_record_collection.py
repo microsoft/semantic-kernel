@@ -3,15 +3,12 @@
 import asyncio
 import contextlib
 import logging
-import types
 from abc import abstractmethod
-from collections.abc import Mapping, Sequence
-from inspect import signature
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from typing import Any, Generic, TypeVar
 
 from pydantic import model_validator
 
-from semantic_kernel.data.utils import add_vector_to_records
 from semantic_kernel.data.vector_store_model_definition import (
     VectorStoreRecordDefinition,
 )
@@ -20,16 +17,12 @@ from semantic_kernel.data.vector_store_model_protocols import (
     VectorStoreModelPydanticProtocol,
     VectorStoreModelToDictFromDictProtocol,
 )
-from semantic_kernel.data.vector_store_record_fields import (
-    VectorStoreRecordVectorField,
-)
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,
     VectorStoreModelValidationError,
 )
-from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -46,7 +39,6 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     collection_name: str
     data_model_type: type[TModel]
     data_model_definition: VectorStoreRecordDefinition
-    kernel: Kernel | None = None
 
     @property
     def _container_mode(self) -> bool:
@@ -132,29 +124,33 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         return None
 
     def _validate_data_model(self):
-        """Internal function that should be overloaded by child classes to validate datatypes, etc.
+        """Internal function that can be overloaded by child classes to validate datatypes, etc.
 
         This should take the VectorStoreRecordDefinition from the item_type and validate it against the store.
 
-        Checks should include, allowed naming of parameters, allowed data types, allowed vector dimensions.
+        Checks can include, allowed naming of parameters, allowed data types, allowed vector dimensions.
+
+        Default checks are that the key field is in the allowed key types and the vector fields
+        are in the allowed vector types.
+
+        Raises:
+            VectorStoreModelValidationError: If the key field is not in the allowed key types.
+            VectorStoreModelValidationError: If the vector fields are not in the allowed vector types.
+
         """
-        model_sig = signature(self.data_model_type)
-        key_type = model_sig.parameters[self._key_field_name].annotation.__args__[0]  # type: ignore
-        if self.supported_key_types and key_type not in self.supported_key_types:
+        if (
+            self.supported_key_types
+            and self.data_model_definition.key_field.property_type
+            and self.data_model_definition.key_field.property_type not in self.supported_key_types
+        ):
             raise VectorStoreModelValidationError(f"Key field must be one of {self.supported_key_types}")
         if not self.supported_vector_types:
             return
-        for field_name, field in self.data_model_definition.fields.items():
-            # TODO (eavanvalkenburg): redo with property types
-            if isinstance(field, VectorStoreRecordVectorField):
-                field_type = model_sig.parameters[field_name].annotation.__args__[0]
-                if field_type.__class__ is types.UnionType:
-                    field_type = field_type.__args__[0]
-                if field_type not in self.supported_vector_types:
-                    raise VectorStoreModelValidationError(
-                        f"Vector field {field_name} must be one of {self.supported_vector_types}"
-                    )
-        return
+        for field in self.data_model_definition.vector_fields:
+            if field.property_type and field.property_type not in self.supported_vector_types:
+                raise VectorStoreModelValidationError(
+                    f"Vector field {field.name} must be one of {self.supported_vector_types}"
+                )
 
     @abstractmethod
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
@@ -204,23 +200,24 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     async def upsert(
         self,
         record: TModel,
-        generate_embeddings: bool = False,
+        embedding_generation_function: Callable[[VectorStoreRecordDefinition, TModel], Awaitable[TModel]] | None = None,
         **kwargs: Any,
     ) -> OneOrMany[TKey] | None:
         """Upsert a record.
 
         Args:
             record (TModel): The record.
-            generate_embeddings (bool): Whether to generate vectors. Defaults to True.
-                If there are no vector fields in the model or the vectors are created
-                by the service, this is ignored, defaults to False.
+            embedding_generation_function (Callable): Supply this function to generate embeddings.
+                This will be called with the data model definition and the records,
+                should return the records with vectors.
+                This can be supplied by using the add_vector_to_records method from the VectorStoreRecordUtils.
             **kwargs (Any): Additional arguments.
 
         Returns:
             The key of the upserted record or a list of keys, when a container type is used.
         """
-        if generate_embeddings and self.kernel:
-            await add_vector_to_records(self.kernel, self.data_model_definition, record, self._container_mode)
+        if embedding_generation_function:
+            record = await embedding_generation_function(self.data_model_definition, record)
 
         try:
             data = self.serialize(record)
@@ -239,24 +236,28 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     async def upsert_batch(
         self,
         records: OneOrMany[TModel],
-        generate_embeddings: bool = False,
+        embedding_generation_function: Callable[
+            [VectorStoreRecordDefinition, OneOrMany[TModel]], Awaitable[OneOrMany[TModel]]
+        ]
+        | None = None,
         **kwargs: Any,
     ) -> Sequence[TKey]:
         """Upsert a batch of records.
 
         Args:
             records (Sequence[TModel] | TModel): The records to upsert, can be a list of records, or a single container.
-            generate_embeddings (bool): Whether to generate vectors. Defaults to True.
-                If there are no vector fields in the model or the vectors are created
-                by the service, this is ignored, defaults to False.
+            embedding_generation_function (Callable): Supply this function to generate embeddings.
+                This will be called with the data model definition and the records,
+                should return the records with vectors.
+                This can be supplied by using the add_vector_to_records method from the VectorStoreRecordUtils.
             **kwargs (Any): Additional arguments.
 
         Returns:
             Sequence[TKey]: The keys of the upserted records, this is always a list,
             corresponds to the input or the items in the container.
         """
-        if generate_embeddings and self.kernel:
-            await add_vector_to_records(self.kernel, self.data_model_definition, records, self._container_mode)
+        if embedding_generation_function:
+            records = await embedding_generation_function(self.data_model_definition, records)
 
         try:
             data = self.serialize(records)
@@ -436,7 +437,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                     return [self.data_model_type.deserialize(rec, **kwargs) for rec in record]
                 return self.data_model_type.deserialize(record, **kwargs)
             except Exception as exc:
-                raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
+                raise VectorStoreModelSerializationException(f"Error deserializing record: {exc}") from exc
         return None
 
     def _serialize_data_model_to_dict(self, record: TModel, **kwargs: Any) -> OneOrMany[dict[str, Any]]:
@@ -460,13 +461,15 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                 raise VectorStoreModelSerializationException(f"Error serializing record: {exc}") from exc
 
         store_model = {}
-        for field_name in self.data_model_definition.field_names:  # type: ignore
+        for field_name in self.data_model_definition.field_names:
             try:
                 store_model[field_name] = (
-                    record.get(field_name) if isinstance(record, Mapping) else getattr(record, field_name)
+                    record[field_name] if isinstance(record, Mapping) else getattr(record, field_name)
                 )
-            except AttributeError:
-                raise VectorStoreModelSerializationException(f"Error serializing record, not able to get: {field_name}")
+            except (AttributeError, KeyError) as exc:
+                raise VectorStoreModelSerializationException(
+                    f"Error serializing record, not able to get: {field_name}"
+                ) from exc
         return store_model
 
     def _deserialize_dict_to_data_model(self, record: OneOrMany[dict[str, Any]], **kwargs: Any) -> TModel:
@@ -484,7 +487,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             return ret if self._container_mode else ret[0]
         if isinstance(record, Sequence):
             if len(record) > 1:
-                raise ValueError(
+                raise VectorStoreModelDeserializationException(
                     "Cannot deserialize multiple records to a single record unless you are using a container."
                 )
             record = record[0]
@@ -500,8 +503,13 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                 raise VectorStoreModelDeserializationException(f"Error deserializing record: {exc}") from exc
         data_model_dict: dict[str, Any] = {}
         for field_name in self.data_model_definition.fields:  # type: ignore
-            data_model_dict[field_name] = record.get(field_name)
-        if isinstance(self.data_model_type, dict):
+            try:
+                data_model_dict[field_name] = record[field_name]
+            except KeyError as exc:
+                raise VectorStoreModelDeserializationException(
+                    f"Error deserializing record, not able to get: {field_name}"
+                ) from exc
+        if self.data_model_type is dict:
             return data_model_dict  # type: ignore
         return self.data_model_type(**data_model_dict)
 

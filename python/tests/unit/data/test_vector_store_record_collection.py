@@ -1,272 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from collections.abc import Mapping, Sequence
 from copy import deepcopy
-from dataclasses import dataclass
-from typing import Annotated, Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock
 
-from pydantic import BaseModel, Field
 from pytest import fixture, mark, raises
 
-from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.data.vector_store_record_fields import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-)
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,
+    VectorStoreModelValidationError,
 )
-
-
-@fixture
-def DictVectorStoreRecordCollection():
-    class DictVectorStoreRecordCollection(VectorStoreRecordCollection[str, Any]):
-        inner_storage: dict[str, Any] = Field(default_factory=dict)
-
-        async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
-            for key in keys:
-                self.inner_storage.pop(key, None)
-
-        async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Any | Sequence[Any] | None:
-            return [self.inner_storage[key] for key in keys if key in self.inner_storage]
-
-        async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[str]:
-            updated_keys = []
-            for record in records:
-                key = (
-                    record[self._key_field_name]
-                    if isinstance(record, Mapping)
-                    else getattr(record, self._key_field_name)
-                )
-                self.inner_storage[key] = record
-                updated_keys.append(key)
-            return updated_keys
-
-        def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
-            return records
-
-        def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
-            return records
-
-        async def create_collection(self, **kwargs: Any) -> None:
-            pass
-
-        async def delete_collection(self, **kwargs: Any) -> None:
-            self.inner_storage = {}
-
-        async def does_collection_exist(self, **kwargs: Any) -> bool:
-            return True
-
-    return DictVectorStoreRecordCollection
-
-
-@fixture
-def data_model_definition() -> object:
-    return VectorStoreRecordDefinition(
-        fields={
-            "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
-        }
-    )
-
-
-@fixture
-def data_model_serialize_definition() -> object:
-    def serialize(record, **kwargs):
-        return record
-
-    def deserialize(records, **kwargs):
-        return records
-
-    return VectorStoreRecordDefinition(
-        fields={
-            "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
-        },
-        serialize=serialize,
-        deserialize=deserialize,
-    )
-
-
-@fixture
-def data_model_to_from_dict_definition() -> object:
-    def to_dict(record, **kwargs):
-        return record
-
-    def from_dict(records, **kwargs):
-        return records
-
-    return VectorStoreRecordDefinition(
-        fields={
-            "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
-        },
-        to_dict=to_dict,
-        from_dict=from_dict,
-    )
-
-
-@fixture
-def data_model_container_definition() -> object:
-    # internal rep = {
-    # "id1": {"content": "test_content", "vector": [1.0, 2.0, 3.0]},
-    # "id2": {"content": "test_content", "vector": [1.0, 2.0, 3.0]}
-    # }
-    def to_dict(record: dict[str, dict[str, Any]], **kwargs) -> list[dict[str, Any]]:
-        return [{"id": key} | value for key, value in record.items()]
-
-    def from_dict(records: list[dict[str, Any]], **kwargs) -> dict[str, dict[str, Any]]:
-        ret = {}
-        for record in records:
-            id = record.pop("id")
-            ret[id] = record
-        return ret
-
-    return VectorStoreRecordDefinition(
-        fields={
-            "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
-        },
-        container_mode=True,
-        to_dict=to_dict,
-        from_dict=from_dict,
-    )
-
-
-@fixture
-def data_model_container_serialize_definition() -> object:
-    def serialize(record: dict[str, dict[str, Any]], **kwargs) -> list[dict[str, Any]]:
-        return [{"id": key} | value for key, value in record.items()]
-
-    def deserialize(records: list[dict[str, Any]], **kwargs) -> dict[str, dict[str, Any]]:
-        ret = {}
-        for record in records:
-            id = record.pop("id")
-            ret[id] = record
-        return ret
-
-    return VectorStoreRecordDefinition(
-        fields={
-            "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
-        },
-        container_mode=True,
-        serialize=serialize,
-        deserialize=deserialize,
-    )
-
-
-@fixture
-def data_model_type_vanilla():
-    @vectorstoremodel
-    class DataModelClass:
-        def __init__(
-            self,
-            content: Annotated[str, VectorStoreRecordDataField()],
-            vector: Annotated[list[float], VectorStoreRecordVectorField()],
-            id: Annotated[str, VectorStoreRecordKeyField()],
-        ):
-            self.content = content
-            self.vector = vector
-            self.id = id
-
-        def __eq__(self, other) -> bool:
-            return self.content == other.content and self.id == other.id and self.vector == other.vector
-
-    return DataModelClass
-
-
-@fixture
-def data_model_type_vanilla_serialize():
-    @vectorstoremodel
-    class DataModelClass:
-        def __init__(
-            self,
-            content: Annotated[str, VectorStoreRecordDataField()],
-            vector: Annotated[list[float], VectorStoreRecordVectorField()],
-            id: Annotated[str, VectorStoreRecordKeyField()],
-        ):
-            self.content = content
-            self.vector = vector
-            self.id = id
-
-        def serialize(self, **kwargs: Any) -> Any:
-            """Serialize the object to the format required by the data store."""
-            return {"id": self.id, "content": self.content, "vector": self.vector}
-
-        @classmethod
-        def deserialize(cls, obj: Any, **kwargs: Any):
-            """Deserialize the output of the data store to an object."""
-            return cls(**obj)
-
-        def __eq__(self, other) -> bool:
-            return self.content == other.content and self.id == other.id and self.vector == other.vector
-
-    return DataModelClass
-
-
-@fixture
-def data_model_type_vanilla_to_from_dict():
-    @vectorstoremodel
-    class DataModelClass:
-        def __init__(
-            self,
-            content: Annotated[str, VectorStoreRecordDataField()],
-            vector: Annotated[list[float], VectorStoreRecordVectorField()],
-            id: Annotated[str, VectorStoreRecordKeyField()],
-        ):
-            self.content = content
-            self.vector = vector
-            self.id = id
-
-        def to_dict(self, **kwargs: Any) -> Any:
-            """Serialize the object to the format required by the data store."""
-            return {"id": self.id, "content": self.content, "vector": self.vector}
-
-        @classmethod
-        def from_dict(cls, *args: Any, **kwargs: Any):
-            """Deserialize the output of the data store to an object."""
-            return cls(**args[0])
-
-        def __eq__(self, other) -> bool:
-            return self.content == other.content and self.id == other.id and self.vector == other.vector
-
-    return DataModelClass
-
-
-@fixture
-def data_model_type_pydantic():
-    @vectorstoremodel
-    class DataModelClass(BaseModel):
-        content: Annotated[str, VectorStoreRecordDataField()]
-        vector: Annotated[list[float], VectorStoreRecordVectorField()]
-        id: Annotated[str, VectorStoreRecordKeyField()]
-
-    return DataModelClass
-
-
-@fixture
-def data_model_type_dataclass():
-    @vectorstoremodel
-    @dataclass
-    class DataModelClass:
-        content: Annotated[str, VectorStoreRecordDataField()]
-        vector: Annotated[list[float], VectorStoreRecordVectorField()]
-        id: Annotated[str, VectorStoreRecordKeyField()]
-
-    return DataModelClass
 
 
 @fixture(scope="function")
@@ -318,7 +64,6 @@ def test_init(DictVectorStoreRecordCollection, data_model_definition):
     assert vsrc.collection_name == "test"
     assert vsrc.data_model_type is dict
     assert vsrc._container_mode is False
-    assert vsrc.kernel is None
     assert vsrc.data_model_definition == data_model_definition
     assert vsrc._key_field_name == "id"
 
@@ -487,6 +232,117 @@ async def test_get_fail(DictVectorStoreRecordCollection, data_model_definition):
 
 
 @mark.asyncio
+async def test_serialize_fail(DictVectorStoreRecordCollection, data_model_definition):
+    DictVectorStoreRecordCollection.serialize = MagicMock(side_effect=Exception)
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=dict,
+        data_model_definition=data_model_definition,
+    )
+    record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    with raises(MemoryConnectorException, match="Error serializing record"):
+        await vector_store_record_collection.upsert(record)
+    with raises(MemoryConnectorException, match="Error serializing record"):
+        await vector_store_record_collection.upsert_batch([record])
+
+
+@mark.asyncio
+async def test_deserialize_fail(DictVectorStoreRecordCollection, data_model_definition):
+    DictVectorStoreRecordCollection.deserialize = MagicMock(side_effect=Exception)
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=dict,
+        data_model_definition=data_model_definition,
+    )
+    record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    vector_store_record_collection.inner_storage["test_id"] = record
+    with raises(MemoryConnectorException, match="Error deserializing record"):
+        await vector_store_record_collection.get("test_id")
+    with raises(MemoryConnectorException, match="Error deserializing record"):
+        await vector_store_record_collection.get_batch(["test_id"])
+
+
+def test_serialize_custom_fail(DictVectorStoreRecordCollection, data_model_type_vanilla_serialize):
+    data_model_type_vanilla_serialize.serialize = MagicMock(side_effect=Exception)
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=data_model_type_vanilla_serialize,
+    )
+    record = data_model_type_vanilla_serialize(
+        content="test_content",
+        vector=[1.0, 2.0, 3.0],
+        id="test_id",
+    )
+    with raises(VectorStoreModelSerializationException, match="Error serializing record:"):
+        vector_store_record_collection.serialize(record)
+
+
+def test_deserialize_custom_fail(DictVectorStoreRecordCollection, data_model_type_vanilla_serialize):
+    data_model_type_vanilla_serialize.deserialize = MagicMock(side_effect=Exception)
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=data_model_type_vanilla_serialize,
+    )
+    record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    with raises(VectorStoreModelSerializationException, match="Error deserializing record:"):
+        vector_store_record_collection.deserialize(record)
+
+
+def test_serialize_data_model_to_dict_fail_mapping(DictVectorStoreRecordCollection, data_model_definition):
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=dict,
+        data_model_definition=data_model_definition,
+    )
+    record = {"content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    with raises(VectorStoreModelSerializationException, match="Error serializing record"):
+        vector_store_record_collection._serialize_data_model_to_dict(record)
+
+
+def test_serialize_data_model_to_dict_fail_object(DictVectorStoreRecordCollection, data_model_type_vanilla):
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=data_model_type_vanilla,
+    )
+    record = Mock(spec=data_model_type_vanilla)
+    with raises(VectorStoreModelSerializationException, match="Error serializing record"):
+        vector_store_record_collection._serialize_data_model_to_dict(record)
+
+
+def test_deserialize_dict_data_model_fail_sequence(DictVectorStoreRecordCollection, data_model_type_vanilla):
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=data_model_type_vanilla,
+    )
+    with raises(VectorStoreModelDeserializationException, match="Cannot deserialize multiple records"):
+        vector_store_record_collection._deserialize_dict_to_data_model([{}, {}])
+
+
+def test_deserialize_dict_data_model_fail(DictVectorStoreRecordCollection, data_model_definition):
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=dict,
+        data_model_definition=data_model_definition,
+    )
+    with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
+        vector_store_record_collection._deserialize_dict_to_data_model(
+            {"content": "test_content", "vector": [1.0, 2.0, 3.0]}
+        )
+
+
+def test_deserialize_dict_data_model_shortcut(DictVectorStoreRecordCollection, data_model_definition):
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=dict,
+        data_model_definition=data_model_definition,
+    )
+    record = vector_store_record_collection._deserialize_dict_to_data_model(
+        [{"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}]
+    )
+    assert record == {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+
+
+@mark.asyncio
 @mark.parametrize("vector_store_record_collection", ["type_pydantic"], indirect=True)
 async def test_pydantic_fail(vector_store_record_collection):
     id = "test_id"
@@ -496,7 +352,7 @@ async def test_pydantic_fail(vector_store_record_collection):
     model.model_dump = MagicMock(side_effect=Exception)
     with raises(VectorStoreModelSerializationException, match="Error serializing record:"):
         vector_store_record_collection.serialize(record)
-    with raises(MemoryConnectorException, match="Error serializing records:"):
+    with raises(MemoryConnectorException, match="Error serializing record:"):
         await vector_store_record_collection.upsert(record)
     model.model_validate = MagicMock(side_effect=Exception)
     with raises(VectorStoreModelDeserializationException, match="Error deserializing record:"):
@@ -561,6 +417,52 @@ async def test_collection_create_if_not_exists(DictVectorStoreRecordCollection, 
     create_mock.assert_called_once()
 
 
-# TODO (eavanvalkenburg): exceptions during serialization, pydantic, to_dict
-# TODO (eavanvalkenburg): vectorizing
+def test_data_model_validation(data_model_type_vanilla, DictVectorStoreRecordCollection):
+    DictVectorStoreRecordCollection.supported_key_types = PropertyMock(return_value=[str])
+    DictVectorStoreRecordCollection.supported_vector_types = PropertyMock(return_value=[list[float]])
+    DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=data_model_type_vanilla,
+    )
+
+
+def test_data_model_validation_key_fail(data_model_type_vanilla, DictVectorStoreRecordCollection):
+    DictVectorStoreRecordCollection.supported_key_types = PropertyMock(return_value=[int])
+    with raises(VectorStoreModelValidationError, match="Key field must be one of"):
+        DictVectorStoreRecordCollection(
+            collection_name="test",
+            data_model_type=data_model_type_vanilla,
+        )
+
+
+def test_data_model_validation_vector_fail(data_model_type_vanilla, DictVectorStoreRecordCollection):
+    DictVectorStoreRecordCollection.supported_vector_types = PropertyMock(return_value=[list[int]])
+    with raises(VectorStoreModelValidationError, match="Vector field "):
+        DictVectorStoreRecordCollection(
+            collection_name="test",
+            data_model_type=data_model_type_vanilla,
+        )
+
+
+@mark.asyncio
+async def test_upsert_with_vectorizing(vector_store_record_collection):
+    record = {"id": "test_id", "content": "test_content"}
+    record2 = {"id": "test_id", "content": "test_content"}
+
+    async def embedding_func(definition, record):
+        if isinstance(record, list):
+            for r in record:
+                r["vector"] = [1.0, 2.0, 3.0]
+            return record
+        record["vector"] = [1.0, 2.0, 3.0]
+        return record
+
+    await vector_store_record_collection.upsert(record, embedding_generation_function=embedding_func)
+    assert vector_store_record_collection.inner_storage["test_id"]["vector"] == [1.0, 2.0, 3.0]
+    await vector_store_record_collection.delete("test_id")
+    assert len(vector_store_record_collection.inner_storage) == 0
+    await vector_store_record_collection.upsert_batch([record2], embedding_generation_function=embedding_func)
+    assert vector_store_record_collection.inner_storage["test_id"]["vector"] == [1.0, 2.0, 3.0]
+
+
 # TODO (eavanvalkenburg): pandas container test

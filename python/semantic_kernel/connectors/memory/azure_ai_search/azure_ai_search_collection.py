@@ -69,8 +69,7 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
                 azure_credentials: AzureKeyCredential | None = None,
                 token_credentials: TokenCredential | None = None,
                 env_file_path: str | None = None,
-                env_file_encoding: str | None = None,
-                kernel: Kernel to use for embedding generation.
+                env_file_encoding: str | None = None
 
         """
         if search_client and search_index_client:
@@ -84,7 +83,6 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
                 collection_name=collection_name,
-                kernel=kwargs.get("kernel", None),
                 search_client=search_client,
                 search_index_client=search_index_client,
             )
@@ -97,7 +95,6 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
                 collection_name=collection_name,
-                kernel=kwargs.get("kernel", None),
                 search_client=get_search_client(
                     search_index_client=search_index_client, collection_name=collection_name
                 ),
@@ -131,7 +128,6 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=azure_ai_search_settings.index_name,
-            kernel=kwargs.get("kernel", None),
             search_client=get_search_client(
                 search_index_client=search_index_client, collection_name=azure_ai_search_settings.index_name
             ),
