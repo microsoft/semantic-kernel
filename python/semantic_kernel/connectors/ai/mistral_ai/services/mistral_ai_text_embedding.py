@@ -1,7 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 
-from typing import Any
+if sys.version_info >= (3, 12):
+    from typing import Any, override  # pragma: no cover
+else:
+    from typing_extensions import Any, override  # pragma: no cover
+import logging
 
 from mistralai.async_client import MistralAsyncClient
 from mistralai.models.embeddings import EmbeddingResponse
@@ -10,8 +15,11 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.mistral_ai.settings.mistral_ai_settings import MistralAISettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
@@ -71,7 +79,23 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
             client=client,
         )
 
-    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
+    @override
+    async def generate_embeddings(
+        self,
+        texts: list[str],
+        settings: "PromptExecutionSettings | None" = None,
+        **kwargs: Any,
+    ) -> ndarray:
+        embedding_response: EmbeddingResponse = await self.generate_raw_embeddings(texts, settings, **kwargs)
+        return array([array(item.embedding) for item in embedding_response.data])
+
+    @override
+    async def generate_raw_embeddings(
+        self,
+        texts: list[str],
+        settings: "PromptExecutionSettings | None" = None,
+        **kwargs: Any,
+    ) -> "EmbeddingResponse":
         """Generate embeddings from the Mistral AI service."""
         try:
 
@@ -83,6 +107,6 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
             raise ServiceResponseException(
                 f"{type(self)} service failed to complete the embedding request.",
                 ex,
-        ) from ex
+            ) from ex
 
-        return array([array(item.embedding) for item in response.data])
+        return response

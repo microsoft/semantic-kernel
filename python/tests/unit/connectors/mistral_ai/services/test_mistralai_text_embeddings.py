@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from mistralai.async_client import MistralAsyncClient
+from mistralai.models.embeddings import EmbeddingResponse
 
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_text_embedding import MistralAITextEmbedding
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
@@ -78,9 +79,20 @@ def test_embedding_missing_model_constructor(mistralai_unit_test_env):
 
 
 @pytest.mark.asyncio
+async def test_embedding_generate_raw_embedding(mistralai_unit_test_env):
+    mock_client = AsyncMock(spec=MistralAsyncClient)
+    mock_embedding_response = MagicMock(spec=EmbeddingResponse, data=[MagicMock(embedding=[1, 2, 3, 4, 5])])
+    mock_client.embeddings.return_value = mock_embedding_response
+    text_embedding = MistralAITextEmbedding(client=mock_client)
+    embedding = await text_embedding.generate_raw_embeddings(["test"])
+    assert isinstance(embedding, EmbeddingResponse)
+    assert embedding.data[0].embedding == [1, 2, 3, 4, 5]
+
+
+@pytest.mark.asyncio
 async def test_embedding_generate_embedding(mistralai_unit_test_env):
     mock_client = AsyncMock(spec=MistralAsyncClient)
-    mock_embedding_response = MagicMock(data=[MagicMock(embedding=[1, 2, 3, 4, 5])])
+    mock_embedding_response = MagicMock(spec=EmbeddingResponse, data=[MagicMock(embedding=[1, 2, 3, 4, 5])])
     mock_client.embeddings.return_value = mock_embedding_response
     text_embedding = MistralAITextEmbedding(client=mock_client)
     embedding = await text_embedding.generate_embeddings(["test"])
