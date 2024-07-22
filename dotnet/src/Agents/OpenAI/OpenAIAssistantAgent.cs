@@ -369,12 +369,12 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         if (definition.EnableCodeInterpreter)
         {
-            assistantCreationOptions.Tools.Add(new CodeInterpreterToolDefinition());
+            assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
         }
 
         if (!string.IsNullOrWhiteSpace(definition.VectorStoreId))
         {
-            assistantCreationOptions.Tools.Add(new FileSearchToolDefinition());
+            assistantCreationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
         }
 
         return assistantCreationOptions;

@@ -7,7 +7,7 @@ using Moq;
 using OpenAI;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests.OpenAI;
+namespace SemanticKernel.Agents.UnitTests.OpenAI.Internal;
 
 /// <summary>
 /// Unit testing of <see cref="OpenAIClientFactory"/>.

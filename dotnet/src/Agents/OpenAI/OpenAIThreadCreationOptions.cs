@@ -14,11 +14,6 @@ public sealed class OpenAIThreadCreationOptions
     public IReadOnlyList<string>? CodeInterpterFileIds { get; init; }
 
     /// <summary>
-    /// Set if code-interpreter is enabled.
-    /// </summary>
-    public bool EnableCodeInterpreter { get; init; }
-
-    /// <summary>
     /// Optional messages to initialize thread with..
     /// </summary>
     public IReadOnlyList<ChatMessageContent>? Messages { get; init; }

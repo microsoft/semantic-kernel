@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
-using Microsoft.SemanticKernel;
+using System;
 using Microsoft.SemanticKernel.Agents.OpenAI;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -16,37 +14,53 @@ public class RunPollingOptionsTests
     /// Verify initial state.
     /// </summary>
     [Fact]
-    public void RunPollingOptionsInitialState()
+    public void RunPollingOptionsInitialStateTest()
     {
-        OpenAIThreadCreationOptions options = new();
+        RunPollingOptions options = new();
 
-        Assert.Null(options.Messages);
-        Assert.Null(options.Metadata);
-        Assert.Null(options.VectorStoreId);
-        Assert.Null(options.CodeInterpterFileIds);
-        Assert.False(options.EnableCodeInterpreter);
+        Assert.Equal(RunPollingOptions.DefaultPollingInterval, options.RunPollingInterval);
+        Assert.Equal(RunPollingOptions.DefaultPollingBackoff, options.RunPollingBackoff);
+        Assert.Equal(RunPollingOptions.DefaultMessageSynchronizationDelay, options.MessageSynchronizationDelay);
+        Assert.Equal(RunPollingOptions.DefaultPollingBackoffThreshold, options.RunPollingBackoffThreshold);
     }
 
     /// <summary>s
     /// Verify initialization.
     /// </summary>
     [Fact]
-    public void RunPollingOptionsAssignment()
+    public void RunPollingOptionsAssignmentTest()
     {
-        OpenAIThreadCreationOptions definition =
+        RunPollingOptions options =
             new()
             {
-                Messages = [new ChatMessageContent(AuthorRole.User, "test")],
-                VectorStoreId = "#vs",
-                Metadata = new Dictionary<string, string>() { { "a", "1" } },
-                CodeInterpterFileIds = ["file1"],
-                EnableCodeInterpreter = true,
+                RunPollingInterval = TimeSpan.FromSeconds(3),
+                RunPollingBackoff = TimeSpan.FromSeconds(4),
+                RunPollingBackoffThreshold = 8,
+                MessageSynchronizationDelay = TimeSpan.FromSeconds(5),
             };
 
-        Assert.Single(definition.Messages);
-        Assert.Single(definition.Metadata);
-        Assert.Equal("#vs", definition.VectorStoreId);
-        Assert.Single(definition.CodeInterpterFileIds);
-        Assert.True(definition.EnableCodeInterpreter);
+        Assert.Equal(3, options.RunPollingInterval.TotalSeconds);
+        Assert.Equal(4, options.RunPollingBackoff.TotalSeconds);
+        Assert.Equal(5, options.MessageSynchronizationDelay.TotalSeconds);
+        Assert.Equal(8, options.RunPollingBackoffThreshold);
+    }
+
+
+    /// <summary>s
+    /// Verify initialization.
+    /// </summary>
+    [Fact]
+    public void RunPollingOptionsGetIntervalTest()
+    {
+        RunPollingOptions options =
+            new()
+            {
+                RunPollingInterval = TimeSpan.FromSeconds(3),
+                RunPollingBackoff = TimeSpan.FromSeconds(4),
+                RunPollingBackoffThreshold = 8,
+            };
+
+        Assert.Equal(options.RunPollingInterval, options.GetPollingInterval(8));
+        Assert.Equal(options.RunPollingBackoff, options.GetPollingInterval(9));
     }
 }

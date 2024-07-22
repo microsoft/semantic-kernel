@@ -6,21 +6,21 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Content type to support file references.
+/// Content type to support message attachment.
 /// </summary>
 [Experimental("SKEXP0110")]
-public class FileReferenceContent : KernelContent
+public class MessageAttachmentContent : FileReferenceContent
 {
     /// <summary>
-    /// The file identifier.
+    /// The associated tool.
     /// </summary>
-    public string FileId { get; init; } = string.Empty;
+    public string Tool { get; init; } = string.Empty;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.
     /// </summary>
     [JsonConstructor]
-    public FileReferenceContent()
+    public MessageAttachmentContent()
     { }
 
     /// <summary>
@@ -30,13 +30,13 @@ public class FileReferenceContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content.</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
-    public FileReferenceContent(
+    public MessageAttachmentContent(
         string fileId,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
+        : base(fileId, modelId, innerContent, metadata)
     {
-        this.FileId = fileId;
+        // %%% TOOL TYPE
     }
 }

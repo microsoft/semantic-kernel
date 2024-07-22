@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
+using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI;
 using OpenAI.Assistants;
@@ -51,45 +52,13 @@ internal static class AssistantThreadActions
             return;
         }
 
-        MessageCreationOptions options =
-            new()
-            {
-                //Role = message.Role.ToMessageRole(), // %%% BUG: ASSIGNABLE (Allow assistant or user)
-            };
-
-        if (message.Metadata != null)
-        {
-            foreach (var metadata in message.Metadata)
-            {
-                options.Metadata.Add(metadata.Key, metadata.Value?.ToString() ?? string.Empty);
-            }
-        }
+        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
 
         await client.CreateMessageAsync(
             threadId,
-            GetMessageContents(),
+            AssistantMessageAdapter.GetMessageContents(message, options),
             options,
             cancellationToken).ConfigureAwait(false);
-
-        IEnumerable<MessageContent> GetMessageContents()
-        {
-            foreach (KernelContent content in message.Items)
-            {
-                if (content is TextContent textContent)
-                {
-                    yield return MessageContent.FromText(content.ToString());
-                }
-                else if (content is ImageContent imageContent && imageContent.Data.HasValue)
-                {
-                    yield return MessageContent.FromImageUrl(
-                        imageContent.Uri ?? new Uri(Convert.ToBase64String(imageContent.Data.Value.ToArray())));
-                }
-                else if (content is FileReferenceContent fileContent)
-                {
-                    options.Attachments.Add(new MessageCreationAttachment(fileContent.FileId, [new CodeInterpreterToolDefinition()]));
-                }
-            }
-        }
     }
 
     /// <summary>
@@ -157,7 +126,7 @@ internal static class AssistantThreadActions
 
         logger.LogOpenAIAssistantCreatingRun(nameof(InvokeAsync), threadId);
 
-        RunCreationOptions options = GenerateRunCreationOptions(agent.Definition, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, invocationOptions);
 
         options.ToolsOverride.AddRange(agent.Tools); // %%%
 
@@ -290,7 +259,7 @@ internal static class AssistantThreadActions
             do
             {
                 // Reduce polling frequency after a couple attempts
-                await agent.PollingOptions.WaitAsync(count, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(agent.PollingOptions.GetPollingInterval(count), cancellationToken).ConfigureAwait(false);
                 ++count;
 
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -492,39 +461,4 @@ internal static class AssistantThreadActions
 
         return toolOutputs;
     }
-
-    private static RunCreationOptions GenerateRunCreationOptions(OpenAIAssistantDefinition definition, OpenAIAssistantInvocationOptions? invocationOptions)
-    {
-        int? truncationMessageCount = ResolveExecutionSetting(invocationOptions?.TruncationMessageCount, definition.ExecutionOptions?.TruncationMessageCount);
-
-        RunCreationOptions options =
-            new()
-            {
-                MaxCompletionTokens = ResolveExecutionSetting(invocationOptions?.MaxCompletionTokens, definition.ExecutionOptions?.MaxCompletionTokens),
-                MaxPromptTokens = ResolveExecutionSetting(invocationOptions?.MaxPromptTokens, definition.ExecutionOptions?.MaxPromptTokens),
-                ModelOverride = invocationOptions?.ModelName,
-                NucleusSamplingFactor = ResolveExecutionSetting(invocationOptions?.TopP, definition.TopP),
-                ParallelToolCallsEnabled = ResolveExecutionSetting(invocationOptions?.ParallelToolCallsEnabled, definition.ExecutionOptions?.ParallelToolCallsEnabled),
-                ResponseFormat = ResolveExecutionSetting(invocationOptions?.EnableJsonResponse, definition.EnableJsonResponse) ?? false ? AssistantResponseFormat.JsonObject : null,
-                Temperature = ResolveExecutionSetting(invocationOptions?.Temperature, definition.Temperature),
-                //ToolConstraint // %%% TODO
-                TruncationStrategy = truncationMessageCount.HasValue ? RunTruncationStrategy.CreateLastMessagesStrategy(truncationMessageCount.Value) : null,
-            };
-
-        if (invocationOptions?.Metadata != null)
-        {
-            foreach (var metadata in invocationOptions.Metadata)
-            {
-                options.Metadata.Add(metadata.Key, metadata.Value ?? string.Empty);
-            }
-        }
-
-        return options;
-    }
-
-    private static TValue? ResolveExecutionSetting<TValue>(TValue? setting, TValue? agentSetting) where TValue : struct
-        =>
-            setting.HasValue && (!agentSetting.HasValue || !EqualityComparer<TValue>.Default.Equals(setting.Value, agentSetting.Value)) ?
-                setting.Value :
-                null;
 }

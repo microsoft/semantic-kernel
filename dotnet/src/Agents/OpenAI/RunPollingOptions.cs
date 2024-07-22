@@ -19,6 +19,11 @@ public sealed class RunPollingOptions
     public static TimeSpan DefaultPollingBackoff { get; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
+    /// The default number of polling iterations before using <see cref="RunPollingBackoff"/>.
+    /// </summary>
+    public static int DefaultPollingBackoffThreshold { get; } = 2;
+
+    /// <summary>
     /// The default polling delay when retrying message retrieval due to a 404/NotFound from synchronization lag.
     /// </summary>
     public static TimeSpan DefaultMessageSynchronizationDelay { get; } = TimeSpan.FromMilliseconds(500);
@@ -34,7 +39,19 @@ public sealed class RunPollingOptions
     public TimeSpan RunPollingBackoff { get; set; } = DefaultPollingBackoff;
 
     /// <summary>
+    /// The number of polling iterations before using <see cref="RunPollingBackoff"/>.
+    /// </summary>
+    public int RunPollingBackoffThreshold { get; set; } = DefaultPollingBackoffThreshold;
+
+    /// <summary>
     /// The polling delay when retrying message retrieval due to a 404/NotFound from synchronization lag.
     /// </summary>
     public TimeSpan MessageSynchronizationDelay { get; set; } = DefaultMessageSynchronizationDelay;
+
+    /// <summary>
+    /// Gets the polling interval for the specified iteration count.
+    /// </summary>
+    /// <param name="iterationCount">The number of polling iterations already attempted</param>
+    public TimeSpan GetPollingInterval(int iterationCount) =>
+        iterationCount > this.RunPollingBackoffThreshold ? this.RunPollingBackoff : this.RunPollingInterval;
 }

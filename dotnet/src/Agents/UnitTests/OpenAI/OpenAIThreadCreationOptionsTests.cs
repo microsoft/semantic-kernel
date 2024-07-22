@@ -24,7 +24,6 @@ public class OpenAIThreadCreationOptionsTests
         Assert.Null(options.Metadata);
         Assert.Null(options.VectorStoreId);
         Assert.Null(options.CodeInterpterFileIds);
-        Assert.False(options.EnableCodeInterpreter);
     }
 
     /// <summary>
@@ -40,13 +39,11 @@ public class OpenAIThreadCreationOptionsTests
                 VectorStoreId = "#vs",
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 CodeInterpterFileIds = ["file1"],
-                EnableCodeInterpreter = true,
             };
 
         Assert.Single(definition.Messages);
         Assert.Single(definition.Metadata);
         Assert.Equal("#vs", definition.VectorStoreId);
         Assert.Single(definition.CodeInterpterFileIds);
-        Assert.True(definition.EnableCodeInterpreter);
     }
 }
