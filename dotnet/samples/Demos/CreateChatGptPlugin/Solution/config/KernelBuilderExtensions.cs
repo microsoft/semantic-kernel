@@ -14,16 +14,7 @@ internal static class KernelBuilderExtensions
         switch (Env.Var("Global:LlmService")!)
         {
             case "AzureOpenAI":
-                if (Env.Var("AzureOpenAI:DeploymentType") == "text-completion")
-                {
-                    kernelBuilder.Services.AddAzureOpenAITextGeneration(
-                        deploymentName: Env.Var("AzureOpenAI:TextCompletionDeploymentName")!,
-                        modelId: Env.Var("AzureOpenAI:TextCompletionModelId"),
-                        endpoint: Env.Var("AzureOpenAI:Endpoint")!,
-                        apiKey: Env.Var("AzureOpenAI:ApiKey")!
-                    );
-                }
-                else if (Env.Var("AzureOpenAI:DeploymentType") == "chat-completion")
+                if (Env.Var("AzureOpenAI:DeploymentType") == "chat-completion")
                 {
                     kernelBuilder.Services.AddAzureOpenAIChatCompletion(
                         deploymentName: Env.Var("AzureOpenAI:ChatCompletionDeploymentName")!,
@@ -35,15 +26,8 @@ internal static class KernelBuilderExtensions
                 break;
 
             case "OpenAI":
-                if (Env.Var("OpenAI:ModelType") == "text-completion")
-                {
-                    kernelBuilder.Services.AddOpenAITextGeneration(
-                        modelId: Env.Var("OpenAI:TextCompletionModelId")!,
-                        apiKey: Env.Var("OpenAI:ApiKey")!,
-                        orgId: Env.Var("OpenAI:OrgId")
-                    );
-                }
-                else if (Env.Var("OpenAI:ModelType") == "chat-completion")
+
+                if (Env.Var("OpenAI:ModelType") == "chat-completion")
                 {
                     kernelBuilder.Services.AddOpenAIChatCompletion(
                         modelId: Env.Var("OpenAI:ChatCompletionModelId")!,
