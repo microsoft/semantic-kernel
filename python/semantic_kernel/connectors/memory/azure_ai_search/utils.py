@@ -70,9 +70,6 @@ def get_search_index_client(
     else:
         raise ServiceInitializationError("Error: missing Azure AI Search client credentials.")
 
-    if not credential:
-        raise ServiceInitializationError("Error: Azure AI Search credentials not set.")
-
     return SearchIndexClientWrapper(
         endpoint=str(azure_ai_search_settings.endpoint),
         credential=credential,  # type: ignore

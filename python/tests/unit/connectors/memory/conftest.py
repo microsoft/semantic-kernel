@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Annotated
 from uuid import uuid4
 
+from pydantic import BaseModel
 from pytest import fixture
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -52,3 +53,14 @@ def data_model_definition() -> object:
             "vector": VectorStoreRecordVectorField(),
         }
     )
+
+
+@fixture
+def data_model_type():
+    @vectorstoremodel
+    class DataModelClass(BaseModel):
+        content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")]
+        vector: Annotated[list[float], VectorStoreRecordVectorField()]
+        id: Annotated[str, VectorStoreRecordKeyField()]
+
+    return DataModelClass
