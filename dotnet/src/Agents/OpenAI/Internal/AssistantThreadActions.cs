@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -9,13 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI;
 using OpenAI.Assistants;
 
-namespace Microsoft.SemanticKernel.Agents.OpenAI;
+namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 
 /// <summary>
 /// Actions associated with an Open Assistant thread.

@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using OpenAI;
 using OpenAI.Files;
 using OpenAI.VectorStores;
 
-namespace Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
+namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
 /// Extension method for creating OpenAI clients from a <see cref="OpenAIServiceConfiguration"/>.

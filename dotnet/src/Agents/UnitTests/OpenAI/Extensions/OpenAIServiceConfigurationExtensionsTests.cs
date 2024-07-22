@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using Microsoft.SemanticKernel.Agents.OpenAI;
-using Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
 using OpenAI.Files;
 using OpenAI.VectorStores;
 using Xunit;

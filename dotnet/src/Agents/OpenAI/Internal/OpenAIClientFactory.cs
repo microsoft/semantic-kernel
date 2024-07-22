@@ -6,7 +6,7 @@ using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
 
-namespace Microsoft.SemanticKernel.Agents.OpenAI;
+namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 
 internal static class OpenAIClientFactory
 {

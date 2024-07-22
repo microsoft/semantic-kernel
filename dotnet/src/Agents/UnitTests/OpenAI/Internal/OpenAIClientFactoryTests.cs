@@ -3,6 +3,7 @@ using System;
 using System.Net.Http;
 using Azure.Core;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Moq;
 using OpenAI;
 using Xunit;
