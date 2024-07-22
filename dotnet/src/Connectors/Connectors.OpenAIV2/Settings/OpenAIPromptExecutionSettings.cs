@@ -23,7 +23,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Default is 1.0.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? Temperature
     {
         get => this._temperature;
 
@@ -40,7 +41,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Default is 1.0.
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double TopP
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? TopP
     {
         get => this._topP;
 
@@ -57,7 +59,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// model's likelihood to talk about new topics.
     /// </summary>
     [JsonPropertyName("presence_penalty")]
-    public double PresencePenalty
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? PresencePenalty
     {
         get => this._presencePenalty;
 
@@ -74,7 +77,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// the model's likelihood to repeat the same line verbatim.
     /// </summary>
     [JsonPropertyName("frequency_penalty")]
-    public double FrequencyPenalty
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? FrequencyPenalty
     {
         get => this._frequencyPenalty;
 
@@ -89,6 +93,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// The maximum number of tokens to generate in the completion.
     /// </summary>
     [JsonPropertyName("max_tokens")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxTokens
     {
         get => this._maxTokens;
@@ -104,6 +109,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
     [JsonPropertyName("stop_sequences")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<string>? StopSequences
     {
         get => this._stopSequences;
@@ -120,6 +126,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// same seed and parameters should return the same result. Determinism is not guaranteed.
     /// </summary>
     [JsonPropertyName("seed")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public long? Seed
     {
         get => this._seed;
@@ -139,6 +146,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </remarks>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? ResponseFormat
     {
         get => this._responseFormat;
@@ -155,6 +163,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Defaults to "Assistant is a large language model."
     /// </summary>
     [JsonPropertyName("chat_system_prompt")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ChatSystemPrompt
     {
         get => this._chatSystemPrompt;
@@ -170,6 +179,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     [JsonPropertyName("token_selection_biases")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<int, int>? TokenSelectionBiases
     {
         get => this._tokenSelectionBiases;
@@ -242,6 +252,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("logprobs")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? Logprobs
     {
         get => this._logprobs;
@@ -258,6 +269,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("top_logprobs")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? TopLogprobs
     {
         get => this._topLogprobs;
@@ -295,11 +307,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     {
         return this.Clone<OpenAIPromptExecutionSettings>();
     }
-
-    /// <summary>
-    /// Default max tokens for a text generation
-    /// </summary>
-    internal static int DefaultTextMaxTokens { get; } = 256;
 
     /// <summary>
     /// Create a new settings object with the values from another settings object.
@@ -359,10 +366,10 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
     #region private ================================================================================
 
-    private double _temperature = 1;
-    private double _topP = 1;
-    private double _presencePenalty;
-    private double _frequencyPenalty;
+    private double? _temperature;
+    private double? _topP;
+    private double? _presencePenalty;
+    private double? _frequencyPenalty;
     private int? _maxTokens;
     private IList<string>? _stopSequences;
     private long? _seed;
