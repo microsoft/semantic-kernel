@@ -23,10 +23,10 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Assert
         Assert.NotNull(executionSettings);
-        Assert.Equal(1, executionSettings.Temperature);
-        Assert.Equal(1, executionSettings.TopP);
-        Assert.Equal(0, executionSettings.FrequencyPenalty);
-        Assert.Equal(0, executionSettings.PresencePenalty);
+        Assert.Null(executionSettings.Temperature);
+        Assert.Null(executionSettings.TopP);
+        Assert.Null(executionSettings.FrequencyPenalty);
+        Assert.Null(executionSettings.PresencePenalty);
         Assert.Null(executionSettings.StopSequences);
         Assert.Null(executionSettings.TokenSelectionBiases);
         Assert.Null(executionSettings.TopLogprobs);
@@ -58,7 +58,7 @@ public class OpenAIPromptExecutionSettingsTests
         // Assert
         Assert.NotNull(executionSettings);
         Assert.Equal(actualSettings, executionSettings);
-        Assert.Null(executionSettings.MaxTokens);
+        Assert.Equal(128, executionSettings.MaxTokens);
     }
 
     [Fact]
