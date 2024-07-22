@@ -28,15 +28,13 @@ class AIServiceClientBase(KernelBaseModel, ABC):
         if not self.service_id:
             self.service_id = self.ai_model_id
 
-    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        """Get the request settings class.
+    # Override this in subclass to return the proper prompt execution type the
+    # service is expecting.
+    def get_prompt_execution_settings_class(self) -> type[PromptExecutionSettings]:
+        """Get the request settings class."""
+        return PromptExecutionSettings
 
-        Overwrite this in subclass to return the proper prompt execution type the
-        service is expecting.
-        """
-        return PromptExecutionSettings  # pragma: no cover
-
-    def instantiate_prompt_execution_settings(self, **kwargs) -> "PromptExecutionSettings":
+    def instantiate_prompt_execution_settings(self, **kwargs) -> PromptExecutionSettings:
         """Create a request settings object.
 
         All arguments are passed to the constructor of the request settings object.

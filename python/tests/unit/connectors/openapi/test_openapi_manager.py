@@ -10,6 +10,7 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_paramet
 )
 from semantic_kernel.connectors.openapi_plugin.openapi_manager import (
     _create_function_from_operation,
+    create_functions_from_openapi,
 )
 from semantic_kernel.exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -222,3 +223,13 @@ async def test_run_openapi_operation_alternative_name(kernel: Kernel):
         assert str(result) == "Operation Result"
         run_operation_mock.assert_called_once()
         assert runner.run_operation.call_args[0][1]["param1"] == "value1"
+
+
+@pytest.mark.asyncio
+@patch("semantic_kernel.connectors.openapi_plugin.openapi_parser.OpenApiParser.parse", return_value=None)
+async def test_create_functions_from_openapi_raises_exception(mock_parse):
+    """Test that an exception is raised when parsing fails."""
+    with pytest.raises(FunctionExecutionException, match="Error parsing OpenAPI document: test_openapi_document_path"):
+        create_functions_from_openapi(plugin_name="test_plugin", openapi_document_path="test_openapi_document_path")
+
+    mock_parse.assert_called_once_with("test_openapi_document_path")

@@ -4,7 +4,7 @@ import logging
 import types
 from collections.abc import Callable
 from inspect import Parameter, Signature, isasyncgenfunction, isclass, isgeneratorfunction, signature
-from typing import Any, ForwardRef, Union, get_args
+from typing import Annotated, Any, ForwardRef, Union, get_args, get_origin
 
 NoneType = type(None)
 logger = logging.getLogger(__name__)
@@ -103,7 +103,10 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
         annotation = arg.annotation
         default = arg.default if arg.default != arg.empty else None
         parsed_annotation = _parse_parameter(arg.name, annotation, default)
-        underlying_type = _get_underlying_type(annotation)
+        if get_origin(annotation) is Annotated or get_origin(annotation) in {Union, types.UnionType}:
+            underlying_type = _get_underlying_type(annotation)
+        else:
+            underlying_type = annotation
         parsed_annotation["type_object"] = underlying_type
         annotations.append(parsed_annotation)
 

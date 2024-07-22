@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Mapping
+from typing import Any
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -58,11 +59,10 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
 
-        if not async_client:
-            if not openai_settings.api_key:
-                raise ServiceInitializationError("The OpenAI API key is required.")
-            if not openai_settings.chat_model_id:
-                raise ServiceInitializationError("The OpenAI chat model ID is required.")
+        if not async_client and not openai_settings.api_key:
+            raise ServiceInitializationError("The OpenAI API key is required.")
+        if not openai_settings.chat_model_id:
+            raise ServiceInitializationError("The OpenAI model ID is required.")
 
         super().__init__(
             ai_model_id=openai_settings.chat_model_id,
@@ -71,11 +71,11 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             service_id=service_id,
             ai_model_type=OpenAIModelTypes.CHAT,
             default_headers=default_headers,
-            async_client=async_client,
+            client=async_client,
         )
 
     @classmethod
-    def from_dict(cls, settings: dict[str, str]) -> "OpenAIChatCompletion":
+    def from_dict(cls, settings: dict[str, Any]) -> "OpenAIChatCompletion":
         """Initialize an Open AI service from a dictionary of settings.
 
         Args:
