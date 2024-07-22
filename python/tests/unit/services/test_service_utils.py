@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from enum import Enum
 from typing import Annotated
 
 import pytest
@@ -90,6 +91,20 @@ class UnionTypePlugin:
         return value
 
 
+class MyEnum(Enum):
+    OPTION_A = "OptionA"
+    OPTION_B = "OptionB"
+    OPTION_C = "OptionC"
+
+
+class EnumPlugin:
+    @kernel_function(name="GetEnumValue", description="Get a value from the enum.")
+    def get_enum_value(
+        self, value: Annotated[MyEnum, "The enum value."]
+    ) -> Annotated[str, "The string representation of the enum value."]:
+        return value.value
+
+
 @pytest.fixture
 def setup_kernel():
     kernel = Kernel()
@@ -102,6 +117,7 @@ def setup_kernel():
             "ItemsPlugin": ItemsPlugin(),
             "UnionPlugin": UnionTypePlugin(),
             "UnionPluginLegacy": UnionTypePluginLegacySyntax(),
+            "EnumPlugin": EnumPlugin(),
         }
     )
     return kernel
@@ -353,3 +369,32 @@ def test_union_plugin(setup_kernel, plugin_name, function_name):
         assert complex_schema_1 == expected_schema
     else:
         assert complex_schema_2 == expected_schema
+
+
+def test_enum_plugin(setup_kernel):
+    kernel = setup_kernel
+
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["EnumPlugin"]})
+
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
+
+    expected_schema = {
+        "type": "function",
+        "function": {
+            "name": "EnumPlugin-GetEnumValue",
+            "description": "Get a value from the enum.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "enum": ["OptionA", "OptionB", "OptionC"],
+                        "description": "The enum value.",
+                    }
+                },
+                "required": ["value"],
+            },
+        },
+    }
+
+    assert complex_schema == expected_schema

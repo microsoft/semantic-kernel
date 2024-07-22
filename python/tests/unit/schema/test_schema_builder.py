@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+from enum import Enum
 from typing import Annotated, Any, Optional, Union
 from unittest.mock import Mock
 
@@ -33,6 +34,12 @@ class ModelWithUnionPrimitives:
     item: int | str
 
 
+class TestEnum(Enum):
+    OPTION_A = "OptionA"
+    OPTION_B = "OptionB"
+    OPTION_C = "OptionC"
+
+
 class MockModel:
     __annotations__ = {
         "id": int,
@@ -54,6 +61,7 @@ class MockModel:
         "scores": Mock(description="The scores associated with the model"),
         "optional_field": Mock(description="An optional field that can be null"),
         "metadata": Mock(description="The optional metadata description"),
+        "coordinates": Mock(description="The coordinates of the model"),
     }
 
 
@@ -70,8 +78,7 @@ def test_build_with_kernel_base_model():
 def test_build_with_model_with_optional_attributes():
     expected_schema = {
         "type": "object",
-        "properties": {"name": {"type": "object"}},
-        "required": ["name"],
+        "properties": {"name": {"type": ["string", "null"]}},
     }
     result = KernelJsonSchemaBuilder.build(ModelWithOptionalAttributes)
     assert result == expected_schema
@@ -197,7 +204,7 @@ def test_build_union():
 
 def test_build_optional():
     schema = KernelJsonSchemaBuilder.build(Optional[int])
-    assert schema == {"type": "integer", "nullable": True}
+    assert schema == {"type": ["integer", "null"]}
 
 
 def test_build_model_schema_for_many_types():
@@ -262,7 +269,8 @@ def test_build_model_schema_for_many_types():
                 {
                     "type": "integer"
                 }
-            ]
+            ],
+            "description": "The coordinates of the model"
         },
         "status":
         {
@@ -278,11 +286,9 @@ def test_build_model_schema_for_many_types():
                 }
             ]
         },
-        "optional_field":
-        {
-            "type": "string",
-            "nullable": true,
-            "description": "An optional field that can be null"
+        "optional_field": {
+            "description": "An optional field that can be null",
+            "type": ["string", "null"]
         }
     },
     "required":
@@ -340,3 +346,25 @@ class Items(KernelBaseModel):
 def test_build_complex_type_list():
     schema = KernelJsonSchemaBuilder.build(list[Items])
     assert schema is not None
+
+
+def test_enum_schema():
+    schema = KernelJsonSchemaBuilder.build(TestEnum, "Test Enum Description")
+    expected_schema = {
+        "type": "string",
+        "enum": ["OptionA", "OptionB", "OptionC"],
+        "description": "Test Enum Description",
+    }
+    assert schema == expected_schema
+
+
+def test_enum_schema_without_description():
+    schema = KernelJsonSchemaBuilder.build(TestEnum)
+    expected_schema = {"type": "string", "enum": ["OptionA", "OptionB", "OptionC"]}
+    assert schema == expected_schema
+
+
+def test_handle_complex_type():
+    schema = KernelJsonSchemaBuilder.handle_complex_type(str, "Description")
+    expected_schema = {"type": "string", "description": "Description"}
+    assert schema == expected_schema
