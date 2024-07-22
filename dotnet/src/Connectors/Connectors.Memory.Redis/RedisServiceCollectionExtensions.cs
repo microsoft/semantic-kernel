@@ -17,7 +17,7 @@ public static class RedisServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="redisConnectionConfiguration">The Redis connection configuration string. If not provided, an <see cref="IDatabase"/> instance will be requested from the dependency injection container.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <param name="options">Optoinal options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <returns>The kernel builder.</returns>
     public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, string? redisConnectionConfiguration = default, string? serviceId = default, RedisVectorStoreOptions? options = default)
     {
