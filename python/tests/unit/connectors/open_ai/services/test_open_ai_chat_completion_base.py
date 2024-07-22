@@ -243,7 +243,7 @@ async def test_process_tool_calls_with_continuation_on_malformed_arguments():
         ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
     )
 
-    with patch("semantic_kernel.connectors.ai.function_calling_utils.logger", autospec=True):
+    with patch("semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.logger", autospec=True):
         await chat_completion_base._process_function_call(
             tool_call_mock,
             chat_history_mock,

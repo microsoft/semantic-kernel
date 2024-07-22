@@ -59,7 +59,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         chat_history: "ChatHistory",
         role_key: str = "role",
         content_key: str = "content",
-    ) -> list[dict[str, str | None]]:
+    ) -> Any:
         """Prepare the chat history for a request.
 
         Allowing customization of the key names for role/author, and optionally overriding the role.
@@ -68,12 +68,14 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
             They require a "tool_call_id" and (function) "name" key, and the "metadata" key should
             be removed. The "encoding" key should also be removed.
 
+        Override this method to customize the formatting of the chat history for a request.
+
         Args:
             chat_history (ChatHistory): The chat history to prepare.
             role_key (str): The key name for the role/author.
             content_key (str): The key name for the content/message.
 
         Returns:
-            List[Dict[str, Optional[str]]]: The prepared chat history.
+            prepared_chat_history (Any): The prepared chat history for a request.
         """
         return [message.to_dict(role_key=role_key, content_key=content_key) for message in chat_history.messages]

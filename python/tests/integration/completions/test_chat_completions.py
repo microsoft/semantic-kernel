@@ -396,6 +396,58 @@ pytestmark = pytest.mark.parametrize(
             id="azure_ai_inference_image_input_file",
         ),
         pytest.param(
+            "azure_ai_inference",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="azure_ai_inference_tool_call_auto",
+        ),
+        pytest.param(
+            "azure_ai_inference",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=False, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="azure_ai_inference_tool_call_non_auto",
+        ),
+        pytest.param(
+            "azure_ai_inference",
+            {},
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                    ),
+                ],
+            ],
+            ["1.2"],
+            id="azure_ai_inference_tool_call_flow",
+        ),
+        pytest.param(
             "mistral_ai",
             {},
             [

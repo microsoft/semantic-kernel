@@ -5,9 +5,9 @@ import sys
 from typing import Any
 
 if sys.version_info >= (3, 12):
-    from typing import override
+    from typing import override  # pragma: no cover
 else:
-    from typing_extensions import override
+    from typing_extensions import override  # pragma: no cover
 
 import sentence_transformers
 import torch
@@ -28,7 +28,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     def __init__(
         self,
         ai_model_id: str,
-        device: int | None = -1,
+        device: int = -1,
         service_id: str | None = None,
     ) -> None:
         """Initializes a new instance of the HuggingFaceTextEmbedding class.
@@ -36,8 +36,8 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         Args:
             ai_model_id (str): Hugging Face model card string, see
                 https://huggingface.co/sentence-transformers
-            device (Optional[int]): Device to run the model on, -1 for CPU, 0+ for GPU.
-            service_id (Optional[str]): Service ID for the model.
+            device (int): Device to run the model on, -1 for CPU, 0+ for GPU. (optional)
+            service_id (str): Service ID for the model. (optional)
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
