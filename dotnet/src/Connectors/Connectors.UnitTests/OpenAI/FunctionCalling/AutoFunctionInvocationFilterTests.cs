@@ -622,6 +622,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     {
         // Arrange
         List<string?> actualToolCallIds = [];
+        List<ChatMessageContent> actualChatMessageContents = [];
 
         var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
 
@@ -633,6 +634,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         var filter = new AutoFunctionInvocationFilter(async (context, next) =>
         {
             actualToolCallIds.Add(context.ToolCallId);
+            actualChatMessageContents.Add(context.ChatMessageContent);
 
             await next(context);
         });
@@ -678,6 +680,17 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         // Assert
         Assert.Equal(["tool-call-id-1", "tool-call-id-2"], actualToolCallIds);
+
+        foreach (var chatMessageContent in actualChatMessageContents)
+        {
+            var content = chatMessageContent as OpenAIChatMessageContent;
+
+            Assert.NotNull(content);
+
+            Assert.Equal("test-model-id", content.ModelId);
+            Assert.Equal(AuthorRole.Assistant, content.Role);
+            Assert.Equal(2, content.ToolCalls.Count);
+        }
     }
 
     public void Dispose()
