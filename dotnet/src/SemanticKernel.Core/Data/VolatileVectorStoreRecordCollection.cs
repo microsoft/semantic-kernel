@@ -22,7 +22,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     where TRecord : class
 {
     /// <summary>Internal storage for the record collection.</summary>
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, TRecord>> _internalCollection;
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _internalCollection;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly VolatileVectorStoreRecordCollectionOptions _options;
@@ -76,7 +76,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <param name="internalCollection">Allows passing in the dictionary used for storage, for testing purposes.</param>
     /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    internal VolatileVectorStoreRecordCollection(ConcurrentDictionary<string, ConcurrentDictionary<string, TRecord>> internalCollection, string collectionName, VolatileVectorStoreRecordCollectionOptions? options = default)
+    internal VolatileVectorStoreRecordCollection(ConcurrentDictionary<string, ConcurrentDictionary<string, object>> internalCollection, string collectionName, VolatileVectorStoreRecordCollectionOptions? options = default)
         : this(collectionName, options)
     {
         this._internalCollection = internalCollection;
@@ -94,7 +94,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <inheritdoc />
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        this._internalCollection.TryAdd(this._collectionName, new ConcurrentDictionary<string, TRecord>());
+        this._internalCollection.TryAdd(this._collectionName, new ConcurrentDictionary<string, object>());
         return Task.CompletedTask;
     }
 
@@ -121,7 +121,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         if (collectionDictionary.TryGetValue(key, out var record))
         {
-            return Task.FromResult<TRecord?>(record);
+            return Task.FromResult<TRecord?>(record as TRecord);
         }
 
         return Task.FromResult<TRecord?>(null);
@@ -187,7 +187,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>
     /// <returns>The retrieved collection dictionary.</returns>
-    private ConcurrentDictionary<string, TRecord> GetCollectionDictionary()
+    private ConcurrentDictionary<string, object> GetCollectionDictionary()
     {
         if (!this._internalCollection.TryGetValue(this._collectionName, out var collectionDictionary))
         {

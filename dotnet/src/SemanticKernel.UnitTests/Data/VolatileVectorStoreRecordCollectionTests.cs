@@ -21,7 +21,7 @@ public class VolatileVectorStoreRecordCollectionTests
 
     private readonly CancellationToken _testCancellationToken = new(false);
 
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, SinglePropsModel>> _collectionStore;
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _collectionStore;
 
     public VolatileVectorStoreRecordCollectionTests()
     {
@@ -34,7 +34,7 @@ public class VolatileVectorStoreRecordCollectionTests
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange
-        var collection = new ConcurrentDictionary<string, SinglePropsModel>();
+        var collection = new ConcurrentDictionary<string, object>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
         var sut = new VolatileVectorStoreRecordCollection<SinglePropsModel>(
@@ -65,7 +65,7 @@ public class VolatileVectorStoreRecordCollectionTests
     public async Task DeleteCollectionRemovesCollectionFromDictionaryAsync()
     {
         // Arrange
-        var collection = new ConcurrentDictionary<string, SinglePropsModel>();
+        var collection = new ConcurrentDictionary<string, object>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
         var sut = this.CreateRecordCollection(false);
@@ -84,7 +84,7 @@ public class VolatileVectorStoreRecordCollectionTests
     {
         // Arrange
         var record = CreateModel(TestRecordKey1, withVectors: true);
-        var collection = new ConcurrentDictionary<string, SinglePropsModel>();
+        var collection = new ConcurrentDictionary<string, object>();
         collection.TryAdd(TestRecordKey1, record);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
@@ -116,7 +116,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Arrange
         var record1 = CreateModel(TestRecordKey1, withVectors: true);
         var record2 = CreateModel(TestRecordKey2, withVectors: true);
-        var collection = new ConcurrentDictionary<string, SinglePropsModel>();
+        var collection = new ConcurrentDictionary<string, object>();
         collection.TryAdd(TestRecordKey1, record1);
         collection.TryAdd(TestRecordKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
@@ -149,7 +149,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Arrange
         var record1 = CreateModel(TestRecordKey1, withVectors: true);
         var record2 = CreateModel(TestRecordKey2, withVectors: true);
-        var collection = new ConcurrentDictionary<string, SinglePropsModel>();
+        var collection = new ConcurrentDictionary<string, object>();
         collection.TryAdd(TestRecordKey1, record1);
         collection.TryAdd(TestRecordKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
@@ -174,7 +174,7 @@ public class VolatileVectorStoreRecordCollectionTests
         // Arrange
         var record1 = CreateModel(TestRecordKey1, withVectors: true);
         var record2 = CreateModel(TestRecordKey2, withVectors: true);
-        var collection = new ConcurrentDictionary<string, SinglePropsModel>();
+        var collection = new ConcurrentDictionary<string, object>();
         collection.TryAdd(TestRecordKey1, record1);
         collection.TryAdd(TestRecordKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
@@ -198,7 +198,7 @@ public class VolatileVectorStoreRecordCollectionTests
     {
         // Arrange
         var record1 = CreateModel(TestRecordKey1, withVectors: true);
-        var collection = new ConcurrentDictionary<string, SinglePropsModel>();
+        var collection = new ConcurrentDictionary<string, object>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
         var sut = this.CreateRecordCollection(useDefinition);
@@ -211,7 +211,8 @@ public class VolatileVectorStoreRecordCollectionTests
         // Assert
         Assert.Equal(TestRecordKey1, upsertResult);
         Assert.True(collection.ContainsKey(TestRecordKey1));
-        Assert.Equal("data testid1", collection[TestRecordKey1].Data);
+        Assert.IsType<SinglePropsModel>(collection[TestRecordKey1]);
+        Assert.Equal("data testid1", (collection[TestRecordKey1] as SinglePropsModel)!.Data);
     }
 
     [Theory]
@@ -223,7 +224,7 @@ public class VolatileVectorStoreRecordCollectionTests
         var record1 = CreateModel(TestRecordKey1, withVectors: true);
         var record2 = CreateModel(TestRecordKey2, withVectors: true);
 
-        var collection = new ConcurrentDictionary<string, SinglePropsModel>();
+        var collection = new ConcurrentDictionary<string, object>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
         var sut = this.CreateRecordCollection(useDefinition);
@@ -240,7 +241,8 @@ public class VolatileVectorStoreRecordCollectionTests
         Assert.Equal(TestRecordKey2, actual[1]);
 
         Assert.True(collection.ContainsKey(TestRecordKey1));
-        Assert.Equal("data testid1", collection[TestRecordKey1].Data);
+        Assert.IsType<SinglePropsModel>(collection[TestRecordKey1]);
+        Assert.Equal("data testid1", (collection[TestRecordKey1] as SinglePropsModel)!.Data);
     }
 
     private static SinglePropsModel CreateModel(string key, bool withVectors)

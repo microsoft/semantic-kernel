@@ -43,8 +43,7 @@ public sealed class VolatileVectorStore : IVectorStore
             throw new NotSupportedException("Only string keys are supported.");
         }
 
-        var typedInternalCollection = this._internalCollection as ConcurrentDictionary<string, ConcurrentDictionary<string, TRecord>>;
-        var collection = new VolatileVectorStoreRecordCollection<TRecord>(typedInternalCollection!, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+        var collection = new VolatileVectorStoreRecordCollection<TRecord>(this._internalCollection, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
         return collection!;
     }
 
