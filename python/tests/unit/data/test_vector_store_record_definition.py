@@ -14,7 +14,7 @@ def test_vector_store_record_definition():
     assert vsrd.key_field_name == "id"
     assert vsrd.key_field == id_field
     assert vsrd.field_names == ["id"]
-    assert vsrd.vector_fields == []
+    assert vsrd.vector_field_names == []
     assert vsrd.container_mode is False
     assert vsrd.to_dict is None
     assert vsrd.from_dict is None

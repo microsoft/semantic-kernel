@@ -41,9 +41,14 @@ class VectorStoreRecordDefinition:
         return self.fields[self.key_field_name]  # type: ignore
 
     @cached_property
-    def vector_fields(self) -> list[str]:
+    def vector_field_names(self) -> list[str]:
         """Get the names of the vector fields."""
         return [name for name, value in self.fields.items() if isinstance(value, VectorStoreRecordVectorField)]
+
+    @cached_property
+    def vector_fields(self) -> list["VectorStoreRecordVectorField"]:
+        """Get the names of the vector fields."""
+        return [field for field in self.fields.values() if isinstance(field, VectorStoreRecordVectorField)]
 
     def __post_init__(self):
         """Validate the fields.

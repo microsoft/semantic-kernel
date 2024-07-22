@@ -177,9 +177,9 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         return [
             PointStruct(
                 id=record.pop(self._key_field_name),
-                vector=record.pop(self.data_model_definition.vector_fields[0])
+                vector=record.pop(self.data_model_definition.vector_field_names[0])
                 if self.named_vectors
-                else {field: record.pop(field) for field in self.data_model_definition.vector_fields},
+                else {field: record.pop(field) for field in self.data_model_definition.vector_field_names},
                 payload=record,
             )
             for record in records
@@ -198,7 +198,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                 **(
                     record.vector
                     if isinstance(record.vector, dict)
-                    else {self.data_model_definition.vector_fields[0]: record.vector}
+                    else {self.data_model_definition.vector_field_names[0]: record.vector}
                 ),
             }
             for record in records
@@ -227,7 +227,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         if "vectors_config" not in kwargs:
             vectors_config: VectorParams | Mapping[str, VectorParams] = {}
             if self.named_vectors:
-                for field in self.data_model_definition.vector_fields:
+                for field in self.data_model_definition.vector_field_names:
                     vector = self.data_model_definition.fields[field]
                     assert isinstance(vector, VectorStoreRecordVectorField)  # nosec
                     if not vector.dimensions:
@@ -238,7 +238,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                         datatype=TYPE_MAPPER_VECTOR[vector.property_type or "default"],
                     )
             else:
-                vector = self.data_model_definition.fields[self.data_model_definition.vector_fields[0]]
+                vector = self.data_model_definition.fields[self.data_model_definition.vector_field_names[0]]
                 assert isinstance(vector, VectorStoreRecordVectorField)  # nosec
                 if not vector.dimensions:
                     raise MemoryConnectorInitializationError("Vector field must have dimensions.")
@@ -268,5 +268,5 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         Checks should include, allowed naming of parameters, allowed data types, allowed vector dimensions.
         """
         super()._validate_data_model()
-        if len(self.data_model_definition.vector_fields) > 1 and not self.named_vectors:
+        if len(self.data_model_definition.vector_field_names) > 1 and not self.named_vectors:
             raise VectorStoreModelValidationError("Only one vector field is allowed when not using named vectors.")

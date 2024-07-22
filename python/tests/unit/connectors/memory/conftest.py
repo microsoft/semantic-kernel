@@ -10,6 +10,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
+from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -40,3 +41,14 @@ def dataclass_vector_data_model() -> object:
         ] = "content1"
 
     return MyDataModel
+
+
+@fixture
+def data_model_definition() -> object:
+    return VectorStoreRecordDefinition(
+        fields={
+            "id": VectorStoreRecordKeyField(),
+            "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
+            "vector": VectorStoreRecordVectorField(),
+        }
+    )
