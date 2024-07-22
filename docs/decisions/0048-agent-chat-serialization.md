@@ -156,7 +156,7 @@ agent2 = OpenAIAssistantAgent(...)
 chat = AgentGroupChat(agent1, agent2)
 
 # Serialize the chat to JSON
-chat_state = json.dumps(chat.model_dump())
+chat_state = chat.model_dump()
 ```
 
 **Deserialize Example:**
