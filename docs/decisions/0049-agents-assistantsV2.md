@@ -145,6 +145,7 @@ This includes optional `ExecutionOptions` which define default _run_ behavior.  
 
 A pending change has been authored that introduces `FunctionChoiceBehavior` as a property of the base / abstract `PromptExecutionSettings`.  Once realized, it may make sense to evaluate integrating this pattern for `OpenAIAssistantAgent`.  This may also imply in inheritance relationship of `PromptExecutionSettings` for both `OpenAIAssistantExecutionOptions` and `OpenAIAssistantInvocationOptions` (next section).
 
+**DECISION**: Do not support `tool_choice` until the `FunctionChoiceBehavior` is realized.
 
 <p align="center">
 <kbd><img src="diagrams/assistant-definition.png"  style="width: 500pt;"></kbd>
