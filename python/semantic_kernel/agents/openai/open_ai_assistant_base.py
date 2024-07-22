@@ -3,15 +3,20 @@
 import asyncio
 import logging
 from collections.abc import AsyncIterable
+from copy import copy
 from typing import TYPE_CHECKING, Any
 
+from openai import AsyncOpenAI
 from openai.resources.beta.assistants import Assistant
 from openai.resources.beta.threads.runs.runs import Run
 
 from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents.openai.open_ai_assistant_configuration import OpenAIAssistantConfiguration
+from semantic_kernel.agents.openai.open_ai_assistant_definition import OpenAIAssistantDefinition
 from semantic_kernel.agents.openai.open_ai_thread_creation_settings import OpenAIThreadCreationSettings
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
+from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
+from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -20,11 +25,72 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 if TYPE_CHECKING:
     from openai.resources.beta.threads.messages import Message
 
+    from semantic_kernel.kernel import Kernel
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OpenAIAssistantBase(OpenAIHandler, Agent):
+class OpenAIAssistantBase(Agent):
+    ai_model_id: str | None = None
     assistant: Assistant | None = None
+    client: AsyncOpenAI | None = None
+    configuration: OpenAIAssistantConfiguration | None = None
+    definition: OpenAIAssistantDefinition | None = None
+
+    # @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+    def __init__(
+        self,
+        api_key: str,
+        org_id: str | None = None,
+        ai_model_id: str | None = None,
+        client: AsyncOpenAI | None = None,
+        service_id: str | None = None,
+        kernel: "Kernel | None" = None,
+        id: str | None = None,
+        name: str | None = None,
+        description: str | None = None,
+        default_headers: dict[str, str] | None = None,
+        instructions: str | None = None,
+        configuration: OpenAIAssistantConfiguration | None = None,
+        definition: OpenAIAssistantDefinition | None = None,
+    ) -> None:
+        """Initialize an OpenAIAssistant Base."""
+        args: dict[str, Any] = {}
+
+        # Merge APP_INFO into the headers if it exists
+        merged_headers = dict(copy(default_headers)) if default_headers else {}
+        if APP_INFO:
+            merged_headers.update(APP_INFO)
+            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
+
+        if not client:
+            if not api_key:
+                raise ServiceInitializationError("Please provide an api_key")
+            client = AsyncOpenAI(
+                api_key=api_key,
+                organization=org_id,
+                default_headers=merged_headers,
+            )
+
+        service_id = configuration.service_id or DEFAULT_SERVICE_NAME
+
+        args = {
+            "ai_model_id": ai_model_id,
+            "client": client,
+            "service_id": service_id,
+            "instructions": instructions,
+            "name": name,
+            "description": description,
+            "configuration": configuration,
+            "definition": definition,
+        }
+
+        if id is not None:
+            args["id"] = id
+        if kernel is not None:
+            args["kernel"] = kernel
+
+        super().__init__(**args)
 
     # region Agent Properties
 

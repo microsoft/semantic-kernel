@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import uuid
-from abc import ABC
 from typing import ClassVar
 
 from pydantic import Field
@@ -13,7 +12,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class
-class Agent(ABC, KernelBaseModel):
+class Agent(KernelBaseModel):
     """Base abstraction for all Semantic Kernel agents.
 
     An agent instance may participate in one or more conversations.
