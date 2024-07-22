@@ -70,6 +70,9 @@ public static class MistralRequest
         [JsonPropertyName("top_p")]
         public double TopP { get; set; } = 1;
 
+        [JsonPropertyName("top_k")]
+        public double TopK { get; set; } = 0;
+
         [JsonPropertyName("max_tokens")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int MaxTokens { get; set; }

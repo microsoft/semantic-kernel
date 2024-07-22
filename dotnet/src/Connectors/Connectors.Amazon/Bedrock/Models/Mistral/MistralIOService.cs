@@ -127,13 +127,54 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
         MistralAIPromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null)
     {
+        float defaultTemperature, defaultTopP;
+        int defaultMaxTokens, defaultTopK;
+
+        if (modelId.Contains("mistral-7b-instruct", StringComparison.OrdinalIgnoreCase))
+        {
+            defaultTemperature = 0.5f;
+            defaultTopP = 0.9f;
+            defaultMaxTokens = 512;
+            defaultTopK = 50;
+        }
+        else if (modelId.Contains("mixtral-8x7b-instruct", StringComparison.OrdinalIgnoreCase))
+        {
+            defaultTemperature = 0.5f;
+            defaultTopP = 0.9f;
+            defaultMaxTokens = 512;
+            defaultTopK = 50;
+        }
+        else if (modelId.Contains("mistral-large", StringComparison.OrdinalIgnoreCase))
+        {
+            defaultTemperature = 0.7f;
+            defaultTopP = 1.0f;
+            defaultMaxTokens = 8192;
+            defaultTopK = 0; // disabled
+        }
+        else if (modelId.Contains("mistral-small", StringComparison.OrdinalIgnoreCase))
+        {
+            defaultTemperature = 0.7f;
+            defaultTopP = 1.0f;
+            defaultMaxTokens = 8192;
+            defaultTopK = 0; // disabled
+        }
+        else
+        {
+            // Default values for other models or if model ID is not recognized
+            defaultTemperature = 0.7f;
+            defaultTopP = 1.0f;
+            defaultMaxTokens = 8192;
+            defaultTopK = 0; // disabled
+        }
+
         var request = new MistralRequest.MistralChatCompletionRequest(modelId)
         {
             Stream = stream,
             Messages = chatHistory.SelectMany(chatMessage => this.ToMistralChatMessages(chatMessage, executionSettings?.ToolCallBehavior)).ToList(),
-            Temperature = executionSettings?.Temperature ?? 0.7f,
-            TopP = executionSettings?.TopP ?? 1.0f,
-            MaxTokens = executionSettings?.MaxTokens ?? 8192,
+            Temperature = executionSettings?.Temperature ?? defaultTemperature,
+            TopP = executionSettings?.TopP ?? defaultTopP,
+            MaxTokens = executionSettings?.MaxTokens ?? defaultMaxTokens,
+            TopK = executionSettings?.TopK ?? defaultTopK,
             SafePrompt = executionSettings?.SafePrompt ?? false,
             RandomSeed = executionSettings?.RandomSeed
         };

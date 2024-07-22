@@ -53,6 +53,22 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
+    /// Default: 50 for Instruct models, disabled for Large and Small.
+    /// Controls the number of most-likely candidates that the model considers for the next token.
+    /// </summary>
+    [JsonPropertyName("top_k")]
+    public double TopK
+    {
+        get => this._topK;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._topK = value;
+        }
+    }
+
+    /// <summary>
     /// Default: null
     /// The maximum number of tokens to generate in the completion.
     /// </summary>
@@ -210,6 +226,7 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
 
     private double _temperature = 0.7;
     private double _topP = 1;
+    private double _topK = 0;
     private int? _maxTokens;
     private bool _safePrompt = false;
     private int? _randomSeed;

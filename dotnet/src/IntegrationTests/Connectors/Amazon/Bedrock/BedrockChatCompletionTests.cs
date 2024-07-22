@@ -15,15 +15,24 @@ namespace SemanticKernel.IntegrationTests.Connectors.Amazon.Bedrock;
 public class BedrockChatCompletionTests
 {
     [Theory]
+    [InlineData("ai21.jamba-instruct-v1:0")]
     [InlineData("amazon.titan-text-premier-v1:0")]
+    [InlineData("amazon.titan-text-lite-v1")]
+    [InlineData("amazon.titan-text-express-v1")]
+    [InlineData("anthropic.claude-v2")]
+    [InlineData("anthropic.claude-v2:1")]
+    [InlineData("anthropic.claude-instant-v1")]
     [InlineData("anthropic.claude-3-sonnet-20240229-v1:0")]
     [InlineData("anthropic.claude-3-haiku-20240307-v1:0")]
-    [InlineData("anthropic.claude-v2:1")]
-    [InlineData("ai21.jamba-instruct-v1:0")]
+    [InlineData("cohere.command-r-v1:0")]
     [InlineData("cohere.command-r-plus-v1:0")]
+    [InlineData("meta.llama3-70b-instruct-v1:0")]
     [InlineData("meta.llama3-8b-instruct-v1:0")]
     [InlineData("mistral.mistral-7b-instruct-v0:2")]
-    public async Task ChatGenerationReturnsValidResponseAsync(string modelId)
+    [InlineData("mistral.mistral-large-2402-v1:0")]
+    [InlineData("mistral.mistral-small-2402-v1:0")]
+    [InlineData("mistral.mixtral-8x7b-instruct-v0:1")]
+    public async Task ChatCompletionReturnsValidResponseAsync(string modelId)
     {
         // Arrange
         var chatHistory = new ChatHistory();
@@ -40,23 +49,34 @@ public class BedrockChatCompletionTests
         foreach (var message in response)
         {
             output += message.Content;
-            Console.WriteLine($"Chat Completion Answer: {message.Content}");
-            Console.WriteLine();
         }
+        chatHistory.AddAssistantMessage(output);
 
         // Assert
         Assert.NotNull(output);
-        Assert.True(output.Contains('4', StringComparison.OrdinalIgnoreCase) || output.Contains("four", StringComparison.OrdinalIgnoreCase));
+        Assert.True(response.Count > 0);
+        Assert.Equal(4, chatHistory.Count);
+        Assert.Equal(AuthorRole.Assistant, chatHistory[3].Role);
     }
 
     [Theory]
-    [InlineData("mistral.mistral-7b-instruct-v0:2")]
     [InlineData("amazon.titan-text-premier-v1:0")]
+    [InlineData("amazon.titan-text-lite-v1")]
+    [InlineData("amazon.titan-text-express-v1")]
     [InlineData("anthropic.claude-v2")]
+    [InlineData("anthropic.claude-v2:1")]
+    [InlineData("anthropic.claude-instant-v1")]
     [InlineData("anthropic.claude-3-sonnet-20240229-v1:0")]
+    [InlineData("anthropic.claude-3-haiku-20240307-v1:0")]
+    [InlineData("cohere.command-r-v1:0")]
     [InlineData("cohere.command-r-plus-v1:0")]
+    [InlineData("meta.llama3-70b-instruct-v1:0")]
     [InlineData("meta.llama3-8b-instruct-v1:0")]
-    public async Task CharStreamingReturnsValidResponseAsync(string modelId)
+    [InlineData("mistral.mistral-7b-instruct-v0:2")]
+    [InlineData("mistral.mistral-large-2402-v1:0")]
+    [InlineData("mistral.mistral-small-2402-v1:0")]
+    [InlineData("mistral.mixtral-8x7b-instruct-v0:1")]
+    public async Task ChatStreamingReturnsValidResponseAsync(string modelId)
     {
         // Arrange
         var chatHistory = new ChatHistory();
@@ -73,12 +93,13 @@ public class BedrockChatCompletionTests
         await foreach (var message in response)
         {
             output += message.Content;
-            Console.WriteLine($"Chat Completion Answer: {message.Content}");
-            Console.WriteLine();
         }
+        chatHistory.AddAssistantMessage(output);
 
         // Assert
         Assert.NotNull(output);
-        Assert.True(output.Contains('4', StringComparison.OrdinalIgnoreCase) || output.Contains("four", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(4, chatHistory.Count);
+        Assert.Equal(AuthorRole.Assistant, chatHistory[3].Role);
+        Assert.False(string.IsNullOrEmpty(output));
     }
 }

@@ -101,6 +101,11 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                     this._ioService = new MistralIOService();
                     break;
                 }
+                if (modelName.StartsWith("mixtral-", StringComparison.OrdinalIgnoreCase))
+                {
+                    this._ioService = new MistralIOService();
+                    break;
+                }
                 throw new ArgumentException($"Unsupported Mistral model: {modelId}");
             default:
                 throw new ArgumentException($"Unsupported model provider: {this._modelProvider}");

@@ -48,7 +48,7 @@ public static class ClaudeRequest
         /// <summary>
         /// (Optional) Definitions of tools that the model may use.
         /// </summary>
-        public class ClaudeTool
+        public class ClaudeTool : Tool
         {
             /// <summary>
             /// The name of the tool.
