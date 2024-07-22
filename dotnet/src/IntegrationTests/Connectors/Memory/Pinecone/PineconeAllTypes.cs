@@ -54,6 +54,11 @@ public record PineconeAllTypes()
     [VectorStoreRecordData]
     public List<string>? NullableStringList { get; set; }
 
-    [VectorStoreRecordVector]
+    [VectorStoreRecordData]
+    public IReadOnlyCollection<string> Collection { get; set; }
+    [VectorStoreRecordData]
+    public IEnumerable<string> Enumerable { get; set; }
+
+    [VectorStoreRecordVector(Dimensions: 8, IndexKind: null, DistanceFunction: DistanceFunction.DotProductSimilarity)]
     public ReadOnlyMemory<float>? Embedding { get; set; }
 }

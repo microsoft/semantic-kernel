@@ -12,16 +12,8 @@ public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
     where TRecord : class
 {
     /// <summary>
-    /// Gets or sets the choice of mapper to use when converting between the data model and the Pinecone vector.
-    /// </summary>
-    public PineconeRecordMapperType MapperType { get; init; } = PineconeRecordMapperType.Default;
-
-    /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Pinecone vector.
     /// </summary>
-    /// <remarks>
-    /// Set <see cref="MapperType"/> to <see cref="PineconeRecordMapperType.PineconeVectorCustomMapper"/> to use this mapper."/>
-    /// </remarks>
     public IVectorStoreRecordMapper<TRecord, Vector>? VectorCustomMapper { get; init; } = null;
 
     /// <summary>
@@ -33,4 +25,25 @@ public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
     /// See <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the value for a namespace within the Pinecone index that will be used for operations involving records (Get, Upsert, Delete)."/>
+    /// </summary>
+    public string? IndexNamespace { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the value for public cloud where the serverless index is hosted.
+    /// </summary>
+    /// <remarks>
+    /// This value is only used when creating a new Pinecone index. Default value is 'aws'.
+    /// </remarks>
+    public string ServerlessIndexCloud { get; init; } = "aws";
+
+    /// <summary>
+    /// Gets or sets the value for region where the serverless index is created.
+    /// </summary>
+    /// <remarks>
+    /// This option is only used when creating a new Pinecone index. Default value is 'us-east-1'.
+    /// </remarks>
+    public string ServerlessIndexRegion { get; init; } = "us-east-1";
 }

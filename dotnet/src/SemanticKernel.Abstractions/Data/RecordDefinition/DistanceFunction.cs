@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Data;
 public static class DistanceFunction
 {
     /// <summary>
-    /// The cosine (angular) similarty between two vectors.
+    /// The cosine (angular) similarity between two vectors.
     /// </summary>
     /// <remarks>
     /// Measures only the angle between the two vectors, without taking into account the length of the vectors.
@@ -20,7 +20,7 @@ public static class DistanceFunction
     public const string CosineSimilarity = nameof(CosineSimilarity);
 
     /// <summary>
-    /// The cosine (angular) similarty between two vectors.
+    /// The cosine (angular) similarity between two vectors.
     /// </summary>
     /// <remarks>
     /// CosineDistance = 1 - CosineSimilarity.

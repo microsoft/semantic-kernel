@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Grpc.Core;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Microsoft.SemanticKernel.Data;
 using Pinecone;
@@ -20,14 +19,6 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone;
 public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture fixture) : IClassFixture<PineconeVectorStoreFixture>
 {
     private PineconeVectorStoreFixture Fixture { get; } = fixture;
-
-    [PineconeFact]
-    public async Task CreateCollectionThrowsMeaningfulExceptionAsync()
-    {
-        var message = (await Assert.ThrowsAsync<KernelException>(() => this.Fixture.HotelRecordCollection.CreateCollectionAsync())).Message;
-
-        Assert.Equal("Index creation is not supported within the PineconeVectorStoreRecordCollection. It should be created manually or by using Pinecone.NET SDK by calling 'CreateServerlessIndex'/'CreatePodBasedIndex' methods on the PineconeClient class. Ensure the created index is ready to use by calling 'Status.IsReady' afterwards.", message);
-    }
 
     [PineconeFact]
     public async Task TryCreateExistingIndexIsNoopAsync()
@@ -137,6 +128,10 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         Assert.Contains("two", allTypes1.StringArray);
         Assert.Contains("eleven", allTypes1.StringList);
         Assert.Contains("twelve", allTypes1.StringList);
+        Assert.Contains("Foo", allTypes1.Collection);
+        Assert.Contains("Bar", allTypes1.Collection);
+        Assert.Contains("another", allTypes1.Enumerable);
+        Assert.Contains("and another", allTypes1.Enumerable);
 
         Assert.False(allTypes2.BoolProperty);
         Assert.Equal("string prop 2", allTypes2.StringProperty);
@@ -147,6 +142,8 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         Assert.Equal(250.75m, allTypes2.DecimalProperty);
         Assert.Empty(allTypes2.StringArray);
         Assert.Empty(allTypes2.StringList);
+        Assert.Empty(allTypes2.Collection);
+        Assert.Empty(allTypes2.Enumerable);
 
         if (includeVectors)
         {
@@ -188,10 +185,66 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         Assert.Null(result);
     }
 
+    [PineconeTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetFromCustomNamespaceAsync(bool includeVectors)
+    {
+        var custom = await this.Fixture.HotelRecordCollectionWithCustomNamespace.GetAsync("custom-hotel", new GetRecordOptions { IncludeVectors = includeVectors });
+
+        Assert.NotNull(custom);
+        Assert.Equal("custom-hotel", custom.HotelId);
+        Assert.Equal("Custom Hotel", custom.HotelName);
+        if (includeVectors)
+        {
+            Assert.Equal(new ReadOnlyMemory<float>([147.5f, 1421.0f, 1741.5f, 1744.0f, 1742.5f, 1483.0f, 1743.5f, 1744.0f]), custom.DescriptionEmbedding);
+        }
+        else
+        {
+            Assert.Equal(new ReadOnlyMemory<float>([]), custom.DescriptionEmbedding);
+        }
+    }
+
+    [PineconeFact]
+    public async Task TryGetVectorLocatedInDefaultNamespaceButLookInCustomNamespaceAsync()
+    {
+        var badFiveSeasons = await this.Fixture.HotelRecordCollectionWithCustomNamespace.GetAsync("five-seasons");
+
+        Assert.Null(badFiveSeasons);
+    }
+
+    [PineconeFact]
+    public async Task TryGetVectorLocatedInCustomNamespaceButLookInDefaultNamespaceAsync()
+    {
+        var badCustomHotel = await this.Fixture.HotelRecordCollection.GetAsync("custom-hotel");
+
+        Assert.Null(badCustomHotel);
+    }
+
     [PineconeFact]
     public async Task DeleteNonExistingRecordAsync()
     {
         await this.Fixture.HotelRecordCollection.DeleteAsync("non-existing");
+    }
+
+    [PineconeFact]
+    public async Task TryDeleteExistingVectorLocatedInDefaultNamespaceButUseCustomNamespaceDoesNotDoAnythingAsync()
+    {
+        await this.Fixture.HotelRecordCollectionWithCustomNamespace.DeleteAsync("five-seasons");
+
+        var stillThere = await this.Fixture.HotelRecordCollection.GetAsync("five-seasons");
+        Assert.NotNull(stillThere);
+        Assert.Equal("five-seasons", stillThere.HotelId);
+    }
+
+    [PineconeFact]
+    public async Task TryDeleteExistingVectorLocatedInCustomNamespaceButUseDefaultNamespaceDoesNotDoAnythingAsync()
+    {
+        await this.Fixture.HotelRecordCollection.DeleteAsync("custom-hotel");
+
+        var stillThere = await this.Fixture.HotelRecordCollectionWithCustomNamespace.GetAsync("custom-hotel");
+        Assert.NotNull(stillThere);
+        Assert.Equal("custom-hotel", stillThere.HotelId);
     }
 
     [PineconeTheory]
@@ -263,8 +316,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
     {
         var incorrectRecordStore = new PineconeVectorStoreRecordCollection<PineconeHotel>(
             this.Fixture.Client,
-            "incorrect",
-            new PineconeVectorStoreRecordCollectionOptions<PineconeHotel> { MapperType = PineconeRecordMapperType.Default });
+            "incorrect");
 
         var result = await incorrectRecordStore.CollectionExistsAsync();
 
@@ -276,8 +328,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
     {
         var incorrectRecordStore = new PineconeVectorStoreRecordCollection<PineconeHotel>(
             this.Fixture.Client,
-            "incorrect",
-            new PineconeVectorStoreRecordCollectionOptions<PineconeHotel> { MapperType = PineconeRecordMapperType.Default });
+            "incorrect");
 
         var statusCode = (await Assert.ThrowsAsync<HttpRequestException>(
             () => incorrectRecordStore.GetAsync("best-eastern"))).StatusCode;
@@ -291,11 +342,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         var recordStore = new PineconeVectorStoreRecordCollection<PineconeHotel>(
             this.Fixture.Client,
             this.Fixture.IndexName,
-            new PineconeVectorStoreRecordCollectionOptions<PineconeHotel>
-            {
-                MapperType = PineconeRecordMapperType.PineconeVectorCustomMapper,
-                VectorCustomMapper = new CustomHotelRecordMapper()
-            });
+            new PineconeVectorStoreRecordCollectionOptions<PineconeHotel> { VectorCustomMapper = new CustomHotelRecordMapper() });
 
         var vacationInn = await recordStore.GetAsync("vacation-inn", new GetRecordOptions { IncludeVectors = true });
 
@@ -321,7 +368,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
                 [nameof(PineconeHotel.HotelCode)] = dataModel.HotelCode,
                 [nameof(PineconeHotel.HotelRating)] = dataModel.HotelRating,
                 ["parking_is_included"] = dataModel.ParkingIncluded,
-                [nameof(PineconeHotel.Tags)] = dataModel.Tags
+                [nameof(PineconeHotel.Tags)] = dataModel.Tags.ToArray(),
             };
 
             return new Vector
@@ -360,11 +407,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         var exception = Assert.Throws<ArgumentException>(
             () => new PineconeVectorStoreRecordCollection<PineconeRecordNoEmbedding>(
             this.Fixture.Client,
-            "Whatever",
-            new PineconeVectorStoreRecordCollectionOptions<PineconeRecordNoEmbedding>
-            {
-                MapperType = PineconeRecordMapperType.Default
-            }));
+            "Whatever"));
 
         Assert.Equal(
             $"No vector property found on type {typeof(PineconeRecordNoEmbedding).FullName}.",
@@ -388,11 +431,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         var exception = Assert.Throws<ArgumentException>(
             () => new PineconeVectorStoreRecordCollection<PineconeRecordMultipleEmbeddings>(
             this.Fixture.Client,
-            "Whatever",
-            new PineconeVectorStoreRecordCollectionOptions<PineconeRecordMultipleEmbeddings>
-            {
-                MapperType = PineconeRecordMapperType.Default
-            }));
+            "Whatever"));
 
         Assert.Equal(
             $"Multiple vector properties found on type {typeof(PineconeRecordMultipleEmbeddings).FullName} while only one is supported.",
@@ -419,14 +458,10 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         var message = Assert.Throws<ArgumentException>(
             () => new PineconeVectorStoreRecordCollection<PineconeRecordUnsupportedKeyType>(
                 this.Fixture.Client,
-                "Whatever",
-                new PineconeVectorStoreRecordCollectionOptions<PineconeRecordUnsupportedKeyType>
-                {
-                    MapperType = PineconeRecordMapperType.Default
-                })).Message;
+                "Whatever")).Message;
 
         Assert.Equal(
-            $"Key properties must be one of the supported types: {typeof(string).FullName}. Type of {nameof(PineconeRecordUnsupportedKeyType.Id)} is {typeof(int).FullName}.",
+            $"Key properties must be one of the supported types: {typeof(string).FullName}. Type of the property '{nameof(PineconeRecordUnsupportedKeyType.Id)}' is {typeof(int).FullName}.",
             message);
     }
 
@@ -443,23 +478,6 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 #pragma warning restore CA1812
-
-    [PineconeFact]
-    public void UseCustomMappingTypeWithoutProvidingTheMapper()
-    {
-        var message = Assert.Throws<ArgumentException>(
-            () => new PineconeVectorStoreRecordCollection<PineconeHotel>(
-                this.Fixture.Client,
-                "Whatever",
-                new PineconeVectorStoreRecordCollectionOptions<PineconeHotel>
-                {
-                    MapperType = PineconeRecordMapperType.PineconeVectorCustomMapper
-                })).Message;
-
-        Assert.Equal(
-            $"The {nameof(PineconeVectorStoreRecordCollectionOptions<PineconeHotel>.VectorCustomMapper)} option needs to be set if a {nameof(PineconeVectorStoreRecordCollectionOptions<PineconeHotel>.MapperType)} of {nameof(PineconeRecordMapperType.PineconeVectorCustomMapper)} has been chosen. (Parameter 'options')",
-            message);
-    }
 
     [PineconeFact]
     public async Task TryAddingVectorWithUnsupportedValuesAsync()
@@ -489,6 +507,58 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
         Assert.NotNull(inner);
         Assert.Equal(StatusCode.InvalidArgument, inner.StatusCode);
     }
+
+    [PineconeFact]
+    public async Task TryCreateIndexWithIncorrectDimensionFailsAsync()
+    {
+        var recordCollection = new PineconeVectorStoreRecordCollection<PineconeRecordWithIncorrectDimension>(
+            this.Fixture.Client,
+            "negative-dimension");
+
+        var message = (await Assert.ThrowsAsync<InvalidOperationException>(() => recordCollection.CreateCollectionAsync())).Message;
+
+        Assert.Equal("Property Dimensions on VectorStoreRecordVectorProperty 'Embedding' must be set to a positive integer to create a collection.", message);
+    }
+
+#pragma warning disable CA1812
+    private sealed record PineconeRecordWithIncorrectDimension
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; } = null!;
+
+        [VectorStoreRecordData]
+        public string? Name { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: -7)]
+        public ReadOnlyMemory<float> Embedding { get; set; }
+    }
+#pragma warning restore CA1812
+
+    [PineconeFact]
+    public async Task TryCreateIndexWithUnsSupportedMetricFailsAsync()
+    {
+        var recordCollection = new PineconeVectorStoreRecordCollection<PineconeRecordWithUnsupportedMetric>(
+            this.Fixture.Client,
+            "bad-metric");
+
+        var message = (await Assert.ThrowsAsync<InvalidOperationException>(() => recordCollection.CreateCollectionAsync())).Message;
+
+        Assert.Equal("Unsupported distance function 'just eyeball it' for VectorStoreRecordVectorProperty 'Embedding'.", message);
+    }
+
+#pragma warning disable CA1812
+    private sealed record PineconeRecordWithUnsupportedMetric
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; } = null!;
+
+        [VectorStoreRecordData]
+        public string? Name { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 5, IndexKind: null, DistanceFunction: "just eyeball it")]
+        public ReadOnlyMemory<float> Embedding { get; set; }
+    }
+#pragma warning restore CA1812
 
     #endregion
 }

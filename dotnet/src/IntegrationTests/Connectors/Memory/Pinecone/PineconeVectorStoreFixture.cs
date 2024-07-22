@@ -19,11 +19,6 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
     private const int MaxAttemptCount = 100;
     private const int DelayInterval = 300;
 
-    private readonly uint _dimension = 8;
-    private readonly Sdk.Metric _metric = Sdk.Metric.DotProduct;
-    private readonly string _cloud = "aws";
-    private readonly string _region = "us-east-1";
-
     public string IndexName { get; } = "sk-index"
 #pragma warning disable CA1308 // Normalize strings to uppercase
         + new Regex("[^a-zA-Z0-9]", RegexOptions.None, matchTimeout: new TimeSpan(0, 0, 10)).Replace(Environment.MachineName.ToLowerInvariant(), "");
@@ -33,7 +28,7 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
     public PineconeVectorStore VectorStore { get; private set; } = null!;
     public PineconeVectorStoreRecordCollection<PineconeHotel> HotelRecordCollection { get; set; } = null!;
     public PineconeVectorStoreRecordCollection<PineconeAllTypes> AllTypesRecordCollection { get; set; } = null!;
-
+    public PineconeVectorStoreRecordCollection<PineconeHotel> HotelRecordCollectionWithCustomNamespace { get; set; } = null!;
     public IVectorStoreRecordCollection<string, PineconeHotel> HotelRecordCollectionFromVectorStore { get; set; } = null!;
 
     public virtual Sdk.Index<GrpcTransport> Index { get; set; } = null!;
@@ -42,9 +37,6 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
     {
         this.Client = new Sdk.PineconeClient(PineconeUserSecretsExtensions.ReadPineconeApiKey());
         this.VectorStore = new PineconeVectorStore(this.Client);
-
-        await this.ClearIndexesAsync();
-        await this.CreateIndexAndWaitAsync();
 
         var hotelRecordDefinition = new VectorStoreRecordDefinition
         {
@@ -57,7 +49,36 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty(nameof(PineconeHotel.HotelRating)),
                 new VectorStoreRecordDataProperty(nameof(PineconeHotel.Tags)),
                 new VectorStoreRecordDataProperty(nameof(PineconeHotel.Description)),
-                new VectorStoreRecordVectorProperty(nameof(PineconeHotel.DescriptionEmbedding))
+                new VectorStoreRecordVectorProperty(nameof(PineconeHotel.DescriptionEmbedding)) { Dimensions = 8, DistanceFunction = DistanceFunction.DotProductSimilarity }
+            ]
+        };
+
+        var allTypesRecordDefinition = new VectorStoreRecordDefinition
+        {
+            Properties =
+            [
+                new VectorStoreRecordKeyProperty(nameof(PineconeAllTypes.Id)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.BoolProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableBoolProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.StringProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.IntProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableIntProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.LongProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableLongProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.FloatProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableFloatProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.DoubleProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableDoubleProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.DecimalProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableDecimalProperty)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.StringArray)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringArray)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.StringList)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringList)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.Collection)),
+                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.Enumerable)),
+                new VectorStoreRecordVectorProperty(nameof(PineconeAllTypes.Embedding)) { Dimensions = 8, DistanceFunction = DistanceFunction.DotProductSimilarity }
             ]
         };
 
@@ -66,7 +87,6 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
             this.IndexName,
             new PineconeVectorStoreRecordCollectionOptions<PineconeHotel>
             {
-                MapperType = PineconeRecordMapperType.Default,
                 VectorStoreRecordDefinition = hotelRecordDefinition
             });
 
@@ -75,46 +95,32 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
             this.IndexName,
             new PineconeVectorStoreRecordCollectionOptions<PineconeAllTypes>
             {
-                MapperType = PineconeRecordMapperType.Default,
-                VectorStoreRecordDefinition = new VectorStoreRecordDefinition
-                {
-                    Properties =
-                    [
-                        new VectorStoreRecordKeyProperty(nameof(PineconeAllTypes.Id)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.BoolProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableBoolProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.StringProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.IntProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableIntProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.LongProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableLongProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.FloatProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableFloatProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.DoubleProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableDoubleProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.DecimalProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableDecimalProperty)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.StringArray)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringArray)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.StringList)),
-                        new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringList)),
-                        new VectorStoreRecordVectorProperty(nameof(PineconeAllTypes.Embedding))
-                    ]
-                }
+                VectorStoreRecordDefinition = allTypesRecordDefinition
+            });
+
+        this.HotelRecordCollectionWithCustomNamespace = new PineconeVectorStoreRecordCollection<PineconeHotel>(
+            this.Client,
+            this.IndexName,
+            new PineconeVectorStoreRecordCollectionOptions<PineconeHotel>
+            {
+                VectorStoreRecordDefinition = hotelRecordDefinition,
+                IndexNamespace = "my-namespace"
             });
 
         this.HotelRecordCollectionFromVectorStore = this.VectorStore.GetCollection<string, PineconeHotel>(
             this.IndexName,
             hotelRecordDefinition);
 
+        await this.ClearIndexesAsync();
+        await this.CreateIndexAndWaitAsync();
         await this.AddSampleDataAsync();
     }
 
     private async Task CreateIndexAndWaitAsync()
     {
         var attemptCount = 0;
-        await this.Client.CreateServerlessIndex(this.IndexName, this._dimension, this._metric, this._cloud, this._region);
+
+        await this.HotelRecordCollection.CreateCollectionAsync();
 
         do
         {
@@ -207,6 +213,8 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
             NullableStringArray = ["five", "six"],
             StringList = ["eleven", "twelve"],
             NullableStringList = ["fifteen", "sixteen"],
+            Collection = ["Foo", "Bar"],
+            Enumerable = ["another", "and another"],
             Embedding = new ReadOnlyMemory<float>([1.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f, 8.5f])
         };
 
@@ -231,11 +239,27 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
             NullableStringArray = null,
             StringList = [],
             NullableStringList = null,
+            Collection = [],
+            Enumerable = [],
             Embedding = new ReadOnlyMemory<float>([10.5f, 20.5f, 30.5f, 40.5f, 50.5f, 60.5f, 70.5f, 80.5f])
         };
 
         await this.AllTypesRecordCollection.UpsertBatchAsync([allTypes1, allTypes2]).ToListAsync();
-        await this.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: 2);
+        vectorCountBefore = await this.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: 2);
+
+        var custom = new PineconeHotel
+        {
+            HotelId = "custom-hotel",
+            HotelName = "Custom Hotel",
+            Description = "Everything customizable!",
+            HotelCode = 17,
+            HotelRating = 4.25f,
+            ParkingIncluded = true,
+            DescriptionEmbedding = new ReadOnlyMemory<float>([147.5f, 1421.0f, 1741.5f, 1744.0f, 1742.5f, 1483.0f, 1743.5f, 1744.0f]),
+        };
+
+        await this.HotelRecordCollectionWithCustomNamespace.UpsertAsync(custom);
+        vectorCountBefore = await this.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: 1);
     }
 
     public async Task<uint> VerifyVectorCountModifiedAsync(uint vectorCountBefore, int delta)

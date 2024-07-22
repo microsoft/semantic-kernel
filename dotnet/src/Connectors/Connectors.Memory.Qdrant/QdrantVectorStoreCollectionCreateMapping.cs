@@ -57,7 +57,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
     {
         if (vectorProperty!.Dimensions is not > 0)
         {
-            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive ingeteger to create a collection.");
+            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive integer to create a collection.");
         }
 
         if (vectorProperty!.IndexKind is not null && vectorProperty!.IndexKind != IndexKind.Hnsw)
@@ -98,7 +98,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
     /// </summary>
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The chosen <see cref="Distance"/>.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't supported by Azure AI Search.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't supported by qdrant.</exception>
     public static Distance GetSDKDistanceAlgorithm(VectorStoreRecordVectorProperty vectorProperty)
     {
         if (vectorProperty.DistanceFunction is null)

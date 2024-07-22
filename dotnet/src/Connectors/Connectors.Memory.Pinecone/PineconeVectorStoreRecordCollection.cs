@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +24,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     where TRecord : class
 {
     private const string DatabaseName = "Pinecone";
+    private const string CreateCollectionName = "CreateCollection";
     private const string CollectionExistsName = "CollectionExists";
     private const string DeleteCollectionName = "DeleteCollection";
 
@@ -33,12 +34,10 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
+    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
     private readonly IVectorStoreRecordMapper<TRecord, Sdk.Vector> _mapper;
 
-    /// <summary>
-    /// Map from an index name to the corresponding Pinecone.NET Index object.
-    /// </summary>
-    private readonly ConcurrentDictionary<string, Sdk.Index<GrpcTransport>> _indexMap = new();
+    private Sdk.Index<GrpcTransport>? _index;
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -58,22 +57,26 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this._pineconeClient = pineconeClient;
         this.CollectionName = collectionName;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
+        this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 
-        if (this._options.MapperType == PineconeRecordMapperType.PineconeVectorCustomMapper)
+        if (this._options.VectorCustomMapper is null)
         {
-            if (this._options.VectorCustomMapper is null)
+            (PropertyInfo KeyProperty, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) properties;
+            if (this._options.VectorStoreRecordDefinition is not null)
             {
-                throw new ArgumentException($"The {nameof(PineconeVectorStoreRecordCollectionOptions<TRecord>.VectorCustomMapper)} option needs to be set if a {nameof(PineconeVectorStoreRecordCollectionOptions<TRecord>.MapperType)} of {nameof(PineconeRecordMapperType.PineconeVectorCustomMapper)} has been chosen.", nameof(options));
+                properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), this._options.VectorStoreRecordDefinition, supportsMultipleVectors: false);
+            }
+            else
+            {
+                properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), supportsMultipleVectors: false);
             }
 
-            this._mapper = this._options.VectorCustomMapper;
+            var storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._options.VectorStoreRecordDefinition);
+            this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(properties.KeyProperty, properties.DataProperties, properties.VectorProperties, storagePropertyNames);
         }
         else
         {
-            this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(new PineconeVectorStoreRecordMapperOptions
-            {
-                VectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition
-            });
+            this._mapper = this._options.VectorCustomMapper;
         }
     }
 
@@ -93,11 +96,21 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        throw new KernelException($"Index creation is not supported within the {nameof(PineconeVectorStoreRecordCollection<TRecord>)}. " +
-            $"It should be created manually or by using Pinecone.NET SDK by calling '{nameof(Sdk.PineconeClient.CreateServerlessIndex)}'/'{nameof(Sdk.PineconeClient.CreatePodBasedIndex)}' methods on the {nameof(Sdk.PineconeClient)} class. " +
-            $"Ensure the created index is ready to use by calling '{nameof(Sdk.Index<GrpcTransport>.Status)}.{nameof(Sdk.Index<GrpcTransport>.Status.IsReady)}' afterwards.");
+        // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
+        var vectorProperty = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>().First();
+        var (dimension, metric) = PineconeVectorStoreCollectionCreateMapping.MapServerlessIndex(vectorProperty);
+
+        await this.RunOperationAsync(
+            CreateCollectionName,
+            () => this._pineconeClient.CreateServerlessIndex(
+                this.CollectionName,
+                dimension,
+                metric,
+                this._options.ServerlessIndexCloud,
+                this._options.ServerlessIndexRegion,
+                cancellationToken)).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -262,17 +275,11 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
     private async Task<Sdk.Index<GrpcTransport>> GetIndexAsync(string indexName, CancellationToken cancellationToken)
     {
-        // Check the local cache first, if not found create a new one.
-        if (!this._indexMap.TryGetValue(indexName, out Sdk.Index<GrpcTransport>? client))
-        {
-            client = await this._pineconeClient.GetIndex(indexName, cancellationToken).ConfigureAwait(false);
-            this._indexMap[indexName] = client;
-        }
+        this._index ??= await this._pineconeClient.GetIndex(indexName, cancellationToken).ConfigureAwait(false);
 
-        return client;
+        return this._index;
     }
 
-    // TODO: Should namespace information be stored in PineconeVectorRecordStoreOptions, as part of collection name (e.g.: myindex.mynamespace), or not supported at all
     private string? GetIndexNamespace()
-        => null;
+        => this._options.IndexNamespace;
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Data;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone;
@@ -16,12 +17,14 @@ public record PineconeHotel()
     [VectorStoreRecordData]
     public string HotelName { get; set; }
 
+    [JsonPropertyName("code_of_the_hotel")]
     [VectorStoreRecordData]
     public int HotelCode { get; set; }
 
     [VectorStoreRecordData]
     public float HotelRating { get; set; }
 
+    [JsonPropertyName("json_parking")]
     [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
     public bool ParkingIncluded { get; set; }
 
@@ -31,6 +34,6 @@ public record PineconeHotel()
     [VectorStoreRecordData]
     public string Description { get; set; }
 
-    [VectorStoreRecordVector]
+    [VectorStoreRecordVector(Dimensions: 8, IndexKind: null, DistanceFunction: DistanceFunction.DotProductSimilarity)]
     public ReadOnlyMemory<float> DescriptionEmbedding { get; set; }
 }

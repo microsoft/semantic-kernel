@@ -37,8 +37,12 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         typeof(double?),
         typeof(decimal),
         typeof(decimal?),
-        typeof(string[]),
-        typeof(List<string>),
+    ];
+
+    /// <summary>A set of types that enumerable data properties on the provided model may use as their element types.</summary>
+    private static readonly HashSet<Type> s_supportedEnumerableDataElementTypes =
+    [
+        typeof(string)
     ];
 
     /// <summary>A set of types that vectors on the provided model may have.</summary>
@@ -48,48 +52,40 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         typeof(ReadOnlyMemory<float>?),
     ];
 
-    /// <summary>A list of property info objects that point at the payload properties in the current model, and allows easy reading and writing of these properties.</summary>
-    private readonly List<PropertyInfo> _payloadPropertiesInfo = [];
-
-    /// <summary>A property info object that points at the vector property in the current model, and allows easy reading and writing of this property.</summary>
-    private readonly PropertyInfo _vectorPropertyInfo;
-
-    /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
-    /// <summary>A dictionary that maps from a property name to the configured name that should be used when storing it.</summary>
+    private readonly List<PropertyInfo> _dataPropertiesInfo;
+
+    private readonly PropertyInfo _vectorPropertyInfo;
+
     private readonly Dictionary<string, string> _storagePropertyNames = [];
 
-    /// <summary>Configuration options for this class.</summary>
-    private readonly PineconeVectorStoreRecordMapperOptions _options;
+    private readonly Dictionary<string, string> _jsonPropertyNames = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStoreRecordMapper{TDataModel}"/> class.
     /// </summary>
-    /// <param name="options">Options to use when doing the model conversion.</param>
-    public PineconeVectorStoreRecordMapper(PineconeVectorStoreRecordMapperOptions options)
+    /// <param name="keyProperty">A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</param>
+    /// <param name="dataProperties">A list of property info objects that point at the data properties in the current model, and allows easy reading and writing of these properties.</param>
+    /// <param name="vectorProperties">A list of property info objects that point at the vector properties in the current model, and allows easy reading and writing of these properties.</param>
+    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
+    public PineconeVectorStoreRecordMapper(PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties, Dictionary<string, string> storagePropertyNames)
     {
-        Verify.NotNull(options);
-        this._options = options;
+        Verify.True(vectorProperties.Count == 1, "There should be exactly one vector property in the data model.");
 
-        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
-        if (this._options.VectorStoreRecordDefinition is not null)
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes([keyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(dataProperties, s_supportedDataTypes, "Data", s_supportedEnumerableDataElementTypes);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(vectorProperties, s_supportedVectorTypes, "Vector");
+
+        this._keyPropertyInfo = keyProperty;
+        this._dataPropertiesInfo = dataProperties;
+        this._vectorPropertyInfo = vectorProperties[0];
+        this._storagePropertyNames = storagePropertyNames;
+
+        foreach (var property in dataProperties.Concat(vectorProperties).Concat([keyProperty]))
         {
-            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), this._options.VectorStoreRecordDefinition, supportsMultipleVectors: false);
+            this._jsonPropertyNames[property.Name] = VectorStoreRecordPropertyReader.GetJsonPropertyName(JsonSerializerOptions.Default, property);
         }
-        else
-        {
-            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), supportsMultipleVectors: false);
-        }
-
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, s_supportedDataTypes, "Data");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
-
-        this._keyPropertyInfo = properties.keyProperty;
-        this._payloadPropertiesInfo = properties.dataProperties;
-        this._vectorPropertyInfo = properties.vectorProperties.First();
-        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._options.VectorStoreRecordDefinition);
     }
 
     /// <inheritdoc />
@@ -102,10 +98,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         }
 
         var metadata = new MetadataMap();
-        foreach (var payloadPropertyInfo in this._payloadPropertiesInfo)
+        foreach (var dataPropertyInfo in this._dataPropertiesInfo)
         {
-            var propertyName = this._storagePropertyNames[payloadPropertyInfo.Name];
-            var propertyValue = payloadPropertyInfo.GetValue(dataModel);
+            var propertyName = this._storagePropertyNames[dataPropertyInfo.Name];
+            var propertyValue = dataPropertyInfo.GetValue(dataModel);
             if (propertyValue != null)
             {
                 metadata[propertyName] = ConvertToMetadataValue(propertyValue);
@@ -133,27 +129,29 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     /// <inheritdoc />
     public TRecord MapFromStorageToDataModel(Vector storageModel, StorageToDataModelMapperOptions options)
     {
-        var keyPropertyName = this._storagePropertyNames[this._keyPropertyInfo.Name];
-
+        var keyJsonName = this._jsonPropertyNames[this._keyPropertyInfo.Name];
         var outputJsonObject = new JsonObject
         {
-            { this._keyPropertyInfo.Name, JsonValue.Create(storageModel.Id) },
+            { keyJsonName, JsonValue.Create(storageModel.Id) },
         };
 
         if (options?.IncludeVectors is true)
         {
             var propertyName = this._storagePropertyNames[this._vectorPropertyInfo.Name];
-            outputJsonObject.Add(this._vectorPropertyInfo.Name, new JsonArray(storageModel.Values.Select(x => JsonValue.Create(x)).ToArray()));
+            var jsonName = this._jsonPropertyNames[this._vectorPropertyInfo.Name];
+            outputJsonObject.Add(jsonName, new JsonArray(storageModel.Values.Select(x => JsonValue.Create(x)).ToArray()));
         }
 
         if (storageModel.Metadata != null)
         {
-            foreach (var payloadProperty in this._payloadPropertiesInfo)
+            foreach (var dataProperty in this._dataPropertiesInfo)
             {
-                var propertyName = this._storagePropertyNames[payloadProperty.Name];
+                var propertyName = this._storagePropertyNames[dataProperty.Name];
+                var jsonName = this._jsonPropertyNames[dataProperty.Name];
+
                 if (storageModel.Metadata.TryGetValue(propertyName, out var value))
                 {
-                    outputJsonObject.Add(payloadProperty.Name, ConvertFromMetadataValueToJsonNode(value));
+                    outputJsonObject.Add(jsonName, ConvertFromMetadataValueToJsonNode(value));
                 }
             }
         }
@@ -173,6 +171,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
             double doubleValue => JsonValue.Create(doubleValue),
             decimal decimalValue => JsonValue.Create(decimalValue),
             MetadataValue[] array => new JsonArray(array.Select(ConvertFromMetadataValueToJsonNode).ToArray()),
+            List<MetadataValue> list => new JsonArray(list.Select(ConvertFromMetadataValueToJsonNode).ToArray()),
             _ => throw new VectorStoreRecordMappingException($"Unsupported metadata type: '{metadataValue.Inner?.GetType().FullName}'."),
         };
 
@@ -189,6 +188,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
             decimal decimalValue => decimalValue,
             string[] stringArray => stringArray,
             List<string> stringList => stringList,
+            IEnumerable<string> stringEnumerable => stringEnumerable.ToArray(),
             _ => throw new VectorStoreRecordMappingException($"Unsupported source value type '{sourceValue?.GetType().FullName}'.")
         };
 }
