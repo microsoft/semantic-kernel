@@ -31,29 +31,33 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
         {
             if (email.Equals("bob@contoso.com", StringComparison.OrdinalIgnoreCase))
             {
-                switch (animalType)
-                {
-                    case AnimalType.Mammals: return "Dog";
-                    case AnimalType.Birds: return "Sparrow";
-                    case AnimalType.Reptiles: return "Lizard";
-                    case AnimalType.Amphibians: return "Salamander";
-                    case AnimalType.Fish: return "Tuna";
-                    case AnimalType.Invertebrates: return "Spider";
-                }
+                return GetBobsFavoriteAnimal(animalType);
             }
 
-            switch (animalType)
-            {
-                case AnimalType.Mammals: return "Horse";
-                case AnimalType.Birds: return "Eagle";
-                case AnimalType.Reptiles: return "Snake";
-                case AnimalType.Amphibians: return "Frog";
-                case AnimalType.Fish: return "Shark";
-                case AnimalType.Invertebrates: return "Ant";
-            }
-
-            return "Unknown";
+            return GetDefaultFavoriteAnimal(animalType);
         }
+
+        private string GetBobsFavoriteAnimal(AnimalType animalType) => animalType switch
+        {
+            AnimalType.Mammals => "Dog",
+            AnimalType.Birds => "Sparrow",
+            AnimalType.Reptiles => "Lizard",
+            AnimalType.Amphibians => "Salamander",
+            AnimalType.Fish => "Tuna",
+            AnimalType.Invertebrates => "Spider",
+            _ => throw new ArgumentOutOfRangeException(nameof(animalType), $"Unexpected animal type: {animalType}"),
+        };
+
+        private string GetDefaultFavoriteAnimal(AnimalType animalType) => animalType switch
+        {
+            AnimalType.Mammals => "Horse",
+            AnimalType.Birds => "Eagle",
+            AnimalType.Reptiles => "Snake",
+            AnimalType.Amphibians => "Frog",
+            AnimalType.Fish => "Shark",
+            AnimalType.Invertebrates => "Ant",
+            _ => throw new ArgumentOutOfRangeException(nameof(animalType), $"Unexpected animal type: {animalType}"),
+        };
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -124,9 +128,9 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine(await kernel.InvokePromptAsync("What is my favourite creepy crawly?", new(settings)));
 
         // Example response
-        // Your favorite color is green.
-        // Your favorite cold - blooded animal is a lizard.
-        // Your favorite marine animal is the Tuna.
+        // Your favorite color is Green. 🌿
+        // Your favorite cold-blooded animal is a lizard.
+        // Your favorite marine animal is the Tuna. 🐟
         // Your favorite creepy crawly is a spider! 🕷️
     }
 
