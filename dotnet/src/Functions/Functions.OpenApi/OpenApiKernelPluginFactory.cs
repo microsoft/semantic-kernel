@@ -165,7 +165,7 @@ public static partial class OpenApiKernelPluginFactory
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other Rest functions
-                logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {PluginName}.{OperationId}. Error: {Message}",
                     pluginName, operation.Id, ex.Message);
             }
         }
@@ -318,7 +318,7 @@ public static partial class OpenApiKernelPluginFactory
             result.Append(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture)));
         }
 
-        logger.LogInformation("""Operation method "{0}" with path "{1}" converted to "{2}" to comply with SK Function name requirements. Use "{2}" when invoking function.""", operation.Method, operation.Path, result, result);
+        logger.LogInformation("""Operation method "{Method}" with path "{Path}" converted to "{Result}" to comply with SK Function name requirements. Use "{Result}" when invoking function.""", operation.Method, operation.Path, result, result);
 
         return result.ToString();
     }
@@ -355,7 +355,7 @@ public static partial class OpenApiKernelPluginFactory
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 
-        logger.LogInformation("""Operation name "{0}" converted to "{1}" to comply with SK Function name requirements. Use "{2}" when invoking function.""", operationId, result, result);
+        logger.LogInformation("""Operation name "{OperationId}" converted to "{Result}" to comply with SK Function name requirements. Use "{Result}" when invoking function.""", operationId, result, result);
 
         return result;
     }
