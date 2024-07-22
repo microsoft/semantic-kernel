@@ -45,7 +45,6 @@ public class RunPollingOptionsTests
         Assert.Equal(8, options.RunPollingBackoffThreshold);
     }
 
-
     /// <summary>s
     /// Verify initialization.
     /// </summary>
