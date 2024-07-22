@@ -78,7 +78,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
         Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-        await foreach (var content in chat.InvokeAsync())
+        await foreach (ChatMessageContent content in chat.InvokeAsync())
         {
             Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
