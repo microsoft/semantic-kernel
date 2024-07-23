@@ -104,7 +104,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata as AnthropicMetadata;
         Assert.NotNull(metadata);
-        Assert.Equal(response.FinishReason, metadata.FinishReason);
+        Assert.Equal(response.StopReason, metadata.FinishReason);
         Assert.Equal(response.Id, metadata.MessageId);
         Assert.Equal(response.StopSequence, metadata.StopSequence);
         Assert.Equal(response.Usage.InputTokens, metadata.InputTokenCount);
@@ -128,7 +128,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata;
         Assert.NotNull(metadata);
-        Assert.Equal(response.FinishReason, metadata[nameof(AnthropicMetadata.FinishReason)]);
+        Assert.Equal(response.StopReason, metadata[nameof(AnthropicMetadata.FinishReason)]);
         Assert.Equal(response.Id, metadata[nameof(AnthropicMetadata.MessageId)]);
         Assert.Equal(response.StopSequence, metadata[nameof(AnthropicMetadata.StopSequence)]);
         Assert.Equal(response.Usage.InputTokens, metadata[nameof(AnthropicMetadata.InputTokenCount)]);

@@ -74,6 +74,7 @@ internal sealed class AnthropicClient
             name: $"{s_namespace}.tokens.total",
             unit: "{token}",
             description: "Number of tokens used");
+
     private readonly string? _bearerKey;
 
     /// <summary>
@@ -141,9 +142,9 @@ internal sealed class AnthropicClient
         try
         {
             anthropicResponse = await this.SendRequestAndReturnValidResponseAsync(
-                this._endpoint,
-                state.AnthropicRequest,
-                cancellationToken)
+                    this._endpoint,
+                    state.AnthropicRequest,
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             chatResponses = this.GetChatResponseFrom(anthropicResponse);
@@ -209,19 +210,21 @@ internal sealed class AnthropicClient
             throw new NotSupportedException($"Content type {content.GetType()} is not supported yet.");
         }
 
-        return new AnthropicChatMessageContent(
-            role: response.Role,
-            items: [new TextContent(textContent.Text ?? string.Empty)],
-            modelId: response.ModelId ?? this._modelId,
-            innerContent: response,
-            metadata: GetResponseMetadata(response));
+        return new AnthropicChatMessageContent
+        {
+            Role = response.Role,
+            Items = [new TextContent(textContent.Text ?? string.Empty)],
+            ModelId = response.ModelId ?? this._modelId,
+            InnerContent = response,
+            Metadata = GetResponseMetadata(response)
+        };
     }
 
     private static AnthropicMetadata GetResponseMetadata(AnthropicResponse response)
         => new()
         {
             MessageId = response.Id,
-            FinishReason = response.FinishReason,
+            FinishReason = response.StopReason,
             StopSequence = response.StopSequence,
             InputTokenCount = response.Usage?.InputTokens ?? 0,
             OutputTokenCount = response.Usage?.OutputTokens ?? 0
