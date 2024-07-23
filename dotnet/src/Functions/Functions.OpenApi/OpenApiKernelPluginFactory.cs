@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -164,7 +165,7 @@ public static partial class OpenApiKernelPluginFactory
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other Rest functions
-                logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {PluginName}.{OperationId}. Error: {Message}",
                     pluginName, operation.Id, ex.Message);
             }
         }
@@ -274,7 +275,7 @@ public static partial class OpenApiKernelPluginFactory
             method: ExecuteAsync,
             new KernelFunctionFromMethodOptions
             {
-                FunctionName = ConvertOperationIdToValidFunctionName(operation.Id, logger),
+                FunctionName = ConvertOperationToValidFunctionName(operation, logger),
                 Description = operation.Description,
                 Parameters = parameters,
                 ReturnParameter = returnParameter,
@@ -290,6 +291,37 @@ public static partial class OpenApiKernelPluginFactory
 
     /// <summary>The metadata property bag key to use for the list of extension values provided in the swagger file at the operation level.</summary>
     private const string OperationExtensionsMetadataKey = "operation-extensions";
+
+    /// <summary>
+    /// Converts operation id to valid <see cref="KernelFunction"/> name.
+    /// A function name can contain only ASCII letters, digits, and underscores.
+    /// </summary>
+    /// <param name="operation">The REST API operation.</param>
+    /// <param name="logger">The logger.</param>
+    /// <returns>Valid KernelFunction name.</returns>
+    private static string ConvertOperationToValidFunctionName(RestApiOperation operation, ILogger logger)
+    {
+        if (!string.IsNullOrWhiteSpace(operation.Id))
+        {
+            return ConvertOperationIdToValidFunctionName(operationId: operation.Id, logger: logger);
+        }
+
+        // Tokenize operation path on forward and back slashes
+        string[] tokens = operation.Path.Split('/', '\\');
+        StringBuilder result = new();
+        result.Append(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(operation.Method.ToString()));
+
+        foreach (string token in tokens)
+        {
+            // Removes all characters that are not ASCII letters, digits, and underscores.
+            string formattedToken = RemoveInvalidCharsRegex().Replace(token, "");
+            result.Append(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture)));
+        }
+
+        logger.LogInformation("""Operation method "{Method}" with path "{Path}" converted to "{Result}" to comply with SK Function name requirements. Use "{Result}" when invoking function.""", operation.Method, operation.Path, result, result);
+
+        return result.ToString();
+    }
 
     /// <summary>
     /// Converts operation id to valid <see cref="KernelFunction"/> name.
@@ -323,7 +355,7 @@ public static partial class OpenApiKernelPluginFactory
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 
-        logger.LogInformation("""Operation name "{0}" converted to "{1}" to comply with SK Function name requirements. Use "{2}" when invoking function.""", operationId, result, result);
+        logger.LogInformation("""Operation name "{OperationId}" converted to "{Result}" to comply with SK Function name requirements. Use "{Result}" when invoking function.""", operationId, result, result);
 
         return result;
     }
@@ -336,7 +368,7 @@ public static partial class OpenApiKernelPluginFactory
     private static partial Regex RemoveInvalidCharsRegex();
 #else
     private static Regex RemoveInvalidCharsRegex() => s_removeInvalidCharsRegex;
-    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_./-/{/}]", RegexOptions.Compiled);
 #endif
 
     #endregion
