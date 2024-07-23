@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from google.generativeai import GenerativeModel
+from google.generativeai.protos import Content
 from google.generativeai.types import GenerationConfig
 
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
@@ -126,3 +127,35 @@ async def test_google_ai_streaming_chat_completion(
 
 
 # endregion streaming chat completion
+
+
+def test_google_ai_chat_completion_parse_chat_history_correctly(google_ai_unit_test_env) -> None:
+    """Test _prepare_chat_history_for_request method"""
+    google_ai_chat_completion = GoogleAIChatCompletion()
+
+    chat_history = ChatHistory()
+    chat_history.add_system_message("test_system_message")
+    chat_history.add_user_message("test_user_message")
+    chat_history.add_assistant_message("test_assistant_message")
+
+    parsed_chat_history = google_ai_chat_completion._prepare_chat_history_for_request(chat_history)
+
+    assert isinstance(parsed_chat_history, list)
+    # System message should be ignored
+    assert len(parsed_chat_history) == 2
+    assert all(isinstance(message, Content) for message in parsed_chat_history)
+    assert parsed_chat_history[0].role == "user"
+    assert parsed_chat_history[0].parts[0].text == "test_user_message"
+    assert parsed_chat_history[1].role == "model"
+    assert parsed_chat_history[1].parts[0].text == "test_assistant_message"
+
+
+def test_google_ai_chat_completion_parse_chat_history_throw_unsupported_message(google_ai_unit_test_env) -> None:
+    """Test _prepare_chat_history_for_request method with unsupported message type"""
+    google_ai_chat_completion = GoogleAIChatCompletion()
+
+    chat_history = ChatHistory()
+    chat_history.add_tool_message("test_tool_message")
+
+    with pytest.raises(ValueError):
+        _ = google_ai_chat_completion._prepare_chat_history_for_request(chat_history)

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import sys
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
