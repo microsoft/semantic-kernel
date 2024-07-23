@@ -82,6 +82,7 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
         self,
         texts: list[str],
         settings: "PromptExecutionSettings | None" = None,
+        **kwargs: Any,
     ) -> list[list[float]]:
         if not settings:
             settings = GoogleAIEmbeddingPromptExecutionSettings()

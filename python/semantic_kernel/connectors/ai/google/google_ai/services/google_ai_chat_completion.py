@@ -127,7 +127,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             A chat message content object.
         """
         # Best effort conversion of finish reason. The raw value will be available in metadata.
-        finish_reason: FinishReason = finish_reason_from_google_ai_to_semantic_kernel(candidate.finish_reason)
+        finish_reason: FinishReason | None = finish_reason_from_google_ai_to_semantic_kernel(candidate.finish_reason)
         response_metadata = self._get_metadata_from_response(response)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
@@ -194,7 +194,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             A streaming chat message content object.
         """
         # Best effort conversion of finish reason. The raw value will be available in metadata.
-        finish_reason: FinishReason = finish_reason_from_google_ai_to_semantic_kernel(candidate.finish_reason)
+        finish_reason: FinishReason | None = finish_reason_from_google_ai_to_semantic_kernel(candidate.finish_reason)
         response_metadata = self._get_metadata_from_response(chunk)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
