@@ -60,13 +60,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
     def model_post_init(self, __context: object | None = None):
         """Post init function that sets the key field and container mode values, and validates the datamodel."""
-        if hasattr(self.data_model_type, "__kernel_vectorstoremodel__"):
-            self._validate_data_model()
-        else:
-            logger.debug(
-                f"No data model validation performed on {self.data_model_type}, "
-                "as it is not a DataModel, your input may be incorrect."
-            )
+        self._validate_data_model()
 
     # region Overload Methods
     async def close(self):

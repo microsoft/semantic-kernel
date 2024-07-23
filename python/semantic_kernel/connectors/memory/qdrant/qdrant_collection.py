@@ -5,13 +5,16 @@ import sys
 from collections.abc import Mapping, Sequence
 from typing import Any, TypeVar
 
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
+from pydantic import ValidationError
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
-from qdrant_client.models import PointStruct, UpdateStatus, VectorParams
+from qdrant_client.models import PointStruct, VectorParams
 
 from semantic_kernel.connectors.memory.qdrant.const import DISTANCE_FUNCTION_MAP, TYPE_MAPPER_VECTOR
 from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
@@ -21,10 +24,8 @@ from semantic_kernel.data.vector_store_record_collection import VectorStoreRecor
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import (
     MemoryConnectorInitializationError,
-    ServiceResponseException,
     VectorStoreModelValidationError,
 )
-from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -44,7 +45,6 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
-        kernel: Kernel | None = None,
         named_vectors: bool = True,
         url: str | None = None,
         api_key: str | None = None,
@@ -72,7 +72,6 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
             data_model_type (type[TModel]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition): The model fields, optional.
             collection_name (str): The name of the collection, optional.
-            kernel: Kernel to use for embedding generation.
             named_vectors (bool): If true, vectors are stored with name (default: True).
             url (str): The URL of the Qdrant server (default: {None}).
             api_key (str): The API key for the Qdrant server (default: {None}).
@@ -93,7 +92,6 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
                 collection_name=collection_name,
-                kernel=kernel,
                 qdrant_client=client,  # type: ignore
                 named_vectors=named_vectors,  # type: ignore
             )
@@ -101,37 +99,35 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
 
         from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
 
-        settings = QdrantSettings.create(
-            url=url,
-            api_key=api_key,
-            host=host,
-            port=port,
-            grpc_port=grpc_port,
-            path=path,
-            location=location,
-            prefer_grpc=prefer_grpc,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
         try:
-            if APP_INFO:
-                kwargs.setdefault("metadata", {})
-                kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(kwargs["metadata"])
-
-            super().__init__(
-                data_model_type=data_model_type,
-                data_model_definition=data_model_definition,
-                collection_name=collection_name,
-                kernel=kernel,
-                qdrant_client=AsyncQdrantClientWrapper(**settings.model_dump(exclude_none=True), **kwargs),  # type: ignore
-                named_vectors=named_vectors,  # type: ignore
+            settings = QdrantSettings.create(
+                url=url,
+                api_key=api_key,
+                host=host,
+                port=port,
+                grpc_port=grpc_port,
+                path=path,
+                location=location,
+                prefer_grpc=prefer_grpc,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
             )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create Qdrant settings.", ex) from ex
+        if APP_INFO:
+            kwargs.setdefault("metadata", {})
+            kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(kwargs["metadata"])
+        try:
+            client = AsyncQdrantClientWrapper(**settings.model_dump(exclude_none=True), **kwargs)
         except ValueError as ex:
             raise MemoryConnectorInitializationError("Failed to create Qdrant client.", ex) from ex
-
-    async def close(self) -> None:
-        """Closes the Qdrant client."""
-        await self.qdrant_client.close()
+        super().__init__(
+            data_model_type=data_model_type,
+            data_model_definition=data_model_definition,
+            collection_name=collection_name,
+            qdrant_client=client,
+            named_vectors=named_vectors,
+        )
 
     @override
     async def _inner_upsert(
@@ -139,14 +135,12 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
         records: Sequence[PointStruct],
         **kwargs: Any,
     ) -> Sequence[TKey]:
-        result = await self.qdrant_client.upsert(
+        await self.qdrant_client.upsert(
             collection_name=self.collection_name,
             points=records,
             **kwargs,
         )
-        if result.status == UpdateStatus.COMPLETED:
-            return [record.id for record in records]
-        raise ServiceResponseException("Upsert failed")
+        return [record.id for record in records]
 
     @override
     async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
@@ -160,13 +154,11 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
-        result = await self.qdrant_client.delete(
+        await self.qdrant_client.delete(
             collection_name=self.collection_name,
             points_selector=keys,
             **kwargs,
         )
-        if result.status != UpdateStatus.COMPLETED:
-            raise ServiceResponseException("Delete failed")
 
     @override
     def _serialize_dicts_to_store_models(
@@ -231,7 +223,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                     vector = self.data_model_definition.fields[field]
                     assert isinstance(vector, VectorStoreRecordVectorField)  # nosec
                     if not vector.dimensions:
-                        raise MemoryConnectorInitializationError("Vector field must have dimensions.")
+                        raise MemoryConnectorException("Vector field must have dimensions.")
                     vectors_config[field] = VectorParams(
                         size=vector.dimensions,
                         distance=DISTANCE_FUNCTION_MAP[vector.distance_function or "default"],
@@ -241,7 +233,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
                 vector = self.data_model_definition.fields[self.data_model_definition.vector_field_names[0]]
                 assert isinstance(vector, VectorStoreRecordVectorField)  # nosec
                 if not vector.dimensions:
-                    raise MemoryConnectorInitializationError("Vector field must have dimensions.")
+                    raise MemoryConnectorException("Vector field must have dimensions.")
                 vectors_config = VectorParams(
                     size=vector.dimensions,
                     distance=DISTANCE_FUNCTION_MAP[vector.distance_function or "default"],
