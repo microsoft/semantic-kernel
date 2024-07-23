@@ -2,7 +2,6 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
@@ -18,6 +17,7 @@ namespace Connectors.Amazon.Models.Meta;
 public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
+    private readonly BedrockUtilities _util = new BedrockUtilities();
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Meta Llama.
     /// </summary>
@@ -30,7 +30,7 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
         double? topP = 0.9; // Llama default
         int? maxGenLen = 512; // Llama default
 
-        if (executionSettings != null && executionSettings.ExtensionData != null)
+        if (executionSettings is { ExtensionData: not null })
         {
             executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
             temperature = temperatureValue as double?;
@@ -90,13 +90,13 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
         {
             Messages = chatHistory.Select(m => new Message
             {
-                Role = MapRole(m.Role),
+                Role = new BedrockUtilities().MapRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
-            Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5f),
-            TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9f),
-            MaxGenLen = this.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5f),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9f),
+            MaxGenLen = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
         };
         var converseRequest = new ConverseRequest
         {
@@ -115,41 +115,6 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
             ToolConfig = null
         };
         return converseRequest;
-    }
-
-    private static ConversationRole MapRole(AuthorRole role)
-    {
-        string roleStr;
-        if (role == AuthorRole.User)
-        {
-            roleStr = "user";
-        }
-        else
-        {
-            roleStr = "assistant";
-        }
-
-        return roleStr switch
-        {
-            "user" => ConversationRole.User,
-            "assistant" => ConversationRole.Assistant,
-            _ => throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}")
-        };
-    }
-
-    private TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
-    {
-        if (extensionData == null || !extensionData.TryGetValue(key, out object? value))
-        {
-            return defaultValue;
-        }
-
-        if (value is TValue typedValue)
-        {
-            return typedValue;
-        }
-
-        return defaultValue;
     }
     /// <summary>
     /// Extracts the text generation streaming output from the Meta Llama response object structure.
@@ -181,13 +146,13 @@ public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, ICha
         {
             Messages = chatHistory.Select(m => new Message
             {
-                Role = MapRole(m.Role),
+                Role = new BedrockUtilities().MapRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
-            Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5),
-            TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9),
-            MaxGenLen = this.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9),
+            MaxGenLen = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
         };
         var converseStreamRequest = new ConverseStreamRequest
         {

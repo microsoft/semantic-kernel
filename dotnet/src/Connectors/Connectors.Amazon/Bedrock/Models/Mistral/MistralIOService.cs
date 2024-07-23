@@ -31,7 +31,7 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
         List<string>? stop = null;
         int? topK = 50; // Mistral default [disabled for non-instruct. likely just ignored since still functional]
 
-        if (executionSettings != null && executionSettings.ExtensionData != null)
+        if (executionSettings is { ExtensionData: not null })
         {
             executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
             temperature = temperatureValue as double?;
@@ -318,20 +318,5 @@ public class MistralIOService : IBedrockModelIOService<IChatCompletionRequest, I
             AdditionalModelResponseFieldPaths = new List<string>()
         };
         return converseStreamRequest;
-    }
-
-    private TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
-    {
-        if (extensionData == null || !extensionData.TryGetValue(key, out object? value))
-        {
-            return defaultValue;
-        }
-
-        if (value is TValue typedValue)
-        {
-            return typedValue;
-        }
-
-        return defaultValue;
     }
 }

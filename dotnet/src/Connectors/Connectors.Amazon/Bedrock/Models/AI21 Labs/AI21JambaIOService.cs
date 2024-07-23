@@ -3,7 +3,6 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
@@ -19,6 +18,7 @@ namespace Connectors.Amazon.Models.AI21;
 public class AI21JambaIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
+    private readonly BedrockUtilities _util = new();
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by AI21 Labs Jamba model.
     /// </summary>
@@ -44,7 +44,7 @@ public class AI21JambaIOService : IBedrockModelIOService<IChatCompletionRequest,
         double? frequencyPenalty = null;
         double? presencePenalty = null;
 
-        if (executionSettings != null && executionSettings.ExtensionData != null)
+        if (executionSettings is { ExtensionData: not null })
         {
             executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
             temperature = temperatureValue as double?;
@@ -124,20 +124,20 @@ public class AI21JambaIOService : IBedrockModelIOService<IChatCompletionRequest,
         {
             Messages = chatHistory.Select(m => new Message
             {
-                Role = MapRole(m.Role),
+                Role = new BedrockUtilities().MapRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1),
-                TopP = this.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 1),
-                MaxTokens = this.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 4096),
-                StopSequences = this.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []),
+                Temperature = this._util.GetExtensionDataValue<float>(settings?.ExtensionData, "temperature", 1),
+                TopP = this._util.GetExtensionDataValue<float>(settings?.ExtensionData, "top_p", 1),
+                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 4096),
+                StopSequences = this._util.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []),
             },
-            NumResponses = this.GetExtensionDataValue(settings?.ExtensionData, "n", 1),
-            FrequencyPenalty = this.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", 0.0),
-            PresencePenalty = this.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", 0.0)
+            NumResponses = this._util.GetExtensionDataValue(settings?.ExtensionData, "n", 1),
+            FrequencyPenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", 0.0),
+            PresencePenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", 0.0)
         };
 
         var converseRequest = new ConverseRequest
@@ -158,40 +158,6 @@ public class AI21JambaIOService : IBedrockModelIOService<IChatCompletionRequest,
         };
 
         return converseRequest;
-    }
-    private static ConversationRole MapRole(AuthorRole role)
-    {
-        string roleStr;
-        if (role == AuthorRole.User)
-        {
-            roleStr = "user";
-        }
-        else
-        {
-            roleStr = "assistant";
-        }
-
-        return roleStr switch
-        {
-            "user" => ConversationRole.User,
-            "assistant" => ConversationRole.Assistant,
-            _ => throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}")
-        };
-    }
-
-    private TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
-    {
-        if (extensionData == null || !extensionData.TryGetValue(key, out object? value))
-        {
-            return defaultValue;
-        }
-
-        if (value is TValue typedValue)
-        {
-            return typedValue;
-        }
-
-        return defaultValue;
     }
     /// <summary>
     /// Gets the streamed text output. AI21 Labs Jamba does not support streaming, but otherwise getting the text response body output would look like the following.
@@ -220,20 +186,20 @@ public class AI21JambaIOService : IBedrockModelIOService<IChatCompletionRequest,
         {
             Messages = chatHistory.Select(m => new Message
             {
-                Role = MapRole(m.Role),
+                Role = new BedrockUtilities().MapRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this.GetExtensionDataValue<float>(settings.ExtensionData, "temperature", 1),
-                TopP = this.GetExtensionDataValue<float>(settings.ExtensionData, "top_p", 1),
-                MaxTokens = this.GetExtensionDataValue(settings.ExtensionData, "max_tokens", 4096),
-                StopSequences = this.GetExtensionDataValue<List<string>>(settings.ExtensionData, "stop_sequences", []),
+                Temperature = this._util.GetExtensionDataValue<float>(settings.ExtensionData, "temperature", 1),
+                TopP = this._util.GetExtensionDataValue<float>(settings.ExtensionData, "top_p", 1),
+                MaxTokens = this._util.GetExtensionDataValue(settings.ExtensionData, "max_tokens", 4096),
+                StopSequences = this._util.GetExtensionDataValue<List<string>>(settings.ExtensionData, "stop_sequences", []),
             },
-            NumResponses = this.GetExtensionDataValue(settings.ExtensionData, "n", 1),
-            FrequencyPenalty = this.GetExtensionDataValue(settings.ExtensionData, "frequency_penalty", 0.0),
-            PresencePenalty = this.GetExtensionDataValue(settings.ExtensionData, "presence_penalty", 0.0)
+            NumResponses = this._util.GetExtensionDataValue(settings.ExtensionData, "n", 1),
+            FrequencyPenalty = this._util.GetExtensionDataValue(settings.ExtensionData, "frequency_penalty", 0.0),
+            PresencePenalty = this._util.GetExtensionDataValue(settings.ExtensionData, "presence_penalty", 0.0)
         };
 
         var converseStreamRequest = new ConverseStreamRequest

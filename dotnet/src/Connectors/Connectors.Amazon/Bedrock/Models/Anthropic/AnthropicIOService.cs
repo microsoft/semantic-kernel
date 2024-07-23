@@ -2,7 +2,6 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Connectors.Amazon.Core.Requests;
@@ -18,6 +17,7 @@ namespace Connectors.Amazon.Models.Anthropic;
 public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
     IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
 {
+    private readonly BedrockUtilities _util = new();
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Anthropic Claude.
     /// </summary>
@@ -32,7 +32,7 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
         List<string>? stopSequences = new() { "\n\nHuman:" }; // Claude default
         int? topK = 250; // Claude default
 
-        if (executionSettings != null && executionSettings.ExtensionData != null)
+        if (executionSettings is { ExtensionData: not null })
         {
             executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
             temperature = temperatureValue as double?;
@@ -101,19 +101,19 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
         {
             Messages = chatHistory.Select(m => new Message
             {
-                Role = MapRole(m.Role),
+                Role = new BedrockUtilities().MapRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
-            System = this.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
+            System = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 1f),
-                TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.999f),
-                MaxTokens = this.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512)
+                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 1f),
+                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.999f),
+                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512)
             },
             // AnthropicVersion = "bedrock-2023-05-31", // NOTE: documentation states anthropic_version required and value must be 'bedrock-2023-05-31' but BedrockRuntime ValidationException with this field present.
-            Tools = this.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
-            ToolChoice = this.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null)
+            Tools = this._util.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
+            ToolChoice = this._util.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null)
         };
         var converseRequest = new ConverseRequest
         {
@@ -156,41 +156,6 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
 
         return converseRequest;
     }
-
-    private static ConversationRole MapRole(AuthorRole role)
-    {
-        string roleStr;
-        if (role == AuthorRole.User)
-        {
-            roleStr = "user";
-        }
-        else
-        {
-            roleStr = "assistant";
-        }
-
-        return roleStr switch
-        {
-            "user" => ConversationRole.User,
-            "assistant" => ConversationRole.Assistant,
-            _ => throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}")
-        };
-    }
-
-    private TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
-    {
-        if (extensionData == null || !extensionData.TryGetValue(key, out object? value))
-        {
-            return defaultValue;
-        }
-
-        if (value is TValue typedValue)
-        {
-            return typedValue;
-        }
-
-        return defaultValue;
-    }
     /// <summary>
     /// Extracts the text generation streaming output from the Anthropic Claude response object structure.
     /// </summary>
@@ -218,19 +183,19 @@ public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest,
         {
             Messages = chatHistory.Select(m => new Message
             {
-                Role = MapRole(m.Role),
+                Role = new BedrockUtilities().MapRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
-            System = this.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
+            System = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this.GetExtensionDataValue(settings?.ExtensionData, "temperature", 1f),
-                TopP = this.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.999f),
-                MaxTokens = this.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512)
+                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 1f),
+                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.999f),
+                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512)
             },
             // AnthropicVersion = "bedrock-2023-05-31", // NOTE: documentation states anthropic_version required and value must be 'bedrock-2023-05-31' but BedrockRuntime ValidationException with this field present.
-            Tools = this.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
-            ToolChoice = this.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null)
+            Tools = this._util.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
+            ToolChoice = this._util.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null)
         };
         var converseRequest = new ConverseStreamRequest()
         {

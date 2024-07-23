@@ -32,7 +32,7 @@ public class AI21JurassicIOService : IBedrockModelIOService<IChatCompletionReque
         AI21JurassicRequest.PresencePenalty? presencePenalty = null;
         AI21JurassicRequest.FrequencyPenalty? frequencyPenalty = null;
 
-        if (executionSettings != null && executionSettings.ExtensionData != null)
+        if (executionSettings is { ExtensionData: not null })
         {
             executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
             temperature = temperatureValue as double?;

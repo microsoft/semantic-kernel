@@ -35,7 +35,7 @@ public class CohereCommandIOService : IBedrockModelIOService<IChatCompletionRequ
         Dictionary<int, double>? logitBias = null;
         string? truncate = "END"; // Cohere default
 
-        if (executionSettings != null && executionSettings.ExtensionData != null)
+        if (executionSettings is { ExtensionData: not null })
         {
             executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
             temperature = temperatureValue as double?;
