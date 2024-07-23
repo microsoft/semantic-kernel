@@ -3,8 +3,11 @@
 import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING
+from unittest.mock import MagicMock
 
 import pytest
+
+from semantic_kernel.contents.function_call_content import FunctionCallContent
 
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
@@ -132,6 +135,24 @@ def create_mock_function() -> Callable:
         return CustomKernelFunction(metadata=kernel_function_metadata)
 
     return create_mock_function
+
+
+@pytest.fixture(scope="function")
+def get_tool_call_mock():
+    tool_call_mock = MagicMock(spec=FunctionCallContent)
+    tool_call_mock.split_name_dict.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.to_kernel_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.name = "test-function"
+    tool_call_mock.function_name = "function"
+    tool_call_mock.plugin_name = "test"
+    tool_call_mock.arguments = {"arg_name": "arg_value"}
+    tool_call_mock.ai_model_id = None
+    tool_call_mock.metadata = {}
+    tool_call_mock.index = 0
+    tool_call_mock.parse_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.id = "test_id"
+
+    return tool_call_mock
 
 
 @pytest.fixture(scope="function")

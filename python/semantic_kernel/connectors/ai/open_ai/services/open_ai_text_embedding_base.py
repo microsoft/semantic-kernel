@@ -32,7 +32,7 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
         **kwargs: Any,
     ) -> ndarray:
         raw_embeddings = await self.generate_raw_embeddings(texts, settings, batch_size, **kwargs)
-        return array([array(emb) for emb in raw_embeddings])
+        return array(raw_embeddings)
 
     @override
     async def generate_raw_embeddings(
