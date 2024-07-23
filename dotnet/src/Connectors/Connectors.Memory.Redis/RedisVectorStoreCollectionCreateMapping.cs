@@ -87,7 +87,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
             {
                 if (vectorProperty.Dimensions is not > 0)
                 {
-                    throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive ingeteger to create a collection.");
+                    throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive integer to create a collection.");
                 }
 
                 var indexKind = GetSDKIndexKind(vectorProperty);

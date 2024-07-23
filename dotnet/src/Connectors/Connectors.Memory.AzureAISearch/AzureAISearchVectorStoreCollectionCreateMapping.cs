@@ -55,7 +55,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     {
         if (vectorProperty.Dimensions is not > 0)
         {
-            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive ingeteger to create a collection.");
+            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive integer to create a collection.");
         }
 
         // Build a name for the profile and algorithm configuration based on the property name
