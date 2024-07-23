@@ -44,8 +44,7 @@ internal static class AssistantThreadActions
     /// <throws><see cref="KernelException"/> if a system message is present, without taking any other action</throws>
     public static async Task CreateMessageAsync(AssistantsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(message.Content) ||
-            message.Items.Any(i => i is FunctionCallContent))
+        if (message.Items.Any(i => i is FunctionCallContent))
         {
             return;
         }
