@@ -112,7 +112,8 @@ public sealed class OpenAIFileService
     public async Task<BinaryContent> GetFileContentAsync(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
-        var (stream, mimetype) = await this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken).ConfigureAwait(false);
+        var contentUri = $"{this._serviceUri}/{id}/content";
+        var (stream, mimetype) = await this.StreamGetRequestAsync(contentUri, cancellationToken).ConfigureAwait(false);
 
         using (stream)
         {
@@ -123,7 +124,12 @@ public sealed class OpenAIFileService
 #else
             await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 #endif
-            return new BinaryContent(memoryStream.ToArray(), mimetype);
+            return
+                new(memoryStream.ToArray(), mimetype)
+                {
+                    Metadata = new Dictionary<string, object?>() { { "id", id } },
+                    Uri = new Uri(contentUri),
+                };
         }
     }
 
@@ -147,9 +153,19 @@ public sealed class OpenAIFileService
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The metadata of all uploaded files.</returns>
-    public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default)
+    public Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default)
+        => this.GetFilesAsync(null, cancellationToken);
+
+    /// <summary>
+    /// Retrieve metadata for previously uploaded files
+    /// </summary>
+    /// <param name="filePurpose">The purpose of the files by which to filter.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The metadata of all uploaded files.</returns>
+    public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(OpenAIFilePurpose? filePurpose, CancellationToken cancellationToken = default)
     {
-        var result = await this.ExecuteGetRequestAsync<FileInfoList>(this._serviceUri.ToString(), cancellationToken).ConfigureAwait(false);
+        var serviceUri = filePurpose.HasValue && !string.IsNullOrEmpty(filePurpose.Value.Label) ? $"{this._serviceUri}?purpose={filePurpose}" : this._serviceUri.ToString();
+        var result = await this.ExecuteGetRequestAsync<FileInfoList>(serviceUri, cancellationToken).ConfigureAwait(false);
 
         return result.Data.Select(this.ConvertFileReference).ToArray();
     }
@@ -167,7 +183,7 @@ public sealed class OpenAIFileService
         Verify.NotNull(fileContent.Data, nameof(fileContent.Data));
 
         using var formData = new MultipartFormDataContent();
-        using var contentPurpose = new StringContent(this.ConvertPurpose(settings.Purpose));
+        using var contentPurpose = new StringContent(settings.Purpose.Label);
         using var contentFile = new ByteArrayContent(fileContent.Data.Value.ToArray());
         formData.Add(contentPurpose, "purpose");
         formData.Add(contentFile, "file", settings.FileName);
@@ -281,25 +297,9 @@ public sealed class OpenAIFileService
                 FileName = result.FileName,
                 CreatedTimestamp = DateTimeOffset.FromUnixTimeSeconds(result.CreatedAt).UtcDateTime,
                 SizeInBytes = result.Bytes ?? 0,
-                Purpose = this.ConvertPurpose(result.Purpose),
+                Purpose = new(result.Purpose),
             };
     }
-
-    private OpenAIFilePurpose ConvertPurpose(string purpose) =>
-        purpose.ToUpperInvariant() switch
-        {
-            "ASSISTANTS" => OpenAIFilePurpose.Assistants,
-            "FINE-TUNE" => OpenAIFilePurpose.FineTune,
-            _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}."),
-        };
-
-    private string ConvertPurpose(OpenAIFilePurpose purpose) =>
-        purpose switch
-        {
-            OpenAIFilePurpose.Assistants => "assistants",
-            OpenAIFilePurpose.FineTune => "fine-tune",
-            _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}."),
-        };
 
     private sealed class FileInfoList
     {

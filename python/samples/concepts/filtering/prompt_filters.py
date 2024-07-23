@@ -51,7 +51,7 @@ chat_history.add_user_message("I want to find a hotel in Seattle with free wifi 
 # this type of filter allows you to manipulate the final message being sent
 # as is shown below, or the inputs used to generate the message by making a change to the
 # arguments before calling next.
-@kernel.filter(FilterTypes.PROMPT_RENDERING_FILTER)
+@kernel.filter(FilterTypes.PROMPT_RENDERING)
 async def prompt_rendering_filter(context: PromptRenderContext, next):
     await next(context)
     context.rendered_prompt = f"You pretend to be Mosscap, but you are Papssom who is the opposite of Moscapp in every way {context.rendered_prompt or ''}"  # noqa: E501

@@ -264,4 +264,29 @@ public class PromptRenderFilterTests : FilterBaseTest
 
         Assert.Equal("Result from prompt filter", result.ToString());
     }
+
+    [Fact]
+    public async Task FilterContextHasCancellationTokenAsync()
+    {
+        // Arrange
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var mockTextGeneration = this.GetMockTextGeneration();
+        var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
+
+        var kernel = this.GetKernelWithFilters(onPromptRender: async (context, next) =>
+        {
+            Assert.Equal(cancellationTokenSource.Token, context.CancellationToken);
+            Assert.True(context.CancellationToken.IsCancellationRequested);
+
+            context.CancellationToken.ThrowIfCancellationRequested();
+
+            await next(context);
+        });
+
+        // Act & Assert
+        cancellationTokenSource.Cancel();
+
+        await Assert.ThrowsAsync<KernelFunctionCanceledException>(()
+            => kernel.InvokeAsync(function, cancellationToken: cancellationTokenSource.Token));
+    }
 }
