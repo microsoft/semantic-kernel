@@ -67,7 +67,7 @@ internal partial class ClientCore
             [nameof(audioTranscription.Segments)] = audioTranscription.Segments
         };
 
-    private static AudioTranscriptionFormat ConvertResponseFormat(string responseFormat)
+    private static AudioTranscriptionFormat? ConvertResponseFormat(string? responseFormat)
     {
         return responseFormat switch
         {
@@ -75,6 +75,7 @@ internal partial class ClientCore
             "verbose_json" => AudioTranscriptionFormat.Verbose,
             "vtt" => AudioTranscriptionFormat.Vtt,
             "srt" => AudioTranscriptionFormat.Srt,
+            null => null,
             _ => throw new NotSupportedException($"The audio transcription format '{responseFormat}' is not supported."),
         };
     }

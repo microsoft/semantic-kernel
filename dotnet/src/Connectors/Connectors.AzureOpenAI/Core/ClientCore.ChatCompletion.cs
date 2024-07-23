@@ -683,7 +683,7 @@ internal partial class ClientCore
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
             ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,
-            ToolChoice = toolCallingConfig.Choice,
+            ToolChoice = toolCallingConfig.Choice
         };
 
         if (executionSettings.AzureChatDataSource is not null)
