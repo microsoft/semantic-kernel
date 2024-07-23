@@ -20,6 +20,9 @@ from semantic_kernel.exceptions.memory_connector_exceptions import (
 )
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
+BASE_PATH_SEARCH_CLIENT = "azure.search.documents.aio.SearchClient"
+BASE_PATH_INDEX_CLIENT = "azure.search.documents.indexes.aio.SearchIndexClient"
+
 
 class AsyncIter:
     def __init__(self, items):
@@ -37,8 +40,31 @@ def vector_store(azure_ai_search_unit_test_env):
 
 
 @fixture
-def mock_merge_or_upload_documents():
-    with patch("azure.search.documents.aio.SearchClient.merge_or_upload_documents") as mock_merge_or_upload_documents:
+def mock_create_collection():
+    """Fixture to patch 'SearchIndexClient' and its 'create_index' method."""
+    with patch(f"{BASE_PATH_INDEX_CLIENT}.create_index") as mock_create_index:
+        yield mock_create_index
+
+
+@fixture
+def mock_delete_collection():
+    """Fixture to patch 'SearchIndexClient' and its 'create_index' method."""
+    with patch(f"{BASE_PATH_INDEX_CLIENT}.delete_index") as mock_delete_index:
+        yield mock_delete_index
+
+
+@fixture
+def mock_list_collection_names():
+    """Fixture to patch 'SearchIndexClient' and its 'create_index' method."""
+    with patch(f"{BASE_PATH_INDEX_CLIENT}.list_index_names") as mock_list_index_names:
+        # Setup the mock to return a specific SearchIndex instance when called
+        mock_list_index_names.return_value = AsyncIter(["test"])
+        yield mock_list_index_names
+
+
+@fixture
+def mock_upsert():
+    with patch(f"{BASE_PATH_SEARCH_CLIENT}.merge_or_upload_documents") as mock_merge_or_upload_documents:
         from azure.search.documents.models import IndexingResult
 
         result = MagicMock(spec=IndexingResult)
@@ -48,39 +74,16 @@ def mock_merge_or_upload_documents():
 
 
 @fixture
-def mock_get_document():
-    with patch("azure.search.documents.aio.SearchClient.get_document") as mock_get_document:
+def mock_get():
+    with patch(f"{BASE_PATH_SEARCH_CLIENT}.get_document") as mock_get_document:
         mock_get_document.return_value = {"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]}
         yield mock_get_document
 
 
 @fixture
-def mock_delete_documents():
-    with patch("azure.search.documents.aio.SearchClient.delete_documents") as mock_delete_documents:
+def mock_delete():
+    with patch(f"{BASE_PATH_SEARCH_CLIENT}.delete_documents") as mock_delete_documents:
         yield mock_delete_documents
-
-
-@fixture
-def mock_create_index():
-    """Fixture to patch 'SearchIndexClient' and its 'create_index' method."""
-    with patch("azure.search.documents.indexes.aio.SearchIndexClient.create_index") as mock_create_index:
-        yield mock_create_index
-
-
-@fixture
-def mock_delete_index():
-    """Fixture to patch 'SearchIndexClient' and its 'create_index' method."""
-    with patch("azure.search.documents.indexes.aio.SearchIndexClient.delete_index") as mock_delete_index:
-        yield mock_delete_index
-
-
-@fixture
-def mock_list_index_names():
-    """Fixture to patch 'SearchIndexClient' and its 'create_index' method."""
-    with patch("azure.search.documents.indexes.aio.SearchIndexClient.list_index_names") as mock_list_index_names:
-        # Setup the mock to return a specific SearchIndex instance when called
-        mock_list_index_names.return_value = AsyncIter(["test"])
-        yield mock_list_index_names
 
 
 @fixture
@@ -192,7 +195,7 @@ def test_init_with_clients_fail(azure_ai_search_unit_test_env, data_model_defini
 
 
 @mark.asyncio
-async def test_upsert(collection, mock_merge_or_upload_documents):
+async def test_upsert(collection, mock_upsert):
     ids = await collection._inner_upsert({"id": "id1", "name": "test"})
     assert ids[0] == "id1"
 
@@ -201,7 +204,7 @@ async def test_upsert(collection, mock_merge_or_upload_documents):
 
 
 @mark.asyncio
-async def test_get(collection, mock_get_document):
+async def test_get(collection, mock_get):
     records = await collection._inner_get(["id1"])
     assert records is not None
 
@@ -210,22 +213,22 @@ async def test_get(collection, mock_get_document):
 
 
 @mark.asyncio
-async def test_delete(collection, mock_delete_documents):
+async def test_delete(collection, mock_delete):
     await collection._inner_delete(["id1"])
 
 
 @mark.asyncio
-async def test_does_collection_exist(collection, mock_list_index_names):
+async def test_does_collection_exist(collection, mock_list_collection_names):
     await collection.does_collection_exist()
 
 
 @mark.asyncio
-async def test_delete_collection(collection, mock_delete_index):
+async def test_delete_collection(collection, mock_delete_collection):
     await collection.delete_collection()
 
 
 @mark.asyncio
-async def test_create_index_from_index(collection, mock_create_index):
+async def test_create_index_from_index(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
     index = MagicMock(spec=SearchIndex)
@@ -233,7 +236,7 @@ async def test_create_index_from_index(collection, mock_create_index):
 
 
 @mark.asyncio
-async def test_create_index_from_definition(collection, mock_create_index):
+async def test_create_index_from_definition(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
     with patch(
@@ -244,7 +247,7 @@ async def test_create_index_from_definition(collection, mock_create_index):
 
 
 @mark.asyncio
-async def test_create_index_from_index_fail(collection, mock_create_index):
+async def test_create_index_from_index_fail(collection, mock_create_collection):
     index = Mock()
     with raises(MemoryConnectorException):
         await collection.create_collection(index=index)
@@ -265,11 +268,11 @@ async def test_vector_store_fail(azure_ai_search_unit_test_env):
 
 
 @mark.asyncio
-async def test_vector_store_list_collection_names(vector_store, mock_list_index_names):
+async def test_vector_store_list_collection_names(vector_store, mock_list_collection_names):
     assert vector_store.search_index_client is not None
     collection_names = await vector_store.list_collection_names()
     assert collection_names == ["test"]
-    mock_list_index_names.assert_called_once()
+    mock_list_collection_names.assert_called_once()
 
 
 def test_get_collection(vector_store, data_model_definition):

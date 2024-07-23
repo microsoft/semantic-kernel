@@ -29,7 +29,6 @@ from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
     MemoryConnectorInitializationError,
 )
-from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -38,8 +37,8 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class RedisVectorRecordStore(VectorStoreRecordCollection[str, TModel]):
-    """A memory store implementation using Redis."""
+class RedisCollection(VectorStoreRecordCollection[str, TModel]):
+    """A vector store record collection implementation using Redis."""
 
     redis_database: Redis
     prefix_collection_name_to_key_names: bool
@@ -49,7 +48,6 @@ class RedisVectorRecordStore(VectorStoreRecordCollection[str, TModel]):
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
-        kernel: Kernel | None = None,
         redis_database: Redis | None = None,
         prefix_collection_name_to_key_names: bool = False,
         connection_string: str | None = None,
@@ -67,7 +65,6 @@ class RedisVectorRecordStore(VectorStoreRecordCollection[str, TModel]):
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
                 collection_name=collection_name,
-                kernel=kernel,
                 redis_database=redis_database,
                 prefix_collection_name_to_key_names=prefix_collection_name_to_key_names,
             )
@@ -86,7 +83,6 @@ class RedisVectorRecordStore(VectorStoreRecordCollection[str, TModel]):
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,
-            kernel=kernel,
             redis_database=RedisWrapper.from_url(redis_settings.connection_string.get_secret_value()),
             prefix_collection_name_to_key_names=prefix_collection_name_to_key_names,
         )
@@ -97,23 +93,20 @@ class RedisVectorRecordStore(VectorStoreRecordCollection[str, TModel]):
 
     async def _single_upsert(self, upsert_record: Any) -> str:
         await self.redis_database.hset(**upsert_record)
-        return self._unget_redis_key(upsert_record["name"], self.collection_name)
+        return self._unget_redis_key(upsert_record["name"])
 
     @override
     async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[bytes, bytes]] | None:
-        return await asyncio.gather(
-            *[self.redis_database.hgetall(self._get_redis_key(key, self.collection_name)) for key in keys]
-        )
+        return await asyncio.gather(*[self.redis_database.hgetall(self._get_redis_key(key)) for key in keys])
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
-        await self.redis_database.delete(*[self._get_redis_key(key, self.collection_name) for key in keys])
+        await self.redis_database.delete(*[self._get_redis_key(key) for key in keys])
 
     @override
     def _serialize_dicts_to_store_models(
         self,
         records: Sequence[dict[str, Any]],
-        collection_name: str | None = None,
         **kwargs: Any,
     ) -> Sequence[dict[str, Any]]:
         """Serialize the dict to a Redis store model."""
@@ -129,7 +122,7 @@ class RedisVectorRecordStore(VectorStoreRecordCollection[str, TModel]):
                         result["mapping"][name] = np.array(record[name]).astype(np.float64).tobytes()
                     continue
                 if isinstance(field, VectorStoreRecordKeyField):
-                    result["name"] = self._get_redis_key(record[name], collection_name)
+                    result["name"] = self._get_redis_key(record[name])
                     continue
                 metadata[name] = record[field.name]
             result["mapping"]["metadata"] = json.dumps(metadata)
@@ -141,7 +134,6 @@ class RedisVectorRecordStore(VectorStoreRecordCollection[str, TModel]):
         self,
         records: Sequence[dict[bytes, bytes]],
         keys: Sequence[str],
-        collection_name: str | None = None,
         **kwargs: Any,
     ) -> Sequence[dict[str, Any]]:
         results = []
@@ -149,7 +141,7 @@ class RedisVectorRecordStore(VectorStoreRecordCollection[str, TModel]):
             flattened = json.loads(record[b"metadata"])
             for name, field in self.data_model_definition.fields.items():
                 if isinstance(field, VectorStoreRecordKeyField):
-                    flattened[name] = self._unget_redis_key(key, collection_name)
+                    flattened[name] = self._unget_redis_key(key)
                 if isinstance(field, VectorStoreRecordVectorField):
                     # TODO (eavanvalkenburg): This is a temporary fix to handle the fact that
                     # the vector is returned as a bytes object, and the user needs that or a list.

@@ -1,11 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+import contextlib
 import json
 from datetime import datetime
 from typing import Any
 
 import numpy as np
-from redis import Redis
+from redis.asyncio.client import Redis
 from redis.commands.search.document import Document
 from redis.commands.search.field import Field as RedisField
 from redis.commands.search.field import TextField, VectorField
@@ -120,7 +122,8 @@ def deserialize_document_to_record(
 class RedisWrapper(Redis):
     def __del__(self) -> None:
         """Close connection, done when the object is deleted, used when SK creates a client."""
-        self.close()
+        with contextlib.suppress(Exception):
+            asyncio.get_running_loop().create_task(self.close())
 
 
 def data_model_definition_to_redis_fields(data_model_definition: VectorStoreRecordDefinition) -> list[RedisField]:
