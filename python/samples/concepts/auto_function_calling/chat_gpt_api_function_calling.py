@@ -120,7 +120,7 @@ async def handle_streaming(
     kernel: Kernel,
     chat_function: "KernelFunction",
     arguments: KernelArguments,
-) -> str:
+) -> str | None:
     response = kernel.invoke_stream(
         chat_function,
         return_function_results=False,
