@@ -41,7 +41,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     {
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
-        if (bedrockApi.Config != null) // This should only be null when runtime object is Mock<IAmazonBedrockRuntime>() for testing.
+        if (bedrockApi.Config != null) // This should only be null when runtime object is Mock<IAmazonBedrockRuntime>() for unit testing.
         {
             var regionEndpoint = bedrockApi.DetermineServiceOperationEndpoint(new AmazonBedrockRuntimeRequest()).URL;
             this._chatGenerationEndpoint = new Uri(regionEndpoint);
@@ -50,7 +50,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         {
             this._chatGenerationEndpoint = new Uri("https://bedrock-runtime.us-east-1.amazonaws.com");
         }
-        string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-embed-text-v1:0"
+        string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-text-premier-v1:0"
         this._modelProvider = parts[0];
         string modelName = parts.Length > 1 ? parts[1] : string.Empty;
         switch (this._modelProvider)
@@ -88,7 +88,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
                     break;
                 }
                 throw new ArgumentException($"Unsupported Cohere model: {modelId}");
-            case "meta": //llama2 will be deprecated in August 2024 so not supporting
+            case "meta": // llama2 will be deprecated in August 2024 so not supporting
                 if (modelName.StartsWith("llama3-", StringComparison.OrdinalIgnoreCase))
                 {
                     this._ioService = new MetaIOService();
@@ -150,7 +150,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
             }
             IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
             IReadOnlyList<ChatMessageContent> chatMessagesList = chat.ToList();
-            // Per other sample Connector demos, we are letting the user add the response to the ChatHistory. Otherwise, it could be done as below:
+            // Per other sample Connector demos, user will add the response to the ChatHistory. Otherwise, it could be done as below:
             // foreach (var message in chat)
             // {
             //     chatHistory.AddMessage(AuthorRole.Assistant, message.Content);

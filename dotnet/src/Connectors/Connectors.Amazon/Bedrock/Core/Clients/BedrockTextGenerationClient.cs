@@ -15,6 +15,7 @@ using Connectors.Amazon.Models.Meta;
 using Connectors.Amazon.Models.Mistral;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
+
 /// <summary>
 /// Represents a client for interacting with the text generation through Bedrock.
 /// </summary>
@@ -38,7 +39,7 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
     {
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
-        string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-embed-text-v1:0"
+        string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-text-premier-v1:0"
         string modelProvider = parts[0];
         string modelName = parts.Length > 1 ? parts[1] : string.Empty;
         switch (modelProvider)
@@ -81,7 +82,7 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
                     break;
                 }
                 throw new ArgumentException($"Unsupported Cohere model: {modelId}");
-            case "meta": //llama2 will be deprecated in August 2024 so not supporting
+            case "meta": // llama2 will be deprecated in August 2024 so not supporting
                 if (modelName.StartsWith("llama3-", StringComparison.OrdinalIgnoreCase))
                 {
                     this._ioService = new MetaIOService();

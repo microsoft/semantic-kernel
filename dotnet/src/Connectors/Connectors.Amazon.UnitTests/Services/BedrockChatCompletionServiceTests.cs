@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Amazon;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Microsoft.SemanticKernel;
@@ -76,25 +75,6 @@ public class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        // var events = new List<ContentBlockDeltaEvent>
-        // {
-        //     new ContentBlockDeltaEvent
-        //     {
-        //         Delta = new ContentBlockDelta
-        //         {
-        //             Text = "hello"
-        //         }
-        //     },
-        //     new ContentBlockDeltaEvent
-        //     {
-        //         Delta = new ContentBlockDelta
-        //         {
-        //             Text = " world"
-        //         }
-        //     }
-        // };
-        // var byteEvents = events.SelectMany(e => JsonSerializer.SerializeToUtf8Bytes(e)).ToArray();
-        // var memoryStream = new MemoryStream(byteEvents);
 
         mockBedrockApi.Setup(m => m.ConverseStreamAsync(It.IsAny<ConverseStreamRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseStreamResponse

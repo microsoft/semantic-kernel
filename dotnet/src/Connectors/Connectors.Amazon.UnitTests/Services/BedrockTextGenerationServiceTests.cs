@@ -84,48 +84,6 @@ public class BedrockTextGenerationServiceTests
         string modelId = "amazon.titan-text-premier-v1:0";
         string prompt = "Write a short greeting.";
 
-        // Attempt 1
-        // List<PayloadPart> payloadParts = new List<PayloadPart>
-        // {
-        //     new PayloadPart { Bytes = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new JsonObject { { "outputText", "Hello" } })) },
-        //     new PayloadPart { Bytes = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(new JsonObject { { "outputText", ", world!" } })) }
-        // };
-        // byte[] byteResponseStream = payloadParts.SelectMany(p => p.Bytes.ToArray()).ToArray();
-        // var mockResponseStream = new MemoryStream(byteResponseStream);
-
-        // Attempt 2
-        // string mockResponseJson = @"{
-        //     ""index"": 0,
-        //     ""inputTextTokenCount"": null,
-        //     ""totalOutputTextTokenCount"": null,
-        //     ""outputText"": ""Hello!"",
-        //     ""completionReason"": ""FINISH""
-        // }";
-        // byte[] mockResponseBytes = Encoding.UTF8.GetBytes(mockResponseJson);
-        // var mockResponseStream = new MemoryStream(mockResponseBytes);
-
-        // Attempt 3
-        // Create a mock response stream that emits the output text in chunks
-        // var mockResponseStream = new MemoryStream();
-        // using (var writer = new StreamWriter(mockResponseStream, Encoding.UTF8, 1024, true))
-        // {
-        //     await writer.WriteAsync("{\"outputText\":\"Hello\"}").ConfigureAwait(true);
-        //     await writer.FlushAsync().ConfigureAwait(true);
-        //     mockResponseStream.Position = 0;
-        //
-        //     await writer.WriteAsync("{\"outputText\":\"").ConfigureAwait(true);
-        //     await writer.FlushAsync().ConfigureAwait(true);
-        //     mockResponseStream.Position = mockResponseStream.Length;
-        //
-        //     await writer.WriteAsync(", world!").ConfigureAwait(true);
-        //     await writer.FlushAsync().ConfigureAwait(true);
-        //     mockResponseStream.Position = 0;
-        //
-        //     await writer.WriteAsync("\"}").ConfigureAwait(true);
-        //     await writer.FlushAsync().ConfigureAwait(true);
-        //     mockResponseStream.Position = 0;
-        // }
-
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         mockBedrockApi.Setup(m => m.InvokeModelWithResponseStreamAsync(It.IsAny<InvokeModelWithResponseStreamRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new InvokeModelWithResponseStreamResponse()
