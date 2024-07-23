@@ -5,6 +5,7 @@ from typing import Annotated
 from semantic_kernel.agents.openai.open_ai_assistant_agent import OpenAIAssistantAgent
 from semantic_kernel.agents.openai.open_ai_assistant_configuration import OpenAIAssistantConfiguration
 from semantic_kernel.agents.openai.open_ai_assistant_definition import OpenAIAssistantDefinition
+from semantic_kernel.agents.openai.open_ai_thread_creation_settings import OpenAIThreadCreationSettings
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -58,19 +59,26 @@ async def main():
 
     # Create the agent
     configuration = OpenAIAssistantConfiguration(service_id=service_id)
-    definition = OpenAIAssistantDefinition(name=HOST_NAME, instructions=HOST_INSTRUCTIONS)
+    definition = OpenAIAssistantDefinition(name=HOST_NAME, instructions=HOST_INSTRUCTIONS, enable_code_interpreter=True)
 
     agent = OpenAIAssistantAgent(configuration=configuration, definition=definition, kernel=kernel)
 
     await agent.create_assistant()
 
-    thread_id = await agent.create_thread()
+    file_id = await agent.add_file("./hello.py")
+
+    thread_options = OpenAIThreadCreationSettings(code_interpreter_file_ids=[file_id])
+
+    thread_id = await agent.create_thread(thread_options)
 
     try:
-        await invoke_agent(agent, thread_id=thread_id, input="Hello")
-        await invoke_agent(agent, thread_id=thread_id, input="What is the special soup?")
-        await invoke_agent(agent, thread_id=thread_id, input="What is the special drink?")
-        await invoke_agent(agent, thread_id=thread_id, input="Thank you")
+        await invoke_agent(
+            agent, thread_id=thread_id, input="Use code interpreter to run my hello.py file and give me the result"
+        )
+        # await invoke_agent(agent, thread_id=thread_id, input="Hello")
+        # await invoke_agent(agent, thread_id=thread_id, input="What is the special soup?")
+        # await invoke_agent(agent, thread_id=thread_id, input="What is the special drink?")
+        # await invoke_agent(agent, thread_id=thread_id, input="Thank you")
     finally:
         await agent.delete_thread(thread_id)
         await agent.delete()

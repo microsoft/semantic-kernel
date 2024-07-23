@@ -37,7 +37,6 @@ class OpenAIAssistantBase(Agent):
     configuration: OpenAIAssistantConfiguration | None = None
     definition: OpenAIAssistantDefinition | None = None
 
-    # @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def __init__(
         self,
         api_key: str,
@@ -124,6 +123,27 @@ class OpenAIAssistantBase(Agent):
         """
         create_kwargs = {}
 
+        if thread_creation_settings:
+            tool_resources = {}
+
+            if len(thread_creation_settings.code_interpreter_file_ids) > 0:
+                tool_resources["code_interpreter"] = {"file_ids": thread_creation_settings.code_interpreter_file_ids}
+
+            if len(thread_creation_settings.vector_store_ids) > 0:
+                tool_resources["file_search"] = {"file_ids": thread_creation_settings.vector_store_ids}
+
+            if tool_resources:
+                create_kwargs["tool_resources"] = tool_resources
+
+            if len(thread_creation_settings.messages) > 0:
+                # TODO(evmattso): handle image message types here
+                create_kwargs["messages"] = [
+                    {"role": message.role, "content": message.content} for message in thread_creation_settings.messages
+                ]
+
+            if len(thread_creation_settings.metadata) > 0:
+                create_kwargs["metadata"] = thread_creation_settings.metadata
+
         thread = await self.client.beta.threads.create(**create_kwargs)
         return thread.id
 
@@ -137,17 +157,21 @@ class OpenAIAssistantBase(Agent):
             await self.client.beta.assistants.delete(self.assistant.id)
         return self._is_deleted
 
-    async def add_file(self, file_path: str) -> str:
+    async def add_file(self, file_path: str, purpose: str = "assistants") -> str:
         """Add a file.
 
         Args:
             file_path (str): The file path.
+            purpose (str): The purpose. Defaults to "assistants".
 
         Returns:
             str: The file id.
         """
+        if self.client is None:
+            raise ServiceInitializationError("The client has not been initialized.")
+
         with open(file_path, "rb") as file:
-            file = await self.client.files.create(file=file)
+            file = await self.client.files.create(file=file, purpose=purpose)
             return file.id
 
     async def invoke(self, thread_id: str) -> AsyncIterable[ChatMessageContent]:

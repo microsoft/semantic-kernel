@@ -121,17 +121,24 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         """Create the assistant."""
         kw_args: dict[str, Any] = {}
 
-        kw_args["tools"] = []
+        tools = []
         if self.definition.enable_code_interpreter:
-            kw_args["tools"].append({"type": "code_interpreter"})
+            tools.append({"type": "code_interpreter"})
         if self.definition.enable_file_search:
-            kw_args["tools"].append({"type": "file_search"})
+            tools.append({"type": "file_search"})
 
-        kw_args["tool_resources"] = []
+        kw_args["tools"] = tools if tools else None
+
+        tool_resources = {}
         if self.definition.file_ids:
-            kw_args["tool_resources"].append({"code_interpreter": {"file_ids": self.definition.file_ids}})
-        if self.definition.vector_store_id:
-            kw_args["tool_resources"].append({"file_search": {"vector_store_ids": [self.definition.vector_store_id]}})
+            tool_resources["code_interpreter"] = {"file_ids": self.definition.file_ids}
+        if self.definition.vector_store_ids:
+            tool_resources["file_search"] = {"vector_store_ids": self.definition.vector_store_ids}
+
+        kw_args["tool_resources"] = tool_resources if tool_resources else None
+
+        # Filter out None values to avoid passing them as kwargs
+        kw_args = {k: v for k, v in kw_args.items() if v is not None}
 
         self.assistant = await self.client.beta.assistants.create(
             model=self.ai_model_id,
