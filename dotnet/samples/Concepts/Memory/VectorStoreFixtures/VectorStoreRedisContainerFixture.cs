@@ -7,7 +7,7 @@ namespace Memory.VectorStoreFixtures;
 /// <summary>
 /// Fixture to use for creating a Redis container before tests and delete it after tests.
 /// </summary>
-public class VectorStore_RedisContainer_Fixture : IAsyncLifetime
+public class VectorStoreRedisContainerFixture : IAsyncLifetime
 {
     private DockerClient? _dockerClient;
     private string? _redisContainerId;
@@ -17,7 +17,7 @@ public class VectorStore_RedisContainer_Fixture : IAsyncLifetime
         // Connect to docker and start the docker container.
         using var dockerClientConfiguration = new DockerClientConfiguration();
         this._dockerClient = dockerClientConfiguration.CreateClient();
-        this._redisContainerId = await VectorStore_Infra.SetupRedisContainerAsync(this._dockerClient);
+        this._redisContainerId = await VectorStoreInfra.SetupRedisContainerAsync(this._dockerClient);
     }
 
     public async Task DisposeAsync()
@@ -25,7 +25,7 @@ public class VectorStore_RedisContainer_Fixture : IAsyncLifetime
         if (this._dockerClient != null && this._redisContainerId != null)
         {
             // Delete docker container.
-            await VectorStore_Infra.DeleteContainerAsync(this._dockerClient, this._redisContainerId);
+            await VectorStoreInfra.DeleteContainerAsync(this._dockerClient, this._redisContainerId);
         }
     }
 }

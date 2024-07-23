@@ -8,7 +8,7 @@ namespace Memory.VectorStoreFixtures;
 /// <summary>
 /// Helper class that creates and deletes containers for the vector store examples.
 /// </summary>
-internal static class VectorStore_Infra
+internal static class VectorStoreInfra
 {
     /// <summary>
     /// Setup the qdrant container by pulling the image and running it.

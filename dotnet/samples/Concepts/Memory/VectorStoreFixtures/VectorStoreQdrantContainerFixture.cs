@@ -7,7 +7,7 @@ namespace Memory.VectorStoreFixtures;
 /// <summary>
 /// Fixture to use for creating a Qdrant container before tests and delete it after tests.
 /// </summary>
-public class VectorStore_QdrantContainer_Fixture : IAsyncLifetime
+public class VectorStoreQdrantContainerFixture : IAsyncLifetime
 {
     private DockerClient? _dockerClient;
     private string? _qdrantContainerId;
@@ -17,7 +17,7 @@ public class VectorStore_QdrantContainer_Fixture : IAsyncLifetime
         // Connect to docker and start the docker container.
         using var dockerClientConfiguration = new DockerClientConfiguration();
         this._dockerClient = dockerClientConfiguration.CreateClient();
-        this._qdrantContainerId = await VectorStore_Infra.SetupQdrantContainerAsync(this._dockerClient);
+        this._qdrantContainerId = await VectorStoreInfra.SetupQdrantContainerAsync(this._dockerClient);
     }
 
     public async Task DisposeAsync()
@@ -25,7 +25,7 @@ public class VectorStore_QdrantContainer_Fixture : IAsyncLifetime
         if (this._dockerClient != null && this._qdrantContainerId != null)
         {
             // Delete docker container.
-            await VectorStore_Infra.DeleteContainerAsync(this._dockerClient, this._qdrantContainerId);
+            await VectorStoreInfra.DeleteContainerAsync(this._dockerClient, this._qdrantContainerId);
         }
     }
 }

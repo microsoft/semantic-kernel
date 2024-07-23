@@ -24,7 +24,7 @@ namespace Memory;
 ///
 /// To run this sample, you need a local instance of Docker running, since the associated fixtures will try and start Redis and Qdrant containers in the local docker instance.
 /// </summary>
-public class VectorStore_DataIngestion(ITestOutputHelper output) : BaseTest(output), IClassFixture<VectorStore_RedisContainer_Fixture>, IClassFixture<VectorStore_QdrantContainer_Fixture>
+public class VectorStore_DataIngestion(ITestOutputHelper output) : BaseTest(output), IClassFixture<VectorStoreRedisContainerFixture>, IClassFixture<VectorStoreQdrantContainerFixture>
 {
     /// <summary>
     /// Main entry point for example.
