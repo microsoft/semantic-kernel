@@ -22,7 +22,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     /// <summary>
     /// Azure OpenAI text-to-audio client.
     /// </summary>
-    private readonly ClientCore _client;
+    private readonly AzureClientCore _client;
 
     /// <summary>
     /// Azure OpenAI model id.
@@ -56,7 +56,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     {
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
-        var options = ClientCore.GetAzureOpenAIClientOptions(
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(
             httpClient,
             AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
 

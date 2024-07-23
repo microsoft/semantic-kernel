@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// <summary>
 /// Base class for AI clients that provides common functionality for interacting with Azure OpenAI services.
 /// </summary>
-internal partial class ClientCore
+internal partial class AzureClientCore
 {
     /// <summary>
     /// Generates an image with the provided configuration.

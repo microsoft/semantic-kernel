@@ -210,7 +210,7 @@ internal partial class ClientCore
     /// <typeparam name="T">Type of the response.</typeparam>
     /// <param name="request">Request to invoke.</param>
     /// <returns>Returns the response.</returns>
-    private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
+    protected static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
     {
         try
         {
@@ -228,7 +228,7 @@ internal partial class ClientCore
     /// <typeparam name="T">Type of the response.</typeparam>
     /// <param name="request">Request to invoke.</param>
     /// <returns>Returns the response.</returns>
-    private static T RunRequest<T>(Func<T> request)
+    protected static T RunRequest<T>(Func<T> request)
     {
         try
         {
@@ -240,7 +240,7 @@ internal partial class ClientCore
         }
     }
 
-    private static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
+    protected static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
     {
         return new GenericActionPipelinePolicy((message) =>
         {
