@@ -17,8 +17,13 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
     AzureAIInferenceChatCompletion,
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
+    MistralAIChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -36,6 +41,20 @@ from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from tests.integration.completions.test_utils import retry
+
+mistral_ai_setup: bool = False
+try:
+    if os.environ["MISTRALAI_API_KEY"] and os.environ["MISTRALAI_CHAT_MODEL_ID"]:
+        mistral_ai_setup = True
+except KeyError:
+    mistral_ai_setup = False
+
+ollama_setup: bool = False
+try:
+    if os.environ["OLLAMA_MODEL"]:
+        ollama_setup = True
+except KeyError:
+    ollama_setup = False
 
 
 def setup(
@@ -90,6 +109,8 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "azure": (AzureChatCompletion(), AzureChatPromptExecutionSettings),
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
         "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
+        "mistral_ai": (MistralAIChatCompletion() if mistral_ai_setup else None, MistralAIChatPromptExecutionSettings),
+        "ollama": (OllamaChatCompletion(), OllamaChatPromptExecutionSettings),
     }
 
 
@@ -145,7 +166,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "openai",
             {
-                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
                     auto_invoke=True, filters={"excluded_plugins": ["chat"]}
                 )
             },
@@ -158,7 +179,7 @@ pytestmark = pytest.mark.parametrize(
         pytest.param(
             "openai",
             {
-                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
                     auto_invoke=False, filters={"excluded_plugins": ["chat"]}
                 )
             },
@@ -242,38 +263,12 @@ pytestmark = pytest.mark.parametrize(
         ),
         pytest.param(
             "azure",
-            {
-                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
-                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
-                )
-            },
-            [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
-            ],
-            ["348"],
-            id="azure_tool_call_auto_function_call_behavior",
-        ),
-        pytest.param(
-            "azure",
-            {
-                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
-                    auto_invoke=False, filters={"excluded_plugins": ["chat"]}
-                )
-            },
-            [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
-            ],
-            ["348"],
-            id="azure_tool_call_non_auto_function_call_behavior",
-        ),
-        pytest.param(
-            "azure",
             {"function_choice_behavior": FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["chat"]})},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
-            id="azure_tool_call_auto_function_choice_behavior",
+            id="azure_tool_call_auto",
         ),
         pytest.param(
             "azure",
@@ -282,7 +277,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
-            id="azure_tool_call_auto_function_choice_behavior_as_string",
+            id="azure_tool_call_auto_as_string",
         ),
         pytest.param(
             "azure",
@@ -295,7 +290,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
-            id="azure_tool_call_non_auto_function_choice_behavior",
+            id="azure_tool_call_non_auto",
         ),
         pytest.param(
             "azure",
@@ -382,6 +377,81 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["house", "germany"],
             id="azure_ai_inference_image_input_file",
+        ),
+        pytest.param(
+            "azure_ai_inference",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
+                ),
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="azure_ai_inference_tool_call_auto",
+        ),
+        pytest.param(
+            "azure_ai_inference",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=False, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="azure_ai_inference_tool_call_non_auto",
+        ),
+        pytest.param(
+            "azure_ai_inference",
+            {},
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                    ),
+                ],
+            ],
+            ["1.2"],
+            id="azure_ai_inference_tool_call_flow",
+        ),
+        pytest.param(
+            "mistral_ai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
+            id="mistral_ai_text_input",
+        ),
+        pytest.param(
+            "ollama",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            id="ollama_text_input",
         ),
     ],
 )

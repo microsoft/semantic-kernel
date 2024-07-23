@@ -49,16 +49,22 @@ public sealed class TextMemoryPlugin
 
     private readonly ISemanticTextMemory _memory;
     private readonly ILogger _logger;
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
 
     /// <summary>
-    /// Creates a new instance of the TextMemoryPlugin
+    /// Initializes a new instance of the <see cref="TextMemoryPlugin"/> class.
     /// </summary>
+    /// <param name="memory">The <see cref="ISemanticTextMemory"/> instance to use for retrieving and saving memories to and from storage.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="jsonSerializerOptions">An optional <see cref="JsonSerializerOptions"/> to use when turning multiple memories into json text. If null, <see cref="JsonSerializerOptions.Default"/> is used.</param>
     public TextMemoryPlugin(
         ISemanticTextMemory memory,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        JsonSerializerOptions? jsonSerializerOptions = null)
     {
         this._memory = memory;
         this._logger = loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) ?? NullLogger.Instance;
+        this._jsonSerializerOptions = jsonSerializerOptions ?? JsonSerializerOptions.Default;
     }
 
     /// <summary>
@@ -128,7 +134,7 @@ public sealed class TextMemoryPlugin
             return string.Empty;
         }
 
-        return limit == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
+        return limit == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text), this._jsonSerializerOptions);
     }
 
     /// <summary>

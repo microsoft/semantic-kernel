@@ -209,7 +209,7 @@ async def handle_streaming(
     print("Security Agent:> ", end="")
     streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
-        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
+        if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and isinstance(
             message[0], StreamingChatMessageContent
         ):
             streamed_chunks.append(message[0])
