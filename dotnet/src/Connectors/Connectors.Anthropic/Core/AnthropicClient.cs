@@ -352,7 +352,9 @@ internal sealed class AnthropicClient
 
         if (!httpRequestMessage.Headers.Contains(HttpHeaderConstant.Names.SemanticKernelVersion))
         {
-            httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AnthropicClient)));
+            httpRequestMessage.Headers.Add(
+                HttpHeaderConstant.Names.SemanticKernelVersion,
+                HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AnthropicClient)));
         }
 
         if (!httpRequestMessage.Headers.Contains("anthropic-version"))

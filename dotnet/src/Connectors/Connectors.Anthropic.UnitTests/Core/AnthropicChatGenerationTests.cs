@@ -54,8 +54,6 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     public async Task ShouldContainRolesInRequestAsync()
     {
         // Arrange
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
-            await File.ReadAllTextAsync(ChatTestDataFilePath));
         var client = this.CreateChatCompletionClient();
         var chatHistory = CreateSampleChatHistory();
 
