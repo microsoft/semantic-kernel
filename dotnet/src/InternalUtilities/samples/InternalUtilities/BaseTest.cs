@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -102,6 +103,8 @@ public abstract class BaseTest
 
     protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
+        private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
+
         private readonly ITestOutputHelper _output = output;
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -110,7 +113,17 @@ public abstract class BaseTest
             if (request.Content is not null)
             {
                 var content = await request.Content.ReadAsStringAsync(cancellationToken);
-                this._output.WriteLine(content);
+                this._output.WriteLine("=== REQUEST ===");
+                try
+                {
+                    string formattedContent = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(content), s_jsonSerializerOptions);
+                    this._output.WriteLine(formattedContent);
+                }
+                catch (JsonException)
+                {
+                    this._output.WriteLine(content);
+                }
+                this._output.WriteLine(string.Empty);
             }
 
             // Call the next handler in the pipeline
@@ -120,11 +133,10 @@ public abstract class BaseTest
             {
                 // Log the response details
                 var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                this._output.WriteLine("=== RESPONSE ===");
                 this._output.WriteLine(responseContent);
+                this._output.WriteLine(string.Empty);
             }
-
-            // Log the response details
-            this._output.WriteLine("");
 
             return response;
         }

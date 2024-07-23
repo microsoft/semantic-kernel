@@ -34,7 +34,7 @@ async def test_summarize_conversation(kernel: Kernel):
     service.get_chat_message_contents = AsyncMock(
         return_value=[ChatMessageContent(role="assistant", content="Hello World!")]
     )
-    service.get_prompt_execution_settings_from_settings = Mock(return_value=PromptExecutionSettings())
+    service.get_prompt_execution_settings_class = Mock(return_value=PromptExecutionSettings)
     kernel.add_service(service)
     config = PromptTemplateConfig(
         name="test", description="test", execution_settings={"default": PromptExecutionSettings()}

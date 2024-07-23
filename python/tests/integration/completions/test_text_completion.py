@@ -104,7 +104,7 @@ pytestmark = pytest.mark.parametrize(
         toothed predator on Earth. Several whale species exhibit sexual dimorphism,
         in that the females are larger than males."""
             ],
-            ["whales"],
+            ["whale"],
             id="hf_summ",
         ),
         pytest.param(

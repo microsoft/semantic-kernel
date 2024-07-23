@@ -1,34 +1,48 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import Callable
-from typing import Any
+from collections.abc import Awaitable, Callable
+from inspect import isawaitable
 
-import httpx
+from httpx import AsyncClient, HTTPStatusError, RequestError
 
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
+from semantic_kernel.exceptions import ServiceInvalidRequestError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class DocumentLoader:
-
     @staticmethod
     async def from_uri(
         url: str,
-        http_client: httpx.AsyncClient,
-        auth_callback: Callable[[Any], None] | None,
+        http_client: AsyncClient,
+        auth_callback: Callable[..., None | Awaitable[dict[str, str]]] | None,
         user_agent: str | None = HTTP_USER_AGENT,
     ):
         """Load the manifest from the given URL."""
+        if user_agent is None:
+            user_agent = HTTP_USER_AGENT
+
         headers = {"User-Agent": user_agent}
-        async with http_client as client:
-            if auth_callback:
-                await auth_callback(client, url)
+        try:
+            async with http_client as client:
+                if auth_callback:
+                    callback = auth_callback(client, url)
+                    if isawaitable(callback):
+                        await callback
 
-            logger.info(f"Importing document from {url}")
+                logger.info(f"Importing document from {url}")
 
-            response = await client.get(url, headers=headers)
-            response.raise_for_status()
-
-            return response.text
+                response = await client.get(url, headers=headers)
+                response.raise_for_status()
+                return response.text
+        except HTTPStatusError as ex:
+            logger.error(f"Failed to get document: {ex}")
+            raise ServiceInvalidRequestError("Failed to get document.") from ex
+        except RequestError as ex:
+            logger.error(f"Client error occurred: {ex}")
+            raise ServiceInvalidRequestError("A client error occurred while getting the document.") from ex
+        except Exception as ex:
+            logger.error(f"An unexpected error occurred: {ex}")
+            raise ServiceInvalidRequestError("An unexpected error occurred while getting the document.") from ex
