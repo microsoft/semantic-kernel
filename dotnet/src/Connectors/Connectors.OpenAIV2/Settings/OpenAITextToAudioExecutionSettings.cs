@@ -38,7 +38,8 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     /// The format to audio in. Supported formats are mp3, opus, aac, and flac.
     /// </summary>
     [JsonPropertyName("response_format")]
-    public string ResponseFormat
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ResponseFormat
     {
         get => this._responseFormat;
 
@@ -53,7 +54,8 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     /// The speed of the generated audio. Select a value from 0.25 to 4.0. 1.0 is the default.
     /// </summary>
     [JsonPropertyName("speed")]
-    public float Speed
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public float? Speed
     {
         get => this._speed;
 
@@ -121,8 +123,8 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
 
     private const string DefaultVoice = "alloy";
 
-    private float _speed = 1.0f;
-    private string _responseFormat = "mp3";
+    private float? _speed;
+    private string? _responseFormat;
     private string _voice;
 
     #endregion

@@ -60,7 +60,7 @@ internal partial class ClientCore
             _ => throw new NotSupportedException($"The voice '{voice}' is not supported."),
         };
 
-    private static (GeneratedSpeechFormat Format, string MimeType) GetGeneratedSpeechFormatAndMimeType(string? format)
+    private static (GeneratedSpeechFormat? Format, string? MimeType) GetGeneratedSpeechFormatAndMimeType(string? format)
         => format?.ToUpperInvariant() switch
         {
             "WAV" => (GeneratedSpeechFormat.Wav, "audio/wav"),
@@ -69,6 +69,7 @@ internal partial class ClientCore
             "FLAC" => (GeneratedSpeechFormat.Flac, "audio/flac"),
             "AAC" => (GeneratedSpeechFormat.Aac, "audio/aac"),
             "PCM" => (GeneratedSpeechFormat.Pcm, "audio/l16"),
+            null => (null, null),
             _ => throw new NotSupportedException($"The format '{format}' is not supported.")
         };
 
