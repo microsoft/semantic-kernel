@@ -31,13 +31,14 @@ public sealed class CreateFromTextSearchExample(ITestOutputHelper output) : Base
         var question = "What is the Semantic Kernel?";
         var function = kernel.Plugins["TextSearch"]["Search"];
         var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
-        var stringList = await result.GetValue<KernelSearchResults<string>>()!.Results.ToListAsync();
-        Console.WriteLine(string.Join('\n', stringList));
+        Console.WriteLine(result);
+        var stringList = result.GetValue<IReadOnlyList<string>>();
+        Console.WriteLine(string.Join('\n', stringList!));
 
         // Invoke the plugin to perform a text search and return BingWebPage values
         function = kernel.Plugins["BingSearch"]["Search"];
         result = await kernel.InvokeAsync(function, new() { ["query"] = question, ["count"] = 2 });
-        var pageList = await result.GetValue<KernelSearchResults<BingWebPage>>()!.Results.ToListAsync();
+        var pageList = result.GetValue<IReadOnlyList<BingWebPage>>();
         Console.WriteLine(JsonSerializer.Serialize(pageList));
     }
 
@@ -53,20 +54,20 @@ public sealed class CreateFromTextSearchExample(ITestOutputHelper output) : Base
         // Build a kernel with Bing search service and add a text search plugin
         Kernel kernel = new();
         var textSearchResultPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(
-            searchService, "CustomSearch", "Custom Search Plugin", CreateCustomMethodOptions<TextSearchResult>(searchService));
+            searchService, "CustomSearch", "Custom Search Plugin", CreateCustomOptions<TextSearchResult>(searchService));
         kernel.Plugins.Add(textSearchResultPlugin);
 
         // Invoke the plugin to perform a text search and return string values
         var question = "What is the Semantic Kernel?";
         var function = kernel.Plugins["CustomSearch"]["SearchForTenResults"];
         var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
-        var resultList = await result.GetValue<KernelSearchResults<TextSearchResult>>()!.Results.ToListAsync();
+        var resultList = result.GetValue<IReadOnlyList<TextSearchResult>>();
         Console.WriteLine(JsonSerializer.Serialize(resultList));
     }
 
-    private static KernelFunctionFromMethodOptions CreateCustomMethodOptions<T>(ITextSearch<T> textSearch) where T : class
+    private static KernelPluginFromTextSearchOptions<T> CreateCustomOptions<T>(ITextSearch<T> textSearch) where T : class
     {
-        return new()
+        KernelFunctionFromMethodOptions search = new()
         {
             FunctionName = "SearchForTenResults",
             Description = "Perform a search for content related to the specified query and return 10 results",
@@ -77,6 +78,11 @@ public sealed class CreateFromTextSearchExample(ITestOutputHelper output) : Base
                 new KernelParameterMetadata("skip") { Description = "Number of results skip", IsRequired = false, DefaultValue = 0 },
             ],
             ReturnParameter = new() { ParameterType = typeof(T) },
+        };
+
+        return new()
+        {
+            Functions = [search],
         };
     }
 }
