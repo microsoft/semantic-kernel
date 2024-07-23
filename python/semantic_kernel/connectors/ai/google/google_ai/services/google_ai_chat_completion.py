@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import google.generativeai as genai
 from google.generativeai import GenerativeModel
-from google.generativeai.protos import Candidate, Content, Part
+from google.generativeai.protos import Candidate, Content
 from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
 from pydantic import ValidationError
 
@@ -18,6 +18,8 @@ from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base impo
 from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     filter_first_system_message,
     finish_reason_from_google_ai_to_semantic_kernel,
+    format_assistant_message,
+    format_user_message,
 )
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -219,11 +221,12 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
         for message in chat_history.messages:
             if message.role == AuthorRole.SYSTEM:
+                # Skip system messages since they are not part of the chat request.
                 continue
             if message.role == AuthorRole.USER:
-                chat_request_messages.append(Content(role="user", parts=[Part(text=message.content)]))
+                chat_request_messages.append(Content(role="user", parts=format_user_message(message)))
             elif message.role == AuthorRole.ASSISTANT:
-                chat_request_messages.append(Content(role="model", parts=[Part(text=message.content)]))
+                chat_request_messages.append(Content(role="model", parts=format_assistant_message(message)))
             else:
                 raise ValueError(f"Unsupported role: {message.role}")
 

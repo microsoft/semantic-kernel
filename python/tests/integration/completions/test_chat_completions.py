@@ -468,6 +468,29 @@ pytestmark = pytest.mark.parametrize(
             ["Hello", "well"],
             id="google_ai_text_input",
         ),
+        pytest.param(
+            "google_ai",
+            {
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
+                ),
+            ],
+            ["house", "germany"],
+            id="google_ai_image_input_file",
+        ),
     ],
 )
 
