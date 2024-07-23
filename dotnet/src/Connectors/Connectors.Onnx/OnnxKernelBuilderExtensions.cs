@@ -20,6 +20,7 @@ public static class OnnxKernelBuilderExtensions
     /// Add OnnxRuntimeGenAI Chat Completion services to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">Model Id.</param>
     /// <param name="modelPath">The generative AI ONNX model path.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>

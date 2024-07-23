@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,10 +13,6 @@ using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.Onnx;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-
 /// <summary>
 /// Represents a chat completion service using OnnxRuntimeGenAI.
 /// </summary>
@@ -25,7 +21,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     private readonly string _modelId;
     private readonly string _modelPath;
     private Model? _model;
-    private Tokenizer _tokenizer;
+    private Tokenizer? _tokenizer;
 
     private Dictionary<string, object?> AttributesInternal { get; } = new();
 
@@ -72,7 +68,11 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var content in this.RunInferenceAsync(chatHistory, executionSettings, cancellationToken).ConfigureAwait(false))
         {
@@ -80,18 +80,18 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         }
     }
 
-    private async IAsyncEnumerable<string> RunInferenceAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
+    private async IAsyncEnumerable<string> RunInferenceAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings = OnnxRuntimeGenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        OnnxRuntimeGenAIPromptExecutionSettings onnxPromptExecutionSettings = OnnxRuntimeGenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
-        var prompt = this.GetPrompt(chatHistory, onnxRuntimeGenAIPromptExecutionSettings);
+        var prompt = this.GetPrompt(chatHistory, onnxPromptExecutionSettings);
         var tokens = this.GetTokenizer().Encode(prompt);
 
-        var generatorParams = new GeneratorParams(this.GetModel());
-        this.UpdateGeneratorParamsFromPromptExecutionSettings(generatorParams, onnxRuntimeGenAIPromptExecutionSettings);
+        using var generatorParams = new GeneratorParams(this.GetModel());
+        this.UpdateGeneratorParamsFromPromptExecutionSettings(generatorParams, onnxPromptExecutionSettings);
         generatorParams.SetInputSequences(tokens);
 
-        var generator = new Generator(this.GetModel(), generatorParams);
+        using var generator = new Generator(this.GetModel(), generatorParams);
 
         while (!generator.IsDone())
         {
@@ -110,10 +110,8 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         }
     }
 
-    [MemberNotNull(nameof(_model))]
     private Model GetModel() => this._model ??= new Model(this._modelPath);
 
-    [MemberNotNull(nameof(_tokenizer))]
     private Tokenizer GetTokenizer() => this._tokenizer ??= new Tokenizer(this.GetModel());
 
     private string GetPrompt(ChatHistory chatHistory, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
