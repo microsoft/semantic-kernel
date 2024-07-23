@@ -91,7 +91,7 @@ internal static class AssistantThreadActions
 
                 ChatMessageContent content = GenerateMessageContent(assistantName, message);
 
-                if (content is not null)
+                if (content.Items.Count > 0)
                 {
                     yield return content;
                 }
