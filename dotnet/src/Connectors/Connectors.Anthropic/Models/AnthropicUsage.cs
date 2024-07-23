@@ -19,12 +19,12 @@ public sealed class AnthropicUsage
     /// </summary>
     [JsonRequired]
     [JsonPropertyName("input_tokens")]
-    public int InputTokens { get; init; }
+    public int? InputTokens { get; init; }
 
     /// <summary>
     /// The number of output tokens which were used
     /// </summary>
     [JsonRequired]
     [JsonPropertyName("output_tokens")]
-    public int OutputTokens { get; init; }
+    public int? OutputTokens { get; init; }
 }

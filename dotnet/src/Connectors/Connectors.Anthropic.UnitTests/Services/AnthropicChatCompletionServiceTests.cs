@@ -13,7 +13,7 @@ public sealed class AnthropicChatCompletionServiceTests
     {
         // Arrange & Act
         string model = "fake-model";
-        var service = new AnthropicChatCompletionService(model, "key");
+        var service = new AnthropicChatCompletionService(new AnthropicClientOptions { ModelId = model, ApiKey = "key" });
 
         // Assert
         Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);

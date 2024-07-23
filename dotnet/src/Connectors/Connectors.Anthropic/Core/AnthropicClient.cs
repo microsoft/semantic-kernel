@@ -39,7 +39,7 @@ internal sealed class AnthropicClient
     private readonly string _modelId;
     private readonly string? _apiKey;
     private readonly Uri _endpoint;
-    private readonly ClientOptions _options;
+    private readonly string? _version;
 
     private static readonly string s_namespace = typeof(AnthropicChatCompletionService).Namespace!;
 
@@ -74,59 +74,47 @@ internal sealed class AnthropicClient
             name: $"{s_namespace}.tokens.total",
             unit: "{token}",
             description: "Number of tokens used");
+    private readonly string? _bearerKey;
 
     /// <summary>
     /// Represents a client for interacting with the Anthropic chat completion models.
     /// </summary>
-    /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
-    /// <param name="modelId">Id of the model supporting chat completion</param>
-    /// <param name="apiKey">Api key</param>
     /// <param name="options">Options for the client</param>
-    /// <param name="logger">Logger instance used for logging (optional)</param>
-    public AnthropicClient(
-        HttpClient httpClient,
-        string modelId,
-        string apiKey,
-        ClientOptions? options,
-        ILogger? logger = null)
-    {
-        Verify.NotNull(httpClient);
-        Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNullOrWhiteSpace(apiKey);
-
-        this._httpClient = httpClient;
-        this._logger = logger ?? NullLogger.Instance;
-        this._modelId = modelId;
-        this._apiKey = apiKey;
-        this._options = options ?? new AnthropicClientOptions();
-        this._endpoint = new Uri("https://api.anthropic.com/v1/messages");
-    }
-
-    /// <summary>
-    /// Represents a client for interacting with the Anthropic chat completion models.
-    /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
-    /// <param name="modelId">Id of the model supporting chat completion</param>
-    /// <param name="endpoint">Endpoint for the chat completion model</param>
-    /// <param name="options">Options for the client</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
-    public AnthropicClient(
-        HttpClient httpClient,
-        string modelId,
-        Uri endpoint,
+    internal AnthropicClient(
         ClientOptions options,
+        HttpClient httpClient,
         ILogger? logger = null)
     {
-        Verify.NotNull(httpClient);
-        Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNull(endpoint);
         Verify.NotNull(options);
+        Verify.NotNull(httpClient);
+        Verify.NotNullOrWhiteSpace(options.ModelId);
+
+        if (options is AnthropicClientOptions anthropicOptions
+            && options.Endpoint is null
+            && httpClient.BaseAddress is null)
+        {
+            // If a custom endpoint is not provided, the ApiKey is required
+            Verify.NotNullOrWhiteSpace(anthropicOptions.ApiKey);
+            this._apiKey = anthropicOptions.ApiKey;
+        }
+        else if (options is VertexAIAnthropicClientOptions vertexOptions)
+        {
+            Verify.NotNullOrWhiteSpace(vertexOptions.BearerKey);
+            this._bearerKey = vertexOptions.BearerKey;
+        }
+        else if (options is AmazonBedrockAnthropicClientOptions amazonOptions)
+        {
+            Verify.NotNullOrWhiteSpace(amazonOptions.BearerKey);
+            this._bearerKey = amazonOptions.BearerKey;
+        }
 
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
-        this._modelId = modelId;
-        this._endpoint = endpoint;
-        this._options = options;
+        this._modelId = options.ModelId;
+        this._version = options.Version;
+        this._endpoint = options.Endpoint ?? httpClient.BaseAddress ?? new Uri("https://api.anthropic.com/v1/messages");
     }
 
     /// <summary>
@@ -137,7 +125,7 @@ internal sealed class AnthropicClient
     /// <param name="kernel">A kernel instance.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>Returns a list of chat message contents.</returns>
-    public async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
+    internal async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
@@ -153,7 +141,11 @@ internal sealed class AnthropicClient
         try
         {
             anthropicResponse = await this.SendRequestAndReturnValidResponseAsync(
-                this._endpoint, state.AnthropicRequest, cancellationToken).ConfigureAwait(false);
+                this._endpoint,
+                state.AnthropicRequest,
+                cancellationToken)
+                .ConfigureAwait(false);
+
             chatResponses = this.GetChatResponseFrom(anthropicResponse);
         }
         catch (Exception ex) when (activity is not null)
@@ -191,9 +183,20 @@ internal sealed class AnthropicClient
             metadata.OutputTokenCount,
             metadata.TotalTokenCount);
 
-        s_promptTokensCounter.Add(metadata.InputTokenCount);
-        s_completionTokensCounter.Add(metadata.OutputTokenCount);
-        s_totalTokensCounter.Add(metadata.TotalTokenCount);
+        if (metadata.InputTokenCount.HasValue)
+        {
+            s_promptTokensCounter.Add(metadata.InputTokenCount.Value);
+        }
+
+        if (metadata.OutputTokenCount.HasValue)
+        {
+            s_completionTokensCounter.Add(metadata.OutputTokenCount.Value);
+        }
+
+        if (metadata.TotalTokenCount.HasValue)
+        {
+            s_totalTokensCounter.Add(metadata.TotalTokenCount.Value);
+        }
     }
 
     private List<AnthropicChatMessageContent> GetChatMessageContentsFromResponse(AnthropicResponse response)
@@ -206,22 +209,19 @@ internal sealed class AnthropicClient
             throw new NotSupportedException($"Content type {content.GetType()} is not supported yet.");
         }
 
-        return new AnthropicChatMessageContent
-        {
-            Role = response.Role,
-            Items = [new TextContent(textContent.Text ?? string.Empty)],
-            ModelId = response.ModelId ?? this._modelId,
-            InnerContent = response,
-            Metadata = GetResponseMetadata(response),
-            Encoding = Encoding.UTF8
-        };
+        return new AnthropicChatMessageContent(
+            role: response.Role,
+            items: [new TextContent(textContent.Text ?? string.Empty)],
+            modelId: response.ModelId ?? this._modelId,
+            innerContent: response,
+            metadata: GetResponseMetadata(response));
     }
 
     private static AnthropicMetadata GetResponseMetadata(AnthropicResponse response)
         => new()
         {
             MessageId = response.Id,
-            FinishReason = response.StopReason,
+            FinishReason = response.FinishReason,
             StopSequence = response.StopSequence,
             InputTokenCount = response.Usage?.InputTokens ?? 0,
             OutputTokenCount = response.Usage?.OutputTokens ?? 0
@@ -232,20 +232,10 @@ internal sealed class AnthropicClient
         AnthropicRequest anthropicRequest,
         CancellationToken cancellationToken)
     {
-        using var httpRequestMessage = await this.CreateHttpRequestAsync(anthropicRequest, endpoint).ConfigureAwait(false);
-        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
+        using var httpRequestMessage = this.CreateHttpRequest(anthropicRequest, endpoint);
+        var body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var response = DeserializeResponse<AnthropicResponse>(body);
-        ValidateAnthropicResponse(response);
         return response;
-    }
-
-    private static void ValidateAnthropicResponse(AnthropicResponse response)
-    {
-        if (response.Contents is null || response.Contents.Count == 0)
-        {
-            throw new KernelException("Anthropic API doesn't return any data.");
-        }
     }
 
     private ChatCompletionState ValidateInputAndCreateChatCompletionState(
@@ -264,10 +254,7 @@ internal sealed class AnthropicClient
 
         var filteredChatHistory = new ChatHistory(chatHistory.Where(IsAssistantOrUserOrSystem));
         var anthropicRequest = AnthropicRequest.FromChatHistoryAndExecutionSettings(filteredChatHistory, anthropicExecutionSettings);
-        if (this._options is not AnthropicClientOptions)
-        {
-            anthropicRequest.Version = this._options.Version;
-        }
+        anthropicRequest.Version = this._version;
 
         return new ChatCompletionState
         {
@@ -288,7 +275,7 @@ internal sealed class AnthropicClient
     /// <param name="kernel">A kernel instance.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>An asynchronous enumerable of <see cref="StreamingChatMessageContent"/> streaming chat contents.</returns>
-    public async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
+    internal async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
@@ -352,17 +339,32 @@ internal sealed class AnthropicClient
         }
     }
 
-    private async Task<HttpRequestMessage> CreateHttpRequestAsync(object requestData, Uri endpoint)
+    private HttpRequestMessage CreateHttpRequest(object requestData, Uri endpoint)
     {
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, endpoint) { Content = CreateJsonContent(requestData) };
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
-            HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AnthropicClient)));
-
-        if (this._options is AnthropicClientOptions)
+        if (!httpRequestMessage.Headers.Contains("User-Agent"))
         {
-            httpRequestMessage.Headers.Add("anthropic-version", this._options.Version);
+            httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        }
+
+        if (!httpRequestMessage.Headers.Contains(HttpHeaderConstant.Names.SemanticKernelVersion))
+        {
+            httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AnthropicClient)));
+        }
+
+        if (!httpRequestMessage.Headers.Contains("anthropic-version"))
+        {
+            httpRequestMessage.Headers.Add("anthropic-version", this._version);
+        }
+
+        if (this._apiKey is not null && !httpRequestMessage.Headers.Contains("x-api-key"))
+        {
             httpRequestMessage.Headers.Add("x-api-key", this._apiKey);
+        }
+
+        if (this._bearerKey is not null && !httpRequestMessage.Headers.Contains("Authorization"))
+        {
+            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._bearerKey);
         }
 
         return httpRequestMessage;

@@ -21,7 +21,12 @@ public sealed class AnthropicServiceCollectionExtensionsTests
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddAnthropicChatCompletion("modelId", "apiKey");
+        kernelBuilder.AddAnthropicChatCompletion(new AnthropicClientOptions
+        {
+            ModelId = "modelId",
+            ApiKey = "apiKey"
+        });
+
         var kernel = kernelBuilder.Build();
 
         // Assert
@@ -37,7 +42,7 @@ public sealed class AnthropicServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddAnthropicChatCompletion("modelId", "apiKey");
+        services.AddAnthropicChatCompletion(new AnthropicClientOptions() { ModelId = "modelId", ApiKey = "apiKey" });
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -53,8 +58,11 @@ public sealed class AnthropicServiceCollectionExtensionsTests
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddAnthropicChatCompletion(
-            "modelId", new Uri("https://example.com"), new AnthropicClientOptions());
+        kernelBuilder.AddAnthropicChatCompletion(new AnthropicClientOptions
+        {
+            ModelId = "modelId",
+            Endpoint = new Uri("https://example.com")
+        });
         var kernel = kernelBuilder.Build();
 
         // Assert
@@ -71,7 +79,11 @@ public sealed class AnthropicServiceCollectionExtensionsTests
 
         // Act
         services.AddAnthropicChatCompletion(
-            "modelId", new Uri("https://example.com"), new AnthropicClientOptions());
+            new AnthropicClientOptions
+            {
+                ModelId = "modelId",
+                Endpoint = new Uri("https://example.com"),
+            });
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert

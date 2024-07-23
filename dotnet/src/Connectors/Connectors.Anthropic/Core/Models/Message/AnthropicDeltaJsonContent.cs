@@ -11,5 +11,5 @@ internal sealed class AnthropicDeltaJsonContent : AnthropicContent
     /// </summary>
     [JsonRequired]
     [JsonPropertyName("partial_json")]
-    public string PartialJson { get; set; } = null!;
+    public string? PartialJson { get; set; }
 }

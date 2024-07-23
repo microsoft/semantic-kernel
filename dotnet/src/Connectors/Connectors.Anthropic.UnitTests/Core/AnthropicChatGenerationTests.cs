@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -103,7 +104,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata as AnthropicMetadata;
         Assert.NotNull(metadata);
-        Assert.Equal(response.StopReason, metadata.FinishReason);
+        Assert.Equal(response.FinishReason, metadata.FinishReason);
         Assert.Equal(response.Id, metadata.MessageId);
         Assert.Equal(response.StopSequence, metadata.StopSequence);
         Assert.Equal(response.Usage.InputTokens, metadata.InputTokenCount);
@@ -127,7 +128,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         Assert.NotNull(textContent);
         var metadata = textContent.Metadata;
         Assert.NotNull(metadata);
-        Assert.Equal(response.StopReason, metadata[nameof(AnthropicMetadata.FinishReason)]);
+        Assert.Equal(response.FinishReason, metadata[nameof(AnthropicMetadata.FinishReason)]);
         Assert.Equal(response.Id, metadata[nameof(AnthropicMetadata.MessageId)]);
         Assert.Equal(response.StopSequence, metadata[nameof(AnthropicMetadata.StopSequence)]);
         Assert.Equal(response.Usage.InputTokens, metadata[nameof(AnthropicMetadata.InputTokenCount)]);
@@ -228,10 +229,13 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         // Arrange
         var options = new AnthropicClientOptions();
         var client = new AnthropicClient(
-            httpClient: this._httpClient,
-            modelId: "fake-model",
-            options: new AnthropicClientOptions(),
-            endpoint: new Uri("https://fake-uri.com"));
+            options: new AnthropicClientOptions
+            {
+                ModelId = "fake-model",
+                Endpoint = new Uri("https://fake-uri.com")
+            },
+            httpClient: this._httpClient);
+
         var chatHistory = CreateSampleChatHistory();
 
         // Act
@@ -367,19 +371,17 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         Assert.Contains("application/json", this._messageHandlerStub.ContentHeaders.ContentType.ToString());
     }
 
-    [Fact]
-    public async Task ItCreatesRequestWithCustomUriAndCustomHeadersAsync()
+    [Theory]
+    [InlineData("custom-header", "custom-value")]
+    public async Task ItCreatesRequestWithCustomUriAndCustomHeadersAsync(string headerName, string headerValue)
     {
         // Arrange
         Uri uri = new("https://fake-uri.com");
-        (string headerName, string headerValue) = ("custom-header", "custom-value");
-        using var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add(headerName, headerValue);
+        using var httpHandler = new CustomHeadersHandler(headerName, headerValue);
+        using var httpClient = new HttpClient(httpHandler);
         var client = new AnthropicClient(
             httpClient: httpClient,
-            modelId: "fake-model",
-            options: new AnthropicClientOptions(),
-            endpoint: uri);
+            options: new AnthropicClientOptions { ModelId = "fake-model", Endpoint = uri });
 
         var chatHistory = CreateSampleChatHistory();
 
@@ -387,9 +389,9 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         await client.GenerateChatMessageAsync(chatHistory);
 
         // Assert
-        Assert.Equal(uri, this._messageHandlerStub.RequestUri);
-        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
-        Assert.Equal(headerValue, this._messageHandlerStub.RequestHeaders.GetValues(headerName).SingleOrDefault());
+        Assert.Equal(uri, httpHandler.RequestUri);
+        Assert.NotNull(httpHandler.RequestHeaders);
+        Assert.Equal(headerValue, httpHandler.RequestHeaders.GetValues(headerName).SingleOrDefault());
     }
 
     private static ChatHistory CreateSampleChatHistory()
@@ -408,10 +410,8 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         HttpClient? httpClient = null)
     {
         return new AnthropicClient(
-            httpClient: httpClient ?? this._httpClient,
-            modelId: modelId,
-            options: options,
-            apiKey: apiKey ?? "fake-key");
+            options: new AnthropicClientOptions { ModelId = modelId, ApiKey = apiKey ?? "fake-key" },
+            httpClient: httpClient ?? this._httpClient);
     }
 
     private static T? Deserialize<T>(string json)
@@ -428,5 +428,41 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
+    }
+
+    private sealed class CustomHeadersHandler : DelegatingHandler
+    {
+        private readonly string _headerName;
+        private readonly string _headerValue;
+        public HttpRequestHeaders? RequestHeaders { get; private set; }
+
+        public HttpContentHeaders? ContentHeaders { get; private set; }
+
+        public byte[]? RequestContent { get; private set; }
+
+        public Uri? RequestUri { get; private set; }
+
+        public HttpMethod? Method { get; private set; }
+
+        public CustomHeadersHandler(string headerName, string headerValue)
+        {
+            this.InnerHandler = new HttpMessageHandlerStub
+            {
+                ResponseToReturn = { Content = new StringContent(File.ReadAllText(ChatTestDataFilePath)) }
+            };
+            this._headerName = headerName;
+            this._headerValue = headerValue;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+        {
+            request.Headers.Add(this._headerName, this._headerValue);
+            this.Method = request.Method;
+            this.RequestUri = request.RequestUri;
+            this.RequestHeaders = request.Headers;
+            this.RequestContent = request.Content is null ? null : request.Content.ReadAsByteArrayAsync(cancellationToken).Result;
+
+            return base.SendAsync(request, cancellationToken);
+        }
     }
 }

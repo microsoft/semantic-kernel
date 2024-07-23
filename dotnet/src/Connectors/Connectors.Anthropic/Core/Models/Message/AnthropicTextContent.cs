@@ -11,5 +11,5 @@ internal sealed class AnthropicTextContent : AnthropicContent
     /// </summary>
     [JsonRequired]
     [JsonPropertyName("text")]
-    public string Text { get; set; } = null!;
+    public string? Text { get; set; }
 }
