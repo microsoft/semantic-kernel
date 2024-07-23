@@ -1,0 +1,44 @@
+classDiagram
+
+    KernelAgent
+    OpenAIAssistantDefinition
+    OpenAIAssistantDefinition --> OpenAIExecutionOptions
+    OpenAIExecutionOptions
+    OpenAIExecutionOptions --> AssistantToolCallBehavior
+    OpenAIServiceConfiguration
+    OpenAIAssistantInvocationOptions
+    OpenAIAssistantInvocationOptions --> AssistantToolCallBehavior
+    OpenAIThreadCreationOptions
+
+    KernelAgent <|-- OpenAIAssistantAgent
+    OpenAIAssistantAgent ..> OpenAIServiceConfiguration
+    OpenAIAssistantAgent -- OpenAIAssistantChannel
+    OpenAIAssistantAgent --> OpenAIAssistantDefinition
+    OpenAIAssistantAgent ..> OpenAIAssistantInvocationOptions
+    OpenAIAssistantAgent ..> OpenAIThreadCreationOptions
+    class OpenAIAssistantAgent {
+        +OpenAIAssistantDefinition Definition
+        +bool IsDeleted
+        +RunPollingConfiguration Polling
+        +Task~OpenAIAssistantAgent~ Create(Kernel kernel, OpenAIServiceConfiguration config, OpenAIAssistantDefinition definition)$
+        +AsyncEnumerable~OpenAIAssistantDefinition~ ListDefinitions(OpenAIServiceConfiguration config)$
+        +Task~OpenAIAssistantAgent~ Retrieve(Kernel kernel, OpenAIServiceConfiguration config, string id)$
+        +Task~string~ CreateThread()
+        +Task~string~ CreateThread(OpenAIThreadCreationOptions? Options)
+        +Task~bool~ DeleteThread(string threadId)
+        +Task AddChatMessage(string threadId, ChatMessageContent message)
+        +AsyncEnumerable~ChatMessageContent~ GetThreadMessages(string threadId)
+        +Task~bool~ Delete()
+        +AsyncEnumerable~ChatMessageContent~ Invoke(string threadId)
+        +AsyncEnumerable~ChatMessageContent~ Invoke(string threadId, OpenAIAssistantInvocationOptions? Options)
+        #AsyncEnumerable~string~ GetChannelKeys()
+        #Task~AgentChannel~ CreateChannel()
+    }
+
+    OpenAIAssistantChannel ..> OpenAIAssistantAgent
+    class OpenAIAssistantChannel {
+        #Task Receive(IReadOnlyList<ChatMessageContent> history)
+        #AsyncEnumerable<ChatMessageContent> Invoke(OpenAIAssistantAgent agent)
+        #AsyncEnumerable<ChatMessageContent> GetHistory()
+    }
+

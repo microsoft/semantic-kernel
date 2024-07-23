@@ -5,12 +5,15 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
 from azure.ai.inference.models import UserMessage
+from azure.core.credentials import AzureKeyCredential
 
 from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceChatCompletion,
     AzureAIInferenceChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.telemetry import SEMANTIC_KERNEL_USER_AGENT
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
@@ -22,6 +25,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 # region init
 def test_azure_ai_inference_chat_completion_init(azure_ai_inference_unit_test_env, model_id) -> None:
+    """Test initialization of AzureAIInferenceChatCompletion"""
     azure_ai_inference = AzureAIInferenceChatCompletion(model_id)
 
     assert azure_ai_inference.ai_model_id == model_id
@@ -29,9 +33,29 @@ def test_azure_ai_inference_chat_completion_init(azure_ai_inference_unit_test_en
     assert isinstance(azure_ai_inference.client, ChatCompletionsClient)
 
 
+@patch("azure.ai.inference.aio.ChatCompletionsClient.__init__", return_value=None)
+def test_azure_ai_inference_chat_completion_client_init(
+    mock_client, azure_ai_inference_unit_test_env, model_id
+) -> None:
+    """Test initialization of the Azure AI Inference client"""
+    endpoint = azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_ENDPOINT"]
+    api_key = azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_API_KEY"]
+    settings = AzureAIInferenceSettings(endpoint=endpoint, api_key=api_key)
+
+    _ = AzureAIInferenceChatCompletion(model_id)
+
+    assert mock_client.call_count == 1
+    assert isinstance(mock_client.call_args.kwargs["endpoint"], str)
+    assert mock_client.call_args.kwargs["endpoint"] == str(settings.endpoint)
+    assert isinstance(mock_client.call_args.kwargs["credential"], AzureKeyCredential)
+    assert mock_client.call_args.kwargs["credential"].key == settings.api_key.get_secret_value()
+    assert mock_client.call_args.kwargs["user_agent"] == SEMANTIC_KERNEL_USER_AGENT
+
+
 def test_azure_ai_inference_chat_completion_init_with_service_id(
     azure_ai_inference_unit_test_env, model_id, service_id
 ) -> None:
+    """Test initialization of AzureAIInferenceChatCompletion with service_id"""
     azure_ai_inference = AzureAIInferenceChatCompletion(model_id, service_id=service_id)
 
     assert azure_ai_inference.ai_model_id == model_id
