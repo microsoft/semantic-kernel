@@ -1,15 +1,124 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
+using OpenAI.Assistants;
+using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI.Internal;
 
 /// <summary>
-/// %%%
+/// Unit testing of <see cref="AssistantRunOptionsFactory"/>.
 /// </summary>
 public class AssistantRunOptionsFactoryTests
 {
+    /// <summary>
+    /// Verify run options generation with null <see cref="OpenAIAssistantInvocationOptions"/>.
+    /// </summary>
+    [Fact]
+    public void AssistantRunOptionsFactoryExecutionOptionsNullTest()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                Temperature = 0.5F,
+            };
+
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null);
+        Assert.NotNull(options);
+        Assert.Null(options.Temperature);
+        Assert.Null(options.NucleusSamplingFactor);
+        Assert.Empty(options.Metadata);
+    }
+
+    /// <summary>
+    /// Verify run options generation with equivalent <see cref="OpenAIAssistantInvocationOptions"/>.
+    /// </summary>
+    [Fact]
+    public void AssistantRunOptionsFactoryExecutionOptionsEquivalentTest()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                Temperature = 0.5F,
+            };
+
+        OpenAIAssistantInvocationOptions invocationOptions =
+            new()
+            {
+                Temperature = 0.5F,
+            };
+
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+        Assert.NotNull(options);
+        Assert.Null(options.Temperature);
+        Assert.Null(options.NucleusSamplingFactor);
+    }
+
+    /// <summary>
+    /// Verify run options generation with <see cref="OpenAIAssistantInvocationOptions"/> override.
+    /// </summary>
+    [Fact]
+    public void AssistantRunOptionsFactoryExecutionOptionsOverrideTest()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                Temperature = 0.5F,
+                ExecutionOptions =
+                    new()
+                    {
+                        TruncationMessageCount = 5,
+                    },
+            };
+
+        OpenAIAssistantInvocationOptions invocationOptions =
+            new()
+            {
+                Temperature = 0.9F,
+                TruncationMessageCount = 8,
+                EnableJsonResponse = true,
+            };
+
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+        Assert.NotNull(options);
+        Assert.Equal(0.9F, options.Temperature);
+        Assert.Equal(8, options.TruncationStrategy.LastMessages);
+        Assert.Equal(AssistantResponseFormat.JsonObject, options.ResponseFormat);
+        Assert.Null(options.NucleusSamplingFactor);
+    }
+
+    /// <summary>
+    /// Verify run options generation with <see cref="OpenAIAssistantInvocationOptions"/> metadata.
+    /// </summary>
+    [Fact]
+    public void AssistantRunOptionsFactoryExecutionOptionsMetadataTest()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                Temperature = 0.5F,
+                ExecutionOptions =
+                    new()
+                    {
+                        TruncationMessageCount = 5,
+                    },
+            };
+
+        OpenAIAssistantInvocationOptions invocationOptions =
+            new()
+            {
+                Metadata = new Dictionary<string, string>
+                {
+                    { "key1", "value" },
+                    { "key2", null! },
+                },
+            };
+
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+
+        Assert.Equal(2, options.Metadata.Count);
+        Assert.Equal("value", options.Metadata["key1"]);
+        Assert.Equal(string.Empty, options.Metadata["key2"]);
+    }
 }

@@ -126,7 +126,7 @@ internal static class AssistantThreadActions
 
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.Definition, invocationOptions);
 
-        options.ToolsOverride.AddRange(agent.Tools); // %%%
+        options.ToolsOverride.AddRange(agent.Tools);
 
         ThreadRun run = await client.CreateRunAsync(threadId, agent.Id, options, cancellationToken).ConfigureAwait(false);
 

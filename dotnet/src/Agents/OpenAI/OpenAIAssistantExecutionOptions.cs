@@ -25,9 +25,6 @@ public sealed class OpenAIAssistantExecutionOptions
     /// </summary>
     public bool? ParallelToolCallsEnabled { get; init; }
 
-    //public ToolConstraint? RequiredTool { get; init; } // %%% ENUM ???
-    //public KernelFunction? RequiredToolFunction { get; init; } // %%% PLUGIN ???
-
     /// <summary>
     /// When set, the thread will be truncated to the N most recent messages in the thread.
     /// </summary>

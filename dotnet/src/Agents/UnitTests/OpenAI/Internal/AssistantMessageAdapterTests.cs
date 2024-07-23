@@ -194,7 +194,7 @@ public class AssistantMessageAdapterTests
                 items:
                 [
                     new TextContent("test"),
-                    new ImageContent(new Uri("https://localhost/myimage.png")), // %%%
+                    new ImageContent(new Uri("https://localhost/myimage.png")),
                     new FileReferenceContent("file-id"),
                     new MessageAttachmentContent("file-id"),
                 ]);

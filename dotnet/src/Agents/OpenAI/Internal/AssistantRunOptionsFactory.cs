@@ -7,11 +7,10 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 internal static class AssistantRunOptionsFactory
 {
     /// <summary>
-    /// %%%
+    /// Produce <see cref="RunCreationOptions"/> by reconciling <see cref="OpenAIAssistantDefinition"/> and <see cref="OpenAIAssistantInvocationOptions"/>.
     /// </summary>
-    /// <param name="definition"></param>
-    /// <param name="invocationOptions"></param>
-    /// <returns></returns>
+    /// <param name="definition">The assistant definition</param>
+    /// <param name="invocationOptions">The run specific options</param>
     public static RunCreationOptions GenerateOptions(OpenAIAssistantDefinition definition, OpenAIAssistantInvocationOptions? invocationOptions)
     {
         int? truncationMessageCount = ResolveExecutionSetting(invocationOptions?.TruncationMessageCount, definition.ExecutionOptions?.TruncationMessageCount);
@@ -26,7 +25,7 @@ internal static class AssistantRunOptionsFactory
                 ParallelToolCallsEnabled = ResolveExecutionSetting(invocationOptions?.ParallelToolCallsEnabled, definition.ExecutionOptions?.ParallelToolCallsEnabled),
                 ResponseFormat = ResolveExecutionSetting(invocationOptions?.EnableJsonResponse, definition.EnableJsonResponse) ?? false ? AssistantResponseFormat.JsonObject : null,
                 Temperature = ResolveExecutionSetting(invocationOptions?.Temperature, definition.Temperature),
-                //ToolConstraint // %%% TODO ISSUE
+                //ToolConstraint - Not Supported: https://github.com/microsoft/semantic-kernel/issues/6795
                 TruncationStrategy = truncationMessageCount.HasValue ? RunTruncationStrategy.CreateLastMessagesStrategy(truncationMessageCount.Value) : null,
             };
 
