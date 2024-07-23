@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Search;
@@ -28,12 +30,14 @@ public static class TextSearchKernelPluginFactory
                 arguments.TryGetValue("query", out var query);
                 query = query?.ToString() ?? string.Empty;
 
+                var parameters = function.Metadata.Parameters;
+
                 arguments.TryGetValue("count", out var count);
                 arguments.TryGetValue("count", out var skip);
                 SearchOptions searchOptions = new()
                 {
-                    Count = (count as int?) ?? 2,
-                    Offset = (skip as int?) ?? 0
+                    Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
+                    Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0)
                 };
 
                 return await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -53,6 +57,12 @@ public static class TextSearchKernelPluginFactory
 
     #region private
 
+    private static int GetDefaultValue(IReadOnlyList<KernelParameterMetadata> parameters, string name, int defaultValue)
+    {
+        var value = parameters.FirstOrDefault(parameter => parameter.Name == name)?.DefaultValue;
+        return value is int intValue ? intValue : defaultValue;
+    }
+
     private static KernelFunctionFromMethodOptions CreateDefaultMethodOptions<T>(ITextSearch<T> textSearch) where T : class
     {
         return new()
@@ -65,6 +75,7 @@ public static class TextSearchKernelPluginFactory
                 new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
                 new KernelParameterMetadata("skip") { Description = "Number of results skip", IsRequired = false, DefaultValue = 0 },
             ],
+            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<T>) },
         };
     }
 

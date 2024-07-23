@@ -38,32 +38,4 @@ public sealed class TextSearchPluginExample(ITestOutputHelper output) : BaseTest
         result = await kernel.InvokeAsync(function, new() { ["query"] = question, ["count"] = 2 });
         Console.WriteLine(result);
     }
-
-    /// <summary>
-    /// Show how to create a <see cref="KernelPlugin"/> and use it to perform a text search.
-    /// </summary>
-    [Fact]
-    public async Task UseCreateFromTextSearchWithBingTextSearchAsync()
-    {
-        // Create a search service with Bing search service
-        var searchService = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
-
-        // Build a kernel with Bing search service and add a text search plugin
-        Kernel kernel = new();
-        var textSearchResultPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<string>(searchService, "TextSearch");
-        kernel.Plugins.Add(textSearchResultPlugin);
-        var bingWebPagePlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<BingWebPage>(searchService, "BingSearch");
-        kernel.Plugins.Add(bingWebPagePlugin);
-
-        // Invoke the plugin to perform a text search and return string values
-        var question = "What is the Semantic Kernel?";
-        var function = kernel.Plugins["TextSearch"]["Search"];
-        var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
-        Console.WriteLine(result);
-
-        // Invoke the plugin to perform a text search and return BingWebPage values
-        function = kernel.Plugins["BingSearch"]["Search"];
-        result = await kernel.InvokeAsync(function, new() { ["query"] = question, ["count"] = 2 });
-        Console.WriteLine(result);
-    }
 }

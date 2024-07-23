@@ -1,0 +1,82 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Text.Json;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Microsoft.SemanticKernel.Search;
+
+namespace TextSearch;
+
+/// <summary>
+/// This example shows how to create and use a <see cref="TextSearchKernelPluginFactory"/>.
+/// </summary>
+public sealed class CreateFromTextSearchExample(ITestOutputHelper output) : BaseTest(output)
+{
+    /// <summary>
+    /// Show how to create a default <see cref="KernelPlugin"/> from an <see cref="ITextSearch{T}"/> and use it to perform a text search.
+    /// </summary>
+    [Fact]
+    public async Task UseCreateFromTextSearchWithBingTextSearchAsync()
+    {
+        // Create a search service with Bing search service
+        var searchService = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+
+        // Build a kernel with Bing search service and add a text search plugin
+        Kernel kernel = new();
+        var stringPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<string>(searchService, "TextSearch");
+        kernel.Plugins.Add(stringPlugin);
+        var bingWebPagePlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<BingWebPage>(searchService, "BingSearch");
+        kernel.Plugins.Add(bingWebPagePlugin);
+
+        // Invoke the plugin to perform a text search and return string values
+        var question = "What is the Semantic Kernel?";
+        var function = kernel.Plugins["TextSearch"]["Search"];
+        var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
+        var stringList = await result.GetValue<KernelSearchResults<string>>()!.Results.ToListAsync();
+        Console.WriteLine(string.Join('\n', stringList));
+
+        // Invoke the plugin to perform a text search and return BingWebPage values
+        function = kernel.Plugins["BingSearch"]["Search"];
+        result = await kernel.InvokeAsync(function, new() { ["query"] = question, ["count"] = 2 });
+        var pageList = await result.GetValue<KernelSearchResults<BingWebPage>>()!.Results.ToListAsync();
+        Console.WriteLine(JsonSerializer.Serialize(pageList));
+    }
+
+    /// <summary>
+    /// Show how to create a custom <see cref="KernelPlugin"/> from an <see cref="ITextSearch{T}"/> and use it to perform a text search.
+    /// </summary>
+    [Fact]
+    public async Task UseCustomizedCreateFromTextSearchWithBingTextSearchAsync()
+    {
+        // Create a search service with Bing search service
+        var searchService = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+
+        // Build a kernel with Bing search service and add a text search plugin
+        Kernel kernel = new();
+        var textSearchResultPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(
+            searchService, "CustomSearch", "Custom Search Plugin", CreateCustomMethodOptions<TextSearchResult>(searchService));
+        kernel.Plugins.Add(textSearchResultPlugin);
+
+        // Invoke the plugin to perform a text search and return string values
+        var question = "What is the Semantic Kernel?";
+        var function = kernel.Plugins["CustomSearch"]["SearchForTenResults"];
+        var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
+        var resultList = await result.GetValue<KernelSearchResults<TextSearchResult>>()!.Results.ToListAsync();
+        Console.WriteLine(JsonSerializer.Serialize(resultList));
+    }
+
+    private static KernelFunctionFromMethodOptions CreateCustomMethodOptions<T>(ITextSearch<T> textSearch) where T : class
+    {
+        return new()
+        {
+            FunctionName = "SearchForTenResults",
+            Description = "Perform a search for content related to the specified query and return 10 results",
+            Parameters =
+            [
+                new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
+                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = true, DefaultValue = 10 },
+                new KernelParameterMetadata("skip") { Description = "Number of results skip", IsRequired = false, DefaultValue = 0 },
+            ],
+            ReturnParameter = new() { ParameterType = typeof(T) },
+        };
+    }
+}
