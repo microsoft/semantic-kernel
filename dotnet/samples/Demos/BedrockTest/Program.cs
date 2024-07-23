@@ -37,6 +37,7 @@ while (!int.TryParse(Console.ReadLine(), out chosenModel) || !modelOptions.Conta
 }
 
 var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelOptions[chosenModel], RegionEndpoint.USEast1).Build();
+var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
 do
 {
@@ -46,8 +47,6 @@ do
     if (!string.Equals(userInput, "exit", StringComparison.OrdinalIgnoreCase))
     {
         chatHistory.AddMessage(AuthorRole.User, userInput);
-
-        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
         var result = await chatCompletionService.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(false);
         string output = "";
         foreach (var message in result)
@@ -184,6 +183,7 @@ while (!int.TryParse(Console.ReadLine(), out chosenStreamChatCompletionModel) ||
 }
 
 var kernel4 = Kernel.CreateBuilder().AddBedrockChatCompletionService(streamChatCompletionModelOptions[chosenStreamChatCompletionModel]).Build();
+var chatStreamCompletionService = kernel4.GetRequiredService<IChatCompletionService>();
 
 do
 {
@@ -193,9 +193,7 @@ do
     if (!string.Equals(userInput2, "exit", StringComparison.OrdinalIgnoreCase))
     {
         chatHistory2.AddMessage(AuthorRole.User, userInput2);
-
-        var chatCompletionService = kernel4.GetRequiredService<IChatCompletionService>();
-        var result = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory2).ConfigureAwait(false);
+        var result = chatStreamCompletionService.GetStreamingChatMessageContentsAsync(chatHistory2).ConfigureAwait(false);
         string output = "";
         await foreach (var message in result)
         {
