@@ -374,11 +374,6 @@ internal static class AssistantThreadActions
             }
         }
 
-        //if (content.Items.Count == 1 && content.Items[0] is FileReferenceContent fileContent)
-        //{
-        //    content.Items.Add(new TextContent());
-        //}
-
         return content;
     }
 
