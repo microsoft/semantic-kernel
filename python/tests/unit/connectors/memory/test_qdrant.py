@@ -15,6 +15,8 @@ from semantic_kernel.exceptions.memory_connector_exceptions import (
     VectorStoreModelValidationError,
 )
 
+BASE_PATH = "qdrant_client.async_qdrant_client.AsyncQdrantClient"
+
 
 @fixture
 def vector_store(qdrant_unit_test_env):
@@ -43,8 +45,8 @@ def collection_without_named_vectors(qdrant_unit_test_env, data_model_definition
 
 
 @fixture
-def mock_get_collections():
-    with patch("qdrant_client.async_qdrant_client.AsyncQdrantClient.get_collections") as mock_get_collections:
+def mock_list_collection_names():
+    with patch(f"{BASE_PATH}.get_collections") as mock_get_collections:
         from qdrant_client.conversions.common_types import CollectionsResponse
         from qdrant_client.http.models import CollectionDescription
 
@@ -55,22 +57,28 @@ def mock_get_collections():
 
 
 @fixture
-def mock_collection_exists():
-    with patch("qdrant_client.async_qdrant_client.AsyncQdrantClient.collection_exists") as mock_collection_exists:
+def mock_does_collection_exist():
+    with patch(f"{BASE_PATH}.collection_exists") as mock_collection_exists:
         mock_collection_exists.return_value = True
         yield mock_collection_exists
 
 
 @fixture
+def mock_create_collection():
+    with patch(f"{BASE_PATH}.recreate_collection") as mock_recreate_collection:
+        yield mock_recreate_collection
+
+
+@fixture
 def mock_delete_collection():
-    with patch("qdrant_client.async_qdrant_client.AsyncQdrantClient.delete_collection") as mock_delete_collection:
+    with patch(f"{BASE_PATH}.delete_collection") as mock_delete_collection:
         mock_delete_collection.return_value = True
         yield mock_delete_collection
 
 
 @fixture
 def mock_upsert():
-    with patch("qdrant_client.async_qdrant_client.AsyncQdrantClient.upsert") as mock_upsert:
+    with patch(f"{BASE_PATH}.upsert") as mock_upsert:
         from qdrant_client.conversions.common_types import UpdateResult
 
         result = MagicMock(spec=UpdateResult)
@@ -80,8 +88,8 @@ def mock_upsert():
 
 
 @fixture
-def mock_retrieve(collection):
-    with patch("qdrant_client.async_qdrant_client.AsyncQdrantClient.retrieve") as mock_retrieve:
+def mock_get(collection):
+    with patch(f"{BASE_PATH}.retrieve") as mock_retrieve:
         from qdrant_client.http.models import Record
 
         if collection.named_vectors:
@@ -95,14 +103,8 @@ def mock_retrieve(collection):
 
 @fixture
 def mock_delete():
-    with patch("qdrant_client.async_qdrant_client.AsyncQdrantClient.delete") as mock_delete:
+    with patch(f"{BASE_PATH}.delete") as mock_delete:
         yield mock_delete
-
-
-@fixture
-def mock_recreate_collection():
-    with patch("qdrant_client.async_qdrant_client.AsyncQdrantClient.recreate_collection") as mock_recreate_collection:
-        yield mock_recreate_collection
 
 
 def test_vector_store_defaults(vector_store):
@@ -135,12 +137,12 @@ def test_vector_store_fail():
 
 
 @mark.asyncio
-async def test_store_list_collection_names(vector_store, mock_get_collections):
+async def test_store_list_collection_names(vector_store, mock_list_collection_names):
     collections = await vector_store.list_collection_names()
     assert collections == ["test"]
 
 
-def test_get_collection(vector_store, data_model_definition):
+def test_get_collection(vector_store, data_model_definition, qdrant_unit_test_env):
     collection = vector_store.get_collection("test", data_model_type=dict, data_model_definition=data_model_definition)
     assert collection.collection_name == "test"
     assert collection.qdrant_client == vector_store.qdrant_client
@@ -149,7 +151,7 @@ def test_get_collection(vector_store, data_model_definition):
     assert vector_store.vector_record_collections["test"] == collection
 
 
-def test_collection_init(data_model_definition):
+def test_collection_init(data_model_definition, qdrant_unit_test_env):
     collection = QdrantCollection(
         data_model_type=dict,
         collection_name="test",
@@ -210,7 +212,7 @@ async def test_upsert(collection, mock_upsert):
 
 
 @mark.asyncio
-async def test_get(collection, mock_retrieve):
+async def test_get(collection, mock_get):
     records = await collection._inner_get(["id1"])
     assert records is not None
 
@@ -224,7 +226,7 @@ async def test_delete(collection, mock_delete):
 
 
 @mark.asyncio
-async def test_does_collection_exist(collection, mock_collection_exists):
+async def test_does_collection_exist(collection, mock_does_collection_exist):
     await collection.does_collection_exist()
 
 
@@ -253,14 +255,14 @@ async def test_delete_collection(collection, mock_delete_collection):
         ),
     ],
 )
-async def test_create_index_with_named_vectors(collection_to_use, results, mock_recreate_collection, request):
+async def test_create_index_with_named_vectors(collection_to_use, results, mock_create_collection, request):
     await request.getfixturevalue(collection_to_use).create_collection()
-    mock_recreate_collection.assert_called_once_with(**results)
+    mock_create_collection.assert_called_once_with(**results)
 
 
 @mark.asyncio
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
-async def test_create_index_fail(collection_to_use, mock_recreate_collection, request):
+async def test_create_index_fail(collection_to_use, mock_create_collection, request):
     collection = request.getfixturevalue(collection_to_use)
     collection.data_model_definition.fields["vector"].dimensions = None
     with raises(MemoryConnectorException, match="Vector field must have dimensions."):
