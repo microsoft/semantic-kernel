@@ -5,6 +5,8 @@
 # Activity tags
 SYSTEM = "gen_ai.system"
 OPERATION = "gen_ai.operation.name"
+CHAT_COMPLETION_OPERATION = "chat.completions"
+TEXT_COMPLETION_OPERATION = "text.completions"
 MODEL = "gen_ai.request.model"
 MAX_TOKEN = "gen_ai.request.max_tokens"  # nosec
 TEMPERATURE = "gen_ai.request.temperature"

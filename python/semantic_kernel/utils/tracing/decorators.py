@@ -19,6 +19,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.utils.tracing.const import (
+    CHAT_COMPLETION_OPERATION,
     COMPLETION_EVENT,
     COMPLETION_EVENT_COMPLETION,
     COMPLETION_TOKEN,
@@ -33,6 +34,7 @@ from semantic_kernel.utils.tracing.const import (
     RESPONSE_ID,
     SYSTEM,
     TEMPERATURE,
+    TEXT_COMPLETION_OPERATION,
     TOP_P,
 )
 
@@ -50,7 +52,7 @@ tracer = get_tracer(__name__)
 def are_model_diagnostics_enabled() -> bool:
     """Check if model diagnostics are enabled.
 
-    Model diagnostics are enabled if either EnableModelDiagnostics or EnableSensitiveEvents is set.
+    Model diagnostics are enabled if either _enable_diagnostics or _enable_sensitive_events is set.
     """
     return _enable_diagnostics or _enable_sensitive_events
 
@@ -58,7 +60,7 @@ def are_model_diagnostics_enabled() -> bool:
 def are_sensitive_events_enabled() -> bool:
     """Check if sensitive events are enabled.
 
-    Sensitive events are enabled if EnableSensitiveEvents is set.
+    Sensitive events are enabled if _enable_sensitive_events is set.
     """
     return _enable_sensitive_events
 
@@ -69,8 +71,6 @@ def trace_chat_completion(model_provider: str) -> Callable:
     def inner_trace_chat_completion(completion_func: Callable) -> Callable:
         @functools.wraps(completion_func)
         async def wrapper_decorator(*args: Any, **kwargs: Any) -> list[ChatMessageContent]:
-            OPERATION_NAME: str = "chat.completions"
-
             chat_history: ChatHistory = kwargs["chat_history"]
             settings: PromptExecutionSettings = kwargs["settings"]
 
@@ -79,7 +79,9 @@ def trace_chat_completion(model_provider: str) -> Callable:
             formatted_messages = (
                 _messages_to_openai_format(chat_history.messages) if are_sensitive_events_enabled() else None
             )
-            span = _start_completion_activity(OPERATION_NAME, model_name, model_provider, formatted_messages, settings)
+            span = _start_completion_activity(
+                CHAT_COMPLETION_OPERATION, model_name, model_provider, formatted_messages, settings
+            )
 
             try:
                 completions: list[ChatMessageContent] = await completion_func(*args, **kwargs)
@@ -127,14 +129,12 @@ def trace_text_completion(model_provider: str) -> Callable:
     def inner_trace_text_completion(completion_func: Callable) -> Callable:
         @functools.wraps(completion_func)
         async def wrapper_decorator(*args: Any, **kwargs: Any) -> list[TextContent]:
-            OPERATION_NAME: str = "text.completions"
-
             prompt: str = kwargs["prompt"]
             settings: PromptExecutionSettings = kwargs["settings"]
 
             model_name = getattr(settings, "ai_model_id", None) or getattr(args[0], "ai_model_id", None) or "unknown"
 
-            span = _start_completion_activity(OPERATION_NAME, model_name, model_provider, prompt, settings)
+            span = _start_completion_activity(TEXT_COMPLETION_OPERATION, model_name, model_provider, prompt, settings)
 
             try:
                 completions: list[TextContent] = await completion_func(*args, **kwargs)
@@ -161,7 +161,12 @@ def trace_text_completion(model_provider: str) -> Callable:
                     )
 
                     _set_completion_response(
-                        span, completion_text, None, response_id or "unknown", prompt_tokens, completion_tokens
+                        span,
+                        completion_text,
+                        None,
+                        response_id or "unknown",
+                        prompt_tokens,
+                        completion_tokens,
                     )
 
             return completions
@@ -193,6 +198,8 @@ def _start_completion_activity(
         }
     )
 
+    # TODO(@glahaye): we'll need to have a way to get these attributes from model
+    # providers other than OpenAI (for example if the attributes are named differently)
     if execution_settings:
         attribute = execution_settings.extension_data.get("max_tokens")
         if attribute:
@@ -246,7 +253,7 @@ def _set_completion_error(span: Span, error: Exception) -> None:
 
     span.set_attribute(ERROR_TYPE, str(type(error)))
 
-    span.set_status(StatusCode.ERROR, str(error))
+    span.set_status(StatusCode.ERROR, repr(error))
 
 
 def _messages_to_openai_format(messages: list[ChatMessageContent]) -> str:
