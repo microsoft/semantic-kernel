@@ -30,7 +30,7 @@ public sealed class AzureOpenAITextEmbeddingTests
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
-        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync([testInputString]); //, testInputString, testInputString]);
+        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync([testInputString]);
 
         // Assert
         Assert.Equal(AdaVectorLength, singleResult.Length);
