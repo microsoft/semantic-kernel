@@ -69,11 +69,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     {
         string templateText = config.Template;
 
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
-        }
-
         var blocks = new TemplateTokenizer(loggerFactory).Tokenize(templateText);
 
         foreach (var block in blocks)
