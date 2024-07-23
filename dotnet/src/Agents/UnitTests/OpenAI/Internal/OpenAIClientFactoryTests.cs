@@ -2,6 +2,7 @@
 using System;
 using System.Net.Http;
 using Azure.Core;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using Moq;
@@ -36,6 +37,26 @@ public class OpenAIClientFactoryTests
         OpenAIServiceConfiguration config = OpenAIServiceConfiguration.ForAzureOpenAI(mockCredential.Object, new Uri("https://localhost"));
         OpenAIClient client = OpenAIClientFactory.CreateClient(config);
         Assert.NotNull(client);
+    }
+
+    /// <summary>
+    /// Verify that the factory throws exception for null credential.
+    /// </summary>
+    [Fact]
+    public void VerifyOpenAIClientFactoryTargetAzureNullCredential()
+    {
+        OpenAIServiceConfiguration config = new() { Type = OpenAIServiceConfiguration.OpenAIServiceType.AzureOpenAI };
+        Assert.Throws<KernelException>(() => OpenAIClientFactory.CreateClient(config));
+    }
+
+    /// <summary>
+    /// Verify that the factory throws exception for null credential.
+    /// </summary>
+    [Fact]
+    public void VerifyOpenAIClientFactoryTargetUnknownTypes()
+    {
+        OpenAIServiceConfiguration config = new() { Type = (OpenAIServiceConfiguration.OpenAIServiceType)99 };
+        Assert.Throws<KernelException>(() => OpenAIClientFactory.CreateClient(config));
     }
 
     /// <summary>

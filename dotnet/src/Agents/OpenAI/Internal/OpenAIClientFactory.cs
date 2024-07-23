@@ -33,6 +33,7 @@ internal static class OpenAIClientFactory
                 {
                     return new AzureOpenAIClient(config.Endpoint, config.Credential, clientOptions);
                 }
+
                 if (!string.IsNullOrEmpty(config.ApiKey))
                 {
                     return new AzureOpenAIClient(config.Endpoint, config.ApiKey!, clientOptions);
