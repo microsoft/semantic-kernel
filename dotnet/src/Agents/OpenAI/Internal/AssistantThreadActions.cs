@@ -43,8 +43,7 @@ internal static class AssistantThreadActions
     /// <throws><see cref="KernelException"/> if a system message is present, without taking any other action</throws>
     public static async Task CreateMessageAsync(AssistantClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(message.Content) ||
-            message.Items.Any(i => i is FunctionCallContent))
+        if (message.Items.Any(i => i is FunctionCallContent))
         {
             return;
         }
@@ -86,14 +85,11 @@ internal static class AssistantThreadActions
 
             assistantName ??= message.AssistantId;
 
-            foreach (MessageContent itemContent in message.Content)
-            {
-                ChatMessageContent content = GenerateMessageContent(role, assistantName, itemContent);
+            ChatMessageContent content = GenerateMessageContent(assistantName, message);
 
-                if (content.Items.Count > 0)
-                {
-                    yield return content;
-                }
+            if (content.Items.Count > 0)
+            {
+                yield return content;
             }
         }
     }
@@ -221,18 +217,13 @@ internal static class AssistantThreadActions
 
                     if (message is not null)
                     {
-                        AuthorRole role = new(message.Role.ToString());
+                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message);
 
-                        foreach (MessageContent itemContent in message.Content)
+                        if (content.Items.Count > 0)
                         {
-                            ChatMessageContent content = GenerateMessageContent(role, agent.Name, itemContent);
+                            ++messageCount;
 
-                            if (content.Items.Count > 0)
-                            {
-                                ++messageCount;
-
-                                yield return (IsVisible: true, Message: content);
-                            }
+                            yield return (IsVisible: true, Message: content);
                         }
                     }
                 }
@@ -336,6 +327,38 @@ internal static class AssistantThreadActions
         }
     }
 
+    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message)
+    {
+        AuthorRole role = new(message.Role.ToString());
+
+        ChatMessageContent content =
+            new(role, content: null)
+            {
+                AuthorName = assistantName,
+            };
+
+        foreach (MessageContent itemContent in message.Content)
+        {
+            // Process text content
+            if (!string.IsNullOrEmpty(itemContent.Text))
+            {
+                content.Items.Add(new TextContent(itemContent.Text.Trim()));
+
+                foreach (TextAnnotation annotation in itemContent.TextAnnotations)
+                {
+                    content.Items.Add(GenerateAnnotationContent(annotation));
+                }
+            }
+            // Process image content
+            else if (itemContent.ImageFileId != null)
+            {
+                content.Items.Add(new FileReferenceContent(itemContent.ImageFileId));
+            }
+        }
+
+        return content;
+    }
+
     private static AnnotationContent GenerateAnnotationContent(TextAnnotation annotation)
     {
         string? fileId = null;
@@ -363,7 +386,7 @@ internal static class AssistantThreadActions
     {
         return
             new ChatMessageContent(
-                AuthorRole.Tool,
+                AuthorRole.Assistant,
                 [
                     new TextContent(code)
                 ])
@@ -399,31 +422,6 @@ internal static class AssistantThreadActions
                 result));
 
         return functionCallContent;
-    }
-
-    private static ChatMessageContent GenerateMessageContent(AuthorRole role, string? assistantName, MessageContent itemContent)
-    {
-        ChatMessageContent content =
-            new(role, content: null)
-            {
-                AuthorName = assistantName,
-            };
-
-        if (!string.IsNullOrEmpty(itemContent.Text))
-        {
-            content.Items.Add(new TextContent(itemContent.Text.Trim()));
-            foreach (TextAnnotation annotation in itemContent.TextAnnotations)
-            {
-                content.Items.Add(GenerateAnnotationContent(annotation));
-            }
-        }
-        // Process image content
-        else if (itemContent.ImageFileId != null)
-        {
-            content.Items.Add(new FileReferenceContent(itemContent.ImageFileId));
-        }
-
-        return content;
     }
 
     private static Task<FunctionResultContent>[] ExecuteFunctionSteps(OpenAIAssistantAgent agent, FunctionCallContent[] functionSteps, CancellationToken cancellationToken)

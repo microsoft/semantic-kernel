@@ -43,10 +43,6 @@ internal static class AssistantMessageAdapter
                 //    yield return MessageContent.FromImageUrl(new Uri(imageContent.DataUri!));
                 //}
             }
-            else if (content is MessageAttachmentContent attachmentContent)
-            {
-                options.Attachments.Add(new MessageCreationAttachment(attachmentContent.FileId, [ToolDefinition.CreateCodeInterpreter()])); // %%% TODO: Tool Type
-            }
             else if (content is FileReferenceContent fileContent)
             {
                 yield return MessageContent.FromImageFileId(fileContent.FileId);

@@ -171,20 +171,6 @@ public class AssistantMessageAdapterTests
     /// Verify options creation.
     /// </summary>
     [Fact]
-    public void VerifyAssistantMessageAdapterGetMessageWithAttachment()
-    {
-        ChatMessageContent message = new(AuthorRole.User, items: [new MessageAttachmentContent("file-id")]);
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
-        MessageContent[] contents = AssistantMessageAdapter.GetMessageContents(message, options).ToArray();
-        Assert.NotNull(options.Attachments);
-        Assert.Single(options.Attachments);
-        Assert.NotNull(options.Attachments.Single().FileId);
-    }
-
-    /// <summary>
-    /// Verify options creation.
-    /// </summary>
-    [Fact]
     public void VerifyAssistantMessageAdapterGetMessageWithAll()
     {
         ChatMessageContent message =
@@ -194,15 +180,11 @@ public class AssistantMessageAdapterTests
                 [
                     new TextContent("test"),
                     new ImageContent(new Uri("https://localhost/myimage.png")),
-                    new FileReferenceContent("file-id"),
-                    new MessageAttachmentContent("file-id"),
+                    new FileReferenceContent("file-id")
                 ]);
         MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
         MessageContent[] contents = AssistantMessageAdapter.GetMessageContents(message, options).ToArray();
         Assert.NotNull(contents);
         Assert.Equal(3, contents.Length);
-        Assert.NotNull(options.Attachments);
-        Assert.Single(options.Attachments);
-        Assert.NotNull(options.Attachments.Single().FileId);
     }
 }
