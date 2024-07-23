@@ -83,7 +83,7 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
         self,
         texts: list[str],
         settings: "PromptExecutionSettings | None" = None,
-    ) -> list[float]:
+    ) -> list[list[float]]:
         if not settings:
             settings = GoogleAIEmbeddingPromptExecutionSettings()
         else:
@@ -92,7 +92,7 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
 
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         response: BatchEmbeddingDict = await genai.embed_content_async(
-            self.service_settings.ai_model_id,
+            model=self.service_settings.ai_model_id,
             content=texts,
             **settings.prepare_settings_dict(),
         )

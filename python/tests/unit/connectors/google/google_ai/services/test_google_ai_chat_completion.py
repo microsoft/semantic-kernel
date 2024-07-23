@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import GoogleAIChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
@@ -70,14 +71,14 @@ async def test_google_ai_chat_completion(
     mock_google_ai_chat_completion_response,
 ) -> None:
     """Test chat completion with GoogleAIChatCompletion"""
-    user_message_content: str = "Hello"
-    chat_history.add_user_message(user_message_content)
     settings = GoogleAIChatPromptExecutionSettings()
 
     mock_google_model_generate_content_async.return_value = mock_google_ai_chat_completion_response
 
     google_ai_chat_completion = GoogleAIChatCompletion()
-    responses = await google_ai_chat_completion.get_chat_message_contents(chat_history, settings)
+    responses: list[ChatMessageContent] = await google_ai_chat_completion.get_chat_message_contents(
+        chat_history, settings
+    )
 
     mock_google_model_generate_content_async.assert_called_once_with(
         contents=google_ai_chat_completion._prepare_chat_history_for_request(chat_history),
@@ -105,8 +106,6 @@ async def test_google_ai_streaming_chat_completion(
     mock_google_ai_streaming_chat_completion_response,
 ) -> None:
     """Test chat completion with GoogleAIChatCompletion"""
-    user_message_content: str = "Hello"
-    chat_history.add_user_message(user_message_content)
     settings = GoogleAIChatPromptExecutionSettings()
 
     mock_google_model_generate_content_async.return_value = mock_google_ai_streaming_chat_completion_response

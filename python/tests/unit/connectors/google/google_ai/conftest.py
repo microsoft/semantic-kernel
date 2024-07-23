@@ -8,15 +8,24 @@ import pytest_asyncio
 from google.generativeai import protos
 from google.generativeai.types import AsyncGenerateContentResponse
 
-
-@pytest.fixture()
-def model_id() -> str:
-    return "test_model_id"
+from semantic_kernel.contents.chat_history import ChatHistory
 
 
 @pytest.fixture()
 def service_id() -> str:
     return "test_service_id"
+
+
+@pytest.fixture()
+def chat_history() -> ChatHistory:
+    chat_history = ChatHistory()
+    chat_history.add_user_message("test_prompt")
+    return chat_history
+
+
+@pytest.fixture()
+def prompt() -> str:
+    return "test_prompt"
 
 
 @pytest.fixture()
@@ -84,6 +93,41 @@ async def mock_google_ai_streaming_chat_completion_response() -> AsyncGenerateCo
         candidates_token_count=0,
         total_token_count=0,
     )
+
+    iterable = MagicMock(spec=AsyncGenerator)
+    iterable.__aiter__.return_value = [response]
+
+    return await AsyncGenerateContentResponse.from_aiterator(
+        iterator=iterable,
+    )
+
+
+@pytest.fixture()
+def mock_google_ai_text_completion_response() -> AsyncGenerateContentResponse:
+    """Mock Google AI Text Completion response."""
+    candidate = protos.Candidate()
+    candidate.index = 0
+    candidate.content = protos.Content(parts=[protos.Part(text="Test content")])
+
+    response = protos.GenerateContentResponse()
+    response.candidates.append(candidate)
+
+    return AsyncGenerateContentResponse(
+        done=True,
+        iterator=None,
+        result=response,
+    )
+
+
+@pytest_asyncio.fixture()
+async def mock_google_ai_streaming_text_completion_response() -> AsyncGenerateContentResponse:
+    """Mock Google AI streaming Text Completion response."""
+    candidate = protos.Candidate()
+    candidate.index = 0
+    candidate.content = protos.Content(parts=[protos.Part(text="Test content")])
+
+    response = protos.GenerateContentResponse()
+    response.candidates.append(candidate)
 
     iterable = MagicMock(spec=AsyncGenerator)
     iterable.__aiter__.return_value = [response]

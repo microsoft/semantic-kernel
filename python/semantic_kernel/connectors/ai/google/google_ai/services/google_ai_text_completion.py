@@ -111,7 +111,6 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         Returns:
             A text content object.
         """
-        # Best effort conversion of finish reason. The raw value will be available in metadata.
         response_metadata = self._get_metadata_from_response(response)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
@@ -169,7 +168,6 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         Returns:
             A streaming text content object.
         """
-        # Best effort conversion of finish reason. The raw value will be available in metadata.
         response_metadata = self._get_metadata_from_response(chunk)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
