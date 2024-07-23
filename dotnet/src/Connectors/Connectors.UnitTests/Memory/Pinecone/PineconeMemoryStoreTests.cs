@@ -199,6 +199,24 @@ public class PineconeMemoryStoreTests
     }
 
     [Fact]
+    public async Task TestRemoveBatchAsync()
+    {
+        // Arrange
+        string collectionName = "testCollection";
+        string[] keys = ["doc1", "doc2"];
+
+        this._mockPineconeClient
+            .Setup<Task>(x => x.DeleteAsync(collectionName, new[] { keys[0], keys[1] }, "", null, false, CancellationToken.None))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await this._pineconeMemoryStore.RemoveBatchAsync(collectionName, keys);
+
+        // Assert
+        this._mockPineconeClient.Verify(x => x.DeleteAsync(collectionName, new[] { keys[0], keys[1] }, "", null, false, CancellationToken.None), Times.Once);
+    }
+
+    [Fact]
     public async Task TestRemoveAsync()
     {
         // Arrange
