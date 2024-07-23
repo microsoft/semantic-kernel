@@ -14,6 +14,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.telemetry import SEMANTIC_KERNEL_USER_AGENT
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -68,6 +69,7 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
             client = EmbeddingsClient(
                 endpoint=str(azure_ai_inference_settings.endpoint),
                 credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
+                user_agent=SEMANTIC_KERNEL_USER_AGENT,
             )
 
         super().__init__(
