@@ -11,7 +11,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Anthropic;
 public abstract class TestBase(ITestOutputHelper output)
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
-        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddUserSecrets<TestBase>()
         .AddEnvironmentVariables()

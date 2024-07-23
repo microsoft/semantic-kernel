@@ -27,6 +27,11 @@ public abstract class ClientOptions
     /// The target model ID.
     /// </summary>
     public string? ModelId { get; init; }
+
+    /// <summary>
+    /// Represents the options for configuring the Anthropic client.
+    /// </summary>
+    protected ClientOptions() { }
 }
 
 /// <summary>
