@@ -49,8 +49,11 @@ def data_model_definition() -> object:
     return VectorStoreRecordDefinition(
         fields={
             "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
-            "vector": VectorStoreRecordVectorField(),
+            "content": VectorStoreRecordDataField(
+                has_embedding=True,
+                embedding_property_name="vector",
+            ),
+            "vector": VectorStoreRecordVectorField(dimensions=3),
         }
     )
 

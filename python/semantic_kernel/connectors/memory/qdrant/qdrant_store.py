@@ -10,10 +10,10 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+from pydantic import ValidationError
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
 
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
-from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.data.vector_store import VectorStore
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
@@ -78,25 +78,29 @@ class QdrantStore(VectorStore):
 
         from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
 
-        settings = QdrantSettings.create(
-            url=url,
-            api_key=api_key,
-            host=host,
-            port=port,
-            grpc_port=grpc_port,
-            path=path,
-            location=location,
-            prefer_grpc=prefer_grpc,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
         try:
-            if APP_INFO:
-                kwargs.setdefault("metadata", {})
-                kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(kwargs["metadata"])
-            super().__init__(qdrant_client=AsyncQdrantClientWrapper(**settings.model_dump(exclude_none=True), **kwargs))
+            settings = QdrantSettings.create(
+                url=url,
+                api_key=api_key,
+                host=host,
+                port=port,
+                grpc_port=grpc_port,
+                path=path,
+                location=location,
+                prefer_grpc=prefer_grpc,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create Qdrant settings.", ex) from ex
+        if APP_INFO:
+            kwargs.setdefault("metadata", {})
+            kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(kwargs["metadata"])
+        try:
+            client = AsyncQdrantClient(**settings.model_dump(exclude_none=True), **kwargs)
         except ValueError as ex:
             raise MemoryConnectorInitializationError("Failed to create Qdrant client.", ex) from ex
+        super().__init__(qdrant_client=client)
 
     def get_collection(
         self,
@@ -126,4 +130,4 @@ class QdrantStore(VectorStore):
     @override
     async def list_collection_names(self, **kwargs: Any) -> Sequence[str]:
         collections = await self.qdrant_client.get_collections()
-        return [collection.name for collection in collections]
+        return [collection.name for collection in collections.collections]
