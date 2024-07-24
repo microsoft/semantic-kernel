@@ -44,13 +44,13 @@ def test_vanilla():
     data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
     assert len(data_model_definition.fields) == 5
     assert data_model_definition.fields["content"].name == "content"
-    assert data_model_definition.fields["content"].property_type is str
+    assert data_model_definition.fields["content"].property_type == "str"
     assert data_model_definition.fields["content2"].name == "content2"
-    assert data_model_definition.fields["content2"].property_type is str
+    assert data_model_definition.fields["content2"].property_type == "str"
     assert data_model_definition.fields["vector"].name == "vector"
     assert data_model_definition.fields["id"].name == "id"
     assert data_model_definition.fields["optional_content"].name == "optional_content"
-    assert data_model_definition.fields["optional_content"].property_type is str
+    assert data_model_definition.fields["optional_content"].property_type == "str"
     assert data_model_definition.key_field_name == "id"
     assert data_model_definition.container_mode is False
     assert data_model_definition.vector_field_names == ["vector"]
@@ -90,13 +90,13 @@ def test_dataclass():
     data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
     assert len(data_model_definition.fields) == 5
     assert data_model_definition.fields["content"].name == "content"
-    assert data_model_definition.fields["content"].property_type is str
+    assert data_model_definition.fields["content"].property_type == "str"
     assert data_model_definition.fields["content2"].name == "content2"
-    assert data_model_definition.fields["content2"].property_type is str
+    assert data_model_definition.fields["content2"].property_type == "str"
     assert data_model_definition.fields["vector"].name == "vector"
     assert data_model_definition.fields["id"].name == "id"
     assert data_model_definition.fields["optional_content"].name == "optional_content"
-    assert data_model_definition.fields["optional_content"].property_type is str
+    assert data_model_definition.fields["optional_content"].property_type == "str"
     assert data_model_definition.key_field_name == "id"
     assert data_model_definition.container_mode is False
     assert data_model_definition.vector_field_names == ["vector"]
@@ -128,13 +128,13 @@ def test_pydantic_base_model():
     data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
     assert len(data_model_definition.fields) == 5
     assert data_model_definition.fields["content"].name == "content"
-    assert data_model_definition.fields["content"].property_type is str
+    assert data_model_definition.fields["content"].property_type == "str"
     assert data_model_definition.fields["content2"].name == "content2"
-    assert data_model_definition.fields["content2"].property_type is str
+    assert data_model_definition.fields["content2"].property_type == "str"
     assert data_model_definition.fields["vector"].name == "vector"
     assert data_model_definition.fields["id"].name == "id"
     assert data_model_definition.fields["optional_content"].name == "optional_content"
-    assert data_model_definition.fields["optional_content"].property_type is str
+    assert data_model_definition.fields["optional_content"].property_type == "str"
     assert data_model_definition.key_field_name == "id"
     assert data_model_definition.container_mode is False
     assert data_model_definition.vector_field_names == ["vector"]
@@ -157,13 +157,13 @@ def test_pydantic_dataclass():
     data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
     assert len(data_model_definition.fields) == 5
     assert data_model_definition.fields["content"].name == "content"
-    assert data_model_definition.fields["content"].property_type is str
+    assert data_model_definition.fields["content"].property_type == "str"
     assert data_model_definition.fields["content2"].name == "content2"
-    assert data_model_definition.fields["content2"].property_type is str
+    assert data_model_definition.fields["content2"].property_type == "str"
     assert data_model_definition.fields["vector"].name == "vector"
     assert data_model_definition.fields["id"].name == "id"
     assert data_model_definition.fields["optional_content"].name == "optional_content"
-    assert data_model_definition.fields["optional_content"].property_type is str
+    assert data_model_definition.fields["optional_content"].property_type == "str"
     assert data_model_definition.key_field_name == "id"
     assert data_model_definition.container_mode is False
     assert data_model_definition.vector_field_names == ["vector"]

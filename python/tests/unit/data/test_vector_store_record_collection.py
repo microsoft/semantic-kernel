@@ -441,8 +441,8 @@ async def test_collection_create_if_not_exists(DictVectorStoreRecordCollection, 
 
 
 def test_data_model_validation(data_model_type_vanilla, DictVectorStoreRecordCollection):
-    DictVectorStoreRecordCollection.supported_key_types = PropertyMock(return_value=[str])
-    DictVectorStoreRecordCollection.supported_vector_types = PropertyMock(return_value=[list[float]])
+    DictVectorStoreRecordCollection.supported_key_types = PropertyMock(return_value=["str"])
+    DictVectorStoreRecordCollection.supported_vector_types = PropertyMock(return_value=["list[float]"])
     DictVectorStoreRecordCollection(
         collection_name="test",
         data_model_type=data_model_type_vanilla,
@@ -450,7 +450,7 @@ def test_data_model_validation(data_model_type_vanilla, DictVectorStoreRecordCol
 
 
 def test_data_model_validation_key_fail(data_model_type_vanilla, DictVectorStoreRecordCollection):
-    DictVectorStoreRecordCollection.supported_key_types = PropertyMock(return_value=[int])
+    DictVectorStoreRecordCollection.supported_key_types = PropertyMock(return_value=["int"])
     with raises(VectorStoreModelValidationError, match="Key field must be one of"):
         DictVectorStoreRecordCollection(
             collection_name="test",
@@ -459,7 +459,7 @@ def test_data_model_validation_key_fail(data_model_type_vanilla, DictVectorStore
 
 
 def test_data_model_validation_vector_fail(data_model_type_vanilla, DictVectorStoreRecordCollection):
-    DictVectorStoreRecordCollection.supported_vector_types = PropertyMock(return_value=[list[int]])
+    DictVectorStoreRecordCollection.supported_vector_types = PropertyMock(return_value=["list[int]"])
     with raises(VectorStoreModelValidationError, match="Vector field "):
         DictVectorStoreRecordCollection(
             collection_name="test",

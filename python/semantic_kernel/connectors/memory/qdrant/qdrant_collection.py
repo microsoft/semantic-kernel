@@ -5,8 +5,6 @@ import sys
 from collections.abc import Mapping, Sequence
 from typing import Any, TypeVar
 
-from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -26,6 +24,7 @@ from semantic_kernel.exceptions import (
     MemoryConnectorInitializationError,
     VectorStoreModelValidationError,
 )
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -196,15 +195,15 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
             for record in records
         ]
 
-    @override
     @property
-    def supported_key_types(self) -> Sequence[type] | None:
-        return [str, int]
+    @override
+    def supported_key_types(self) -> Sequence[str] | None:
+        return ["str", "int"]
 
-    @override
     @property
-    def supported_vector_types(self) -> Sequence[type] | None:
-        return [list[float], list[int]]
+    @override
+    def supported_vector_types(self) -> Sequence[str] | None:
+        return ["list[float]", "list[int]"]
 
     @override
     async def create_collection(self, **kwargs) -> None:

@@ -5,16 +5,14 @@ from dataclasses import dataclass, field
 from typing import Annotated
 from uuid import uuid4
 
-from numpy import array
+import numpy as np
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection import (
-    AzureAISearchCollection,
-)
+from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
@@ -27,14 +25,14 @@ from semantic_kernel.data.vector_store_record_fields import (
 @dataclass
 class MyDataModel:
     vector: Annotated[
-        list[float] | None,
+        np.ndarray | None,
         VectorStoreRecordVectorField(
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
             index_kind="hnsw",
             dimensions=1536,
             distance_function="cosine",
-            property_type="list[float]",
-            # cast_function=array,
+            property_type="ndarray",
+            cast_function=lambda x: np.frombuffer(x),
         ),
     ] = None
     other: str | None = None
@@ -48,23 +46,24 @@ kernel = Kernel()
 
 
 stores = {
-    "ai_search": AzureAISearchCollection[MyDataModel](
+    "redis": RedisJsonCollection[MyDataModel](
         data_model_type=MyDataModel,
-        kernel=kernel,
+        collection_name="test",
+        prefix_collection_name_to_key_names=True,
     ),
-    # "redis": RedisVectorRecordStore[MyDataModel](
+    "redis_hashset": RedisHashsetCollection[MyDataModel](
+        data_model_type=MyDataModel,
+        collection_name="test_hashset",
+        prefix_collection_name_to_key_names=True,
+    ),
+    # "ai_search": AzureAISearchCollection[MyDataModel](
     #     data_model_type=MyDataModel,
-    #     kernel=kernel,
-    #     collection_name="test",
-    #     prefix_collection_name_to_key_names=True,
     # ),
-    # "qdrant": QdrantVectorRecordStore[MyDataModel](
-    #     data_model_type=MyDataModel, kernel=kernel, collection_name="test", prefer_grpc=True
-    # ),
+    # "qdrant": QdrantCollection[MyDataModel](data_model_type=MyDataModel, collection_name="test", prefer_grpc=True),
 }
 
-store = "ai_search"
-manual_embed = False
+store = "redis_hashset"
+manual_embed = True
 
 
 async def main():
@@ -87,19 +86,20 @@ async def main():
                         service_id=service_id, ai_model_id=ai_model_id, dimensions=1536
                     )
                 },
-                cast_function=array,
+                cast_function=lambda x: np.array(x),
             )
             keys = await record_store.upsert_batch([record1, record2])
         else:
             keys = await record_store.upsert_batch([record1, record2], generate_embeddings=True)
         print(f"upserted {keys=}")
 
-        result = await record_store.get(record1.id)
-        if result:
-            print(f"found {result.id=}")
-            print(f"{result.content=}")
-            if result.vector:
-                print(f"{result.vector[:5]=}")
+        results = await record_store.get_batch([record1.id, record2.id])
+        if results:
+            for result in results:
+                print(f"found {result.id=}")
+                print(f"{result.content=}")
+                if result.vector is not None:
+                    print(f"{result.vector[:5]=}")
         else:
             print("not found")
 
