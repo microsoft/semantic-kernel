@@ -13,7 +13,6 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
 )
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.telemetry import SEMANTIC_KERNEL_USER_AGENT
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
@@ -21,6 +20,7 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInvalidExecutionSettingsError,
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 
 # region init

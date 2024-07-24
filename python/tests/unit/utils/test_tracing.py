@@ -17,13 +17,13 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
-from semantic_kernel.utils.tracing.const import (
+from semantic_kernel.utils.telemetry.const import (
     CHAT_COMPLETION_OPERATION,
     COMPLETION_EVENT,
     COMPLETION_EVENT_COMPLETION,
     ERROR_TYPE,
     FINISH_REASON,
-    MAX_TOKEN,
+    MAX_TOKENS,
     MODEL,
     OPERATION,
     PROMPT_EVENT,
@@ -43,7 +43,7 @@ TEST_TEMPERATURE = "0.5"
 TEST_TOP_P = "0.9"
 TEST_CREATED_AT = 1
 TEST_TEXT_PROMPT = "Test prompt"
-EXPECTED_CHAT_COMPLETION_EVENT_PAYLOAD = '[{{}"role": "assistant", "content": "{TEST_CONTENT}"}}]'
+EXPECTED_CHAT_COMPLETION_EVENT_PAYLOAD = f'[{{"role": "assistant", "content": "{TEST_CONTENT}"}}]'
 EXPECTED_TEXT_COMPLETION_EVENT_PAYLOAD = f'["{TEST_CONTENT}"]'
 
 TEST_CHAT_RESPONSE = [
@@ -84,7 +84,8 @@ EXPECTED_TEXT_CONTENT = [
 ]
 
 
-@patch("semantic_kernel.utils.tracing.decorators.are_sensitive_events_enabled", return_value=True)
+@pytest.mark.asyncio
+@patch("semantic_kernel.utils.telemetry.decorators.are_sensitive_events_enabled", return_value=True)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._send_chat_request",
     return_value=TEST_CHAT_RESPONSE,
@@ -107,7 +108,7 @@ async def test_trace_chat_completion(mock_span, mock_send_chat_request, mock_sen
             MODEL: TEST_MODEL,
         }
     )
-    mock_span.set_attribute.assert_any_call(MAX_TOKEN, TEST_MAX_TOKENS)
+    mock_span.set_attribute.assert_any_call(MAX_TOKENS, TEST_MAX_TOKENS)
     mock_span.set_attribute.assert_any_call(TEMPERATURE, TEST_TEMPERATURE)
     mock_span.set_attribute.assert_any_call(TOP_P, TEST_TOP_P)
     mock_span.add_event.assert_any_call(PROMPT_EVENT, {PROMPT_EVENT_PROMPT: "[]"})
@@ -119,7 +120,8 @@ async def test_trace_chat_completion(mock_span, mock_send_chat_request, mock_sen
     )
 
 
-@patch("semantic_kernel.utils.tracing.decorators.are_sensitive_events_enabled", return_value=True)
+@pytest.mark.asyncio
+@patch("semantic_kernel.utils.telemetry.decorators.are_sensitive_events_enabled", return_value=True)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base.OpenAITextCompletionBase._send_request",
     return_value=TEST_TEXT_RESPONSE,
@@ -142,7 +144,7 @@ async def test_trace_text_completion(mock_span, mock_send_request, mock_sensitiv
             MODEL: TEST_MODEL,
         }
     )
-    mock_span.set_attribute.assert_any_call(MAX_TOKEN, TEST_MAX_TOKENS)
+    mock_span.set_attribute.assert_any_call(MAX_TOKENS, TEST_MAX_TOKENS)
     mock_span.set_attribute.assert_any_call(TEMPERATURE, TEST_TEMPERATURE)
     mock_span.set_attribute.assert_any_call(TOP_P, TEST_TOP_P)
     mock_span.add_event.assert_any_call(PROMPT_EVENT, {PROMPT_EVENT_PROMPT: TEST_TEXT_PROMPT})
@@ -153,7 +155,8 @@ async def test_trace_text_completion(mock_span, mock_send_request, mock_sensitiv
     )
 
 
-@patch("semantic_kernel.utils.tracing.decorators.are_sensitive_events_enabled", return_value=True)
+@pytest.mark.asyncio
+@patch("semantic_kernel.utils.telemetry.decorators.are_sensitive_events_enabled", return_value=True)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._send_chat_request",
     side_effect=ServiceResponseException,
@@ -183,7 +186,8 @@ async def test_trace_chat_completion_exception(mock_span, mock_send_chat_request
     mock_span.end.assert_any_call()
 
 
-@patch("semantic_kernel.utils.tracing.decorators.are_sensitive_events_enabled", return_value=True)
+@pytest.mark.asyncio
+@patch("semantic_kernel.utils.telemetry.decorators.are_sensitive_events_enabled", return_value=True)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base.OpenAITextCompletionBase._send_request",
     side_effect=ServiceResponseException,

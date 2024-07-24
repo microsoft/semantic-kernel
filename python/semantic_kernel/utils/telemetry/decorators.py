@@ -18,19 +18,19 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.utils.tracing.const import (
+from semantic_kernel.utils.telemetry.const import (
     CHAT_COMPLETION_OPERATION,
     COMPLETION_EVENT,
     COMPLETION_EVENT_COMPLETION,
-    COMPLETION_TOKEN,
+    COMPLETION_TOKENS,
     ERROR_TYPE,
     FINISH_REASON,
-    MAX_TOKEN,
+    MAX_TOKENS,
     MODEL,
     OPERATION,
     PROMPT_EVENT,
     PROMPT_EVENT_PROMPT,
-    PROMPT_TOKEN,
+    PROMPT_TOKENS,
     RESPONSE_ID,
     SYSTEM,
     TEMPERATURE,
@@ -203,7 +203,7 @@ def _start_completion_activity(
     if execution_settings:
         attribute = execution_settings.extension_data.get("max_tokens")
         if attribute:
-            span.set_attribute(MAX_TOKEN, attribute)
+            span.set_attribute(MAX_TOKENS, attribute)
 
         attribute = execution_settings.extension_data.get("temperature")
         if attribute:
@@ -237,10 +237,10 @@ def _set_completion_response(
         span.set_attribute(FINISH_REASON, ",".join(finish_reasons))
 
     if prompt_tokens:
-        span.set_attribute(PROMPT_TOKEN, prompt_tokens)
+        span.set_attribute(PROMPT_TOKENS, prompt_tokens)
 
     if completion_tokens:
-        span.set_attribute(COMPLETION_TOKEN, completion_tokens)
+        span.set_attribute(COMPLETION_TOKENS, completion_tokens)
 
     if are_sensitive_events_enabled() and completion_text:
         span.add_event(COMPLETION_EVENT, {COMPLETION_EVENT_COMPLETION: completion_text})
