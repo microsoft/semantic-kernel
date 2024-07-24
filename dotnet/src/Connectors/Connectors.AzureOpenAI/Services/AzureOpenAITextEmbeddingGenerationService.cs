@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 [Experimental("SKEXP0010")]
 public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
-    private readonly AzureClientCore _core;
+    private readonly AzureClientCore _client;
     private readonly int? _dimensions;
 
     /// <summary>
@@ -42,9 +42,9 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
     {
-        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
+        this._client = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
 
         this._dimensions = dimensions;
     }
@@ -68,9 +68,9 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
     {
-        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
+        this._client = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
 
         this._dimensions = dimensions;
     }
@@ -90,15 +90,15 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
         ILoggerFactory? loggerFactory = null,
         int? dimensions = null)
     {
-        this._core = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
+        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
 
         this._dimensions = dimensions;
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
 
     /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
@@ -106,6 +106,6 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._core.GetEmbeddingsAsync(this._core.DeploymentName, data, kernel, this._dimensions, cancellationToken);
+        return this._client.GetEmbeddingsAsync(this._client.DeploymentName, data, kernel, this._dimensions, cancellationToken);
     }
 }

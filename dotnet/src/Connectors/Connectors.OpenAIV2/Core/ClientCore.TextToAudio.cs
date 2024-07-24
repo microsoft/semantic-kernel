@@ -17,11 +17,13 @@ internal partial class ClientCore
     /// <summary>
     /// Generates an image with the provided configuration.
     /// </summary>
+    /// <param name="model">Model identifier</param>
     /// <param name="prompt">Prompt to generate the image</param>
     /// <param name="executionSettings">Text to Audio execution settings for the prompt</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Url of the generated image</returns>
     internal async Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
+        string model,
         string prompt,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
@@ -36,9 +38,9 @@ internal partial class ClientCore
             Speed = audioExecutionSettings?.Speed,
         };
 
-        ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client.GetAudioClient(this.ModelId).GenerateSpeechFromTextAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
+        ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client!.GetAudioClient(model).GenerateSpeechFromTextAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
 
-        return [new AudioContent(response.Value.ToArray(), mimeType)];
+        return [new AudioContent(response.Value.ToArray(), mimeType) { ModelId = model }];
     }
 
     private static GeneratedSpeechVoice GetGeneratedSpeechVoice(string? voice)

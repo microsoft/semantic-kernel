@@ -1045,11 +1045,11 @@ internal partial class AzureClientCore
     {
         if (usage is null)
         {
-            this.Logger.LogDebug("Token usage information unavailable.");
+            this.Logger!.LogDebug("Token usage information unavailable.");
             return;
         }
 
-        if (this.Logger.IsEnabled(LogLevel.Information))
+        if (this.Logger!.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation(
                 "Prompt tokens: {InputTokens}. Completion tokens: {OutputTokens}. Total tokens: {TotalTokens}.",

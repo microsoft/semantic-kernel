@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, ITextGenerationService
 {
     /// <summary>Core implementation shared by Azure OpenAI clients.</summary>
-    private readonly AzureClientCore _core;
+    private readonly AzureClientCore _client;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionService"/> class.
@@ -38,9 +38,9 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._client = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -60,8 +60,8 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._client = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
@@ -77,26 +77,26 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         string? modelId = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._client = new(deploymentName, azureOpenAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIChatCompletionService)));
+        this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        => this._client.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatAsTextStreamingContentsAsync(prompt, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatAsTextStreamingContentsAsync(prompt, executionSettings, kernel, cancellationToken);
 }

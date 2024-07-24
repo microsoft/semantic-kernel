@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 internal partial class AzureClientCore : ClientCore
 {
     /// <summary>
-    /// Gets the key used to store the deployment name in the <see cref="Attributes"/> dictionary.
+    /// Gets the key used to store the deployment name in the <see cref="ClientCore.Attributes"/> dictionary.
     /// </summary>
     internal static string DeploymentNameKey => "DeploymentName";
 

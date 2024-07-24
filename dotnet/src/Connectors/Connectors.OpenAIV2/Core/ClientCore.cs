@@ -66,12 +66,12 @@ internal partial class ClientCore
     /// <summary>
     /// Logger instance
     /// </summary>
-    internal ILogger Logger { get; init; }
+    internal ILogger? Logger { get; init; }
 
     /// <summary>
     /// OpenAI Client
     /// </summary>
-    internal OpenAIClient Client { get; }
+    internal OpenAIClient? Client { get; }
 
     /// <summary>
     /// Storage for AI service attributes.
@@ -95,6 +95,17 @@ internal partial class ClientCore
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
+        // Empty constructor will be used when inherited by a specialized Client.
+        if (modelId is null
+            && apiKey is null
+            && organizationId is null
+            && endpoint is null
+            && httpClient is null
+            && logger is null)
+        {
+            return;
+        }
+
         if (!string.IsNullOrWhiteSpace(modelId))
         {
             this.ModelId = modelId!;
@@ -161,7 +172,7 @@ internal partial class ClientCore
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     internal void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        if (this.Logger.IsEnabled(LogLevel.Information))
+        if (this.Logger!.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelId);
         }
