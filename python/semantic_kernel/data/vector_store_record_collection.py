@@ -108,12 +108,12 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         ...  # pragma: no cover
 
     @property
-    def supported_key_types(self) -> Sequence[type] | None:
+    def supported_key_types(self) -> Sequence[str] | None:
         """Supply the types that keys are allowed to have. None means any."""
         return None
 
     @property
-    def supported_vector_types(self) -> Sequence[type] | None:
+    def supported_vector_types(self) -> Sequence[str] | None:
         """Supply the types that vectors are allowed to have. None means any."""
         return None
 
@@ -137,13 +137,16 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             and self.data_model_definition.key_field.property_type
             and self.data_model_definition.key_field.property_type not in self.supported_key_types
         ):
-            raise VectorStoreModelValidationError(f"Key field must be one of {self.supported_key_types}")
+            raise VectorStoreModelValidationError(
+                f"Key field must be one of {self.supported_key_types}, "
+                f"got {self.data_model_definition.key_field.property_type}"
+            )
         if not self.supported_vector_types:
             return
         for field in self.data_model_definition.vector_fields:
             if field.property_type and field.property_type not in self.supported_vector_types:
                 raise VectorStoreModelValidationError(
-                    f"Vector field {field.name} must be one of {self.supported_vector_types}"
+                    f"Vector field {field.name} must be one of {self.supported_vector_types}, got {field.property_type}"
                 )
 
     @abstractmethod

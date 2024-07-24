@@ -13,9 +13,10 @@ from redis.commands.search.field import Field as RedisField
 from redis.commands.search.field import TextField, VectorField
 
 from semantic_kernel.connectors.memory.azure_ai_search.const import DISTANCE_FUNCTION_MAP
-from semantic_kernel.connectors.memory.redis.const import TYPE_MAPPER_VECTOR
+from semantic_kernel.connectors.memory.redis.const import TYPE_MAPPER_VECTOR, RedisCollectionTypes
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_fields import (
+    VectorStoreRecordField,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -128,22 +129,43 @@ class RedisWrapper(Redis):
             asyncio.get_running_loop().create_task(self.close())
 
 
-def data_model_definition_to_redis_fields(data_model_definition: VectorStoreRecordDefinition) -> list[RedisField]:
+def data_model_definition_to_redis_fields(
+    data_model_definition: VectorStoreRecordDefinition, collection_type: RedisCollectionTypes
+) -> list[RedisField]:
     """Create a list of fields for Redis from a data_model_definition."""
     fields: list[RedisField] = []
     for name, field in data_model_definition.fields.items():
-        if isinstance(field, VectorStoreRecordVectorField):
-            fields.append(
-                VectorField(
-                    name=name,
-                    algorithm=field.index_kind.value.upper() if field.index_kind else "HNSW",
-                    attributes={
-                        "type": TYPE_MAPPER_VECTOR[field.property_type or "default"],
-                        "dim": field.dimensions,
-                        "distance_metric": DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
-                    },
-                )
-            )
-            continue
-        fields.append(TextField(name=name))
+        if collection_type == RedisCollectionTypes.HASHSET:
+            fields.append(_field_to_redis_field_hashset(name, field))
+        elif collection_type == RedisCollectionTypes.JSON:
+            fields.append(_field_to_redis_field_json(name, field))
     return fields
+
+
+def _field_to_redis_field_hashset(name: str, field: VectorStoreRecordField) -> RedisField:
+    if isinstance(field, VectorStoreRecordVectorField):
+        return VectorField(
+            name=name,
+            algorithm=field.index_kind.value.upper() if field.index_kind else "HNSW",
+            attributes={
+                "type": TYPE_MAPPER_VECTOR[field.property_type or "default"],
+                "dim": field.dimensions,
+                "distance_metric": DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
+            },
+        )
+    return TextField(name=name)
+
+
+def _field_to_redis_field_json(name: str, field: VectorStoreRecordField) -> RedisField:
+    if isinstance(field, VectorStoreRecordVectorField):
+        return VectorField(
+            name=f"$.{name}",
+            algorithm=field.index_kind.value.upper() if field.index_kind else "HNSW",
+            attributes={
+                "type": TYPE_MAPPER_VECTOR[field.property_type or "default"],
+                "dim": field.dimensions,
+                "distance_metric": DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
+            },
+            as_name=name,
+        )
+    return TextField(name=f"$.{name}", as_name=name)

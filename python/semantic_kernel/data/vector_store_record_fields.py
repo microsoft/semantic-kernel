@@ -2,8 +2,10 @@
 
 from abc import ABC
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from typing import Any
+
+from pydantic import Field
+from pydantic.dataclasses import dataclass
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.data.const import DistanceFunction, IndexKind
@@ -47,7 +49,7 @@ class VectorStoreRecordVectorField(VectorStoreRecordField):
     dimensions: int | None = None
     index_kind: IndexKind | None = None  # hnsw, flat, etc.
     distance_function: DistanceFunction | None = None  # cosine, dot prod, euclidean
-    embedding_settings: dict[str, PromptExecutionSettings] = field(default_factory=dict)
+    embedding_settings: dict[str, PromptExecutionSettings] = Field(default_factory=dict)
     cast_function: Callable[[list[float]], Any] | None = None
 
 

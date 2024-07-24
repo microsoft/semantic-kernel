@@ -84,9 +84,16 @@ def _parse_signature_to_definition(parameters) -> VectorStoreRecordDefinition:
                 if not field_type.name or field_type.name != field.name:
                     field_type.name = field.name
                 if not field_type.property_type:
-                    field_type.property_type = property_type
+                    if hasattr(property_type, "__args__"):
+                        field_type.property_type = f"{property_type.__name__}[{property_type.__args__[0].__name__}]"
+                    else:
+                        field_type.property_type = property_type.__name__
             elif isinstance(item, type(VectorStoreRecordField)):
-                field_type = item(name=field.name, property_type=property_type)
+                if hasattr(property_type, "__args__"):
+                    property_type_name = f"{property_type.__name__}[{property_type.__args__[0].__name__}]"
+                else:
+                    property_type_name = property_type.__name__
+                field_type = item(name=field.name, property_type=property_type_name)
         if not field_type:
             if field._default is _empty:
                 raise VectorStoreModelException(

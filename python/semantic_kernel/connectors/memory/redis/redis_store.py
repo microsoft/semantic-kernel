@@ -5,8 +5,6 @@ import sys
 from collections.abc import Sequence
 from typing import Any, TypeVar
 
-from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -15,7 +13,8 @@ else:
 from pydantic import ValidationError
 from redis.asyncio.client import Redis
 
-from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection
+from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
+from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.connectors.memory.redis.utils import RedisWrapper
 from semantic_kernel.data.vector_store import VectorStore
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
@@ -95,5 +94,11 @@ class RedisStore(VectorStore):
                     **kwargs,
                 )
             else:
-                raise NotImplementedError(f"Collection type {collection_type} is not implemented yet.")
+                self.vector_record_collections[collection_name] = RedisJsonCollection(
+                    data_model_type=data_model_type,
+                    data_model_definition=data_model_definition,
+                    collection_name=collection_name,
+                    redis_database=self.redis_database,
+                    **kwargs,
+                )
         return self.vector_record_collections[collection_name]

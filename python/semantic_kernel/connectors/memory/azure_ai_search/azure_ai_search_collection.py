@@ -6,8 +6,6 @@ import sys
 from collections.abc import Sequence
 from typing import Any, Generic, TypeVar
 
-from pydantic import ValidationError
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -16,6 +14,7 @@ else:
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import SearchIndex
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     data_model_definition_to_azure_ai_search_index,
@@ -154,15 +153,15 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
         await self.search_client.delete_documents(documents=[{self._key_field_name: key} for key in keys])
 
-    @override
     @property
-    def supported_key_types(self) -> Sequence[type] | None:
-        return [str]
+    @override
+    def supported_key_types(self) -> Sequence[str] | None:
+        return ["str"]
 
-    @override
     @property
-    def supported_vector_types(self) -> Sequence[type] | None:
-        return [list[float], list[int]]
+    @override
+    def supported_vector_types(self) -> Sequence[str] | None:
+        return ["list[float]", "list[int]"]
 
     @override
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:

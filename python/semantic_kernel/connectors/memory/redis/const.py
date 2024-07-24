@@ -3,6 +3,8 @@
 
 from enum import Enum
 
+from redis.commands.search.indexDefinition import IndexType
+
 from semantic_kernel.data.const import DistanceFunction
 
 
@@ -10,6 +12,11 @@ class RedisCollectionTypes(str, Enum):
     JSON = "json"
     HASHSET = "hashset"
 
+
+INDEX_TYPE_MAP = {
+    RedisCollectionTypes.JSON: IndexType.JSON,
+    RedisCollectionTypes.HASHSET: IndexType.HASH,
+}
 
 DISTANCE_FUNCTION_MAP = {
     DistanceFunction.COSINE: "COSINE",
@@ -22,6 +29,7 @@ TYPE_MAPPER_VECTOR = {
     "list[float]": "FLOAT32",
     "list[int]": "FLOAT16",
     "list[binary]": "FLOAT16",
+    "ndarray": "FLOAT32",
     "default": "FLOAT32",
 }
 

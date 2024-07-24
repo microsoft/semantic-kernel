@@ -2,7 +2,6 @@
 
 from unittest.mock import AsyncMock, patch
 
-from numpy import array
 from pytest import fixture, mark, raises
 from redis.asyncio.client import Redis
 
@@ -80,7 +79,7 @@ def mock_get():
     with patch(f"{BASE_PATH}.hgetall", new=AsyncMock()) as mock_get:
         mock_get.return_value = {
             b"metadata": b'{"content": "content"}',
-            b"vector": array([1.0, 2.0, 3.0]),
+            b"vector": b"[1.0, 2.0, 3.0]",
         }
         yield mock_get
 
