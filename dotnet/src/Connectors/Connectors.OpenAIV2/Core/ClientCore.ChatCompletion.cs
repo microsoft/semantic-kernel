@@ -26,8 +26,8 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
-    private const string ModelProvider = "openai";
-    private record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
+    protected const string ModelProvider = "openai";
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -45,23 +45,23 @@ internal partial class ClientCore
     /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
     /// configurable should need arise.
     /// </remarks>
-    private const int MaxInflightAutoInvokes = 128;
+    protected const int MaxInflightAutoInvokes = 128;
 
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
-    private static readonly ChatTool s_nonInvocableFunctionTool = ChatTool.CreateFunctionTool("NonInvocableTool");
+    protected static readonly ChatTool s_nonInvocableFunctionTool = ChatTool.CreateFunctionTool("NonInvocableTool");
 
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
-    private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
+    protected static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
-    private static readonly Meter s_meter = new("Microsoft.SemanticKernel.Connectors.OpenAI");
+    protected static readonly Meter s_meter = new("Microsoft.SemanticKernel.Connectors.OpenAI");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
     /// </summary>
-    private static readonly Counter<int> s_promptTokensCounter =
+    protected static readonly Counter<int> s_promptTokensCounter =
         s_meter.CreateCounter<int>(
             name: "semantic_kernel.connectors.openai.tokens.prompt",
             unit: "{token}",
@@ -70,7 +70,7 @@ internal partial class ClientCore
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
     /// </summary>
-    private static readonly Counter<int> s_completionTokensCounter =
+    protected static readonly Counter<int> s_completionTokensCounter =
         s_meter.CreateCounter<int>(
             name: "semantic_kernel.connectors.openai.tokens.completion",
             unit: "{token}",
@@ -79,13 +79,13 @@ internal partial class ClientCore
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
     /// </summary>
-    private static readonly Counter<int> s_totalTokensCounter =
+    protected static readonly Counter<int> s_totalTokensCounter =
         s_meter.CreateCounter<int>(
             name: "semantic_kernel.connectors.openai.tokens.total",
             unit: "{token}",
             description: "Number of tokens used");
 
-    private static Dictionary<string, object?> GetChatCompletionMetadata(OpenAIChatCompletion completions)
+    protected virtual Dictionary<string, object?> GetChatCompletionMetadata(OpenAIChatCompletion completions)
     {
         return new Dictionary<string, object?>
         {
@@ -100,7 +100,7 @@ internal partial class ClientCore
         };
     }
 
-    private static Dictionary<string, object?> GetChatCompletionMetadata(StreamingChatCompletionUpdate completionUpdate)
+    protected static Dictionary<string, object?> GetChatCompletionMetadata(StreamingChatCompletionUpdate completionUpdate)
     {
         return new Dictionary<string, object?>
         {
@@ -116,12 +116,14 @@ internal partial class ClientCore
     /// <summary>
     /// Generate a new chat message
     /// </summary>
+    /// <param name="targetModel">Model identifier</param>
     /// <param name="chat">Chat history</param>
     /// <param name="executionSettings">Execution settings for the completion API.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
     internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
+        string targetModel,
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
@@ -129,7 +131,7 @@ internal partial class ClientCore
     {
         Verify.NotNull(chat);
 
-        if (this.Logger.IsEnabled(LogLevel.Trace))
+        if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
                 JsonSerializer.Serialize(chat),
@@ -137,7 +139,7 @@ internal partial class ClientCore
         }
 
         // Convert the incoming execution settings to OpenAI settings.
-        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        OpenAIPromptExecutionSettings chatExecutionSettings = this.GetSpecializedExecutionSettings(executionSettings);
 
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
@@ -152,11 +154,11 @@ internal partial class ClientCore
             // Make the request.
             OpenAIChatCompletion? chatCompletion = null;
             OpenAIChatMessageContent chatMessageContent;
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.ModelId, ModelProvider, chat, chatExecutionSettings))
+            using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
             {
                 try
                 {
-                    chatCompletion = (await RunRequestAsync(() => this.Client.GetChatClient(this.ModelId).CompleteChatAsync(chatForRequest, chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
+                    chatCompletion = (await RunRequestAsync(() => this.Client!.GetChatClient(targetModel).CompleteChatAsync(chatForRequest, chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
 
                     this.LogUsage(chatCompletion.Usage);
                 }
@@ -174,7 +176,7 @@ internal partial class ClientCore
                     throw;
                 }
 
-                chatMessageContent = this.CreateChatMessageContent(chatCompletion);
+                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel);
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokens, chatCompletion.Usage.OutputTokens);
             }
 
@@ -316,6 +318,7 @@ internal partial class ClientCore
     }
 
     internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+        string targetModel,
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
@@ -323,14 +326,14 @@ internal partial class ClientCore
     {
         Verify.NotNull(chat);
 
-        if (this.Logger.IsEnabled(LogLevel.Trace))
+        if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
                 JsonSerializer.Serialize(chat),
                 JsonSerializer.Serialize(executionSettings));
         }
 
-        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        OpenAIPromptExecutionSettings chatExecutionSettings = this.GetSpecializedExecutionSettings(executionSettings);
 
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
@@ -361,13 +364,13 @@ internal partial class ClientCore
             ChatToolCall[]? toolCalls = null;
             FunctionCallContent[]? functionCallContents = null;
 
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.ModelId, ModelProvider, chat, chatExecutionSettings))
+            using (var activity = this.StartCompletionActivity(chat, chatExecutionSettings))
             {
                 // Make the request.
                 AsyncResultCollection<StreamingChatCompletionUpdate> response;
                 try
                 {
-                    response = RunRequest(() => this.Client.GetChatClient(this.ModelId).CompleteChatStreamingAsync(chatForRequest, chatOptions, cancellationToken));
+                    response = RunRequest(() => this.Client!.GetChatClient(targetModel).CompleteChatStreamingAsync(chatForRequest, chatOptions, cancellationToken));
                 }
                 catch (Exception ex) when (activity is not null)
                 {
@@ -414,7 +417,7 @@ internal partial class ClientCore
                             OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatCompletionUpdate.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                         }
 
-                        var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, this.ModelId, metadata);
+                        var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(chatCompletionUpdate, 0, targetModel, metadata);
 
                         foreach (var functionCallUpdate in chatCompletionUpdate.ToolCallUpdates)
                         {
@@ -586,32 +589,139 @@ internal partial class ClientCore
     }
 
     internal async IAsyncEnumerable<StreamingTextContent> GetChatAsTextStreamingContentsAsync(
+        string targetModel,
         string prompt,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        OpenAIPromptExecutionSettings chatSettings = this.GetSpecializedExecutionSettings(executionSettings);
         ChatHistory chat = CreateNewChat(prompt, chatSettings);
 
-        await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
+        await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(targetModel, chat, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
         {
             yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate.ModelId, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
         }
     }
 
     internal async Task<IReadOnlyList<TextContent>> GetChatAsTextContentsAsync(
+        string model,
         string text,
         PromptExecutionSettings? executionSettings,
         Kernel? kernel,
         CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        OpenAIPromptExecutionSettings chatSettings = this.GetSpecializedExecutionSettings(executionSettings);
 
         ChatHistory chat = CreateNewChat(text, chatSettings);
-        return (await this.GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
+        return (await this.GetChatMessageContentsAsync(model, chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
             .Select(chat => new TextContent(chat.Content, chat.ModelId, chat.Content, Encoding.UTF8, chat.Metadata))
             .ToList();
+    }
+
+    /// <summary>
+    /// Returns a specialized execution settings object for the OpenAI chat completion service.
+    /// </summary>
+    /// <param name="executionSettings">Potential execution settings infer specialized.</param>
+    /// <returns>Specialized settings</returns>
+    protected virtual OpenAIPromptExecutionSettings GetSpecializedExecutionSettings(PromptExecutionSettings? executionSettings)
+        => OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+
+    /// <summary>
+    /// Start a chat completion activity for a given model.
+    /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
+    /// </summary>
+    protected virtual Activity? StartCompletionActivity(ChatHistory chatHistory, PromptExecutionSettings settings)
+        => ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.ModelId, ModelProvider, chatHistory, settings);
+
+    protected virtual ChatCompletionOptions CreateChatCompletionOptions(
+        OpenAIPromptExecutionSettings executionSettings,
+        ChatHistory chatHistory,
+        ToolCallingConfig toolCallingConfig,
+        Kernel? kernel)
+    {
+        var options = new ChatCompletionOptions
+        {
+            MaxTokens = executionSettings.MaxTokens,
+            Temperature = (float?)executionSettings.Temperature,
+            TopP = (float?)executionSettings.TopP,
+            FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
+            PresencePenalty = (float?)executionSettings.PresencePenalty,
+            Seed = executionSettings.Seed,
+            User = executionSettings.User,
+            TopLogProbabilityCount = executionSettings.TopLogprobs,
+            IncludeLogProbabilities = executionSettings.Logprobs,
+            ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,
+            ToolChoice = toolCallingConfig.Choice,
+        };
+
+        if (toolCallingConfig.Tools is { Count: > 0 } tools)
+        {
+            options.Tools.AddRange(tools);
+        }
+
+        if (executionSettings.TokenSelectionBiases is not null)
+        {
+            foreach (var keyValue in executionSettings.TokenSelectionBiases)
+            {
+                options.LogitBiases.Add(keyValue.Key, keyValue.Value);
+            }
+        }
+
+        if (executionSettings.StopSequences is { Count: > 0 })
+        {
+            foreach (var s in executionSettings.StopSequences)
+            {
+                options.StopSequences.Add(s);
+            }
+        }
+
+        return options;
+    }
+
+    /// <summary>
+    /// Retrieves the response format based on the provided settings.
+    /// </summary>
+    /// <param name="executionSettings">Execution settings.</param>
+    /// <returns>Chat response format</returns>
+    protected static ChatResponseFormat? GetResponseFormat(OpenAIPromptExecutionSettings executionSettings)
+    {
+        switch (executionSettings.ResponseFormat)
+        {
+            case ChatResponseFormat formatObject:
+                // If the response format is an OpenAI SDK ChatCompletionsResponseFormat, just pass it along.
+                return formatObject;
+            case string formatString:
+                // If the response format is a string, map the ones we know about, and ignore the rest.
+                switch (formatString)
+                {
+                    case "json_object":
+                        return ChatResponseFormat.JsonObject;
+
+                    case "text":
+                        return ChatResponseFormat.Text;
+                }
+                break;
+
+            case JsonElement formatElement:
+                // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
+                // Handling only string formatElement.
+                if (formatElement.ValueKind == JsonValueKind.String)
+                {
+                    string formatString = formatElement.GetString() ?? "";
+                    switch (formatString)
+                    {
+                        case "json_object":
+                            return ChatResponseFormat.JsonObject;
+
+                        case "text":
+                            return ChatResponseFormat.Text;
+                    }
+                }
+                break;
+        }
+
+        return null;
     }
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
@@ -655,51 +765,6 @@ internal partial class ClientCore
         }
 
         return chat;
-    }
-
-    private ChatCompletionOptions CreateChatCompletionOptions(
-        OpenAIPromptExecutionSettings executionSettings,
-        ChatHistory chatHistory,
-        ToolCallingConfig toolCallingConfig,
-        Kernel? kernel)
-    {
-        var options = new ChatCompletionOptions
-        {
-            MaxTokens = executionSettings.MaxTokens,
-            Temperature = (float?)executionSettings.Temperature,
-            TopP = (float?)executionSettings.TopP,
-            FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
-            PresencePenalty = (float?)executionSettings.PresencePenalty,
-            Seed = executionSettings.Seed,
-            User = executionSettings.User,
-            TopLogProbabilityCount = executionSettings.TopLogprobs,
-            IncludeLogProbabilities = executionSettings.Logprobs,
-            ResponseFormat = GetResponseFormat(executionSettings) ?? ChatResponseFormat.Text,
-            ToolChoice = toolCallingConfig.Choice,
-        };
-
-        if (toolCallingConfig.Tools is { Count: > 0 } tools)
-        {
-            options.Tools.AddRange(tools);
-        }
-
-        if (executionSettings.TokenSelectionBiases is not null)
-        {
-            foreach (var keyValue in executionSettings.TokenSelectionBiases)
-            {
-                options.LogitBiases.Add(keyValue.Key, keyValue.Value);
-            }
-        }
-
-        if (executionSettings.StopSequences is { Count: > 0 })
-        {
-            foreach (var s in executionSettings.StopSequences)
-            {
-                options.StopSequences.Add(s);
-            }
-        }
-
-        return options;
     }
 
     private static List<ChatMessage> CreateChatCompletionMessages(OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory)
@@ -909,9 +974,9 @@ internal partial class ClientCore
         throw new NotSupportedException($"Role {completion.Role} is not supported.");
     }
 
-    private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion)
+    private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel)
     {
-        var message = new OpenAIChatMessageContent(completion, this.ModelId, GetChatCompletionMetadata(completion));
+        var message = new OpenAIChatMessageContent(completion, targetModel, this.GetChatCompletionMetadata(completion));
 
         message.Items.AddRange(this.GetFunctionCallContents(completion.ToolCalls));
 
@@ -962,7 +1027,7 @@ internal partial class ClientCore
                 {
                     exception = new KernelException("Error: Function call arguments were invalid JSON.", ex);
 
-                    if (this.Logger.IsEnabled(LogLevel.Debug))
+                    if (this.Logger!.IsEnabled(LogLevel.Debug))
                     {
                         this.Logger.LogDebug(ex, "Failed to deserialize function arguments ({FunctionName}/{FunctionId}).", toolCall.FunctionName, toolCall.Id);
                     }
@@ -1030,11 +1095,11 @@ internal partial class ClientCore
     {
         if (usage is null)
         {
-            this.Logger.LogDebug("Token usage information unavailable.");
+            this.Logger!.LogDebug("Token usage information unavailable.");
             return;
         }
 
-        if (this.Logger.IsEnabled(LogLevel.Information))
+        if (this.Logger!.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation(
                 "Prompt tokens: {InputTokens}. Completion tokens: {OutputTokens}. Total tokens: {TotalTokens}.",
@@ -1123,7 +1188,7 @@ internal partial class ClientCore
         if (requestIndex >= executionSettings.ToolCallBehavior.MaximumUseAttempts)
         {
             // Don't add any tools as we've reached the maximum attempts limit.
-            if (this.Logger.IsEnabled(LogLevel.Debug))
+            if (this.Logger!.IsEnabled(LogLevel.Debug))
             {
                 this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", executionSettings.ToolCallBehavior!.MaximumUseAttempts);
             }
@@ -1141,7 +1206,7 @@ internal partial class ClientCore
         if (requestIndex >= executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts)
         {
             autoInvoke = false;
-            if (this.Logger.IsEnabled(LogLevel.Debug))
+            if (this.Logger!.IsEnabled(LogLevel.Debug))
             {
                 this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", executionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
             }
@@ -1151,45 +1216,5 @@ internal partial class ClientCore
             Tools: tools ?? [s_nonInvocableFunctionTool],
             Choice: choice ?? ChatToolChoice.None,
             AutoInvoke: autoInvoke);
-    }
-
-    private static ChatResponseFormat? GetResponseFormat(OpenAIPromptExecutionSettings executionSettings)
-    {
-        switch (executionSettings.ResponseFormat)
-        {
-            case ChatResponseFormat formatObject:
-                // If the response format is an OpenAI SDK ChatCompletionsResponseFormat, just pass it along.
-                return formatObject;
-            case string formatString:
-                // If the response format is a string, map the ones we know about, and ignore the rest.
-                switch (formatString)
-                {
-                    case "json_object":
-                        return ChatResponseFormat.JsonObject;
-
-                    case "text":
-                        return ChatResponseFormat.Text;
-                }
-                break;
-
-            case JsonElement formatElement:
-                // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
-                // Handling only string formatElement.
-                if (formatElement.ValueKind == JsonValueKind.String)
-                {
-                    string formatString = formatElement.GetString() ?? "";
-                    switch (formatString)
-                    {
-                        case "json_object":
-                            return ChatResponseFormat.JsonObject;
-
-                        case "text":
-                            return ChatResponseFormat.Text;
-                    }
-                }
-                break;
-        }
-
-        return null;
     }
 }

@@ -52,7 +52,7 @@ internal static class ModelDiagnostics
     /// Start a chat completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity<TPromptExecutionSettings>(
+    internal static Activity? StartCompletionActivity<TPromptExecutionSettings>(
         Uri? endpoint,
         string modelName,
         string modelProvider,
