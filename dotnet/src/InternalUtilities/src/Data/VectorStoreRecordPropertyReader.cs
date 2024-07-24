@@ -255,6 +255,23 @@ internal static class VectorStoreRecordPropertyReader
     /// <exception cref="ArgumentException">Thrown if any of the properties are not in the given set of types.</exception>
     public static void VerifyPropertyTypes(List<PropertyInfo> properties, HashSet<Type> supportedTypes, string propertyCategoryDescription, bool? supportEnumerable = false)
     {
+        var supportedEnumerableTypes = supportEnumerable == true
+            ? supportedTypes
+            : [];
+
+        VerifyPropertyTypes(properties, supportedTypes, propertyCategoryDescription, supportedEnumerableTypes);
+    }
+
+    /// <summary>
+    /// Verify that the given properties are of the supported types.
+    /// </summary>
+    /// <param name="properties">The properties to check.</param>
+    /// <param name="supportedTypes">A set of supported types that the provided properties may have.</param>
+    /// <param name="propertyCategoryDescription">A description of the category of properties being checked. Used for error messaging.</param>
+    /// <param name="supportedEnumerableTypes">A set of supported types that the provided enumerable properties may use as their element type.</param>
+    /// <exception cref="ArgumentException">Thrown if any of the properties are not in the given set of types.</exception>
+    public static void VerifyPropertyTypes(List<PropertyInfo> properties, HashSet<Type> supportedTypes, string propertyCategoryDescription, HashSet<Type> supportedEnumerableTypes)
+    {
         foreach (var property in properties)
         {
             // Add shortcut before testing all the more expensive scenarios.
@@ -264,39 +281,29 @@ internal static class VectorStoreRecordPropertyReader
             }
 
             // Check all collection scenarios and get stored type.
-            Type typeToCheck;
-            if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType) && supportEnumerable == true)
+            if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType) && supportedEnumerableTypes.Count > 0)
             {
-                if (property.PropertyType is IEnumerable)
+                var typeToCheck = property.PropertyType switch
                 {
-                    typeToCheck = typeof(object);
-                }
-                else if (property.PropertyType.IsArray)
+                    IEnumerable => typeof(object),
+                    var enumerableType when enumerableType.IsGenericType && enumerableType.GetGenericTypeDefinition() == typeof(IEnumerable<>) => enumerableType.GetGenericArguments()[0],
+                    var arrayType when arrayType.IsArray => arrayType.GetElementType()!,
+                    var interfaceType when interfaceType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface =>
+                        enumerableInterface.GetGenericArguments()[0],
+                    _ => property.PropertyType
+                };
+
+                if (!supportedEnumerableTypes.Contains(typeToCheck))
                 {
-                    typeToCheck = property.PropertyType.GetElementType()!;
-                }
-                else if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                {
-                    typeToCheck = property.PropertyType.GetGenericArguments()[0];
-                }
-                else if (property.PropertyType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface)
-                {
-                    typeToCheck = enumerableInterface.GetGenericArguments()[0];
-                }
-                else
-                {
-                    typeToCheck = property.PropertyType;
+                    var supportedEnumerableElementTypesString = string.Join(", ", supportedEnumerableTypes!.Select(t => t.FullName));
+                    throw new ArgumentException($"Enumerable {propertyCategoryDescription} properties must have one of the supported element types: {supportedEnumerableElementTypesString}. Element type of the property '{property.Name}' is {typeToCheck.FullName}.");
                 }
             }
             else
             {
-                typeToCheck = property.PropertyType;
-            }
-
-            if (!supportedTypes.Contains(typeToCheck))
-            {
+                // if we got here, we know the type is not supported
                 var supportedTypesString = string.Join(", ", supportedTypes.Select(t => t.FullName));
-                throw new ArgumentException($"{propertyCategoryDescription} properties must be one of the supported types: {supportedTypesString}. Type of {property.Name} is {property.PropertyType.FullName}.");
+                throw new ArgumentException($"{propertyCategoryDescription} properties must be one of the supported types: {supportedTypesString}. Type of the property '{property.Name}' is {property.PropertyType.FullName}.");
             }
         }
     }
