@@ -40,8 +40,8 @@ public class AI21JambaIOService : IBedrockModelIOService
             }
         };
 
-        var temperature = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double)DefaultTemperature);
-        var topP = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", (double)DefaultTopP);
+        var temperature = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", DefaultTemperature);
+        var topP = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", DefaultTopP);
         var maxTokens = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", DefaultMaxTokens);
         var stop = this._util.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop", null);
         var numberOfResponses = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "n", DefaultN);
@@ -152,7 +152,7 @@ public class AI21JambaIOService : IBedrockModelIOService
     /// <param name="chatHistory"></param>
     /// <param name="settings"></param>
     /// <returns></returns>
-    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         var messages = chatHistory.Select(m => new Message
         {

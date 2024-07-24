@@ -90,8 +90,8 @@ public class AmazonIOService : IBedrockModelIOService
 
         var inferenceConfig = new InferenceConfiguration
         {
-            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", (float)DefaultTopP),
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", DefaultTopP),
             MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount),
         };
 
@@ -137,8 +137,8 @@ public class AmazonIOService : IBedrockModelIOService
 
         var inferenceConfig = new InferenceConfiguration
         {
-            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", (float)DefaultTopP),
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", DefaultTopP),
             MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount),
         };
 
@@ -146,7 +146,7 @@ public class AmazonIOService : IBedrockModelIOService
         {
             ModelId = modelId,
             Messages = messages,
-            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
+            System = new List<SystemContentBlock>(),
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()

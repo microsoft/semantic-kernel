@@ -56,7 +56,7 @@ switch (choice)
             Console.Write("Enter the number of the model you want to use: ");
         }
 
-        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelOptions[chosenModel], RegionEndpoint.USEast1).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelOptions[chosenModel]).Build();
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         do

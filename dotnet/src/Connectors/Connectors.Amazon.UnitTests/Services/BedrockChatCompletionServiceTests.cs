@@ -2,9 +2,10 @@
 
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
+using Amazon.Runtime.Endpoints;
+using Connectors.Amazon.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Amazon.Services;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
@@ -33,7 +34,8 @@ public class BedrockChatCompletionServiceTests
         // Arrange & Act
         string modelId = "amazon.titan-text-premier-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
 
         // Assert
         Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
@@ -47,6 +49,11 @@ public class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "amazon.titan-embed-text-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseResponse
             {
@@ -62,7 +69,8 @@ public class BedrockChatCompletionServiceTests
                 StopReason = StopReason.Max_tokens,
                 Usage = new TokenUsage()
             });
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
@@ -90,7 +98,8 @@ public class BedrockChatCompletionServiceTests
                 Stream = new ConverseStreamOutput(new MemoryStream())
             });
 
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory();
 
         // Act
@@ -128,6 +137,11 @@ public class BedrockChatCompletionServiceTests
                 { "maxTokenCount", 510 }
             }
         };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseResponse
             {
@@ -143,7 +157,8 @@ public class BedrockChatCompletionServiceTests
                 StopReason = StopReason.Max_tokens,
                 Usage = new TokenUsage()
             });
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
@@ -170,6 +185,11 @@ public class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "amazon.titan-embed-text-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseResponse
             {
@@ -185,7 +205,8 @@ public class BedrockChatCompletionServiceTests
                 StopReason = StopReason.Max_tokens,
                 Usage = new TokenUsage()
             });
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
@@ -206,6 +227,11 @@ public class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "amazon.titan-embed-text-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
 
         // Set up the mock ConverseAsync to return multiple responses
         mockBedrockApi.SetupSequence(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
@@ -238,7 +264,8 @@ public class BedrockChatCompletionServiceTests
                 Usage = new TokenUsage()
             });
 
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
@@ -302,7 +329,8 @@ public class BedrockChatCompletionServiceTests
                 StopReason = StopReason.Max_tokens,
                 Usage = new TokenUsage()
             });
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
@@ -327,6 +355,11 @@ public class BedrockChatCompletionServiceTests
                 { "max_tokens_to_sample", 512 }
             }
         };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseResponse
             {
@@ -342,7 +375,8 @@ public class BedrockChatCompletionServiceTests
                 StopReason = StopReason.Max_tokens,
                 Usage = new TokenUsage()
             });
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
@@ -379,6 +413,11 @@ public class BedrockChatCompletionServiceTests
                 { "max_gen_len", 256 }
             }
         };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseResponse
             {
@@ -394,7 +433,8 @@ public class BedrockChatCompletionServiceTests
                 StopReason = StopReason.Max_tokens,
                 Usage = new TokenUsage()
             });
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
@@ -431,6 +471,11 @@ public class BedrockChatCompletionServiceTests
                 { "max_tokens", 512 }
             }
         };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseResponse
             {
@@ -446,7 +491,8 @@ public class BedrockChatCompletionServiceTests
                 StopReason = StopReason.Max_tokens,
                 Usage = new TokenUsage()
             });
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
@@ -483,6 +529,11 @@ public class BedrockChatCompletionServiceTests
                 { "max_tokens", 202 }
             }
         };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseResponse
             {
@@ -498,7 +549,8 @@ public class BedrockChatCompletionServiceTests
                 StopReason = StopReason.Max_tokens,
                 Usage = new TokenUsage()
             });
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
 
         // Act
@@ -535,6 +587,11 @@ public class BedrockChatCompletionServiceTests
                 { "max_tokens", 202 }
             }
         };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseResponse
             {
@@ -550,7 +607,8 @@ public class BedrockChatCompletionServiceTests
                 StopReason = StopReason.Max_tokens,
                 Usage = new TokenUsage()
             });
-        var service = new BedrockChatCompletionService(modelId, mockBedrockApi.Object);
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
 
         // Act

@@ -35,7 +35,7 @@ public class BedrockTextGenerationTests
     {
         // Arrange
         string prompt = "What is 2 + 2?";
-        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, RegionEndpoint.USEast1).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId).Build();
         var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
 
         // Act
@@ -73,7 +73,7 @@ public class BedrockTextGenerationTests
     {
         // Arrange
         string prompt = "What is 2 + 2?";
-        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, RegionEndpoint.USEast1).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId).Build();
         var textGenerationService = kernel.GetRequiredService<ITextGenerationService>();
 
         // Act

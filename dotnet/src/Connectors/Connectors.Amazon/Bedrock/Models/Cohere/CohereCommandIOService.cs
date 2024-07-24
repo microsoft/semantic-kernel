@@ -131,7 +131,7 @@ public class CohereCommandIOService : IBedrockModelIOService
     /// <param name="settings"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         throw new NotImplementedException();
     }

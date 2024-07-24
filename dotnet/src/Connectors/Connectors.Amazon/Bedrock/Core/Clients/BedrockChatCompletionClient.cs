@@ -24,7 +24,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     private readonly string _modelProvider;
     private readonly IAmazonBedrockRuntime _bedrockApi;
     private readonly IBedrockModelIOService _ioService;
-    private readonly Uri _chatGenerationEndpoint;
+    private Uri? _chatGenerationEndpoint;
 
     /// <summary>
     /// Builds the client object and registers the model input-output service given the user's passed in model ID.
@@ -32,32 +32,23 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     /// <param name="modelId"></param>
     /// <param name="bedrockApi"></param>
     /// <exception cref="ArgumentException"></exception>
-    public BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockApi)
+    protected BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockApi)
     {
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
-        if (bedrockApi.Config != null) // This should only be null when runtime object is Mock<IAmazonBedrockRuntime>() for unit testing.
-        {
-            var regionEndpoint = bedrockApi.DetermineServiceOperationEndpoint(new AmazonBedrockRuntimeRequest()).URL;
-            this._chatGenerationEndpoint = new Uri(regionEndpoint);
-        }
-        else
-        {
-            this._chatGenerationEndpoint = new Uri("https://bedrock-runtime.us-east-1.amazonaws.com");
-        }
         this._ioService = new BedrockClientIOService().GetIOService(modelId);
         this._modelProvider = new BedrockClientIOService().GetModelProvider(modelId);
     }
     /// <summary>
     /// Builds the convert request body given the model ID (as stored in ioService object) and calls the ConverseAsync Bedrock Runtime action to get the result.
     /// </summary>
-    /// <param name="chatHistory"> The chat history containing the conversation data. </param>
-    /// <param name="executionSettings"> Optional settings for prompt execution. </param>
+    /// <param name="converseRequest"> The converse request for ConverseAsync bedrock runtime action. </param>
     /// <param name="cancellationToken"> A cancellation token to cancel the operation. </param>
     /// <returns></returns>
-    private async Task<ConverseResponse> ConverseBedrockModelAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, CancellationToken cancellationToken = default)
+    private async Task<ConverseResponse> ConverseBedrockModelAsync(
+        ConverseRequest converseRequest,
+        CancellationToken cancellationToken = default)
     {
-        var converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory, executionSettings);
         string? text = converseRequest.Messages?[^1]?.Content?[0]?.Text;
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -72,13 +63,16 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(chatHistory);
+        ConverseRequest converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory, executionSettings);
+        var regionEndpoint = this._bedrockApi.DetermineServiceOperationEndpoint(converseRequest).URL;
+        this._chatGenerationEndpoint = new Uri(regionEndpoint);
         ConverseResponse response;
         using (var activity = ModelDiagnostics.StartCompletionActivity(
                    this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings))
         {
             try
             {
-                response = await this.ConverseBedrockModelAsync(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
+                response = await this.ConverseBedrockModelAsync(converseRequest, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (activity is not null)
             {
@@ -87,11 +81,6 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
             }
             IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
             IReadOnlyList<ChatMessageContent> chatMessagesList = chat.ToList();
-            // Per other sample Connector demos, user will add the response to the ChatHistory. Otherwise, it could be done as below:
-            // foreach (var message in chat)
-            // {
-            //     chatHistory.AddMessage(AuthorRole.Assistant, message.Content);
-            // }
             activity?.SetCompletionResponse(chatMessagesList);
             return chatMessagesList;
         }
@@ -149,6 +138,9 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
+        var converseStreamRequest = this._ioService.GetConverseStreamRequest(this._modelId, chatHistory, executionSettings);
+        var regionEndpoint = this._bedrockApi.DetermineServiceOperationEndpoint(converseStreamRequest).URL;
+        this._chatGenerationEndpoint = new Uri(regionEndpoint);
         ConverseStreamResponse response;
         using var activity = ModelDiagnostics.StartCompletionActivity(
             this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings);
@@ -156,7 +148,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         {
             try
             {
-                response = await this.StreamConverseBedrockModelAsync(chatHistory, executionSettings ?? new PromptExecutionSettings(), cancellationToken).ConfigureAwait(false);
+                response = await this.StreamConverseBedrockModelAsync(chatHistory, executionSettings, cancellationToken).ConfigureAwait(false);
             }
             catch (AmazonBedrockRuntimeException e)
             {
@@ -185,8 +177,8 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
     }
     private async Task<ConverseStreamResponse> StreamConverseBedrockModelAsync(
         ChatHistory chatHistory,
-        PromptExecutionSettings executionSettings,
-        CancellationToken cancellationToken)
+        PromptExecutionSettings? executionSettings = null,
+        CancellationToken cancellationToken = default)
     {
         var converseRequest = this._ioService.GetConverseStreamRequest(this._modelId, chatHistory, executionSettings);
         return await this._bedrockApi.ConverseStreamAsync(converseRequest, cancellationToken).ConfigureAwait(true);

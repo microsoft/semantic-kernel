@@ -40,7 +40,7 @@ public class BedrockChatCompletionTests
         chatHistory.AddAssistantMessage("I'm doing well, thanks for asking.");
         chatHistory.AddUserMessage("What is 2 + 2?");
 
-        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, RegionEndpoint.USEast1).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId).Build();
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Act
@@ -84,7 +84,7 @@ public class BedrockChatCompletionTests
         chatHistory.AddAssistantMessage("I'm doing well, thanks for asking.");
         chatHistory.AddUserMessage("What is 2 + 2?");
 
-        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, RegionEndpoint.USEast1).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId).Build();
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Act
