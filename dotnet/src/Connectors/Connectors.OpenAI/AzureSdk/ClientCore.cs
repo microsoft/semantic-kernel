@@ -506,8 +506,9 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat, result)
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
@@ -760,7 +761,9 @@ internal abstract class ClientCore
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, streamedName, toolCalls));
-            chat.Add(this.GetChatMessage(streamedRole ?? default, content, toolCalls, functionCallContents, metadata, streamedName));
+
+            var chatMessageContent = this.GetChatMessage(streamedRole ?? default, content, toolCalls, functionCallContents, metadata, streamedName);
+            chat.Add(chatMessageContent);
 
             // Respond to each tooling request.
             for (int toolCallIndex = 0; toolCallIndex < toolCalls.Length; toolCallIndex++)
@@ -805,8 +808,9 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat, chatMessageContent)
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
