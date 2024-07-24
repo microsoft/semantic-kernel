@@ -286,9 +286,16 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         except Exception as exc:
             raise MemoryConnectorException(f"Error deserializing record: {exc}") from exc
 
-        if isinstance(model_records, Sequence):
+        # there are many code paths within the deserialize method, some supplied by the developer,
+        # and so depending on what is used,
+        # it might return a sequence, so we just return the first element,
+        # there should never be multiple elements (this is not a batch get),
+        # hence a raise if there are.
+        if not isinstance(model_records, Sequence):
+            return model_records
+        if len(model_records) == 1:
             return model_records[0]
-        return model_records
+        raise MemoryConnectorException(f"Error deserializing record, multiple records returned: {model_records}")
 
     async def get_batch(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[TModel] | None:
         """Get a batch of records.
@@ -341,7 +348,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
     # region Internal Serialization methods
 
-    def serialize(self, records: OneOrMany[TModel], **kwargs: Any) -> OneOrMany[Any] | None:
+    def serialize(self, records: OneOrMany[TModel], **kwargs: Any) -> OneOrMany[Any]:
         """Serialize the data model to the store model.
 
         This method follows the following steps:
@@ -370,7 +377,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         # this case is single record in, single record out
         return self._serialize_dicts_to_store_models([dict_records], **kwargs)[0]
 
-    def deserialize(self, records: OneOrMany[Any | dict[str, Any]], **kwargs: Any) -> OneOrMany[TModel] | None:
+    def deserialize(self, records: OneOrMany[Any | dict[str, Any]], **kwargs: Any) -> OneOrMany[TModel]:
         """Deserialize the store model to the data model.
 
         This method follows the following steps:
