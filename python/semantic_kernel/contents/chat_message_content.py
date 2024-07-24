@@ -9,6 +9,7 @@ from xml.etree.ElementTree import Element  # nosec
 from defusedxml import ElementTree
 from pydantic import Field
 
+from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.const import (
     CHAT_MESSAGE_CONTENT_TAG,
     DISCRIMINATOR_FIELD,
@@ -36,6 +37,7 @@ TAG_CONTENT_MAP = {
 }
 
 ITEM_TYPES = Union[
+    AnnotationContent,
     ImageContent,
     TextContent,
     StreamingTextContent,

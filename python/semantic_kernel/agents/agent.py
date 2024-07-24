@@ -30,7 +30,7 @@ class Agent(KernelBaseModel):
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     description: str | None = None
-    name: str | None = None
+    name: str = Field(default_factory=lambda: "Agent")
     instructions: str | None = None
     kernel: Kernel = Field(default_factory=Kernel)
     channel_type: ClassVar[type[AgentChannel] | None] = None

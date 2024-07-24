@@ -3,10 +3,8 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel.agents.openai.open_ai_assistant_agent import OpenAIAssistantAgent
-from semantic_kernel.agents.openai.open_ai_assistant_configuration import OpenAIAssistantConfiguration
 from semantic_kernel.agents.openai.open_ai_assistant_definition import OpenAIAssistantDefinition
-from semantic_kernel.agents.openai.open_ai_thread_creation_settings import OpenAIThreadCreationSettings
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.agents.openai.open_ai_service_configuration import OpenAIServiceConfiguration
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -53,32 +51,29 @@ async def main():
 
     # Add the OpenAIChatCompletion AI Service to the Kernel
     service_id = "agent"
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
 
     kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
 
     # Create the agent
-    configuration = OpenAIAssistantConfiguration(service_id=service_id)
+    configuration = OpenAIServiceConfiguration.for_openai(service_id=service_id)
     definition = OpenAIAssistantDefinition(name=HOST_NAME, instructions=HOST_INSTRUCTIONS, enable_code_interpreter=True)
 
-    agent = OpenAIAssistantAgent(configuration=configuration, definition=definition, kernel=kernel)
+    # First define the OpenAIAssistantAgent object
+    agent = OpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
 
+    # Next create the assistant
     await agent.create_assistant()
 
-    file_id = await agent.add_file("./hello.py")
+    # Note: this can be done in one step if desired
+    # agent = await OpenAIAssistantAgent.create(configuration=configuration, definition=definition, kernel=kernel)
 
-    thread_options = OpenAIThreadCreationSettings(code_interpreter_file_ids=[file_id])
-
-    thread_id = await agent.create_thread(thread_options)
+    thread_id = await agent.create_thread()
 
     try:
-        await invoke_agent(
-            agent, thread_id=thread_id, input="Use code interpreter to run my hello.py file and give me the result"
-        )
         # await invoke_agent(agent, thread_id=thread_id, input="Hello")
-        # await invoke_agent(agent, thread_id=thread_id, input="What is the special soup?")
-        # await invoke_agent(agent, thread_id=thread_id, input="What is the special drink?")
-        # await invoke_agent(agent, thread_id=thread_id, input="Thank you")
+        await invoke_agent(agent, thread_id=thread_id, input="What is the special soup?")
+        await invoke_agent(agent, thread_id=thread_id, input="What is the special drink?")
+        await invoke_agent(agent, thread_id=thread_id, input="Thank you")
     finally:
         await agent.delete_thread(thread_id)
         await agent.delete()
