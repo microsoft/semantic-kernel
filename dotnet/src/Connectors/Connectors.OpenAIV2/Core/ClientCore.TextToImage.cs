@@ -51,14 +51,6 @@ internal partial class ClientCore
         // However, considering that the model is required by the OpenAI SDK and the ModelId property is optional, it defaults to DALL-E 2 in the line below.
         targetModel = string.IsNullOrEmpty(targetModel) ? "dall-e-2" : targetModel!;
 
-        /* Unmerged change from project 'Connectors.OpenAIV2 (netstandard2.0)'
-        Before:
-                ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient(targetModel).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
-                var generatedImage = response.Value;
-        After:
-                ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient((string?)targetModel).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
-                var generatedImage = response.Value;
-        */
         ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient(targetModel).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
         var generatedImage = response.Value;
 
