@@ -21,13 +21,11 @@ public static class BedrockKernelBuilderExtensions
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for chat completion.</param>
     /// <param name="bedrockApi">The IAmazonBedrockRuntime to run inference using the respective model.</param>
-    /// <param name="serviceId">The optional service ID.</param>
     /// <returns></returns>
     public static IKernelBuilder AddBedrockChatCompletionService(
         this IKernelBuilder builder,
         string modelId,
-        IAmazonBedrockRuntime bedrockApi,
-        string? serviceId = null)
+        IAmazonBedrockRuntime bedrockApi)
     {
         builder.Services.AddSingleton<IChatCompletionService>(services =>
         {
@@ -49,12 +47,10 @@ public static class BedrockKernelBuilderExtensions
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for chat completion.</param>
-    /// <param name="serviceId">The optional service ID.</param>
     /// <returns></returns>
     public static IKernelBuilder AddBedrockChatCompletionService(
         this IKernelBuilder builder,
-        string modelId,
-        string? serviceId = null)
+        string modelId)
     {
         // Add IAmazonBedrockRuntime service client to the DI container
         builder.Services.AddAWSService<IAmazonBedrockRuntime>();
@@ -79,13 +75,11 @@ public static class BedrockKernelBuilderExtensions
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="bedrockApi">The IAmazonBedrockRuntime to run inference using the respective model.</param>
-    /// <param name="serviceId">The optional service ID.</param>
     /// <returns></returns>
     public static IKernelBuilder AddBedrockTextGenerationService(
         this IKernelBuilder builder,
         string modelId,
-        IAmazonBedrockRuntime bedrockApi,
-        string? serviceId = null)
+        IAmazonBedrockRuntime bedrockApi)
     {
         builder.Services.AddSingleton<ITextGenerationService>(services =>
         {
@@ -106,12 +100,10 @@ public static class BedrockKernelBuilderExtensions
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
-    /// <param name="serviceId">The optional service ID.</param>
     /// <returns></returns>
     public static IKernelBuilder AddBedrockTextGenerationService(
         this IKernelBuilder builder,
-        string modelId,
-        string? serviceId = null)
+        string modelId)
     {
         // Add IAmazonBedrockRuntime service client to the DI container
         builder.Services.AddAWSService<IAmazonBedrockRuntime>();
