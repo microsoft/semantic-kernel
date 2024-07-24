@@ -8,6 +8,9 @@ using OpenAI;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 
+/// <summary>
+/// Factory for creating <see cref="OpenAIClient"/>.
+/// </summary>
 internal static class OpenAIClientFactory
 {
     /// <summary>

@@ -4,8 +4,19 @@ using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 
-internal static class AssistantMessageAdapter
+/// <summary>
+/// Factory for creating <see cref="MessageContent"/> based on <see cref="ChatMessageContent"/>.
+/// Also able to produce <see cref="MessageCreationOptions"/>.
+/// </summary>
+/// <remarks>
+/// Improves testability.
+/// </remarks>
+internal static class AssistantMessageFactory
 {
+    /// <summary>
+    /// Produces <see cref="MessageCreationOptions"/> based on <see cref="ChatMessageContent"/>.
+    /// </summary>
+    /// <param name="message">The message content.</param>
     public static MessageCreationOptions CreateOptions(ChatMessageContent message)
     {
         MessageCreationOptions options = new();
@@ -21,7 +32,11 @@ internal static class AssistantMessageAdapter
         return options;
     }
 
-    public static IEnumerable<MessageContent> GetMessageContents(ChatMessageContent message, MessageCreationOptions options)
+    /// <summary>
+    /// Translates <see cref="ChatMessageContent.Items"/> into enumeration of <see cref="MessageContent"/>.
+    /// </summary>
+    /// <param name="message">The message content.</param>
+    public static IEnumerable<MessageContent> GetMessageContents(ChatMessageContent message)
     {
         foreach (KernelContent content in message.Items)
         {
@@ -37,7 +52,7 @@ internal static class AssistantMessageAdapter
                 }
                 //else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
                 //{
-                //    %%% BUG: https://github.com/openai/openai-dotnet/issues/135
+                //    SDK BUG - BAD SIGNATURE (https://github.com/openai/openai-dotnet/issues/135)
                 //        URI does not accept the format used for `DataUri`
                 //        Approach is inefficient anyway...
                 //    yield return MessageContent.FromImageUrl(new Uri(imageContent.DataUri!));

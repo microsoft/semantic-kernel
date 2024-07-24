@@ -116,7 +116,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         AssistantClient client = CreateClient(config);
 
         // Retrieve the assistant
-        Assistant model = await client.GetAssistantAsync(id).ConfigureAwait(false); // %%% BUG CANCEL TOKEN
+        Assistant model = await client.GetAssistantAsync(id).ConfigureAwait(false); // SDK BUG - CANCEL TOKEN (https://github.com/microsoft/semantic-kernel/issues/7431)
 
         // Instantiate the agent
         return
@@ -132,7 +132,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
     public Task<string> CreateThreadAsync(CancellationToken cancellationToken = default)
-        => this.CreateThreadAsync(options: null, cancellationToken);
+        => AssistantThreadActions.CreateThreadAsync(this._client, options: null, cancellationToken);
 
     /// <summary>
     /// Create a new assistant thread.
@@ -140,28 +140,8 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <param name="options">%%%</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
-    public async Task<string> CreateThreadAsync(OpenAIThreadCreationOptions? options, CancellationToken cancellationToken = default)
-    {
-        ThreadCreationOptions createOptions =
-            new()
-            {
-                ToolResources = GenerateToolResources(options?.VectorStoreId, options?.CodeInterpterFileIds),
-            };
-
-        //options.InitialMessages, // %%% TODO
-
-        if (options?.Metadata != null)
-        {
-            foreach (KeyValuePair<string, string> item in options.Metadata)
-            {
-                createOptions.Metadata[item.Key] = item.Value;
-            }
-        }
-
-        AssistantThread thread = await this._client.CreateThreadAsync(createOptions, cancellationToken).ConfigureAwait(false);
-
-        return thread.Id;
-    }
+    public Task<string> CreateThreadAsync(OpenAIThreadCreationOptions? options, CancellationToken cancellationToken = default)
+        => AssistantThreadActions.CreateThreadAsync(this._client, options, cancellationToken);
 
     /// <summary>
     /// Create a new assistant thread.
@@ -348,7 +328,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 Description = definition.Description,
                 Instructions = definition.Instructions,
                 Name = definition.Name,
-                ToolResources = GenerateToolResources(definition.VectorStoreId, definition.EnableCodeInterpreter ? definition.CodeInterpterFileIds : null),
+                ToolResources = AssistantToolResourcesFactory.GenerateToolResources(definition.VectorStoreId, definition.EnableCodeInterpreter ? definition.CodeInterpterFileIds : null),
                 ResponseFormat = definition.EnableJsonResponse ? AssistantResponseFormat.JsonObject : AssistantResponseFormat.Auto,
                 Temperature = definition.Temperature,
                 NucleusSamplingFactor = definition.TopP,
@@ -379,38 +359,6 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         }
 
         return assistantCreationOptions;
-    }
-
-    private static ToolResources? GenerateToolResources(string? vectorStoreId, IReadOnlyList<string>? codeInterpreterFileIds)
-    {
-        bool hasFileSearch = !string.IsNullOrWhiteSpace(vectorStoreId);
-        bool hasCodeInterpreterFiles = (codeInterpreterFileIds?.Count ?? 0) > 0;
-
-        ToolResources? toolResources = null;
-
-        if (hasFileSearch || hasCodeInterpreterFiles)
-        {
-            toolResources =
-                new ToolResources()
-                {
-                    FileSearch =
-                        hasFileSearch ?
-                            new FileSearchToolResources()
-                            {
-                                VectorStoreIds = [vectorStoreId!],
-                            } :
-                            null,
-                    CodeInterpreter =
-                        hasCodeInterpreterFiles ?
-                            new CodeInterpreterToolResources()
-                            {
-                                FileIds = (IList<string>)codeInterpreterFileIds!,
-                            } :
-                            null,
-                };
-        }
-
-        return toolResources;
     }
 
     private static AssistantClient CreateClient(OpenAIServiceConfiguration config)

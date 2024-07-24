@@ -34,6 +34,43 @@ internal static class AssistantThreadActions
         ];
 
     /// <summary>
+    /// Create a new assistant thread.
+    /// </summary>
+    /// <param name="client">%%%</param>
+    /// <param name="options">%%%</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The thread identifier</returns>
+    public static async Task<string> CreateThreadAsync(AssistantClient client, OpenAIThreadCreationOptions? options, CancellationToken cancellationToken = default)
+    {
+        ThreadCreationOptions createOptions =
+            new()
+            {
+                ToolResources = AssistantToolResourcesFactory.GenerateToolResources(options?.VectorStoreId, options?.CodeInterpterFileIds),
+            };
+
+        if (options?.Messages != null)
+        {
+            foreach (ChatMessageContent message in options.Messages)
+            {
+                ThreadInitializationMessage threadMessage = new(AssistantMessageFactory.GetMessageContents(message));
+                createOptions.InitialMessages.Add(threadMessage);
+            }
+        }
+
+        if (options?.Metadata != null)
+        {
+            foreach (KeyValuePair<string, string> item in options.Metadata)
+            {
+                createOptions.Metadata[item.Key] = item.Value;
+            }
+        }
+
+        AssistantThread thread = await client.CreateThreadAsync(createOptions, cancellationToken).ConfigureAwait(false);
+
+        return thread.Id;
+    }
+
+    /// <summary>
     /// Create a message in the specified thread.
     /// </summary>
     /// <param name="client">The assistant client</param>
@@ -48,11 +85,11 @@ internal static class AssistantThreadActions
             return;
         }
 
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
+        MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
         await client.CreateMessageAsync(
             threadId,
-            AssistantMessageAdapter.GetMessageContents(message, options),
+            AssistantMessageFactory.GetMessageContents(message),
             options,
             cancellationToken).ConfigureAwait(false);
     }
@@ -76,7 +113,7 @@ internal static class AssistantThreadActions
             if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
                 !agentNames.TryGetValue(message.AssistantId, out assistantName))
             {
-                Assistant assistant = await client.GetAssistantAsync(message.AssistantId).ConfigureAwait(false); // %%% BUG CANCEL TOKEN
+                Assistant assistant = await client.GetAssistantAsync(message.AssistantId).ConfigureAwait(false); // SDK BUG - CANCEL TOKEN (https://github.com/microsoft/semantic-kernel/issues/7431)
                 if (!string.IsNullOrWhiteSpace(assistant.Name))
                 {
                     agentNames.Add(assistant.Id, assistant.Name);

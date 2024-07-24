@@ -4,6 +4,12 @@ using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 
+/// <summary>
+/// Factory for creating <see cref="RunCreationOptions"/> definition.
+/// </summary>
+/// <remarks>
+/// Improves testability.
+/// </remarks>
 internal static class AssistantRunOptionsFactory
 {
     /// <summary>
@@ -25,7 +31,7 @@ internal static class AssistantRunOptionsFactory
                 ParallelToolCallsEnabled = ResolveExecutionSetting(invocationOptions?.ParallelToolCallsEnabled, definition.ExecutionOptions?.ParallelToolCallsEnabled),
                 ResponseFormat = ResolveExecutionSetting(invocationOptions?.EnableJsonResponse, definition.EnableJsonResponse) ?? false ? AssistantResponseFormat.JsonObject : null,
                 Temperature = ResolveExecutionSetting(invocationOptions?.Temperature, definition.Temperature),
-                //ToolConstraint - Not Supported: https://github.com/microsoft/semantic-kernel/issues/6795
+                //ToolConstraint - Not Currently Supported (https://github.com/microsoft/semantic-kernel/issues/6795)
                 TruncationStrategy = truncationMessageCount.HasValue ? RunTruncationStrategy.CreateLastMessagesStrategy(truncationMessageCount.Value) : null,
             };
 

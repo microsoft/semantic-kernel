@@ -11,9 +11,9 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.OpenAI.Internal;
 
 /// <summary>
-/// Unit testing of <see cref="AssistantMessageAdapter"/>.
+/// Unit testing of <see cref="AssistantMessageFactory"/>.
 /// </summary>
-public class AssistantMessageAdapterTests
+public class AssistantMessageFactoryTests
 {
     /// <summary>
     /// Verify options creation.
@@ -25,7 +25,7 @@ public class AssistantMessageAdapterTests
         ChatMessageContent message = new(AuthorRole.User, "test");
 
         // Create options
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
+        MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
         // Validate
         Assert.NotNull(options);
@@ -46,7 +46,7 @@ public class AssistantMessageAdapterTests
             };
 
         // Create options
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
+        MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
         // Validate
         Assert.NotNull(options);
@@ -72,7 +72,7 @@ public class AssistantMessageAdapterTests
             };
 
         // Create options
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
+        MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
         // Validate
         Assert.NotNull(options);
@@ -101,7 +101,7 @@ public class AssistantMessageAdapterTests
             };
 
         // Create options
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
+        MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
         // Validate
         Assert.NotNull(options);
@@ -118,8 +118,7 @@ public class AssistantMessageAdapterTests
     public void VerifyAssistantMessageAdapterGetMessageContentsWithText()
     {
         ChatMessageContent message = new(AuthorRole.User, items: [new TextContent("test")]);
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
-        MessageContent[] contents = AssistantMessageAdapter.GetMessageContents(message, options).ToArray();
+        MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
         Assert.NotNull(contents);
         Assert.Single(contents);
         Assert.NotNull(contents.Single().Text);
@@ -132,8 +131,7 @@ public class AssistantMessageAdapterTests
     public void VerifyAssistantMessageAdapterGetMessageWithImageUrl()
     {
         ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new Uri("https://localhost/myimage.png"))]);
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
-        MessageContent[] contents = AssistantMessageAdapter.GetMessageContents(message, options).ToArray();
+        MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
         Assert.NotNull(contents);
         Assert.Single(contents);
         Assert.NotNull(contents.Single().ImageUrl);
@@ -146,8 +144,7 @@ public class AssistantMessageAdapterTests
     public void VerifyAssistantMessageAdapterGetMessageWithImageData()
     {
         ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new byte[] { 1, 2, 3 }, "image/png")]);
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
-        MessageContent[] contents = AssistantMessageAdapter.GetMessageContents(message, options).ToArray();
+        MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
         Assert.NotNull(contents);
         Assert.Single(contents);
         Assert.NotNull(contents.Single().ImageUrl);
@@ -160,8 +157,7 @@ public class AssistantMessageAdapterTests
     public void VerifyAssistantMessageAdapterGetMessageWithImageFile()
     {
         ChatMessageContent message = new(AuthorRole.User, items: [new FileReferenceContent("file-id")]);
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
-        MessageContent[] contents = AssistantMessageAdapter.GetMessageContents(message, options).ToArray();
+        MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
         Assert.NotNull(contents);
         Assert.Single(contents);
         Assert.NotNull(contents.Single().ImageFileId);
@@ -182,8 +178,7 @@ public class AssistantMessageAdapterTests
                     new ImageContent(new Uri("https://localhost/myimage.png")),
                     new FileReferenceContent("file-id")
                 ]);
-        MessageCreationOptions options = AssistantMessageAdapter.CreateOptions(message);
-        MessageContent[] contents = AssistantMessageAdapter.GetMessageContents(message, options).ToArray();
+        MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
         Assert.NotNull(contents);
         Assert.Equal(3, contents.Length);
     }
