@@ -74,6 +74,6 @@ def test_app_info_when_telemetry_disabled(monkeypatch):
     # need to reload the module to get the updated APP_INFO
     import semantic_kernel.utils.telemetry.user_agent
 
-    importlib.reload(semantic_kernel.connectors.user_agent)
+    importlib.reload(semantic_kernel.utils.telemetry.user_agent)
 
     assert semantic_kernel.utils.telemetry.user_agent.APP_INFO is None

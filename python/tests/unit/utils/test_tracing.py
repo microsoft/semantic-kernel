@@ -91,7 +91,9 @@ EXPECTED_TEXT_CONTENT = [
     return_value=TEST_CHAT_RESPONSE,
 )
 @patch("opentelemetry.trace.INVALID_SPAN")
-async def test_trace_chat_completion(mock_span, mock_send_chat_request, mock_sensitive_events_enabled):
+async def test_trace_chat_completion(
+    mock_span, mock_send_chat_request, mock_sensitive_events_enabled, openai_unit_test_env
+):
     chat_completion = OpenAIChatCompletion(ai_model_id=TEST_MODEL)
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
 
@@ -127,7 +129,7 @@ async def test_trace_chat_completion(mock_span, mock_send_chat_request, mock_sen
     return_value=TEST_TEXT_RESPONSE,
 )
 @patch("opentelemetry.trace.INVALID_SPAN")
-async def test_trace_text_completion(mock_span, mock_send_request, mock_sensitive_events_enabled):
+async def test_trace_text_completion(mock_span, mock_send_request, mock_sensitive_events_enabled, openai_unit_test_env):
     chat_completion = OpenAITextCompletion(ai_model_id=TEST_MODEL)
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
 
@@ -162,7 +164,9 @@ async def test_trace_text_completion(mock_span, mock_send_request, mock_sensitiv
     side_effect=ServiceResponseException,
 )
 @patch("opentelemetry.trace.INVALID_SPAN")
-async def test_trace_chat_completion_exception(mock_span, mock_send_chat_request, mock_sensitive_events_enabled):
+async def test_trace_chat_completion_exception(
+    mock_span, mock_send_chat_request, mock_sensitive_events_enabled, openai_unit_test_env
+):
     chat_completion = OpenAIChatCompletion(ai_model_id=TEST_MODEL)
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
 
@@ -193,7 +197,9 @@ async def test_trace_chat_completion_exception(mock_span, mock_send_chat_request
     side_effect=ServiceResponseException,
 )
 @patch("opentelemetry.trace.INVALID_SPAN")
-async def test_trace_text_completion_exception(mock_span, mock_send_chat_request, mock_sensitive_events_enabled):
+async def test_trace_text_completion_exception(
+    mock_span, mock_send_chat_request, mock_sensitive_events_enabled, openai_unit_test_env
+):
     chat_completion = OpenAITextCompletion(ai_model_id=TEST_MODEL)
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
 
