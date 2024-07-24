@@ -10,6 +10,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.AutoFunctionInvocationContext.#ctor(Microsoft.SemanticKernel.Kernel,Microsoft.SemanticKernel.KernelFunction,Microsoft.SemanticKernel.FunctionResult,Microsoft.SemanticKernel.ChatCompletion.ChatHistory)</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.BinaryContent.#ctor(System.Func{System.Threading.Tasks.Task{System.IO.Stream}},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
     <Left>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
@@ -67,6 +74,13 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.AudioContent.#ctor(System.ReadOnlyMemory{System.Byte},System.String,System.Object,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.AutoFunctionInvocationContext.#ctor(Microsoft.SemanticKernel.Kernel,Microsoft.SemanticKernel.KernelFunction,Microsoft.SemanticKernel.FunctionResult,Microsoft.SemanticKernel.ChatCompletion.ChatHistory)</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
