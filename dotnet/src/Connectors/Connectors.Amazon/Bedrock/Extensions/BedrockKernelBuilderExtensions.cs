@@ -87,8 +87,17 @@ public static class BedrockKernelBuilderExtensions
         IAmazonBedrockRuntime bedrockApi,
         string? serviceId = null)
     {
-        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (_, _)
-            => new BedrockTextGenerationService(modelId, bedrockApi));
+        builder.Services.AddSingleton<ITextGenerationService>(services =>
+        {
+            try
+            {
+                return new BedrockTextGenerationService(modelId, bedrockApi);
+            }
+            catch (Exception ex)
+            {
+                throw new KernelException($"An error occurred while initializing the BedrockTextGenerationService: {ex.Message}", ex);
+            }
+        });
 
         return builder;
     }
