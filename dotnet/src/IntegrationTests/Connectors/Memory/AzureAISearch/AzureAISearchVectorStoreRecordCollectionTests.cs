@@ -22,7 +22,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHelper output, AzureAISearchVectorStoreFixture fixture)
 {
     // If null, all tests will be enabled
-    private const string SkipReason = null; //"Requires Azure AI Search Service instance up and running";
+    private const string SkipReason = "Requires Azure AI Search Service instance up and running";
 
     [Theory(Skip = SkipReason)]
     [InlineData(true)]

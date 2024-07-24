@@ -10,17 +10,17 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// Class for mapping between a json node stored in redis, and the consumer data model.
 /// </summary>
 /// <typeparam name="TConsumerDataModel">The consumer data model to map to or from.</typeparam>
-internal sealed class RedisVectorStoreRecordMapper<TConsumerDataModel> : IVectorStoreRecordMapper<TConsumerDataModel, (string Key, JsonNode Node)>
+internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel> : IVectorStoreRecordMapper<TConsumerDataModel, (string Key, JsonNode Node)>
     where TConsumerDataModel : class
 {
     /// <summary>The name of the temporary json property that the key field will be serialized / parsed from.</summary>
     private readonly string _keyFieldJsonPropertyName;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RedisVectorStoreRecordMapper{TConsumerDataModel}"/> class.
+    /// Initializes a new instance of the <see cref="RedisJsonVectorStoreRecordMapper{TConsumerDataModel}"/> class.
     /// </summary>
     /// <param name="keyFieldJsonPropertyName">The name of the key field on the model when serialized to json.</param>
-    public RedisVectorStoreRecordMapper(string keyFieldJsonPropertyName)
+    public RedisJsonVectorStoreRecordMapper(string keyFieldJsonPropertyName)
     {
         Verify.NotNullOrWhiteSpace(keyFieldJsonPropertyName);
         this._keyFieldJsonPropertyName = keyFieldJsonPropertyName;

@@ -10,15 +10,15 @@ using Xunit;
 namespace SemanticKernel.Connectors.Redis.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="RedisVectorStoreRecordMapper{TConsumerDataModel}"/> class.
+/// Contains tests for the <see cref="RedisJsonVectorStoreRecordMapper{TConsumerDataModel}"/> class.
 /// </summary>
-public sealed class RedisVectorStoreRecordMapperTests
+public sealed class RedisJsonVectorStoreRecordMapperTests
 {
     [Fact]
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-        var sut = new RedisVectorStoreRecordMapper<MultiPropsModel>("Key");
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("Key");
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
@@ -37,7 +37,7 @@ public sealed class RedisVectorStoreRecordMapperTests
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-        var sut = new RedisVectorStoreRecordMapper<MultiPropsModel>("Key");
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("Key");
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(("test key", CreateJsonNode()), new());
