@@ -14,11 +14,26 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public class ChatHistoryChannel : AgentChannel
 {
-    private readonly ChatHistory _history;
+    /// <summary>
+    /// %%%
+    /// </summary>
+    protected ChatHistory History { get; }
 
     /// <inheritdoc/>
-    protected internal sealed override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
+    protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
+        CancellationToken cancellationToken = default)
+        => this.InvokeAsync(agent, this.History, cancellationToken);
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <param name="history"></param>
+    /// <param name="cancellationToken"></param>
+    protected internal async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
+        Agent agent,
+        ChatHistory history,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (agent is not IChatHistoryHandler historyHandler)
@@ -27,30 +42,30 @@ public class ChatHistoryChannel : AgentChannel
         }
 
         // Capture the current message count to evaluate history mutation.
-        int messageCount = this._history.Count;
+        int messageCount = this.History.Count;
         HashSet<ChatMessageContent> mutatedHistory = [];
 
         // Utilize a queue as a "read-ahead" cache to evaluate message sequencing (i.e., which message is final).
         Queue<ChatMessageContent> messageQueue = [];
 
         ChatMessageContent? yieldMessage = null;
-        await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
+        await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this.History, cancellationToken).ConfigureAwait(false))
         {
             // Capture all messages that have been included in the mutated the history.
-            for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)
+            for (int messageIndex = messageCount; messageIndex < this.History.Count; messageIndex++)
             {
-                ChatMessageContent mutatedMessage = this._history[messageIndex];
+                ChatMessageContent mutatedMessage = this.History[messageIndex];
                 mutatedHistory.Add(mutatedMessage);
                 messageQueue.Enqueue(mutatedMessage);
             }
 
             // Update the message count pointer to reflect the current history.
-            messageCount = this._history.Count;
+            messageCount = this.History.Count;
 
             // Avoid duplicating any message included in the mutated history and also returned by the enumeration result.
             if (!mutatedHistory.Contains(responseMessage))
             {
-                this._history.Add(responseMessage);
+                this.History.Add(responseMessage);
                 messageQueue.Enqueue(responseMessage);
             }
 
@@ -76,7 +91,7 @@ public class ChatHistoryChannel : AgentChannel
     /// <inheritdoc/>
     protected internal sealed override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
-        this._history.AddRange(history);
+        this.History.AddRange(history);
 
         return Task.CompletedTask;
     }
@@ -84,7 +99,7 @@ public class ChatHistoryChannel : AgentChannel
     /// <inheritdoc/>
     protected internal sealed override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        return this._history.ToDescendingAsync();
+        return this.History.ToDescendingAsync();
     }
 
     /// <summary>
@@ -92,6 +107,6 @@ public class ChatHistoryChannel : AgentChannel
     /// </summary>
     public ChatHistoryChannel()
     {
-        this._history = [];
+        this.History = [];
     }
 }

@@ -13,13 +13,13 @@ namespace Microsoft.SemanticKernel.Agents;
 public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
 {
     /// <inheritdoc/>
-    protected internal sealed override IEnumerable<string> GetChannelKeys()
+    protected internal override IEnumerable<string> GetChannelKeys()
     {
         yield return typeof(ChatHistoryChannel).FullName!;
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+    protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         ChatHistoryChannel channel =
             new()
@@ -32,7 +32,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
 
     /// <inheritdoc/>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        ChatHistory history,
+    ChatHistory history,
         CancellationToken cancellationToken = default);
 
     /// <inheritdoc/>
