@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Data;
@@ -90,7 +91,16 @@ public class QdrantVectorStoreRecordCollectionTests
             .Verify(
                 x => x.CreatePayloadIndexAsync(
                     TestCollectionName,
-                    "Data",
+                    "OriginalNameData",
+                    PayloadSchemaType.Text,
+                    this._testCancellationToken),
+                Times.Once);
+
+        this._qdrantClientMock
+            .Verify(
+                x => x.CreatePayloadIndexAsync(
+                    TestCollectionName,
+                    "data_storage_name",
                     PayloadSchemaType.Text,
                     this._testCancellationToken),
                 Times.Once);
@@ -153,6 +163,7 @@ public class QdrantVectorStoreRecordCollectionTests
 
         Assert.NotNull(actual);
         Assert.Equal(testRecordKey, actual.Key);
+        Assert.Equal("data 1", actual.OriginalNameData);
         Assert.Equal("data 1", actual.Data);
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector!.Value.ToArray());
     }
@@ -187,6 +198,7 @@ public class QdrantVectorStoreRecordCollectionTests
 
         Assert.NotNull(actual);
         Assert.Equal(testRecordKey, actual.Key);
+        Assert.Equal("data 1", actual.OriginalNameData);
         Assert.Equal("data 1", actual.Data);
         Assert.Null(actual.Vector);
     }
@@ -263,6 +275,7 @@ public class QdrantVectorStoreRecordCollectionTests
         // Assert
         Assert.NotNull(actual);
         Assert.Equal(UlongTestRecordKey1, actual.Key);
+        Assert.Equal("data 1", actual.OriginalNameData);
         Assert.Equal("data 1", actual.Data);
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector!.Value.ToArray());
 
@@ -460,7 +473,7 @@ public class QdrantVectorStoreRecordCollectionTests
         var pointStruct = new PointStruct
         {
             Id = new() { Num = UlongTestRecordKey1 },
-            Payload = { ["Data"] = "data 1" },
+            Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
             Vectors = new[] { 1f, 2f, 3f, 4f }
         };
 
@@ -571,10 +584,10 @@ public class QdrantVectorStoreRecordCollectionTests
         if (hasNamedVectors)
         {
             var namedVectors = new NamedVectors();
-            namedVectors.Vectors.Add("Vector", new[] { 1f, 2f, 3f, 4f });
+            namedVectors.Vectors.Add("vector_storage_name", new[] { 1f, 2f, 3f, 4f });
             point = new RetrievedPoint()
             {
-                Payload = { ["Data"] = "data 1" },
+                Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
                 Vectors = new Vectors { Vectors_ = namedVectors }
             };
         }
@@ -582,7 +595,7 @@ public class QdrantVectorStoreRecordCollectionTests
         {
             point = new RetrievedPoint()
             {
-                Payload = { ["Data"] = "data 1" },
+                Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
                 Vectors = new[] { 1f, 2f, 3f, 4f }
             };
         }
@@ -618,6 +631,7 @@ public class QdrantVectorStoreRecordCollectionTests
         return new SinglePropsModel<T>
         {
             Key = key,
+            OriginalNameData = "data 1",
             Data = "data 1",
             Vector = withVectors ? new float[] { 1, 2, 3, 4 } : null,
             NotAnnotated = null,
@@ -629,8 +643,9 @@ public class QdrantVectorStoreRecordCollectionTests
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("Data"),
-            new VectorStoreRecordVectorProperty("Vector")
+            new VectorStoreRecordDataProperty("OriginalNameData") { IsFilterable = true },
+            new VectorStoreRecordDataProperty("Data") { IsFilterable = true, StoragePropertyName = "data_storage_name" },
+            new VectorStoreRecordVectorProperty("Vector") { StoragePropertyName = "vector_storage_name" }
         ]
     };
 
@@ -640,9 +655,14 @@ public class QdrantVectorStoreRecordCollectionTests
         public required T Key { get; set; }
 
         [VectorStoreRecordData(IsFilterable = true)]
+        public string OriginalNameData { get; set; } = string.Empty;
+
+        [JsonPropertyName("ignored_data_json_name")]
+        [VectorStoreRecordData(IsFilterable = true, StoragePropertyName = "data_storage_name")]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4)]
+        [JsonPropertyName("ignored_vector_json_name")]
+        [VectorStoreRecordVector(4, StoragePropertyName = "vector_storage_name")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

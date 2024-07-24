@@ -41,7 +41,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    public async Task ItCanCreateACollectionAsync(bool hasNamedVectors, bool useRecordDefinition)
+    public async Task ItCanCreateACollectionUpsertAndGetAsync(bool hasNamedVectors, bool useRecordDefinition)
     {
         // Arrange
         var collectionNamePostfix1 = useRecordDefinition ? "WithDefinition" : "WithType";
@@ -55,16 +55,31 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         };
         var sut = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, testCollectionName, options);
 
+        var record = this.CreateTestHotel(30);
+
         // Act
         await sut.CreateCollectionAsync();
+        var upsertResult = await sut.UpsertAsync(record);
+        var getResult = await sut.GetAsync(30, new GetRecordOptions { IncludeVectors = true });
 
         // Assert
-        var existResult = await sut.CollectionExistsAsync();
-        Assert.True(existResult);
+        var collectionExistResult = await sut.CollectionExistsAsync();
+        Assert.True(collectionExistResult);
         await sut.DeleteCollectionAsync();
 
+        Assert.Equal(30ul, upsertResult);
+        Assert.Equal(record.HotelId, getResult?.HotelId);
+        Assert.Equal(record.HotelName, getResult?.HotelName);
+        Assert.Equal(record.HotelCode, getResult?.HotelCode);
+        Assert.Equal(record.HotelRating, getResult?.HotelRating);
+        Assert.Equal(record.ParkingIncluded, getResult?.ParkingIncluded);
+        Assert.Equal(record.Tags.ToArray(), getResult?.Tags.ToArray());
+        Assert.Equal(record.Description, getResult?.Description);
+
         // Output
-        output.WriteLine(existResult.ToString());
+        output.WriteLine(collectionExistResult.ToString());
+        output.WriteLine(upsertResult.ToString(CultureInfo.InvariantCulture));
+        output.WriteLine(getResult?.ToString());
     }
 
     [Fact]

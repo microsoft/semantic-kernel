@@ -45,9 +45,10 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// Map from the given list of <see cref="VectorStoreRecordProperty"/> items to the Redis <see cref="Schema"/>.
     /// </summary>
     /// <param name="properties">The property definitions to map from.</param>
+    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</param>
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
-    public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties)
+    public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, Dictionary<string, string> storagePropertyNames)
     {
         var schema = new Schema();
 
@@ -69,14 +70,16 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     throw new InvalidOperationException($"Property {nameof(dataProperty.PropertyType)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.PropertyName}' must be set to create a collection, since the property is filterable.");
                 }
 
+                var storageName = storagePropertyNames[dataProperty.PropertyName];
+
                 if (dataProperty.PropertyType == typeof(string))
                 {
-                    schema.AddTextField(new FieldName($"$.{dataProperty.PropertyName}", dataProperty.PropertyName));
+                    schema.AddTextField(new FieldName($"$.{storageName}", storageName));
                 }
 
                 if (RedisVectorStoreCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.PropertyType))
                 {
-                    schema.AddNumericField(new FieldName($"$.{dataProperty.PropertyName}", dataProperty.PropertyName));
+                    schema.AddNumericField(new FieldName($"$.{storageName}", storageName));
                 }
 
                 continue;
@@ -90,10 +93,11 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive integer to create a collection.");
                 }
 
+                var storageName = storagePropertyNames[vectorProperty.PropertyName];
                 var indexKind = GetSDKIndexKind(vectorProperty);
                 var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                 var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
-                schema.AddVectorField(new FieldName($"$.{vectorProperty.PropertyName}", vectorProperty.PropertyName), indexKind, new Dictionary<string, object>()
+                schema.AddVectorField(new FieldName($"$.{storageName}", storageName), indexKind, new Dictionary<string, object>()
                 {
                     ["TYPE"] = "FLOAT32",
                     ["DIM"] = dimensions,

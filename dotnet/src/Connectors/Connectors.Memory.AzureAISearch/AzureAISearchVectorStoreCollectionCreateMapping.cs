@@ -18,23 +18,25 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// Map from a <see cref="VectorStoreRecordKeyProperty"/> to an Azure AI Search <see cref="SearchableField"/>.
     /// </summary>
     /// <param name="keyProperty">The key property definition.</param>
+    /// <param name="storagePropertyName">The name of the property in storage.</param>
     /// <returns>The <see cref="SearchableField"/> for the provided property definition.</returns>
-    public static SearchableField MapKeyField(VectorStoreRecordKeyProperty keyProperty)
+    public static SearchableField MapKeyField(VectorStoreRecordKeyProperty keyProperty, string storagePropertyName)
     {
-        return new SearchableField(keyProperty.PropertyName) { IsKey = true, IsFilterable = true };
+        return new SearchableField(storagePropertyName) { IsKey = true, IsFilterable = true };
     }
 
     /// <summary>
     /// Map from a <see cref="VectorStoreRecordDataProperty"/> to an Azure AI Search <see cref="SimpleField"/>.
     /// </summary>
     /// <param name="dataProperty">The data property definition.</param>
+    /// <param name="storagePropertyName">The name of the property in storage.</param>
     /// <returns>The <see cref="SimpleField"/> for the provided property definition.</returns>
     /// <exception cref="InvalidOperationException">Throws when the definition is missing required information.</exception>
-    public static SimpleField MapDataField(VectorStoreRecordDataProperty dataProperty)
+    public static SimpleField MapDataField(VectorStoreRecordDataProperty dataProperty, string storagePropertyName)
     {
         if (dataProperty.PropertyType == typeof(string))
         {
-            return new SearchableField(dataProperty.PropertyName) { IsFilterable = dataProperty.IsFilterable };
+            return new SearchableField(storagePropertyName) { IsFilterable = dataProperty.IsFilterable };
         }
 
         if (dataProperty.PropertyType is null)
@@ -42,16 +44,17 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
             throw new InvalidOperationException($"Property {nameof(dataProperty.PropertyType)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.PropertyName}' must be set to create a collection.");
         }
 
-        return new SimpleField(dataProperty.PropertyName, AzureAISearchVectorStoreCollectionCreateMapping.GetSDKFieldDataType(dataProperty.PropertyType)) { IsFilterable = dataProperty.IsFilterable };
+        return new SimpleField(storagePropertyName, AzureAISearchVectorStoreCollectionCreateMapping.GetSDKFieldDataType(dataProperty.PropertyType)) { IsFilterable = dataProperty.IsFilterable };
     }
 
     /// <summary>
     /// Map form a <see cref="VectorStoreRecordVectorProperty"/> to an Azure AI Search <see cref="VectorSearchField"/> and generate the required index configuration.
     /// </summary>
     /// <param name="vectorProperty">The vector property definition.</param>
+    /// <param name="storagePropertyName">The name of the property in storage.</param>
     /// <returns>The <see cref="VectorSearchField"/> and required index configuration.</returns>
     /// <exception cref="InvalidOperationException">Throws when the definition is missing required information, or unsupported options are configured.</exception>
-    public static (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) MapVectorField(VectorStoreRecordVectorProperty vectorProperty)
+    public static (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) MapVectorField(VectorStoreRecordVectorProperty vectorProperty, string storagePropertyName)
     {
         if (vectorProperty.Dimensions is not > 0)
         {
@@ -60,8 +63,8 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
 
         // Build a name for the profile and algorithm configuration based on the property name
         // since we'll just create a separate one for each vector property.
-        var vectorSearchProfileName = $"{vectorProperty.PropertyName}Profile";
-        var algorithmConfigName = $"{vectorProperty.PropertyName}AlgoConfig";
+        var vectorSearchProfileName = $"{storagePropertyName}Profile";
+        var algorithmConfigName = $"{storagePropertyName}AlgoConfig";
 
         // Read the vector index settings from the property definition and create the right index configuration.
         var indexKind = AzureAISearchVectorStoreCollectionCreateMapping.GetSKIndexKind(vectorProperty);
@@ -75,7 +78,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
         };
         var vectorSearchProfile = new VectorSearchProfile(vectorSearchProfileName, algorithmConfigName);
 
-        return (new VectorSearchField(vectorProperty.PropertyName, vectorProperty.Dimensions.Value, vectorSearchProfileName), algorithmConfiguration, vectorSearchProfile);
+        return (new VectorSearchField(storagePropertyName, vectorProperty.Dimensions.Value, vectorSearchProfileName), algorithmConfiguration, vectorSearchProfile);
     }
 
     /// <summary>
