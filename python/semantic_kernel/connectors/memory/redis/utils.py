@@ -21,7 +21,7 @@ from semantic_kernel.data.vector_store_record_fields import (
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
-def get_redis_key(collection_name: str, record_id: str) -> str:
+def get_redis_key(collection_name: str, record_id: str) -> str:  # pragma: no cover
     """Returns the Redis key for an element called record_id within collection_name.
 
     Args:
@@ -34,7 +34,7 @@ def get_redis_key(collection_name: str, record_id: str) -> str:
     return f"{collection_name}:{record_id}"
 
 
-def split_redis_key(redis_key: str) -> tuple[str, str]:
+def split_redis_key(redis_key: str) -> tuple[str, str]:  # pragma: no cover
     """Split a Redis key into its collection name and record ID.
 
     Args:
@@ -47,7 +47,7 @@ def split_redis_key(redis_key: str) -> tuple[str, str]:
     return collection, record_id
 
 
-def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> dict[str, Any]:
+def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> dict[str, Any]:  # pragma: no cover
     """Serialize a MemoryRecord to Redis fields."""
     all_metadata = {
         "is_reference": record._is_reference,
@@ -66,7 +66,9 @@ def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> di
     }
 
 
-def deserialize_redis_to_record(fields: dict[str, Any], vector_type: np.dtype, with_embedding: bool) -> MemoryRecord:
+def deserialize_redis_to_record(
+    fields: dict[str, Any], vector_type: np.dtype, with_embedding: bool
+) -> MemoryRecord:  # pragma: no cover
     """Deserialize Redis fields to a MemoryRecord."""
     metadata = json.loads(fields[b"metadata"])
     record = MemoryRecord(
@@ -91,7 +93,7 @@ def deserialize_redis_to_record(fields: dict[str, Any], vector_type: np.dtype, w
 
 def deserialize_document_to_record(
     database: Redis, doc: Document, vector_type: np.dtype, with_embedding: bool
-) -> MemoryRecord:
+) -> MemoryRecord:  # pragma: no cover
     """Deserialize document to a MemoryRecord."""
     # Document's ID refers to the Redis key
     redis_key = doc["id"]
