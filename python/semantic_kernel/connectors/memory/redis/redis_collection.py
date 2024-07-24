@@ -37,7 +37,7 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class RedisHashsetCollection(VectorStoreRecordCollection[str, TModel]):
+class RedisCollection(VectorStoreRecordCollection[str, TModel]):
     """A vector store record collection implementation using Redis."""
 
     redis_database: Redis
@@ -86,6 +86,32 @@ class RedisHashsetCollection(VectorStoreRecordCollection[str, TModel]):
             redis_database=RedisWrapper.from_url(redis_settings.connection_string.get_secret_value()),
             prefix_collection_name_to_key_names=prefix_collection_name_to_key_names,
         )
+
+    @override
+    @property
+    def supported_key_types(self) -> list[type] | None:
+        return [str]
+
+    @override
+    @property
+    def supported_vector_types(self) -> list[type] | None:
+        """Supply the types that vectors are allowed to have. None means any."""
+        return [list[float], np.ndarray]
+
+    def _get_redis_key(self, key: str) -> str:
+        if self.prefix_collection_name_to_key_names:
+            return f"{self.collection_name}:{key}"
+        return key
+
+    def _unget_redis_key(self, key: str) -> str:
+        if self.prefix_collection_name_to_key_names and ":" in key:
+            return key[len(self.collection_name) + 1 :]
+        return key
+
+
+@experimental_class
+class RedisHashsetCollection(RedisCollection):
+    """A vector store record collection implementation using Redis Hashsets."""
 
     @override
     async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[str]:
@@ -152,27 +178,6 @@ class RedisHashsetCollection(VectorStoreRecordCollection[str, TModel]):
                         flattened[name] = vector
             results.append(flattened)
         return results
-
-    @override
-    @property
-    def supported_key_types(self) -> list[type] | None:
-        return [str]
-
-    @override
-    @property
-    def supported_vector_types(self) -> list[type] | None:
-        """Supply the types that vectors are allowed to have. None means any."""
-        return [list[float], np.ndarray]
-
-    def _get_redis_key(self, key: str) -> str:
-        if self.prefix_collection_name_to_key_names:
-            return f"{self.collection_name}:{key}"
-        return key
-
-    def _unget_redis_key(self, key: str) -> str:
-        if self.prefix_collection_name_to_key_names and ":" in key:
-            return key[len(self.collection_name) + 1 :]
-        return key
 
     @override
     async def create_collection(self, **kwargs) -> None:
