@@ -37,7 +37,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
                 });
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input
         try
@@ -54,7 +54,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
                 Sum      426  1622     856 2904
                 """);
 
-            await InvokeAgentAsync("Can you regenerate this same chart using the category names as the bar colors?"); // %%% WHY NOT ???
+            await InvokeAgentAsync("Can you regenerate this same chart using the category names as the bar colors?");
         }
         finally
         {

@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 public sealed class OpenAIAssistantAgent : KernelAgent
 {
-    private const string OptionsMetadataKey = "__run_options";
+    internal const string OptionsMetadataKey = "__run_options";
 
     private readonly Assistant _assistant;
     private readonly AssistantClient _client;
@@ -137,7 +137,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Create a new assistant thread.
     /// </summary>
-    /// <param name="options">%%%</param>
+    /// <param name="options">The options for creating the thread</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
     public Task<string> CreateThreadAsync(OpenAIThreadCreationOptions? options, CancellationToken cancellationToken = default)

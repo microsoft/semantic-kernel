@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -36,25 +38,12 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 ModelName = "testmodel",
             };
 
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentSimple);
-
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                this._emptyKernel,
-                this.CreateTestConfiguration(targetAzure: true),
-                definition);
-
-        Assert.NotNull(agent);
-        Assert.NotNull(agent.Id);
-        Assert.Null(agent.Instructions);
-        Assert.Null(agent.Name);
-        Assert.Null(agent.Description);
-        Assert.False(agent.IsDeleted);
+        await this.VerifyAgentCreationAsync(definition);
     }
 
     /// <summary>
     /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
-    /// for an agent with optional properties defined.
+    /// for an agent with name, instructions, and description.
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationPropertiesAsync()
@@ -68,60 +57,32 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 Instructions = "testinstructions",
             };
 
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentFull);
-
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                this._emptyKernel,
-                this.CreateTestConfiguration(),
-                definition);
-
-        Assert.NotNull(agent);
-        Assert.NotNull(agent.Id);
-        Assert.NotNull(agent.Instructions);
-        Assert.NotNull(agent.Name);
-        Assert.NotNull(agent.Description);
-        Assert.False(agent.IsDeleted);
+        await this.VerifyAgentCreationAsync(definition);
     }
 
     /// <summary>
-    /// %%%
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with code-interpreter enabled.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationEverythingAsync() // %%% NAME
+    public async Task VerifyOpenAIAssistantAgentCreationWithCodeInterpreterAsync()
     {
         OpenAIAssistantDefinition definition =
             new()
             {
                 ModelName = "testmodel",
                 EnableCodeInterpreter = true,
-                VectorStoreId = "#vs",
-                Metadata = new Dictionary<string, string>() { { "a", "1" } },
             };
 
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentWithEverything);
-
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                this._emptyKernel,
-                this.CreateTestConfiguration(),
-                definition);
-
-        Assert.NotNull(agent);
-        Assert.Equal(2, agent.Tools.Count);
-        Assert.True(agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
-        Assert.True(agent.Tools.OfType<FileSearchToolDefinition>().Any());
-        Assert.Equal("#vs", agent.Definition.VectorStoreId);
-        Assert.Null(agent.Definition.CodeInterpterFileIds);
-        Assert.NotNull(agent.Definition.Metadata);
-        Assert.NotEmpty(agent.Definition.Metadata);
+        await this.VerifyAgentCreationAsync(definition);
     }
 
     /// <summary>
-    /// %%%
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with code-interpreter files.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationEverything2Async() // %%% NAME
+    public async Task VerifyOpenAIAssistantAgentCreationWithCodeInterpreterFilesAsync()
     {
         OpenAIAssistantDefinition definition =
             new()
@@ -129,69 +90,174 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 ModelName = "testmodel",
                 EnableCodeInterpreter = true,
                 CodeInterpterFileIds = ["file1", "file2"],
-                Metadata = new Dictionary<string, string>() { { "a", "1" } },
             };
 
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentWithEverything);
-
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                this._emptyKernel,
-                this.CreateTestConfiguration(),
-                definition);
-
-        Assert.NotNull(agent);
-        Assert.Equal(2, agent.Tools.Count);
-        Assert.True(agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
-        Assert.True(agent.Tools.OfType<FileSearchToolDefinition>().Any());
-        //Assert.Null(agent.Definition.VectorStoreId); // %%% SETUP
-        //Assert.Null(agent.Definition.CodeInterpterFileIds); // %%% SETUP
-        Assert.NotNull(agent.Definition.Metadata);
-        Assert.NotEmpty(agent.Definition.Metadata);
+        await this.VerifyAgentCreationAsync(definition);
     }
 
     /// <summary>
-    /// %%%
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with a vector-store-id (for file-search).
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationEverything3Async() // %%% NAME
+    public async Task VerifyOpenAIAssistantAgentCreationWithVectorStoreAsync()
     {
         OpenAIAssistantDefinition definition =
             new()
             {
                 ModelName = "testmodel",
-                EnableCodeInterpreter = false,
+                VectorStoreId = "#vs1",
+            };
+
+        await this.VerifyAgentCreationAsync(definition);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with metadata.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationWithMetadataAsync()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelName = "testmodel",
+                Metadata = new Dictionary<string, string>()
+                {
+                    { "a", "1" },
+                    { "b", "2" },
+                },
+            };
+
+        await this.VerifyAgentCreationAsync(definition);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with json-response mode enabled.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationWithJsonResponseAsync()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelName = "testmodel",
                 EnableJsonResponse = true,
-                CodeInterpterFileIds = ["file1", "file2"],
-                Metadata = new Dictionary<string, string>() { { "a", "1" } },
+            };
+
+        await this.VerifyAgentCreationAsync(definition);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with temperature defined.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationWithTemperatureAsync()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelName = "testmodel",
+                Temperature = 2.0F,
+            };
+
+        await this.VerifyAgentCreationAsync(definition);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with topP defined.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationWithTopPAsync()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelName = "testmodel",
+                TopP = 2.0F,
+            };
+
+        await this.VerifyAgentCreationAsync(definition);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with empty execution settings.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationWithEmptyExecutionOptionsAsync()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelName = "testmodel",
                 ExecutionOptions = new(),
             };
 
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentWithEverything);
+        await this.VerifyAgentCreationAsync(definition);
+    }
 
-        OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.CreateAsync(
-                this._emptyKernel,
-                this.CreateTestConfiguration(),
-                definition);
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with populated execution settings.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationWithExecutionOptionsAsync()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelName = "testmodel",
+                ExecutionOptions =
+                    new()
+                    {
+                        MaxCompletionTokens = 100,
+                        ParallelToolCallsEnabled = false,
+                    }
+            };
 
-        Assert.NotNull(agent);
-        Assert.Equal(2, agent.Tools.Count);
-        Assert.True(agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
-        Assert.True(agent.Tools.OfType<FileSearchToolDefinition>().Any());
-        //Assert.Null(agent.Definition.VectorStoreId); // %%% SETUP
-        //Assert.Null(agent.Definition.CodeInterpterFileIds); // %%% SETUP
-        Assert.NotNull(agent.Definition.Metadata);
-        Assert.NotEmpty(agent.Definition.Metadata);
+        await this.VerifyAgentCreationAsync(definition);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with execution settings and meta-data.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationWithEmptyExecutionOptionsAndMetadataAsync()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelName = "testmodel",
+                ExecutionOptions = new(),
+                Metadata = new Dictionary<string, string>()
+                {
+                    { "a", "1" },
+                    { "b", "2" },
+                },
+            };
+
+        await this.VerifyAgentCreationAsync(definition);
     }
 
     /// <summary>
     /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.RetrieveAsync"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentRetrieveAsync()
+    public async Task VerifyOpenAIAssistantAgentRetrievalAsync()
     {
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentSimple);
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelName = "testmodel",
+            };
+
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.RetrieveAsync(
@@ -199,12 +265,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 this.CreateTestConfiguration(),
                 "#id");
 
-        Assert.NotNull(agent);
-        Assert.NotNull(agent.Id);
-        Assert.Null(agent.Instructions);
-        Assert.Null(agent.Name);
-        Assert.Null(agent.Description);
-        Assert.False(agent.IsDeleted);
+        ValidateAgentDefinition(agent, definition);
     }
 
     /// <summary>
@@ -432,6 +493,91 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         this._emptyKernel = new Kernel();
     }
 
+    private async Task VerifyAgentCreationAsync(OpenAIAssistantDefinition definition)
+    {
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                this._emptyKernel,
+                this.CreateTestConfiguration(),
+                definition);
+
+        ValidateAgentDefinition(agent, definition);
+    }
+
+    private static void ValidateAgentDefinition(OpenAIAssistantAgent agent, OpenAIAssistantDefinition sourceDefinition)
+    {
+        // Verify fundamental state
+        Assert.NotNull(agent);
+        Assert.NotNull(agent.Id);
+        Assert.False(agent.IsDeleted);
+        Assert.NotNull(agent.Definition);
+        Assert.Equal(sourceDefinition.ModelName, agent.Definition.ModelName);
+
+        // Verify core properties
+        Assert.Equal(sourceDefinition.Instructions ?? string.Empty, agent.Instructions);
+        Assert.Equal(sourceDefinition.Name ?? string.Empty, agent.Name);
+        Assert.Equal(sourceDefinition.Description ?? string.Empty, agent.Description);
+
+        // Verify options
+        Assert.Equal(sourceDefinition.Temperature, agent.Definition.Temperature);
+        Assert.Equal(sourceDefinition.TopP, agent.Definition.TopP);
+        Assert.Equal(sourceDefinition.ExecutionOptions?.MaxCompletionTokens, agent.Definition.ExecutionOptions?.MaxCompletionTokens);
+        Assert.Equal(sourceDefinition.ExecutionOptions?.MaxPromptTokens, agent.Definition.ExecutionOptions?.MaxPromptTokens);
+        Assert.Equal(sourceDefinition.ExecutionOptions?.ParallelToolCallsEnabled, agent.Definition.ExecutionOptions?.ParallelToolCallsEnabled);
+        Assert.Equal(sourceDefinition.ExecutionOptions?.TruncationMessageCount, agent.Definition.ExecutionOptions?.TruncationMessageCount);
+
+        // Verify tool definitions
+        int expectedToolCount = 0;
+
+        bool hasCodeIterpreter = false;
+        if (sourceDefinition.EnableCodeInterpreter)
+        {
+            hasCodeIterpreter = true;
+            ++expectedToolCount;
+        }
+
+        Assert.Equal(hasCodeIterpreter, agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
+
+        bool hasFileSearch = false;
+        if (!string.IsNullOrWhiteSpace(sourceDefinition.VectorStoreId))
+        {
+            hasFileSearch = true;
+            ++expectedToolCount;
+        }
+
+        Assert.Equal(hasFileSearch, agent.Tools.OfType<FileSearchToolDefinition>().Any());
+
+        Assert.Equal(expectedToolCount, agent.Tools.Count);
+
+        // Verify metadata
+        Assert.NotNull(agent.Definition.Metadata);
+        if (sourceDefinition.ExecutionOptions == null)
+        {
+            Assert.Equal(sourceDefinition.Metadata ?? new Dictionary<string, string>(), agent.Definition.Metadata);
+        }
+        else // Additional metadata present when execution options are defined
+        {
+            Assert.Equal((sourceDefinition.Metadata?.Count ?? 0) + 1, agent.Definition.Metadata.Count);
+
+            if (sourceDefinition.Metadata != null)
+            {
+                foreach (var (key, value) in sourceDefinition.Metadata)
+                {
+                    string? targetValue = agent.Definition.Metadata[key];
+                    Assert.NotNull(targetValue);
+                    Assert.Equal(value, targetValue);
+                }
+            }
+        }
+
+        // Verify detail definition
+        Assert.Equal(sourceDefinition.VectorStoreId, agent.Definition.VectorStoreId);
+        Assert.Equal(sourceDefinition.CodeInterpterFileIds, agent.Definition.CodeInterpterFileIds);
+
+    }
+
     private Task<OpenAIAssistantAgent> CreateAgentAsync()
     {
         OpenAIAssistantDefinition definition =
@@ -440,7 +586,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 ModelName = "testmodel",
             };
 
-        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentSimple);
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
 
         return
             OpenAIAssistantAgent.CreateAsync(
@@ -486,62 +632,114 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     private static class ResponseContent
     {
-        public const string CreateAgentSimple =
-            """
-            {
-              "id": "asst_abc123",
-              "object": "assistant",
-              "created_at": 1698984975,
-              "name": null,
-              "description": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {}
-            }
-            """;
+        public static string CreateAgentPayload(OpenAIAssistantDefinition definition)
+        {
+            StringBuilder builder = new();
+            builder.AppendLine("{");
+            builder.AppendLine(@"  ""id"": ""asst_abc123"",");
+            builder.AppendLine(@"  ""object"": ""assistant"",");
+            builder.AppendLine(@"  ""created_at"": 1698984975,");
+            builder.AppendLine(@$"  ""name"": ""{definition.Name}"",");
+            builder.AppendLine(@$"  ""description"": ""{definition.Description}"",");
+            builder.AppendLine(@$"  ""instructions"": ""{definition.Instructions}"",");
+            builder.AppendLine(@$"  ""model"": ""{definition.ModelName}"",");
 
-        public const string CreateAgentFull =
-            """
+            bool hasCodeInterpeter = definition.EnableCodeInterpreter;
+            bool hasCodeInterpeterFiles = (definition.CodeInterpterFileIds?.Count ?? 0) > 0;
+            bool hasFileSearch = !string.IsNullOrWhiteSpace(definition.VectorStoreId);
+            if (!hasCodeInterpeter && !hasFileSearch)
             {
-              "id": "asst_abc123",
-              "object": "assistant",
-              "created_at": 1698984975,
-              "name": "testname",
-              "description": "testdescription",
-              "model": "gpt-4-turbo",
-              "instructions": "testinstructions",
-              "tools": [],
-              "file_ids": [],
-              "metadata": {}
+                builder.AppendLine(@"  ""tools"": [],");
             }
-            """;
+            else
+            {
+                builder.AppendLine(@"  ""tools"": [");
+
+                if (hasCodeInterpeter)
+                {
+                    builder.Append(@$"  {{ ""type"": ""code_interpreter"" }}{(hasFileSearch ? "," : string.Empty)}");
+                }
+
+                if (hasFileSearch)
+                {
+                    builder.AppendLine(@"  { ""type"": ""file_search"" }");
+                }
+
+                builder.AppendLine("    ],");
+            }
+
+            if (!hasCodeInterpeterFiles && !hasFileSearch)
+            {
+                builder.AppendLine(@"  ""tool_resources"": {},");
+            }
+            else
+            {
+                builder.AppendLine(@"  ""tool_resources"": {");
+
+                if (hasCodeInterpeterFiles)
+                {
+                    string fileIds = string.Join(",", definition.CodeInterpterFileIds!.Select(fileId => "\"" + fileId + "\""));
+                    builder.AppendLine(@$"  ""code_interpreter"": {{ ""file_ids"": [{fileIds}] }}{(hasFileSearch ? "," : string.Empty)}");
+                }
+
+                if (hasFileSearch)
+                {
+                    builder.AppendLine(@$"  ""file_search"": {{ ""vector_store_ids"": [""{definition.VectorStoreId}""] }}");
+                }
+
+                builder.AppendLine("    },");
+            }
+
+            if (definition.Temperature.HasValue)
+            {
+                builder.AppendLine(@$"  ""temperature"": {definition.Temperature},");
+            }
+
+            if (definition.TopP.HasValue)
+            {
+                builder.AppendLine(@$"  ""top_p"": {definition.TopP},");
+            }
+
+            bool hasExecutionOptions = definition.ExecutionOptions != null;
+            int metadataCount = (definition.Metadata?.Count ?? 0);
+            if (metadataCount == 0 && !hasExecutionOptions)
+            {
+                builder.AppendLine(@"  ""metadata"": {}");
+            }
+            else
+            {
+                int index = 0;
+                builder.AppendLine(@"  ""metadata"": {");
+
+                if (hasExecutionOptions)
+                {
+                    string serializedExecutionOptions = JsonSerializer.Serialize(definition.ExecutionOptions);
+                    builder.AppendLine(@$"    ""{OpenAIAssistantAgent.OptionsMetadataKey}"": ""{JsonEncodedText.Encode(serializedExecutionOptions)}""{(metadataCount > 0 ? "," : string.Empty)}");
+                }
+
+                if (metadataCount > 0)
+                {
+                    foreach (var (key, value) in definition.Metadata!)
+                    {
+                        builder.AppendLine(@$"    ""{key}"": ""{value}""{(index < metadataCount - 1 ? "," : string.Empty)}");
+                        ++index;
+                    }
+                }
+
+                builder.AppendLine("  }");
+            }
+
+            builder.AppendLine("}");
+
+            return builder.ToString();
+        }
 
         public const string CreateAgentWithEverything =
             """
             {
-              "id": "asst_abc123",
-              "object": "assistant",
-              "created_at": 1698984975,
-              "name": null,
-              "description": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [
-                {
-                  "type": "code_interpreter"
-                },
-                {
-                  "type": "file_search"
-                }
-              ],
               "tool_resources": {
-                "file_search": {
-                    "vector_store_ids": ["#vs"]
-                }
+                "file_search": { "vector_store_ids": ["#vs"] }
               },
-              "metadata": {"a": "1"}
             }
             """;
 

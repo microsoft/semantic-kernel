@@ -36,8 +36,8 @@ internal static class AssistantThreadActions
     /// <summary>
     /// Create a new assistant thread.
     /// </summary>
-    /// <param name="client">%%%</param>
-    /// <param name="options">%%%</param>
+    /// <param name="client">The assistant client</param>
+    /// <param name="options">The options for creating the thread</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
     public static async Task<string> CreateThreadAsync(AssistantClient client, OpenAIThreadCreationOptions? options, CancellationToken cancellationToken = default)
