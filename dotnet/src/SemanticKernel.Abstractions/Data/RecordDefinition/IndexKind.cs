@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Defines the index types that can be used to index vectors.
 /// </summary>
+[Experimental("SKEXP0001")]
 public static class IndexKind
 {
     /// <summary>

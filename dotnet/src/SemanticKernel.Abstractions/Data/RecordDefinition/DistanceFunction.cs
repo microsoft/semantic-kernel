@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Defines the distance functions that can be used to compare vectors.
 /// </summary>
+[Experimental("SKEXP0001")]
 public static class DistanceFunction
 {
     /// <summary>

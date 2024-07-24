@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <remarks>
 /// This interface can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
+[Experimental("SKEXP0001")]
 public interface IVectorStore
 {
     /// <summary>

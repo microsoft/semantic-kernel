@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -7,6 +8,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <summary>
 /// Extension methods to register Data services on an <see cref="IServiceCollection"/>.
 /// </summary>
+[Experimental("SKEXP0001")]
 public static class ServiceCollectionExtensions
 {
     /// <summary>
