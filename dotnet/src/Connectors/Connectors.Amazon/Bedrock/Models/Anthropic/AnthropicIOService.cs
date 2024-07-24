@@ -4,8 +4,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
-using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -14,8 +12,7 @@ namespace Connectors.Amazon.Models.Anthropic;
 /// <summary>
 /// Input-output service for Anthropic Claude model.
 /// </summary>
-public class AnthropicIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
-    IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
+public class AnthropicIOService : IBedrockModelIOService
 {
     private readonly BedrockUtilities _util = new();
     /// <summary>

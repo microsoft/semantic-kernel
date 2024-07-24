@@ -3,8 +3,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
-using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -13,8 +11,7 @@ namespace Connectors.Amazon.Models.Cohere;
 /// <summary>
 /// Input-output service for Cohere Command.
 /// </summary>
-public class CohereCommandIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
-    IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
+public class CohereCommandIOService : IBedrockModelIOService
 {
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Cohere Command.

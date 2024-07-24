@@ -10,9 +10,7 @@ namespace Connectors.Amazon.Models;
 /// <summary>
 /// Bedrock input-output service to build the request and response bodies as required by the given model.
 /// </summary>
-/// <typeparam name="TRequest"></typeparam>
-/// <typeparam name="TResponse"></typeparam>
-public interface IBedrockModelIOService<TRequest, TResponse>
+public interface IBedrockModelIOService
 {
     /// <summary>
     /// Builds InvokeModelRequest Body parameter to be serialized. Object itself dependent on model request parameter requirements.

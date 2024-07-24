@@ -4,8 +4,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
-using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -14,8 +12,7 @@ namespace Connectors.Amazon.Models.Meta;
 /// <summary>
 /// Input-output service for Meta Llama.
 /// </summary>
-public class MetaIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
-    IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
+public class MetaIOService : IBedrockModelIOService
 {
     private readonly BedrockUtilities _util = new BedrockUtilities();
     /// <summary>

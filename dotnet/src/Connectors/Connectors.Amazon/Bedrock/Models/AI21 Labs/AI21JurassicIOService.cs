@@ -13,8 +13,7 @@ namespace Connectors.Amazon.Models.AI21;
 /// <summary>
 /// Input-output service for AI21 Labs Jurassic.
 /// </summary>
-public class AI21JurassicIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
-    IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
+public class AI21JurassicIOService : IBedrockModelIOService
 {
     /// <summary>
     /// Builds InvokeModelRequest Body parameter to be serialized.

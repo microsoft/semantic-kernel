@@ -5,8 +5,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
-using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -15,8 +13,7 @@ namespace Connectors.Amazon.Models.AI21;
 /// <summary>
 /// Input-output service for AI21 Labs Jamba model.
 /// </summary>
-public class AI21JambaIOService : IBedrockModelIOService<IChatCompletionRequest, IChatCompletionResponse>,
-    IBedrockModelIOService<ITextGenerationRequest, ITextGenerationResponse>
+public class AI21JambaIOService : IBedrockModelIOService
 {
     private readonly BedrockUtilities _util = new();
     /// <summary>

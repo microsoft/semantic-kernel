@@ -6,7 +6,7 @@ using Amazon.Runtime;
 using Connectors.Amazon.Core.Requests;
 using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Amazon.Core;
+using Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
