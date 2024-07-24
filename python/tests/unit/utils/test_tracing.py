@@ -94,7 +94,7 @@ EXPECTED_TEXT_CONTENT = [
 async def test_trace_chat_completion(
     mock_span, mock_send_chat_request, mock_sensitive_events_enabled, openai_unit_test_env
 ):
-    chat_completion = OpenAIChatCompletion(ai_model_id=TEST_MODEL)
+    chat_completion = OpenAIChatCompletion(ai_model_id=TEST_MODEL, env_file_path="test.env")
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
 
     results: list[ChatMessageContent] = await chat_completion.get_chat_message_contents(
@@ -130,7 +130,7 @@ async def test_trace_chat_completion(
 )
 @patch("opentelemetry.trace.INVALID_SPAN")
 async def test_trace_text_completion(mock_span, mock_send_request, mock_sensitive_events_enabled, openai_unit_test_env):
-    chat_completion = OpenAITextCompletion(ai_model_id=TEST_MODEL)
+    chat_completion = OpenAITextCompletion(ai_model_id=TEST_MODEL, env_file_path="test.env")
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
 
     results: list[TextContent] = await chat_completion.get_text_contents(
@@ -167,7 +167,7 @@ async def test_trace_text_completion(mock_span, mock_send_request, mock_sensitiv
 async def test_trace_chat_completion_exception(
     mock_span, mock_send_chat_request, mock_sensitive_events_enabled, openai_unit_test_env
 ):
-    chat_completion = OpenAIChatCompletion(ai_model_id=TEST_MODEL)
+    chat_completion = OpenAIChatCompletion(ai_model_id=TEST_MODEL, env_file_path="test.env")
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
 
     with pytest.raises(ServiceResponseException):
@@ -200,7 +200,7 @@ async def test_trace_chat_completion_exception(
 async def test_trace_text_completion_exception(
     mock_span, mock_send_chat_request, mock_sensitive_events_enabled, openai_unit_test_env
 ):
-    chat_completion = OpenAITextCompletion(ai_model_id=TEST_MODEL)
+    chat_completion = OpenAITextCompletion(ai_model_id=TEST_MODEL, env_file_path="test.env")
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
 
     with pytest.raises(ServiceResponseException):
