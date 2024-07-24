@@ -40,7 +40,7 @@ public class MistralIOService : IBedrockModelIOService
         var temperature = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", isInstructModel ? (double?)DefaultTemperatureInstruct : (double?)DefaultTemperatureNonInstruct);
         var topP = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", isInstructModel ? (double?)DefaultTopPInstruct : (double?)DefaultTopPNonInstruct);
         var maxTokens = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", isInstructModel ? (int?)DefaultMaxTokensInstruct : (int?)DefaultMaxTokensNonInstruct);
-        var stop = this._util.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop", isInstructModel ? DefaultStopSequencesInstruct : DefaultStopSequencesNonInstruct);
+        var stop = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "stop", isInstructModel ? DefaultStopSequencesInstruct : DefaultStopSequencesNonInstruct);
         var topK = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_k", isInstructModel ? (int?)DefaultTopKInstruct : (int?)DefaultTopKNonInstruct);
 
         var requestBody = new
