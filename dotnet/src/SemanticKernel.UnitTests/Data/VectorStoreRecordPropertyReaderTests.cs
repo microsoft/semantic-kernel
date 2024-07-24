@@ -211,7 +211,7 @@ public class VectorStoreRecordPropertyReaderTests
         var ex = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, [typeof(int), typeof(float)], "Data"));
 
         // Assert.
-        Assert.Equal("Data properties must be one of the supported types: System.Int32, System.Single. Type of Data is System.String.", ex.Message);
+        Assert.Equal("Data properties must be one of the supported types: System.Int32, System.Single. Type of the property 'Data' is System.String.", ex.Message);
     }
 
     [Fact]
