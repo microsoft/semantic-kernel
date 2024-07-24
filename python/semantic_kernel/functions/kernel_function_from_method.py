@@ -121,6 +121,30 @@ class KernelFunctionFromMethod(KernelFunction):
         function_arguments = self.gather_function_parameters(context)
         context.result = FunctionResult(function=self.metadata, value=self.stream_method(**function_arguments))
 
+    def _parse_parameter(self, value: Any, param_type: Any) -> Any:
+        """Parses the value into the specified param_type, including handling lists of types."""
+        if isinstance(param_type, type) and hasattr(param_type, "model_validate"):
+            try:
+                return param_type.model_validate(value)
+            except Exception as exc:
+                raise FunctionExecutionException(
+                    f"Parameter is expected to be parsed to {param_type} but is not."
+                ) from exc
+        elif hasattr(param_type, "__origin__") and param_type.__origin__ is list:
+            if isinstance(value, list):
+                item_type = param_type.__args__[0]
+                return [self._parse_parameter(item, item_type) for item in value]
+            raise FunctionExecutionException(f"Expected a list for {param_type}, but got {type(value)}")
+        else:
+            try:
+                if isinstance(value, dict) and hasattr(param_type, "__init__"):
+                    return param_type(**value)
+                return param_type(value)
+            except Exception as exc:
+                raise FunctionExecutionException(
+                    f"Parameter is expected to be parsed to {param_type} but is not."
+                ) from exc
+
     def gather_function_parameters(self, context: FunctionInvocationContext) -> dict[str, Any]:
         """Gathers the function parameters from the arguments."""
         function_arguments: dict[str, Any] = {}
@@ -147,24 +171,12 @@ class KernelFunctionFromMethod(KernelFunction):
                     and param.type_object
                     and param.type_object is not inspect._empty
                 ):
-                    if hasattr(param.type_object, "model_validate"):
-                        try:
-                            value = param.type_object.model_validate(value)
-                        except Exception as exc:
-                            raise FunctionExecutionException(
-                                f"Parameter {param.name} is expected to be parsed to {param.type_} but is not."
-                            ) from exc
-                    else:
-                        try:
-                            if isinstance(value, dict) and hasattr(param.type_object, "__init__"):
-                                value = param.type_object(**value)
-                            else:
-                                value = param.type_object(value)
-                        except Exception as exc:
-                            raise FunctionExecutionException(
-                                f"Parameter {param.name} is expected to be parsed to "
-                                f"{param.type_object} but is not."
-                            ) from exc
+                    try:
+                        value = self._parse_parameter(value, param.type_object)
+                    except Exception as exc:
+                        raise FunctionExecutionException(
+                            f"Parameter {param.name} is expected to be parsed to {param.type_object} but is not."
+                        ) from exc
                 function_arguments[param.name] = value
                 continue
             if param.is_required:

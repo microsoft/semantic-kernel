@@ -19,17 +19,23 @@ from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions import (
-    FunctionCallInvalidArgumentsException,
     KernelFunctionAlreadyExistsError,
     KernelServiceNotFoundError,
 )
-from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
+from semantic_kernel.exceptions.content_exceptions import FunctionCallInvalidArgumentsException
+from semantic_kernel.exceptions.kernel_exceptions import (
+    KernelFunctionNotFoundError,
+    KernelInvokeException,
+    KernelPluginNotFoundError,
+    OperationCancelledException,
+)
 from semantic_kernel.exceptions.template_engine_exceptions import TemplateSyntaxError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -105,6 +111,21 @@ async def test_invoke_function(kernel: Kernel, create_mock_function):
 
 
 @pytest.mark.asyncio
+async def test_invoke_function_with_cancellation(kernel: Kernel, create_mock_function):
+    mock_function = create_mock_function(name="test_function")
+
+    with (
+        patch.object(Kernel, "invoke", AsyncMock(side_effect=OperationCancelledException("Operation cancelled"))),
+        pytest.raises(OperationCancelledException),
+    ):
+        result = await kernel.invoke(function=mock_function, arguments=KernelArguments())
+
+        assert result is None
+
+        Kernel.invoke.assert_called_once_with(function=mock_function, arguments=KernelArguments())
+
+
+@pytest.mark.asyncio
 async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
     mock_function = kernel.add_function(plugin_name="test", function=create_mock_function(name="test_function"))
 
@@ -115,6 +136,21 @@ async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
 
     async for response in kernel.invoke_stream(function_name="test_function", plugin_name="test"):
         assert response[0].text == "test"
+
+
+@pytest.mark.asyncio
+async def test_invoke_functions_by_name_return_function_results(kernel: Kernel, create_mock_function):
+    mock_function = kernel.add_function(plugin_name="test", function=create_mock_function(name="test_function"))
+
+    result = await kernel.invoke(function_name="test_function", plugin_name="test", arguments=KernelArguments())
+    assert str(result) == "test"
+
+    assert mock_function.call_count == 1
+
+    async for _ in kernel.invoke_stream(
+        function_name="test_function", plugin_name="test", return_function_results=True
+    ):
+        assert isinstance(result, FunctionResult)
 
 
 @pytest.mark.asyncio
@@ -182,19 +218,124 @@ async def test_invoke_prompt_no_prompt_error(kernel: Kernel):
 
 
 @pytest.mark.asyncio
-async def test_invoke_function_call(kernel: Kernel):
-    tool_call_mock = MagicMock(spec=FunctionCallContent)
-    tool_call_mock.split_name_dict.return_value = {"arg_name": "arg_value"}
-    tool_call_mock.to_kernel_arguments.return_value = {"arg_name": "arg_value"}
-    tool_call_mock.name = "test-function"
-    tool_call_mock.function_name = "function"
-    tool_call_mock.plugin_name = "test"
-    tool_call_mock.arguments = {"arg_name": "arg_value"}
-    tool_call_mock.ai_model_id = None
-    tool_call_mock.metadata = {}
-    tool_call_mock.index = 0
-    tool_call_mock.parse_arguments.return_value = {"arg_name": "arg_value"}
-    tool_call_mock.id = "test_id"
+async def test_invoke_prompt_stream_no_prompt_throws(kernel: Kernel):
+    with pytest.raises(TemplateSyntaxError):
+        async for _ in kernel.invoke_prompt_stream(prompt=""):
+            pass
+
+
+@pytest.mark.asyncio
+async def test_invoke_prompt_stream(kernel: Kernel, create_mock_function):
+    mock_function = create_mock_function(name="test_function")
+    with (
+        patch(
+            "semantic_kernel.kernel.Kernel.invoke_stream",
+        ) as mock_stream_invoke,
+    ):
+        mock_stream_invoke.return_value.__aiter__.return_value = [
+            FunctionResult(function=mock_function.metadata, value="test")
+        ]
+        async for response in kernel.invoke_prompt_stream(prompt="test"):
+            assert response.value == "test"
+
+
+@pytest.mark.asyncio
+async def test_invoke_prompt_stream_returns_function_results(kernel: Kernel, create_mock_function):
+    mock_function = create_mock_function(name="test_function")
+    with (
+        patch(
+            "semantic_kernel.kernel.Kernel.invoke_stream",
+        ) as mock_stream_invoke,
+    ):
+        mock_stream_invoke.return_value.__aiter__.return_value = [
+            FunctionResult(function=mock_function.metadata, value="test")
+        ]
+        async for response in kernel.invoke_prompt_stream(prompt="test", return_function_results=True):
+            assert isinstance(response, FunctionResult)
+
+
+@pytest.mark.asyncio
+async def test_invoke_prompt_stream_raises_exception(kernel: Kernel, create_mock_function):
+    mock_function = create_mock_function(name="test_function")
+    with (
+        patch(
+            "semantic_kernel.kernel.Kernel.invoke_stream",
+        ) as mock_stream_invoke,
+        pytest.raises(KernelInvokeException),
+    ):
+        mock_stream_invoke.return_value.__aiter__.return_value = [
+            FunctionResult(
+                function=mock_function.metadata, value="", metadata={METADATA_EXCEPTION_KEY: KernelInvokeException()}
+            )
+        ]
+        async for _ in kernel.invoke_prompt_stream(prompt="test"):
+            pass
+
+
+@pytest.mark.asyncio
+async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
+    tool_call_mock = get_tool_call_mock
+    result_mock = MagicMock(spec=ChatMessageContent)
+    result_mock.items = [tool_call_mock]
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    func_mock = AsyncMock(spec=KernelFunction)
+    func_meta = KernelFunctionMetadata(name="function", is_prompt=False)
+    func_mock.metadata = func_meta
+    func_mock.name = "function"
+    func_result = FunctionResult(value="Function result", function=func_meta)
+    func_mock.invoke = MagicMock(return_value=func_result)
+
+    arguments = KernelArguments()
+
+    with (
+        patch("semantic_kernel.kernel.logger", autospec=True),
+        patch("semantic_kernel.kernel.Kernel.get_list_of_function_metadata", return_value=[func_meta]),
+    ):
+        await kernel.invoke_function_call(
+            tool_call_mock,
+            chat_history_mock,
+            arguments,
+            1,
+            0,
+            FunctionChoiceBehavior.Auto(filters={"included_functions": ["function"]}),
+        )
+
+
+@pytest.mark.asyncio
+async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_tool_call_mock):
+    tool_call_mock = get_tool_call_mock
+    result_mock = MagicMock(spec=ChatMessageContent)
+    result_mock.items = [tool_call_mock]
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    func_mock = AsyncMock(spec=KernelFunction)
+    func_meta = KernelFunctionMetadata(name="function", is_prompt=False)
+    func_mock.metadata = func_meta
+    func_mock.name = "function"
+    func_result = FunctionResult(value="Function result", function=func_meta)
+    func_mock.invoke = MagicMock(return_value=func_result)
+
+    arguments = KernelArguments()
+
+    with (
+        patch("semantic_kernel.kernel.logger", autospec=True),
+        patch("semantic_kernel.kernel.Kernel.get_list_of_function_metadata", return_value=[func_meta]),
+        patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
+    ):
+        await kernel.invoke_function_call(
+            tool_call_mock,
+            chat_history_mock,
+            arguments,
+            1,
+            0,
+            FunctionChoiceBehavior.Auto(),
+        )
+
+
+@pytest.mark.asyncio
+async def test_invoke_function_call_non_allowed_func_throws(kernel: Kernel, get_tool_call_mock):
+    tool_call_mock = get_tool_call_mock
     result_mock = MagicMock(spec=ChatMessageContent)
     result_mock.items = [tool_call_mock]
     chat_history_mock = MagicMock(spec=ChatHistory)
@@ -215,12 +356,74 @@ async def test_invoke_function_call(kernel: Kernel):
             arguments,
             1,
             0,
+            FunctionChoiceBehavior.Auto(filters={"included_functions": ["unknown"]}),
+        )
+
+
+@pytest.mark.asyncio
+async def test_invoke_function_call_no_name_throws(kernel: Kernel, get_tool_call_mock):
+    tool_call_mock = get_tool_call_mock
+    tool_call_mock.name = None
+    result_mock = MagicMock(spec=ChatMessageContent)
+    result_mock.items = [tool_call_mock]
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    func_mock = AsyncMock(spec=KernelFunction)
+    func_meta = KernelFunctionMetadata(name="function", is_prompt=False)
+    func_mock.metadata = func_meta
+    func_mock.name = "function"
+    func_result = FunctionResult(value="Function result", function=func_meta)
+    func_mock.invoke = MagicMock(return_value=func_result)
+
+    arguments = KernelArguments()
+
+    with (
+        patch("semantic_kernel.kernel.logger", autospec=True),
+    ):
+        await kernel.invoke_function_call(
+            tool_call_mock,
+            chat_history_mock,
+            arguments,
+            1,
+            0,
             FunctionChoiceBehavior.Auto(),
         )
 
 
 @pytest.mark.asyncio
-async def test_invoke_function_call_with_continuation_on_malformed_arguments(kernel: Kernel):
+async def test_invoke_function_call_not_enough_parsed_args(kernel: Kernel, get_tool_call_mock):
+    tool_call_mock = get_tool_call_mock
+    tool_call_mock.to_kernel_arguments.return_value = {}
+    result_mock = MagicMock(spec=ChatMessageContent)
+    result_mock.items = [tool_call_mock]
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    func_mock = AsyncMock(spec=KernelFunction)
+    func_meta = KernelFunctionMetadata(name="function", is_prompt=False)
+    func_mock.metadata = func_meta
+    func_mock.name = "function"
+    func_mock.parameters = [KernelParameterMetadata(name="param1", is_required=True)]
+    func_result = FunctionResult(value="Function result", function=func_meta)
+    func_mock.invoke = MagicMock(return_value=func_result)
+
+    arguments = KernelArguments()
+
+    with (
+        patch("semantic_kernel.kernel.logger", autospec=True),
+        patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
+    ):
+        await kernel.invoke_function_call(
+            tool_call_mock,
+            chat_history_mock,
+            arguments,
+            1,
+            0,
+            FunctionChoiceBehavior.Auto(),
+        )
+
+
+@pytest.mark.asyncio
+async def test_invoke_function_call_with_continuation_on_malformed_arguments(kernel: Kernel, get_tool_call_mock):
     tool_call_mock = MagicMock(spec=FunctionCallContent)
     tool_call_mock.to_kernel_arguments.side_effect = FunctionCallInvalidArgumentsException("Malformed arguments")
     tool_call_mock.name = "test-function"

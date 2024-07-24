@@ -298,6 +298,44 @@ public sealed class OpenApiKernelPluginFactoryTests
     }
 
     [Fact]
+    public async Task ItShouldHandleEmptyOperationNameAsync()
+    {
+        // Arrange
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_0.json");
+
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+        {
+            doc["paths"]!["/secrets/{secret-name}"]!["get"]!["operationId"] = "";
+        });
+
+        // Act
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, this._executionParameters);
+
+        // Assert
+        Assert.Equal(5, plugin.Count());
+        Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
+    }
+
+    [Fact]
+    public async Task ItShouldHandleNullOperationNameAsync()
+    {
+        // Arrange
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_0.json");
+
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+        {
+            doc["paths"]!["/secrets/{secret-name}"]!["get"]!.AsObject().Remove("operationId");
+        });
+
+        // Act
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, this._executionParameters);
+
+        // Assert
+        Assert.Equal(5, plugin.Count());
+        Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
+    }
+
+    [Fact]
     public void Dispose()
     {
         this._openApiDocument.Dispose();
