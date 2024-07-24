@@ -33,11 +33,15 @@ def finish_reason_from_google_ai_to_semantic_kernel(
     return None
 
 
-def filter_first_system_message(chat_history: ChatHistory) -> str | None:
+def filter_system_message(chat_history: ChatHistory) -> str | None:
     """Filter the first system message from the chat history.
 
+    If there are multiple system messages, raise an error.
     If there are no system messages, return None.
     """
+    if len([message for message in chat_history if message.role == AuthorRole.SYSTEM]) > 1:
+        raise ValueError("Multiple system messages in chat history. Only one system message is expected.")
+
     for message in chat_history:
         if message.role == AuthorRole.SYSTEM:
             return message.content
@@ -67,11 +71,11 @@ def format_user_message(message: ChatMessageContent) -> list[Part]:
             else:
                 # The Google AI API doesn't support image from an arbitrary URI:
                 # https://github.com/google-gemini/generative-ai-python/issues/357
-                logger.warning(
+                raise ValueError(
                     "ImageContent without data_uri in User message while formatting chat history for Google AI"
                 )
         else:
-            logger.warning(
+            raise ValueError(
                 "Unsupported item type in User message while formatting chat history for Google AI"
                 f" Inference: {type(item)}"
             )

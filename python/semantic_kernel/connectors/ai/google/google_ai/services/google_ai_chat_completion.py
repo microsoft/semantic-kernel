@@ -16,7 +16,7 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
 )
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
 from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
-    filter_first_system_message,
+    filter_system_message,
     finish_reason_from_google_ai_to_semantic_kernel,
     format_assistant_message,
     format_user_message,
@@ -104,7 +104,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         model = GenerativeModel(
             self.service_settings.ai_model_id,
-            system_instruction=filter_first_system_message(chat_history),
+            system_instruction=filter_system_message(chat_history),
         )
 
         response: AsyncGenerateContentResponse = await model.generate_content_async(
@@ -167,7 +167,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         model = GenerativeModel(
             self.service_settings.ai_model_id,
-            system_instruction=filter_first_system_message(chat_history),
+            system_instruction=filter_system_message(chat_history),
         )
 
         response: AsyncGenerateContentResponse = await model.generate_content_async(
@@ -222,6 +222,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         for message in chat_history.messages:
             if message.role == AuthorRole.SYSTEM:
                 # Skip system messages since they are not part of the chat request.
+                # System message will be provided as system_instruction in the model.
                 continue
             if message.role == AuthorRole.USER:
                 chat_request_messages.append(Content(role="user", parts=format_user_message(message)))

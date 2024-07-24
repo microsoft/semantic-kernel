@@ -104,6 +104,25 @@ async def test_embedding_with_settings(mock_embedding_client, google_ai_unit_tes
 
 @pytest.mark.asyncio
 @patch("google.generativeai.embed_content_async")
+async def test_embedding_without_settings(mock_embedding_client, google_ai_unit_test_env, prompt):
+    """Test that the service initializes and generates embeddings correctly without settings."""
+    model_id = google_ai_unit_test_env["GOOGLE_AI_AI_MODEL_ID"]
+
+    mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3]]}
+
+    google_ai_text_embedding = GoogleAITextEmbedding()
+    response: ndarray = await google_ai_text_embedding.generate_embeddings([prompt])
+
+    assert len(response) == 1
+    assert response.all() == array([0.1, 0.2, 0.3]).all()
+    mock_embedding_client.assert_called_once_with(
+        model=model_id,
+        content=[prompt],
+    )
+
+
+@pytest.mark.asyncio
+@patch("google.generativeai.embed_content_async")
 async def test_embedding_list_input(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly with a list of prompts."""
     model_id = google_ai_unit_test_env["GOOGLE_AI_AI_MODEL_ID"]
