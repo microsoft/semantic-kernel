@@ -16,13 +16,13 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// <summary>
 /// Azure OpenAI text-to-audio service.
 /// </summary>
-[Experimental("SKEXP0001")]
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 {
     /// <summary>
     /// Azure OpenAI text-to-audio client.
     /// </summary>
-    private readonly ClientCore _client;
+    private readonly AzureClientCore _client;
 
     /// <summary>
     /// Azure OpenAI model id.
@@ -56,7 +56,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     {
         var url = !string.IsNullOrWhiteSpace(httpClient?.BaseAddress?.AbsoluteUri) ? httpClient!.BaseAddress!.AbsoluteUri : endpoint;
 
-        var options = ClientCore.GetAzureOpenAIClientOptions(
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(
             httpClient,
             AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#text-to-speech
 
@@ -75,5 +75,13 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetAudioContentsAsync(text, executionSettings, this._modelId, cancellationToken);
+        => this._client.GetAudioContentsAsync(this.GetModelId(executionSettings), text, executionSettings, cancellationToken);
+
+    private string GetModelId(PromptExecutionSettings? executionSettings)
+    {
+        return
+            !string.IsNullOrWhiteSpace(this._modelId) ? this._modelId! :
+            !string.IsNullOrWhiteSpace(executionSettings?.ModelId) ? executionSettings!.ModelId! :
+            this._client.DeploymentName;
+    }
 }

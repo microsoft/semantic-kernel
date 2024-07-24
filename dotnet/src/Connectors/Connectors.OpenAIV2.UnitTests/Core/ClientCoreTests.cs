@@ -90,7 +90,7 @@ public partial class ClientCoreTests
             organizationId: (organizationIdProvided) ? "organization" : null,
             httpClient: client);
 
-        var pipelineMessage = clientCore.Client.Pipeline.CreateMessage();
+        var pipelineMessage = clientCore.Client!.Pipeline.CreateMessage();
         pipelineMessage.Request.Method = "POST";
         pipelineMessage.Request.Uri = new Uri("http://localhost");
         pipelineMessage.Request.Content = BinaryContent.Create(new BinaryData("test"));
@@ -119,7 +119,7 @@ public partial class ClientCoreTests
         // Act
         var clientCore = new ClientCore(modelId: "model", apiKey: "test", httpClient: client);
 
-        var pipelineMessage = clientCore.Client.Pipeline.CreateMessage();
+        var pipelineMessage = clientCore.Client!.Pipeline.CreateMessage();
         pipelineMessage.Request.Method = "POST";
         pipelineMessage.Request.Uri = new Uri("http://localhost");
         pipelineMessage.Request.Content = BinaryContent.Create(new BinaryData("test"));
@@ -153,7 +153,7 @@ public partial class ClientCoreTests
                     NetworkTimeout = Timeout.InfiniteTimeSpan
                 }));
 
-        var pipelineMessage = clientCore.Client.Pipeline.CreateMessage();
+        var pipelineMessage = clientCore.Client!.Pipeline.CreateMessage();
         pipelineMessage.Request.Method = "POST";
         pipelineMessage.Request.Uri = new Uri("http://localhost");
         pipelineMessage.Request.Content = BinaryContent.Create(new BinaryData("test"));

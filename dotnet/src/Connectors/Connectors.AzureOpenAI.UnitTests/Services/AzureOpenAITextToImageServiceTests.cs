@@ -42,17 +42,17 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
     {
         // Case #1
         var sut = new AzureOpenAITextToImageService("deployment", "https://api-host/", "api-key", "model", loggerFactory: this._mockLoggerFactory.Object);
-        Assert.Equal("deployment", sut.Attributes[ClientCore.DeploymentNameKey]);
+        Assert.Equal("deployment", sut.Attributes[AzureClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
 
         // Case #2
         sut = new AzureOpenAITextToImageService("deployment", "https://api-hostapi/", new Mock<TokenCredential>().Object, "model", loggerFactory: this._mockLoggerFactory.Object);
-        Assert.Equal("deployment", sut.Attributes[ClientCore.DeploymentNameKey]);
+        Assert.Equal("deployment", sut.Attributes[AzureClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
 
         // Case #3
         sut = new AzureOpenAITextToImageService("deployment", new AzureOpenAIClient(new Uri("https://api-host/"), "api-key"), "model", loggerFactory: this._mockLoggerFactory.Object);
-        Assert.Equal("deployment", sut.Attributes[ClientCore.DeploymentNameKey]);
+        Assert.Equal("deployment", sut.Attributes[AzureClientCore.DeploymentNameKey]);
         Assert.Equal("model", sut.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 

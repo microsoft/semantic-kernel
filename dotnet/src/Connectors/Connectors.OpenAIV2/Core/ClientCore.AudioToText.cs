@@ -17,11 +17,13 @@ internal partial class ClientCore
     /// <summary>
     /// Generates an image with the provided configuration.
     /// </summary>
+    /// <param name="targetModel">Model identifier</param>
     /// <param name="input">Input audio to generate the text</param>
     /// <param name="executionSettings">Audio-to-text execution settings for the prompt</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Url of the generated image</returns>
     internal async Task<IReadOnlyList<TextContent>> GetTextFromAudioContentsAsync(
+        string targetModel,
         AudioContent input,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
@@ -38,17 +40,17 @@ internal partial class ClientCore
 
         using var memoryStream = new MemoryStream(input.Data!.Value.ToArray());
 
-        AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioClient(this.ModelId).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
+        AudioTranscription responseData = (await RunRequestAsync(() => this.Client!.GetAudioClient(targetModel).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
 
-        return [new(responseData.Text, this.ModelId, metadata: GetResponseMetadata(responseData))];
+        return [new(responseData.Text, targetModel, metadata: GetResponseMetadata(responseData))];
     }
 
     /// <summary>
-    /// Converts <see cref="PromptExecutionSettings"/> to <see cref="AudioTranscriptionOptions"/> type.
+    /// Converts <see cref="OpenAIAudioToTextExecutionSettings"/> to <see cref="AudioTranscriptionOptions"/> type.
     /// </summary>
-    /// <param name="executionSettings">Instance of <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="executionSettings">Instance of <see cref="OpenAIAudioToTextExecutionSettings"/>.</param>
     /// <returns>Instance of <see cref="AudioTranscriptionOptions"/>.</returns>
-    private static AudioTranscriptionOptions? AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
+    private static AudioTranscriptionOptions AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
         => new()
         {
             Granularities = AudioTimestampGranularities.Default,

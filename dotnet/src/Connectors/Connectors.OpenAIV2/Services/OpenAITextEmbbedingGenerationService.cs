@@ -82,6 +82,6 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         CancellationToken cancellationToken = default)
     {
         this._client.LogActionDetails();
-        return this._client.GetEmbeddingsAsync(data, kernel, this._dimensions, cancellationToken);
+        return this._client.GetEmbeddingsAsync(this._client.ModelId, data, kernel, this._dimensions, cancellationToken);
     }
 }

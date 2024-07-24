@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 [Experimental("SKEXP0010")]
 public class AzureOpenAITextToImageService : ITextToImageService
 {
-    private readonly ClientCore _client;
+    private readonly AzureClientCore _client;
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
@@ -52,7 +52,7 @@ public class AzureOpenAITextToImageService : ITextToImageService
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
-        var options = ClientCore.GetAzureOpenAIClientOptions(
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(
             httpClient,
             AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
 
@@ -93,7 +93,7 @@ public class AzureOpenAITextToImageService : ITextToImageService
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
-        var options = ClientCore.GetAzureOpenAIClientOptions(
+        var options = AzureClientCore.GetAzureOpenAIClientOptions(
             httpClient,
             AzureOpenAIClientOptions.ServiceVersion.V2024_05_01_Preview); // DALL-E 3 is supported in the latest API releases - https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#image-generation
 
@@ -132,7 +132,5 @@ public class AzureOpenAITextToImageService : ITextToImageService
 
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        return this._client.GenerateImageAsync(description, width, height, cancellationToken);
-    }
+        => this._client.GenerateImageAsync(this._client.DeploymentName, description, width, height, cancellationToken);
 }

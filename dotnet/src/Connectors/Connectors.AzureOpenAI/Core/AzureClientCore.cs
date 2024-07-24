@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ClientModel;
 using System.ClientModel.Primitives;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
-using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
 
@@ -19,10 +17,10 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// <summary>
 /// Base class for AI clients that provides common functionality for interacting with Azure OpenAI services.
 /// </summary>
-internal partial class ClientCore
+internal partial class AzureClientCore : ClientCore
 {
     /// <summary>
-    /// Gets the key used to store the deployment name in the <see cref="Attributes"/> dictionary.
+    /// Gets the key used to store the deployment name in the <see cref="ClientCore.Attributes"/> dictionary.
     /// </summary>
     internal static string DeploymentNameKey => "DeploymentName";
 
@@ -32,34 +30,14 @@ internal partial class ClientCore
     internal string DeploymentName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Azure OpenAI Client
-    /// </summary>
-    internal AzureOpenAIClient Client { get; }
-
-    /// <summary>
-    /// Azure OpenAI API endpoint.
-    /// </summary>
-    internal Uri? Endpoint { get; set; } = null;
-
-    /// <summary>
-    /// Logger instance
-    /// </summary>
-    internal ILogger Logger { get; set; }
-
-    /// <summary>
-    /// Storage for AI service attributes.
-    /// </summary>
-    internal Dictionary<string, object?> Attributes { get; } = [];
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ClientCore"/> class.
+    /// Initializes a new instance of the <see cref="AzureClientCore"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    internal ClientCore(
+    internal AzureClientCore(
         string deploymentName,
         string endpoint,
         string apiKey,
@@ -82,14 +60,14 @@ internal partial class ClientCore
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ClientCore"/> class.
+    /// Initializes a new instance of the <see cref="AzureClientCore"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
-    internal ClientCore(
+    internal AzureClientCore(
         string deploymentName,
         string endpoint,
         TokenCredential credential,
@@ -111,14 +89,14 @@ internal partial class ClientCore
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ClientCore"/> class..
+    /// Initializes a new instance of the <see cref="AzureClientCore"/> class..
     /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="AzureOpenAIClient"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
-    internal ClientCore(
+    internal AzureClientCore(
         string deploymentName,
         AzureOpenAIClient openAIClient,
         ILogger? logger = null)
@@ -143,7 +121,7 @@ internal partial class ClientCore
             ? new(serviceVersion.Value) { ApplicationId = HttpHeaderConstant.Values.UserAgent }
             : new() { ApplicationId = HttpHeaderConstant.Values.UserAgent };
 
-        options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), PipelinePosition.PerCall);
+        options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureClientCore))), PipelinePosition.PerCall);
 
         if (httpClient is not null)
         {
@@ -153,48 +131,5 @@ internal partial class ClientCore
         }
 
         return options;
-    }
-
-    internal void AddAttribute(string key, string? value)
-    {
-        if (!string.IsNullOrEmpty(value))
-        {
-            this.Attributes.Add(key, value);
-        }
-    }
-
-    private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
-    {
-        try
-        {
-            return await request.Invoke().ConfigureAwait(false);
-        }
-        catch (ClientResultException e)
-        {
-            throw e.ToHttpOperationException();
-        }
-    }
-
-    private static T RunRequest<T>(Func<T> request)
-    {
-        try
-        {
-            return request.Invoke();
-        }
-        catch (ClientResultException e)
-        {
-            throw e.ToHttpOperationException();
-        }
-    }
-
-    private static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
-    {
-        return new GenericActionPipelinePolicy((message) =>
-        {
-            if (message?.Request?.Headers?.TryGetValue(headerName, out string? _) == false)
-            {
-                message.Request.Headers.Set(headerName, headerValue);
-            }
-        });
     }
 }
