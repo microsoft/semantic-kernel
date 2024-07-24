@@ -14,9 +14,9 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="RedisVectorStoreRecordCollection{TRecord}"/> class.
+/// Contains tests for the <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
-public class RedisVectorStoreRecordCollectionTests
+public class RedisJsonVectorStoreRecordCollectionTests
 {
     private const string TestCollectionName = "testcollection";
     private const string TestRecordKey1 = "testid1";
@@ -24,7 +24,7 @@ public class RedisVectorStoreRecordCollectionTests
 
     private readonly Mock<IDatabase> _redisDatabaseMock;
 
-    public RedisVectorStoreRecordCollectionTests()
+    public RedisJsonVectorStoreRecordCollectionTests()
     {
         this._redisDatabaseMock = new Mock<IDatabase>(MockBehavior.Strict);
 
@@ -46,7 +46,7 @@ public class RedisVectorStoreRecordCollectionTests
         {
             SetupExecuteMock(this._redisDatabaseMock, new RedisServerException("Unknown index name"));
         }
-        var sut = new RedisVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new RedisJsonVectorStoreRecordCollection<SinglePropsModel>(
             this._redisDatabaseMock.Object,
             collectionName);
 
@@ -69,7 +69,7 @@ public class RedisVectorStoreRecordCollectionTests
     {
         // Arrange.
         SetupExecuteMock(this._redisDatabaseMock, string.Empty);
-        var sut = new RedisVectorStoreRecordCollection<SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
+        var sut = new RedisJsonVectorStoreRecordCollection<SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
 
         // Act.
         await sut.CreateCollectionAsync();
@@ -213,7 +213,7 @@ public class RedisVectorStoreRecordCollectionTests
             .Returns(CreateModel(TestRecordKey1, true));
 
         // Arrange target with custom mapper.
-        var sut = new RedisVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new RedisJsonVectorStoreRecordCollection<SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()
@@ -360,7 +360,7 @@ public class RedisVectorStoreRecordCollectionTests
             .Returns((TestRecordKey1, JsonNode.Parse(jsonNode)!));
 
         // Arrange target with custom mapper.
-        var sut = new RedisVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new RedisJsonVectorStoreRecordCollection<SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()
@@ -380,9 +380,9 @@ public class RedisVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
-    private RedisVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
+    private RedisJsonVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
     {
-        return new RedisVectorStoreRecordCollection<SinglePropsModel>(
+        return new RedisJsonVectorStoreRecordCollection<SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()

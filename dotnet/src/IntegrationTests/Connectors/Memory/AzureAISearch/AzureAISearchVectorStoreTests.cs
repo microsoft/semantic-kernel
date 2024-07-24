@@ -17,7 +17,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureAISearch;
 public class AzureAISearchVectorStoreTests(ITestOutputHelper output, AzureAISearchVectorStoreFixture fixture)
 {
     // If null, all tests will be enabled
-    private const string SkipReason = null; //"Requires Azure AI Search Service instance up and running";
+    private const string SkipReason = "Requires Azure AI Search Service instance up and running";
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanGetAListOfExistingCollectionNamesAsync()
