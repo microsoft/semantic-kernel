@@ -2,7 +2,7 @@
 
 
 from copy import deepcopy
-from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock
+from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
 
 from pytest import fixture, mark, raises
 
@@ -229,6 +229,29 @@ async def test_get_fail(DictVectorStoreRecordCollection, data_model_definition):
         await vector_store_record_collection.get("test_id")
     with raises(MemoryConnectorException, match="Error getting records:"):
         await vector_store_record_collection.get_batch(["test_id"])
+
+
+@mark.asyncio
+async def test_get_fail_multiple(DictVectorStoreRecordCollection, data_model_definition):
+    vector_store_record_collection = DictVectorStoreRecordCollection(
+        collection_name="test",
+        data_model_type=dict,
+        data_model_definition=data_model_definition,
+    )
+    record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    await vector_store_record_collection.upsert(record)
+    assert len(vector_store_record_collection.inner_storage) == 1
+    with (
+        patch(
+            "semantic_kernel.data.vector_store_record_collection.VectorStoreRecordCollection.deserialize"
+        ) as deserialize_mock,
+        raises(MemoryConnectorException, match="Error deserializing record, multiple records returned:"),
+    ):
+        deserialize_mock.return_value = [
+            {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]},
+            {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]},
+        ]
+        await vector_store_record_collection.get("test_id")
 
 
 @mark.asyncio
