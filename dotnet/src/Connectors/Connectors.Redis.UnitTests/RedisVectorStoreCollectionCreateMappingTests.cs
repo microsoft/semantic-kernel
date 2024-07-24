@@ -32,7 +32,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
             new VectorStoreRecordVectorProperty("VectorSpecificIndexingOptions") { Dimensions = 20, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.EuclideanDistance },
         };
 
-        var stroragePropertyNames = new Dictionary<string, string>()
+        var storagePropertyNames = new Dictionary<string, string>()
         {
             { "FilterableString", "FilterableString" },
             { "FilterableInt", "FilterableInt" },
@@ -43,7 +43,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
         };
 
         // Act.
-        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, stroragePropertyNames);
+        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames);
 
         // Assert.
         Assert.NotNull(schema);
