@@ -71,7 +71,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task AutoInvokeLightPluginAsync()
     {
-        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        // Create a kernel with OpenAI chat completion and LightPlugin
         Kernel kernel = CreateKernelWithPlugin<LightPlugin>();
         kernel.FunctionInvocationFilters.Add(new FunctionFilterExample(this.Output));
 
