@@ -283,7 +283,7 @@ public abstract class AgentChat
         foreach (Agent agent in this.Agents)
         {
             string channelKey = this.GetAgentHash(agent);
-            AgentChannel channel = await agent.RestoreChannelAsync(channelStateMap[channelKey].JsonState, NullLogger.Instance, CancellationToken.None).ConfigureAwait(false);
+            AgentChannel channel = await agent.RestoreChannelAsync(channelStateMap[channelKey].JsonState, CancellationToken.None).ConfigureAwait(false);
             this._agentChannels.Add(channelKey, channel);
             channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
         }

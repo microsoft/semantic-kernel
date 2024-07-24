@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI.Assistants;
@@ -39,4 +40,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     {
         return AssistantThreadActions.GetMessagesAsync(this._client, this._threadId, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    protected override string Serialize()
+        => JsonSerializer.Serialize(this._threadId, AgentChatSerializer.DefaultOptions);
 }

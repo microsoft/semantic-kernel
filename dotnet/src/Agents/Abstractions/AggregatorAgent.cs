@@ -57,9 +57,10 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     }
 
     /// <inheritdoc/>
-    protected internal async override Task<AgentChannel> RestoreChannelAsync(string state, ILogger logger, CancellationToken cancellationToken)
+    protected internal async override Task<AgentChannel> RestoreChannelAsync(string state, CancellationToken cancellationToken)
     {
-        logger.LogDebug("[{MethodName}] Restoring channel {ChannelType}", nameof(CreateChannelAsync), nameof(AggregatorChannel));
+        // %%% LOGGING
+        //this.Logger.LogDebug("[{MethodName}] Restoring channel {ChannelType}", nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
         AgentChat chat = chatProvider.Invoke();
         AgentChatState agentChatState =
@@ -69,7 +70,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
         await chat.DeserializeAsync(agentChatState).ConfigureAwait(false); ;
         AggregatorChannel channel = new(chat);
 
-        logger.LogInformation("[{MethodName}] Restoring channel {ChannelType} ({ChannelMode}) with: {AgentChatType}", nameof(CreateChannelAsync), nameof(AggregatorChannel), this.Mode, chat.GetType());
+        //this.Logger.LogInformation("[{MethodName}] Restoring channel {ChannelType} ({ChannelMode}) with: {AgentChatType}", nameof(CreateChannelAsync), nameof(AggregatorChannel), this.Mode, chat.GetType());
 
         return channel;
     }

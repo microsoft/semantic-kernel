@@ -44,18 +44,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
         {
             await InvokeAgentAsync("Hello");
             await InvokeAgentAsync("What is the special soup?");
-
-            await using MemoryStream stream = new();
-            await AgentChatSerializer.SerializeAsync(chat, stream);
-            //stream.Position = 0;
-            //using StreamReader reader = new(stream);
-            //Console.WriteLine(await reader.ReadToEndAsync());
-            stream.Position = 0;
-
-            chat = new(agent);
-            await AgentChatSerializer.DeserializeAsync<AgentGroupChat>(chat, stream);
             await InvokeAgentAsync("What is the special drink?");
-            await InvokeAgentAsync("What was the first question I asked?");
             await InvokeAgentAsync("Thank you");
         }
         finally

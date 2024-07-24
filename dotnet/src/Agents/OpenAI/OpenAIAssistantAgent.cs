@@ -313,9 +313,10 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
-    protected override async Task<AgentChannel> RestoreChannelAsync(string state, ILogger logger, CancellationToken cancellationToken)
+    protected override async Task<AgentChannel> RestoreChannelAsync(string state, CancellationToken cancellationToken)
     {
-        logger.LogDebug("[{MethodName}] Restoring assistant thread", nameof(CreateChannelAsync));
+        // %%% LOGGING
+        //this.Logger.LogDebug("[{MethodName}] Restoring assistant thread", nameof(CreateChannelAsync));
 
         string threadId =
             JsonSerializer.Deserialize<string>(state, AgentChatSerializer.DefaultOptions) ??
@@ -323,7 +324,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
         AssistantThread thread = await this._client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
 
-        logger.LogInformation("[{MethodName}] Restored assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
+        //this.Logger.LogInformation("[{MethodName}] Restored assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
         return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
     }

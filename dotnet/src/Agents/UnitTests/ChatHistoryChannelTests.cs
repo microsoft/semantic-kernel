@@ -38,5 +38,10 @@ public class ChatHistoryChannelTests
         {
             throw new NotImplementedException();
         }
+
+        protected internal override Task<AgentChannel> RestoreChannelAsync(string state, CancellationToken cancellationToken) // %%% MOCK CLASS
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -31,7 +31,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task<AgentChannel> RestoreChannelAsync(string state, ILogger logger, CancellationToken cancellationToken)
+    protected internal sealed override Task<AgentChannel> RestoreChannelAsync(string state, CancellationToken cancellationToken)
     {
         ChatHistory history =
             JsonSerializer.Deserialize<ChatHistory>(state, AgentChatSerializer.DefaultOptions) ??

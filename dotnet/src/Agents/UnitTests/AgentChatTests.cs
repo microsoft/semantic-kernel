@@ -125,6 +125,8 @@ public class AgentChatTests
     {
         public TestAgent Agent { get; } = new TestAgent();
 
+        public override IReadOnlyList<Agent> Agents => [this.Agent]; // %%% MOCK ???
+
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>
                 this.InvokeAgentAsync(this.Agent, cancellationToken);
