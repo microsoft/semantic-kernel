@@ -23,14 +23,14 @@ internal partial class ClientCore
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
-    /// <param name="model">Target model to generate embeddings from</param>
+    /// <param name="targetModel">Target model to generate embeddings from</param>
     /// <param name="data">List of strings to generate embeddings for</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
     internal async Task<IList<ReadOnlyMemory<float>>> GetEmbeddingsAsync(
-        string model,
+        string targetModel,
         IList<string> data,
         Kernel? kernel,
         int? dimensions,
@@ -45,7 +45,7 @@ internal partial class ClientCore
                 Dimensions = dimensions
             };
 
-            ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(model).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
+            ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
             var embeddings = response.Value;
 
             if (embeddings.Count != data.Count)

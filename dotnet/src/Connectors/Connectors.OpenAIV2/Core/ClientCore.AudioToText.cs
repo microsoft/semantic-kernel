@@ -17,13 +17,13 @@ internal partial class ClientCore
     /// <summary>
     /// Generates an image with the provided configuration.
     /// </summary>
-    /// <param name="model">Model identifier</param>
+    /// <param name="targetModel">Model identifier</param>
     /// <param name="input">Input audio to generate the text</param>
     /// <param name="executionSettings">Audio-to-text execution settings for the prompt</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Url of the generated image</returns>
     internal async Task<IReadOnlyList<TextContent>> GetTextFromAudioContentsAsync(
-        string model,
+        string targetModel,
         AudioContent input,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
@@ -40,9 +40,9 @@ internal partial class ClientCore
 
         using var memoryStream = new MemoryStream(input.Data!.Value.ToArray());
 
-        AudioTranscription responseData = (await RunRequestAsync(() => this.Client!.GetAudioClient(model).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
+        AudioTranscription responseData = (await RunRequestAsync(() => this.Client!.GetAudioClient(targetModel).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
 
-        return [new(responseData.Text, model, metadata: GetResponseMetadata(responseData))];
+        return [new(responseData.Text, targetModel, metadata: GetResponseMetadata(responseData))];
     }
 
     /// <summary>
