@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// <summary>
 /// Azure OpenAI text-to-audio service.
 /// </summary>
-[Experimental("SKEXP0001")]
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 {
     /// <summary>
@@ -75,5 +75,13 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetAudioContentsAsync(text, executionSettings, this._modelId, cancellationToken);
+        => this._client.GetAudioContentsAsync(this.GetModelId(executionSettings), text, executionSettings, cancellationToken);
+
+    private string GetModelId(PromptExecutionSettings? executionSettings)
+    {
+        return
+            !string.IsNullOrWhiteSpace(this._modelId) ? this._modelId! :
+            !string.IsNullOrWhiteSpace(executionSettings?.ModelId) ? executionSettings!.ModelId! :
+            this._client.DeploymentName;
+    }
 }

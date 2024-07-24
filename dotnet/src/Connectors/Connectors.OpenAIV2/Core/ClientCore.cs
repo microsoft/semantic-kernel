@@ -56,22 +56,22 @@ internal partial class ClientCore
     /// <summary>
     /// Identifier of the default model to use
     /// </summary>
-    internal string ModelId { get; init; } = string.Empty;
+    protected internal string ModelId { get; init; } = string.Empty;
 
     /// <summary>
     /// Non-default endpoint for OpenAI API.
     /// </summary>
-    internal Uri? Endpoint { get; init; }
+    protected internal Uri? Endpoint { get; init; }
 
     /// <summary>
     /// Logger instance
     /// </summary>
-    internal ILogger? Logger { get; init; }
+    protected internal ILogger? Logger { get; init; }
 
     /// <summary>
     /// OpenAI Client
     /// </summary>
-    internal OpenAIClient? Client { get; }
+    protected internal OpenAIClient? Client { get; set; }
 
     /// <summary>
     /// Storage for AI service attributes.

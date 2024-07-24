@@ -30,17 +30,19 @@ internal partial class ClientCore
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
-        OpenAITextToAudioExecutionSettings? audioExecutionSettings = OpenAITextToAudioExecutionSettings.FromExecutionSettings(executionSettings);
-        var (responseFormat, mimeType) = GetGeneratedSpeechFormatAndMimeType(audioExecutionSettings?.ResponseFormat);
+        OpenAITextToAudioExecutionSettings audioExecutionSettings = OpenAITextToAudioExecutionSettings.FromExecutionSettings(executionSettings);
+
+        var (responseFormat, mimeType) = GetGeneratedSpeechFormatAndMimeType(audioExecutionSettings.ResponseFormat);
+
         SpeechGenerationOptions options = new()
         {
             ResponseFormat = responseFormat,
-            Speed = audioExecutionSettings?.Speed,
+            Speed = audioExecutionSettings.Speed,
         };
 
         ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client!.GetAudioClient(model).GenerateSpeechFromTextAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
 
-        return [new AudioContent(response.Value.ToArray(), mimeType) { ModelId = model }];
+        return [new AudioContent(response.Value.ToArray(), mimeType)];
     }
 
     private static GeneratedSpeechVoice GetGeneratedSpeechVoice(string? voice)

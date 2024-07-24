@@ -132,7 +132,5 @@ public class AzureOpenAITextToImageService : ITextToImageService
 
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        return this._client.GenerateImageAsync(description, width, height, cancellationToken);
-    }
+        => this._client.GenerateImageAsync(this._client.DeploymentName, description, width, height, cancellationToken);
 }

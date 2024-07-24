@@ -30,11 +30,6 @@ internal partial class AzureClientCore : ClientCore
     internal string DeploymentName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Azure OpenAI Client
-    /// </summary>
-    internal new AzureOpenAIClient Client { get; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="AzureClientCore"/> class.
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>

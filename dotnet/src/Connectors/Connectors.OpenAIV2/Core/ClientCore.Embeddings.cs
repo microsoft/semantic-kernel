@@ -45,7 +45,7 @@ internal partial class ClientCore
                 Dimensions = dimensions
             };
 
-            ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client.GetEmbeddingClient(model).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
+            ClientResult<EmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(model).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
             var embeddings = response.Value;
 
             if (embeddings.Count != data.Count)
