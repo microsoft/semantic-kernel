@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -125,7 +126,6 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     public async Task DifferentWaysOfAddingFiltersWorkCorrectlyAsync()
     {
         // Arrange
-        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
         var executionOrder = new List<string>();
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
@@ -182,7 +182,6 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     public async Task MultipleFiltersAreExecutedInOrderAsync(bool isStreaming)
     {
         // Arrange
-        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
         var executionOrder = new List<string>();
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
@@ -567,6 +566,131 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         Assert.Equal("function1-value", lastMessageContent.Content);
         Assert.Equal(AuthorRole.Tool, lastMessageContent.Role);
+    }
+
+    [Fact]
+    public async Task FilterContextHasCancellationTokenAsync()
+    {
+        // Arrange
+        using var cancellationTokenSource = new CancellationTokenSource();
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) =>
+        {
+            cancellationTokenSource.Cancel();
+            firstFunctionInvocations++;
+            return parameter;
+        }, "Function1");
+
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) =>
+        {
+            secondFunctionInvocations++;
+            return parameter;
+        }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            Assert.Equal(cancellationTokenSource.Token, context.CancellationToken);
+
+            await next(context);
+
+            context.CancellationToken.ThrowIfCancellationRequested();
+        });
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_multiple_function_calls_test_response.json")) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
+
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        var arguments = new KernelArguments(new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions });
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(()
+            => kernel.InvokePromptAsync("Test prompt", arguments, cancellationToken: cancellationTokenSource.Token));
+
+        Assert.Equal(1, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterContextHasOperationRelatedInformationAsync(bool isStreaming)
+    {
+        // Arrange
+        List<string?> actualToolCallIds = [];
+        List<ChatMessageContent> actualChatMessageContents = [];
+
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var filter = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            actualToolCallIds.Add(context.ToolCallId);
+            actualChatMessageContents.Add(context.ChatMessageContent);
+
+            await next(context);
+        });
+
+        var builder = Kernel.CreateBuilder();
+
+        builder.Plugins.Add(plugin);
+
+        builder.AddOpenAIChatCompletion(
+            modelId: "test-model-id",
+            apiKey: "test-api-key",
+            httpClient: this._httpClient);
+
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter);
+
+        var kernel = builder.Build();
+
+        var arguments = new KernelArguments(new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        });
+
+        // Act
+        if (isStreaming)
+        {
+            using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_streaming_multiple_function_calls_test_response.txt")) };
+            using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")) };
+
+            this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+            await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", arguments))
+            { }
+        }
+        else
+        {
+            using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_multiple_function_calls_test_response.json")) };
+            using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
+
+            this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+            await kernel.InvokePromptAsync("Test prompt", arguments);
+        }
+
+        // Assert
+        Assert.Equal(["tool-call-id-1", "tool-call-id-2"], actualToolCallIds);
+
+        foreach (var chatMessageContent in actualChatMessageContents)
+        {
+            var content = chatMessageContent as OpenAIChatMessageContent;
+
+            Assert.NotNull(content);
+
+            Assert.Equal("test-model-id", content.ModelId);
+            Assert.Equal(AuthorRole.Assistant, content.Role);
+            Assert.Equal(2, content.ToolCalls.Count);
+        }
     }
 
     public void Dispose()

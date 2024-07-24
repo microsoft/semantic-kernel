@@ -231,7 +231,7 @@ class ChatMessageContent(KernelContent):
             ChatMessageContent - The new instance of ChatMessageContent or a subclass.
         """
         if element.tag != cls.tag:
-            raise ContentInitializationError(f"Element tag is not {cls.tag}")
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
         kwargs: dict[str, Any] = {key: value for key, value in element.items()}
         items: list[KernelContent] = []
         if element.text:
@@ -296,5 +296,5 @@ class ChatMessageContent(KernelContent):
         if len(self.items) == 1 and isinstance(self.items[0], TextContent):
             return self.items[0].text
         if len(self.items) == 1 and isinstance(self.items[0], FunctionResultContent):
-            return self.items[0].result
+            return str(self.items[0].result)
         return [item.to_dict() for item in self.items]
