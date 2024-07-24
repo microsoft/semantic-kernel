@@ -87,6 +87,8 @@ public class AggregatorAgentTests
 
         ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test agent")];
         agent.Setup(a => a.InvokeAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
+        agent.Setup(a => a.CreateChannelAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new ChatHistoryChannel());
+        agent.Setup(a => a.GetChannelKeys()).Returns(new[] { nameof(ChatHistoryChannel) });
 
         return agent;
     }
