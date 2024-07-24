@@ -26,7 +26,7 @@ public class CohereCommandRIOService : IBedrockModelIOService
     private const int DefaultSeed = 0;
     private const bool DefaultReturnPrompt = false;
     private const bool DefaultRawPrompting = false;
-    private const int DefaultMaxTokens = 128000;
+    private const int DefaultMaxTokens = 4096;
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Cohere Command R.
     /// </summary>
@@ -36,61 +36,19 @@ public class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = DefaultTemperature;
-        double? topP = DefaultTopP;
-        int? maxTokens = DefaultMaxTokens;
-        List<string>? stopSequences = null;
-        double? topK = DefaultTopK;
-        string? promptTruncation = DefaultPromptTruncation;
-        double? frequencyPenalty = DefaultFrequencyPenalty;
-        double? presencePenalty = DefaultPresencePenalty;
-        int? seed = DefaultSeed;
-        bool? returnPrompt = DefaultReturnPrompt;
-        List<CommandRTextRequest.Tool>? tools = null;
-        List<CommandRTextRequest.ToolResult>? toolResults = null;
-        bool? rawPrompting = DefaultRawPrompting;
-
-        if (executionSettings is { ExtensionData: not null })
-        {
-            executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
-            temperature = temperatureValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("p", out var topPValue);
-            topP = topPValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("k", out var topKValue);
-            topK = topKValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("max_tokens", out var maxTokensValue);
-            maxTokens = maxTokensValue as int?;
-
-            executionSettings.ExtensionData.TryGetValue("stop_sequences", out var stopSequencesValue);
-            stopSequences = stopSequencesValue as List<string>;
-
-            executionSettings.ExtensionData.TryGetValue("prompt_truncation", out var promptTruncationValue);
-            promptTruncation = promptTruncationValue as string;
-
-            executionSettings.ExtensionData.TryGetValue("frequency_penalty", out var frequencyPenaltyValue);
-            frequencyPenalty = frequencyPenaltyValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("presence_penalty", out var presencePenaltyValue);
-            presencePenalty = presencePenaltyValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("seed", out var seedValue);
-            seed = seedValue as int?;
-
-            executionSettings.ExtensionData.TryGetValue("return_prompt", out var returnPromptValue);
-            returnPrompt = returnPromptValue as bool?;
-
-            executionSettings.ExtensionData.TryGetValue("tools", out var toolsValue);
-            tools = toolsValue as List<CommandRTextRequest.Tool>;
-
-            executionSettings.ExtensionData.TryGetValue("tool_results", out var toolResultsValue);
-            toolResults = toolResultsValue as List<CommandRTextRequest.ToolResult>;
-
-            executionSettings.ExtensionData.TryGetValue("raw_prompting", out var rawPromptingValue);
-            rawPrompting = rawPromptingValue as bool?;
-        }
+        var temperature = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature);
+        var topP = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "p", (double?)DefaultTopP);
+        var topK = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "k", (double?)DefaultTopK);
+        var maxTokens = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", (int?)DefaultMaxTokens);
+        var stopSequences = this._util.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop_sequences", null);
+        var promptTruncation = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation);
+        var frequencyPenalty = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "frequency_penalty", (double?)DefaultFrequencyPenalty);
+        var presencePenalty = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "presence_penalty", (double?)DefaultPresencePenalty);
+        var seed = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "seed", (int?)DefaultSeed);
+        var returnPrompt = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "return_prompt", (bool?)DefaultReturnPrompt);
+        var tools = this._util.GetExtensionDataValue<List<CommandRTextRequest.Tool>>(executionSettings?.ExtensionData, "tools", null);
+        var toolResults = this._util.GetExtensionDataValue<List<CommandRTextRequest.ToolResult>>(executionSettings?.ExtensionData, "tool_results", null);
+        var rawPrompting = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "raw_prompting", (bool?)DefaultRawPrompting);
 
         var requestBody = new CommandRTextRequest.CommandRTextGenerationRequest
         {
@@ -146,62 +104,37 @@ public class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var cohereRequest = new CohereCommandRequest
+        var messages = chatHistory.Select(m => new Message
         {
-            ChatHistory = chatHistory.Select(m => new CohereCommandRequest.CohereMessage
-            {
-                Role = new BedrockUtilities().MapRole(m.Role),
-                Message = m.Content
-            }).ToList(),
-            Messages = chatHistory.Select(m => new Message
-            {
-                Role = new BedrockUtilities().MapRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
+            Role = new BedrockUtilities().MapRole(m.Role),
+            Content = new List<ContentBlock> { new() { Text = m.Content } }
+        }).ToList();
+
+        var inferenceConfig = new InferenceConfiguration
+        {
             Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
             TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "p", (float)DefaultTopP),
-            TopK = this._util.GetExtensionDataValue(settings?.ExtensionData, "k", (float)DefaultTopK),
-            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens),
-            PromptTruncation = this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation),
-            FrequencyPenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty),
-            PresencePenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty),
-            Seed = this._util.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed),
-            ReturnPrompt = this._util.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt),
-            Tools = this._util.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", null),
-            ToolResults = this._util.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", null),
-            StopSequences = this._util.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
-            RawPrompting = this._util.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", false)
+            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens)
         };
+
+        var additionalModelRequestFields = new Document
+        {
+            { "k", this._util.GetExtensionDataValue(settings?.ExtensionData, "k", (float)DefaultTopK) },
+            { "prompt_truncation", this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation) },
+            { "frequency_penalty", this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty) },
+            { "presence_penalty", this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) },
+            { "seed", this._util.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed) },
+            { "return_prompt", this._util.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt) },
+            { "stop_sequences", new Document(this._util.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null).Select(s => new Document(s)).ToList() ?? new List<Document>()) },
+            { "raw_prompting", this._util.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", false) }
+        };
+
         var converseRequest = new ConverseRequest
         {
             ModelId = modelId,
-            Messages = cohereRequest.Messages,
-            System = cohereRequest.System,
-            InferenceConfig = new InferenceConfiguration
-            {
-                Temperature = cohereRequest.Temperature,
-                TopP = cohereRequest.TopP,
-                MaxTokens = cohereRequest.MaxTokens
-            },
-            AdditionalModelRequestFields = new Document
-            {
-                { "message", cohereRequest.Message },
-                { "documents", new Document(cohereRequest.Documents?.Select(d => new Document
-                {
-                    { "title", d.Title },
-                    { "snippet", d.Snippet }
-                }).ToList() ?? new List<Document>()) },
-                { "search_queries_only", cohereRequest.SearchQueriesOnly },
-                { "preamble", cohereRequest.Preamble },
-                { "k", cohereRequest.TopK },
-                { "prompt_truncation", cohereRequest.PromptTruncation },
-                { "frequency_penalty", cohereRequest.FrequencyPenalty },
-                { "presence_penalty", cohereRequest.PresencePenalty },
-                { "seed", cohereRequest.Seed },
-                { "return_prompt", cohereRequest.ReturnPrompt },
-                { "stop_sequences", new Document(cohereRequest.StopSequences?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
-                { "raw_prompting", cohereRequest.RawPrompting }
-            },
+            Messages = messages,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = additionalModelRequestFields,
             AdditionalModelResponseFieldPaths = new List<string>(),
             GuardrailConfig = null,
             ToolConfig = null
@@ -231,68 +164,42 @@ public class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var cohereRequest = new CohereCommandRequest
+        var messages = chatHistory.Select(m => new Message
         {
-            ChatHistory = chatHistory.Select(m => new CohereCommandRequest.CohereMessage
-            {
-                Role = new BedrockUtilities().MapRole(m.Role),
-                Message = m.Content
-            }).ToList(),
-            Messages = chatHistory.Select(m => new Message
-            {
-                Role = new BedrockUtilities().MapRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
+            Role = new BedrockUtilities().MapRole(m.Role),
+            Content = new List<ContentBlock> { new() { Text = m.Content } }
+        }).ToList();
+
+        var inferenceConfig = new InferenceConfiguration
+        {
             Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
             TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "p", (float)DefaultTopP),
-            TopK = this._util.GetExtensionDataValue(settings?.ExtensionData, "k", (float)DefaultTopK),
-            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens),
-            PromptTruncation = this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation),
-            FrequencyPenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty),
-            PresencePenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty),
-            Seed = this._util.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed),
-            ReturnPrompt = this._util.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt),
-            Tools = this._util.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", null),
-            ToolResults = this._util.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", null),
-            StopSequences = this._util.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
-            RawPrompting = this._util.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", false)
+            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens)
         };
+
+        var additionalModelRequestFields = new Document
+        {
+            { "k", this._util.GetExtensionDataValue(settings?.ExtensionData, "k", (float)DefaultTopK) },
+            { "prompt_truncation", this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation) },
+            { "frequency_penalty", this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty) },
+            { "presence_penalty", this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) },
+            { "seed", this._util.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed) },
+            { "return_prompt", this._util.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt) },
+            { "stop_sequences", new Document(this._util.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null)?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
+            { "raw_prompting", this._util.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", false) }
+        };
+
         var converseRequest = new ConverseStreamRequest
         {
             ModelId = modelId,
-            Messages = cohereRequest.Messages,
-            System = cohereRequest.System,
-            InferenceConfig = new InferenceConfiguration
-            {
-                Temperature = (float)cohereRequest.Temperature,
-                TopP = (float)cohereRequest.TopP,
-                MaxTokens = cohereRequest.MaxTokens
-            },
-            AdditionalModelRequestFields = new Document
-            {
-                { "message", cohereRequest.Message },
-                {
-                    "documents", new Document(cohereRequest.Documents?.Select(d => new Document
-                    {
-                        { "title", d.Title },
-                        { "snippet", d.Snippet }
-                    }).ToList() ?? new List<Document>())
-                },
-                { "search_queries_only", cohereRequest.SearchQueriesOnly },
-                { "preamble", cohereRequest.Preamble },
-                { "k", cohereRequest.TopK },
-                { "prompt_truncation", cohereRequest.PromptTruncation },
-                { "frequency_penalty", cohereRequest.FrequencyPenalty },
-                { "presence_penalty", cohereRequest.PresencePenalty },
-                { "seed", cohereRequest.Seed },
-                { "return_prompt", cohereRequest.ReturnPrompt },
-                { "stop_sequences", new Document(cohereRequest.StopSequences?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
-                { "raw_prompting", cohereRequest.RawPrompting }
-            },
+            Messages = messages,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = additionalModelRequestFields,
             AdditionalModelResponseFieldPaths = new List<string>(),
             GuardrailConfig = null,
             ToolConfig = null
         };
+
         return converseRequest;
     }
 }

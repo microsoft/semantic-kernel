@@ -49,14 +49,14 @@ public static class TitanRequest
         /// </summary>
         [JsonPropertyName("topP")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public double? TopP { get; set; }
+        public float TopP { get; set; }
 
         /// <summary>
         /// The Temperature value ranges from 0 to 1, with 0 being the most deterministic and 1 being the most creative.
         /// </summary>
         [JsonPropertyName("temperature")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public double? Temperature { get; set; }
+        public float Temperature { get; set; }
 
         /// <summary>
         /// Configures the maximum number of tokens in the generated response. The range is 0 to 4096. The default is 512.

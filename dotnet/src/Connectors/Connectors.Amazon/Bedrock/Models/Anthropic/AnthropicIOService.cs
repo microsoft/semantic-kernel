@@ -31,29 +31,11 @@ public class AnthropicIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = DefaultTemperature;
-        double? topP = DefaultTopP;
-        int? maxTokensToSample = DefaultMaxTokensToSample;
-        List<string>? stopSequences = DefaultStopSequences;
-        int? topK = DefaultTopK;
-
-        if (executionSettings is { ExtensionData: not null })
-        {
-            executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
-            temperature = temperatureValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("top_p", out var topPValue);
-            topP = topPValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("max_tokens_to_sample", out var maxTokensToSampleValue);
-            maxTokensToSample = maxTokensToSampleValue as int?;
-
-            executionSettings.ExtensionData.TryGetValue("stop_sequences", out var stopSequencesValue);
-            stopSequences = stopSequencesValue as List<string>;
-
-            executionSettings.ExtensionData.TryGetValue("top_k", out var topKValue);
-            topK = topKValue as int?;
-        }
+        var temperature = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature);
+        var topP = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", (double?)DefaultTopP);
+        var maxTokensToSample = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens_to_sample", (int?)DefaultMaxTokensToSample);
+        var stopSequences = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "stop_sequences", DefaultStopSequences);
+        var topK = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_k", (int?)DefaultTopK);
 
         var requestBody = new ClaudeRequest.ClaudeTextGenerationRequest()
         {
@@ -102,41 +84,30 @@ public class AnthropicIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var claudeRequest = new ClaudeRequest.ClaudeChatCompletionRequest
+        var messages = chatHistory.Select(m => new Message
         {
-            Messages = chatHistory.Select(m => new Message
-            {
-                Role = new BedrockUtilities().MapRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
-            System = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
-            InferenceConfig = new InferenceConfiguration
-            {
-                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
-            },
-            // AnthropicVersion = "bedrock-2023-05-31", // NOTE: documentation states anthropic_version required and value must be 'bedrock-2023-05-31' but BedrockRuntime ValidationException with this field present.
-            Tools = this._util.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
-            ToolChoice = this._util.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null)
-        };
-        var converseRequest = new ConverseRequest
+            Role = new BedrockUtilities().MapRole(m.Role),
+            Content = new List<ContentBlock> { new() { Text = m.Content } }
+        }).ToList();
+
+        var system = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>());
+
+        var inferenceConfig = new InferenceConfiguration
         {
-            ModelId = modelId,
-            Messages = claudeRequest.Messages,
-            System = claudeRequest.System,
-            InferenceConfig = claudeRequest.InferenceConfig,
-            AdditionalModelRequestFields = new Document
-            {
-                { "anthropic_version", claudeRequest.AnthropicVersion },
-            }
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
+            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
         };
 
-        // Tools are only unsupported for version 1 but work for all other anthropic models.
+        var additionalModelRequestFields = new Document {};
+
+        var tools = this._util.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null);
+        var toolChoice = this._util.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null);
+
         if (modelId != "anthropic.claude-instant-v1")
         {
-            converseRequest.AdditionalModelRequestFields.Add(
-                "tools", new Document(claudeRequest.Tools?.Select(t => new Document
+            additionalModelRequestFields.Add(
+                "tools", new Document(tools?.Select(t => new Document
                 {
                     { "name", t.Name },
                     { "description", t.Description },
@@ -144,20 +115,28 @@ public class AnthropicIOService : IBedrockModelIOService
                 }).ToList() ?? new List<Document>())
             );
 
-            converseRequest.AdditionalModelRequestFields.Add(
-                "tool_choice", claudeRequest.ToolChoice != null
+            additionalModelRequestFields.Add(
+                "tool_choice", toolChoice != null
                     ? new Document
                     {
-                        { "type", claudeRequest.ToolChoice.Type },
-                        { "name", claudeRequest.ToolChoice.Name }
+                        { "type", toolChoice.Type },
+                        { "name", toolChoice.Name }
                     }
                     : new Document()
             );
         }
 
-        converseRequest.AdditionalModelResponseFieldPaths = new List<string>();
-        converseRequest.GuardrailConfig = null; // Set if needed
-        converseRequest.ToolConfig = null; // Set if needed
+        var converseRequest = new ConverseRequest
+        {
+            ModelId = modelId,
+            Messages = messages,
+            System = system,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = additionalModelRequestFields,
+            AdditionalModelResponseFieldPaths = new List<string>(),
+            GuardrailConfig = null, // Set if needed
+            ToolConfig = null // Set if needed
+        };
 
         return converseRequest;
     }
@@ -184,41 +163,30 @@ public class AnthropicIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var claudeRequest = new ClaudeRequest.ClaudeChatCompletionRequest
+        var messages = chatHistory.Select(m => new Message
         {
-            Messages = chatHistory.Select(m => new Message
-            {
-                Role = new BedrockUtilities().MapRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
-            System = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
-            InferenceConfig = new InferenceConfiguration
-            {
-                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
-            },
-            // AnthropicVersion = "bedrock-2023-05-31", // NOTE: documentation states anthropic_version required and value must be 'bedrock-2023-05-31' but BedrockRuntime ValidationException with this field present.
-            Tools = this._util.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
-            ToolChoice = this._util.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null)
-        };
-        var converseRequest = new ConverseStreamRequest()
+            Role = new BedrockUtilities().MapRole(m.Role),
+            Content = new List<ContentBlock> { new() { Text = m.Content } }
+        }).ToList();
+
+        var system = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>());
+
+        var inferenceConfig = new InferenceConfiguration
         {
-            ModelId = modelId,
-            Messages = claudeRequest.Messages,
-            System = claudeRequest.System,
-            InferenceConfig = claudeRequest.InferenceConfig,
-            AdditionalModelRequestFields = new Document
-            {
-                { "anthropic_version", claudeRequest.AnthropicVersion },
-            }
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
+            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
         };
 
-        // Tools are only unsupported for version 1 but work for all other anthropic models.
+        var additionalModelRequestFields = new Document {};
+
+        var tools = this._util.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null);
+        var toolChoice = this._util.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null);
+
         if (modelId != "anthropic.claude-instant-v1")
         {
-            converseRequest.AdditionalModelRequestFields.Add(
-                "tools", new Document(claudeRequest.Tools?.Select(t => new Document
+            additionalModelRequestFields.Add(
+                "tools", new Document(tools?.Select(t => new Document
                 {
                     { "name", t.Name },
                     { "description", t.Description },
@@ -226,20 +194,28 @@ public class AnthropicIOService : IBedrockModelIOService
                 }).ToList() ?? new List<Document>())
             );
 
-            converseRequest.AdditionalModelRequestFields.Add(
-                "tool_choice", claudeRequest.ToolChoice != null
+            additionalModelRequestFields.Add(
+                "tool_choice", toolChoice != null
                     ? new Document
                     {
-                        { "type", claudeRequest.ToolChoice.Type },
-                        { "name", claudeRequest.ToolChoice.Name }
+                        { "type", toolChoice.Type },
+                        { "name", toolChoice.Name }
                     }
                     : new Document()
             );
         }
 
-        converseRequest.AdditionalModelResponseFieldPaths = new List<string>();
-        converseRequest.GuardrailConfig = null; // Set if needed
-        converseRequest.ToolConfig = null; // Set if needed
+        var converseRequest = new ConverseStreamRequest
+        {
+            ModelId = modelId,
+            Messages = messages,
+            System = system,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = additionalModelRequestFields,
+            AdditionalModelResponseFieldPaths = new List<string>(),
+            GuardrailConfig = null, // Set if needed
+            ToolConfig = null // Set if needed
+        };
 
         return converseRequest;
     }

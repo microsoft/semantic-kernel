@@ -29,21 +29,9 @@ public class MetaIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = DefaultTemperature;
-        double? topP = DefaultTopP;
-        int? maxGenLen = DefaultMaxGenLen;
-
-        if (executionSettings is { ExtensionData: not null })
-        {
-            executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
-            temperature = temperatureValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("top_p", out var topPValue);
-            topP = topPValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("max_gen_len", out var maxGenLenValue);
-            maxGenLen = maxGenLenValue as int?;
-        }
+        var temperature = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature);
+        var topP = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", (double?)DefaultTopP);
+        var maxGenLen = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "max_gen_len", (int?)DefaultMaxGenLen);
 
         var requestBody = new LlamaTextRequest.LlamaTextGenerationRequest
         {
@@ -89,34 +77,31 @@ public class MetaIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var llamaRequest = new LlamaChatRequest()
+        var messages = chatHistory.Select(m => new Message
         {
-            Messages = chatHistory.Select(m => new Message
-            {
-                Role = new BedrockUtilities().MapRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
-            System = new List<SystemContentBlock>(),
+            Role = new BedrockUtilities().MapRole(m.Role),
+            Content = new List<ContentBlock> { new() { Text = m.Content } }
+        }).ToList();
+
+        var inferenceConfig = new InferenceConfiguration
+        {
             Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
             TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-            MaxGenLen = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
+            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
         };
+
         var converseRequest = new ConverseRequest
         {
             ModelId = modelId,
-            Messages = llamaRequest.Messages,
-            System = llamaRequest.System,
-            InferenceConfig = new InferenceConfiguration
-            {
-                Temperature = llamaRequest.Temperature,
-                TopP = llamaRequest.TopP,
-                MaxTokens = llamaRequest.MaxGenLen
-            },
+            Messages = messages,
+            System = new List<SystemContentBlock>(),
+            InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>(),
             GuardrailConfig = null,
             ToolConfig = null
         };
+
         return converseRequest;
     }
     /// <summary>
@@ -145,34 +130,31 @@ public class MetaIOService : IBedrockModelIOService
         ChatHistory chatHistory,
         PromptExecutionSettings? settings = null)
     {
-        var llamaRequest = new LlamaChatRequest
+        var messages = chatHistory.Select(m => new Message
         {
-            Messages = chatHistory.Select(m => new Message
-            {
-                Role = new BedrockUtilities().MapRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
-            System = new List<SystemContentBlock>(),
+            Role = new BedrockUtilities().MapRole(m.Role),
+            Content = new List<ContentBlock> { new() { Text = m.Content } }
+        }).ToList();
+
+        var inferenceConfig = new InferenceConfiguration
+        {
             Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
             TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-            MaxGenLen = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
+            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
         };
-        var converseStreamRequest = new ConverseStreamRequest
+
+        var converseRequest = new ConverseStreamRequest
         {
             ModelId = modelId,
-            Messages = llamaRequest.Messages,
-            System = llamaRequest.System,
-            InferenceConfig = new InferenceConfiguration
-            {
-                Temperature = llamaRequest.Temperature,
-                TopP = llamaRequest.TopP,
-                MaxTokens = llamaRequest.MaxGenLen
-            },
+            Messages = messages,
+            System = new List<SystemContentBlock>(),
+            InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>(),
             GuardrailConfig = null,
             ToolConfig = null
         };
-        return converseStreamRequest;
+
+        return converseRequest;
     }
 }

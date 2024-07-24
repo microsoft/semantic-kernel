@@ -17,9 +17,10 @@ public class AmazonIOService : IBedrockModelIOService
     private readonly BedrockUtilities _util = new();
 
     // Define constants for default values
-    private const double DefaultTemperature = 0.7;
-    private const double DefaultTopP = 0.9;
+    private const float DefaultTemperature = 0.7f;
+    private const float DefaultTopP = 0.9f;
     private const int DefaultMaxTokenCount = 512;
+    private static readonly List<string> DefaultStopSequences = new() { "User:" };
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Amazon Titan.
     /// </summary>
@@ -29,25 +30,11 @@ public class AmazonIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = DefaultTemperature;
-        double? topP = DefaultTopP;
-        int? maxTokenCount = DefaultMaxTokenCount;
-        List<string>? stopSequences = [];
+        float temperature = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", DefaultTemperature);
+        float topP = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "topP", DefaultTopP);
+        int maxTokenCount = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount);
+        List<string> stopSequences = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "stopSequences", DefaultStopSequences);
 
-        if (executionSettings is { ExtensionData: not null })
-        {
-            executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
-            temperature = temperatureValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("top_p", out var topPValue);
-            topP = topPValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("max_tokens", out var maxTokensValue);
-            maxTokenCount = maxTokensValue as int?;
-
-            executionSettings.ExtensionData.TryGetValue("stop_sequences", out var stopSequencesValue);
-            stopSequences = stopSequencesValue as List<string>;
-        }
         var requestBody = new
         {
             inputText = prompt,
@@ -95,34 +82,29 @@ public class AmazonIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var titanRequest = new TitanRequest.TitanChatCompletionRequest
+        var messages = chatHistory.Select(m => new Message
         {
-            Messages = chatHistory.Select(m => new Message
-            {
-                Role = new BedrockUtilities().MapRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
-            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
-            InferenceConfig = new InferenceConfiguration
-            {
-                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", (float)DefaultTopP),
-                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount),
-            },
-            AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>()
+            Role = new BedrockUtilities().MapRole(m.Role),
+            Content = new List<ContentBlock> { new() { Text = m.Content } }
+        }).ToList();
+
+        var inferenceConfig = new InferenceConfiguration
+        {
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", (float)DefaultTopP),
+            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount),
         };
+
         var converseRequest = new ConverseRequest
         {
             ModelId = modelId,
-            Messages = titanRequest.Messages,
-            System = titanRequest.System,
-            InferenceConfig = titanRequest.InferenceConfig,
-            AdditionalModelRequestFields = titanRequest.AdditionalModelRequestFields,
-            AdditionalModelResponseFieldPaths = titanRequest.AdditionalModelResponseFieldPaths,
-            GuardrailConfig = null, // Set if needed
-            ToolConfig = null // Set if needed
+            Messages = messages,
+            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>()
         };
+
         return converseRequest;
     }
     /// <summary>
@@ -147,34 +129,27 @@ public class AmazonIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var titanRequest = new TitanRequest.TitanChatCompletionRequest
+        var messages = chatHistory.Select(m => new Message
         {
-            Messages = chatHistory.Select(m => new Message
-            {
-                Role = new BedrockUtilities().MapRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
-            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
-            InferenceConfig = new InferenceConfiguration
-            {
-                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", (float)DefaultTopP),
-                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount),
-            },
-            AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>()
+            Role = new BedrockUtilities().MapRole(m.Role),
+            Content = new List<ContentBlock> { new() { Text = m.Content } }
+        }).ToList();
+
+        var inferenceConfig = new InferenceConfiguration
+        {
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", (float)DefaultTopP),
+            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount),
         };
 
         var converseStreamRequest = new ConverseStreamRequest
         {
             ModelId = modelId,
-            Messages = titanRequest.Messages,
-            System = titanRequest.System,
-            InferenceConfig = titanRequest.InferenceConfig,
-            AdditionalModelRequestFields = titanRequest.AdditionalModelRequestFields,
-            AdditionalModelResponseFieldPaths = titanRequest.AdditionalModelResponseFieldPaths,
-            GuardrailConfig = null, // Set if needed
-            ToolConfig = null // Set if needed
+            Messages = messages,
+            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>()
         };
 
         return converseStreamRequest;

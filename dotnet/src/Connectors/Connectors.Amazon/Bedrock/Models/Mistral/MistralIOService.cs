@@ -14,6 +14,7 @@ namespace Connectors.Amazon.Models.Mistral;
 /// </summary>
 public class MistralIOService : IBedrockModelIOService
 {
+    private readonly BedrockUtilities _util = new();
     // Define constants for default values
     private const float DefaultTemperatureInstruct = 0.5f;
     private const float DefaultTopPInstruct = 0.9f;
@@ -36,29 +37,11 @@ public class MistralIOService : IBedrockModelIOService
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
         var isInstructModel = modelId.Contains("instruct", StringComparison.OrdinalIgnoreCase);
-        double? temperature = isInstructModel ? DefaultTemperatureInstruct : DefaultTemperatureNonInstruct;
-        double? topP = isInstructModel ? DefaultTopPInstruct : DefaultTopPNonInstruct;
-        int? maxTokens = isInstructModel ? DefaultMaxTokensInstruct : DefaultMaxTokensNonInstruct;
-        List<string>? stop = isInstructModel ? DefaultStopSequencesInstruct : DefaultStopSequencesNonInstruct;
-        int? topK = isInstructModel ? DefaultTopKInstruct : DefaultTopKNonInstruct;
-
-        if (executionSettings is { ExtensionData: not null })
-        {
-            executionSettings.ExtensionData.TryGetValue("temperature", out var temperatureValue);
-            temperature = temperatureValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("top_p", out var topPValue);
-            topP = topPValue as double?;
-
-            executionSettings.ExtensionData.TryGetValue("max_tokens", out var maxTokensValue);
-            maxTokens = maxTokensValue as int?;
-
-            executionSettings.ExtensionData.TryGetValue("stop", out var stopValue);
-            stop = stopValue as List<string>;
-
-            executionSettings.ExtensionData.TryGetValue("top_k", out var topKValue);
-            topK = topKValue as int?;
-        }
+        var temperature = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", isInstructModel ? (double?)DefaultTemperatureInstruct : (double?)DefaultTemperatureNonInstruct);
+        var topP = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", isInstructModel ? (double?)DefaultTopPInstruct : (double?)DefaultTopPNonInstruct);
+        var maxTokens = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", isInstructModel ? (int?)DefaultMaxTokensInstruct : (int?)DefaultMaxTokensNonInstruct);
+        var stop = this._util.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop", isInstructModel ? DefaultStopSequencesInstruct : DefaultStopSequencesNonInstruct);
+        var topK = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_k", isInstructModel ? (int?)DefaultTopKInstruct : (int?)DefaultTopKNonInstruct);
 
         var requestBody = new
         {
