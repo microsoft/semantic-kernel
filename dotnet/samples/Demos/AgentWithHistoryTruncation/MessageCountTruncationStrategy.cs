@@ -4,12 +4,12 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AgentWithHistoryTruncation;
 
-internal class MessageCountTruncationStrategy(int trunctionThreshold) : TruncationStrategy
+internal class MessageCountTruncationStrategy(int truncationThreshold) : TruncationStrategy
 {
     // Strict trigger will truncate often once threshold is reached.
     // Specifying a buffer / window beyond the threshold could reduce the frequency of truncation:
     // At x + y messages, truncate to x messages.
-    public override bool RequiresTruncation(ChatHistory history) => history.Count >= trunctionThreshold;
+    public override bool RequiresTruncation(ChatHistory history) => history.Count >= truncationThreshold;
 
     public override IAsyncEnumerable<ChatMessageContent> TruncateAsync(ChatHistory history, CancellationToken cancellationToken)
     {
@@ -17,7 +17,7 @@ internal class MessageCountTruncationStrategy(int trunctionThreshold) : Truncati
 
         IEnumerable<ChatMessageContent> GetTruncatedHistory()
         {
-            for (int index = history.Count - trunctionThreshold; index < history.Count - 1; ++index)
+            for (int index = history.Count - truncationThreshold; index < history.Count - 1; ++index)
             {
                 yield return history[index];
             }
@@ -25,5 +25,5 @@ internal class MessageCountTruncationStrategy(int trunctionThreshold) : Truncati
     }
 
     // Override so that different instances with the same threshold are considered equal.
-    public override int GetHashCode() => HashCode.Combine(nameof(MessageCountTruncationStrategy), trunctionThreshold);
+    public override int GetHashCode() => HashCode.Combine(nameof(MessageCountTruncationStrategy), truncationThreshold);
 }
