@@ -1,7 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from enum import Enum
+
 from semantic_kernel.data.const import DistanceFunction
+
+
+class RedisCollectionTypes(str, Enum):
+    JSON = "json"
+    HASHSET = "hashset"
+
 
 DISTANCE_FUNCTION_MAP = {
     DistanceFunction.COSINE: "COSINE",

@@ -37,7 +37,7 @@ TModel = TypeVar("TModel")
 
 
 @experimental_class
-class RedisCollection(VectorStoreRecordCollection[str, TModel]):
+class RedisHashsetCollection(VectorStoreRecordCollection[str, TModel]):
     """A vector store record collection implementation using Redis."""
 
     redis_database: Redis
