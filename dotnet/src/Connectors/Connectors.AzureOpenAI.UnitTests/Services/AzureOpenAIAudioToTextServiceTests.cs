@@ -43,7 +43,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
 
         // Assert
         Assert.Equal("model-id", service.Attributes[AIServiceExtensions.ModelIdKey]);
-        Assert.Equal("deployment", service.Attributes[ClientCore.DeploymentNameKey]);
+        Assert.Equal("deployment", service.Attributes[AzureClientCore.DeploymentNameKey]);
     }
 
     [Theory]
@@ -59,7 +59,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
 
         // Assert
         Assert.Equal("model-id", service.Attributes[AIServiceExtensions.ModelIdKey]);
-        Assert.Equal("deployment", service.Attributes[ClientCore.DeploymentNameKey]);
+        Assert.Equal("deployment", service.Attributes[AzureClientCore.DeploymentNameKey]);
     }
 
     [Theory]
@@ -75,7 +75,7 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
 
         // Assert
         Assert.Equal("model-id", service.Attributes[AIServiceExtensions.ModelIdKey]);
-        Assert.Equal("deployment", service.Attributes[ClientCore.DeploymentNameKey]);
+        Assert.Equal("deployment", service.Attributes[AzureClientCore.DeploymentNameKey]);
     }
 
     [Fact]

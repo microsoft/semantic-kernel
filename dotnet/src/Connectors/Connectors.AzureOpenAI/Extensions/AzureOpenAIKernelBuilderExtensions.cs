@@ -517,8 +517,8 @@ public static class AzureOpenAIKernelBuilderExtensions
     #endregion
 
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
-        new(new Uri(endpoint), credentials, ClientCore.GetAzureOpenAIClientOptions(httpClient));
+        new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient));
 
     private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient) =>
-        new(new Uri(endpoint), credentials, ClientCore.GetAzureOpenAIClientOptions(httpClient));
+        new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient));
 }

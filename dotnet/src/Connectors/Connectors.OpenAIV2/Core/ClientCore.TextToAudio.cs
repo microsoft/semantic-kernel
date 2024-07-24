@@ -17,26 +17,30 @@ internal partial class ClientCore
     /// <summary>
     /// Generates an image with the provided configuration.
     /// </summary>
+    /// <param name="targetModel">Model identifier</param>
     /// <param name="prompt">Prompt to generate the image</param>
     /// <param name="executionSettings">Text to Audio execution settings for the prompt</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Url of the generated image</returns>
     internal async Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
+        string targetModel,
         string prompt,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
-        OpenAITextToAudioExecutionSettings? audioExecutionSettings = OpenAITextToAudioExecutionSettings.FromExecutionSettings(executionSettings);
-        var (responseFormat, mimeType) = GetGeneratedSpeechFormatAndMimeType(audioExecutionSettings?.ResponseFormat);
+        OpenAITextToAudioExecutionSettings audioExecutionSettings = OpenAITextToAudioExecutionSettings.FromExecutionSettings(executionSettings);
+
+        var (responseFormat, mimeType) = GetGeneratedSpeechFormatAndMimeType(audioExecutionSettings.ResponseFormat);
+
         SpeechGenerationOptions options = new()
         {
             ResponseFormat = responseFormat,
-            Speed = audioExecutionSettings?.Speed,
+            Speed = audioExecutionSettings.Speed,
         };
 
-        ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client.GetAudioClient(this.ModelId).GenerateSpeechFromTextAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
+        ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client!.GetAudioClient(targetModel).GenerateSpeechFromTextAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
 
         return [new AudioContent(response.Value.ToArray(), mimeType)];
     }
@@ -53,7 +57,7 @@ internal partial class ClientCore
             _ => throw new NotSupportedException($"The voice '{voice}' is not supported."),
         };
 
-    private static (GeneratedSpeechFormat Format, string MimeType) GetGeneratedSpeechFormatAndMimeType(string? format)
+    private static (GeneratedSpeechFormat? Format, string? MimeType) GetGeneratedSpeechFormatAndMimeType(string? format)
         => format?.ToUpperInvariant() switch
         {
             "WAV" => (GeneratedSpeechFormat.Wav, "audio/wav"),
@@ -62,6 +66,7 @@ internal partial class ClientCore
             "FLAC" => (GeneratedSpeechFormat.Flac, "audio/flac"),
             "AAC" => (GeneratedSpeechFormat.Aac, "audio/aac"),
             "PCM" => (GeneratedSpeechFormat.Pcm, "audio/l16"),
+            null => (null, null),
             _ => throw new NotSupportedException($"The format '{format}' is not supported.")
         };
 }

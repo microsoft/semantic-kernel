@@ -128,7 +128,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatMessageContentsAsync(this._client.ModelId, chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
@@ -136,7 +136,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        => this._client.GetStreamingChatMessageContentsAsync(this._client.ModelId, chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
@@ -144,7 +144,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatAsTextContentsAsync(this._client.ModelId, prompt, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -152,5 +152,5 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetChatAsTextStreamingContentsAsync(prompt, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatAsTextStreamingContentsAsync(this._client.ModelId, prompt, executionSettings, kernel, cancellationToken);
 }

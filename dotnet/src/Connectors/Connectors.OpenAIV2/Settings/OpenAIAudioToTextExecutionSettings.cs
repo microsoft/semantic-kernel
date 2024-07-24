@@ -34,6 +34,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// An optional language of the audio data as two-letter ISO-639-1 language code (e.g. 'en' or 'es').
     /// </summary>
     [JsonPropertyName("language")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Language
     {
         get => this._language;
@@ -49,6 +50,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.
     /// </summary>
     [JsonPropertyName("prompt")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Prompt
     {
         get => this._prompt;
@@ -64,7 +66,8 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// The format of the transcript output, in one of these options: json, srt, verbose_json, or vtt. Default is 'json'.
     /// </summary>
     [JsonPropertyName("response_format")]
-    public string ResponseFormat
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ResponseFormat
     {
         get => this._responseFormat;
 
@@ -82,7 +85,8 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     /// Default is 0.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public float Temperature
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public float? Temperature
     {
         get => this._temperature;
 
@@ -152,8 +156,8 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 
     private const string DefaultFilename = "file.mp3";
 
-    private float _temperature = 0;
-    private string _responseFormat = "json";
+    private float? _temperature = 0;
+    private string? _responseFormat;
     private string _filename;
     private string? _language;
     private string? _prompt;

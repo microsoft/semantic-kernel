@@ -56,22 +56,22 @@ internal partial class ClientCore
     /// <summary>
     /// Identifier of the default model to use
     /// </summary>
-    internal string ModelId { get; init; } = string.Empty;
+    protected internal string ModelId { get; init; } = string.Empty;
 
     /// <summary>
     /// Non-default endpoint for OpenAI API.
     /// </summary>
-    internal Uri? Endpoint { get; init; }
+    protected internal Uri? Endpoint { get; init; }
 
     /// <summary>
     /// Logger instance
     /// </summary>
-    internal ILogger Logger { get; init; }
+    protected internal ILogger? Logger { get; init; }
 
     /// <summary>
     /// OpenAI Client
     /// </summary>
-    internal OpenAIClient Client { get; }
+    protected internal OpenAIClient? Client { get; set; }
 
     /// <summary>
     /// Storage for AI service attributes.
@@ -95,6 +95,17 @@ internal partial class ClientCore
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
+        // Empty constructor will be used when inherited by a specialized Client.
+        if (modelId is null
+            && apiKey is null
+            && organizationId is null
+            && endpoint is null
+            && httpClient is null
+            && logger is null)
+        {
+            return;
+        }
+
         if (!string.IsNullOrWhiteSpace(modelId))
         {
             this.ModelId = modelId!;
@@ -161,7 +172,7 @@ internal partial class ClientCore
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     internal void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        if (this.Logger.IsEnabled(LogLevel.Information))
+        if (this.Logger!.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelId);
         }
@@ -210,7 +221,7 @@ internal partial class ClientCore
     /// <typeparam name="T">Type of the response.</typeparam>
     /// <param name="request">Request to invoke.</param>
     /// <returns>Returns the response.</returns>
-    private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
+    protected static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
     {
         try
         {
@@ -228,7 +239,7 @@ internal partial class ClientCore
     /// <typeparam name="T">Type of the response.</typeparam>
     /// <param name="request">Request to invoke.</param>
     /// <returns>Returns the response.</returns>
-    private static T RunRequest<T>(Func<T> request)
+    protected static T RunRequest<T>(Func<T> request)
     {
         try
         {
@@ -240,7 +251,7 @@ internal partial class ClientCore
         }
     }
 
-    private static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
+    protected static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
     {
         return new GenericActionPipelinePolicy((message) =>
         {

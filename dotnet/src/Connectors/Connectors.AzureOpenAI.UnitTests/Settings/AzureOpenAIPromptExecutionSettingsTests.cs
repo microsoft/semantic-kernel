@@ -18,20 +18,22 @@ public class AzureOpenAIPromptExecutionSettingsTests
     public void ItCreatesOpenAIExecutionSettingsWithCorrectDefaults()
     {
         // Arrange
+        var maxTokensSettings = 128;
+
         // Act
-        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(null, 128);
+        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(null, maxTokensSettings);
 
         // Assert
-        Assert.Equal(1, executionSettings.Temperature);
-        Assert.Equal(1, executionSettings.TopP);
-        Assert.Equal(0, executionSettings.FrequencyPenalty);
-        Assert.Equal(0, executionSettings.PresencePenalty);
+        Assert.Null(executionSettings.Temperature);
+        Assert.Null(executionSettings.TopP);
+        Assert.Null(executionSettings.FrequencyPenalty);
+        Assert.Null(executionSettings.PresencePenalty);
         Assert.Null(executionSettings.StopSequences);
         Assert.Null(executionSettings.TokenSelectionBiases);
         Assert.Null(executionSettings.TopLogprobs);
         Assert.Null(executionSettings.Logprobs);
         Assert.Null(executionSettings.AzureChatDataSource);
-        Assert.Equal(128, executionSettings.MaxTokens);
+        Assert.Equal(maxTokensSettings, executionSettings.MaxTokens);
     }
 
     [Fact]
