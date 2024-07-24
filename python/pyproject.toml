@@ -141,7 +141,7 @@ weaviate-client = ">=3.18,<5.0"
 
 # Extras are exposed to pip, this allows a user to easily add the right dependencies to their environment
 [tool.poetry.extras]
-all = ["transformers", "sentence-transformers", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
+all = ["transformers", "sentence-transformers", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "google", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
 
 azure = ["azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "msgraph-sdk"]
 chromadb = ["chromadb"]

@@ -45,7 +45,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
     def __init__(
         self,
-        ai_model_id: str | None = None,
+        gemini_model_id: str | None = None,
         api_key: str | None = None,
         service_id: str | None = None,
         env_file_path: str | None = None,
@@ -55,11 +55,11 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
         If no arguments are provided, the service will attempt to load the settings from the environment.
         The following environment variables are used:
-        - GOOGLE_AI_AI_MODEL_ID
+        - GOOGLE_AI_GEMINI_MODEL_ID
         - GOOGLE_AI_API_KEY
 
         Args:
-            ai_model_id (str | None): The AI model ID. (Optional)
+            gemini_model_id (str | None): The Gemini model ID. (Optional)
             api_key (str | None): The API key. (Optional)
             service_id (str | None): The service ID. (Optional)
             env_file_path (str | None): The path to the .env file. (Optional)
@@ -70,17 +70,19 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         """
         try:
             google_ai_settings = GoogleAISettings.create(
-                ai_model_id=ai_model_id,
+                gemini_model_id=gemini_model_id,
                 api_key=api_key,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
             raise ServiceInitializationError(f"Failed to validate Google AI settings: {e}") from e
+        if not google_ai_settings.gemini_model_id:
+            raise ServiceInitializationError("The Google AI Gemini model ID is required.")
 
         super().__init__(
-            ai_model_id=google_ai_settings.ai_model_id,
-            service_id=service_id or google_ai_settings.ai_model_id,
+            ai_model_id=google_ai_settings.gemini_model_id,
+            service_id=service_id or google_ai_settings.gemini_model_id,
             service_settings=google_ai_settings,
         )
 
@@ -103,7 +105,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         """Send a chat request to the Google AI service."""
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         model = GenerativeModel(
-            self.service_settings.ai_model_id,
+            self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
 
@@ -166,7 +168,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         """Send a streaming chat request to the Google AI service."""
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         model = GenerativeModel(
-            self.service_settings.ai_model_id,
+            self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
 

@@ -10,6 +10,7 @@ from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -40,7 +41,9 @@ def filter_system_message(chat_history: ChatHistory) -> str | None:
     If there are no system messages, return None.
     """
     if len([message for message in chat_history if message.role == AuthorRole.SYSTEM]) > 1:
-        raise ValueError("Multiple system messages in chat history. Only one system message is expected.")
+        raise ServiceInvalidRequestError(
+            "Multiple system messages in chat history. Only one system message is expected."
+        )
 
     for message in chat_history:
         if message.role == AuthorRole.SYSTEM:
@@ -71,11 +74,11 @@ def format_user_message(message: ChatMessageContent) -> list[Part]:
             else:
                 # The Google AI API doesn't support image from an arbitrary URI:
                 # https://github.com/google-gemini/generative-ai-python/issues/357
-                raise ValueError(
+                raise ServiceInvalidRequestError(
                     "ImageContent without data_uri in User message while formatting chat history for Google AI"
                 )
         else:
-            raise ValueError(
+            raise ServiceInvalidRequestError(
                 "Unsupported item type in User message while formatting chat history for Google AI"
                 f" Inference: {type(item)}"
             )

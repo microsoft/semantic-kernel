@@ -16,7 +16,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 # region init
 def test_google_ai_text_embedding_init(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAITextEmbedding"""
-    model_id = google_ai_unit_test_env["GOOGLE_AI_AI_MODEL_ID"]
+    model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
     api_key = google_ai_unit_test_env["GOOGLE_AI_API_KEY"]
     google_ai_text_embedding = GoogleAITextEmbedding()
 
@@ -24,7 +24,7 @@ def test_google_ai_text_embedding_init(google_ai_unit_test_env) -> None:
     assert google_ai_text_embedding.service_id == model_id
 
     assert isinstance(google_ai_text_embedding.service_settings, GoogleAISettings)
-    assert google_ai_text_embedding.service_settings.ai_model_id == model_id
+    assert google_ai_text_embedding.service_settings.embedding_model_id == model_id
     assert google_ai_text_embedding.service_settings.api_key.get_secret_value() == api_key
 
 
@@ -35,7 +35,15 @@ def test_google_ai_text_embedding_init_with_service_id(google_ai_unit_test_env, 
     assert google_ai_text_embedding.service_id == service_id
 
 
-@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_AI_MODEL_ID"]], indirect=True)
+def test_google_ai_text_embedding_init_with_model_id_in_argument(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAIChatCompletion with model_id in argument"""
+    google_ai_chat_completion = GoogleAITextEmbedding(embedding_model_id="custom_model_id")
+
+    assert google_ai_chat_completion.ai_model_id == "custom_model_id"
+    assert google_ai_chat_completion.service_id == "custom_model_id"
+
+
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_EMBEDDING_MODEL_ID"]], indirect=True)
 def test_google_ai_text_embedding_init_with_empty_model_id(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAITextEmbedding with an empty model_id"""
     with pytest.raises(ServiceInitializationError):
@@ -61,7 +69,7 @@ def test_prompt_execution_settings_class(google_ai_unit_test_env) -> None:
 @patch("google.generativeai.embed_content_async")
 async def test_embedding(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly."""
-    model_id = google_ai_unit_test_env["GOOGLE_AI_AI_MODEL_ID"]
+    model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
 
     mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3]]}
     settings = GoogleAIEmbeddingPromptExecutionSettings()
@@ -81,7 +89,7 @@ async def test_embedding(mock_embedding_client, google_ai_unit_test_env, prompt)
 @patch("google.generativeai.embed_content_async")
 async def test_embedding_with_settings(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly."""
-    model_id = google_ai_unit_test_env["GOOGLE_AI_AI_MODEL_ID"]
+    model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
 
     mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3]]}
     settings = GoogleAIEmbeddingPromptExecutionSettings()
@@ -106,7 +114,7 @@ async def test_embedding_with_settings(mock_embedding_client, google_ai_unit_tes
 @patch("google.generativeai.embed_content_async")
 async def test_embedding_without_settings(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly without settings."""
-    model_id = google_ai_unit_test_env["GOOGLE_AI_AI_MODEL_ID"]
+    model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
 
     mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3]]}
 
@@ -125,7 +133,7 @@ async def test_embedding_without_settings(mock_embedding_client, google_ai_unit_
 @patch("google.generativeai.embed_content_async")
 async def test_embedding_list_input(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly with a list of prompts."""
-    model_id = google_ai_unit_test_env["GOOGLE_AI_AI_MODEL_ID"]
+    model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
 
     mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]}
     settings = GoogleAIEmbeddingPromptExecutionSettings()
@@ -145,7 +153,7 @@ async def test_embedding_list_input(mock_embedding_client, google_ai_unit_test_e
 @patch("google.generativeai.embed_content_async")
 async def test_raw_embedding(mock_embedding_client, google_ai_unit_test_env, prompt):
     """Test that the service initializes and generates embeddings correctly."""
-    model_id = google_ai_unit_test_env["GOOGLE_AI_AI_MODEL_ID"]
+    model_id = google_ai_unit_test_env["GOOGLE_AI_EMBEDDING_MODEL_ID"]
 
     mock_embedding_client.return_value = {"embedding": [[0.1, 0.2, 0.3]]}
     settings = GoogleAIEmbeddingPromptExecutionSettings()

@@ -21,7 +21,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 # region init
 def test_google_ai_chat_completion_init(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAIChatCompletion"""
-    model_id = google_ai_unit_test_env["GOOGLE_AI_AI_MODEL_ID"]
+    model_id = google_ai_unit_test_env["GOOGLE_AI_GEMINI_MODEL_ID"]
     api_key = google_ai_unit_test_env["GOOGLE_AI_API_KEY"]
     google_ai_chat_completion = GoogleAIChatCompletion()
 
@@ -29,7 +29,7 @@ def test_google_ai_chat_completion_init(google_ai_unit_test_env) -> None:
     assert google_ai_chat_completion.service_id == model_id
 
     assert isinstance(google_ai_chat_completion.service_settings, GoogleAISettings)
-    assert google_ai_chat_completion.service_settings.ai_model_id == model_id
+    assert google_ai_chat_completion.service_settings.gemini_model_id == model_id
     assert google_ai_chat_completion.service_settings.api_key.get_secret_value() == api_key
 
 
@@ -40,7 +40,15 @@ def test_google_ai_chat_completion_init_with_service_id(google_ai_unit_test_env,
     assert google_ai_chat_completion.service_id == service_id
 
 
-@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_AI_MODEL_ID"]], indirect=True)
+def test_google_ai_chat_completion_init_with_model_id_in_argument(google_ai_unit_test_env) -> None:
+    """Test initialization of GoogleAIChatCompletion with model_id in argument"""
+    google_ai_chat_completion = GoogleAIChatCompletion(gemini_model_id="custom_model_id")
+
+    assert google_ai_chat_completion.ai_model_id == "custom_model_id"
+    assert google_ai_chat_completion.service_id == "custom_model_id"
+
+
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_GEMINI_MODEL_ID"]], indirect=True)
 def test_google_ai_chat_completion_init_with_empty_model_id(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAIChatCompletion with an empty model_id"""
     with pytest.raises(ServiceInitializationError):

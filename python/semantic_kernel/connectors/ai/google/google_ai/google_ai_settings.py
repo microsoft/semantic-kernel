@@ -19,9 +19,12 @@ class GoogleAISettings(KernelBaseSettings):
     settings are missing.
 
     Required settings for prefix 'GOOGLE_AI_' are:
-    - ai_model_id: str - The AI model ID for the Google AI service.
+    - gemini_model_id: str - The Gemini model ID for the Google AI service, i.e. gemini-1.5-pro
                 This value can be found in the Google AI service deployment.
-                (Env var GOOGLE_AI_AI_MODEL_ID)
+                (Env var GOOGLE_AI_GEMINI_MODEL_ID)
+    - embedding_model_id: str - The embedding model ID for the Google AI service, i.e. text-embedding-004
+                This value can be found in the Google AI service deployment.
+                (Env var GOOGLE_AI_EMBEDDING_MODEL_ID)
     - api_key: SecretStr - The API key for the Google AI service deployment.
                 This value can be found in the Google AI service deployment.
                 (Env var GOOGLE_AI_API_KEY)
@@ -29,5 +32,6 @@ class GoogleAISettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "GOOGLE_AI_"
 
-    ai_model_id: str
+    gemini_model_id: str | None = None
+    embedding_model_id: str | None = None
     api_key: SecretStr

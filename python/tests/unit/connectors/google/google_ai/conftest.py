@@ -38,7 +38,8 @@ def google_ai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
         override_env_param_dict = {}
 
     env_vars = {
-        "GOOGLE_AI_AI_MODEL_ID": "test-model-id",
+        "GOOGLE_AI_GEMINI_MODEL_ID": "test-gemini-model-id",
+        "GOOGLE_AI_EMBEDDING_MODEL_ID": "test-embedding-model-id",
         "GOOGLE_AI_API_KEY": "test-api-key",
     }
 

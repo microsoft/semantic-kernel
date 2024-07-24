@@ -28,7 +28,7 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
 
     def __init__(
         self,
-        ai_model_id: str | None = None,
+        embedding_model_id: str | None = None,
         api_key: str | None = None,
         service_id: str | None = None,
         env_file_path: str | None = None,
@@ -38,11 +38,11 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
 
         If no arguments are provided, the service will attempt to load the settings from the environment.
         The following environment variables are used:
-        - GOOGLE_AI_AI_MODEL_ID
+        - GOOGLE_AI_EMBEDDING_MODEL_ID
         - GOOGLE_AI_API_KEY
 
         Args:
-            ai_model_id (str | None): The AI model ID. (Optional)
+            embedding_model_id (str | None): The embedding model ID. (Optional)
             api_key (str | None): The API key. (Optional)
             service_id (str | None): The service ID. (Optional)
             env_file_path (str | None): The path to the .env file. (Optional)
@@ -53,17 +53,19 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
         """
         try:
             google_ai_settings = GoogleAISettings.create(
-                ai_model_id=ai_model_id,
+                embedding_model_id=embedding_model_id,
                 api_key=api_key,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
             raise ServiceInitializationError(f"Failed to validate Google AI settings: {e}") from e
+        if not google_ai_settings.embedding_model_id:
+            raise ServiceInitializationError("The Google AI embedding model ID is required.")
 
         super().__init__(
-            ai_model_id=google_ai_settings.ai_model_id,
-            service_id=service_id or google_ai_settings.ai_model_id,
+            ai_model_id=google_ai_settings.embedding_model_id,
+            service_id=service_id or google_ai_settings.embedding_model_id,
             service_settings=google_ai_settings,
         )
 
@@ -92,7 +94,7 @@ class GoogleAITextEmbedding(GoogleAIBase, EmbeddingGeneratorBase):
 
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         response: BatchEmbeddingDict = await genai.embed_content_async(
-            model=self.service_settings.ai_model_id,
+            model=self.service_settings.embedding_model_id,
             content=texts,
             **settings.prepare_settings_dict(),
         )

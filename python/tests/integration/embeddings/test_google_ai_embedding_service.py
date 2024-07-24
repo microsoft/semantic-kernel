@@ -12,9 +12,7 @@ from semantic_kernel.memory.volatile_memory_store import VolatileMemoryStore
 
 @pytest.mark.asyncio
 async def test_google_ai_embedding_service(kernel: Kernel):
-    embeddings_gen = GoogleAITextEmbedding(
-        ai_model_id="models/text-embedding-004",
-    )
+    embeddings_gen = GoogleAITextEmbedding()
 
     kernel.add_service(embeddings_gen)
 

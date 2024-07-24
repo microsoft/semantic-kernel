@@ -35,7 +35,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
 
     def __init__(
         self,
-        ai_model_id: str | None = None,
+        gemini_model_id: str | None = None,
         api_key: str | None = None,
         service_id: str | None = None,
         env_file_path: str | None = None,
@@ -49,7 +49,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         - GOOGLE_AI_API_KEY
 
         Args:
-            ai_model_id (str | None): The AI model ID. (Optional)
+            gemini_model_id (str | None): The Gemini model ID. (Optional)
             api_key (str | None): The API key. (Optional)
             service_id (str | None): The service ID. (Optional)
             env_file_path (str | None): The path to the .env file. (Optional)
@@ -60,17 +60,19 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         """
         try:
             google_ai_settings = GoogleAISettings.create(
-                ai_model_id=ai_model_id,
+                gemini_model_id=gemini_model_id,
                 api_key=api_key,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
             raise ServiceInitializationError(f"Failed to validate Google AI settings: {e}") from e
+        if not google_ai_settings.gemini_model_id:
+            raise ServiceInitializationError("The Google AI Gemini model ID is required.")
 
         super().__init__(
-            ai_model_id=google_ai_settings.ai_model_id,
-            service_id=service_id or google_ai_settings.ai_model_id,
+            ai_model_id=google_ai_settings.gemini_model_id,
+            service_id=service_id or google_ai_settings.gemini_model_id,
             service_settings=google_ai_settings,
         )
 
@@ -90,7 +92,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         """Send a text generation request to the Google AI service."""
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         model = GenerativeModel(
-            self.service_settings.ai_model_id,
+            self.service_settings.gemini_model_id,
         )
 
         response: AsyncGenerateContentResponse = await model.generate_content_async(
@@ -143,7 +145,7 @@ class GoogleAITextCompletion(GoogleAIBase, TextCompletionClientBase):
         """Send a text generation request to the Google AI service."""
         genai.configure(api_key=self.service_settings.api_key.get_secret_value())
         model = GenerativeModel(
-            self.service_settings.ai_model_id,
+            self.service_settings.gemini_model_id,
         )
 
         response: AsyncGenerateContentResponse = await model.generate_content_async(

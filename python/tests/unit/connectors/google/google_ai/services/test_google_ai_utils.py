@@ -15,6 +15,7 @@ from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 
 
 def test_finish_reason_from_google_ai_to_semantic_kernel():
@@ -42,7 +43,7 @@ def test_first_system_message():
     chat_history = ChatHistory()
     chat_history.add_system_message("System message 1")
     chat_history.add_system_message("System message 2")
-    with pytest.raises(ValueError):
+    with pytest.raises(ServiceInvalidRequestError):
         filter_system_message(chat_history)
 
 
@@ -86,7 +87,7 @@ def test_format_user_message_throws_with_unsupported_items() -> None:
             ImageContent(data="image data", mime_type="image/png"),
         ],
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(ServiceInvalidRequestError):
         format_user_message(user_message)
 
     # Test with an ImageContent that has no data_uri
@@ -96,5 +97,5 @@ def test_format_user_message_throws_with_unsupported_items() -> None:
             ImageContent(data_uri=""),
         ],
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(ServiceInvalidRequestError):
         format_user_message(user_message)
