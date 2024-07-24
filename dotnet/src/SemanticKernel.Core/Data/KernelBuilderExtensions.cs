@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Extension methods to register Data services on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Experimental("SKEXP0001")]
 public static class KernelBuilderExtensions
 {
     /// <summary>
