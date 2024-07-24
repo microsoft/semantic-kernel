@@ -336,6 +336,10 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         while (messages.HasMore);
     }
 
+    /// <inheritdoc/>
+    protected override string Serialize()
+        => JsonSerializer.Serialize(this._threadId, AgentChatSerializer.DefaultOptions);
+
     private static AnnotationContent GenerateAnnotationContent(MessageTextAnnotation annotation)
     {
         string? fileId = null;
@@ -456,11 +460,9 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         {
             FunctionResultContent functionResult = functionResults[index];
 
-            object resultValue = (functionResult.Result as FunctionResult)?.GetValue<object>() ?? string.Empty;
-
-            if (resultValue is not string textResult)
+            if (functionResult.Result is not string textResult)
             {
-                textResult = JsonSerializer.Serialize(resultValue);
+                textResult = JsonSerializer.Serialize(functionResult.Result);
             }
 
             toolOutputs[index] = new ToolOutput(functionResult.CallId, textResult!);

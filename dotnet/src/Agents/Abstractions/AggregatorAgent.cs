@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -54,5 +55,23 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
         logger.LogInformation("[{MethodName}] Created channel {ChannelType} ({ChannelMode}) with: {AgentChatType}", nameof(CreateChannelAsync), nameof(AggregatorChannel), this.Mode, chat.GetType());
 
         return Task.FromResult<AgentChannel>(channel);
+    }
+
+    /// <inheritdoc/>
+    protected internal async override Task<AgentChannel> RestoreChannelAsync(string state, ILogger logger, CancellationToken cancellationToken)
+    {
+        logger.LogDebug("[{MethodName}] Restoring channel {ChannelType}", nameof(CreateChannelAsync), nameof(AggregatorChannel));
+
+        AgentChat chat = chatProvider.Invoke();
+        AgentChatState agentChatState =
+            JsonSerializer.Deserialize<AgentChatState>(state, AgentChatSerializer.DefaultOptions) ??
+            throw new KernelException("%%%");
+
+        await chat.DeserializeAsync(agentChatState).ConfigureAwait(false); ;
+        AggregatorChannel channel = new(chat);
+
+        logger.LogInformation("[{MethodName}] Restoring channel {ChannelType} ({ChannelMode}) with: {AgentChatType}", nameof(CreateChannelAsync), nameof(AggregatorChannel), this.Mode, chat.GetType());
+
+        return channel;
     }
 }

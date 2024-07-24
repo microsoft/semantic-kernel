@@ -29,6 +29,11 @@ public abstract class AgentChat
     private ILogger? _logger;
 
     /// <summary>
+    /// The agents participating in the chat.
+    /// </summary>
+    public abstract IReadOnlyList<Agent> Agents { get; }
+
+    /// <summary>
     /// Indicates if a chat operation is active.  Activity is defined as
     /// any the execution of any public method.
     /// </summary>
@@ -273,6 +278,41 @@ public abstract class AgentChat
 
             return channel;
         }
+    }
+
+    internal async Task DeserializeAsync(AgentChatState state)
+    {
+        if (this._agentChannels.Count > 0 ||
+            this.History.Count > 0)
+        {
+            throw new KernelException("%%%");
+        }
+        //this.History = state.History; %%%
+        Dictionary<string, AgentChannelState> channelStateMap = state.Channels.ToDictionary(c => c.ChannelKey);
+        foreach (Agent agent in this.Agents)
+        {
+            string channelKey = this.GetAgentHash(agent);
+            AgentChannel channel = await agent.RestoreChannelAsync(channelStateMap[channelKey].JsonState, NullLogger.Instance, CancellationToken.None).ConfigureAwait(false);
+            this._agentChannels.Add(channelKey, channel);
+            channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
+        }
+    }
+
+    internal AgentChatState Serialize() // %%% ASYNC
+    {
+        return
+            new()
+            {
+                History = this.History,
+                Channels =
+                this._agentChannels.Select(
+                    kvp =>
+                        new AgentChannelState
+                        {
+                            ChannelKey = kvp.Key,
+                            JsonState = kvp.Value.Serialize()
+                        })
+            };
     }
 
     /// <summary>

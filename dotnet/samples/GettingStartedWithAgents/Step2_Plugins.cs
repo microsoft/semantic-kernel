@@ -39,7 +39,18 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
         // Respond to user input, invoking functions where appropriate.
         await InvokeAgentAsync("Hello");
         await InvokeAgentAsync("What is the special soup?");
+
+        await using MemoryStream stream = new();
+        await AgentChatSerializer.SerializeAsync(chat, stream);
+        stream.Position = 0;
+        using StreamReader reader = new(stream);
+        Console.WriteLine(await reader.ReadToEndAsync());
+        stream.Position = 0;
+
+        chat = new(agent);
+        await AgentChatSerializer.DeserializeAsync<AgentGroupChat>(chat, stream);
         await InvokeAgentAsync("What is the special drink?");
+        await InvokeAgentAsync("What was the first question I asked?");
         await InvokeAgentAsync("Thank you");
 
         // Local function to invoke agent and display the conversation messages.

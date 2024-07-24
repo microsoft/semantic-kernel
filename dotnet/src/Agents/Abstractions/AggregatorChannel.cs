@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,5 +54,11 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
         this._chat.AddChatMessages([.. history]);
 
         return Task.CompletedTask;
+    }
+
+    protected internal override string Serialize() // %%%
+    {
+        AgentChatState state = this._chat.Serialize();
+        return JsonSerializer.Serialize(state, AgentChatSerializer.DefaultOptions);
     }
 }

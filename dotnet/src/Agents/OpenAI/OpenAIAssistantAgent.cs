@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -211,6 +212,22 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 
         logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
+
+        return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
+    }
+
+    /// <inheritdoc/>
+    protected override async Task<AgentChannel> RestoreChannelAsync(string state, ILogger logger, CancellationToken cancellationToken)
+    {
+        logger.LogDebug("[{MethodName}] Restoring assistant thread", nameof(CreateChannelAsync));
+
+        string threadId =
+            JsonSerializer.Deserialize<string>(state, AgentChatSerializer.DefaultOptions) ??
+            throw new KernelException("%%%"); // %%%
+
+        AssistantThread thread = await this._client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+
+        logger.LogInformation("[{MethodName}] Restored assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
         return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
     }

@@ -61,4 +61,17 @@ public abstract class Agent
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
     protected internal abstract Task<AgentChannel> CreateChannelAsync(ILogger logger, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type based on the provided state.
+    /// </summary>
+    /// <param name="state">%%%</param>
+    /// <param name="logger">An agent specific logger.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="AgentChannel"/> appropriate for the agent type.</returns>
+    /// <remarks>
+    /// Every agent conversation, or <see cref="AgentChat"/>, will establish one or more <see cref="AgentChannel"/>
+    /// objects according to the specific <see cref="Agent"/> type.
+    /// </remarks>
+    protected internal abstract Task<AgentChannel> RestoreChannelAsync(string state, ILogger logger, CancellationToken cancellationToken);
 }

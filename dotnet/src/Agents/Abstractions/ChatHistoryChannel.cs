@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
@@ -11,7 +12,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="IChatHistoryHandler"/>.
 /// </summary>
-public class ChatHistoryChannel : AgentChannel
+internal sealed class ChatHistoryChannel : AgentChannel
 {
     private readonly ChatHistory _history;
 
@@ -47,11 +48,15 @@ public class ChatHistoryChannel : AgentChannel
         return this._history.ToDescendingAsync();
     }
 
+    /// <inheritdoc/>
+    protected internal override string Serialize()
+        => JsonSerializer.Serialize(this._history, AgentChatSerializer.DefaultOptions);
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryChannel"/> class.
     /// </summary>
-    public ChatHistoryChannel()
+    public ChatHistoryChannel(ChatHistory? history = null)
     {
-        this._history = [];
+        this._history = history ?? [];
     }
 }
