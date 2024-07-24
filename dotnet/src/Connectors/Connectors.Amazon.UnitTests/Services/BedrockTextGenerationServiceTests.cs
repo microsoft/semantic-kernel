@@ -53,8 +53,7 @@ public class BedrockTextGenerationServiceTests
                     InputTextTokenCount = 5,
                     Results = new List<TitanTextResponse.Result>
                     {
-                        new TitanTextResponse.Result
-                        {
+                        new() {
                             TokenCount = 10,
                             OutputText = "This is a mock output.",
                             CompletionReason = "stop"
@@ -94,7 +93,7 @@ public class BedrockTextGenerationServiceTests
         var service = new BedrockTextGenerationService(modelId, mockBedrockApi.Object);
 
         // Act
-        List<StreamingTextContent> result = new List<StreamingTextContent>();
+        List<StreamingTextContent> result = new();
         var output = service.GetStreamingTextContentsAsync(prompt).ConfigureAwait(true);
 
         // Assert
@@ -136,8 +135,7 @@ public class BedrockTextGenerationServiceTests
                     InputTextTokenCount = 5,
                     Results = new List<TitanTextResponse.Result>
                     {
-                        new TitanTextResponse.Result
-                        {
+                        new() {
                             TokenCount = 10,
                             OutputText = "This is a mock output.",
                             CompletionReason = "stop"
@@ -153,7 +151,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new InvokeModelRequest();
+        InvokeModelRequest invokeModelRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -219,8 +217,7 @@ public class BedrockTextGenerationServiceTests
                     Id = "my-request-id",
                     Choices = new List<AI21JambaResponse.AI21TextResponse.Choice>
                     {
-                        new AI21JambaResponse.AI21TextResponse.Choice
-                        {
+                        new() {
                             Index = 0,
                             Message = new AI21JambaResponse.AI21TextResponse.Message
                             {
@@ -246,7 +243,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new InvokeModelRequest();
+        InvokeModelRequest invokeModelRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -313,7 +310,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new InvokeModelRequest();
+        InvokeModelRequest invokeModelRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -371,8 +368,7 @@ public class BedrockTextGenerationServiceTests
                     Prompt = "Write a greeting.",
                     Generations = new List<CommandTextResponse.Generation>
                     {
-                        new CommandTextResponse.Generation
-                        {
+                        new() {
                             Id = "generation-id",
                             Text = "Hello! This is a mock Cohere Command response.",
                             FinishReason = "COMPLETE",
@@ -389,7 +385,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new InvokeModelRequest();
+        InvokeModelRequest invokeModelRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -455,7 +451,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new InvokeModelRequest();
+        InvokeModelRequest invokeModelRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -506,8 +502,7 @@ public class BedrockTextGenerationServiceTests
                 {
                     Outputs = new List<MistralRequest.MistralTextResponse.Output>
                     {
-                        new MistralRequest.MistralTextResponse.Output
-                        {
+                        new() {
                             Text = "Hello! This is a mock Mistral response.",
                             StopReason = "stop_sequence"
                         }
@@ -522,7 +517,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new InvokeModelRequest();
+        InvokeModelRequest invokeModelRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
