@@ -150,14 +150,11 @@ public class BedrockChatCompletionServiceTests
         var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
 
         // Assert
-        ConverseRequest converseRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "ConverseAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
-        if (invocation != null)
-        {
-            converseRequest = (ConverseRequest)invocation.Arguments[0];
-        }
+        Assert.NotNull(invocation);
+        ConverseRequest converseRequest = (ConverseRequest)invocation.Arguments[0];
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
@@ -352,14 +349,11 @@ public class BedrockChatCompletionServiceTests
         var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
 
         // Assert
-        ConverseRequest converseRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "ConverseAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
-        if (invocation != null)
-        {
-            converseRequest = (ConverseRequest)invocation.Arguments[0];
-        }
+        Assert.NotNull(invocation);
+        ConverseRequest converseRequest = (ConverseRequest)invocation.Arguments[0];
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
@@ -407,14 +401,11 @@ public class BedrockChatCompletionServiceTests
         var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
 
         // Assert
-        ConverseRequest converseRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "ConverseAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
-        if (invocation != null)
-        {
-            converseRequest = (ConverseRequest)invocation.Arguments[0];
-        }
+        Assert.NotNull(invocation);
+        ConverseRequest converseRequest = (ConverseRequest)invocation.Arguments[0];
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
@@ -462,14 +453,11 @@ public class BedrockChatCompletionServiceTests
         var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
 
         // Assert
-        ConverseRequest converseRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "ConverseAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
-        if (invocation != null)
-        {
-            converseRequest = (ConverseRequest)invocation.Arguments[0];
-        }
+        Assert.NotNull(invocation);
+        ConverseRequest converseRequest = (ConverseRequest)invocation.Arguments[0];
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
@@ -517,14 +505,11 @@ public class BedrockChatCompletionServiceTests
         var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
 
         // Assert
-        ConverseRequest converseRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "ConverseAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
-        if (invocation != null)
-        {
-            converseRequest = (ConverseRequest)invocation.Arguments[0];
-        }
+        Assert.NotNull(invocation);
+        ConverseRequest converseRequest = (ConverseRequest)invocation.Arguments[0];
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
@@ -572,14 +557,11 @@ public class BedrockChatCompletionServiceTests
         var result = await service.GetChatMessageContentsAsync(chatHistory, executionSettings).ConfigureAwait(true);
 
         // Assert
-        ConverseRequest converseRequest = new();
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "ConverseAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is ConverseRequest);
-        if (invocation != null)
-        {
-            converseRequest = (ConverseRequest)invocation.Arguments[0];
-        }
+        Assert.NotNull(invocation);
+        ConverseRequest converseRequest = (ConverseRequest)invocation.Arguments[0];
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);

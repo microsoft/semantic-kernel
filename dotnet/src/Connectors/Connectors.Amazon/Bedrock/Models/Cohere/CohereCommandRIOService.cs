@@ -17,12 +17,12 @@ public class CohereCommandRIOService : IBedrockModelIOService
     private readonly BedrockUtilities _util = new();
 
     // Define constants for default values
-    private const double DefaultTemperature = 0.3;
-    private const double DefaultTopP = 0.75;
-    private const double DefaultTopK = 0.0;
+    private const float DefaultTemperature = 0.3f;
+    private const float DefaultTopP = 0.75f;
+    private const float DefaultTopK = 0.0f;
     private const string DefaultPromptTruncation = "OFF";
-    private const double DefaultFrequencyPenalty = 0.0;
-    private const double DefaultPresencePenalty = 0.0;
+    private const float DefaultFrequencyPenalty = 0.0f;
+    private const float DefaultPresencePenalty = 0.0f;
     private const int DefaultSeed = 0;
     private const bool DefaultReturnPrompt = false;
     private const bool DefaultRawPrompting = false;
@@ -104,37 +104,31 @@ public class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var messages = chatHistory.Select(m => new Message
-        {
-            Role = new BedrockUtilities().MapRole(m.Role),
-            Content = new List<ContentBlock> { new() { Text = m.Content } }
-        }).ToList();
-
-        var inferenceConfig = new InferenceConfiguration
-        {
-            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "p", (float)DefaultTopP),
-            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens)
-        };
-
-        var additionalModelRequestFields = new Document
-        {
-            { "k", this._util.GetExtensionDataValue(settings?.ExtensionData, "k", (float)DefaultTopK) },
-            { "prompt_truncation", this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation) },
-            { "frequency_penalty", this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty) },
-            { "presence_penalty", this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) },
-            { "seed", this._util.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed) },
-            { "return_prompt", this._util.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt) },
-            { "stop_sequences", new Document(this._util.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null).Select(s => new Document(s)).ToList() ?? new List<Document>()) },
-            { "raw_prompting", this._util.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", false) }
-        };
-
         var converseRequest = new ConverseRequest
         {
             ModelId = modelId,
-            Messages = messages,
-            InferenceConfig = inferenceConfig,
-            AdditionalModelRequestFields = additionalModelRequestFields,
+            Messages = chatHistory.Select(m => new Message
+            {
+                Role = this._util.MapRole(m.Role),
+                Content = new List<ContentBlock> { new() { Text = m.Content } }
+            }).ToList(),
+            InferenceConfig = new InferenceConfiguration
+            {
+                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", DefaultTemperature),
+                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "p", DefaultTopP),
+                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens)
+            },
+            AdditionalModelRequestFields = new Document
+            {
+                { "k", this._util.GetExtensionDataValue(settings?.ExtensionData, "k", DefaultTopK) },
+                { "prompt_truncation", this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation) },
+                { "frequency_penalty", this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty) },
+                { "presence_penalty", this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) },
+                { "seed", this._util.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed) },
+                { "return_prompt", this._util.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt) },
+                { "stop_sequences", new Document(this._util.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null)?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
+                { "raw_prompting", this._util.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", DefaultRawPrompting) }
+            },
             AdditionalModelResponseFieldPaths = new List<string>(),
             GuardrailConfig = null,
             ToolConfig = null
@@ -172,14 +166,14 @@ public class CohereCommandRIOService : IBedrockModelIOService
 
         var inferenceConfig = new InferenceConfiguration
         {
-            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "p", (float)DefaultTopP),
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "p", DefaultTopP),
             MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens)
         };
 
         var additionalModelRequestFields = new Document
         {
-            { "k", this._util.GetExtensionDataValue(settings?.ExtensionData, "k", (float)DefaultTopK) },
+            { "k", this._util.GetExtensionDataValue(settings?.ExtensionData, "k", DefaultTopK) },
             { "prompt_truncation", this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation) },
             { "frequency_penalty", this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty) },
             { "presence_penalty", this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) },
