@@ -103,6 +103,10 @@ ollama = "^0.2.1"
 google-generativeai = "^0.7.2"
 transformers = { version = "^4.28.1", extras=["torch"]}
 sentence-transformers = "^2.2.2"
+# qdrant
+qdrant-client = '^1.9'
+# redis
+redis = { version = "^5.0.7", extras=['hiredis']}
 
 [tool.poetry.group.tests]
 optional = true
