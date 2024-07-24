@@ -15,17 +15,23 @@ namespace Connectors.Amazon.Models.Amazon;
 public class AmazonIOService : IBedrockModelIOService
 {
     private readonly BedrockUtilities _util = new();
+
+    // Define constants for default values
+    private const double DefaultTemperature = 0.7;
+    private const double DefaultTopP = 0.9;
+    private const int DefaultMaxTokenCount = 512;
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Amazon Titan.
     /// </summary>
+    /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = 0.7;
-        double? topP = 0.9;
-        int? maxTokenCount = 512;
+        double? temperature = DefaultTemperature;
+        double? topP = DefaultTopP;
+        int? maxTokenCount = DefaultMaxTokenCount;
         List<string>? stopSequences = [];
 
         if (executionSettings is { ExtensionData: not null })
@@ -99,9 +105,9 @@ public class AmazonIOService : IBedrockModelIOService
             System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.7f),
-                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", 0.9f),
-                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", 512),
+                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", (float)DefaultTopP),
+                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount),
             },
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()
@@ -151,9 +157,9 @@ public class AmazonIOService : IBedrockModelIOService
             System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.7f),
-                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", 0.9f),
-                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", 512),
+                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "topP", (float)DefaultTopP),
+                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount),
             },
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()

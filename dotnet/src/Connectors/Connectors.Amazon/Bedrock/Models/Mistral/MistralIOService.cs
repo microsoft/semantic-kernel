@@ -14,19 +14,33 @@ namespace Connectors.Amazon.Models.Mistral;
 /// </summary>
 public class MistralIOService : IBedrockModelIOService
 {
+    // Define constants for default values
+    private const float DefaultTemperatureInstruct = 0.5f;
+    private const float DefaultTopPInstruct = 0.9f;
+    private const int DefaultMaxTokensInstruct = 512;
+    private const int DefaultTopKInstruct = 50;
+    private static readonly List<string> DefaultStopSequencesInstruct = new List<string>();
+
+    private const float DefaultTemperatureNonInstruct = 0.7f;
+    private const float DefaultTopPNonInstruct = 1.0f;
+    private const int DefaultMaxTokensNonInstruct = 8192;
+    private const int DefaultTopKNonInstruct = 0;
+    private static readonly List<string> DefaultStopSequencesNonInstruct = new List<string>();
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Mistral.
     /// </summary>
+    /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = 0.5f; // Mistral default [0.7 for the non-instruct versions. need to fix]
-        double? topP = 0.9f; // Mistral default
-        int? maxTokens = 512; // Mistral default [8192 for the non-instruct versions. need to fix]
-        List<string>? stop = null;
-        int? topK = 50; // Mistral default [disabled for non-instruct. likely just ignored since still functional]
+        var isInstructModel = modelId.Contains("instruct", StringComparison.OrdinalIgnoreCase);
+        double? temperature = isInstructModel ? DefaultTemperatureInstruct : DefaultTemperatureNonInstruct;
+        double? topP = isInstructModel ? DefaultTopPInstruct : DefaultTopPNonInstruct;
+        int? maxTokens = isInstructModel ? DefaultMaxTokensInstruct : DefaultMaxTokensNonInstruct;
+        List<string>? stop = isInstructModel ? DefaultStopSequencesInstruct : DefaultStopSequencesNonInstruct;
+        int? topK = isInstructModel ? DefaultTopKInstruct : DefaultTopKNonInstruct;
 
         if (executionSettings is { ExtensionData: not null })
         {
@@ -124,45 +138,11 @@ public class MistralIOService : IBedrockModelIOService
         MistralAIPromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null)
     {
-        float defaultTemperature, defaultTopP;
-        int defaultMaxTokens, defaultTopK;
-
-        if (modelId.Contains("mistral-7b-instruct", StringComparison.OrdinalIgnoreCase))
-        {
-            defaultTemperature = 0.5f;
-            defaultTopP = 0.9f;
-            defaultMaxTokens = 512;
-            defaultTopK = 50;
-        }
-        else if (modelId.Contains("mixtral-8x7b-instruct", StringComparison.OrdinalIgnoreCase))
-        {
-            defaultTemperature = 0.5f;
-            defaultTopP = 0.9f;
-            defaultMaxTokens = 512;
-            defaultTopK = 50;
-        }
-        else if (modelId.Contains("mistral-large", StringComparison.OrdinalIgnoreCase))
-        {
-            defaultTemperature = 0.7f;
-            defaultTopP = 1.0f;
-            defaultMaxTokens = 8192;
-            defaultTopK = 0; // disabled
-        }
-        else if (modelId.Contains("mistral-small", StringComparison.OrdinalIgnoreCase))
-        {
-            defaultTemperature = 0.7f;
-            defaultTopP = 1.0f;
-            defaultMaxTokens = 8192;
-            defaultTopK = 0; // disabled
-        }
-        else
-        {
-            // Default values for other models or if model ID is not recognized
-            defaultTemperature = 0.7f;
-            defaultTopP = 1.0f;
-            defaultMaxTokens = 8192;
-            defaultTopK = 0; // disabled
-        }
+        var isInstructModel = modelId.Contains("instruct", StringComparison.OrdinalIgnoreCase);
+        float defaultTemperature = isInstructModel ? DefaultTemperatureInstruct : DefaultTemperatureNonInstruct;
+        float defaultTopP = isInstructModel ? DefaultTopPInstruct : DefaultTopPNonInstruct;
+        int defaultMaxTokens = isInstructModel ? DefaultMaxTokensInstruct : DefaultMaxTokensNonInstruct;
+        int defaultTopK = isInstructModel ? DefaultTopKInstruct : DefaultTopKNonInstruct;
 
         var request = new MistralRequest.MistralChatCompletionRequest(modelId)
         {

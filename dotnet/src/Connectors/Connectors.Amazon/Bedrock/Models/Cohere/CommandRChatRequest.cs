@@ -43,37 +43,37 @@ public class CohereCommandRequest : IChatCompletionRequest
     /// The maximum number of tokens the model should generate as part of the response. Note that setting a low value may result in incomplete generations. Setting max_tokens may result in incomplete or no generations when used with the tools or documents fields.
     /// </summary>
     [JsonPropertyName("max_tokens")]
-    public int MaxTokens { get; set; } = 512; // Default value
+    public int MaxTokens { get; set; }
     /// <summary>
     /// Use a lower value to decrease randomness in the response. Randomness can be further maximized by increasing the value of the p parameter.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature { get; set; } = 0.3; // Default value
+    public float Temperature { get; set; }
     /// <summary>
     /// Top P. Use a lower value to ignore less probable options.
     /// </summary>
     [JsonPropertyName("p")]
-    public double TopP { get; set; } = 0.75; // Default value
+    public float TopP { get; set; }
     /// <summary>
     /// Top K. Specify the number of token choices the model uses to generate the next token.
     /// </summary>
     [JsonPropertyName("k")]
-    public double TopK { get; set; } // Default value
+    public float TopK { get; set; }
     /// <summary>
     /// Defaults to OFF. Dictates how the prompt is constructed. With prompt_truncation set to AUTO_PRESERVE_ORDER, some elements from chat_history and documents will be dropped to construct a prompt that fits within the model's context length limit. During this process the order of the documents and chat history will be preserved. With prompt_truncation` set to OFF, no elements will be dropped.
     /// </summary>
     [JsonPropertyName("prompt_truncation")]
-    public string PromptTruncation { get; set; } = "OFF"; // Default value
+    public string PromptTruncation { get; set; }
     /// <summary>
     /// Used to reduce repetitiveness of generated tokens. The higher the value, the stronger a penalty is applied to previously present tokens, proportional to how many times they have already appeared in the prompt or prior generation.
     /// </summary>
     [JsonPropertyName("frequency_penalty")]
-    public double FrequencyPenalty { get; set; } // Default value
+    public double FrequencyPenalty { get; set; }
     /// <summary>
     /// Used to reduce repetitiveness of generated tokens. Similar to frequency_penalty, except that this penalty is applied equally to all tokens that have already appeared, regardless of their exact frequencies.
     /// </summary>
     [JsonPropertyName("presence_penalty")]
-    public double PresencePenalty { get; set; } // Default value
+    public double PresencePenalty { get; set; }
     /// <summary>
     /// If specified, the backend will make a best effort to sample tokens deterministically, such that repeated requests with the same seed and parameters should return the same result. However, determinism cannot be totally guaranteed.
     /// </summary>

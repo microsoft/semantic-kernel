@@ -15,10 +15,11 @@ public interface IBedrockModelIOService
     /// <summary>
     /// Builds InvokeModelRequest Body parameter to be serialized. Object itself dependent on model request parameter requirements.
     /// </summary>
+    /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null);
+    object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null);
     /// <summary>
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API. Must be deserialized into the model's specific response object first.
     /// </summary>

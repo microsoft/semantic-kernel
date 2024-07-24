@@ -124,9 +124,9 @@ public class BedrockChatCompletionServiceTests
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
-                { "temperature", 0.7f },
-                { "topP", 0.9f },
-                { "maxTokenCount", 512 }
+                { "temperature", 0.3f },
+                { "topP", 0.8f },
+                { "maxTokenCount", 510 }
             }
         };
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
@@ -328,7 +328,7 @@ public class BedrockChatCompletionServiceTests
             {
                 { "temperature", 0.7f },
                 { "top_p", 0.7f },
-                { "maxTokenCount", 512 }
+                { "max_tokens_to_sample", 512 }
             }
         };
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
@@ -365,7 +365,7 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
-        Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
+        Assert.Equal(executionSettings.ExtensionData["max_tokens_to_sample"], converseRequest?.InferenceConfig.MaxTokens);
     }
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
@@ -382,8 +382,8 @@ public class BedrockChatCompletionServiceTests
             ExtensionData = new Dictionary<string, object>()
             {
                 { "temperature", 0.7f },
-                { "topP", 0.9f },
-                { "maxTokenCount", 512 }
+                { "top_p", 0.6f },
+                { "max_gen_len", 256 }
             }
         };
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
@@ -419,8 +419,8 @@ public class BedrockChatCompletionServiceTests
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
-        Assert.Equal(executionSettings.ExtensionData["topP"], converseRequest?.InferenceConfig.TopP);
-        Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
+        Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
+        Assert.Equal(executionSettings.ExtensionData["max_gen_len"], converseRequest?.InferenceConfig.MaxTokens);
     }
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.

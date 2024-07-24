@@ -13,24 +13,34 @@ namespace Connectors.Amazon.Models.Cohere;
 /// </summary>
 public class CohereCommandIOService : IBedrockModelIOService
 {
+    // Define constants for default values
+    private const double DefaultTemperature = 0.9;
+    private const double DefaultTopP = 0.75;
+    private const int DefaultMaxTokens = 20;
+    private const double DefaultTopK = 0.0;
+    private const string DefaultReturnLikelihoods = "NONE";
+    private const bool DefaultStream = false;
+    private const int DefaultNumGenerations = 1;
+    private const string DefaultTruncate = "END";
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Cohere Command.
     /// </summary>
+    /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = 0.9; // Cohere default
-        double? topP = 0.75; // Cohere default
-        int? maxTokens = 20; // Cohere default
+        double? temperature = DefaultTemperature;
+        double? topP = DefaultTopP;
+        int? maxTokens = DefaultMaxTokens;
         List<string>? stopSequences = null;
-        double? topK = 0; // Cohere default
-        string? returnLikelihoods = "NONE"; // Cohere default
-        bool? stream = false; // Cohere default
-        int? numGenerations = 1; // Cohere default
+        double? topK = DefaultTopK;
+        string? returnLikelihoods = DefaultReturnLikelihoods;
+        bool? stream = DefaultStream;
+        int? numGenerations = DefaultNumGenerations;
         Dictionary<int, double>? logitBias = null;
-        string? truncate = "END"; // Cohere default
+        string? truncate = DefaultTruncate;
 
         if (executionSettings is { ExtensionData: not null })
         {

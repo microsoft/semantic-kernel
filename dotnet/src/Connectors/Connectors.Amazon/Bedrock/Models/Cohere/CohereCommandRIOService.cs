@@ -14,28 +14,41 @@ namespace Connectors.Amazon.Models.Cohere;
 /// </summary>
 public class CohereCommandRIOService : IBedrockModelIOService
 {
-    private readonly BedrockUtilities _util = new BedrockUtilities();
+    private readonly BedrockUtilities _util = new();
+
+    // Define constants for default values
+    private const double DefaultTemperature = 0.3;
+    private const double DefaultTopP = 0.75;
+    private const double DefaultTopK = 0.0;
+    private const string DefaultPromptTruncation = "OFF";
+    private const double DefaultFrequencyPenalty = 0.0;
+    private const double DefaultPresencePenalty = 0.0;
+    private const int DefaultSeed = 0;
+    private const bool DefaultReturnPrompt = false;
+    private const bool DefaultRawPrompting = false;
+    private const int DefaultMaxTokens = 128000;
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Cohere Command R.
     /// </summary>
+    /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = 0.3; // Cohere default
-        double? topP = 0.75; // Cohere default
-        int? maxTokens = null; // Cohere default
+        double? temperature = DefaultTemperature;
+        double? topP = DefaultTopP;
+        int? maxTokens = DefaultMaxTokens;
         List<string>? stopSequences = null;
-        double? topK = 0; // Cohere default
-        string? promptTruncation = "OFF"; // Cohere default
-        double? frequencyPenalty = 0; // Cohere default
-        double? presencePenalty = 0; // Cohere default
-        int? seed = null;
-        bool? returnPrompt = false; // Cohere default
+        double? topK = DefaultTopK;
+        string? promptTruncation = DefaultPromptTruncation;
+        double? frequencyPenalty = DefaultFrequencyPenalty;
+        double? presencePenalty = DefaultPresencePenalty;
+        int? seed = DefaultSeed;
+        bool? returnPrompt = DefaultReturnPrompt;
         List<CommandRTextRequest.Tool>? tools = null;
         List<CommandRTextRequest.ToolResult>? toolResults = null;
-        bool? rawPrompting = false; // Cohere default
+        bool? rawPrompting = DefaultRawPrompting;
 
         if (executionSettings is { ExtensionData: not null })
         {
@@ -145,15 +158,15 @@ public class CohereCommandRIOService : IBedrockModelIOService
                 Role = new BedrockUtilities().MapRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
-            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.3f),
-            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "p", 0.75f),
-            TopK = this._util.GetExtensionDataValue(settings?.ExtensionData, "k", 0.0f),
-            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512),
-            PromptTruncation = this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", "OFF"),
-            FrequencyPenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", 0.0),
-            PresencePenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", 0.0),
-            Seed = this._util.GetExtensionDataValue(settings?.ExtensionData, "seed", 0),
-            ReturnPrompt = this._util.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", false),
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "p", (float)DefaultTopP),
+            TopK = this._util.GetExtensionDataValue(settings?.ExtensionData, "k", (float)DefaultTopK),
+            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens),
+            PromptTruncation = this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation),
+            FrequencyPenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty),
+            PresencePenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty),
+            Seed = this._util.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed),
+            ReturnPrompt = this._util.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt),
             Tools = this._util.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", null),
             ToolResults = this._util.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", null),
             StopSequences = this._util.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),
@@ -166,8 +179,8 @@ public class CohereCommandRIOService : IBedrockModelIOService
             System = cohereRequest.System,
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = (float)cohereRequest.Temperature,
-                TopP = (float)cohereRequest.TopP,
+                Temperature = cohereRequest.Temperature,
+                TopP = cohereRequest.TopP,
                 MaxTokens = cohereRequest.MaxTokens
             },
             AdditionalModelRequestFields = new Document
@@ -230,15 +243,15 @@ public class CohereCommandRIOService : IBedrockModelIOService
                 Role = new BedrockUtilities().MapRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
-            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.3f),
-            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "p", 0.75f),
-            TopK = this._util.GetExtensionDataValue(settings?.ExtensionData, "k", 0.0f),
-            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512),
-            PromptTruncation = this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", "OFF"),
-            FrequencyPenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", 0.0),
-            PresencePenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", 0.0),
-            Seed = this._util.GetExtensionDataValue(settings?.ExtensionData, "seed", 0),
-            ReturnPrompt = this._util.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", false),
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "p", (float)DefaultTopP),
+            TopK = this._util.GetExtensionDataValue(settings?.ExtensionData, "k", (float)DefaultTopK),
+            MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens),
+            PromptTruncation = this._util.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation),
+            FrequencyPenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty),
+            PresencePenalty = this._util.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty),
+            Seed = this._util.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed),
+            ReturnPrompt = this._util.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt),
             Tools = this._util.GetExtensionDataValue<List<CohereCommandRequest.CohereTool>>(settings?.ExtensionData, "tools", null),
             ToolResults = this._util.GetExtensionDataValue<List<CohereCommandRequest.CohereToolResult>>(settings?.ExtensionData, "tool_results", null),
             StopSequences = this._util.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null),

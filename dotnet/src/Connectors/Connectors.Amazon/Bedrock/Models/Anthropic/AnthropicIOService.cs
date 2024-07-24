@@ -15,19 +15,27 @@ namespace Connectors.Amazon.Models.Anthropic;
 public class AnthropicIOService : IBedrockModelIOService
 {
     private readonly BedrockUtilities _util = new();
+
+    // Define constants for default values
+    private const double DefaultTemperature = 1.0;
+    private const double DefaultTopP = 1.0;
+    private const int DefaultMaxTokensToSample = 4096;
+    private static readonly List<string> DefaultStopSequences = new() { "\n\nHuman:" };
+    private const int DefaultTopK = 250;
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Anthropic Claude.
     /// </summary>
+    /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = 1.0; // Claude default
-        double? topP = 1.0; // Claude default
-        int? maxTokensToSample = 200; // Claude default
-        List<string>? stopSequences = new() { "\n\nHuman:" }; // Claude default
-        int? topK = 250; // Claude default
+        double? temperature = DefaultTemperature;
+        double? topP = DefaultTopP;
+        int? maxTokensToSample = DefaultMaxTokensToSample;
+        List<string>? stopSequences = DefaultStopSequences;
+        int? topK = DefaultTopK;
 
         if (executionSettings is { ExtensionData: not null })
         {
@@ -104,9 +112,9 @@ public class AnthropicIOService : IBedrockModelIOService
             System = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 1f),
-                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.999f),
-                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512)
+                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
+                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
             },
             // AnthropicVersion = "bedrock-2023-05-31", // NOTE: documentation states anthropic_version required and value must be 'bedrock-2023-05-31' but BedrockRuntime ValidationException with this field present.
             Tools = this._util.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),
@@ -186,9 +194,9 @@ public class AnthropicIOService : IBedrockModelIOService
             System = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>()),
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 1f),
-                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.999f),
-                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", 512)
+                Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+                TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
+                MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
             },
             // AnthropicVersion = "bedrock-2023-05-31", // NOTE: documentation states anthropic_version required and value must be 'bedrock-2023-05-31' but BedrockRuntime ValidationException with this field present.
             Tools = this._util.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null),

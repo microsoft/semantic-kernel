@@ -42,7 +42,7 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var requestBody = this._ioService.GetInvokeModelRequestBody(prompt, executionSettings);
+        var requestBody = this._ioService.GetInvokeModelRequestBody(this._modelId, prompt, executionSettings);
         var invokeRequest = new InvokeModelRequest
         {
             ModelId = this._modelId,
@@ -59,7 +59,7 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var requestBody = this._ioService.GetInvokeModelRequestBody(prompt, executionSettings);
+        var requestBody = this._ioService.GetInvokeModelRequestBody(this._modelId, prompt, executionSettings);
         var invokeRequest = new InvokeModelWithResponseStreamRequest
         {
             ModelId = this._modelId,

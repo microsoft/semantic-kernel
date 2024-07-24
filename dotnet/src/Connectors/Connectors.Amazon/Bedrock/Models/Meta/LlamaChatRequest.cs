@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json.Serialization;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
@@ -15,18 +16,22 @@ public class LlamaChatRequest : IChatCompletionRequest
     /// <summary>
     /// (Required) The prompt that you want to pass to the model.
     /// </summary>
+    [JsonPropertyName("prompt")]
     public string? Prompt { get; set; }
     /// <summary>
     /// Use a lower value to decrease randomness in the response.
     /// </summary>
-    public double Temperature { get; set; }
+    [JsonPropertyName("temperature")]
+    public float Temperature { get; set; }
     /// <summary>
     /// Use a lower value to ignore less probable options. Set to 0 or 1.0 to disable.
     /// </summary>
-    public double TopP { get; set; }
+    [JsonPropertyName("top_p")]
+    public float TopP { get; set; }
     /// <summary>
     /// Specify the maximum number of tokens to use in the generated response. The model truncates the response once the generated text exceeds max_gen_len.
     /// </summary>
+    [JsonPropertyName("max_gen_len")]
     public int MaxGenLen { get; set; }
     private List<Message>? _messages;
 

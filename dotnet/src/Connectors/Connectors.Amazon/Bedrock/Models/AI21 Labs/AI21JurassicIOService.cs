@@ -3,8 +3,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
-using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -15,17 +13,22 @@ namespace Connectors.Amazon.Models.AI21;
 /// </summary>
 public class AI21JurassicIOService : IBedrockModelIOService
 {
+    // Defined constants for default values
+    private const double DefaultTemperature = 0.5;
+    private const double DefaultTopP = 0.5;
+    private const int DefaultMaxTokens = 200;
     /// <summary>
     /// Builds InvokeModelRequest Body parameter to be serialized.
     /// </summary>
+    /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = 0.5; // AI21 Jurassic default
-        double? topP = 0.5; // AI21 Jurassic default
-        int? maxTokens = 200; // AI21 Jurassic default
+        double? temperature = DefaultTemperature;
+        double? topP = DefaultTopP;
+        int? maxTokens = DefaultMaxTokens;
         List<string>? stopSequences = null;
         AI21JurassicRequest.CountPenalty? countPenalty = null;
         AI21JurassicRequest.PresencePenalty? presencePenalty = null;

@@ -14,18 +14,24 @@ namespace Connectors.Amazon.Models.Meta;
 /// </summary>
 public class MetaIOService : IBedrockModelIOService
 {
-    private readonly BedrockUtilities _util = new BedrockUtilities();
+    private readonly BedrockUtilities _util = new();
+
+    // Define constants for default values
+    private const double DefaultTemperature = 0.5;
+    private const double DefaultTopP = 0.9;
+    private const int DefaultMaxGenLen = 512;
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Meta Llama.
     /// </summary>
+    /// <param name="modelId">The model ID to be used as a request parameter.</param>
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public object GetInvokeModelRequestBody(string prompt, PromptExecutionSettings? executionSettings = null)
+    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        double? temperature = 0.5; // Llama default
-        double? topP = 0.9; // Llama default
-        int? maxGenLen = 512; // Llama default
+        double? temperature = DefaultTemperature;
+        double? topP = DefaultTopP;
+        int? maxGenLen = DefaultMaxGenLen;
 
         if (executionSettings is { ExtensionData: not null })
         {
@@ -91,9 +97,9 @@ public class MetaIOService : IBedrockModelIOService
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
-            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5f),
-            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9f),
-            MaxGenLen = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
+            MaxGenLen = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
         };
         var converseRequest = new ConverseRequest
         {
@@ -102,8 +108,8 @@ public class MetaIOService : IBedrockModelIOService
             System = llamaRequest.System,
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = (float)llamaRequest.Temperature,
-                TopP = (float)llamaRequest.TopP,
+                Temperature = llamaRequest.Temperature,
+                TopP = llamaRequest.TopP,
                 MaxTokens = llamaRequest.MaxGenLen
             },
             AdditionalModelRequestFields = new Document(),
@@ -147,9 +153,9 @@ public class MetaIOService : IBedrockModelIOService
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             }).ToList(),
             System = new List<SystemContentBlock>(),
-            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", 0.5),
-            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", 0.9),
-            MaxGenLen = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", 512)
+            Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+            TopP = this._util.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
+            MaxGenLen = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
         };
         var converseStreamRequest = new ConverseStreamRequest
         {
@@ -158,8 +164,8 @@ public class MetaIOService : IBedrockModelIOService
             System = llamaRequest.System,
             InferenceConfig = new InferenceConfiguration
             {
-                Temperature = (float)llamaRequest.Temperature,
-                TopP = (float)llamaRequest.TopP,
+                Temperature = llamaRequest.Temperature,
+                TopP = llamaRequest.TopP,
                 MaxTokens = llamaRequest.MaxGenLen
             },
             AdditionalModelRequestFields = new Document(),
