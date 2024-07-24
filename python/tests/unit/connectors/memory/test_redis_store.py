@@ -6,7 +6,7 @@ from numpy import array
 from pytest import fixture, mark, raises
 from redis.asyncio.client import Redis
 
-from semantic_kernel.connectors.memory.redis.redis_collection import RedisCollection
+from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection
 from semantic_kernel.connectors.memory.redis.redis_store import RedisStore
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
@@ -24,7 +24,7 @@ def vector_store(redis_unit_test_env):
 
 @fixture
 def collection(redis_unit_test_env, data_model_definition):
-    return RedisCollection(
+    return RedisHashsetCollection(
         data_model_type=dict,
         collection_name="test",
         data_model_definition=data_model_definition,
@@ -34,7 +34,7 @@ def collection(redis_unit_test_env, data_model_definition):
 
 @fixture
 def collection_with_prefix(redis_unit_test_env, data_model_definition):
-    return RedisCollection(
+    return RedisHashsetCollection(
         data_model_type=dict,
         collection_name="test",
         data_model_definition=data_model_definition,
@@ -124,7 +124,7 @@ def test_get_collection(vector_store, data_model_definition):
 
 
 def test_collection_init(redis_unit_test_env, data_model_definition):
-    collection = RedisCollection(
+    collection = RedisHashsetCollection(
         data_model_type=dict,
         collection_name="test",
         data_model_definition=data_model_definition,
@@ -138,7 +138,7 @@ def test_collection_init(redis_unit_test_env, data_model_definition):
 
 
 def test_init_with_type(redis_unit_test_env, data_model_type):
-    collection = RedisCollection(data_model_type=data_model_type, collection_name="test")
+    collection = RedisHashsetCollection(data_model_type=data_model_type, collection_name="test")
     assert collection is not None
     assert collection.data_model_type is data_model_type
     assert collection.collection_name == "test"
@@ -147,7 +147,7 @@ def test_init_with_type(redis_unit_test_env, data_model_type):
 @mark.parametrize("exclude_list", [["REDIS_CONNECTION_STRING"]], indirect=True)
 def test_collection_fail(redis_unit_test_env, data_model_definition):
     with raises(MemoryConnectorInitializationError, match="Failed to create Redis settings."):
-        RedisCollection(
+        RedisHashsetCollection(
             data_model_type=dict,
             collection_name="test",
             data_model_definition=data_model_definition,

@@ -5,6 +5,8 @@ import sys
 from collections.abc import Sequence
 from typing import Any, TypeVar
 
+from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -13,7 +15,7 @@ else:
 from pydantic import ValidationError
 from redis.asyncio.client import Redis
 
-from semantic_kernel.connectors.memory.redis.redis_collection import RedisCollection
+from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection
 from semantic_kernel.connectors.memory.redis.utils import RedisWrapper
 from semantic_kernel.data.vector_store import VectorStore
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
@@ -70,6 +72,7 @@ class RedisStore(VectorStore):
         collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_type: RedisCollectionTypes = RedisCollectionTypes.HASHSET,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
         """Get a QdrantCollection tied to a collection.
@@ -78,15 +81,19 @@ class RedisStore(VectorStore):
             collection_name (str): The name of the collection.
             data_model_type (type[TModel]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
+            collection_type (RedisCollectionTypes): The type of the collection, can be JSON or HASHSET.
 
             **kwargs: Additional keyword arguments, passed to the collection constructor.
         """
         if collection_name not in self.vector_record_collections:
-            self.vector_record_collections[collection_name] = RedisCollection(
-                data_model_type=data_model_type,
-                data_model_definition=data_model_definition,
-                collection_name=collection_name,
-                redis_database=self.redis_database,
-                **kwargs,
-            )
+            if collection_type == RedisCollectionTypes.HASHSET:
+                self.vector_record_collections[collection_name] = RedisHashsetCollection(
+                    data_model_type=data_model_type,
+                    data_model_definition=data_model_definition,
+                    collection_name=collection_name,
+                    redis_database=self.redis_database,
+                    **kwargs,
+                )
+            else:
+                raise NotImplementedError(f"Collection type {collection_type} is not implemented yet.")
         return self.vector_record_collections[collection_name]
