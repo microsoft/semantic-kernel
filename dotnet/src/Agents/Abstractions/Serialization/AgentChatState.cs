@@ -9,6 +9,8 @@ namespace Microsoft.SemanticKernel.Agents.Serialization;
 /// </summary>
 internal sealed class AgentChatState
 {
+    // %%% PARTICIPANTS
+
     /// <summary>
     /// %%%
     /// </summary>
