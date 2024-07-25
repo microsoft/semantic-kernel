@@ -46,7 +46,7 @@ Various agents specializations might include:
 ### **Agent Modalities**
 An _Agent_ can be of various modalities.  Modalities are asymmetrical with regard to abilities and constraints.
 
-- **SemanticKernel - IChatCompletionService**: An _Agent_ based solely on the *SemanticKernel* `IChatCompletionService`.
+- **SemanticKernel - ChatCompletion**: An _Agent_ based solely on the *SemanticKernel* support for chat-completion (e.g. .NET `ChatCompletionService`).
 - **OpenAI Assistants**: A hosted _Agent_ solution supported the _OpenAI Assistant API_ (both OpenAI & Azure OpenAI).
 - **Custom**: A custom agent developed by extending the _Agent Framework_.
 - **Future**: Yet to be announced, such as a HuggingFace Assistant API (they already have assistants, but yet to publish an API.)
