@@ -54,12 +54,12 @@ public class ChatMessageContent : KernelContent
             {
                 this.Items.Add(new TextContent(
                     text: value,
-                    modelId: this.ModelId,
-                    innerContent: this.InnerContent,
-                    encoding: this.Encoding,
-                    metadata: this.Metadata
-                )
-                { MimeType = this.MimeType });
+                ////modelId: this.ModelId, %%% ALREADY KNOWN AT MESSAGE LEVEL
+                ////innerContent: this.InnerContent, %%% MUTATION RISK
+                    encoding: this.Encoding
+                ////metadata: this.Metadata, %%% MUTATION RISK
+                ));
+                //{ MimeType = this.MimeType });
             }
         }
     }

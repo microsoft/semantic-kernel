@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.Agents.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -75,7 +76,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._history.AddRange(history);
 
@@ -83,14 +84,14 @@ internal sealed class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal sealed override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
+    protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._history.ToDescendingAsync();
     }
 
     /// <inheritdoc/>
     protected internal override string Serialize()
-        => JsonSerializer.Serialize(this._history, AgentChatSerializer.DefaultOptions);
+        => JsonSerializer.Serialize(this._history.Select(m => new ChatMessageReference(m)));
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryChannel"/> class.

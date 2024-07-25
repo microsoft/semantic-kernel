@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.Internal;
+using Microsoft.SemanticKernel.Agents.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -273,38 +275,55 @@ public abstract class AgentChat
 
     internal async Task DeserializeAsync(AgentChatState state)
     {
-        if (this._agentChannels.Count > 0 ||
-            this.History.Count > 0)
+        if (this._agentChannels.Count > 0 || this.History.Count > 0)
         {
-            throw new KernelException("%%%");
+            throw new KernelException($"Unable to restore chat to instance of {this.GetType().Name}: Already in use.");
         }
-        //this.History = state.History; %%%
-        Dictionary<string, AgentChannelState> channelStateMap = state.Channels.ToDictionary(c => c.ChannelKey);
-        foreach (Agent agent in this.Agents)
+
+        try
         {
-            string channelKey = this.GetAgentHash(agent);
-            AgentChannel channel = await agent.RestoreChannelAsync(channelStateMap[channelKey].JsonState, CancellationToken.None).ConfigureAwait(false);
-            this._agentChannels.Add(channelKey, channel);
-            channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
+            Dictionary<string, AgentChannelState> channelStateMap = state.Channels.ToDictionary(c => c.ChannelKey);
+            foreach (Agent agent in this.Agents)
+            {
+                string channelKey = this.GetAgentHash(agent);
+
+                if (this._agentChannels.ContainsKey(channelKey))
+                {
+                    continue;
+                }
+
+                AgentChannel channel = await agent.RestoreChannelAsync(channelStateMap[channelKey].ChannelState, CancellationToken.None).ConfigureAwait(false);
+                this._agentChannels.Add(channelKey, channel);
+                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
+            }
+
+            IEnumerable<ChatMessageContent>? history = JsonSerializer.Deserialize<IEnumerable<ChatMessageContent>>(state.History);
+            if (history != null)
+            {
+                this.History.AddRange(history);
+            }
+        }
+        catch
+        {
+            this._agentChannels.Clear();
+            this.History.Clear();
+            throw;
         }
     }
 
-    internal AgentChatState Serialize() // %%% ASYNC
-    {
-        return
-            new()
-            {
-                History = this.History,
-                Channels =
+    internal AgentChatState Serialize() =>
+        new()
+        {
+            History = JsonSerializer.Serialize(this.History.Select(m => new ChatMessageReference(m))),
+            Channels =
                 this._agentChannels.Select(
                     kvp =>
                         new AgentChannelState
                         {
                             ChannelKey = kvp.Key,
-                            JsonState = kvp.Value.Serialize()
+                            ChannelState = kvp.Value.Serialize()
                         })
-            };
-    }
+        };
 
     /// <summary>
     /// Clear activity signal to indicate that activity has ceased.

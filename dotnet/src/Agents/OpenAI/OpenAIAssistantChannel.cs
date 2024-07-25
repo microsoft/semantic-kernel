@@ -42,6 +42,5 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     }
 
     /// <inheritdoc/>
-    protected override string Serialize()
-        => JsonSerializer.Serialize(this._threadId, AgentChatSerializer.DefaultOptions);
+    protected override string Serialize() => this._threadId;
 }

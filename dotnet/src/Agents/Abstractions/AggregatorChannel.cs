@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -56,9 +57,6 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
         return Task.CompletedTask;
     }
 
-    protected internal override string Serialize() // %%%
-    {
-        AgentChatState state = this._chat.Serialize();
-        return JsonSerializer.Serialize(state, AgentChatSerializer.DefaultOptions);
-    }
+    protected internal override string Serialize() =>
+        JsonSerializer.Serialize(this._chat.Serialize());
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -64,7 +65,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
 
         AgentChat chat = chatProvider.Invoke();
         AgentChatState agentChatState =
-            JsonSerializer.Deserialize<AgentChatState>(state, AgentChatSerializer.DefaultOptions) ??
+            JsonSerializer.Deserialize<AgentChatState>(state) ??
             throw new KernelException("%%%");
 
         await chat.DeserializeAsync(agentChatState).ConfigureAwait(false); ;
