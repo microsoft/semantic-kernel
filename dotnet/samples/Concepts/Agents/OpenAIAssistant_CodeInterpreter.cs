@@ -24,7 +24,7 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
                 new()
                 {
                     EnableCodeInterpreter = true, // Enable code-interpreter
-                    ModelName = this.Model,
+                    ModelId = this.Model,
                 });
 
         // Create a chat for agent interaction.

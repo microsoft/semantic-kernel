@@ -52,7 +52,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
-                    ModelName = this.Model,
+                    ModelId = this.Model,
                 });
 
         // Create a chat for agent interaction.

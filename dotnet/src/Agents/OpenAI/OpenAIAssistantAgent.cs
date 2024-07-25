@@ -68,7 +68,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Create the assistant
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
-        Assistant model = await client.CreateAssistantAsync(definition.ModelName, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+        Assistant model = await client.CreateAssistantAsync(definition.ModelId, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
         return
@@ -311,7 +311,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 CodeInterpterFileIds = fileIds,
                 EnableCodeInterpreter = model.Tools.Any(t => t is CodeInterpreterToolDefinition),
                 Metadata = model.Metadata,
-                ModelName = model.Model,
+                ModelId = model.Model,
                 EnableJsonResponse = enableJsonResponse,
                 TopP = model.NucleusSamplingFactor,
                 Temperature = model.Temperature,

@@ -41,7 +41,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
                 {
                     CodeInterpterFileIds = [uploadFile.Id],
                     EnableCodeInterpreter = true, // Enable code-interpreter
-                    ModelName = this.Model,
+                    ModelId = this.Model,
                 });
 
         // Create a chat for agent interaction.

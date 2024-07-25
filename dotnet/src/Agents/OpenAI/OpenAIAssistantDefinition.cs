@@ -11,7 +11,7 @@ public sealed class OpenAIAssistantDefinition
     /// <summary>
     /// Identifies the AI model targeted by the agent.
     /// </summary>
-    public string ModelName { get; init; } = string.Empty;
+    public string ModelId { get; init; } = string.Empty;
 
     /// <summary>
     /// The description of the assistant.

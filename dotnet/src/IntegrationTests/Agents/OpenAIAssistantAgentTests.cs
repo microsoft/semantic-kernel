@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Agents.OpenAI;
+namespace SemanticKernel.IntegrationTests.Agents;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
@@ -79,7 +79,7 @@ public sealed class OpenAIAssistantAgentTests
                 new()
                 {
                     Instructions = "Answer questions about the menu.",
-                    ModelName = modelName,
+                    ModelId = modelName,
                 });
 
         AgentGroupChat chat = new();

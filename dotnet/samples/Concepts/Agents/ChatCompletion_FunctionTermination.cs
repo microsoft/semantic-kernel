@@ -3,7 +3,6 @@ using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Agents;
@@ -23,7 +22,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             {
                 Instructions = "Answer questions about the menu.",
                 Kernel = CreateKernelWithChatCompletion(),
-                ExecutionSettings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -76,7 +75,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             {
                 Instructions = "Answer questions about the menu.",
                 Kernel = CreateKernelWithChatCompletion(),
-                ExecutionSettings = new AzureOpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();

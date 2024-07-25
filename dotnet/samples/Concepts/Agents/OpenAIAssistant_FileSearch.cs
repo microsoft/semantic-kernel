@@ -47,7 +47,7 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
                 config,
                 new()
                 {
-                    ModelName = this.Model,
+                    ModelId = this.Model,
                     VectorStoreId = vectorStore.Id,
                 });
 

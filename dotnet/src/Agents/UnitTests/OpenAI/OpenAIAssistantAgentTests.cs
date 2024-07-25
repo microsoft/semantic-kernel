@@ -35,7 +35,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
             };
 
         await this.VerifyAgentCreationAsync(definition);
@@ -51,7 +51,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 Name = "testname",
                 Description = "testdescription",
                 Instructions = "testinstructions",
@@ -70,7 +70,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 EnableCodeInterpreter = true,
             };
 
@@ -87,7 +87,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 EnableCodeInterpreter = true,
                 CodeInterpterFileIds = ["file1", "file2"],
             };
@@ -105,7 +105,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 VectorStoreId = "#vs1",
             };
 
@@ -122,7 +122,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 Metadata = new Dictionary<string, string>()
                 {
                     { "a", "1" },
@@ -143,7 +143,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 EnableJsonResponse = true,
             };
 
@@ -160,7 +160,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 Temperature = 2.0F,
             };
 
@@ -177,7 +177,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 TopP = 2.0F,
             };
 
@@ -194,7 +194,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 ExecutionOptions = new(),
             };
 
@@ -211,7 +211,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 ExecutionOptions =
                     new()
                     {
@@ -233,7 +233,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
                 ExecutionOptions = new(),
                 Metadata = new Dictionary<string, string>()
                 {
@@ -254,7 +254,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
             };
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
@@ -535,7 +535,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.NotNull(agent.Id);
         Assert.False(agent.IsDeleted);
         Assert.NotNull(agent.Definition);
-        Assert.Equal(sourceDefinition.ModelName, agent.Definition.ModelName);
+        Assert.Equal(sourceDefinition.ModelId, agent.Definition.ModelId);
 
         // Verify core properties
         Assert.Equal(sourceDefinition.Instructions ?? string.Empty, agent.Instructions);
@@ -604,7 +604,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                ModelName = "testmodel",
+                ModelId = "testmodel",
             };
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
@@ -663,7 +663,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             builder.AppendLine(@$"  ""name"": ""{definition.Name}"",");
             builder.AppendLine(@$"  ""description"": ""{definition.Description}"",");
             builder.AppendLine(@$"  ""instructions"": ""{definition.Instructions}"",");
-            builder.AppendLine(@$"  ""model"": ""{definition.ModelName}"",");
+            builder.AppendLine(@$"  ""model"": ""{definition.ModelId}"",");
 
             bool hasCodeInterpreter = definition.EnableCodeInterpreter;
             bool hasCodeInterpreterFiles = (definition.CodeInterpterFileIds?.Count ?? 0) > 0;
