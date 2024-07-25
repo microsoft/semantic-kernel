@@ -26,9 +26,9 @@ DISTANCE_FUNCTION_MAP = {
 }
 
 TYPE_MAPPER_VECTOR = {
-    "list[float]": "FLOAT32",
-    "list[int]": "FLOAT16",
-    "list[binary]": "FLOAT16",
+    "float": "FLOAT32",
+    "int": "FLOAT16",
+    "binary": "FLOAT16",
     "ndarray": "FLOAT32",
     "default": "FLOAT32",
 }

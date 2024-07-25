@@ -37,9 +37,9 @@ TYPE_MAPPER_DATA = {
 }
 
 TYPE_MAPPER_VECTOR = {
-    "list[float]": SearchFieldDataType.Collection(SearchFieldDataType.Single),
-    "list[int]": "Collection(Edm.Int16)",
-    "list[binary]": "Collection(Edm.Byte)",
+    "float": SearchFieldDataType.Collection(SearchFieldDataType.Single),
+    "int": "Collection(Edm.Int16)",
+    "binary": "Collection(Edm.Byte)",
     "default": SearchFieldDataType.Collection(SearchFieldDataType.Single),
 }
 

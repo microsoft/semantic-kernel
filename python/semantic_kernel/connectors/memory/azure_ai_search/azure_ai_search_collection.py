@@ -4,7 +4,7 @@ import asyncio
 import logging
 import sys
 from collections.abc import Sequence
-from typing import Any, Generic, TypeVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -35,6 +35,8 @@ TModel = TypeVar("TModel")
 class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[TModel]):
     search_client: SearchClient
     search_index_client: SearchIndexClient
+    supported_key_types: ClassVar[list[str] | None] = ["str"]
+    supported_vector_types: ClassVar[list[str] | None] = ["float", "int"]
 
     def __init__(
         self,
@@ -145,38 +147,22 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
     @override
     async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Sequence[dict[str, Any]]:
         client = self.search_client
-        return await asyncio.gather(
-            *[client.get_document(key=key, selected_fields=kwargs.get("selected_fields", ["*"])) for key in keys]
+        result = await asyncio.gather(
+            *[client.get_document(key=key, selected_fields=kwargs.get("selected_fields", ["*"])) for key in keys],
+            return_exceptions=True,
         )
+        return [res for res in result if not isinstance(res, Exception)]
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
         await self.search_client.delete_documents(documents=[{self._key_field_name: key} for key in keys])
 
-    @property
-    @override
-    def supported_key_types(self) -> Sequence[str] | None:
-        return ["str"]
-
-    @property
-    @override
-    def supported_vector_types(self) -> Sequence[str] | None:
-        return ["list[float]", "list[int]"]
-
     @override
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
-        """Serialize a dict of the data to the store model.
-
-        This method should be overridden by the child class to convert the dict to the store model.
-        """
         return records
 
     @override
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
-        """Deserialize the store model to a dict.
-
-        This method should be overridden by the child class to convert the store model to a dict.
-        """
         return records
 
     @override

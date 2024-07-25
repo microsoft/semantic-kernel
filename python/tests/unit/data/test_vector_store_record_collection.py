@@ -442,7 +442,7 @@ async def test_collection_create_if_not_exists(DictVectorStoreRecordCollection, 
 
 def test_data_model_validation(data_model_type_vanilla, DictVectorStoreRecordCollection):
     DictVectorStoreRecordCollection.supported_key_types = PropertyMock(return_value=["str"])
-    DictVectorStoreRecordCollection.supported_vector_types = PropertyMock(return_value=["list[float]"])
+    DictVectorStoreRecordCollection.supported_vector_types = PropertyMock(return_value=["float"])
     DictVectorStoreRecordCollection(
         collection_name="test",
         data_model_type=data_model_type_vanilla,

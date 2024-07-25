@@ -23,8 +23,9 @@ class VectorStoreRecordUtils:
 
     async def add_vector_to_records(
         self,
-        data_model_definition: "VectorStoreRecordDefinition",
         records: OneOrMany[TModel],
+        data_model_type: type[TModel] | None = None,
+        data_model_definition: "VectorStoreRecordDefinition | None" = None,
         **kwargs,
     ) -> OneOrMany[TModel]:
         """Vectorize the vector record.
@@ -43,7 +44,12 @@ class VectorStoreRecordUtils:
         """
         # dict of embedding_field.name and tuple of record, settings, field_name
         embeddings_to_make: list[tuple[str, str, dict[str, "PromptExecutionSettings"], Callable | None]] = []
-
+        if not data_model_definition:
+            data_model_definition = getattr(data_model_type, "__kernel_vectorstoremodel_definition__", None)
+        if not data_model_definition:
+            raise VectorStoreModelException(
+                "Data model definition is required, either directly or from the data model type."
+            )
         for name, field in data_model_definition.fields.items():  # type: ignore
             if (
                 not isinstance(field, VectorStoreRecordDataField)
@@ -60,7 +66,7 @@ class VectorStoreRecordUtils:
                         name,
                         field.embedding_property_name,
                         embedding_field.embedding_settings,
-                        embedding_field.cast_function,
+                        embedding_field.deserialize_function,
                     )
                 )
 

@@ -31,8 +31,7 @@ def dataclass_vector_data_model() -> object:
                 index_kind="hnsw",
                 dimensions=1536,
                 distance_function="cosine",
-                property_type="list[float]",
-                # cast_function=array,
+                property_type="float",
             ),
         ] = None
         other: str | None = None
