@@ -57,12 +57,12 @@ def _format_user_message(message: ChatMessageContent) -> UserMessage:
     if not any(isinstance(item, (ImageContent)) for item in message.items):
         return UserMessage(content=message.content)
 
-    contentItems: list[ContentItem] = []
+    content_items: list[ContentItem] = []
     for item in message.items:
         if isinstance(item, TextContent):
-            contentItems.append(TextContentItem(text=item.text))
+            content_items.append(TextContentItem(text=item.text))
         elif isinstance(item, ImageContent) and (item.data_uri or item.uri):
-            contentItems.append(
+            content_items.append(
                 ImageContentItem(
                     image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto.value)
                 )
@@ -73,7 +73,7 @@ def _format_user_message(message: ChatMessageContent) -> UserMessage:
                 f" Inference: {type(item)}"
             )
 
-    return UserMessage(content=contentItems)
+    return UserMessage(content=content_items)
 
 
 def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
@@ -85,7 +85,7 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
     Returns:
         The formatted assistant message.
     """
-    toolCalls: list[ChatCompletionsToolCall] = []
+    tool_calls: list[ChatCompletionsToolCall] = []
 
     for item in message.items:
         if isinstance(item, TextContent):
@@ -93,7 +93,7 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
             # and we assign the content directly to the message content, which is a string.
             continue
         if isinstance(item, FunctionCallContent):
-            toolCalls.append(
+            tool_calls.append(
                 ChatCompletionsFunctionToolCall(
                     id=item.id or "",
                     function=FunctionCall(
@@ -111,7 +111,7 @@ def _format_assistant_message(message: ChatMessageContent) -> AssistantMessage:
             )
 
     # tollCalls cannot be an empty list, so we need to set it to None if it is empty
-    return AssistantMessage(content=message.content, tool_calls=toolCalls if toolCalls else None)
+    return AssistantMessage(content=message.content, tool_calls=tool_calls if tool_calls else None)
 
 
 def _format_tool_message(message: ChatMessageContent) -> ToolMessage:
