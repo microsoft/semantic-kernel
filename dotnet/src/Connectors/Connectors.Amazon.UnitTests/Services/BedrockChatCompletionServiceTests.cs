@@ -91,7 +91,11 @@ public class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseStreamRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
         mockBedrockApi.Setup(m => m.ConverseStreamAsync(It.IsAny<ConverseStreamRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseStreamResponse
             {
