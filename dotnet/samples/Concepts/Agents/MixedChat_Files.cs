@@ -25,6 +25,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task AnalyzeFileAndGenerateReportAsync()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
         OpenAIFileReference uploadFile =
@@ -95,5 +96,6 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseTest(output)
                 }
             }
         }
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
