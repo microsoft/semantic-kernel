@@ -18,6 +18,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     {
         yield return typeof(ChatHistoryChannel).FullName!;
     }
+
     /// <inheritdoc/>
     protected internal sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
