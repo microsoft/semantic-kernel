@@ -26,8 +26,9 @@ public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFix
         var collectionNames = await sut.ListCollectionNamesAsync().ToListAsync();
 
         // Assert
-        Assert.Single(collectionNames);
-        Assert.Contains("hotels", collectionNames);
+        Assert.Equal(2, collectionNames.Count);
+        Assert.Contains("jsonhotels", collectionNames);
+        Assert.Contains("hashhotels", collectionNames);
 
         // Output
         output.WriteLine(string.Join(",", collectionNames));
