@@ -10,7 +10,6 @@ using Connectors.Amazon.Models.Anthropic;
 using Connectors.Amazon.Models.Cohere;
 using Connectors.Amazon.Models.Meta;
 using Connectors.Amazon.Models.Mistral;
-using Connectors.Amazon.Services;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;

@@ -99,7 +99,7 @@ public class AnthropicIOService : IBedrockModelIOService
             MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
         };
 
-        var additionalModelRequestFields = new Document {};
+        var additionalModelRequestFields = new Document { };
 
         var tools = this._util.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null);
         var toolChoice = this._util.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null);
@@ -178,7 +178,7 @@ public class AnthropicIOService : IBedrockModelIOService
             MaxTokens = this._util.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
         };
 
-        var additionalModelRequestFields = new Document {};
+        var additionalModelRequestFields = new Document { };
 
         var tools = this._util.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null);
         var toolChoice = this._util.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null);

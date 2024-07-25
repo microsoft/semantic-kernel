@@ -20,13 +20,13 @@ public class MistralIOService : IBedrockModelIOService
     private const float DefaultTopPInstruct = 0.9f;
     private const int DefaultMaxTokensInstruct = 512;
     private const int DefaultTopKInstruct = 50;
-    private static readonly List<string> DefaultStopSequencesInstruct = new List<string>();
+    private static readonly List<string> DefaultStopSequencesInstruct = new();
 
     private const float DefaultTemperatureNonInstruct = 0.7f;
     private const float DefaultTopPNonInstruct = 1.0f;
     private const int DefaultMaxTokensNonInstruct = 8192;
     private const int DefaultTopKNonInstruct = 0;
-    private static readonly List<string> DefaultStopSequencesNonInstruct = new List<string>();
+    private static readonly List<string> DefaultStopSequencesNonInstruct = new();
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Mistral.
     /// </summary>
