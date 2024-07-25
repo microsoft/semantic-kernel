@@ -88,7 +88,7 @@ public class AI21JurassicIOService : IBedrockModelIOService
     /// <exception cref="NotImplementedException"></exception>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("Converse not supported by this model.");
     }
     /// <summary>
     /// Jurassic does not support streaming.
@@ -98,7 +98,7 @@ public class AI21JurassicIOService : IBedrockModelIOService
     /// <exception cref="NotImplementedException"></exception>
     public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("Streaming not supported by this model.");
     }
     /// <summary>
     /// Jurassic does not support converse (or streaming for that matter).
@@ -110,6 +110,6 @@ public class AI21JurassicIOService : IBedrockModelIOService
     /// <exception cref="NotImplementedException"></exception>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("Streaming not supported by this model.");
     }
 }

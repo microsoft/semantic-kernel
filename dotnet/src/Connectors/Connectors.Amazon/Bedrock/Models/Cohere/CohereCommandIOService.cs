@@ -121,7 +121,7 @@ public class CohereCommandIOService : IBedrockModelIOService
     /// <exception cref="NotImplementedException"></exception>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("Converse not supported by this model.");
     }
     /// <summary>
     /// Command does not support ConverseStream (only Command R): "Limited. No chat support." - https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features
@@ -133,6 +133,6 @@ public class CohereCommandIOService : IBedrockModelIOService
     /// <exception cref="NotImplementedException"></exception>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("Streaming not supported by this model.");
     }
 }
