@@ -19,6 +19,9 @@ internal sealed class ChatMessageReference(ChatMessageContent message)
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ModelId => message.ModelId;
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MimeType => message.MimeType;
+
     public static IEnumerable<ChatMessageReference> Prepare(IEnumerable<ChatMessageContent> messages) =>
         messages.Select(m => new ChatMessageReference(m));
 }

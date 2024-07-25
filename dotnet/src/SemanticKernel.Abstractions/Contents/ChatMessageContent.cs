@@ -55,11 +55,11 @@ public class ChatMessageContent : KernelContent
                 this.Items.Add(new TextContent(
                     text: value,
                 ////modelId: this.ModelId, %%% ALREADY KNOWN AT MESSAGE LEVEL
-                ////innerContent: this.InnerContent, %%% MUTATION RISK
-                    encoding: this.Encoding
-                ////metadata: this.Metadata, %%% MUTATION RISK
-                ));
-                //{ MimeType = this.MimeType });
+                ////innerContent: this.InnerContent, %%% MUTATION RISK / INCONSISTENT / INVALID ASSUMPTION
+                    encoding: this.Encoding // %%% WEIRD, BUT WHO CARES (INGORED FOR SERIALIZATION)
+                ////metadata: this.Metadata, %%% MUTATION RISK / INCONSISTENT
+                )
+                { MimeType = this.MimeType }); // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION
             }
         }
     }

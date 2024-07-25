@@ -322,6 +322,7 @@ public abstract class AgentChat
                         new AgentChannelState
                         {
                             ChannelKey = kvp.Key,
+                            ChannelType = kvp.Value.GetType().FullName!,
                             ChannelState = kvp.Value.Serialize()
                         })
         };

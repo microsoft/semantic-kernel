@@ -16,6 +16,11 @@ internal sealed class AgentChannelState
     /// <summary>
     /// %%%
     /// </summary>
+    public string ChannelType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// %%%
+    /// </summary>
     [JsonConverter(typeof(JsonChannelStateConverter))]
     public string ChannelState { get; set; } = string.Empty;
 }
