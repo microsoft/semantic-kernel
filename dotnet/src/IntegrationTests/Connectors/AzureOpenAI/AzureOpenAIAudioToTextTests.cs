@@ -8,30 +8,34 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
-public sealed class OpenAIAudioToTextTests()
+public sealed class AzureOpenAIAudioToTextTests()
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<OpenAIAudioToTextTests>()
+        .AddUserSecrets<AzureOpenAIAudioToTextTests>()
         .Build();
 
-    [Fact]//(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
-    public async Task OpenAIAudioToTextTestAsync()
+    [RetryFact]
+    public async Task AzureOpenAIAudioToTextTestAsync()
     {
         // Arrange
         const string Filename = "test_audio.wav";
 
-        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIAudioToText").Get<OpenAIConfiguration>();
-        Assert.NotNull(openAIConfiguration);
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIAudioToText").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
 
         var kernel = Kernel.CreateBuilder()
-            .AddOpenAIAudioToText(openAIConfiguration.ModelId, openAIConfiguration.ApiKey)
+            .AddAzureOpenAIAudioToText(
+                azureOpenAIConfiguration.DeploymentName,
+                azureOpenAIConfiguration.Endpoint,
+                azureOpenAIConfiguration.ApiKey)
             .Build();
 
         var service = kernel.GetRequiredService<IAudioToTextService>();

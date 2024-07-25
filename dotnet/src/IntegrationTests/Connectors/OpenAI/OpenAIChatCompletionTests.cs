@@ -18,7 +18,7 @@ using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTestsV2.Connectors.OpenAI;
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
