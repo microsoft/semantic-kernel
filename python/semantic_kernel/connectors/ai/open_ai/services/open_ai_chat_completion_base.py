@@ -107,7 +107,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             chat_history.add_message(message=completions[0])
             # get the function call contents from the chat message
             function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
-            if (fc_count := len(function_calls)) == 0 and settings:
+            if (fc_count := len(function_calls)) == 0:
                 return completions
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
