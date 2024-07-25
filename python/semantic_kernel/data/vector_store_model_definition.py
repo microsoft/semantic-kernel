@@ -20,7 +20,17 @@ from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreMo
 
 @dataclass
 class VectorStoreRecordDefinition:
-    """Memory record definition."""
+    """Memory record definition.
+
+    Args:
+        fields: The fields of the record.
+        container_mode: Whether the record is in container mode.
+        to_dict: The to_dict function, should take a record and return a list of dicts.
+        from_dict: The from_dict function, should take a list of dicts and return a record.
+        serialize: The serialize function, should take a record and return the type specific to a datastore.
+        deserialize: The deserialize function, should take a type specific to a datastore and return a record.
+
+    """
 
     key_field_name: str = field(init=False)
     fields: dict[str, VectorStoreRecordField]

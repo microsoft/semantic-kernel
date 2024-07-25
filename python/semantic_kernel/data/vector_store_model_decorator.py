@@ -6,7 +6,7 @@ from types import NoneType
 from typing import Any
 
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordField
+from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordField, VectorStoreRecordVectorField
 from semantic_kernel.exceptions.memory_connector_exceptions import VectorStoreModelException
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,10 @@ def _parse_signature_to_definition(parameters) -> VectorStoreRecordDefinition:
                     field_type.name = field.name
                 if not field_type.property_type:
                     if hasattr(property_type, "__args__"):
-                        field_type.property_type = f"{property_type.__name__}[{property_type.__args__[0].__name__}]"
+                        if isinstance(item, VectorStoreRecordVectorField):
+                            field_type.property_type = property_type.__args__[0].__name__
+                        else:
+                            field_type.property_type = f"{property_type.__name__}[{property_type.__args__[0].__name__}]"
                     else:
                         field_type.property_type = property_type.__name__
             elif isinstance(item, type(VectorStoreRecordField)):

@@ -3,7 +3,7 @@
 import logging
 import sys
 from collections.abc import Mapping, Sequence
-from typing import Any, TypeVar
+from typing import Any, ClassVar, TypeVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -38,6 +38,8 @@ TKey = TypeVar("TKey", str, int)
 class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
     qdrant_client: AsyncQdrantClient
     named_vectors: bool
+    supported_key_types: ClassVar[list[str] | None] = ["str", "int"]
+    supported_vector_types: ClassVar[list[str] | None] = ["float", "int"]
 
     def __init__(
         self,
@@ -169,7 +171,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
             PointStruct(
                 id=record.pop(self._key_field_name),
                 vector=record.pop(self.data_model_definition.vector_field_names[0])
-                if self.named_vectors
+                if not self.named_vectors
                 else {field: record.pop(field) for field in self.data_model_definition.vector_field_names},
                 payload=record,
             )
@@ -194,16 +196,6 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
             }
             for record in records
         ]
-
-    @property
-    @override
-    def supported_key_types(self) -> Sequence[str] | None:
-        return ["str", "int"]
-
-    @property
-    @override
-    def supported_vector_types(self) -> Sequence[str] | None:
-        return ["list[float]", "list[int]"]
 
     @override
     async def create_collection(self, **kwargs) -> None:
@@ -241,7 +233,7 @@ class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
             kwargs["vectors_config"] = vectors_config
         if "collection_name" not in kwargs:
             kwargs["collection_name"] = self.collection_name
-        await self.qdrant_client.recreate_collection(**kwargs)
+        await self.qdrant_client.create_collection(**kwargs)
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:

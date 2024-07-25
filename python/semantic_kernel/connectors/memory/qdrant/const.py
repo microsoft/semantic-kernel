@@ -13,9 +13,9 @@ DISTANCE_FUNCTION_MAP = {
 }
 
 TYPE_MAPPER_VECTOR = {
-    "list[float]": Datatype.FLOAT32,
-    "list[int]": Datatype.UINT8,
-    "list[binary]": Datatype.UINT8,
+    "float": Datatype.FLOAT32,
+    "int": Datatype.UINT8,
+    "binary": Datatype.UINT8,
     "default": Datatype.FLOAT32,
 }
 

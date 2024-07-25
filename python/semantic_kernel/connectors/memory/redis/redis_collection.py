@@ -5,7 +5,7 @@ import json
 import logging
 import sys
 from collections.abc import Sequence
-from typing import Any, TypeVar
+from typing import Any, ClassVar, TypeVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -43,6 +43,8 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
     redis_database: Redis
     prefix_collection_name_to_key_names: bool
     collection_type: RedisCollectionTypes
+    supported_key_types: ClassVar[list[str] | None] = ["str"]
+    supported_vector_types: ClassVar[list[str] | None] = ["float"]
 
     def __init__(
         self,
@@ -91,17 +93,6 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
             collection_type=collection_type,
         )
 
-    @property
-    @override
-    def supported_key_types(self) -> Sequence[str] | None:
-        return ["str"]
-
-    @property
-    @override
-    def supported_vector_types(self) -> Sequence[str] | None:
-        """Supply the types that vectors are allowed to have. None means any."""
-        return ["list[float]", "ndarray"]
-
     def _get_redis_key(self, key: str) -> str:
         if self.prefix_collection_name_to_key_names:
             return f"{self.collection_name}:{key}"
@@ -147,7 +138,11 @@ class RedisCollection(VectorStoreRecordCollection[str, TModel]):
 
     @override
     async def delete_collection(self, **kwargs) -> None:
-        await self.redis_database.ft(self.collection_name).dropindex(**kwargs)
+        exists = await self.does_collection_exist()
+        if exists:
+            await self.redis_database.ft(self.collection_name).dropindex(**kwargs)
+        else:
+            logger.debug("Collection does not exist, skipping deletion.")
 
 
 @experimental_class
@@ -195,7 +190,8 @@ class RedisHashsetCollection(RedisCollection):
 
     @override
     async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[bytes, bytes]] | None:
-        return await asyncio.gather(*[self.redis_database.hgetall(self._get_redis_key(key)) for key in keys])
+        results = await asyncio.gather(*[self.redis_database.hgetall(self._get_redis_key(key)) for key in keys])
+        return [result for result in results if result]
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
@@ -210,14 +206,13 @@ class RedisHashsetCollection(RedisCollection):
         """Serialize the dict to a Redis store model."""
         results = []
         for record in records:
-            result = {"mapping": {"metadata": {}}}
+            result = {"mapping": {}}
             metadata = {}
             for name, field in self.data_model_definition.fields.items():
                 if isinstance(field, VectorStoreRecordVectorField):
-                    if isinstance(record[name], np.ndarray):
-                        result["mapping"][name] = record[name].tobytes()
-                    else:
-                        result["mapping"][name] = json.dumps(record[name])
+                    if not isinstance(record[name], np.ndarray):
+                        record[name] = np.array(record[name])
+                    result["mapping"][name] = record[name].tobytes()
                     continue
                 if isinstance(field, VectorStoreRecordKeyField):
                     result["name"] = self._get_redis_key(record[name])
@@ -236,19 +231,14 @@ class RedisHashsetCollection(RedisCollection):
     ) -> Sequence[dict[str, Any]]:
         results = []
         for key, record in zip(keys, records):
-            flattened = json.loads(record[b"metadata"])
-            for name, field in self.data_model_definition.fields.items():
-                if isinstance(field, VectorStoreRecordKeyField):
-                    flattened[name] = self._unget_redis_key(key)
-                if isinstance(field, VectorStoreRecordVectorField):
-                    # TODO (eavanvalkenburg): This is a temporary fix to handle the fact that
-                    # the vector is returned as a bytes object, and the user needs that or a list.
-                    vector_value = record[name.encode()]
-                    if field.property_type == "ndarray":
-                        flattened[name] = field.cast_function(vector_value)
-                    else:
-                        flattened[name] = json.loads(vector_value)
-            results.append(flattened)
+            if record:
+                flattened = json.loads(record[b"metadata"])
+                for name, field in self.data_model_definition.fields.items():
+                    if isinstance(field, VectorStoreRecordKeyField):
+                        flattened[name] = self._unget_redis_key(key)
+                    if isinstance(field, VectorStoreRecordVectorField):
+                        flattened[name] = np.frombuffer(record[name.encode()]).tolist()
+                results.append(flattened)
         return results
 
 
@@ -297,7 +287,8 @@ class RedisJsonCollection(RedisCollection):
 
     @override
     async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[bytes, bytes]] | None:
-        return await self.redis_database.json().mget([self._get_redis_key(key) for key in keys], "$", **kwargs)
+        results = await self.redis_database.json().mget([self._get_redis_key(key) for key in keys], "$", **kwargs)
+        return [result[0] for result in results if result]
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
@@ -317,6 +308,10 @@ class RedisJsonCollection(RedisCollection):
                 if isinstance(field, VectorStoreRecordKeyField):
                     result["name"] = self._get_redis_key(record[name])
                     continue
+                if isinstance(field, VectorStoreRecordVectorField):
+                    if isinstance(record[name], np.ndarray):
+                        record[name] = record[name].tolist()
+                    result["value"][name] = record[name]
                 result["value"][name] = record[name]
             results.append(result)
         return results
@@ -330,8 +325,6 @@ class RedisJsonCollection(RedisCollection):
     ) -> Sequence[dict[str, Any]]:
         results = []
         for key, record in zip(keys, records):
-            # for some reason redis json returns the dict as a list[dict]
-            record = record[0]
             record[self.data_model_definition.key_field_name] = self._unget_redis_key(key)
             results.append(record)
         return results

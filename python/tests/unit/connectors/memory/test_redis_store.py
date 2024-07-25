@@ -5,7 +5,8 @@ from unittest.mock import AsyncMock, patch
 from pytest import fixture, mark, raises
 from redis.asyncio.client import Redis
 
-from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection
+from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
+from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.connectors.memory.redis.redis_store import RedisStore
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorException,
@@ -14,6 +15,7 @@ from semantic_kernel.exceptions.memory_connector_exceptions import (
 
 BASE_PATH = "redis.asyncio.client.Redis"
 BASE_PATH_FT = "redis.commands.search.AsyncSearch"
+BASE_PATH_JSON = "redis.commands.json.commands.JSONCommands"
 
 
 @fixture
@@ -22,7 +24,7 @@ def vector_store(redis_unit_test_env):
 
 
 @fixture
-def collection(redis_unit_test_env, data_model_definition):
+def collection_hash(redis_unit_test_env, data_model_definition):
     return RedisHashsetCollection(
         data_model_type=dict,
         collection_name="test",
@@ -32,7 +34,17 @@ def collection(redis_unit_test_env, data_model_definition):
 
 
 @fixture
-def collection_with_prefix(redis_unit_test_env, data_model_definition):
+def collection_json(redis_unit_test_env, data_model_definition):
+    return RedisJsonCollection(
+        data_model_type=dict,
+        collection_name="test",
+        data_model_definition=data_model_definition,
+        env_file_path="test.env",
+    )
+
+
+@fixture
+def collection_with_prefix_hash(redis_unit_test_env, data_model_definition):
     return RedisHashsetCollection(
         data_model_type=dict,
         collection_name="test",
@@ -43,39 +55,56 @@ def collection_with_prefix(redis_unit_test_env, data_model_definition):
 
 
 @fixture
+def collection_with_prefix_json(redis_unit_test_env, data_model_definition):
+    return RedisJsonCollection(
+        data_model_type=dict,
+        collection_name="test",
+        data_model_definition=data_model_definition,
+        prefix_collection_name_to_key_names=True,
+        env_file_path="test.env",
+    )
+
+
+@fixture(autouse=True)
 def moc_list_collection_names():
     with patch(f"{BASE_PATH}.execute_command") as mock_get_collections:
         mock_get_collections.return_value = [b"test"]
         yield mock_get_collections
 
 
-@fixture
+@fixture(autouse=True)
 def mock_does_collection_exist():
     with patch(f"{BASE_PATH_FT}.info", new=AsyncMock()) as mock_collection_exists:
         mock_collection_exists.return_value = True
         yield mock_collection_exists
 
 
-@fixture
+@fixture(autouse=True)
 def mock_create_collection():
     with patch(f"{BASE_PATH_FT}.create_index", new=AsyncMock()) as mock_recreate_collection:
         yield mock_recreate_collection
 
 
-@fixture
+@fixture(autouse=True)
 def mock_delete_collection():
     with patch(f"{BASE_PATH_FT}.dropindex", new=AsyncMock()) as mock_delete_collection:
         yield mock_delete_collection
 
 
-@fixture
-def mock_upsert():
+@fixture(autouse=True)
+def mock_upsert_hash():
     with patch(f"{BASE_PATH}.hset", new=AsyncMock()) as mock_upsert:
         yield mock_upsert
 
 
-@fixture
-def mock_get():
+@fixture(autouse=True)
+def mock_upsert_json():
+    with patch(f"{BASE_PATH_JSON}.set", new=AsyncMock()) as mock_upsert:
+        yield mock_upsert
+
+
+@fixture(autouse=True)
+def mock_get_hash():
     with patch(f"{BASE_PATH}.hgetall", new=AsyncMock()) as mock_get:
         mock_get.return_value = {
             b"metadata": b'{"content": "content"}',
@@ -84,9 +113,29 @@ def mock_get():
         yield mock_get
 
 
-@fixture
-def mock_delete():
+@fixture(autouse=True)
+def mock_get_json():
+    with patch(f"{BASE_PATH_JSON}.mget", new=AsyncMock()) as mock_get:
+        mock_get.return_value = [
+            [
+                {
+                    "content": "content",
+                    "vector": [1.0, 2.0, 3.0],
+                }
+            ]
+        ]
+        yield mock_get
+
+
+@fixture(autouse=True)
+def mock_delete_hash():
     with patch(f"{BASE_PATH}.delete", new=AsyncMock()) as mock_delete:
+        yield mock_delete
+
+
+@fixture(autouse=True)
+def mock_delete_json():
+    with patch(f"{BASE_PATH_JSON}.delete", new=AsyncMock()) as mock_delete:
         yield mock_delete
 
 
@@ -113,8 +162,24 @@ async def test_store_list_collection_names(vector_store, moc_list_collection_nam
     assert collections == ["test"]
 
 
-def test_get_collection(vector_store, data_model_definition):
-    collection = vector_store.get_collection("test", data_model_type=dict, data_model_definition=data_model_definition)
+@mark.parametrize("type_", ["hashset", "json"])
+def test_get_collection(vector_store, data_model_definition, type_):
+    if type_ == "hashset":
+        collection = vector_store.get_collection(
+            "test",
+            data_model_type=dict,
+            data_model_definition=data_model_definition,
+            collection_type=RedisCollectionTypes.HASHSET,
+        )
+        assert isinstance(collection, RedisHashsetCollection)
+    else:
+        collection = vector_store.get_collection(
+            "test",
+            data_model_type=dict,
+            data_model_definition=data_model_definition,
+            collection_type=RedisCollectionTypes.JSON,
+        )
+        assert isinstance(collection, RedisJsonCollection)
     assert collection.collection_name == "test"
     assert collection.redis_database == vector_store.redis_database
     assert collection.data_model_type is dict
@@ -122,13 +187,22 @@ def test_get_collection(vector_store, data_model_definition):
     assert vector_store.vector_record_collections["test"] == collection
 
 
-def test_collection_init(redis_unit_test_env, data_model_definition):
-    collection = RedisHashsetCollection(
-        data_model_type=dict,
-        collection_name="test",
-        data_model_definition=data_model_definition,
-        env_file_path="test.env",
-    )
+@mark.parametrize("type_", ["hashset", "json"])
+def test_collection_init(redis_unit_test_env, data_model_definition, type_):
+    if type_ == "hashset":
+        collection = RedisHashsetCollection(
+            data_model_type=dict,
+            collection_name="test",
+            data_model_definition=data_model_definition,
+            env_file_path="test.env",
+        )
+    else:
+        collection = RedisJsonCollection(
+            data_model_type=dict,
+            collection_name="test",
+            data_model_definition=data_model_definition,
+            env_file_path="test.env",
+        )
     assert collection.collection_name == "test"
     assert collection.redis_database is not None
     assert collection.data_model_type is dict
@@ -136,8 +210,12 @@ def test_collection_init(redis_unit_test_env, data_model_definition):
     assert collection.prefix_collection_name_to_key_names is False
 
 
-def test_init_with_type(redis_unit_test_env, data_model_type):
-    collection = RedisHashsetCollection(data_model_type=data_model_type, collection_name="test")
+@mark.parametrize("type_", ["hashset", "json"])
+def test_init_with_type(redis_unit_test_env, data_model_type, type_):
+    if type_ == "hashset":
+        collection = RedisHashsetCollection(data_model_type=data_model_type, collection_name="test")
+    else:
+        collection = RedisJsonCollection(data_model_type=data_model_type, collection_name="test")
     assert collection is not None
     assert collection.data_model_type is data_model_type
     assert collection.collection_name == "test"
@@ -152,17 +230,35 @@ def test_collection_fail(redis_unit_test_env, data_model_definition):
             data_model_definition=data_model_definition,
             env_file_path="test.env",
         )
+    with raises(MemoryConnectorInitializationError, match="Failed to create Redis settings."):
+        RedisJsonCollection(
+            data_model_type=dict,
+            collection_name="test",
+            data_model_definition=data_model_definition,
+            env_file_path="test.env",
+        )
 
 
 @mark.asyncio
-async def test_upsert(collection, mock_upsert):
-    record = {
-        "name": "id1",
-        "mapping": {
-            "metadata": {"content": "content"},
-            "vector": [1.0, 2.0, 3.0],
-        },
-    }
+@mark.parametrize("type_", ["hashset", "json"])
+async def test_upsert(collection_hash, collection_json, type_):
+    if type_ == "hashset":
+        record = {
+            "name": "id1",
+            "mapping": {
+                "metadata": {"content": "content"},
+                "vector": [1.0, 2.0, 3.0],
+            },
+        }
+    else:
+        record = {
+            "name": "id1",
+            "value": {
+                "content": "content",
+                "vector": [1.0, 2.0, 3.0],
+            },
+        }
+    collection = collection_hash if type_ == "hashset" else collection_json
     ids = await collection._inner_upsert([record])
     assert ids[0] == "id1"
 
@@ -171,23 +267,27 @@ async def test_upsert(collection, mock_upsert):
 
 
 @mark.asyncio
-async def test_upsert_with_prefix(collection_with_prefix, mock_upsert):
-    record = {
-        "name": "test:id1",
-        "mapping": {
-            "metadata": {"content": "content"},
-            "vector": [1.0, 2.0, 3.0],
-        },
-    }
-    ids = await collection_with_prefix._inner_upsert([record])
-    assert ids[0] == "id1"
-
-    ids = await collection_with_prefix.upsert(record={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]})
+async def test_upsert_with_prefix(collection_with_prefix_hash, collection_with_prefix_json):
+    ids = await collection_with_prefix_hash.upsert(
+        record={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]}
+    )
+    assert ids == "id1"
+    ids = await collection_with_prefix_json.upsert(
+        record={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]}
+    )
     assert ids == "id1"
 
 
 @mark.asyncio
-async def test_get(collection, mock_get):
+@mark.parametrize("type_", ["hashset", "json"])
+@mark.parametrize("prefix", [True, False])
+async def test_get(
+    collection_hash, collection_json, collection_with_prefix_hash, collection_with_prefix_json, type_, prefix
+):
+    if prefix:
+        collection = collection_with_prefix_hash if type_ == "hashset" else collection_with_prefix_json
+    else:
+        collection = collection_hash if type_ == "hashset" else collection_json
     records = await collection._inner_get(["id1"])
     assert records is not None
 
@@ -196,51 +296,44 @@ async def test_get(collection, mock_get):
 
 
 @mark.asyncio
-async def test_get_with_prefix(collection_with_prefix, mock_get):
-    records = await collection_with_prefix._inner_get(["id1"])
-    assert records is not None
-
-    records = await collection_with_prefix.get("id1")
-    assert records is not None
-
-
-@mark.asyncio
-async def test_delete(collection, mock_delete):
+@mark.parametrize("type_", ["hashset", "json"])
+async def test_delete(collection_hash, collection_json, type_):
+    collection = collection_hash if type_ == "hashset" else collection_json
     await collection._inner_delete(["id1"])
 
 
 @mark.asyncio
-async def test_does_collection_exist(collection, mock_does_collection_exist):
-    await collection.does_collection_exist()
+async def test_does_collection_exist(collection_hash, mock_does_collection_exist):
+    await collection_hash.does_collection_exist()
 
 
 @mark.asyncio
-async def test_does_collection_exist_false(collection, mock_does_collection_exist):
+async def test_does_collection_exist_false(collection_hash, mock_does_collection_exist):
     mock_does_collection_exist.side_effect = Exception
-    exists = await collection.does_collection_exist()
+    exists = await collection_hash.does_collection_exist()
     assert not exists
 
 
 @mark.asyncio
-async def test_delete_collection(collection, mock_delete_collection):
-    await collection.delete_collection()
+async def test_delete_collection(collection_hash, mock_delete_collection):
+    await collection_hash.delete_collection()
 
 
 @mark.asyncio
-async def test_create_index(collection, mock_create_collection):
-    await collection.create_collection()
+async def test_create_index(collection_hash, mock_create_collection):
+    await collection_hash.create_collection()
 
 
 @mark.asyncio
-async def test_create_index_manual(collection, mock_create_collection):
+async def test_create_index_manual(collection_hash, mock_create_collection):
     from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 
     fields = ["fields"]
     index_definition = IndexDefinition(prefix="test:", index_type=IndexType.HASH)
-    await collection.create_collection(index_definition=index_definition, fields=fields)
+    await collection_hash.create_collection(index_definition=index_definition, fields=fields)
 
 
 @mark.asyncio
-async def test_create_index_fail(collection, mock_create_collection):
+async def test_create_index_fail(collection_hash, mock_create_collection):
     with raises(MemoryConnectorException, match="Invalid index type supplied."):
-        await collection.create_collection(index_definition="index_definition", fields="fields")
+        await collection_hash.create_collection(index_definition="index_definition", fields="fields")
