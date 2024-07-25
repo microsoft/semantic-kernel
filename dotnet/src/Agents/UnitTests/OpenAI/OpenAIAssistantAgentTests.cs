@@ -597,7 +597,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Verify detail definition
         Assert.Equal(sourceDefinition.VectorStoreId, agent.Definition.VectorStoreId);
         Assert.Equal(sourceDefinition.CodeInterpterFileIds, agent.Definition.CodeInterpterFileIds);
-
     }
 
     private Task<OpenAIAssistantAgent> CreateAgentAsync()
