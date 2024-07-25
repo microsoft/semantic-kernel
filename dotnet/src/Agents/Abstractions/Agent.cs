@@ -82,7 +82,7 @@ public abstract class Agent
     /// Every agent conversation, or <see cref="AgentChat"/>, will establish one or more <see cref="AgentChannel"/>
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
-    protected internal abstract Task<AgentChannel> RestoreChannelAsync(string state, CancellationToken cancellationToken); // %%% LOGGER
+    protected internal abstract Task<AgentChannel> RestoreChannelAsync(string state, CancellationToken cancellationToken);
 
     private ILogger? _logger;
 }
