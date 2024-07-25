@@ -7,17 +7,17 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTestsV2.Connectors.AzureOpenAI;
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
+public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
 {
     [Fact]
     public async Task ChatCompletionShouldUseChatSystemPromptAsync()
@@ -27,7 +27,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         var chatCompletion = kernel.Services.GetRequiredService<IChatCompletionService>();
 
-        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         // Act
         var result = await chatCompletion.GetChatMessageContentAsync("What is the capital of France?", settings, kernel);
@@ -60,8 +60,6 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(result.Metadata.TryGetValue("CreatedAt", out object? createdAt));
         Assert.NotNull(createdAt);
 
-        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForPrompt"));
-
         Assert.True(result.Metadata.ContainsKey("SystemFingerprint"));
 
         Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
@@ -75,8 +73,6 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(jsonObject.TryGetProperty("OutputTokens", out JsonElement completionTokensJson));
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
-
-        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForResponse"));
 
         Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
@@ -93,7 +89,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
         var textGeneration = kernel.Services.GetRequiredService<ITextGenerationService>();
 
-        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         // Act
         var result = await textGeneration.GetTextContentAsync("What is the capital of France?", settings, kernel);
@@ -123,8 +119,6 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(result.Metadata.TryGetValue("CreatedAt", out object? createdAt));
         Assert.NotNull(createdAt);
 
-        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForPrompt"));
-
         Assert.True(result.Metadata.ContainsKey("SystemFingerprint"));
 
         Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
@@ -139,8 +133,6 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
 
-        Assert.True(result.Metadata.ContainsKey("ContentFilterResultForResponse"));
-
         Assert.True(result.Metadata.TryGetValue("FinishReason", out object? finishReason));
         Assert.Equal("Stop", finishReason);
 
@@ -152,19 +144,16 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
 
     private Kernel CreateAndInitializeKernel()
     {
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-        Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
-        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
-        Assert.NotNull(azureOpenAIConfiguration.Endpoint);
+        var OpenAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(OpenAIConfiguration);
+        Assert.NotNull(OpenAIConfiguration.ChatModelId!);
+        Assert.NotNull(OpenAIConfiguration.ApiKey);
 
         var kernelBuilder = base.CreateKernelBuilder();
 
-        kernelBuilder.AddAzureOpenAIChatCompletion(
-            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
-            modelId: azureOpenAIConfiguration.ChatModelId,
-            endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
+        kernelBuilder.AddOpenAIChatCompletion(
+            modelId: OpenAIConfiguration.ChatModelId,
+            apiKey: OpenAIConfiguration.ApiKey);
 
         return kernelBuilder.Build();
     }
@@ -173,7 +162,7 @@ public sealed class AzureOpenAIChatCompletionNonStreamingTests : BaseIntegration
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<AzureOpenAIChatCompletionTests>()
+        .AddUserSecrets<OpenAIChatCompletionTests>()
         .Build();
 
     #endregion
