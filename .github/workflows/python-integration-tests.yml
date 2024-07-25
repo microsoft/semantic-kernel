@@ -111,6 +111,9 @@ jobs:
           MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
           MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
           OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
+          GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
+          GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
@@ -195,6 +198,9 @@ jobs:
           MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
           MISTRALAI_EMBEDDING_MODEL_ID: ${{ vars.MISTRALAI_EMBEDDING_MODEL_ID }}
           OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
+          GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
+          GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
