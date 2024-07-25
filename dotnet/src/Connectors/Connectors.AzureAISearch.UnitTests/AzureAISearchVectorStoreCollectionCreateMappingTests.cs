@@ -19,13 +19,14 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     {
         // Arrange
         var keyProperty = new VectorStoreRecordKeyProperty("testkey");
+        var storagePropertyName = "test_key";
 
         // Act
-        var result = AzureAISearchVectorStoreCollectionCreateMapping.MapKeyField(keyProperty);
+        var result = AzureAISearchVectorStoreCollectionCreateMapping.MapKeyField(keyProperty, storagePropertyName);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(keyProperty.PropertyName, result.Name);
+        Assert.Equal(storagePropertyName, result.Name);
         Assert.True(result.IsKey);
         Assert.True(result.IsFilterable);
     }
@@ -37,14 +38,15 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     {
         // Arrange
         var dataProperty = new VectorStoreRecordDataProperty("testdata") { IsFilterable = isFilterable, PropertyType = typeof(string) };
+        var storagePropertyName = "test_data";
 
         // Act
-        var result = AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty);
+        var result = AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty, storagePropertyName);
 
         // Assert
         Assert.NotNull(result);
         Assert.IsType<SearchableField>(result);
-        Assert.Equal(dataProperty.PropertyName, result.Name);
+        Assert.Equal(storagePropertyName, result.Name);
         Assert.False(result.IsKey);
         Assert.Equal(isFilterable, result.IsFilterable);
     }
@@ -56,14 +58,15 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     {
         // Arrange
         var dataProperty = new VectorStoreRecordDataProperty("testdata") { IsFilterable = isFilterable, PropertyType = typeof(int) };
+        var storagePropertyName = "test_data";
 
         // Act
-        var result = AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty);
+        var result = AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty, storagePropertyName);
 
         // Assert
         Assert.NotNull(result);
         Assert.IsType<SimpleField>(result);
-        Assert.Equal(dataProperty.PropertyName, result.Name);
+        Assert.Equal(storagePropertyName, result.Name);
         Assert.Equal(SearchFieldDataType.Int32, result.Type);
         Assert.False(result.IsKey);
         Assert.Equal(isFilterable, result.IsFilterable);
@@ -74,9 +77,10 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     {
         // Arrange
         var dataProperty = new VectorStoreRecordDataProperty("testdata");
+        var storagePropertyName = "test_data";
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty));
+        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty, storagePropertyName));
     }
 
     [Fact]
@@ -84,24 +88,25 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     {
         // Arrange
         var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 10, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity };
+        var storagePropertyName = "test_vector";
 
         // Act
-        var (vectorSearchField, algorithmConfiguration, vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty);
+        var (vectorSearchField, algorithmConfiguration, vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty, storagePropertyName);
 
         // Assert
         Assert.NotNull(vectorSearchField);
         Assert.NotNull(algorithmConfiguration);
         Assert.NotNull(vectorSearchProfile);
-        Assert.Equal(vectorProperty.PropertyName, vectorSearchField.Name);
+        Assert.Equal(storagePropertyName, vectorSearchField.Name);
         Assert.Equal(vectorProperty.Dimensions, vectorSearchField.VectorSearchDimensions);
 
-        Assert.Equal("testvectorAlgoConfig", algorithmConfiguration.Name);
+        Assert.Equal("test_vectorAlgoConfig", algorithmConfiguration.Name);
         Assert.IsType<ExhaustiveKnnAlgorithmConfiguration>(algorithmConfiguration);
         var flatConfig = algorithmConfiguration as ExhaustiveKnnAlgorithmConfiguration;
         Assert.Equal(VectorSearchAlgorithmMetric.DotProduct, flatConfig!.Parameters.Metric);
 
-        Assert.Equal("testvectorProfile", vectorSearchProfile.Name);
-        Assert.Equal("testvectorAlgoConfig", vectorSearchProfile.AlgorithmConfigurationName);
+        Assert.Equal("test_vectorProfile", vectorSearchProfile.Name);
+        Assert.Equal("test_vectorAlgoConfig", vectorSearchProfile.AlgorithmConfigurationName);
     }
 
     [Theory]
@@ -111,12 +116,13 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     {
         // Arrange
         var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 10, IndexKind = indexKind, DistanceFunction = DistanceFunction.DotProductSimilarity };
+        var storagePropertyName = "test_vector";
 
         // Act
-        var (vectorSearchField, algorithmConfiguration, vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty);
+        var (vectorSearchField, algorithmConfiguration, vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty, storagePropertyName);
 
         // Assert
-        Assert.Equal("testvectorAlgoConfig", algorithmConfiguration.Name);
+        Assert.Equal("test_vectorAlgoConfig", algorithmConfiguration.Name);
         Assert.Equal(algoConfigType, algorithmConfiguration.GetType());
     }
 
@@ -125,9 +131,10 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     {
         // Arrange
         var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 10 };
+        var storagePropertyName = "test_vector";
 
         // Act
-        var (vectorSearchField, algorithmConfiguration, vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty);
+        var (vectorSearchField, algorithmConfiguration, vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty, storagePropertyName);
 
         // Assert
         Assert.IsType<HnswAlgorithmConfiguration>(algorithmConfiguration);
@@ -140,9 +147,10 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     {
         // Arrange
         var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 10, DistanceFunction = DistanceFunction.ManhattanDistance };
+        var storagePropertyName = "test_vector";
 
         // Act
-        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty));
+        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty, storagePropertyName));
     }
 
     [Fact]
@@ -150,9 +158,10 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     {
         // Arrange
         var vectorProperty = new VectorStoreRecordVectorProperty("testvector");
+        var storagePropertyName = "test_vector";
 
         // Act
-        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty));
+        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty, storagePropertyName));
     }
 
     [Theory]

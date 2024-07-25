@@ -63,8 +63,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     /// <summary>The name of the temporary JSON property that the key property will be serialized / parsed from.</summary>
     private readonly string _keyJsonPropertyName;
 
-    /// <summary>An array of the names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties.</summary>
-    private readonly string[] _dataPropertyNames;
+    /// <summary>An array of the storage names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties.</summary>
+    private readonly string[] _dataStoragePropertyNames;
+
+    /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</summary>
+    private readonly Dictionary<string, string> _storagePropertyNames = new();
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)> _mapper;
@@ -110,10 +113,20 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         this._keyPropertyInfo = properties.keyProperty;
         this._keyJsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(this._jsonSerializerOptions, this._keyPropertyInfo);
 
-        this._dataPropertyNames = properties
-            .dataProperties
-            .Select(x => VectorStoreRecordPropertyReader.GetJsonPropertyName(this._jsonSerializerOptions, x))
-            .ToArray();
+        this._dataStoragePropertyNames = new string[properties.dataProperties.Count];
+        var index = 0;
+        foreach (var property in properties.dataProperties)
+        {
+            var storagePropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(this._jsonSerializerOptions, property);
+            this._storagePropertyNames[property.Name] = storagePropertyName;
+            this._dataStoragePropertyNames[index++] = storagePropertyName;
+        }
+
+        foreach (var property in properties.vectorProperties)
+        {
+            var storagePropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(this._jsonSerializerOptions, property);
+            this._storagePropertyNames[property.Name] = storagePropertyName;
+        }
 
         // Assign Mapper.
         if (this._options.JsonNodeCustomMapper is not null)
@@ -156,7 +169,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // Map the record definition to a schema.
-        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties);
+        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties, this._storagePropertyNames);
 
         // Create the index creation params.
         // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
@@ -201,7 +214,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
                     .GetAsync(maybePrefixedKey) :
                 this._database
                     .JSON()
-                    .GetAsync(maybePrefixedKey, this._dataPropertyNames)).ConfigureAwait(false);
+                    .GetAsync(maybePrefixedKey, this._dataStoragePropertyNames)).ConfigureAwait(false);
 
         // Check if the key was found before trying to parse the result.
         if (redisResult.IsNull || redisResult is null)

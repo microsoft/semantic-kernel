@@ -40,9 +40,10 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task ItCanCreateACollectionAsync(bool useRecordDefinition)
+    public async Task ItCanCreateACollectionUpsertAndGetAsync(bool useRecordDefinition)
     {
         // Arrange
+        var record = CreateTestHotel("Upsert-1", 1);
         var collectionNamePostfix = useRecordDefinition ? "WithDefinition" : "WithType";
         var testCollectionName = $"createtest{collectionNamePostfix}";
 
@@ -55,14 +56,31 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 
         // Act
         await sut.CreateCollectionAsync();
+        var upsertResult = await sut.UpsertAsync(record);
+        var getResult = await sut.GetAsync("Upsert-1", new GetRecordOptions { IncludeVectors = true });
 
         // Assert
-        var existResult = await sut.CollectionExistsAsync();
-        Assert.True(existResult);
+        var collectionExistResult = await sut.CollectionExistsAsync();
+        Assert.True(collectionExistResult);
         await sut.DeleteCollectionAsync();
 
+        Assert.Equal("Upsert-1", upsertResult);
+        Assert.Equal(record.HotelId, getResult?.HotelId);
+        Assert.Equal(record.HotelName, getResult?.HotelName);
+        Assert.Equal(record.HotelCode, getResult?.HotelCode);
+        Assert.Equal(record.Tags, getResult?.Tags);
+        Assert.Equal(record.ParkingIncluded, getResult?.ParkingIncluded);
+        Assert.Equal(record.LastRenovationDate, getResult?.LastRenovationDate);
+        Assert.Equal(record.Rating, getResult?.Rating);
+        Assert.Equal(record.Address.Country, getResult?.Address.Country);
+        Assert.Equal(record.Address.City, getResult?.Address.City);
+        Assert.Equal(record.Description, getResult?.Description);
+        Assert.Equal(record.DescriptionEmbedding?.ToArray(), getResult?.DescriptionEmbedding?.ToArray());
+
         // Output
-        output.WriteLine(existResult.ToString());
+        output.WriteLine(collectionExistResult.ToString());
+        output.WriteLine(upsertResult);
+        output.WriteLine(getResult?.ToString());
     }
 
     [Fact]
@@ -97,14 +115,14 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         var sut = new RedisJsonVectorStoreRecordCollection<Hotel>(fixture.Database, "hotels", options);
-        Hotel record = CreateTestHotel("Upsert-1", 1);
+        Hotel record = CreateTestHotel("Upsert-2", 2);
 
         // Act.
         var upsertResult = await sut.UpsertAsync(record);
 
         // Assert.
-        var getResult = await sut.GetAsync("Upsert-1", new GetRecordOptions { IncludeVectors = true });
-        Assert.Equal("Upsert-1", upsertResult);
+        var getResult = await sut.GetAsync("Upsert-2", new GetRecordOptions { IncludeVectors = true });
+        Assert.Equal("Upsert-2", upsertResult);
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
