@@ -314,6 +314,7 @@ public abstract class AgentChat
     internal AgentChatState Serialize() =>
         new()
         {
+            Participants = this.Agents.Select(a => new AgentParticipant(a)),
             History = JsonSerializer.Serialize(ChatMessageReference.Prepare(this.History)),
             Channels =
                 this._agentChannels.Select(

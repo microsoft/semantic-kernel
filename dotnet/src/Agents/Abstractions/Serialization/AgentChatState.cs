@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -9,17 +10,19 @@ namespace Microsoft.SemanticKernel.Agents.Serialization;
 /// </summary>
 internal sealed class AgentChatState
 {
-    // %%% PARTICIPANTS
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public IEnumerable<AgentParticipant> Participants { get; init; } = Array.Empty<AgentParticipant>();
 
     /// <summary>
     /// %%%
     /// </summary>
-    //public IEnumerable<ChatMessageContent> History { get; set; } = [];
     [JsonConverter(typeof(JsonChannelStateConverter))]
-    public string History { get; set; } = string.Empty;
+    public string History { get; init; } = string.Empty;
 
     /// <summary>
     /// %%%
     /// </summary>
-    public IEnumerable<AgentChannelState> Channels { get; set; } = [];
+    public IEnumerable<AgentChannelState> Channels { get; init; } = [];
 }
