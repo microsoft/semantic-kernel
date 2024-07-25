@@ -261,7 +261,7 @@ agent = ChatCompletionAgent(service_id="agent", kernel=kernel, name="name", inst
 
 **2. Agent Instantiation: OpenAI Assistant**
 
-Since every Assistant action is a call to a REST endpoint, `OpenAIAssistantAgent`, top-level operations are realized via static asynchrnous factory methods:
+Since every Assistant action is a call to a REST endpoint, `OpenAIAssistantAgent`, top-level operations are realized via static asynchronous factory methods:
 
 **Create:**
 
