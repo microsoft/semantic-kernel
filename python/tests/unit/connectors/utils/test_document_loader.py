@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import AsyncClient, HTTPStatusError, RequestError
 
-from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.connectors.utils.document_loader import DocumentLoader
 from semantic_kernel.exceptions import ServiceInvalidRequestError
+from semantic_kernel.utils.telemetry.user_agent import HTTP_USER_AGENT
 
 
 @pytest.fixture

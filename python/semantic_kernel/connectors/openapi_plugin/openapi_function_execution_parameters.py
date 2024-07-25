@@ -28,7 +28,7 @@ class OpenAPIFunctionExecutionParameters(KernelBaseModel):
 
     def model_post_init(self, __context: Any) -> None:
         """Post initialization method for the model."""
-        from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
+        from semantic_kernel.utils.telemetry.user_agent import HTTP_USER_AGENT
 
         if self.server_url_override:
             parsed_url = urlparse(self.server_url_override)
