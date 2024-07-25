@@ -15,5 +15,5 @@ public enum RedisStorageType
     /// <summary>
     /// Data is stored as collections of field-value pairs.
     /// </summary>
-    Hashes
+    HashSet
 }

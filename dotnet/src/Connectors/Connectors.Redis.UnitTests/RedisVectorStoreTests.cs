@@ -45,7 +45,7 @@ public class RedisVectorStoreTests
     public void GetCollectionReturnsHashSetCollection()
     {
         // Arrange.
-        var sut = new RedisVectorStore(this._redisDatabaseMock.Object, new() { StorageType = RedisStorageType.Hashes });
+        var sut = new RedisVectorStore(this._redisDatabaseMock.Object, new() { StorageType = RedisStorageType.HashSet });
 
         // Act.
         var actual = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);

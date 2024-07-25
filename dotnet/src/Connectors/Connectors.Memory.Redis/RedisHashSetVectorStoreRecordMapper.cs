@@ -86,6 +86,9 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
             var value = property.GetValue(dataModel);
             if (value is not null)
             {
+                // Convert the vector to a byte array and store it in the hash entry.
+                // We only support float and double vectors and we do checking in the
+                // collection constructor to ensure that the model has no other vector types.
                 if (value is ReadOnlyMemory<float> rom)
                 {
                     hashEntries.Add(new HashEntry(storageName, ConvertVectorToBytes(rom)));
