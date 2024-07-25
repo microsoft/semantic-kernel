@@ -102,7 +102,6 @@ async def test_azure_ai_inference_text_embedding(
         dimensions=None,
         encoding_format=None,
         input_type=None,
-        kwargs={},
     )
 
 
@@ -130,7 +129,6 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
         dimensions=settings.dimensions,
         encoding_format=settings.encoding_format,
         input_type=settings.input_type,
-        kwargs={},
     )
 
 
@@ -157,5 +155,4 @@ async def test_azure_ai_inference_text_embedding_with_extra_parameters(
         dimensions=settings.dimensions,
         encoding_format=settings.encoding_format,
         input_type=settings.input_type,
-        kwargs={},
     )
