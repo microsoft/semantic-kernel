@@ -32,8 +32,18 @@ public class RedisVectorStoreCollectionCreateMappingTests
             new VectorStoreRecordVectorProperty("VectorSpecificIndexingOptions") { Dimensions = 20, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.EuclideanDistance },
         };
 
+        var storagePropertyNames = new Dictionary<string, string>()
+        {
+            { "FilterableString", "FilterableString" },
+            { "FilterableInt", "FilterableInt" },
+            { "FilterableNullableInt", "FilterableNullableInt" },
+            { "NonFilterableString", "NonFilterableString" },
+            { "VectorDefaultIndexingOptions", "VectorDefaultIndexingOptions" },
+            { "VectorSpecificIndexingOptions", "vector_specific_indexing_options" },
+        };
+
         // Act.
-        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(properties);
+        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames);
 
         // Assert.
         Assert.NotNull(schema);
@@ -50,7 +60,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
         VerifyFieldName(schema.Fields[2].FieldName, new List<object> { "$.FilterableNullableInt", "AS", "FilterableNullableInt" });
 
         VerifyFieldName(schema.Fields[3].FieldName, new List<object> { "$.VectorDefaultIndexingOptions", "AS", "VectorDefaultIndexingOptions" });
-        VerifyFieldName(schema.Fields[4].FieldName, new List<object> { "$.VectorSpecificIndexingOptions", "AS", "VectorSpecificIndexingOptions" });
+        VerifyFieldName(schema.Fields[4].FieldName, new List<object> { "$.vector_specific_indexing_options", "AS", "vector_specific_indexing_options" });
 
         Assert.Equal("10", ((VectorField)schema.Fields[3]).Attributes!["DIM"]);
         Assert.Equal("FLOAT32", ((VectorField)schema.Fields[3]).Attributes!["TYPE"]);
@@ -66,9 +76,10 @@ public class RedisVectorStoreCollectionCreateMappingTests
     {
         // Arrange.
         var properties = new VectorStoreRecordProperty[] { new VectorStoreRecordDataProperty("FilterableString") { IsFilterable = true } };
+        var storagePropertyNames = new Dictionary<string, string>() { { "FilterableString", "FilterableString" } };
 
         // Act and assert.
-        Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties));
+        Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames));
     }
 
     [Theory]
@@ -78,9 +89,10 @@ public class RedisVectorStoreCollectionCreateMappingTests
     {
         // Arrange.
         var properties = new VectorStoreRecordProperty[] { new VectorStoreRecordVectorProperty("VectorProperty") { Dimensions = dimensions } };
+        var storagePropertyNames = new Dictionary<string, string>() { { "VectorProperty", "VectorProperty" } };
 
         // Act and assert.
-        Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties));
+        Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames));
     }
 
     [Fact]

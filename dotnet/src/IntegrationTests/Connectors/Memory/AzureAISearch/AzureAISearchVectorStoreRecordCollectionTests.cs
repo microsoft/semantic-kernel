@@ -43,9 +43,10 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task ItCanCreateACollectionAsync(bool useRecordDefinition)
+    public async Task ItCanCreateACollectionUpsertAndGetAsync(bool useRecordDefinition)
     {
         // Arrange
+        var hotel = CreateTestHotel("Upsert-1");
         var testCollectionName = $"{fixture.TestIndexName}-createtest";
         var options = new AzureAISearchVectorStoreRecordCollectionOptions<Hotel>
         {
@@ -57,14 +58,31 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act
         await sut.CreateCollectionAsync();
+        var upsertResult = await sut.UpsertAsync(hotel);
+        var getResult = await sut.GetAsync("Upsert-1");
 
         // Assert
-        var existResult = await sut.CollectionExistsAsync();
-        Assert.True(existResult);
+        var collectionExistResult = await sut.CollectionExistsAsync();
+        Assert.True(collectionExistResult);
         await sut.DeleteCollectionAsync();
 
+        Assert.NotNull(upsertResult);
+        Assert.Equal("Upsert-1", upsertResult);
+
+        Assert.NotNull(getResult);
+        Assert.Equal(hotel.HotelName, getResult.HotelName);
+        Assert.Equal(hotel.Description, getResult.Description);
+        Assert.NotNull(getResult.DescriptionEmbedding);
+        Assert.Equal(hotel.DescriptionEmbedding?.ToArray(), getResult.DescriptionEmbedding?.ToArray());
+        Assert.Equal(hotel.Tags, getResult.Tags);
+        Assert.Equal(hotel.ParkingIncluded, getResult.ParkingIncluded);
+        Assert.Equal(hotel.LastRenovationDate, getResult.LastRenovationDate);
+        Assert.Equal(hotel.Rating, getResult.Rating);
+
         // Output
-        output.WriteLine(existResult.ToString());
+        output.WriteLine(collectionExistResult.ToString());
+        output.WriteLine(upsertResult);
+        output.WriteLine(getResult.ToString());
     }
 
     [Fact(Skip = SkipReason)]
