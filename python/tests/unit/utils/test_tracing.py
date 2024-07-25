@@ -85,6 +85,7 @@ EXPECTED_TEXT_CONTENT = [
 
 
 @pytest.mark.asyncio
+@patch("semantic_kernel.utils.telemetry.decorators.are_model_diagnostics_enabled", return_value=True)
 @patch("semantic_kernel.utils.telemetry.decorators.are_sensitive_events_enabled", return_value=True)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._send_chat_request",
@@ -92,7 +93,11 @@ EXPECTED_TEXT_CONTENT = [
 )
 @patch("opentelemetry.trace.INVALID_SPAN")
 async def test_trace_chat_completion(
-    mock_span, mock_send_chat_request, mock_sensitive_events_enabled, openai_unit_test_env
+    mock_span,
+    mock_send_chat_request,
+    mock_sensitive_events_enabled,
+    mock_model_diagnostics_enabled,
+    openai_unit_test_env,
 ):
     chat_completion = OpenAIChatCompletion(ai_model_id=TEST_MODEL, env_file_path="test.env")
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
@@ -123,13 +128,16 @@ async def test_trace_chat_completion(
 
 
 @pytest.mark.asyncio
+@patch("semantic_kernel.utils.telemetry.decorators.are_model_diagnostics_enabled", return_value=True)
 @patch("semantic_kernel.utils.telemetry.decorators.are_sensitive_events_enabled", return_value=True)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base.OpenAITextCompletionBase._send_request",
     return_value=TEST_TEXT_RESPONSE,
 )
 @patch("opentelemetry.trace.INVALID_SPAN")
-async def test_trace_text_completion(mock_span, mock_send_request, mock_sensitive_events_enabled, openai_unit_test_env):
+async def test_trace_text_completion(
+    mock_span, mock_send_request, mock_sensitive_events_enabled, mock_model_diagnostics_enabled, openai_unit_test_env
+):
     chat_completion = OpenAITextCompletion(ai_model_id=TEST_MODEL, env_file_path="test.env")
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
 
@@ -158,6 +166,7 @@ async def test_trace_text_completion(mock_span, mock_send_request, mock_sensitiv
 
 
 @pytest.mark.asyncio
+@patch("semantic_kernel.utils.telemetry.decorators.are_model_diagnostics_enabled", return_value=True)
 @patch("semantic_kernel.utils.telemetry.decorators.are_sensitive_events_enabled", return_value=True)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._send_chat_request",
@@ -165,7 +174,11 @@ async def test_trace_text_completion(mock_span, mock_send_request, mock_sensitiv
 )
 @patch("opentelemetry.trace.INVALID_SPAN")
 async def test_trace_chat_completion_exception(
-    mock_span, mock_send_chat_request, mock_sensitive_events_enabled, openai_unit_test_env
+    mock_span,
+    mock_send_chat_request,
+    mock_sensitive_events_enabled,
+    mock_model_diagnostics_enabled,
+    openai_unit_test_env,
 ):
     chat_completion = OpenAIChatCompletion(ai_model_id=TEST_MODEL, env_file_path="test.env")
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
@@ -191,6 +204,7 @@ async def test_trace_chat_completion_exception(
 
 
 @pytest.mark.asyncio
+@patch("semantic_kernel.utils.telemetry.decorators.are_model_diagnostics_enabled", return_value=True)
 @patch("semantic_kernel.utils.telemetry.decorators.are_sensitive_events_enabled", return_value=True)
 @patch(
     "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base.OpenAITextCompletionBase._send_request",
@@ -198,7 +212,11 @@ async def test_trace_chat_completion_exception(
 )
 @patch("opentelemetry.trace.INVALID_SPAN")
 async def test_trace_text_completion_exception(
-    mock_span, mock_send_chat_request, mock_sensitive_events_enabled, openai_unit_test_env
+    mock_span,
+    mock_send_chat_request,
+    mock_sensitive_events_enabled,
+    mock_model_diagnostics_enabled,
+    openai_unit_test_env,
 ):
     chat_completion = OpenAITextCompletion(ai_model_id=TEST_MODEL, env_file_path="test.env")
     extension_data = {"max_tokens": TEST_MAX_TOKENS, "temperature": TEST_TEMPERATURE, "top_p": TEST_TOP_P}
