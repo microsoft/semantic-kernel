@@ -8,6 +8,7 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -568,7 +569,7 @@ public class RestApiOperationTests
     {
         var builder = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddAzureOpenAITextGeneration(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
+            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
 
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.InvariantCulture);
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.CurrentCulture);
@@ -577,10 +578,10 @@ public class RestApiOperationTests
         Kernel kernel = builder.Build();
 
         Assert.IsType<OpenAIChatCompletionService>(kernel.GetRequiredService<IChatCompletionService>("openai"));
-        Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetRequiredService<ITextGenerationService>("azureopenai"));
+        Assert.IsType<AzureOpenAIChatCompletionService>(kernel.GetRequiredService<IChatCompletionService>("azureopenai"));
 
         Assert.Equal(2, kernel.GetAllServices<ITextGenerationService>().Count());
-        Assert.Single(kernel.GetAllServices<IChatCompletionService>());
+        Assert.Equal(2, kernel.GetAllServices<IChatCompletionService>().Count());
 
         Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());
     }
