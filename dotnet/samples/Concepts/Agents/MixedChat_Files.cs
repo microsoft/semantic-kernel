@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Files;
 using Resources;
 
 namespace Agents;
@@ -25,13 +25,15 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task AnalyzeFileAndGenerateReportAsync()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
+        OpenAIServiceConfiguration config = GetOpenAIConfiguration();
 
-        OpenAIFileReference uploadFile =
-            await fileService.UploadContentAsync(
-                new BinaryContent(await EmbeddedResource.ReadAllAsync("30-user-context.txt"), mimeType: "text/plain"),
-                new OpenAIFileUploadExecutionSettings("30-user-context.txt", OpenAIFilePurpose.Assistants));
+        FileClient fileClient = config.CreateFileClient();
+
+        OpenAIFileInfo uploadFile =
+            await fileClient.UploadFileAsync(
+                new BinaryData(await EmbeddedResource.ReadAllAsync("30-user-context.txt")),
+                "30-user-context.txt",
+                FileUploadPurpose.Assistants);
 
         Console.WriteLine(this.ApiKey);
 
@@ -39,12 +41,12 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseTest(output)
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
+                config,
                 new()
                 {
                     EnableCodeInterpreter = true, // Enable code-interpreter
                     ModelId = this.Model,
-                    FileIds = [uploadFile.Id] // Associate uploaded file with assistant
+                    CodeInterpterFileIds = [uploadFile.Id] // Associate uploaded file with assistant
                 });
 
         ChatCompletionAgent summaryAgent =
@@ -71,7 +73,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseTest(output)
         finally
         {
             await analystAgent.DeleteAsync();
-            await fileService.DeleteFileAsync(uploadFile.Id);
+            await fileClient.DeleteFileAsync(uploadFile.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -90,12 +92,16 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseTest(output)
                 foreach (AnnotationContent annotation in content.Items.OfType<AnnotationContent>())
                 {
                     Console.WriteLine($"\t* '{annotation.Quote}' => {annotation.FileId}");
-                    BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!);
-                    byte[] byteContent = fileContent.Data?.ToArray() ?? [];
-                    Console.WriteLine($"\n{Encoding.Default.GetString(byteContent)}");
+                    BinaryData fileContent = await fileClient.DownloadFileAsync(annotation.FileId!);
+                    Console.WriteLine($"\n{Encoding.Default.GetString(fileContent.ToArray())}");
                 }
             }
         }
-#pragma warning restore CS0618 // Type or member is obsolete
     }
+
+    private OpenAIServiceConfiguration GetOpenAIConfiguration()
+        =>
+            this.UseOpenAIConfig ?
+                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
+                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

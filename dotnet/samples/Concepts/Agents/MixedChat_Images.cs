@@ -3,7 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Files;
 
 namespace Agents;
 
@@ -27,14 +27,15 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task AnalyzeDataAndGenerateChartAsync()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
+        OpenAIServiceConfiguration config = GetOpenAIConfiguration();
+
+        FileClient fileClient = config.CreateFileClient();
 
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
+                config,
                 new()
                 {
                     Instructions = AnalystInstructions,
@@ -101,14 +102,18 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
                 foreach (FileReferenceContent fileReference in message.Items.OfType<FileReferenceContent>())
                 {
                     Console.WriteLine($"\t* Generated image - @{fileReference.FileId}");
-                    BinaryContent fileContent = await fileService.GetFileContentAsync(fileReference.FileId!);
-                    byte[] byteContent = fileContent.Data?.ToArray() ?? [];
+                    BinaryData fileContent = await fileClient.DownloadFileAsync(fileReference.FileId!);
                     string filePath = Path.ChangeExtension(Path.GetTempFileName(), ".png");
-                    await File.WriteAllBytesAsync($"{filePath}.png", byteContent);
+                    await File.WriteAllBytesAsync($"{filePath}.png", fileContent.ToArray());
                     Console.WriteLine($"\t* Local path - {filePath}");
                 }
             }
         }
-#pragma warning restore CS0618 // Type or member is obsolete
     }
+
+    private OpenAIServiceConfiguration GetOpenAIConfiguration()
+        =>
+            this.UseOpenAIConfig ?
+                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
+                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }
