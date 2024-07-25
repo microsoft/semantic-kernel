@@ -42,7 +42,7 @@ internal static class OpenAIClientFactory
                     return new AzureOpenAIClient(config.Endpoint, config.ApiKey!, clientOptions);
                 }
 
-                throw new KernelException($"Unsupported configuration type: {config.Type}");
+                throw new KernelException($"Unsupported configuration state: {config.Type}.  No api-key or credential present.");
             }
             case OpenAIServiceConfiguration.OpenAIServiceType.OpenAI:
             {
@@ -50,7 +50,7 @@ internal static class OpenAIClientFactory
                 return new OpenAIClient(config.ApiKey ?? SingleSpaceKey, clientOptions);
             }
             default:
-                throw new KernelException($"Unsupported configuration state: {config.Type}");
+                throw new KernelException($"Unsupported configuration type: {config.Type}");
         }
     }
 
