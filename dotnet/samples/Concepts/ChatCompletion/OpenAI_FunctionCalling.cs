@@ -87,7 +87,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         Console.WriteLine(chatPromptResult);
     }
 
-    public sealed class WeatherPlugin
+    private sealed class WeatherPlugin
     {
         [KernelFunction]
         [Description("Get the current weather in a given location.")]
@@ -96,7 +96,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         ) => $"12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy\nLocation: {location}";
     }
 
-    public sealed class HolidayPlugin
+    private sealed class HolidayPlugin
     {
         [KernelFunction]
         [Description("Book a holiday for a specified time period.")]
@@ -105,7 +105,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         ) => $"Holiday booked, starting {holidayRequest.StartDate} and ending {holidayRequest.EndDate}";
     }
 
-    public sealed class HolidayRequest
+    private sealed class HolidayRequest
     {
         [Description("The date when the holiday period starts in ISO 8601 format")]
         public string StartDate { get; set; } = string.Empty;
@@ -114,15 +114,13 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         public string EndDate { get; set; } = string.Empty;
     }
 
-    public class LightPlugin
+    private sealed class LightPlugin
     {
         public bool IsOn { get; set; } = false;
 
-#pragma warning disable CA1024 // Use properties where appropriate
         [KernelFunction]
         [Description("Gets the state of the light.")]
         public string GetState() => IsOn ? "on" : "off";
-#pragma warning restore CA1024 // Use properties where appropriate
 
         [KernelFunction]
         [Description("Changes the state of the light.'")]
