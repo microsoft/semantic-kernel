@@ -85,8 +85,7 @@ async def test_embedding_generate_raw_embedding(mistralai_unit_test_env):
     mock_client.embeddings.return_value = mock_embedding_response
     text_embedding = MistralAITextEmbedding(client=mock_client)
     embedding = await text_embedding.generate_raw_embeddings(["test"])
-    assert isinstance(embedding, EmbeddingResponse)
-    assert embedding.data[0].embedding == [1, 2, 3, 4, 5]
+    assert embedding == [[1, 2, 3, 4, 5]]
 
 
 @pytest.mark.asyncio

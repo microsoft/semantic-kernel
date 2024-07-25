@@ -87,7 +87,7 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
         **kwargs: Any,
     ) -> ndarray:
         embedding_response: EmbeddingResponse = await self.generate_raw_embeddings(texts, settings, **kwargs)
-        return array([item.embedding for item in embedding_response.data])
+        return array(embedding_response)
 
     @override
     async def generate_raw_embeddings(
@@ -95,11 +95,11 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
         texts: list[str],
         settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
-    ) -> "EmbeddingResponse":
+    ) -> "Any":
         """Generate embeddings from the Mistral AI service."""
         try:
 
-            response: EmbeddingResponse = await self.client.embeddings(
+            embedding_response: EmbeddingResponse = await self.client.embeddings(
                 model=self.ai_model_id,
                 input=texts
             )
@@ -109,4 +109,4 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
                 ex,
             ) from ex
 
-        return response
+        return [item.embedding for item in embedding_response.data]
