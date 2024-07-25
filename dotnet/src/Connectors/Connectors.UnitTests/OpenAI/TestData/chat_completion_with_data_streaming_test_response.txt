@@ -1,1 +1,0 @@
-data: {"id":"response-id","model":"","created":1684304924,"object":"chat.completion","choices":[{"index":0,"messages":[{"delta":{"role":"assistant","content":"Test chat with data streaming response"},"end_turn":false}]}]}
