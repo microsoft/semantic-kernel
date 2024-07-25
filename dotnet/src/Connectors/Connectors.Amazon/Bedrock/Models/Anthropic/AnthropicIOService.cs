@@ -14,7 +14,7 @@ namespace Connectors.Amazon.Models.Anthropic;
 /// </summary>
 public class AnthropicIOService : IBedrockModelIOService
 {
-    private readonly BedrockUtilities _util = new();
+    private readonly BedrockModelUtilities _util = new();
 
     // Define constants for default values
     private const double DefaultTemperature = 1.0;
@@ -86,7 +86,7 @@ public class AnthropicIOService : IBedrockModelIOService
     {
         var messages = chatHistory.Select(m => new Message
         {
-            Role = new BedrockUtilities().MapRole(m.Role),
+            Role = new BedrockModelUtilities().MapRole(m.Role),
             Content = new List<ContentBlock> { new() { Text = m.Content } }
         }).ToList();
 
@@ -165,7 +165,7 @@ public class AnthropicIOService : IBedrockModelIOService
     {
         var messages = chatHistory.Select(m => new Message
         {
-            Role = new BedrockUtilities().MapRole(m.Role),
+            Role = new BedrockModelUtilities().MapRole(m.Role),
             Content = new List<ContentBlock> { new() { Text = m.Content } }
         }).ToList();
 

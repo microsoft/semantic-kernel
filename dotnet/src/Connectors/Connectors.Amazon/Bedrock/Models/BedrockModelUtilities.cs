@@ -8,7 +8,7 @@ namespace Connectors.Amazon.Models;
 /// <summary>
 /// Utilities class for functions all Bedrock models need to use.
 /// </summary>
-public class BedrockUtilities
+public class BedrockModelUtilities
 {
     /// <summary>
     /// Maps the AuthorRole to the corresponding ConversationRole because AuthorRole is static and { readonly get; }.

@@ -15,7 +15,7 @@ namespace Connectors.Amazon.Models.AI21;
 /// </summary>
 public class AI21JambaIOService : IBedrockModelIOService
 {
-    private readonly BedrockUtilities _util = new();
+    private readonly BedrockModelUtilities _util = new();
 
     // Define constants for default values
     private const double DefaultTemperature = 1.0;
@@ -102,7 +102,7 @@ public class AI21JambaIOService : IBedrockModelIOService
     {
         var messages = chatHistory.Select(m => new Message
         {
-            Role = new BedrockUtilities().MapRole(m.Role),
+            Role = new BedrockModelUtilities().MapRole(m.Role),
             Content = new List<ContentBlock> { new() { Text = m.Content } }
         }).ToList();
 
@@ -156,7 +156,7 @@ public class AI21JambaIOService : IBedrockModelIOService
     {
         var messages = chatHistory.Select(m => new Message
         {
-            Role = new BedrockUtilities().MapRole(m.Role),
+            Role = new BedrockModelUtilities().MapRole(m.Role),
             Content = new List<ContentBlock> { new() { Text = m.Content } }
         }).ToList();
 

@@ -13,7 +13,7 @@ namespace Connectors.Amazon.Models.AI21;
 /// </summary>
 public class AI21JurassicIOService : IBedrockModelIOService
 {
-    private readonly BedrockUtilities _util = new();
+    private readonly BedrockModelUtilities _util = new();
 
     // Defined constants for default values
     private const double DefaultTemperature = 0.5;

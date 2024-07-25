@@ -14,7 +14,7 @@ namespace Connectors.Amazon.Models.Mistral;
 /// </summary>
 public class MistralIOService : IBedrockModelIOService
 {
-    private readonly BedrockUtilities _util = new();
+    private readonly BedrockModelUtilities _util = new();
     // Define constants for default values
     private const float DefaultTemperatureInstruct = 0.5f;
     private const float DefaultTopPInstruct = 0.9f;

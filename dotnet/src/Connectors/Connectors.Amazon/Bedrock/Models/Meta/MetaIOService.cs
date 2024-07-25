@@ -14,7 +14,7 @@ namespace Connectors.Amazon.Models.Meta;
 /// </summary>
 public class MetaIOService : IBedrockModelIOService
 {
-    private readonly BedrockUtilities _util = new();
+    private readonly BedrockModelUtilities _util = new();
 
     // Define constants for default values
     private const double DefaultTemperature = 0.5;
@@ -79,7 +79,7 @@ public class MetaIOService : IBedrockModelIOService
     {
         var messages = chatHistory.Select(m => new Message
         {
-            Role = new BedrockUtilities().MapRole(m.Role),
+            Role = new BedrockModelUtilities().MapRole(m.Role),
             Content = new List<ContentBlock> { new() { Text = m.Content } }
         }).ToList();
 
@@ -132,7 +132,7 @@ public class MetaIOService : IBedrockModelIOService
     {
         var messages = chatHistory.Select(m => new Message
         {
-            Role = new BedrockUtilities().MapRole(m.Role),
+            Role = new BedrockModelUtilities().MapRole(m.Role),
             Content = new List<ContentBlock> { new() { Text = m.Content } }
         }).ToList();
 

@@ -13,7 +13,7 @@ namespace Connectors.Amazon.Models.Cohere;
 /// </summary>
 public class CohereCommandIOService : IBedrockModelIOService
 {
-    private readonly BedrockUtilities _util = new();
+    private readonly BedrockModelUtilities _util = new();
     // Define constants for default values
     private const double DefaultTemperature = 0.9;
     private const double DefaultTopP = 0.75;

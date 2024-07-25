@@ -14,7 +14,7 @@ namespace Connectors.Amazon.Models.Amazon;
 /// </summary>
 public class AmazonIOService : IBedrockModelIOService
 {
-    private readonly BedrockUtilities _util = new();
+    private readonly BedrockModelUtilities _util = new();
 
     // Define constants for default values
     private const float DefaultTemperature = 0.7f;
@@ -84,7 +84,7 @@ public class AmazonIOService : IBedrockModelIOService
     {
         var messages = chatHistory.Select(m => new Message
         {
-            Role = new BedrockUtilities().MapRole(m.Role),
+            Role = new BedrockModelUtilities().MapRole(m.Role),
             Content = new List<ContentBlock> { new() { Text = m.Content } }
         }).ToList();
 
@@ -131,7 +131,7 @@ public class AmazonIOService : IBedrockModelIOService
     {
         var messages = chatHistory.Select(m => new Message
         {
-            Role = new BedrockUtilities().MapRole(m.Role),
+            Role = new BedrockModelUtilities().MapRole(m.Role),
             Content = new List<ContentBlock> { new() { Text = m.Content } }
         }).ToList();
 

@@ -14,7 +14,7 @@ namespace Connectors.Amazon.Models.Cohere;
 /// </summary>
 public class CohereCommandRIOService : IBedrockModelIOService
 {
-    private readonly BedrockUtilities _util = new();
+    private readonly BedrockModelUtilities _util = new();
 
     // Define constants for default values
     private const float DefaultTemperature = 0.3f;
@@ -160,7 +160,7 @@ public class CohereCommandRIOService : IBedrockModelIOService
     {
         var messages = chatHistory.Select(m => new Message
         {
-            Role = new BedrockUtilities().MapRole(m.Role),
+            Role = new BedrockModelUtilities().MapRole(m.Role),
             Content = new List<ContentBlock> { new() { Text = m.Content } }
         }).ToList();
 
