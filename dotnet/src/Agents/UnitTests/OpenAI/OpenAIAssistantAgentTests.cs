@@ -553,14 +553,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Verify tool definitions
         int expectedToolCount = 0;
 
-        bool hasCodeIterpreter = false;
+        bool hasCodeInterpreter = false;
         if (sourceDefinition.EnableCodeInterpreter)
         {
-            hasCodeIterpreter = true;
+            hasCodeInterpreter = true;
             ++expectedToolCount;
         }
 
-        Assert.Equal(hasCodeIterpreter, agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
+        Assert.Equal(hasCodeInterpreter, agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
 
         bool hasFileSearch = false;
         if (!string.IsNullOrWhiteSpace(sourceDefinition.VectorStoreId))
