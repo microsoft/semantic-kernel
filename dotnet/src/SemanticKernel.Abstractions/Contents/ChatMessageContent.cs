@@ -54,10 +54,10 @@ public class ChatMessageContent : KernelContent
             {
                 this.Items.Add(new TextContent(
                     text: value,
-                ////modelId: this.ModelId, %%% ALREADY KNOWN AT MESSAGE LEVEL
-                ////innerContent: this.InnerContent, %%% MUTATION RISK / INCONSISTENT / INVALID ASSUMPTION
-                    encoding: this.Encoding // %%% WEIRD, BUT WHO CARES (INGORED FOR SERIALIZATION)
-                ////metadata: this.Metadata, %%% MUTATION RISK / INCONSISTENT
+                ////modelId: this.ModelId, // %%% ALREADY KNOWN AT MESSAGE LEVEL
+                ////innerContent: this.InnerContent, // %%% MUTATION RISK / INCONSISTENT / INVALID ASSUMPTION
+                    encoding: this.Encoding // %%% WEIRD, BUT WHO CARES (IGNORED FOR SERIALIZATION)
+                ////metadata: this.Metadata, // %%% MUTATION RISK / INCONSISTENT
                 )
                 { MimeType = this.MimeType }); // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION
             }
