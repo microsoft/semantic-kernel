@@ -284,6 +284,28 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         await agent.DeleteAsync(); // Doesn't throw
         Assert.True(agent.IsDeleted);
+
+        await Assert.ThrowsAsync<KernelException>(() => agent.AddChatMessageAsync("threadid", new(AuthorRole.User, "test")));
+        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync("threadid").ToArrayAsync().AsTask());
+    }
+
+    /// <summary>
+    /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.DeleteAsync"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreateThreadAsync()
+    {
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateThread);
+
+        string threadId = await agent.CreateThreadAsync();
+        Assert.NotNull(threadId);
+
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateThread);
+
+        threadId = await agent.CreateThreadAsync(new());
+        Assert.NotNull(threadId);
     }
 
     /// <summary>
@@ -644,10 +666,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             builder.AppendLine(@$"  ""instructions"": ""{definition.Instructions}"",");
             builder.AppendLine(@$"  ""model"": ""{definition.ModelName}"",");
 
-            bool hasCodeInterpeter = definition.EnableCodeInterpreter;
-            bool hasCodeInterpeterFiles = (definition.CodeInterpterFileIds?.Count ?? 0) > 0;
+            bool hasCodeInterpreter = definition.EnableCodeInterpreter;
+            bool hasCodeInterpreterFiles = (definition.CodeInterpterFileIds?.Count ?? 0) > 0;
             bool hasFileSearch = !string.IsNullOrWhiteSpace(definition.VectorStoreId);
-            if (!hasCodeInterpeter && !hasFileSearch)
+            if (!hasCodeInterpreter && !hasFileSearch)
             {
                 builder.AppendLine(@"  ""tools"": [],");
             }
@@ -655,7 +677,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             {
                 builder.AppendLine(@"  ""tools"": [");
 
-                if (hasCodeInterpeter)
+                if (hasCodeInterpreter)
                 {
                     builder.Append(@$"  {{ ""type"": ""code_interpreter"" }}{(hasFileSearch ? "," : string.Empty)}");
                 }
@@ -668,7 +690,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 builder.AppendLine("    ],");
             }
 
-            if (!hasCodeInterpeterFiles && !hasFileSearch)
+            if (!hasCodeInterpreterFiles && !hasFileSearch)
             {
                 builder.AppendLine(@"  ""tool_resources"": {},");
             }
@@ -676,7 +698,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             {
                 builder.AppendLine(@"  ""tool_resources"": {");
 
-                if (hasCodeInterpeterFiles)
+                if (hasCodeInterpreterFiles)
                 {
                     string fileIds = string.Join(",", definition.CodeInterpterFileIds!.Select(fileId => "\"" + fileId + "\""));
                     builder.AppendLine(@$"  ""code_interpreter"": {{ ""file_ids"": [{fileIds}] }}{(hasFileSearch ? "," : string.Empty)}");
