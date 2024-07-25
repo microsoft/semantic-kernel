@@ -23,6 +23,7 @@ public class BedrockChatCompletionServiceTests
         chatHistory.AddUserMessage("Hello");
         chatHistory.AddAssistantMessage("Hi");
         chatHistory.AddUserMessage("How are you?");
+        chatHistory.AddSystemMessage("You are an AI Assistant");
         return chatHistory;
     }
     /// <summary>
@@ -245,7 +246,7 @@ public class BedrockChatCompletionServiceTests
                 {
                     Message = new Message
                     {
-                        Role = ConversationRole.Assistant,
+                        Role = ConversationRole.User,
                         Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
                     }
                 },
@@ -259,7 +260,7 @@ public class BedrockChatCompletionServiceTests
                 {
                     Message = new Message
                     {
-                        Role = ConversationRole.User,
+                        Role = ConversationRole.Assistant,
                         Content = new List<ContentBlock> { new() { Text = "That's great to hear!" } }
                     }
                 },
@@ -286,27 +287,35 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(2, result1.Count + result2.Count);
 
         // Check the first result
-        Assert.Equal(AuthorRole.Assistant, result1[0].Role);
+        Assert.Equal(AuthorRole.User, result1[0].Role);
         Assert.Single(result1[0].Items);
         Assert.Equal("I'm doing well.", result1[0].Items[0].ToString());
 
         // Check the second result
-        Assert.Equal(AuthorRole.User, result2[0].Role);
+        Assert.Equal(AuthorRole.Assistant, result2[0].Role);
         Assert.Single(result2[0].Items);
         Assert.Equal("That's great to hear!", result2[0].Items[0].ToString());
 
         // Check the chat history
-        Assert.Equal(5, chatHistory.Count); // Use the Count property to get the number of messages
+        Assert.Equal(6, chatHistory.Count); // Use the Count property to get the number of messages
+
         Assert.Equal(AuthorRole.User, chatHistory[0].Role); // Use the indexer to access individual messages
         Assert.Equal("Hello", chatHistory[0].Items[0].ToString());
+
         Assert.Equal(AuthorRole.Assistant, chatHistory[1].Role);
         Assert.Equal("Hi", chatHistory[1].Items[0].ToString());
+
         Assert.Equal(AuthorRole.User, chatHistory[2].Role);
         Assert.Equal("How are you?", chatHistory[2].Items[0].ToString());
-        Assert.Equal(AuthorRole.Assistant, chatHistory[3].Role);
-        Assert.Equal("I'm doing well.", chatHistory[3].Items[0].ToString());
-        Assert.Equal(AuthorRole.User, chatHistory[4].Role);
-        Assert.Equal("That's great to hear!", chatHistory[4].Items[0].ToString());
+
+        Assert.Equal(AuthorRole.System, chatHistory[3].Role);
+        Assert.Equal("You are an AI Assistant", chatHistory[3].Items[0].ToString());
+
+        Assert.Equal(AuthorRole.Assistant, chatHistory[4].Role);
+        Assert.Equal("I'm doing well.", chatHistory[4].Items[0].ToString());
+
+        Assert.Equal(AuthorRole.User, chatHistory[5].Role);
+        Assert.Equal("That's great to hear!", chatHistory[5].Items[0].ToString());
     }
     /// <summary>
     /// Checks that error handling present for empty chat history.

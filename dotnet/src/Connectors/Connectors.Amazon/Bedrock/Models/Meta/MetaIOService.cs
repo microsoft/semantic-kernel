@@ -77,11 +77,8 @@ public class MetaIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var messages = chatHistory.Select(m => new Message
-        {
-            Role = new BedrockModelUtilities().MapRole(m.Role),
-            Content = new List<ContentBlock> { new() { Text = m.Content } }
-        }).ToList();
+        var messages = this._util.BuildMessageList(chatHistory);
+        var systemMessages = this._util.GetSystemMessages(chatHistory);
 
         var inferenceConfig = new InferenceConfiguration
         {
@@ -94,7 +91,7 @@ public class MetaIOService : IBedrockModelIOService
         {
             ModelId = modelId,
             Messages = messages,
-            System = new List<SystemContentBlock>(),
+            System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>(),
@@ -130,11 +127,8 @@ public class MetaIOService : IBedrockModelIOService
         ChatHistory chatHistory,
         PromptExecutionSettings? settings = null)
     {
-        var messages = chatHistory.Select(m => new Message
-        {
-            Role = new BedrockModelUtilities().MapRole(m.Role),
-            Content = new List<ContentBlock> { new() { Text = m.Content } }
-        }).ToList();
+        var messages = this._util.BuildMessageList(chatHistory);
+        var systemMessages = this._util.GetSystemMessages(chatHistory);
 
         var inferenceConfig = new InferenceConfiguration
         {
@@ -147,7 +141,7 @@ public class MetaIOService : IBedrockModelIOService
         {
             ModelId = modelId,
             Messages = messages,
-            System = new List<SystemContentBlock>(),
+            System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>(),

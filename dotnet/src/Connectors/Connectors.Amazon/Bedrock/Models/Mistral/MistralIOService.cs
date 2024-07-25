@@ -93,15 +93,13 @@ public class MistralIOService : IBedrockModelIOService
     {
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(settings);
         var request = this.CreateChatCompletionRequest(modelId, false, chatHistory, mistralExecutionSettings, new Kernel());
+        var messages = this._util.BuildMessageList(chatHistory);
+        var systemMessages = this._util.GetSystemMessages(chatHistory);
         var converseRequest = new ConverseRequest
         {
             ModelId = modelId,
-            Messages = request.Messages.Select(m => new Message
-            {
-                Role = m.Role,
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
-            System = new List<SystemContentBlock>(),
+            Messages = messages,
+            System = systemMessages,
             InferenceConfig = new InferenceConfiguration
             {
                 Temperature = (float)request.Temperature,
@@ -259,15 +257,13 @@ public class MistralIOService : IBedrockModelIOService
     {
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(settings);
         var request = this.CreateChatCompletionRequest(modelId, false, chatHistory, mistralExecutionSettings, new Kernel());
+        var messages = this._util.BuildMessageList(chatHistory);
+        var systemMessages = this._util.GetSystemMessages(chatHistory);
         var converseStreamRequest = new ConverseStreamRequest()
         {
             ModelId = modelId,
-            Messages = request.Messages.Select(m => new Message
-            {
-                Role = m.Role,
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
-            System = new List<SystemContentBlock>(),
+            Messages = messages,
+            System = systemMessages,
             InferenceConfig = new InferenceConfiguration
             {
                 Temperature = (float)request.Temperature,

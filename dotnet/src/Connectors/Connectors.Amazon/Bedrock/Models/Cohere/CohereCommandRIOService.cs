@@ -104,14 +104,13 @@ public class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
+        var messages = this._util.BuildMessageList(chatHistory);
+        var systemMessages = this._util.GetSystemMessages(chatHistory);
         var converseRequest = new ConverseRequest
         {
             ModelId = modelId,
-            Messages = chatHistory.Select(m => new Message
-            {
-                Role = this._util.MapRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            }).ToList(),
+            Messages = messages,
+            System = systemMessages,
             InferenceConfig = new InferenceConfiguration
             {
                 Temperature = this._util.GetExtensionDataValue(settings?.ExtensionData, "temperature", DefaultTemperature),
@@ -158,11 +157,8 @@ public class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var messages = chatHistory.Select(m => new Message
-        {
-            Role = new BedrockModelUtilities().MapRole(m.Role),
-            Content = new List<ContentBlock> { new() { Text = m.Content } }
-        }).ToList();
+        var messages = this._util.BuildMessageList(chatHistory);
+        var systemMessages = this._util.GetSystemMessages(chatHistory);
 
         var inferenceConfig = new InferenceConfiguration
         {
@@ -187,6 +183,7 @@ public class CohereCommandRIOService : IBedrockModelIOService
         {
             ModelId = modelId,
             Messages = messages,
+            System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = additionalModelRequestFields,
             AdditionalModelResponseFieldPaths = new List<string>(),

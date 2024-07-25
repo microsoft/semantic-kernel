@@ -1,13 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
-using Amazon;
 using Connectors.Amazon.Extensions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Amazon;
 using Microsoft.SemanticKernel.ChatCompletion;
-using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Amazon.Bedrock;

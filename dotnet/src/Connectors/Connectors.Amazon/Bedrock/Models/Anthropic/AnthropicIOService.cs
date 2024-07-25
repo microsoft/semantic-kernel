@@ -84,13 +84,10 @@ public class AnthropicIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var messages = chatHistory.Select(m => new Message
-        {
-            Role = new BedrockModelUtilities().MapRole(m.Role),
-            Content = new List<ContentBlock> { new() { Text = m.Content } }
-        }).ToList();
+        var messages = this._util.BuildMessageList(chatHistory);
+        var systemMessages = this._util.GetSystemMessages(chatHistory);
 
-        var system = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>());
+        var system = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", systemMessages);
 
         var inferenceConfig = new InferenceConfiguration
         {
@@ -163,13 +160,10 @@ public class AnthropicIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var messages = chatHistory.Select(m => new Message
-        {
-            Role = new BedrockModelUtilities().MapRole(m.Role),
-            Content = new List<ContentBlock> { new() { Text = m.Content } }
-        }).ToList();
+        var messages = this._util.BuildMessageList(chatHistory);
+        var systemMessages = this._util.GetSystemMessages(chatHistory);
 
-        var system = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", new List<SystemContentBlock>());
+        var system = this._util.GetExtensionDataValue(settings?.ExtensionData, "system", systemMessages);
 
         var inferenceConfig = new InferenceConfiguration
         {

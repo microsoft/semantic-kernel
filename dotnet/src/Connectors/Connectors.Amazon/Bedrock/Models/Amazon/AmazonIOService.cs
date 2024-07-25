@@ -82,11 +82,8 @@ public class AmazonIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var messages = chatHistory.Select(m => new Message
-        {
-            Role = new BedrockModelUtilities().MapRole(m.Role),
-            Content = new List<ContentBlock> { new() { Text = m.Content } }
-        }).ToList();
+        var messages = this._util.BuildMessageList(chatHistory);
+        var systemMessages = this._util.GetSystemMessages(chatHistory);
 
         var inferenceConfig = new InferenceConfiguration
         {
@@ -99,7 +96,7 @@ public class AmazonIOService : IBedrockModelIOService
         {
             ModelId = modelId,
             Messages = messages,
-            System = new List<SystemContentBlock>(), // { new SystemContentBlock { Text = "You are an AI assistant." } },
+            System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()
@@ -129,11 +126,8 @@ public class AmazonIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var messages = chatHistory.Select(m => new Message
-        {
-            Role = new BedrockModelUtilities().MapRole(m.Role),
-            Content = new List<ContentBlock> { new() { Text = m.Content } }
-        }).ToList();
+        var messages = this._util.BuildMessageList(chatHistory);
+        var systemMessages = this._util.GetSystemMessages(chatHistory);
 
         var inferenceConfig = new InferenceConfiguration
         {
@@ -146,7 +140,7 @@ public class AmazonIOService : IBedrockModelIOService
         {
             ModelId = modelId,
             Messages = messages,
-            System = new List<SystemContentBlock>(),
+            System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
             AdditionalModelResponseFieldPaths = new List<string>()
