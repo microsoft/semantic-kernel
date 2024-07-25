@@ -107,7 +107,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             chat_history.add_message(message=completions[0])
             # get the function call contents from the chat message
             function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
-            if (fc_count := len(function_calls)) == 0:
+            if (fc_count := len(function_calls)) == 0 and settings:
                 return completions
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
@@ -135,9 +135,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
             self._update_settings(settings, chat_history, kernel=kernel)
         else:
-            # do a final call, without function calling when the max has been reached.
-            settings.function_choice_behavior.auto_invoke_kernel_functions = False
-            return await self._send_chat_request(settings)
+            # do a final call to get the LLM Chat Response, without function calling when the max has been reached.
+            settings.tool_choice = None
+            response = await self._send_chat_request(settings)
+            # Reset the tool_choice to the previous type, to ensure the next time functions are called again.
+            settings.tool_choice = str(settings.function_choice_behavior.type)
+            return response
 
     @override
     async def get_streaming_chat_message_contents(
