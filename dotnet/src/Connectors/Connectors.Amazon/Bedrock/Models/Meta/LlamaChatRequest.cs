@@ -33,52 +33,9 @@ public class LlamaChatRequest : IChatCompletionRequest
     /// </summary>
     [JsonPropertyName("max_gen_len")]
     public int MaxGenLen { get; set; }
-    private List<Message>? _messages;
 
-    /// <summary>
-    /// List of messages.
-    /// </summary>
-    public List<Message> Messages
-    {
-        get
-        {
-            if (this._messages == null)
-            {
-                this._messages = new List<Message>();
-                if (!string.IsNullOrEmpty(this.Prompt))
-                {
-                    var role = ConversationRole.User;
-                    string systemPrompt = null;
-                    if (this.Prompt.StartsWith("<s>[INST]"))
-                    {
-                        var parts = this.Prompt.Split("[/INST]", StringSplitOptions.RemoveEmptyEntries);
-                        if (parts.Length > 0)
-                        {
-                            systemPrompt = parts[0].Trim('<', 's', '[', 'I', 'N', 'S', 'T', ']', ' ');
-                            this.Prompt = string.Join("[/INST]", parts.Skip(1));
-                        }
-                    }
-
-                    this._messages.Add(new Message
-                    {
-                        Role = role,
-                        Content = new List<ContentBlock> { new() { Text = this.Prompt } }
-                    });
-                    if (!string.IsNullOrEmpty(systemPrompt))
-                    {
-                        this.System = new List<SystemContentBlock> { new() { Text = systemPrompt } };
-                    }
-                }
-            }
-
-            return this._messages;
-        }
-        set
-        {
-            this._messages = value;
-        }
-    }
-
+    /// <inheritdoc />
+    public List<Message>? Messages { get; set; }
     /// <inheritdoc />
     public List<SystemContentBlock>? System { get; set; }
     /// <inheritdoc />
