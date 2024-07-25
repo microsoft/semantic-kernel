@@ -28,7 +28,7 @@ public class RedisVectorStoreTests
     }
 
     [Fact]
-    public void GetCollectionReturnsCollection()
+    public void GetCollectionReturnsJsonCollection()
     {
         // Arrange.
         var sut = new RedisVectorStore(this._redisDatabaseMock.Object);
@@ -39,6 +39,20 @@ public class RedisVectorStoreTests
         // Assert.
         Assert.NotNull(actual);
         Assert.IsType<RedisJsonVectorStoreRecordCollection<SinglePropsModel<string>>>(actual);
+    }
+
+    [Fact]
+    public void GetCollectionReturnsHashSetCollection()
+    {
+        // Arrange.
+        var sut = new RedisVectorStore(this._redisDatabaseMock.Object, new() { StorageType = RedisStorageType.Hashes });
+
+        // Act.
+        var actual = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
+
+        // Assert.
+        Assert.NotNull(actual);
+        Assert.IsType<RedisHashSetVectorStoreRecordCollection<SinglePropsModel<string>>>(actual);
     }
 
     [Fact]

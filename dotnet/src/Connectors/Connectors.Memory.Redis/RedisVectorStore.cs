@@ -53,8 +53,16 @@ public sealed class RedisVectorStore : IVectorStore
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._database, name, vectorStoreRecordDefinition);
         }
 
-        var directlyCreatedStore = new RedisJsonVectorStoreRecordCollection<TRecord>(this._database, name, new RedisJsonVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
-        return directlyCreatedStore!;
+        if (this._options.StorageType == RedisStorageType.Hashes)
+        {
+            var directlyCreatedStore = new RedisHashSetVectorStoreRecordCollection<TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            return directlyCreatedStore!;
+        }
+        else
+        {
+            var directlyCreatedStore = new RedisJsonVectorStoreRecordCollection<TRecord>(this._database, name, new RedisJsonVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            return directlyCreatedStore!;
+        }
     }
 
     /// <inheritdoc />

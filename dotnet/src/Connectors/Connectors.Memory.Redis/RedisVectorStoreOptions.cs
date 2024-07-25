@@ -11,4 +11,9 @@ public sealed class RedisVectorStoreOptions
     /// An optional factory to use for constructing <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> instances, if custom options are required.
     /// </summary>
     public IRedisVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
+
+    /// <summary>
+    /// Indicates the way in which data should be stored in redis. Default is <see cref="RedisStorageType.Json"/>.
+    /// </summary>
+    public RedisStorageType? StorageType { get; init; } = RedisStorageType.Json;
 }
