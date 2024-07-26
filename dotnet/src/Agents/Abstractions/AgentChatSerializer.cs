@@ -34,7 +34,7 @@ public sealed class AgentChatSerializer
     /// <summary>
     /// Provides a <see cref="AgentChatSerializer"/> that is able to restore an <see cref="AgentChat"/>.
     /// </summary>
-    public static async Task<AgentChatSerializer> DeserializeAsync<TChat>(TChat chat, Stream stream) where TChat : AgentChat
+    public static async Task<AgentChatSerializer> DeserializeAsync(Stream stream)
     {
         AgentChatState state =
             await JsonSerializer.DeserializeAsync<AgentChatState>(stream).ConfigureAwait(false) ??
@@ -52,8 +52,7 @@ public sealed class AgentChatSerializer
     /// <summary>
     /// Restore the <see cref="AgentChat"/> to the previously captured state.
     /// </summary>
-    public async Task DeserializeAsync<TChat>(TChat chat) where TChat : AgentChat =>
-        await chat.DeserializeAsync(this._state).ConfigureAwait(false);
+    public Task DeserializeAsync<TChat>(TChat chat) where TChat : AgentChat => chat.DeserializeAsync(this._state);
 
     private AgentChatSerializer(AgentChatState state)
     {

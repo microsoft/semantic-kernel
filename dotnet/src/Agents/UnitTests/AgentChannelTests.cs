@@ -82,7 +82,7 @@ public class AgentChannelTests
             throw new NotImplementedException();
         }
 
-        protected internal override Task<AgentChannel> RestoreChannelAsync(string state, CancellationToken cancellationToken)
+        protected internal override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
