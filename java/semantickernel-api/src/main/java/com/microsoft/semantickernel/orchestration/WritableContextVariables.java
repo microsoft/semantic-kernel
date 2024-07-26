@@ -45,6 +45,7 @@ public interface WritableContextVariables extends ContextVariables {
          * Builds an instance with the given variables
          *
          * @param map Existing variables
+         * @param map Existing varibles
          * @return an instantiation of ContextVariables
          */
         WritableContextVariables build(Map<String, String> map);

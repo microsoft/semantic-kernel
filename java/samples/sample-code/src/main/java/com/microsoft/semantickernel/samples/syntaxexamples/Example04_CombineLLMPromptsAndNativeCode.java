@@ -5,6 +5,8 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
+import com.microsoft.semantickernel.SamplesConfig;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
@@ -59,4 +61,41 @@ public class Example04_CombineLLMPromptsAndNativeCode {
 
     System.out.println(result.block().getResult());
   }
+public class Example04_CombineLLMPromptsAndNativeCode {
+
+    public static class SearchEngineSkill {
+        @DefineSKFunction(description = "Append the day variable", name = "search")
+        public Mono<String> search(
+                @SKFunctionInputAttribute(description = "Text to search")
+                String input) {
+            return Mono.just("Gran Torre Santiago is the tallest building in South America");
+        }
+    }
+
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
+
+        TextCompletion textCompletion = SKBuilders.textCompletion()
+                .withModelId("text-davinci-003")
+                .withOpenAIClient(client)
+                .build();
+
+        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
+        kernel.importSkill(new SearchEngineSkill(), null);
+        kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");
+
+        // Run
+        String ask = "What's the tallest building in South America?";
+
+        Mono<SKContext> result =
+                kernel.runAsync(ask, kernel.getSkills().getFunction("Search", null));
+
+        result =
+                kernel.runAsync(
+                        ask,
+                        kernel.getSkills().getFunction("Search", null),
+                        kernel.getSkill("SummarizeSkill").getFunction("Summarize", null));
+
+        System.out.println(result.block().getResult());
+    }
 }

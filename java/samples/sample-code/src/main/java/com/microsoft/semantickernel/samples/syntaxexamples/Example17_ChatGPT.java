@@ -16,6 +16,8 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
  * Refer to the <a href=
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
+ * The following example shows how to use Semantic Kernel with OpenAI ChatGPT
+ * API
  */
 public class Example17_ChatGPT {
 

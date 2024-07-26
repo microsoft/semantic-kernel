@@ -152,6 +152,7 @@ public class CompletionRequestSettings {
                 config.getBestOf(),
                 config.getUser(),
                 config.getStopSequences());
+                new ArrayList<>());
     }
 
     /**

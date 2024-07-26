@@ -1,6 +1,7 @@
 # Semantic Kernel for Java
 
 Semantic Kernel (SK) is a lightweight foundation that lets you easily mix conventional programming languages with the latest in
+Semantic Kernel (SK) is a lightweight SDK that lets you easily mix conventional programming languages with the latest in
 Large Language Model (LLM) AI "prompts" with templating, chaining, and planning capabilities out-of-the-box.
 
 To learn more about Microsoft Semantic Kernel, visit
@@ -8,6 +9,8 @@ the [Microsoft Semantic Kernel documentation](https://learn.microsoft.com/en-us/
 
 The Microsoft Semantic Kernel for Java is a library that implements the key concepts and foundations of Microsoft Semantic Kernel. It is designed
 to be used in Java applications in both client (desktop, mobile, CLIs) and server environments in an idiomatic way, and to be easily integrated with other Java libraries
+The Semantic Kernel for Java is an SDK that implements the key concepts of the Semantic Kernel in Java. It is designed
+to be used in Java applications and services in an idiomatic way, and to be easily integrated with other Java libraries
 and frameworks.
 
 ## Get started
@@ -19,6 +22,12 @@ or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-servi
 ### Requirements
 
 To build the Semantic Kernel for Java, you will need:
+an [Open AI API Key](https://openai.com/api/)
+or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api).
+
+### Requirements
+
+To build the Semantic Kernel, you will need:
 
 - **Required**:
   - [OpenJDK 17](https://microsoft.com/openjdk/) or newer
@@ -30,6 +39,9 @@ To build the Semantic Kernel for Java, you will need:
         git clone -b java-development https://github.com/microsoft/semantic-kernel/
 
 2. Build the project with the Maven Wrapper
+        git clone -b experimental-java https://github.com/microsoft/semantic-kernel/
+
+2. Build the Semantic Kernel
 
         cd semantic-kernel/java
         ./mvnw install
@@ -39,6 +51,9 @@ To build the Semantic Kernel for Java, you will need:
 The library is organized in a set of dependencies published to Maven Central. For a list of the Maven dependencies and how to use each of them, see [PACKAGES.md](PACKAGES.md).
 
 Alternatively, check the `samples` folder for examples of common AI-enabled scenarios implemented with Semantic Kernel for Java.
+## Using the Semantic Kernel
+
+Check the `samples` folder for examples of how to use the Semantic Kernel for Java.
 
 ## Discord community
 
@@ -58,6 +73,7 @@ If you are using Azure OpenAI, you will also need to set the following environme
 
 - `AZURE_OPENAI_ENDPOINT` - the Azure OpenAI endpoint found in **Keys * Endpoint** section of the Azure OpenAI service.
 - `AZURE_OPENAI_API_KEY` - the Azure OpenAI API key found in **Keys * Endpoint** section of the Azure OpenAI service.
+- `AZURE_OPENAI_API_KEY` - the Azure OpoenAI API key found in **Keys * Endpoint** section of the Azure OpenAI service.
 - `AZURE_OPENAI_DEPLOYMENT_NAME` - the custom name you chose for your deployment when you deployed a model. It can be
   found under **Resource Management > Deployments** in the Azure Portal.
 
@@ -89,6 +105,7 @@ Also ensure that:
 - All new code is covered by integration tests
 
 Once your proposal is ready, submit a pull request to the `java-development` branch. The pull request will be reviewed by the
+Once your proposal is ready, submit a pull request to the `main` branch. The pull request will be reviewed by the
 project maintainers.
 
 Make sure your pull request has an objective title and a clear description explaining the problem and solution.

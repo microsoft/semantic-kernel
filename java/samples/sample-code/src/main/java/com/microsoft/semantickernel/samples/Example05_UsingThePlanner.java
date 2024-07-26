@@ -27,6 +27,9 @@ import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
  */
+import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
+import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
+
 public class Example05_UsingThePlanner {
 
     public static SequentialPlanner getPlanner(Kernel kernel) {

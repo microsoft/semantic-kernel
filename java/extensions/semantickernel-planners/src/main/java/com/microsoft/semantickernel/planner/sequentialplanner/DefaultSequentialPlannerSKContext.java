@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
@@ -43,6 +44,16 @@ public class DefaultSequentialPlannerSKContext {
             @Nullable String semanticQuery,
             @Nullable SequentialPlannerRequestSettings config,
             boolean includeFunctionOutputs) {
+    /// <summary>
+    /// Returns a string containing the manual for all available functions.
+    /// </summary>
+    /// <param name="context">The SKContext to get the functions manual for.</param>
+    /// <param name="semanticQuery">The semantic query for finding relevant registered
+    // functions</param>
+    /// <param name="config">The planner skill config.</param>
+    /// <returns>A string containing the manual for all available functions.</returns>
+    public Mono<String> getFunctionsManualAsync(
+            @Nullable String semanticQuery, @Nullable SequentialPlannerRequestSettings config) {
         if (config == null) {
             config = new SequentialPlannerRequestSettings();
         }
@@ -54,6 +65,7 @@ public class DefaultSequentialPlannerSKContext {
                 funcs ->
                         funcs.stream()
                                 .map(it -> it.toManualString(includeFunctionOutputs))
+                                .map(SKFunction::toManualString)
                                 .collect(Collectors.joining("\n\n")));
     }
 

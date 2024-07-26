@@ -25,6 +25,11 @@ import reactor.core.publisher.Mono;
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
  */
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Example15_MemorySkill {
     private static final String MEMORY_COLLECTION_NAME = "aboutMe";
 
@@ -54,6 +59,7 @@ public class Example15_MemorySkill {
                         .build();
 
         MemoryStore memoryStore = new VolatileMemoryStore.Builder().build();
+        MemoryStore memoryStore = SKBuilders.memoryStore().build();
 
         Kernel kernel = SKBuilders.kernel()
                 .withDefaultAIService(textCompletionService)

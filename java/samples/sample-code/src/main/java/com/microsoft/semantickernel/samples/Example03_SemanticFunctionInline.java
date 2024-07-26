@@ -104,6 +104,7 @@ public class Example03_SemanticFunctionInline {
      */
     public static void TLDR(Kernel kernel) {
         String prompt = """
+        String propmt = """
                 {{$input}}
 
                 Give me the TLDR in 5 words.
@@ -121,6 +122,7 @@ public class Example03_SemanticFunctionInline {
                 """;
 
         inlineFunction(kernel, prompt, "tldr", text);
+        inlineFunction(kernel, propmt, "tldr", text);
     }
 
     public static void run(OpenAIAsyncClient client) throws IOException {

@@ -186,6 +186,7 @@ public abstract class AbstractSkFunction<RequestConfiguration>
 
     @Override
     public String toManualString(boolean includeOutputs) {
+    public String toManualString() {
         String inputs =
                 parameters.stream()
                         .map(
@@ -238,6 +239,8 @@ public abstract class AbstractSkFunction<RequestConfiguration>
             }
         }
 
+                        .collect(Collectors.joining("\n"));
+
         return toFullyQualifiedName()
                 + ":\n"
                 + "  description: "
@@ -246,6 +249,7 @@ public abstract class AbstractSkFunction<RequestConfiguration>
                 + "  inputs:\n"
                 + inputs
                 + outputs;
+                + inputs;
     }
 
     @Override

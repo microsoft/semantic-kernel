@@ -8,6 +8,7 @@ import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.semantickernel.Verify;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.chatcompletion.ChatRequestSettings;
+import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
@@ -22,6 +23,8 @@ import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
 /// <summary>
@@ -111,11 +114,16 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
 
     private CompletionsOptions getCompletionsOptions(
             String text, CompletionRequestSettings requestSettings) {
+    protected Mono<List<String>> internalCompleteTextAsync(
+            String text, CompletionRequestSettings requestSettings) {
+        // TODO
+
         if (requestSettings.getMaxTokens() < 1) {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, "Max tokens must be >0");
         }
 
         CompletionsOptions options =
+        CompletionsOptions completionsOptions =
                 new CompletionsOptions(Collections.singletonList(text))
                         .setMaxTokens(requestSettings.getMaxTokens())
                         .setTemperature(requestSettings.getTemperature())
@@ -138,6 +146,16 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
         @Nullable private OpenAIAsyncClient client;
         @Nullable private String modelId;
         private CompletionType defaultCompletionType = CompletionType.STREAMING;
+        return getClient()
+                .getCompletions(getModelId(), completionsOptions)
+                .flatMapIterable(Completions::getChoices)
+                .mapNotNull(Choice::getText)
+                .collectList();
+    }
+
+    public static final class Builder implements TextCompletion.Builder {
+        @Nullable private OpenAIAsyncClient client;
+        @Nullable private String modelId;
 
         public Builder withOpenAIClient(OpenAIAsyncClient client) {
             this.client = client;
@@ -164,6 +182,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
                 throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "Model ID not set");
             }
             return new OpenAITextCompletion(client, modelId, defaultCompletionType);
+            return new OpenAITextCompletion(client, modelId);
         }
     }
 }

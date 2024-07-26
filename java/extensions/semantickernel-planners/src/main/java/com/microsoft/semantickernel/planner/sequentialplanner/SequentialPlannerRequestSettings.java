@@ -20,6 +20,7 @@ public class SequentialPlannerRequestSettings {
     /// For default, this is set to null to exhibit previous behavior.
     /// </remarks>
     @Nullable private Float relevancyThreshold = null;
+    @Nullable private Double relevancyThreshold = null;
 
     /*
         /// <summary>
@@ -55,6 +56,7 @@ public class SequentialPlannerRequestSettings {
 
     public SequentialPlannerRequestSettings(
             @Nullable Float relevancyThreshold,
+            @Nullable Double relevancyThreshold,
             int maxRelevantFunctions,
             Set<String> excludedSkills,
             Set<String> excludedFunctions,
@@ -72,6 +74,7 @@ public class SequentialPlannerRequestSettings {
 
     @Nullable
     public Float getRelevancyThreshold() {
+    public Double getRelevancyThreshold() {
         return relevancyThreshold;
     }
 

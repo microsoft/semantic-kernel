@@ -64,6 +64,9 @@ public interface SkillExecutor {
      */
     ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName) throws KernelException;
+     */
+    ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName);
 
     /**
      * Imports a skill using clazz.getResourceAsStream to load skills from the classpath.
@@ -76,6 +79,9 @@ public interface SkillExecutor {
      */
     ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) throws KernelException;
+     */
+    ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz);
 
     /**
      * Imports the native functions annotated on the given object as a skill.

@@ -33,6 +33,7 @@ public abstract class DefaultSemanticSKFunction<RequestConfiguration>
                 description,
                 Collections.emptyList(),
                 kernelSkillsSupplier);
+        super(parameters, skillName, functionName, description, kernelSkillsSupplier);
     }
 
     @Override

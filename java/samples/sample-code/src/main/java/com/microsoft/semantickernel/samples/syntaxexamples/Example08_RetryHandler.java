@@ -13,6 +13,10 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.settings.SettingsMap;
+import com.microsoft.semantickernel.connectors.ai.openai.util.SettingsMap;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 

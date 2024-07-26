@@ -19,6 +19,11 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
  * README</a> for configuring your environment to run the examples.
  */
 public class Example06_TemplateLanguage {
+public class Example06_TemplateLanguage {
+    /// <summary>
+    /// Show how to invoke a Native Function written in C#
+    /// from a Semantic Function written in natural language
+    /// </summary>
 
     public static void main(String[] args) throws ConfigurationException {
         System.out.println("======== TemplateLanguage ========");

@@ -47,6 +47,11 @@ public interface ChatCompletion<ChatHistoryType extends ChatHistory>
 
     interface Builder<ChatHistoryType extends ChatHistory>
             extends SemanticKernelBuilder<ChatCompletion<ChatHistoryType>> {
+    static <ChatHistoryType extends ChatHistory, E extends ChatCompletion<ChatHistoryType>> Builder<ChatHistoryType> builder() {
+        return (Builder<ChatHistoryType>)BuildersSingleton.INST.getInstance(Builder.class);
+    }
+
+    interface Builder<ChatHistoryType extends ChatHistory> extends SemanticKernelBuilder<ChatCompletion<ChatHistoryType>> {
 
         Builder<ChatHistoryType> withOpenAIClient(OpenAIAsyncClient client);
 

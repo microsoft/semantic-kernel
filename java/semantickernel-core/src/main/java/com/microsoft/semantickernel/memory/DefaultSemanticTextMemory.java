@@ -80,6 +80,31 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                 .switchIfEmpty(embedAndSave);
     }
 
+        return _embeddingGenerator
+                .generateEmbeddingsAsync(Collections.singletonList(text))
+                .flatMap(
+                        embeddings -> {
+                            if (embeddings.isEmpty()) {
+                                return Mono.empty();
+                            }
+                            MemoryRecordMetadata data =
+                                    new MemoryRecordMetadata(
+                                            true, id, text, description, "", additionalMetadata);
+                            MemoryRecord memoryRecord =
+                                    new MemoryRecord(data, embeddings.iterator().next(), id, null);
+
+                            return _storage.upsertAsync(collection, memoryRecord)
+                                    .onErrorResume(
+                                            e -> {
+                                                return _storage.createCollectionAsync(collection)
+                                                        .then(
+                                                                _storage.upsertAsync(
+                                                                        collection, memoryRecord));
+                                            });
+                        });
+    }
+
+    @Override
     public Mono<MemoryQueryResult> getAsync(String collection, String key, boolean withEmbedding) {
         return _storage.getAsync(collection, key, withEmbedding)
                 .map(record -> new MemoryQueryResult(record.getMetadata(), 1d));
@@ -117,6 +142,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
             @Nonnull String query,
             int limit,
             float minRelevanceScore,
+            double minRelevanceScore,
             boolean withEmbeddings) {
 
         // TODO: break this up into smaller methods

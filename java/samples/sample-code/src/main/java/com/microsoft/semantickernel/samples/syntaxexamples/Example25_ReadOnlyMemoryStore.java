@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 /**
  * Demonstrates a custom implementation of {@code MemoryStore} that is read only.
+ * This sample provides a custom implementation of {@code MemoryStore} that is read only.
  * In this sample, the data is stored in a JSON String and deserialized into an
  * {@code MemoryRecord[]}. For this specific sample, the implementation
  * of {@code MemoryStore}  has a single collection, and thus does not need to be named.
@@ -49,6 +50,7 @@ public class Example25_ReadOnlyMemoryStore
 
         mono = mono.then(
                 store.getNearestMatchAsync("collection", embedding, 0f, true)
+                store.getNearestMatchAsync("collection", embedding, 0.0, true)
                         .mapNotNull(result -> {
                                     Float similarity = result.getT2().floatValue();
                                     MemoryRecord memoryRecord = result.getT1();
@@ -131,6 +133,7 @@ public class Example25_ReadOnlyMemoryStore
 
         @Override
         public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(String collectionName, Embedding embedding, float minRelevanceScore,
+        public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(String collectionName, Embedding embedding, double minRelevanceScore,
                                                                         boolean withEmbedding)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
@@ -155,6 +158,7 @@ public class Example25_ReadOnlyMemoryStore
         @Override
         public Mono<Collection<Tuple2<MemoryRecord, Float>>> getNearestMatchesAsync(String collectionName, Embedding embedding, int limit,
             float minRelevanceScore, boolean withEmbeddings)
+            double minRelevanceScore, boolean withEmbeddings)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return Mono.justOrEmpty(

@@ -103,6 +103,7 @@ public class SequentialPlanner {
         try {
             return new DefaultSequentialPlannerSKContext(context)
                     .getFunctionsManualAsync(goal, this.config, includeFunctionOutputs)
+                    .getFunctionsManualAsync(goal, this.config)
                     .flatMap(
                             relevantFunctionsManual -> {
                                 SKContext updatedContext =

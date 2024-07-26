@@ -5,6 +5,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
+import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -57,6 +58,7 @@ public class Config {
 
         return new OpenAIClientBuilder()
                 .credential(new KeyCredential(Config.getOpenAIKey(OPEN_AI_CONF_PROPERTIES)))
+                .credential(new NonAzureOpenAIKeyCredential(Config.getOpenAIKey(OPEN_AI_CONF_PROPERTIES)))
                 .buildAsyncClient();
     }
 }

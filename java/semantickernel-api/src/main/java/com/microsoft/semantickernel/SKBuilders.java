@@ -70,6 +70,12 @@ public class SKBuilders {
             ChatCompletion.Builder<ChatHistoryType> chatCompletion() {
         return (ChatCompletion.Builder<ChatHistoryType>)
                 BuildersSingleton.INST.getInstance(ChatCompletion.Builder.class);
+        return BuildersSingleton.INST.getInstance(PromptTemplateConfig.CompletionConfigBuilder.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <ChatHistoryType extends ChatHistory> ChatCompletion.Builder<ChatHistoryType> chatCompletion() {
+        return (ChatCompletion.Builder<ChatHistoryType>)BuildersSingleton.INST.getInstance(ChatCompletion.Builder.class);
     }
 
     public static MemoryStore.Builder memoryStore() {

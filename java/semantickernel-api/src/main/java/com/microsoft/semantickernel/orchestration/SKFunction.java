@@ -113,6 +113,9 @@ public interface SKFunction<RequestConfiguration> {
      * @return A manual-friendly string for a function.
      */
     String toManualString(boolean includeOutputs);
+     * @return A manual-friendly string for a function.
+     */
+    String toManualString();
 
     /**
      * Invokes the function with the given input, context and settings

@@ -61,6 +61,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                 goal,
                 Collections.emptyList(),
                 kernelSkillsSupplier);
+        super(new ArrayList<>(), Plan.class.getName(), "", goal, kernelSkillsSupplier);
         this.state = state;
     }
 
@@ -299,6 +300,58 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         updatedContext.setVariable(DefaultResultKey, finalResultValue);
 
         return Mono.just(SKBuilders.context().clone(context).withVariables(updatedContext).build());
+                                    result -> {
+                                        String resultValue = result.getResult();
+                                        if (resultValue == null) {
+                                            return Mono.error(
+                                                    new RuntimeException("No result returned"));
+                                        }
+
+                                        resultValue = resultValue.trim();
+
+                                        WritableContextVariables updatedContext =
+                                                currentContext.getVariables().writableClone();
+
+                                        String finalResultValue = resultValue;
+
+                                        step.outputs.forEach(
+                                                item -> {
+                                                    if (result.getVariables()
+                                                            .asMap()
+                                                            .containsKey(item)) {
+                                                        String variable =
+                                                                result.getVariables().get(item);
+                                                        if (variable != null) {
+                                                            updatedContext.setVariable(
+                                                                    item, variable);
+                                                        }
+                                                    } else {
+                                                        updatedContext.setVariable(
+                                                                item, finalResultValue);
+                                                    }
+                                                });
+
+                                        // If this function produces an output, don't overwrite the
+                                        // current
+                                        // result
+                                        if (step.outputs.size() > 0) {
+                                            updatedContext.setVariable(
+                                                    ContextVariables.MAIN_KEY,
+                                                    currentContext.getResult());
+                                        } else {
+                                            updatedContext.update(finalResultValue);
+                                        }
+
+                                        updatedContext.setVariable(
+                                                DefaultResultKey, finalResultValue);
+
+                                        return Mono.just(
+                                                SKBuilders.context()
+                                                        .clone(context)
+                                                        .withVariables(updatedContext)
+                                                        .build());
+                                    });
+                });
     }
 
     public Mono<SKContext> invokeAsync(

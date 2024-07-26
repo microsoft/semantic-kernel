@@ -104,6 +104,7 @@ public class DefaultKernelTest {
                         + "\n"
                         + "BE CREATIVE AND FUNNY. I WANT TO LAUGH.\n"
                         + "Incorporate the style suggestion, if provided: \n"
+                        + "\n"
                         + "+++++\n"
                         + "\n"
                         + "time travel to dinosaur age\n"
@@ -187,6 +188,10 @@ public class DefaultKernelTest {
             mockChatCompletionResponseStreaming(openAIAsyncClient, response);
             mockTextCompletionResponse(openAIAsyncClient, response);
             mockTextCompletionResponseStreaming(openAIAsyncClient, response);
+
+            mockChatCompletionResponse(openAIAsyncClient, response);
+            mockChatCompletionResponseStreaming(openAIAsyncClient, response);
+            mockTextCompletionResponse(openAIAsyncClient, response);
         }
         return openAIAsyncClient;
     }
@@ -395,6 +400,9 @@ public class DefaultKernelTest {
                 .getCompletionsStream(
                         Mockito.matches(model),
                         Mockito.argThat(
+                .getCompletions(
+                        Mockito.matches(model),
+                        Mockito.<CompletionsOptions>argThat(
                                 completionsOptions ->
                                         completionsOptions.getPrompt().size() == 1
                                                 && completionsOptions

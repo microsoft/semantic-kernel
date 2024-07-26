@@ -35,6 +35,7 @@ public class RunAll {
                 Example29_Tokenizer::main,
                 Example33_StreamingChat::main,
                 Example51_StepwisePlanner::main
+                Example33_StreamingChat::main
         );
 
         mains.forEach(mainMethod -> {

@@ -130,4 +130,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+    </dependencies>
 </project>

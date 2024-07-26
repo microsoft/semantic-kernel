@@ -11,6 +11,11 @@ import javax.annotation.Nullable;
 /** Semantic Kernel context */
 public abstract class AbstractSKContext implements SKContext {
 
+import reactor.util.annotation.NonNull;
+import reactor.util.annotation.Nullable;
+
+/** Semantic Kernel context */
+public abstract class AbstractSKContext implements SKContext {
     private final ReadOnlySkillCollection skills;
     private final WritableContextVariables variables;
     @Nullable private final SemanticTextMemory memory;
@@ -101,24 +106,28 @@ public abstract class AbstractSKContext implements SKContext {
 
     @Override
     public SKContext setVariable(@Nonnull String key, @Nonnull String content) {
+    public SKContext setVariable(@NonNull String key, @NonNull String content) {
         variables.setVariable(key, content);
         return getThis();
     }
 
     @Override
     public SKContext appendToVariable(@Nonnull String key, @Nonnull String content) {
+    public SKContext appendToVariable(@NonNull String key, @NonNull String content) {
         variables.appendToVariable(key, content);
         return getThis();
     }
 
     @Override
     public SKContext update(@Nonnull String content) {
+    public SKContext update(@NonNull String content) {
         variables.update(content);
         return getThis();
     }
 
     @Override
     public SKContext update(@Nonnull ContextVariables newData) {
+    public SKContext update(@NonNull ContextVariables newData) {
         variables.update(newData, true);
         return getThis();
     }

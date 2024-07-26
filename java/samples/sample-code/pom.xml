@@ -103,9 +103,11 @@
                 </executions>
                 <configuration>
                     <mainClass>com.microsoft.semantickernel.samples.syntaxexamples.${sample}</mainClass>
+                    <mainClass>com.microsoft.semantickernel.syntaxexamples.${sample}</mainClass>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
+</project>
 </project>

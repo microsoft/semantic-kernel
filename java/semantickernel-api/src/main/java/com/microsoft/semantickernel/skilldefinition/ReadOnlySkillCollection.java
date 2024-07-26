@@ -54,4 +54,6 @@ public interface ReadOnlySkillCollection extends Buildable {
     }
 
     interface Builder extends SemanticKernelBuilder<ReadOnlySkillCollection> {}
+    interface Builder extends SemanticKernelBuilder<ReadOnlySkillCollection> {
+    }
 }

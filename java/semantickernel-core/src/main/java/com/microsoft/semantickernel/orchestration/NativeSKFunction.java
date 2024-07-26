@@ -55,6 +55,8 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
             List<ParameterView> returnParameter,
             KernelSkillsSupplier skillCollection) {
         super(parameters, skillName, functionName, description, returnParameter, skillCollection);
+            KernelSkillsSupplier skillCollection) {
+        super(parameters, skillName, functionName, description, skillCollection);
         // TODO
         // Verify.NotNull(delegateFunction, "The function delegate is empty");
         // Verify.ValidSkillName(skillName);
@@ -103,6 +105,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                 String description,
                 String returnType,
                 String returnDescription) {
+                String description) {
             this.hasSkFunctionAttribute = hasSkFunctionAttribute;
             this.function = function;
             this.parameters = parameters;
@@ -195,6 +198,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                 description,
                 returnType,
                 returnDescription);
+        return new MethodDetails(hasSkFunctionAttribute, function, parameters, name, description);
     }
 
     private static List<ParameterView> getParameters(Method method) {
@@ -312,6 +316,13 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                                                         "Unable to access function "
                                                                 + method.getName(),
                                                         e);
+                                                Object result =
+                                                        method.invoke(instance, args.toArray());
+
+                                                return result;
+                                            } catch (IllegalAccessException
+                                                    | InvocationTargetException e) {
+                                                throw new RuntimeException(e.getCause());
                                             }
                                         })
                                 .subscribeOn(Schedulers.boundedElastic()));

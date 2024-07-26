@@ -75,6 +75,9 @@
         <module>extensions/semantickernel-gpt3-tokenizer</module>
         <module>extensions/semantickernel-settings-loader</module>
 
+        <module>extensions/semantickernel-planners</module>
+        <module>extensions/semantickernel-gpt3-tokenizer</module>
+
         <module>plugins/semantickernel-plugin-core</module>
 
         <module>semantickernel-bom</module>

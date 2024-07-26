@@ -103,6 +103,7 @@ public class Example12_SequentialPlanner {
 
         System.out.println("Original plan:");
         System.out.println(plan.toManualString(false));
+        System.out.println(plan.toPlanString());
 
         var input =
                 "Once upon a time, in a faraway kingdom, there lived a kind and just king named Arjun. " +

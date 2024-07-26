@@ -123,12 +123,14 @@ public interface MemoryStore extends Buildable {
      * @param withEmbeddings If true, the embeddings will be returned in the memory records.
      * @return A collection of tuples where item1 is a {@link MemoryRecord} and item2 is its
      *     similarity score as a {@code Float}.
+     *     similarity score as a {@code double}.
      */
     Mono<Collection<Tuple2<MemoryRecord, Float>>> getNearestMatchesAsync(
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             int limit,
             float minRelevanceScore,
+            double minRelevanceScore,
             boolean withEmbeddings);
 
     /**
@@ -153,4 +155,12 @@ public interface MemoryStore extends Buildable {
     }
 
     interface Builder<T extends MemoryStore> extends SemanticKernelBuilder<T> {}
+            double minRelevanceScore,
+            boolean withEmbedding);
+
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(Builder.class);
+    }
+
+    interface Builder extends SemanticKernelBuilder<MemoryStore> {}
 }

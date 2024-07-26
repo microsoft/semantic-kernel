@@ -100,6 +100,9 @@
                 <artifactId>semantickernel-settings-loader</artifactId>
                 <version>${project.version}</version>
             </dependency>
+                <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.azure</groupId>

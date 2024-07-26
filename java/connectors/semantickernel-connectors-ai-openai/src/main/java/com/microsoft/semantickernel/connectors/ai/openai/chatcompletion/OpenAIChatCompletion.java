@@ -21,6 +21,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,6 +39,8 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
             OpenAIAsyncClient client, String modelId, CompletionType defaultCompletionType) {
         super(client, modelId);
         this.defaultCompletionType = defaultCompletionType;
+    public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId) {
+        super(client, modelId);
     }
 
     @Override
@@ -59,6 +64,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
 
     public static class Builder implements ChatCompletion.Builder<OpenAIChatHistory> {
 
+    public static class Builder implements ChatCompletion.Builder<OpenAIChatHistory> {
         public Builder() {}
 
         @Nullable private OpenAIAsyncClient client;
@@ -89,6 +95,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
                 throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "Model ID not set");
             }
             return new OpenAIChatCompletion(client, modelId, defaultCompletionType);
+            return new OpenAIChatCompletion(client, modelId);
         }
     }
 
@@ -148,6 +155,8 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
                                 it ->
                                         new ChatMessage(
                                                 toChatRole(it.getAuthorRoles()), it.getContent()))
+                                        new ChatMessage(toChatRole(it.getAuthorRoles()))
+                                                .setContent(it.getContent()))
                         .collect(Collectors.toList());
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(messages);
@@ -209,6 +218,20 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         };
     }
 
+                .concatMap(
+                        chatCompletionResult -> {
+                            return Flux.fromIterable(chatCompletionResult.getChoices());
+                        })
+                .map(
+                        chatChoice -> {
+                            ChatMessage message = chatChoice.getDelta();
+                            if (message == null || message.getContent() == null) {
+                                return "";
+                            }
+                            return message.getContent();
+                        });
+    }
+
     @Override
     public Flux<ChatCompletions> getStreamingChatCompletionsAsync(
             OpenAIChatHistory chat, ChatRequestSettings requestSettings) {
@@ -243,5 +266,6 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         OpenAIChatHistory history = new OpenAIChatHistory("Assistant is a large language model.");
         history.addUserMessage(instructions);
         return history;
+        return new OpenAIChatHistory(instructions);
     }
 }

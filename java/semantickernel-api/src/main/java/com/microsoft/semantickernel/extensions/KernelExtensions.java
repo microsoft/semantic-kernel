@@ -14,10 +14,16 @@ import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.util.EmbeddedResourceLoader.ResourceLocation;
 import java.io.File;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,6 +104,7 @@ public class KernelExtensions {
             String functionName,
             @Nullable Class clazz,
             PromptTemplateEngine promptTemplateEngine) throws KernelException {
+            PromptTemplateEngine promptTemplateEngine) {
 
         PromptTemplateConfig config =
                 getPromptTemplateConfig(pluginDirectory, pluginName, functionName, clazz);
@@ -140,6 +147,20 @@ public class KernelExtensions {
                     ResourceLocation.CLASSPATH_ROOT,
                     ResourceLocation.CLASSPATH,
                     ResourceLocation.FILESYSTEM);
+        InputStream promptFileStream;
+        if (clazz == null) {
+            promptFileStream =
+                    KernelExtensions.class.getClassLoader().getResourceAsStream(promptFileName);
+        } else {
+            promptFileStream = clazz.getResourceAsStream(promptFileName);
+        }
+
+        String template;
+
+        try (BufferedReader promptFile =
+                new BufferedReader(
+                        new InputStreamReader(promptFileStream, Charset.defaultCharset()))) {
+            template = promptFile.lines().collect(Collectors.joining("\n"));
         } catch (IOException e) {
             LOGGER.error("Failed to read file " + promptFileName, e);
 
@@ -151,6 +172,11 @@ public class KernelExtensions {
 
     private static PromptTemplateConfig getPromptTemplateConfig(
             String pluginDirectory, String pluginName, String functionName, @Nullable Class clazz) throws KernelException {
+        return template;
+    }
+
+    private static PromptTemplateConfig getPromptTemplateConfig(
+            String pluginDirectory, String pluginName, String functionName, @Nullable Class clazz) {
         String configFileName =
                 pluginDirectory
                         + File.separator
@@ -181,6 +207,23 @@ public class KernelExtensions {
             LOGGER.debug("No config for " + functionName + " in " + pluginName);
           }
           return null;
+        InputStream configFileStream;
+        if (clazz == null) {
+            configFileStream =
+                    KernelExtensions.class.getClassLoader().getResourceAsStream(configFileName);
+        } else {
+            configFileStream = clazz.getResourceAsStream(configFileName);
+        }
+
+        if (configFileStream == null) {
+            return null;
+        }
+
+        try (InputStream is = configFileStream) {
+            return new ObjectMapper().readValue(is, PromptTemplateConfig.class);
+        } catch (IOException e) {
+            LOGGER.debug("No config for " + functionName + " in " + pluginName);
+            return null;
         }
     }
 }

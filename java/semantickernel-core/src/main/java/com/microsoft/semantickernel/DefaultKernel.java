@@ -118,6 +118,18 @@ public class DefaultKernel implements Kernel {
                 .withKernel(this)
                 .build();
     }
+    /*
+    /// <inheritdoc/>
+    public SKFunction registerSemanticFunction(
+        String skillName, String functionName, SemanticFunctionConfig functionConfig) {
+      // Future-proofing the name not to contain special chars
+      // Verify.ValidSkillName(skillName);
+      // Verify.ValidFunctionName(functionName);
+
+      skillCollection = skillCollection.addSemanticFunction(func);
+
+      return this.createSemanticFunction(skillName, functionName, functionConfig);
+    }*/
 
     /// <summary>
     /// Import a set of functions from the given skill. The functions must have the `SKFunction`
@@ -236,6 +248,7 @@ public class DefaultKernel implements Kernel {
     @Override
     public ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) throws KernelException {
+            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) {
         Map<String, SemanticFunctionConfig> skills =
                 KernelExtensions.importSemanticSkillFromResourcesDirectory(
                         pluginDirectory, skillName, functionName, clazz, promptTemplateEngine);
