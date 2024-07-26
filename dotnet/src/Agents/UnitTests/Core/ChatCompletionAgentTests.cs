@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -60,13 +59,55 @@ public class ChatCompletionAgentTests
                 ExecutionSettings = new(),
             };
 
-        var result = await agent.InvokeAsync([], NullLogger.Instance).ToArrayAsync();
+        var result = await agent.InvokeAsync([]).ToArrayAsync();
 
         Assert.Single(result);
 
         mockService.Verify(
             x =>
                 x.GetChatMessageContentsAsync(
+                    It.IsAny<ChatHistory>(),
+                    It.IsAny<PromptExecutionSettings>(),
+                    It.IsAny<Kernel>(),
+                    It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    /// <summary>
+    /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatCompletionAgentStreamingAsync()
+    {
+        StreamingChatMessageContent[] returnContent =
+            [
+                new(AuthorRole.Assistant, "wh"),
+                new(AuthorRole.Assistant, "at?"),
+            ];
+
+        var mockService = new Mock<IChatCompletionService>();
+        mockService.Setup(
+            s => s.GetStreamingChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>())).Returns(returnContent.ToAsyncEnumerable());
+
+        var agent =
+            new ChatCompletionAgent()
+            {
+                Instructions = "test instructions",
+                Kernel = CreateKernel(mockService.Object),
+                ExecutionSettings = new(),
+            };
+
+        var result = await agent.InvokeStreamingAsync([]).ToArrayAsync();
+
+        Assert.Equal(2, result.Length);
+
+        mockService.Verify(
+            x =>
+                x.GetStreamingChatMessageContentsAsync(
                     It.IsAny<ChatHistory>(),
                     It.IsAny<PromptExecutionSettings>(),
                     It.IsAny<Kernel>(),

@@ -128,6 +128,11 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Act
         await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
+            if (content is StreamingChatMessageContent messageContent)
+            {
+                Assert.NotNull(messageContent.Role);
+            }
+
             fullResult.Append(content);
         }
 

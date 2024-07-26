@@ -4,6 +4,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Literal
 
 from pydantic.dataclasses import dataclass
+from typing_extensions import deprecated
 
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -23,8 +24,11 @@ class FunctionCallConfiguration:
     required_functions: list["KernelFunctionMetadata"] | None = None
 
 
+@deprecated("The `FunctionCallBehavior` class is deprecated; use `FunctionChoiceBehavior` instead.", category=None)
 class FunctionCallBehavior(KernelBaseModel):
     """Class that controls function calling behavior.
+
+    DEPRECATED: This class has been replaced by FunctionChoiceBehavior.
 
     Args:
         enable_kernel_functions (bool): Enable kernel functions.
@@ -93,11 +97,13 @@ class FunctionCallBehavior(KernelBaseModel):
         return
 
     @classmethod
+    @deprecated("Use the `FunctionChoiceBehavior` `Auto` class instead.")
     def AutoInvokeKernelFunctions(cls) -> "KernelFunctions":
         """Returns KernelFunctions class with auto_invoke enabled."""
         return KernelFunctions(max_auto_invoke_attempts=DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS)
 
     @classmethod
+    @deprecated("Use the `FunctionChoiceBehavior` `Auto` class method instead.")
     def EnableKernelFunctions(cls) -> "KernelFunctions":
         """Returns KernelFunctions class with auto_invoke disabled.
 
@@ -106,13 +112,15 @@ class FunctionCallBehavior(KernelBaseModel):
         return KernelFunctions(max_auto_invoke_attempts=0)
 
     @classmethod
+    @deprecated("Use the `FunctionChoiceBehavior` `Auto` class method instead.")
     def EnableFunctions(
         cls,
         auto_invoke: bool = False,
         *,
         filters: dict[
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
-        ],
+        ]
+        | None = {},
     ) -> "EnabledFunctions":
         """Set the enable kernel functions flag."""
         return EnabledFunctions(
@@ -120,6 +128,7 @@ class FunctionCallBehavior(KernelBaseModel):
         )
 
     @classmethod
+    @deprecated("Use the `FunctionChoiceBehavior` `Required` class method instead.")
     def RequiredFunction(
         cls,
         auto_invoke: bool = False,
@@ -133,6 +142,7 @@ class FunctionCallBehavior(KernelBaseModel):
         )
 
 
+@deprecated("Use the `FunctionChoiceBehavior` `Auto` class instead.")
 class KernelFunctions(FunctionCallBehavior):
     """Function call behavior for making all kernel functions available for tool calls."""
 
@@ -149,6 +159,7 @@ class KernelFunctions(FunctionCallBehavior):
             )
 
 
+@deprecated("Use the `FunctionChoiceBehavior` `Auto` class instead.")
 class EnabledFunctions(FunctionCallBehavior):
     """Function call behavior for making a filtered set of functions available for tool calls."""
 
@@ -170,6 +181,7 @@ class EnabledFunctions(FunctionCallBehavior):
             )
 
 
+@deprecated("Use the `FunctionChoiceBehavior` `Required` class instead.")
 class RequiredFunction(FunctionCallBehavior):
     """Function call behavior for making a single function available for tool calls."""
 

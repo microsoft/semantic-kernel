@@ -506,12 +506,14 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat, result)
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = result.ToolCalls.Count
+                    FunctionCount = result.ToolCalls.Count,
+                    CancellationToken = cancellationToken
                 };
 
                 s_inflightAutoInvokes.Value++;
@@ -693,7 +695,18 @@ internal abstract class ClientCore
                             OpenAIFunctionToolCall.TrackStreamingToolingUpdate(update.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                         }
 
-                        var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName };
+                        AuthorRole? role = null;
+                        if (streamedRole.HasValue)
+                        {
+                            role = new AuthorRole(streamedRole.Value.ToString());
+                        }
+
+                        OpenAIStreamingChatMessageContent openAIStreamingChatMessageContent =
+                            new(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata)
+                            {
+                                AuthorName = streamedName,
+                                Role = role,
+                            };
 
                         if (update.ToolCallUpdate is StreamingFunctionToolCallUpdate functionCallUpdate)
                         {
@@ -748,7 +761,9 @@ internal abstract class ClientCore
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, streamedName, toolCalls));
-            chat.Add(this.GetChatMessage(streamedRole ?? default, content, toolCalls, functionCallContents, metadata, streamedName));
+
+            var chatMessageContent = this.GetChatMessage(streamedRole ?? default, content, toolCalls, functionCallContents, metadata, streamedName);
+            chat.Add(chatMessageContent);
 
             // Respond to each tooling request.
             for (int toolCallIndex = 0; toolCallIndex < toolCalls.Length; toolCallIndex++)
@@ -793,12 +808,14 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat, chatMessageContent)
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = toolCalls.Length
+                    FunctionCount = toolCalls.Length,
+                    CancellationToken = cancellationToken
                 };
 
                 s_inflightAutoInvokes.Value++;
