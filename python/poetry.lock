@@ -266,13 +266,13 @@ cryptography = "*"
 
 [[package]]
 name = "azure-ai-inference"
-version = "1.0.0b1"
+version = "1.0.0b2"
 description = "Microsoft Azure Ai Inference Client Library for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "azure-ai-inference-1.0.0b1.tar.gz", hash = "sha256:e44c58ccc38a6ae335193d4ba99d9424b1d9cdfc7f18d5285dc17ba988404dfd"},
-    {file = "azure_ai_inference-1.0.0b1-py3-none-any.whl", hash = "sha256:c62279a36c232a98cb69bcbbf6b8f1974316922350e20f990bc27c041881c854"},
+    {file = "azure-ai-inference-1.0.0b2.tar.gz", hash = "sha256:efe2ad0c79ab80d3323edb919cb769a5e21d8ed2c56fe17f9b737893432e0a99"},
+    {file = "azure_ai_inference-1.0.0b2-py3-none-any.whl", hash = "sha256:fb35a30867419590d2c7a52e287c456c9bd264690bdfcdec54930c3e73897a8f"},
 ]
 
 [package.dependencies]
