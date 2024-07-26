@@ -93,8 +93,7 @@
             "command": "poetry",
             "args": [
                 "install",
-                "--extras",
-                "all"
+                "--all-extras"
             ],
             "presentation": {
                 "reveal": "silent",

@@ -170,7 +170,7 @@ public sealed class SseJsonParserTests
         var result = await SseJsonParser.ParseAsync(stream,
                 line =>
                 {
-                    if (line.EventName == null)
+                    if (line.EventName is null)
                     {
                         return null;
                     }

@@ -42,7 +42,7 @@ public sealed class OpenAI_AudioToText(ITestOutputHelper output) : BaseTest(outp
         // Read audio content from a file
         await using var audioFileStream = EmbeddedResource.ReadStream(AudioFilename);
         var audioFileBinaryData = await BinaryData.FromStreamAsync(audioFileStream!);
-        AudioContent audioContent = new(audioFileBinaryData);
+        AudioContent audioContent = new(audioFileBinaryData, mimeType: null);
 
         // Convert audio to text
         var textContent = await audioToTextService.GetTextContentAsync(audioContent, executionSettings);

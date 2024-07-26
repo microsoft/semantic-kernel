@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
 
 from pytest import mark
 
@@ -16,7 +15,8 @@ def create_handlebars_prompt_template(template: str) -> HandlebarsPromptTemplate
     return HandlebarsPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template, template_format="handlebars"
-        )
+        ),
+        allow_dangerously_set_content=True,
     )
 
 
@@ -26,7 +26,7 @@ class MyPlugin:
         return "123 ok" if input == "123" else f"{input} != 123"
 
     @kernel_function()
-    def asis(self, input: Optional[str] = None) -> str:
+    def asis(self, input: str | None = None) -> str:
         return input or ""
 
 
@@ -56,7 +56,7 @@ class TestHandlebarsPromptTemplateEngine:
         result = await create_handlebars_prompt_template(template).render(kernel, arguments)
 
         # Assert
-        assert "== 123 ok ==" == result
+        assert result == "== 123 ok =="
 
     @mark.asyncio
     async def test_it_allows_to_pass_values_to_functions(self, kernel: Kernel):
@@ -68,7 +68,7 @@ class TestHandlebarsPromptTemplateEngine:
         result = await create_handlebars_prompt_template(template).render(kernel, None)
 
         # Assert
-        assert "== 234 != 123 ==" == result
+        assert result == "== 234 != 123 =="
 
     @mark.asyncio
     async def test_it_allows_to_pass_escaped_values1_to_functions(self, kernel: Kernel):
@@ -79,7 +79,7 @@ class TestHandlebarsPromptTemplateEngine:
         result = await create_handlebars_prompt_template(template).render(kernel, None)
 
         # Assert
-        assert "== a'b != 123 ==" == result
+        assert result == "== a'b != 123 =="
 
     @mark.asyncio
     async def test_it_allows_to_pass_escaped_values2_to_functions(self, kernel: Kernel):
@@ -91,7 +91,7 @@ class TestHandlebarsPromptTemplateEngine:
         result = await create_handlebars_prompt_template(template).render(kernel, None)
 
         # Assert
-        assert '== a"b != 123 ==' == result
+        assert result == '== a"b != 123 =='
 
     @mark.asyncio
     async def test_chat_history_round_trip(self, kernel: Kernel):

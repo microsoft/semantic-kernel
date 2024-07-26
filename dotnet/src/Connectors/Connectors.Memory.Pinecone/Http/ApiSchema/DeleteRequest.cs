@@ -79,7 +79,7 @@ internal sealed class DeleteRequest
 
     public HttpRequestMessage Build()
     {
-        if (this.Filter != null)
+        if (this.Filter is not null)
         {
             this.Filter = PineconeUtils.ConvertFilterToPineconeFilter(this.Filter);
         }
@@ -100,22 +100,22 @@ internal sealed class DeleteRequest
 
         sb.Append("DeleteRequest: ");
 
-        if (this.Ids != null)
+        if (this.Ids is not null)
         {
             sb.Append($"Deleting {this.Ids.Count()} vectors, {string.Join(", ", this.Ids)},");
         }
 
-        if (this.DeleteAll != null)
+        if (this.DeleteAll is not null)
         {
             sb.Append("Deleting All vectors,");
         }
 
-        if (this.Namespace != null)
+        if (this.Namespace is not null)
         {
             sb.Append($"From Namespace: {this.Namespace}, ");
         }
 
-        if (this.Filter == null)
+        if (this.Filter is null)
         {
             return sb.ToString();
         }

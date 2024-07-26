@@ -223,7 +223,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     private static MongoClientSettings GetMongoClientSettings(string connectionString)
     {
         var settings = MongoClientSettings.FromConnectionString(connectionString);
-        var skVersion = typeof(IMemoryStore).Assembly.GetName().Version.ToString();
+        var skVersion = typeof(IMemoryStore).Assembly.GetName().Version?.ToString();
         settings.LibraryInfo = new LibraryInfo("Microsoft Semantic Kernel", skVersion);
         return settings;
     }

@@ -10,8 +10,8 @@ from semantic_kernel.connectors.openai_plugin.openai_function_execution_paramete
 from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
 
 __all__ = [
-    "OpenAIUtils",
-    "OpenAIFunctionExecutionParameters",
     "OpenAIAuthenticationConfig",
     "OpenAIAuthenticationType",
+    "OpenAIFunctionExecutionParameters",
+    "OpenAIUtils",
 ]

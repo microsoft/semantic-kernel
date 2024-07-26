@@ -2,8 +2,8 @@
 
 import logging
 import re
+from collections.abc import Callable
 from enum import Enum
-from typing import Callable, Dict
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ def _messages(chat_history):
 
     if not isinstance(chat_history, ChatHistory):
         return ""
-    return str(chat_history)
+    return chat_history.to_prompt()
 
 
 def _message_to_prompt(context):
@@ -61,7 +61,6 @@ def _double_close():
 
 
 def _array(*args, **kwargs):
-    print(f"Received args: {args}")
     return list(args)
 
 
@@ -77,7 +76,7 @@ def _snake_case(*args, **kwargs):
     return arg.lower()
 
 
-JINJA2_SYSTEM_HELPERS: Dict[str, Callable] = {
+JINJA2_SYSTEM_HELPERS: dict[str, Callable] = {
     "get": _safe_get_wrapper,
     "double_open": _double_open,
     "doubleOpen": _double_open,

@@ -41,7 +41,7 @@ internal static class ChatHistorySerializer
         return JsonSerializer.Serialize(messages);
     }
 
-    private class SerializableChatMessage
+    private sealed class SerializableChatMessage
     {
         public string? Role { get; set; }
 

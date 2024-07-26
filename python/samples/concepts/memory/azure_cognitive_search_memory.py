@@ -2,8 +2,6 @@
 
 import asyncio
 
-from dotenv import dotenv_values
-
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, AzureTextEmbedding
 from semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognitiveSearchMemoryStore
@@ -44,49 +42,19 @@ async def search_acs_memory_questions(memory: SemanticTextMemory) -> None:
 async def main() -> None:
     kernel = Kernel()
 
-    config = dotenv_values(".env")
-
-    AZURE_COGNITIVE_SEARCH_ENDPOINT = config["AZURE_COGNITIVE_SEARCH_ENDPOINT"]
-    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = config["AZURE_COGNITIVE_SEARCH_ADMIN_KEY"]
-    AZURE_OPENAI_API_KEY = config["AZURE_OPENAI_API_KEY"]
-    AZURE_OPENAI_ENDPOINT = config["AZURE_OPENAI_ENDPOINT"]
     vector_size = 1536
 
     # Setting up OpenAI services for text completion and text embedding
-    text_complete_service_id = "dv"
-    kernel.add_service(
-        AzureTextCompletion(
-            service_id=text_complete_service_id,
-            deployment_name="text-embedding-ada-002",
-            endpoint=AZURE_OPENAI_ENDPOINT,
-            api_key=AZURE_OPENAI_API_KEY,
-        ),
-    )
-    embedding_service_id = "ada"
-    embedding_gen = AzureTextEmbedding(
-        service_id=embedding_service_id,
-        deployment_name="text-embedding-ada-002",
-        endpoint=AZURE_OPENAI_ENDPOINT,
-        api_key=AZURE_OPENAI_API_KEY,
-    )
-    kernel.add_service(
-        embedding_gen,
-    )
+    kernel.add_service(AzureTextCompletion(service_id="dv"))
+    async with AzureCognitiveSearchMemoryStore(vector_size=vector_size) as acs_connector:
+        memory = SemanticTextMemory(storage=acs_connector, embeddings_generator=AzureTextEmbedding(service_id="ada"))
+        kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
-    acs_connector = AzureCognitiveSearchMemoryStore(
-        vector_size, AZURE_COGNITIVE_SEARCH_ENDPOINT, AZURE_COGNITIVE_SEARCH_ADMIN_KEY
-    )
+        print("Populating memory...")
+        await populate_memory(memory)
 
-    memory = SemanticTextMemory(storage=acs_connector, embeddings_generator=embedding_gen)
-    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
-
-    print("Populating memory...")
-    await populate_memory(memory)
-
-    print("Asking questions... (manually)")
-    await search_acs_memory_questions(memory)
-
-    await acs_connector.close()
+        print("Asking questions... (manually)")
+        await search_acs_memory_questions(memory)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,23 @@
+classDiagram
+
+    OpenAIAssistantInvocationOptions --> OpenAIAssistantToolCallBehavior
+    class OpenAIAssistantInvocationOptions {
+        string? ModelName
+        bool? EnableCodeInterpreter
+        bool? EnableFileSearch
+        bool? EnableJsonResponse
+        int? MaxCompletionTokens
+        int? MaxPromptTokens
+        bool? ParallelToolCallsEnabled
+        int? TruncationMessageCount
+        float? Temperature
+        float? TopP
+        Dictionary~string, string~? Metadata
+        OpenAIAssistantToolCallBehavior? ToolCallBehavior
+    }
+
+    class OpenAIAssistantToolCallBehavior {
+        AssistantToolCallBehavior RequireCodeInterpreter()$
+        AssistantToolCallBehavior RequireFunction(KernelFunction function)$
+        AssistantToolCallBehavior RequireFileSearch()$
+    }

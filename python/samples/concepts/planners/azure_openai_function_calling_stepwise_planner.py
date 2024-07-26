@@ -7,7 +7,6 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.planners import FunctionCallingStepwisePlanner, FunctionCallingStepwisePlannerOptions
-from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
 
 async def main():
@@ -16,12 +15,15 @@ async def main():
     service_id = "planner"
     kernel.add_service(
         AzureChatCompletion(
-            service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+            service_id=service_id,
         ),
     )
 
-    cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources")
-    kernel.add_plugin(parent_directory=cur_dir, plugin_name="email_plugin")
+    plugin_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 
+        "resources", 
+    )
+    kernel.add_plugin(parent_directory=plugin_path, plugin_name="email_plugin")
 
     kernel.add_plugin(MathPlugin(), "MathPlugin")
     kernel.add_plugin(TimePlugin(), "TimePlugin")

@@ -7,27 +7,21 @@ from azure.core.credentials import AccessToken
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
 
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import (
-    SessionsPythonTool,
-)
+from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import SessionsPythonTool
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.settings import (
-    azure_container_apps_settings_from_dot_env_as_dict,
-    azure_openai_settings_from_dot_env_as_dict,
-)
 
 auth_token: AccessToken | None = None
 
-ACA_TOKEN_ENDPOINT = "https://acasessions.io/.default"
+ACA_TOKEN_ENDPOINT: str = "https://acasessions.io/.default"  # nosec
 
 
 async def auth_callback() -> str:
@@ -56,12 +50,11 @@ kernel = Kernel()
 
 service_id = "sessions-tool"
 chat_service = AzureChatCompletion(
-    service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+    service_id=service_id,
 )
 kernel.add_service(chat_service)
 
 sessions_tool = SessionsPythonTool(
-    **azure_container_apps_settings_from_dot_env_as_dict(),
     auth_callback=auth_callback,
 )
 
@@ -76,8 +69,7 @@ chat_function = kernel.add_function(
 
 req_settings = AzureChatPromptExecutionSettings(service_id=service_id, tool_choice="auto")
 
-filter = {"excluded_plugins": ["ChatBot"]}
-req_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(auto_invoke=True, filters=filter)
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
 
 arguments = KernelArguments(settings=req_settings)
 

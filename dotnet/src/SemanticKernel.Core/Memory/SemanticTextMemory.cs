@@ -93,7 +93,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     {
         MemoryRecord? record = await this._storage.GetAsync(collection, key, withEmbedding, cancellationToken).ConfigureAwait(false);
 
-        if (record == null) { return null; }
+        if (record is null) { return null; }
 
         return MemoryQueryResult.FromMemoryRecord(record, 1);
     }

@@ -3,6 +3,7 @@
 import os
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import DEFAULT_SERVICE_NAME, METADATA_EXCEPTION_KEY
 from semantic_kernel.exceptions import PlannerCreatePlanError, PlannerException, PlannerInvalidGoalError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -16,7 +17,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
     "Given a request or command or goal generate a step by step plan to "
-    + "fulfill the request using functions. This ability is also known as decision making and function flow"
+    "fulfill the request using functions. This ability is also known as decision making and function flow"
 )
 
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -25,7 +26,8 @@ PROMPT_TEMPLATE_FILE_PATH = os.path.join(CUR_DIR, "Plugins/SequentialPlanning/sk
 
 
 def read_file(file_path: str) -> str:
-    with open(file_path, "r") as file:
+    """Reads the content of a file."""
+    with open(file_path) as file:
         return file.read()
 
 
@@ -42,10 +44,9 @@ class SequentialPlanner:
         kernel: Kernel,
         service_id: str,
         config: SequentialPlannerConfig = None,
-        prompt: str = None,
+        prompt: str | None = None,
     ) -> None:
-        """
-        Initializes a new instance of the SequentialPlanner class.
+        """Initializes a new instance of the SequentialPlanner class.
 
         Args:
             kernel (Kernel): The kernel instance to use for planning
@@ -53,7 +54,6 @@ class SequentialPlanner:
             config (SequentialPlannerConfig, optional): The configuration to use for planning. Defaults to None.
             prompt (str, optional): The prompt to use for planning. Defaults to None.
         """
-        assert isinstance(kernel, Kernel)
         self.config = config or SequentialPlannerConfig()
 
         self.config.excluded_plugins.append(self.RESTRICTED_PLUGIN_NAME)
@@ -67,8 +67,8 @@ class SequentialPlanner:
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
         if service_id in prompt_config.execution_settings:
             prompt_config.execution_settings[service_id].extension_data["max_tokens"] = self.config.max_tokens
-        elif "default" in prompt_config.execution_settings:
-            prompt_config.execution_settings["default"].extension_data["max_tokens"] = self.config.max_tokens
+        elif DEFAULT_SERVICE_NAME in prompt_config.execution_settings:
+            prompt_config.execution_settings[DEFAULT_SERVICE_NAME].extension_data["max_tokens"] = self.config.max_tokens
         else:
             prompt_config.execution_settings[service_id] = PromptExecutionSettings(
                 service_id=service_id, max_tokens=self.config.max_tokens
@@ -76,11 +76,13 @@ class SequentialPlanner:
         prompt_config.template = prompt_template
 
         # if a service_id is provided, use it instead of the default
-        if service_id and service_id not in prompt_config.execution_settings:
-            # Move 'default' settings to this service_id if 'default' exists
-            if "default" in prompt_config.execution_settings:
-                settings = prompt_config.execution_settings.pop("default")
-                prompt_config.execution_settings[service_id] = settings
+        if (
+            service_id
+            and service_id not in prompt_config.execution_settings
+            and DEFAULT_SERVICE_NAME in prompt_config.execution_settings
+        ):
+            settings = prompt_config.execution_settings.pop(DEFAULT_SERVICE_NAME)
+            prompt_config.execution_settings[service_id] = settings
 
         return self._kernel.add_function(
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
@@ -89,6 +91,7 @@ class SequentialPlanner:
         )
 
     async def create_plan(self, goal: str) -> Plan:
+        """Create a plan for the specified goal."""
         if len(goal) == 0:
             raise PlannerInvalidGoalError("The goal specified is empty")
 
@@ -100,10 +103,10 @@ class SequentialPlanner:
 
         plan_result = await self._function_flow_function.invoke(self._kernel, self._arguments)
 
-        if isinstance(plan_result, FunctionResult) and "exception" in plan_result.metadata:
+        if isinstance(plan_result, FunctionResult) and METADATA_EXCEPTION_KEY in plan_result.metadata:
             raise PlannerCreatePlanError(
                 f"Error creating plan for goal: {plan_result.metadata['exception']}",
-            ) from plan_result.metadata["exception"]
+            ) from plan_result.metadata[METADATA_EXCEPTION_KEY]
 
         plan_result_string = str(plan_result).strip()
 

@@ -4,408 +4,483 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.builders.Buildable;
-import com.microsoft.semantickernel.builders.BuildersSingleton;
-import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import reactor.util.annotation.Nullable;
+import java.util.Map;
+import java.util.Objects;
+import javax.annotation.Nullable;
 
-/** Prompt template configuration */
+/**
+ * Metadata for a prompt template.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PromptTemplateConfig {
-    private final CompletionConfig completionConfig;
-    private final InputConfig input;
 
     /**
-     * A returns the configuration for the text completion
-     *
-     * @return CompletionConfig
+     * The current prompt template config schema version.
      */
-    public CompletionConfig getCompletionConfig() {
-        return completionConfig;
+    public static final int CURRENT_SCHEMA = 1;
+
+    /**
+     * The default name for a prompt template config.
+     */
+    public static final String DEFAULT_CONFIG_NAME = "default";
+
+    /**
+     * The default template format for a prompt template config.
+     */
+    public static final String SEMANTIC_KERNEL_TEMPLATE_FORMAT = "semantic-kernel";
+
+    private final int schema;
+    @Nullable
+    private final String name;
+    @Nullable
+    private final String template;
+    private final String templateFormat;
+    @Nullable
+    private final String description;
+    private final List<InputVariable> inputVariables;
+    @Nullable
+    private final OutputVariable outputVariable;
+    private final Map<String, PromptExecutionSettings> executionSettings;
+
+    /**
+     * Constructor for a prompt template config
+     *
+     * @param template Template string
+     */
+    protected PromptTemplateConfig(String template) {
+        this(
+            CURRENT_SCHEMA,
+            DEFAULT_CONFIG_NAME,
+            template,
+            SEMANTIC_KERNEL_TEMPLATE_FORMAT,
+            "",
+            Collections.emptyList(),
+            new OutputVariable(String.class.getName(), "out"),
+            Collections.emptyMap());
     }
 
+    /**
+     * Constructor for a prompt template config
+     *
+     * @param schema            Schema version
+     * @param name              Name of the template
+     * @param template          Template string
+     * @param templateFormat    Template format
+     * @param description       Description of the template
+     * @param inputVariables    Input variables
+     * @param outputVariable    Output variable
+     * @param executionSettings Execution settings
+     */
+    @JsonCreator
+    public PromptTemplateConfig(
+        @JsonProperty("schema") int schema,
+        @Nullable @JsonProperty("name") String name,
+        @Nullable @JsonProperty("template") String template,
+        @Nullable @JsonProperty(value = "template_format", defaultValue = SEMANTIC_KERNEL_TEMPLATE_FORMAT) String templateFormat,
+        @Nullable @JsonProperty("description") String description,
+        @Nullable @JsonProperty("input_variables") List<InputVariable> inputVariables,
+        @Nullable @JsonProperty("output_variable") OutputVariable outputVariable,
+        @Nullable @JsonProperty("execution_settings") Map<String, PromptExecutionSettings> executionSettings) {
+        this.schema = schema;
+        this.name = name;
+        this.template = template;
+        if (templateFormat == null) {
+            templateFormat = SEMANTIC_KERNEL_TEMPLATE_FORMAT;
+        }
+        this.templateFormat = templateFormat;
+        this.description = description;
+        if (inputVariables == null) {
+            this.inputVariables = new ArrayList<>();
+        } else {
+            this.inputVariables = new ArrayList<>(inputVariables);
+        }
+        this.outputVariable = outputVariable != null
+            ? outputVariable
+            : new OutputVariable(String.class.getName(), "out");
+        if (executionSettings == null) {
+            this.executionSettings = new HashMap<>();
+        } else {
+            this.executionSettings = new HashMap<>(executionSettings);
+        }
+    }
+
+    /**
+     * Constructor for a prompt template config
+     *
+     * @param name              Name of the template
+     * @param template          Template string
+     * @param templateFormat    Template format
+     * @param description       Description of the template
+     * @param inputVariables    Input variables
+     * @param outputVariable    Output variable
+     * @param executionSettings Execution settings
+     */
+    protected PromptTemplateConfig(
+        @Nullable String name,
+        @Nullable String template,
+        @Nullable String templateFormat,
+        @Nullable String description,
+        @Nullable List<InputVariable> inputVariables,
+        @Nullable OutputVariable outputVariable,
+        @Nullable Map<String, PromptExecutionSettings> executionSettings) {
+        this(
+            CURRENT_SCHEMA,
+            name,
+            template,
+            templateFormat,
+            description,
+            inputVariables,
+            outputVariable,
+            executionSettings);
+    }
+
+    /**
+     * Copy constructor.
+     *
+     * @param promptTemplate The prompt template to copy.
+     */
+    public PromptTemplateConfig(PromptTemplateConfig promptTemplate) {
+        this(
+            promptTemplate.name,
+            promptTemplate.template,
+            promptTemplate.templateFormat,
+            promptTemplate.description,
+            promptTemplate.inputVariables,
+            promptTemplate.outputVariable,
+            promptTemplate.executionSettings);
+    }
+
+    /**
+     * Deserialize the JSON string to a PromptTemplateConfig.
+     *
+     * @param json The JSON string to parse
+     * @return The PromptTemplateConfig object
+     * @throws SKException If the prompt template config cannot be deserialized.
+     */
+    public static PromptTemplateConfig parseFromJson(String json) throws SKException {
+        try {
+            return new ObjectMapper().readValue(json, PromptTemplateConfig.class);
+        } catch (JsonProcessingException e) {
+            throw new SKException("Unable to parse prompt template config", e);
+        }
+    }
+
+    /**
+     * Create a builder for a prompt template config.
+     *
+     * @return The prompt template config builder.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Create a builder for a prompt template config, where the constructed template will be
+     * considered the default to be used if no other config is selected.
+     *
+     * @return The default prompt template config.
+     */
+    public static Builder defaultTemplateBuilder() {
+        return new Builder()
+            .withName(DEFAULT_CONFIG_NAME);
+    }
+
+    /**
+     * Get the parameters metadata.
+     *
+     * @return The parameters metadata.
+     */
+    public List<InputVariable> getKernelParametersMetadata() {
+        if (inputVariables == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(inputVariables);
+    }
+
+    /**
+     * Get the return parameter metadata.
+     *
+     * @return The return parameter metadata.
+     */
+    public OutputVariable<?> getKernelReturnParameterMetadata() {
+        if (outputVariable == null) {
+            return new OutputVariable<>("", String.class);
+        }
+
+        return new OutputVariable<>(
+            outputVariable.getDescription(),
+            outputVariable.getType());
+    }
+
+    /**
+     * Get the name of the prompt template config.
+     *
+     * @return The name of the prompt template config.
+     */
+    @Nullable
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Get the template of the prompt template config.
+     *
+     * @return The template of the prompt template config.
+     */
+    @Nullable
+    public String getTemplate() {
+        return template;
+    }
+
+    /**
+     * Get the description of the prompt template config.
+     *
+     * @return The description of the prompt template config.
+     */
+    @Nullable
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Get the inputVariables of the prompt template config.
+     *
+     * @return The input variables of the prompt template config.
+     */
+    public List<InputVariable> getInputVariables() {
+        return Collections.unmodifiableList(inputVariables);
+    }
+
+    /**
+     * Get the output variable of the prompt template config.
+     *
+     * @return The output variable of the prompt template config.
+     */
+    @Nullable
+    public OutputVariable getOutputVariable() {
+        return outputVariable;
+    }
+
+    /**
+     * Get the prompt execution settings of the prompt template config.
+     *
+     * @return The prompt execution settings of the prompt template config.
+     */
+    @Nullable
+    public Map<String, PromptExecutionSettings> getExecutionSettings() {
+        if (executionSettings != null) {
+            return Collections.unmodifiableMap(executionSettings);
+        }
+        return null;
+    }
+
+    /**
+     * Get the template format of the prompt template config.
+     *
+     * @return The template format of the prompt template config.
+     */
+    public String getTemplateFormat() {
+        return templateFormat;
+    }
+
+    /**
+     * Get the schema version of the prompt template config.
+     *
+     * @return The schema version of the prompt template config.
+     */
     public int getSchema() {
         return schema;
     }
 
-    public String getType() {
-        return type;
+    /**
+     * Create a builder for a prompt template config which is a clone of the current object.
+     *
+     * @return The prompt template config builder.
+     */
+    public Builder copy() {
+        return new Builder(this);
     }
 
-    /** Builder for CompletionConfig */
-    public static class CompletionConfigBuilder implements SemanticKernelBuilder<CompletionConfig> {
-
-        private CompletionConfig completionConfig;
-
-        public CompletionConfigBuilder() {
-            completionConfig = new CompletionConfig();
-        }
-
-        public CompletionConfigBuilder(CompletionConfig completionConfig) {
-            this.completionConfig = completionConfig;
-        }
-
-        public CompletionConfigBuilder temperature(double temperature) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
-        }
-
-        public CompletionConfigBuilder topP(double topP) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
-        }
-
-        public CompletionConfigBuilder presencePenalty(double presencePenalty) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
-        }
-
-        public CompletionConfigBuilder frequencyPenalty(double frequencyPenalty) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
-        }
-
-        public CompletionConfigBuilder maxTokens(int maxTokens) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            completionConfig.stopSequences));
-        }
-
-        public CompletionConfigBuilder stopSequences(List<String> stopSequences) {
-            return new CompletionConfigBuilder(
-                    new CompletionConfig(
-                            completionConfig.temperature,
-                            completionConfig.topP,
-                            completionConfig.presencePenalty,
-                            completionConfig.frequencyPenalty,
-                            completionConfig.maxTokens,
-                            completionConfig.bestOf,
-                            completionConfig.user,
-                            stopSequences));
-        }
-
-        public CompletionConfig build() {
-            return completionConfig;
-        }
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, template, templateFormat, description, inputVariables,
+            outputVariable, executionSettings);
     }
 
-    public InputConfig getInput() {
-        return input;
-    }
-
-    /** Completion configuration parameters */
-    public static class CompletionConfig implements Buildable {
-        /*
-        /// <summary>
-        /// Sampling temperature to use, between 0 and 2. Higher values will make the output more random.
-        /// Lower values will make it more focused and deterministic.
-        /// </summary>
-        [JsonPropertyName("temperature")]
-        [JsonPropertyOrder(1)]
-        */
-        private final double temperature;
-        /*
-        /// <summary>
-        /// Cut-off of top_p probability mass of tokens to consider.
-        /// For example, 0.1 means only the tokens comprising the top 10% probability mass are considered.
-        /// </summary>
-        [JsonPropertyName("top_p")]
-        [JsonPropertyOrder(2)]
-        */
-        private final double topP;
-
-        /*
-        /// <summary>
-        /// Lowers the probability of a word appearing if it already appeared in the predicted text.
-        /// Unlike the frequency penalty, the presence penalty does not depend on the frequency at which words
-        /// appear in past predictions.
-        /// </summary>
-        [JsonPropertyName("presence_penalty")]
-        [JsonPropertyOrder(3)]
-        */
-        private final double presencePenalty;
-
-        /*
-        /// <summary>
-        /// Controls the model’s tendency to repeat predictions. The frequency penalty reduces the probability
-        /// of words that have already been generated. The penalty depends on how many times a word has already
-        /// occurred in the prediction.
-        /// </summary>
-        [JsonPropertyName("frequency_penalty")]
-        [JsonPropertyOrder(4)]
-        */
-        private final double frequencyPenalty;
-        /*
-        /// <summary>
-        /// Maximum number of tokens that can be generated.
-        /// </summary>
-        [JsonPropertyName("max_tokens")]
-        [JsonPropertyOrder(5)]*/
-        private final int maxTokens; // { get; set; } = 256;
-        /*
-        /// <summary>
-        /// Stop sequences are optional sequences that tells the AI model when to stop generating tokens.
-        /// </summary>
-        [JsonPropertyName("stop_sequences")]
-        [JsonPropertyOrder(6)]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        */
-        public final List<String> stopSequences; // { get; set; } = new();
-
-        /**
-         * The maximum number of completions to generate for each prompt. This is used by the
-         * CompletionService to generate multiple completions for a single prompt.
-         */
-        private final Integer bestOf;
-
-        /**
-         * A unique identifier representing your end-user, which can help OpenAI to monitor and
-         * detect abuse
-         */
-        private final String user;
-
-        public CompletionConfig() {
-            this(0.0, 0.0, 0.0, 0.0, 256, 1, "", new ArrayList<>());
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-
-        public CompletionConfig(
-                double temperature,
-                double topP,
-                double presencePenalty,
-                double frequencyPenalty,
-                int maxTokens) {
-            this(
-                    temperature,
-                    topP,
-                    presencePenalty,
-                    frequencyPenalty,
-                    maxTokens,
-                    1,
-                    "",
-                    new ArrayList<>());
+        if (obj == null) {
+            return false;
         }
-
-        @JsonCreator
-        public CompletionConfig(
-                @JsonProperty("temperature") double temperature,
-                @JsonProperty("top_p") double topP,
-                @JsonProperty("presence_penalty") double presencePenalty,
-                @JsonProperty("frequency_penalty") double frequencyPenalty,
-                @JsonProperty("max_tokens") int maxTokens,
-                @JsonProperty("best_of") int bestOf,
-                @JsonProperty("user") String user,
-                @JsonProperty(value = "stop_sequences") List<String> stopSequences) {
-            this.temperature = temperature;
-            this.topP = topP;
-            this.presencePenalty = presencePenalty;
-            this.frequencyPenalty = frequencyPenalty;
-            this.maxTokens = maxTokens;
-
-            // bestOf must be at least 1
-            this.bestOf = Math.max(1, bestOf);
-
-            if (user == null) {
-                user = "";
-            }
-            this.user = user;
-            if (stopSequences == null) {
-                stopSequences = new ArrayList<>();
-            }
-            this.stopSequences = stopSequences;
+        if (!getClass().isInstance(obj)) {
+            return false;
         }
-
-        public double getTemperature() {
-            return temperature;
+        final PromptTemplateConfig other = (PromptTemplateConfig) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
         }
-
-        public double getTopP() {
-            return topP;
+        if (!Objects.equals(this.template, other.template)) {
+            return false;
         }
-
-        public double getPresencePenalty() {
-            return presencePenalty;
+        if (!Objects.equals(this.description, other.description)) {
+            return false;
         }
-
-        public double getFrequencyPenalty() {
-            return frequencyPenalty;
+        if (!Objects.equals(this.templateFormat, other.templateFormat)) {
+            return false;
         }
-
-        public int getMaxTokens() {
-            return maxTokens;
+        if (!Objects.equals(this.inputVariables, other.inputVariables)) {
+            return false;
         }
-
-        /**
-         * The maximum number of completions to generate for each prompt. This is used by the
-         * CompletionService to generate multiple completions for a single prompt.
-         */
-        public int getBestOf() {
-            return bestOf;
+        if (!Objects.equals(this.outputVariable, other.outputVariable)) {
+            return false;
         }
-
-        /**
-         * A unique identifier representing your end-user, which can help OpenAI to monitor and
-         * detect abuse
-         */
-        public String getUser() {
-            return user;
-        }
-
-        public SemanticKernelBuilder<CompletionConfig> builder() {
-            return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
-        }
-
-        public List<String> getStopSequences() {
-            return Collections.unmodifiableList(stopSequences);
-        }
-    }
-
-    /** Input parameter for semantic functions */
-    public static class InputParameter {
-        private final String name;
-        private final String description;
-
-        private final String defaultValue;
-
-        @JsonCreator
-        public InputParameter(
-                @JsonProperty("name") String name,
-                @JsonProperty("description") String description,
-                @JsonProperty("defaultValue") String defaultValue) {
-            this.name = name;
-            this.description = description;
-            this.defaultValue = defaultValue;
-        }
-
-        /**
-         * Name of the parameter to pass to the function. e.g. when using "{{$input}}" the name is
-         * "input", when using "{{$style}}" the name is "style", etc.
-         *
-         * @return name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Parameter description for UI apps and planner. Localization is not supported here.
-         *
-         * @return description
-         */
-        public String getDescription() {
-            return description;
-        }
-
-        /**
-         * Default value when nothing is provided
-         *
-         * @return the default value
-         */
-        public String getDefaultValue() {
-            return defaultValue;
-        }
-    }
-
-    /** Input configuration (list of all input parameters for a semantic function). */
-    public static class InputConfig {
-
-        public final List<InputParameter> parameters;
-
-        @JsonCreator
-        public InputConfig(@JsonProperty("parameters") List<InputParameter> parameters) {
-            this.parameters = Collections.unmodifiableList(parameters);
-        }
-
-        public List<InputParameter> getParameters() {
-            return parameters;
-        }
-    }
-
-    private final int schema;
-
-    private final String type; // { get; set; } = "completion";
-    private final String description;
-
-    public PromptTemplateConfig() {
-        this("", "", null);
-    }
-
-    public PromptTemplateConfig(CompletionConfig completionConfig) {
-        this(1, "", "", completionConfig, new InputConfig(new ArrayList<>()));
-    }
-
-    public PromptTemplateConfig(
-            String description, String type, @Nullable CompletionConfig completionConfig) {
-        this(1, description, type, completionConfig, new InputConfig(new ArrayList<>()));
-    }
-
-    @JsonCreator
-    public PromptTemplateConfig(
-            @JsonProperty("schema") int schema,
-            @JsonProperty("description") String description,
-            @JsonProperty("type") String type,
-            @Nullable @JsonProperty("completion") CompletionConfig completionConfig,
-            @Nullable @JsonProperty("input") InputConfig input) {
-        if (completionConfig == null) {
-            completionConfig = new CompletionConfig();
-        }
-        this.schema = schema;
-        this.description = description;
-        this.type = type;
-        this.completionConfig = completionConfig;
-        if (input == null) {
-            input = new InputConfig(new ArrayList<>());
-        }
-        this.input = input;
+        return Objects.equals(this.executionSettings, other.executionSettings);
     }
 
     /**
-     * Description
-     *
-     * @return Description
+     * Builder for a prompt template config.
      */
-    public String getDescription() {
-        return description;
+    public static class Builder {
+
+        @Nullable
+        private String name;
+        @Nullable
+        private String template;
+        private String templateFormat = SEMANTIC_KERNEL_TEMPLATE_FORMAT;
+        @Nullable
+        private String description = null;
+        private List<InputVariable> inputVariables = new ArrayList<>();
+        @Nullable
+        private OutputVariable outputVariable;
+        private Map<String, PromptExecutionSettings> executionSettings = new HashMap<>();
+
+        private Builder() {
+        }
+
+        private Builder(PromptTemplateConfig promptTemplateConfig) {
+            this.name = promptTemplateConfig.name;
+            this.template = promptTemplateConfig.template;
+            this.templateFormat = promptTemplateConfig.templateFormat;
+            this.description = promptTemplateConfig.description;
+            this.inputVariables = new ArrayList<>(promptTemplateConfig.inputVariables);
+            this.outputVariable = promptTemplateConfig.outputVariable;
+            this.executionSettings = new HashMap<>(promptTemplateConfig.executionSettings);
+        }
+
+        /**
+         * Set the name of the prompt template config.
+         *
+         * @param name The name of the prompt template config.
+         * @return {@code this} prompt template config.
+         */
+        public Builder withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        /**
+         * Add an input variable to the prompt template config.
+         *
+         * @param inputVariable The input variable to add.
+         * @return {@code this} prompt template config.
+         */
+        public Builder addInputVariable(InputVariable inputVariable) {
+            inputVariables.add(inputVariable);
+            return this;
+        }
+
+        /**
+         * Set the template of the prompt template config.
+         *
+         * @param template The template of the prompt template config.
+         * @return {@code this} prompt template config.
+         */
+        public Builder withTemplate(String template) {
+            this.template = template;
+            return this;
+        }
+
+        /**
+         * Set the description of the prompt template config.
+         *
+         * @param description The description of the prompt template config.
+         * @return {@code this} prompt template config.
+         */
+        public Builder withDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        /**
+         * Set the template format of the prompt template config.
+         *
+         * @param templateFormat The template format of the prompt template config.
+         * @return {@code this} prompt template config.
+         */
+        public Builder withTemplateFormat(String templateFormat) {
+            this.templateFormat = templateFormat;
+            return this;
+        }
+
+        /**
+         * Set the inputVariables of the prompt template config.
+         *
+         * @param inputVariables The input variables of the prompt template config.
+         * @return {@code this} prompt template config.
+         */
+        public Builder withInputVariables(List<InputVariable> inputVariables) {
+            this.inputVariables = new ArrayList<>(inputVariables);
+            return this;
+        }
+
+        /**
+         * Set the output variable of the prompt template config.
+         *
+         * @param outputVariable The output variable of the prompt template config.
+         * @return {@code this} prompt template config.
+         */
+        public Builder withOutputVariable(OutputVariable<?> outputVariable) {
+            this.outputVariable = outputVariable;
+            return this;
+        }
+
+        /**
+         * Set the prompt execution settings of the prompt template config.
+         *
+         * @param executionSettings The prompt execution settings of the prompt template config.
+         * @return {@code this} prompt template config.
+         */
+        public Builder withExecutionSettings(
+            Map<String, PromptExecutionSettings> executionSettings) {
+            this.executionSettings = new HashMap<>(executionSettings);
+            return this;
+        }
+
+        /**
+         * Build the prompt template config.
+         *
+         * @return The prompt template config.
+         */
+        public PromptTemplateConfig build() {
+            return new PromptTemplateConfig(
+                name,
+                template,
+                templateFormat,
+                description,
+                inputVariables,
+                outputVariable,
+                executionSettings);
+        }
     }
 }

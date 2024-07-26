@@ -289,7 +289,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             MemoryRecord? record = await this.GetFromNamespaceAsync(indexName, indexNamespace, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
 
-            if (record != null)
+            if (record is not null)
             {
                 yield return record;
             }
@@ -423,7 +423,18 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async Task RemoveBatchFromNamespaceAsync(string indexName, string indexNamespace, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(async k => await this.RemoveFromNamespaceAsync(indexName, indexNamespace, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
+        try
+        {
+            await this._pineconeClient.DeleteAsync(indexName,
+                keys,
+                indexNamespace,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpOperationException ex)
+        {
+            this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+            throw;
+        }
     }
 
     /// <inheritdoc />
@@ -677,7 +688,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
 
         // compare metadata dictionaries
-        if (existingRecord.Metadata != null && vectorData.Metadata != null)
+        if (existingRecord.Metadata is not null && vectorData.Metadata is not null)
         {
             if (existingRecord.Metadata.SequenceEqual(vectorData.Metadata))
             {

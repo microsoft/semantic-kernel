@@ -8,14 +8,13 @@ from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins import WebSearchEnginePlugin
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import KernelPromptTemplate, PromptTemplateConfig
-from semantic_kernel.utils.settings import bing_search_settings_from_dot_env, openai_settings_from_dot_env
 
 
 async def example1(kernel: Kernel, search_plugin_name: str):
     print("======== Bing and Google Search Plugins ========")
 
     question = "What's the largest building in the world?"
-    function = kernel.plugins[search_plugin_name]["search"]
+    function = kernel.get_function(plugin_name=search_plugin_name, function_name="search")
     result = await kernel.invoke(function, query=question)
 
     print(question)
@@ -66,7 +65,7 @@ async def example2(kernel: Kernel, service_id: str):
     oracle = kernel.add_function(
         function_name="oracle",
         plugin_name="OraclePlugin",
-        template=prompt,
+        prompt=prompt,
         execution_settings=OpenAIChatPromptExecutionSettings(
             service_id=service_id, max_tokens=150, temperature=0, top_p=1
         ),
@@ -98,18 +97,14 @@ async def example2(kernel: Kernel, service_id: str):
 async def main():
     kernel = Kernel()
 
-    model = "gpt-3.5-turbo-1106"
+    model = "gpt-3.5-turbo"
     service_id = model
 
-    api_key, org_id = openai_settings_from_dot_env()
     kernel.add_service(
-        OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
+        OpenAIChatCompletion(service_id=service_id, ai_model_id=model),
     )
 
-    bing_api_key = bing_search_settings_from_dot_env()
-    assert bing_api_key is not None
-
-    bing_connector = BingConnector(api_key=bing_api_key)
+    bing_connector = BingConnector()
     bing = WebSearchEnginePlugin(bing_connector)
     kernel.add_plugin(bing, "bing")
 

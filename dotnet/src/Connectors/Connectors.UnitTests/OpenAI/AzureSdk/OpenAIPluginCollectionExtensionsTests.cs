@@ -16,7 +16,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
     public void TryGetFunctionAndArgumentsWithNonExistingFunctionReturnsFalse()
     {
         // Arrange
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", []);
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin");
         var plugins = new KernelPluginCollection([plugin]);
 
         var toolCall = new ChatCompletionsFunctionToolCall("id", "MyPlugin_MyFunction", string.Empty);

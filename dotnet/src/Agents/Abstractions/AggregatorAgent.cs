@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -40,18 +39,18 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     /// <inheritdoc/>
     protected internal override IEnumerable<string> GetChannelKeys()
     {
-        yield return typeof(AggregatorChannel).FullName;
+        yield return typeof(AggregatorChannel).FullName!;
     }
 
     /// <inheritdoc/>
-    protected internal override Task<AgentChannel> CreateChannelAsync(ILogger logger, CancellationToken cancellationToken)
+    protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        logger.LogDebug("[{MethodName}] Creating channel {ChannelType}", nameof(CreateChannelAsync), nameof(AggregatorChannel));
+        this.Logger.LogAggregatorAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
         AgentChat chat = chatProvider.Invoke();
         AggregatorChannel channel = new(chat);
 
-        logger.LogInformation("[{MethodName}] Created channel {ChannelType} ({ChannelMode}) with: {AgentChatType}", nameof(CreateChannelAsync), nameof(AggregatorChannel), this.Mode, chat.GetType());
+        this.Logger.LogAggregatorAgentCreatedChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel), this.Mode, chat.GetType());
 
         return Task.FromResult<AgentChannel>(channel);
     }

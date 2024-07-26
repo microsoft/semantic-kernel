@@ -15,7 +15,7 @@ This sample uses function calling capable models and has been tested with the fo
 | Model type      | Model name/id             |       Model version | Supported |
 | --------------- | ------------------------- | ------------------: | --------- |
 | Chat Completion | gpt-3.5-turbo             |                0125 | ✅        |
-| Chat Completion | gpt-3.5-turbo-1106        |                1106 | ✅        |
+| Chat Completion | gpt-3.5-turbo             |                1106 | ✅        |
 | Chat Completion | gpt-3.5-turbo-0613        |                0613 | ✅        |
 | Chat Completion | gpt-3.5-turbo-0301        |                0301 | ❌        |
 | Chat Completion | gpt-3.5-turbo-16k         |                0613 | ✅        |
@@ -35,11 +35,21 @@ This sample uses function calling capable models and has been tested with the fo
 
 ## Configuring the sample
 
-Please make sure your .env file contains the following:
+Please make sure either your environment variables or your .env file contains the following:
 
 - "BOOKING_SAMPLE_CLIENT_ID"
 - "BOOKING_SAMPLE_TENANT_ID"
 - "BOOKING_SAMPLE_CLIENT_SECRET"
+- "BOOKING_SAMPLE_BUSINESS_ID"
+- "BOOKING_SAMPLE_SERVICE_ID"
+
+If wanting to use the `.env` file, you must pass the `env_file_path` parameter with a valid path:
+
+```python
+booking_sample_settings = BookingSampleSettings(env_file_path=env_file_path)
+```
+
+This will tell Pydantic settings to also load the `.env` file instead of just trying to load environment variables.
 
 ### Create an App Registration in Azure Active Directory
 

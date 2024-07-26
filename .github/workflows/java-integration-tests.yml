@@ -70,8 +70,9 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+        run: ./mvnw -B -Pwith-samples -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java
+        if: ${{ matrix.java-versions >= 17 }}
 
       # API tests run on JDK 17+
       - name: Run integration tests

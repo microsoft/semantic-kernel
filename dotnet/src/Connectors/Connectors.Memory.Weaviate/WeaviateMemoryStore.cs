@@ -29,7 +29,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </remarks>
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-public class WeaviateMemoryStore : IMemoryStore
+public partial class WeaviateMemoryStore : IMemoryStore
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
     /// <summary>
@@ -39,7 +39,13 @@ public class WeaviateMemoryStore : IMemoryStore
 
     // Regex to ensure Weaviate class names confirm to the naming convention
     // https://weaviate.io/developers/weaviate/configuration/schema-configuration#class
-    private static readonly Regex s_classNameRegEx = new("[^0-9a-zA-Z]+", RegexOptions.Compiled);
+#if NET
+    [GeneratedRegex("[^0-9a-zA-Z]+")]
+    private static partial Regex ClassNameRegex();
+#else
+    private static Regex ClassNameRegex() => s_classNameRegex;
+    private static readonly Regex s_classNameRegex = new("[^0-9a-zA-Z]+", RegexOptions.Compiled);
+#endif
 
     private const string DefaultApiVersion = "v1";
 
@@ -126,7 +132,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
             CreateClassSchemaResponse? result = JsonSerializer.Deserialize<CreateClassSchemaResponse>(responseContent, s_jsonOptionsCache);
 
-            if (result == null || result.Description != description)
+            if (result is null || result.Description != description)
             {
                 throw new KernelException($"Name conflict for collection: {collectionName} with class name: {className}");
             }
@@ -157,7 +163,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
             GetClassResponse? existing = JsonSerializer.Deserialize<GetClassResponse>(responseContent, s_jsonOptionsCache);
 
-            if (existing != null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
+            if (existing is not null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
             {
                 // ReSharper disable once CommentTypo
                 // Check that we don't have an accidental conflict.
@@ -305,13 +311,13 @@ public class WeaviateMemoryStore : IMemoryStore
         }
 
         WeaviateObject? weaviateObject = JsonSerializer.Deserialize<WeaviateObject>(responseContent, s_jsonOptionsCache);
-        if (weaviateObject == null)
+        if (weaviateObject is null)
         {
             this._logger.LogError("Unable to deserialize response to WeaviateObject");
             return null;
         }
 
-        DateTimeOffset? timestamp = weaviateObject.Properties == null
+        DateTimeOffset? timestamp = weaviateObject.Properties is null
             ? null
             : weaviateObject.Properties.TryGetValue("sk_timestamp", out object? value)
                 ? Convert.ToDateTime(value.ToString(), CultureInfo.InvariantCulture)
@@ -335,7 +341,7 @@ public class WeaviateMemoryStore : IMemoryStore
         foreach (string? key in keys)
         {
             MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (record != null)
+            if (record is not null)
             {
                 yield return record;
             }
@@ -414,7 +420,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
             GraphResponse? data = JsonSerializer.Deserialize<GraphResponse>(responseContent, s_jsonOptionsCache);
 
-            if (data == null)
+            if (data is null)
             {
                 this._logger.LogWarning("Unable to deserialize Search response");
                 yield break;
@@ -455,7 +461,7 @@ public class WeaviateMemoryStore : IMemoryStore
         string description = json["sk_description"]!.GetValue<string>();
         string additionalMetadata = json["sk_additional_metadata"]!.GetValue<string>();
         string key = json["sk_id"]!.GetValue<string>();
-        DateTime? timestamp = json["sk_timestamp"] != null
+        DateTime? timestamp = json["sk_timestamp"] is not null
             ? Convert.ToDateTime(json["sk_timestamp"]!.GetValue<string>(), CultureInfo.InvariantCulture)
             : null;
 
@@ -501,7 +507,7 @@ public class WeaviateMemoryStore : IMemoryStore
     private static string ToWeaviateFriendlyClassName(string collectionName)
     {
         // Prefix class names with to ensure proper case for Weaviate Classes
-        var sanitised = s_classNameRegEx.Replace(collectionName, string.Empty);
+        var sanitised = ClassNameRegex().Replace(collectionName, string.Empty);
         if (!char.IsLetter(sanitised[0]))
         {
             throw new ArgumentException("collectionName must start with a letter.", nameof(collectionName));

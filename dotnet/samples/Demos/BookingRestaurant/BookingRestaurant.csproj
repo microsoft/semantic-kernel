@@ -6,7 +6,7 @@
     <RootNamespace></RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>CA2007;VSTHRD111</NoWarn>
+    <NoWarn>$(NoWarn);CA2007;VSTHRD111</NoWarn>
     <UserSecretsId>c478d0b2-7145-4d1a-9600-3130c04085cd</UserSecretsId>
   </PropertyGroup>
 

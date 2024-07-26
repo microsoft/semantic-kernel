@@ -57,13 +57,17 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     public OpenAITextEmbeddingGenerationService(
         string modelId,
         OpenAIClient openAIClient,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
         this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+
+        this._dimensions = dimensions;
     }
 
     /// <inheritdoc/>

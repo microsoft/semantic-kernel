@@ -5,13 +5,14 @@ import logging
 import os
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAISearchDataSource,
     AzureChatCompletion,
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import TimePlugin
 from semantic_kernel.functions import KernelArguments
@@ -25,12 +26,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 kernel = sk.Kernel()
 
-# Load Azure OpenAI Settings
-deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env(include_deployment=True)
-
 # Create the data source settings
-azure_ai_search_settings = sk.azure_aisearch_settings_from_dot_env_as_dict()
-az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
+azure_ai_search_settings = AzureAISearchSettings.create()
+az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings.model_dump())
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_body=extra, tool_choice="auto")
 
@@ -42,10 +40,6 @@ req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_bod
 
 chat_service = AzureChatCompletion(
     service_id="chat-gpt",
-    deployment_name=deployment,
-    api_key=api_key,
-    endpoint=endpoint,
-    api_version="2024-02-15-preview",
 )
 kernel.add_service(
     chat_service,
@@ -85,9 +79,7 @@ chat_function = kernel.add_function(
 # calling the chat, you could add a overloaded version of the settings here,
 # to enable or disable function calling or set the function calling to a specific plugin.
 # see the openai_function_calling example for how to use this with a unrelated function definition
-req_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-    auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
-)
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
 
 arguments = KernelArguments(settings=req_settings)
 
@@ -109,7 +101,7 @@ async def chat() -> bool:
     arguments["chat_history"] = history
     arguments["user_input"] = user_input
     answer = await kernel.invoke(
-        functions=chat_function,
+        function=chat_function,
         arguments=arguments,
     )
     print(f"Mosscap:> {answer}")

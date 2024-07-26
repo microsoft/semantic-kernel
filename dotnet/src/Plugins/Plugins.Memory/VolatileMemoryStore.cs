@@ -105,7 +105,7 @@ public class VolatileMemoryStore : IMemoryStore
         {
             var record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
 
-            if (record != null)
+            if (record is not null)
             {
                 yield return record;
             }
@@ -158,7 +158,7 @@ public class VolatileMemoryStore : IMemoryStore
             embeddingCollection = collectionDict.Values;
         }
 
-        if (embeddingCollection == null || embeddingCollection.Count == 0)
+        if (embeddingCollection is null || embeddingCollection.Count == 0)
         {
             return AsyncEnumerable.Empty<(MemoryRecord, double)>();
         }
@@ -167,7 +167,7 @@ public class VolatileMemoryStore : IMemoryStore
 
         foreach (var record in embeddingCollection)
         {
-            if (record != null)
+            if (record is not null)
             {
                 double similarity = TensorPrimitives.CosineSimilarity(embedding.Span, record.Embedding.Span);
                 if (similarity >= minRelevanceScore)

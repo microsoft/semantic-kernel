@@ -29,10 +29,10 @@ class PlannerCreatePlanError(PlannerException):
 
 
 __all__ = [
+    "PlannerCreatePlanError",
     "PlannerException",
     "PlannerExecutionException",
+    "PlannerInvalidConfigurationError",
     "PlannerInvalidGoalError",
     "PlannerInvalidPlanError",
-    "PlannerInvalidConfigurationError",
-    "PlannerCreatePlanError",
 ]

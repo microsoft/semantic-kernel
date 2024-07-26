@@ -15,7 +15,7 @@ internal static class KernelFunctionExtensions
     /// <param name="pluginName">The plugin name</param>
     /// <param name="delimiter">The delimiter character</param>
     /// <returns>An OpenAI tool definition</returns>
-    public static FunctionToolDefinition ToToolDefinition(this KernelFunction function, string pluginName, char delimiter)
+    public static FunctionToolDefinition ToToolDefinition(this KernelFunction function, string pluginName, string delimiter)
     {
         var metadata = function.Metadata;
         if (metadata.Parameters.Count > 0)
@@ -47,15 +47,15 @@ internal static class KernelFunctionExtensions
                     required,
                 };
 
-            return new FunctionToolDefinition(function.GetQualifiedName(pluginName, delimiter), function.Description, BinaryData.FromObjectAsJson(spec));
+            return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName, delimiter), function.Description, BinaryData.FromObjectAsJson(spec));
         }
 
-        return new FunctionToolDefinition(function.GetQualifiedName(pluginName, delimiter), function.Description);
+        return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName, delimiter), function.Description);
     }
 
     private static string ConvertType(Type? type)
     {
-        if (type == null || type == typeof(string))
+        if (type is null || type == typeof(string))
         {
             return "string";
         }
@@ -75,30 +75,15 @@ internal static class KernelFunctionExtensions
             return "array";
         }
 
-        switch (Type.GetTypeCode(type))
+        return Type.GetTypeCode(type) switch
         {
-            case TypeCode.SByte:
-            case TypeCode.Byte:
-            case TypeCode.Int16:
-            case TypeCode.UInt16:
-            case TypeCode.Int32:
-            case TypeCode.UInt32:
-            case TypeCode.Int64:
-            case TypeCode.UInt64:
-            case TypeCode.Single:
-            case TypeCode.Double:
-            case TypeCode.Decimal:
-                return "number";
-        }
+            TypeCode.SByte or TypeCode.Byte or
+            TypeCode.Int16 or TypeCode.UInt16 or
+            TypeCode.Int32 or TypeCode.UInt32 or
+            TypeCode.Int64 or TypeCode.UInt64 or
+            TypeCode.Single or TypeCode.Double or TypeCode.Decimal => "number",
 
-        return "object";
-    }
-
-    /// <summary>
-    /// Produce a fully qualified toolname.
-    /// </summary>
-    public static string GetQualifiedName(this KernelFunction function, string pluginName, char delimiter)
-    {
-        return $"{pluginName}{delimiter}{function.Name}";
+            _ => "object",
+        };
     }
 }

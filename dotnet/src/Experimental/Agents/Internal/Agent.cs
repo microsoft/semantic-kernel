@@ -304,7 +304,7 @@ internal sealed class Agent : IAgent
                 function = this.FunctionAsk;
             }
 
-            return function != null;
+            return function is not null;
         }
     }
 }

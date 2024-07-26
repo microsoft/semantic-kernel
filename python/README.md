@@ -20,15 +20,29 @@ Make sure you have an
 [OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
-Copy those keys into a `.env` file (see the `.env.example` file):
+There are two methods to manage keys, secrets, and endpoints:
+
+1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints. This means that there is a first attempt to load them from environment variables. The `.env` file naming applies to how the names should be stored as environment variables.
+
+2. If you'd like to use the `.env` file, you will need to configure the `.env` file with the following keys in the file (see the `.env.example` file):
 
 ```
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
-AZURE_OPENAI_DEPLOYMENT_NAME=""
+AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=""
+AZURE_OPENAI_TEXT_DEPLOYMENT_NAME=""
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=""
 AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
 ```
+
+You will then configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
+
+```python
+chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
+```
+
+This optional `env_file_path` parameter will allow pydantic settings to use the `.env` file as a fallback to read the settings.
 
 # Running a prompt
 
@@ -37,30 +51,21 @@ import asyncio
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureChatCompletion
 from semantic_kernel.prompt_template import PromptTemplateConfig
-from semantic_kernel.utils.settings import openai_settings_from_dot_env, azure_openai_settings_from_dot_env
 
 kernel = Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
-api_key, org_id = openai_settings_from_dot_env()
 service_id="chat-gpt"
 kernel.add_service(
     OpenAIChatCompletion(
         service_id=service_id,
-        ai_model_id="gpt-3.5-turbo",
-        api_key=api_key,
-        org_id=org_id
     )
 )
 
 # Alternative using Azure:
-# deployment, api_key, endpoint = azure_openai_settings_from_dot_env()
 # kernel.add_service(
 #   AzureChatCompletion(
 #       service_id=service_id,
-#       deployment_name=deployment,
-#       endpoint=endpoint,
-#       api_key=api_key
 #   )
 # )
 
@@ -112,10 +117,10 @@ if __name__ == "__main__":
 ```python
 # Create a reusable function summarize function
 summarize = kernel.add_function(
-        function_name="tldr_function",
-        plugin_name="tldr_plugin",
-        prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
-        prompt_template_settings=req_settings,
+    function_name="tldr_function",
+    plugin_name="tldr_plugin",
+    prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
+    prompt_template_settings=req_settings,
 )
 
 # Summarize the laws of thermodynamics

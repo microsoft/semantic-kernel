@@ -23,7 +23,21 @@ internal sealed class RestApiOperationRunner
     private const string MediaTypeTextPlain = "text/plain";
 
     private const string DefaultResponseKey = "default";
-    private const string WildcardResponseKeyFormat = "{0}XX";
+
+    /// <summary>
+    /// HTTP request method.
+    /// </summary>
+    private const string HttpRequestMethod = "http.request.method";
+
+    /// <summary>
+    /// The HTTP request payload body.
+    /// </summary>
+    private const string HttpRequestBody = "http.request.body";
+
+    /// <summary>
+    /// Absolute URL describing a network resource according to RFC3986.
+    /// </summary>
+    private const string UrlFull = "url.full";
 
     /// <summary>
     /// List of payload builders/factories.
@@ -128,7 +142,7 @@ internal sealed class RestApiOperationRunner
 
         var operationPayload = this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
+        return this.SendAsync(url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), options, cancellationToken);
     }
 
     #region private
@@ -142,6 +156,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payload">HTTP request payload.</param>
     /// <param name="requestContent">HTTP request content.</param>
     /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
+    /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
     private async Task<RestApiOperationResponse> SendAsync(
@@ -151,13 +166,20 @@ internal sealed class RestApiOperationRunner
         object? payload = null,
         HttpContent? requestContent = null,
         IDictionary<string, KernelJsonSchema?>? expectedSchemas = null,
+        RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(method, url);
 
+#if NET5_0_OR_GREATER
+        requestMessage.Options.Set(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
+#else
+        requestMessage.Properties.Add(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
+#endif
+
         await this._authCallback(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        if (requestContent != null)
+        if (requestContent is not null)
         {
             requestMessage.Content = requestContent;
         }
@@ -167,7 +189,7 @@ internal sealed class RestApiOperationRunner
             : HttpHeaderConstant.Values.UserAgent);
         requestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(RestApiOperationRunner)));
 
-        if (headers != null)
+        if (headers is not null)
         {
             foreach (var header in headers)
             {
@@ -175,13 +197,46 @@ internal sealed class RestApiOperationRunner
             }
         }
 
-        using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage.Content).ConfigureAwait(false);
+            var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
 
-        response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+            response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
-        return response;
+            return response;
+        }
+        catch (HttpOperationException ex)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            ex.RequestMethod = requestMessage.Method.Method;
+            ex.RequestUri = requestMessage.RequestUri;
+            ex.RequestPayload = payload;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(HttpRequestBody, payload);
+
+            throw;
+        }
+        catch (OperationCanceledException ex)
+        {
+            ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(HttpRequestBody, payload);
+
+            throw;
+        }
+        catch (KernelException ex)
+        {
+            ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(HttpRequestBody, payload);
+
+            throw;
+        }
     }
 
     /// <summary>
@@ -189,11 +244,21 @@ internal sealed class RestApiOperationRunner
     /// </summary>
     /// <param name="request">The HttpRequestMessage associated with the HTTP request.</param>
     /// <param name="payload">The payload sent in the HTTP request.</param>
-    /// <param name="content">The HttpContent object containing the response content to be serialized.</param>
+    /// <param name="responseMessage">The HttpResponseMessage object containing the response content to be serialized.</param>
     /// <returns>The serialized content.</returns>
-    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpRequestMessage request, object? payload, HttpContent content)
+    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpRequestMessage request, object? payload, HttpResponseMessage responseMessage)
     {
-        var contentType = content.Headers.ContentType;
+        if (responseMessage.StatusCode == HttpStatusCode.NoContent)
+        {
+            return new RestApiOperationResponse(null, null)
+            {
+                RequestMethod = request.Method.Method,
+                RequestUri = request.RequestUri,
+                RequestPayload = payload,
+            };
+        }
+
+        var contentType = responseMessage.Content.Headers.ContentType;
 
         var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
 
@@ -217,7 +282,7 @@ internal sealed class RestApiOperationRunner
         }
 
         // Serialize response content and return it
-        var serializedContent = await serializer.Invoke(content).ConfigureAwait(false);
+        var serializedContent = await serializer.Invoke(responseMessage.Content).ConfigureAwait(false);
 
         return new RestApiOperationResponse(serializedContent, contentType!.ToString())
         {
@@ -270,7 +335,7 @@ internal sealed class RestApiOperationRunner
         // Build operation payload dynamically
         if (this._enableDynamicPayload)
         {
-            if (payloadMetadata == null)
+            if (payloadMetadata is null)
             {
                 throw new KernelException("Payload can't be built dynamically due to the missing payload metadata.");
             }
@@ -337,13 +402,13 @@ internal sealed class RestApiOperationRunner
         KernelJsonSchema? matchingResponse = null;
         if (expectedSchemas is not null)
         {
-            var statusCodeKey = $"{(int)statusCode}";
+            var statusCodeKey = ((int)statusCode).ToString(CultureInfo.InvariantCulture);
 
             // Exact Match
             matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == statusCodeKey).Value;
 
             // Wildcard match e.g. 2XX
-            matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key == string.Format(CultureInfo.InvariantCulture, WildcardResponseKeyFormat, statusCodeKey.Substring(0, 1))).Value;
+            matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key is { Length: 3 } key && key[0] == statusCodeKey[0] && key[1] == 'X' && key[2] == 'X').Value;
 
             // Default
             matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key == DefaultResponseKey).Value;

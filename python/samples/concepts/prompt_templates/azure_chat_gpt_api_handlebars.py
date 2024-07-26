@@ -4,10 +4,10 @@ import asyncio
 import logging
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
-from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -24,7 +24,7 @@ kernel = Kernel()
 
 service_id = "chat-gpt"
 chat_service = AzureChatCompletion(
-    service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+    service_id=service_id,
 )
 kernel.add_service(chat_service)
 
@@ -32,7 +32,7 @@ req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=s
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
-req_settings.auto_invoke_kernel_functions = False
+req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
 
 chat_function = kernel.add_function(

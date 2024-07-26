@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import asyncio
 
 import semantic_kernel as sk
@@ -8,9 +10,7 @@ async def main():
     """Client"""
     kernel = sk.Kernel()
 
-    openapi_plugin = kernel.import_plugin_from_openapi(
-        plugin_name="openApiPlugin", openapi_document_path="./openapi.yaml"
-    )
+    openapi_plugin = kernel.add_plugin_from_openapi(plugin_name="openApiPlugin", openapi_document_path="./openapi.yaml")
 
     arguments = {
         "request_body": '{"input": "hello world"}',

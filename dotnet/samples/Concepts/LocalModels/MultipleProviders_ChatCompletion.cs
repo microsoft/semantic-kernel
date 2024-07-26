@@ -90,6 +90,6 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
         await foreach (var word in kernel.InvokeStreamingAsync(mailFunction, new() { ["input"] = "Tell David that I'm going to finish the business plan by the end of the week." }))
         {
             Console.WriteLine(word);
-        };
+        }
     }
 }

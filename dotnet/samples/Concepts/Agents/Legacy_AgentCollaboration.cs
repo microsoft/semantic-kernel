@@ -157,7 +157,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
     private void DisplayMessage(IChatMessage message, IAgent? agent = null)
     {
         Console.WriteLine($"[{message.Id}]");
-        if (agent != null)
+        if (agent is not null)
         {
             Console.WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
         }

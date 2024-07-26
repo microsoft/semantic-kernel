@@ -9,20 +9,14 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
-from semantic_kernel.utils.settings import (
-    azure_aisearch_settings_from_dot_env_as_dict,
-    azure_openai_settings_from_dot_env_as_dict,
-)
 
 kernel = Kernel()
 logging.basicConfig(level=logging.DEBUG)
-
-# Load Azure OpenAI Settings
-aoai_settings = azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 
 # For example, AI Search index may contain the following document:
 
@@ -30,7 +24,8 @@ aoai_settings = azure_openai_settings_from_dot_env_as_dict(include_api_version=T
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-azure_ai_search_settings = azure_aisearch_settings_from_dot_env_as_dict()
+azure_ai_search_settings = AzureAISearchSettings.create()
+azure_ai_search_settings = azure_ai_search_settings.model_dump()
 
 # This example index has fields "title", "chunk", and "vector".
 # Add fields mapping to the settings.
@@ -56,7 +51,7 @@ req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_bod
 # When using data, use the 2024-02-15-preview API version.
 chat_service = AzureChatCompletion(
     service_id="chat-gpt",
-    **aoai_settings,
+    api_version="2024-02-15-preview",
 )
 kernel.add_service(chat_service)
 

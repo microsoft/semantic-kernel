@@ -82,13 +82,9 @@ internal sealed class OpenAITextToImageClientCore
         using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
         using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
         string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-        T result = JsonDeserialize<T>(responseJson);
+        T result = JsonSerializer.Deserialize<T>(responseJson, JsonOptionsCache.ReadPermissive) ?? throw new KernelException("Response JSON parse error");
         return result;
     }
-
-    internal static T JsonDeserialize<T>(string responseJson) =>
-        JsonSerializer.Deserialize<T>(responseJson, JsonOptionsCache.ReadPermissive) ??
-            throw new KernelException("Response JSON parse error");
 
     internal event EventHandler<HttpRequestMessage>? RequestCreated;
 
@@ -96,7 +92,7 @@ internal sealed class OpenAITextToImageClientCore
     {
         using var request = new HttpRequestMessage(method, url);
 
-        if (content != null)
+        if (content is not null)
         {
             request.Content = content;
         }

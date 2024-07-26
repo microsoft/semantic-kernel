@@ -42,7 +42,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         this.Method = request.Method;
         this.RequestUri = request.RequestUri;
         this.RequestHeaders = request.Headers;
-        this.RequestContent = request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
 
         if (request.Content is MultipartContent multipartContent)
         {

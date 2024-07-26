@@ -196,8 +196,8 @@ public sealed class OpenAIFileServiceTests : IDisposable
             };
 
         // Act & Assert
-        var content = service.GetFileContent("file-id");
-        var result = await content.GetContentAsync();
+        var content = await service.GetFileContentAsync("file-id");
+        var result = content.Data!.Value;
         Assert.Equal(data.ToArray(), result.ToArray());
     }
 
@@ -236,7 +236,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         stream.Position = 0;
 
-        var content = new BinaryContent(() => Task.FromResult<Stream>(stream));
+        var content = new BinaryContent(stream.ToArray(), "text/plain");
 
         // Act & Assert
         if (isFailedRequest)

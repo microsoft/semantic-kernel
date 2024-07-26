@@ -8,19 +8,13 @@ from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
 
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import (
-    SessionsPythonTool,
-)
+from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import SessionsPythonTool
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.settings import (
-    azure_container_apps_settings_from_dot_env_as_dict,
-    azure_openai_settings_from_dot_env_as_dict,
-)
 
 auth_token: AccessToken | None = None
 
-ACA_TOKEN_ENDPOINT = "https://acasessions.io/.default"
+ACA_TOKEN_ENDPOINT: str = "https://acasessions.io/.default"  # nosec
 
 
 async def auth_callback() -> str:
@@ -50,13 +44,11 @@ async def main():
 
     service_id = "python-code-interpreter"
     chat_service = AzureChatCompletion(
-        service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+        service_id=service_id,
     )
     kernel.add_service(chat_service)
 
-    python_code_interpreter = SessionsPythonTool(
-        **azure_container_apps_settings_from_dot_env_as_dict(), auth_callback=auth_callback
-    )
+    python_code_interpreter = SessionsPythonTool(auth_callback=auth_callback)
 
     sessions_tool = kernel.add_plugin(python_code_interpreter, "PythonCodeInterpreter")
 

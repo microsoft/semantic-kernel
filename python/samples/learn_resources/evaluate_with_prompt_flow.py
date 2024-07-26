@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from dotenv import dotenv_values
 from promptflow import PFClient
 from promptflow.entities import AzureOpenAIConnection

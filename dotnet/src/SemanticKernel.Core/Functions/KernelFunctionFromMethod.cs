@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -28,7 +27,7 @@ namespace Microsoft.SemanticKernel;
 /// Provides factory methods for creating <see cref="KernelFunction"/> instances backed by a .NET method.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class KernelFunctionFromMethod : KernelFunction
+internal sealed partial class KernelFunctionFromMethod : KernelFunction
 {
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -166,13 +165,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             this.Metadata.AdditionalProperties);
     }
 
-    /// <summary>
-    /// JSON serialized string representation of the function.
-    /// </summary>
-    public override string ToString() => JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented);
-
-    #region private
-
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         Kernel kernel,
@@ -213,7 +205,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target)
     {
-        ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
+        ThrowForInvalidSignatureIf(method.ContainsGenericParameters, method, "Open generic methods are not supported");
 
         if (functionName is null)
         {
@@ -484,7 +476,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
                 // For instance, the JObject for { "id": 28 } JSON is serialized into the string  "{ "Id": [] }", and the deserialization fails with the
                 // following exception - "The JSON value could not be converted to System.Int32. Path: $.Id | LineNumber: 0 | BytePositionInLine: 7."
-                _ => JsonSerializer.Deserialize(value.ToString(), targetType)
+                _ => JsonSerializer.Deserialize(value.ToString()!, targetType)
             };
 
             return true;
@@ -612,7 +604,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 {
                     await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
-                    var taskResult = Invoke(taskResultGetter, result, []);
+                    var taskResult = Invoke(taskResultGetter, result, null);
                     return new FunctionResult(function, taskResult, kernel.Culture);
                 }
                 );
@@ -626,10 +618,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 return (asTaskResultGetter.ReturnType, async (kernel, function, result) =>
                 {
-                    Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), [])!;
+                    Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), null)!;
                     await task.ConfigureAwait(false);
 
-                    var taskResult = Invoke(asTaskResultGetter, task, []);
+                    var taskResult = Invoke(asTaskResultGetter, task, null);
                     return new FunctionResult(function, taskResult, kernel.Culture);
                 }
                 );
@@ -797,14 +789,18 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.
     /// </summary>
-    private static string SanitizeMetadataName(string methodName) =>
-        s_invalidNameCharsRegex.Replace(methodName, "_");
+    internal static string SanitizeMetadataName(string methodName) =>
+        InvalidNameCharsRegex().Replace(methodName, "_");
 
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
-    private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]");
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex InvalidNameCharsRegex();
+#else
+    private static Regex InvalidNameCharsRegex() => s_invalidNameCharsRegex;
+    private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, object?>?> s_parsers = new();
-
-    #endregion
 }

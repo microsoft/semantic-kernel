@@ -7,9 +7,9 @@ from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptT
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 __all__ = [
-    "KernelPromptTemplate",
     "HandlebarsPromptTemplate",
-    "Jinja2PromptTemplate",
     "InputVariable",
+    "Jinja2PromptTemplate",
+    "KernelPromptTemplate",
     "PromptTemplateConfig",
 ]
