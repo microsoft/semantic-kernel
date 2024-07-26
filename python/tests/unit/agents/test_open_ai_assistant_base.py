@@ -292,7 +292,7 @@ def mock_run_in_progress():
 
         def update_status(self):
             self.poll_count += 1
-            if self.poll_count > 2:  # Change the status to completed after 3 polls
+            if self.poll_count > 2:
                 self.status = "completed"
 
     return MockRun()
@@ -373,7 +373,6 @@ async def test_create_assistant(configuration, definition, kernel, mock_assistan
 
         assistant = await agent.create_assistant()
 
-        # Assertions to check if the assistant is created correctly
         assert assistant.model == "test_model"
         assert assistant.description == "test_description"
         assert assistant.id == "test_id"
@@ -462,7 +461,6 @@ async def test_create_thread(configuration, definition, kernel, mock_thread_crea
 
         thread_id = await agent.create_thread(thread_creation_settings=mock_thread_creation_settings)
 
-        # Assertions to check if the thread is created correctly
         assert thread_id == "test_thread_id"
         mock_client.beta.threads.create.assert_called_once()
         _, called_kwargs = mock_client.beta.threads.create.call_args

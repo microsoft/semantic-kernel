@@ -147,7 +147,6 @@ async def test_list_definitions(configuration, kernel):
 
 @pytest.mark.asyncio
 async def test_retrieve_agent(kernel, configuration, definition):
-    # Mock the _create_client_from_configuration method
     with patch.object(
         AzureOpenAIAssistantAgent, "_create_client_from_configuration", return_value=MagicMock(spec=AsyncAzureOpenAI)
     ) as mock_create_client:
