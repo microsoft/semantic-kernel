@@ -32,6 +32,8 @@ from openai.types.beta.threads.runs.tool_calls_step_details import ToolCallsStep
 
 from semantic_kernel.agents.open_ai.azure_open_ai_assistant_agent import AzureOpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
+from semantic_kernel.agents.open_ai.open_ai_assistant_execution_options import OpenAIAssistantExecutionOptions
+from semantic_kernel.agents.open_ai.open_ai_assistant_invocation_options import OpenAIAssistantInvocationOptions
 from semantic_kernel.agents.open_ai.open_ai_service_configuration import AzureOpenAIServiceConfiguration
 from semantic_kernel.agents.open_ai.open_ai_thread_creation_options import OpenAIThreadCreationOptions
 from semantic_kernel.contents.annotation_content import AnnotationContent
@@ -916,6 +918,76 @@ def test_generate_function_call_content(configuration, definition, kernel, mock_
     assert message is not None
     assert isinstance(message, ChatMessageContent)
     assert isinstance(message.items[0], FunctionCallContent)
+
+
+def test_merge_options(configuration, definition, kernel):
+    agent = AzureOpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+    definition = OpenAIAssistantDefinition(
+        ai_model_id="model-id",
+        enable_json_response=True,
+        enable_code_interpreter=True,
+        enable_file_search=True,
+        execution_options=OpenAIAssistantExecutionOptions(max_completion_tokens=1000, parallel_tool_calls_enabled=True),
+    )
+
+    invocation_options = OpenAIAssistantInvocationOptions(
+        max_completion_tokens=150, enable_json_response=False, metadata={"key1": "value1"}
+    )
+
+    merged_options = agent._merge_options(invocation_options, definition)
+
+    expected_options = {
+        "ai_model_id": "model-id",
+        "description": None,
+        "id": None,
+        "instructions": None,
+        "name": None,
+        "enable_code_interpreter": False,
+        "enable_file_search": False,
+        "enable_json_response": False,
+        "file_ids": [],
+        "temperature": None,
+        "top_p": None,
+        "vector_store_ids": [],
+        "metadata": {"key1": "value1"},
+        "max_completion_tokens": 150,
+        "max_prompt_tokens": None,
+        "parallel_tool_calls_enabled": True,
+        "truncation_message_count": None,
+    }
+
+    assert merged_options == expected_options, f"Expected {expected_options}, but got {merged_options}"
+
+
+def test_generate_options(configuration, definition, kernel):
+    agent = AzureOpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+    definition = OpenAIAssistantDefinition(
+        ai_model_id="model-id",
+        enable_json_response=True,
+        enable_code_interpreter=True,
+        enable_file_search=True,
+        execution_options=OpenAIAssistantExecutionOptions(max_completion_tokens=1000, parallel_tool_calls_enabled=True),
+    )
+
+    invocation_options = OpenAIAssistantInvocationOptions(
+        max_completion_tokens=150, enable_json_response=False, metadata={"key1": "value1"}
+    )
+
+    options = agent._generate_options(definition=definition, invocation_options=invocation_options)
+
+    expected_options = {
+        "max_completion_tokens": 150,
+        "max_prompt_tokens": None,
+        "model": "model-id",
+        "top_p": None,
+        "parallel_tool_calls_enabled": True,
+        "response_format": None,
+        "temperature": None,
+        "truncation_strategy": None,
+        "metadata": {"key1": "value1"},
+    }
+
+    assert options == expected_options, f"Expected {expected_options}, but got {options}"
 
 
 # endregion

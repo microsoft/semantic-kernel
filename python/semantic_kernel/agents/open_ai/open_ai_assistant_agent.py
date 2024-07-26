@@ -27,7 +27,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class OpenAIAssistantAgent(OpenAIAssistantBase):
-    """OpenAI Assistant Agent class."""
+    """OpenAI Assistant Agent class.
+
+    Provides the ability to interact with OpenAI Assistants.
+    """
 
     _options_metadata_key: str = "__run_options"
 
@@ -39,7 +42,16 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         configuration: OpenAIServiceConfiguration,
         definition: OpenAIAssistantDefinition,
     ) -> None:
-        """Initialize an OpenAIAssistant service."""
+        """Initialize an OpenAIAssistant service.
+
+        Args:
+            kernel: The Kernel instance.
+            configuration: The OpenAI Service Configuration.
+            definition: The OpenAI Assistant Definition
+
+        Raises:
+            AgentInitializationError: If the api_key is not provided in the configuration.
+        """
         client = self._create_client_from_configuration(configuration)
         service_id = configuration.service_id if configuration.service_id else DEFAULT_SERVICE_NAME
 
@@ -66,7 +78,14 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         cls,
         configuration: OpenAIServiceConfiguration,
     ) -> AsyncOpenAI:
-        """Create the OpenAI client."""
+        """Create the OpenAI client.
+
+        Args:
+            configuration: The OpenAI Service Configuration.
+
+        Returns:
+            An OpenAI client instance.
+        """
         return cls._create_client_from_configuration(configuration)
 
     @classmethod
@@ -77,7 +96,16 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         configuration: OpenAIServiceConfiguration,
         definition: OpenAIAssistantDefinition,
     ) -> "OpenAIAssistantAgent":
-        """Asynchronous class method used to create the OpenAI Assistant Agent."""
+        """Asynchronous class method used to create the OpenAI Assistant Agent.
+
+        Args:
+            kernel: The Kernel instance.
+            configuration: The OpenAI Service Configuration.
+            definition: The OpenAI Assistant Definition.
+
+        Returns:
+            An OpenAIAssistantAgent instance.
+        """
         agent = cls(
             kernel=kernel,
             configuration=configuration,
@@ -90,7 +118,14 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
     def _create_client_from_configuration(
         configuration: OpenAIServiceConfiguration,
     ) -> AsyncOpenAI:
-        """Create the OpenAI client from configuration."""
+        """Create the OpenAI client from configuration.
+
+        Args:
+            configuration: The OpenAI Service Configuration.
+
+        Returns:
+            An OpenAI client instance.
+        """
         merged_headers = dict(copy(configuration.default_headers)) if configuration.default_headers else {}
         if configuration.default_headers:
             merged_headers.update(configuration.default_headers)
@@ -108,7 +143,14 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         )
 
     def _create_open_ai_assistant_definition(self, assistant: "Assistant") -> OpenAIAssistantDefinition:
-        """Create an OpenAI Assistant Definition from an OpenAI Assistant."""
+        """Create an OpenAI Assistant Definition from an OpenAI Assistant.
+
+        Args:
+            assistant: The OpenAI Assistant.
+
+        Returns:
+            An OpenAIAssistantDefinition instance.
+        """
         settings: OpenAIAssistantExecutionOptions | None = None
         if isinstance(assistant.metadata, dict) and self._options_metadata_key in assistant.metadata:
             settings = OpenAIAssistantExecutionOptions(**assistant.metadata[self._options_metadata_key])
@@ -161,7 +203,16 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
     async def retrieve(
         self, kernel: "Kernel", configuration: OpenAIServiceConfiguration, id: str
     ) -> "OpenAIAssistantAgent":
-        """Retrieve an assistant by ID."""
+        """Retrieve an assistant by ID.
+
+        Args:
+            kernel: The Kernel instance.
+            configuration: The OpenAI Service Configuration.
+            id: The assistant ID.
+
+        Returns:
+            An OpenAIAssistantAgent instance.
+        """
         client = self._create_client_from_configuration(configuration)
         assistant = await client.beta.assistants.retrieve(id)
         definition = self._create_open_ai_assistant_definition(assistant)

@@ -14,6 +14,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class OpenAIServiceConfiguration(KernelBaseModel):
+    """OpenAI Assistant Agent Service Configuration class."""
+
     service_id: str
     ai_model_id: str | None = None
     api_key: str | None = None
@@ -62,6 +64,8 @@ class OpenAIServiceConfiguration(KernelBaseModel):
 
 @experimental_class
 class AzureOpenAIServiceConfiguration(OpenAIServiceConfiguration):
+    """Azure OpenAI Assistant Agent Service Configuration class."""
+
     endpoint: HttpsUrl | None = None
     ad_token: str | None = None
     ad_token_provider: Callable[[], str | Awaitable[str]] | None = None

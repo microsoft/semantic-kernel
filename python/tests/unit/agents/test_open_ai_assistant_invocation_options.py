@@ -14,7 +14,7 @@ def test_default_values():
     assert options.enable_json_response is False
     assert options.max_completion_tokens is None
     assert options.max_prompt_tokens is None
-    assert options.parallel_tool_calls_enabled is False
+    assert options.parallel_tool_calls_enabled is True
     assert options.truncation_message_count is None
     assert options.temperature is None
     assert options.top_p is None

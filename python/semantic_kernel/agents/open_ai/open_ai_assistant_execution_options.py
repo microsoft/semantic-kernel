@@ -13,5 +13,5 @@ class OpenAIAssistantExecutionOptions(KernelBaseModel):
 
     max_completion_tokens: int | None = Field(None)
     max_prompt_tokens: int | None = Field(None)
-    parallel_tool_calls_enabled: bool | None = Field(False)
+    parallel_tool_calls_enabled: bool | None = Field(True)
     truncation_message_count: int | None = Field(None)

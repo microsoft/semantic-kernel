@@ -14,6 +14,7 @@ from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
+from semantic_kernel.agents.open_ai.open_ai_assistant_invocation_options import OpenAIAssistantInvocationOptions
 from semantic_kernel.agents.open_ai.open_ai_service_configuration import OpenAIServiceConfiguration
 from semantic_kernel.agents.open_ai.open_ai_thread_creation_options import OpenAIThreadCreationOptions
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
@@ -47,7 +48,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class OpenAIAssistantBase(Agent):
-    """OpenAI Assistant Base class."""
+    """OpenAI Assistant Base class.
+
+    Manages the interaction with OpenAI Assistants.
+    """
 
     ai_model_id: str
     client: AsyncOpenAI
@@ -119,7 +123,11 @@ class OpenAIAssistantBase(Agent):
     async def create_assistant(
         self,
     ) -> "Assistant":
-        """Create the assistant."""
+        """Create the assistant.
+
+        Returns:
+            Assistant: The assistant
+        """
         kwargs: dict[str, Any] = {}
 
         tools = []
@@ -155,7 +163,11 @@ class OpenAIAssistantBase(Agent):
 
     @property
     def metadata(self) -> dict[str, str]:
-        """The metadata."""
+        """The metadata.
+
+        Returns:
+            dict[str, str]: The metadata.
+        """
         if self.assistant is None:
             raise AgentInitializationError("The assistant has not been created.")
         if not isinstance(self.assistant.metadata, dict):
@@ -164,7 +176,11 @@ class OpenAIAssistantBase(Agent):
 
     @property
     def tools(self) -> list["AssistantTool"]:
-        """The tools."""
+        """The tools.
+
+        Returns:
+            list[AssistantTool]: The tools.
+        """
         if self.assistant is None:
             raise AgentInitializationError("The assistant has not been created.")
         tools: list[AssistantTool] = []
@@ -185,7 +201,8 @@ class OpenAIAssistantBase(Agent):
         """Create a thread.
 
         Args:
-            thread_creation_settings (OpenAIThreadCreationSettings): The thread creation settings. Defaults to None.
+            thread_creation_settings (OpenAIThreadCreationSettings): The thread creation settings.
+                Defaults to None. (optional)
 
         Returns:
             str: The thread id.
@@ -231,7 +248,11 @@ class OpenAIAssistantBase(Agent):
         await self.client.beta.threads.delete(thread_id)
 
     async def delete(self) -> bool:
-        """Delete the assistant."""
+        """Delete the assistant.
+
+        Returns:
+            bool: True if the assistant is deleted.
+        """
         if not self._is_deleted and self.assistant:
             await self.client.beta.assistants.delete(self.assistant.id)
         return self._is_deleted
@@ -290,7 +311,7 @@ class OpenAIAssistantBase(Agent):
         Args:
             thread_id (str): The thread id.
 
-        Returns:
+        Yields:
             list[ChatMessageContent]: The chat messages.
         """
         agent_names: dict[str, Any] = {}
@@ -331,20 +352,36 @@ class OpenAIAssistantBase(Agent):
 
     # region Agent Invoke Methods
 
-    async def invoke(self, thread_id: str) -> AsyncIterable[ChatMessageContent]:
+    async def invoke(
+        self, thread_id: str, invocation_options: OpenAIAssistantInvocationOptions | None = None
+    ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat assistant.
 
         Args:
             thread_id (str): The thread id.
+            invocation_options (OpenAIAssistantInvocationOptions): The invocation options. Defaults to None. (optional)
 
         Yields:
             ChatMessageContent: The chat message content.
         """
-        async for is_visible, content in self._invoke_internal(thread_id):
+        async for is_visible, content in self._invoke_internal(
+            thread_id=thread_id, invocation_options=invocation_options
+        ):
             if is_visible:
                 yield content
 
-    async def _invoke_internal(self, thread_id: str) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
+    async def _invoke_internal(
+        self, thread_id: str, invocation_options: OpenAIAssistantInvocationOptions | None = None
+    ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
+        """Internal invoke method.
+
+        Args:
+            thread_id (str): The thread id.
+            invocation_options (OpenAIAssistantInvocationOptions): The invocation options. Defaults to None. (optional)
+
+        Yields:
+            tuple[bool, ChatMessageContent]: A tuple of visibility and chat message content.
+        """
         if not self.assistant:
             raise AgentInitializationError("The assistant has not been created.")
 
@@ -354,11 +391,20 @@ class OpenAIAssistantBase(Agent):
         self._check_if_deleted()
         tools = self._get_tools()
 
+        run_options = self._generate_options(
+            definition=self.definition,
+            invocation_options=invocation_options,
+        )
+
+        # Filter out None values to avoid passing them as kwargs
+        run_options = {k: v for k, v in run_options.items() if v is not None}
+
         run = await self.client.beta.threads.runs.create(
             assistant_id=self.assistant.id,
             thread_id=thread_id,
             instructions=self.assistant.instructions,
             tools=tools,  # type: ignore
+            **run_options,
         )
 
         processed_step_ids = set()
@@ -435,6 +481,7 @@ class OpenAIAssistantBase(Agent):
     # region Content Generation Methods
 
     def _generate_function_call_content(self, agent_name: str, fccs: list[FunctionCallContent]) -> ChatMessageContent:
+        """Generate function call content."""
         function_call_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.TOOL, name=agent_name)  # type: ignore
 
         function_call_content.items.extend(fccs)
@@ -465,6 +512,7 @@ class OpenAIAssistantBase(Agent):
         )
 
     def _generate_annotation_content(self, annotation: "Annotation") -> AnnotationContent:
+        """Generate annotation content."""
         file_id = None
         if hasattr(annotation, "file_path"):
             file_id = annotation.file_path.file_id
@@ -481,6 +529,72 @@ class OpenAIAssistantBase(Agent):
     # endregion
 
     # region Agent Helper Methods
+
+    @staticmethod
+    def _resolve_execution_setting(setting: Any, agent_setting: Any) -> Any:
+        """Resolve the execution setting."""
+        return setting if setting is not None else agent_setting
+
+    @staticmethod
+    def _merge_options(
+        definition: OpenAIAssistantDefinition, invocation_options: OpenAIAssistantInvocationOptions | None = None
+    ) -> dict[str, Any]:
+        """Merge the invocation options with the definition options.
+
+        The invocation options take precedence over the definition options.
+
+        Args:
+            definition (OpenAIAssistantDefinition): The definition.
+            invocation_options (OpenAIAssistantInvocationOptions): The invocation options. (optional)
+
+        Returns:
+            dict[str, Any]: The merged options.
+        """
+        definition_dict = definition.model_dump()
+        invocation_dict = invocation_options.model_dump() if invocation_options else {}
+
+        execution_options_dict = definition_dict.pop("execution_options", None)
+
+        merged_options = {
+            key: OpenAIAssistantBase._resolve_execution_setting(invocation_dict.get(key, None), definition_dict[key])
+            for key in definition_dict
+        }
+
+        if execution_options_dict:
+            merged_options.update(
+                {
+                    key: OpenAIAssistantBase._resolve_execution_setting(
+                        invocation_dict.get(key, None), execution_options_dict[key]
+                    )
+                    for key in execution_options_dict
+                }
+            )
+
+        return merged_options
+
+    def _generate_options(
+        self,
+        definition: OpenAIAssistantDefinition,
+        invocation_options: OpenAIAssistantInvocationOptions | None = None,
+    ) -> dict[str, Any]:
+        """Generate options for the assistant invocation."""
+        merged_options = self._merge_options(
+            invocation_options=invocation_options if invocation_options else None, definition=definition
+        )
+
+        truncation_message_count = merged_options.get("truncation_message_count")
+
+        return {
+            "max_completion_tokens": merged_options.get("max_completion_tokens"),
+            "max_prompt_tokens": merged_options.get("max_prompt_tokens"),
+            "model": merged_options.get("ai_model_id"),
+            "top_p": merged_options.get("top_p"),
+            "parallel_tool_calls_enabled": merged_options.get("parallel_tool_calls_enabled"),
+            "response_format": "json" if merged_options.get("enable_json_response") else None,
+            "temperature": merged_options.get("temperature"),
+            "truncation_strategy": truncation_message_count if truncation_message_count else None,
+            "metadata": merged_options.get("metadata", None),
+        }
 
     async def _poll_run_status(self, run: Run, thread_id: str) -> Run:
         """Poll the run status."""
@@ -529,6 +643,7 @@ class OpenAIAssistantBase(Agent):
         return message
 
     def _get_message_contents(self, message: ChatMessageContent) -> list[dict[str, Any]]:
+        """Get the message contents."""
         contents: list[dict[str, Any]] = []
         for content in message.items:
             if isinstance(content, TextContent):
@@ -538,6 +653,7 @@ class OpenAIAssistantBase(Agent):
         return contents
 
     def _generate_message_content(self, assistant_name: str, message: Message) -> ChatMessageContent:
+        """Generate message content."""
         role = AuthorRole(message.role)
 
         content: ChatMessageContent = ChatMessageContent(role=role, name=assistant_name)  # type: ignore

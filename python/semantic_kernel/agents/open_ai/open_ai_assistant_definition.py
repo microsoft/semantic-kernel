@@ -27,4 +27,4 @@ class OpenAIAssistantDefinition(KernelBaseModel):
     top_p: float | None = Field(None)
     vector_store_ids: list[str] | None = Field(default_factory=list, max_length=1)
     metadata: dict[str, Any] | None = Field(default_factory=dict, max_length=16)
-    exection_options: OpenAIAssistantExecutionOptions | None = Field(None)
+    execution_options: OpenAIAssistantExecutionOptions | None = Field(default_factory=OpenAIAssistantExecutionOptions)
