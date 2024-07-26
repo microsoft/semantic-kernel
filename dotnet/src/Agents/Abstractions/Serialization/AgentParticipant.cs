@@ -16,6 +16,7 @@ public sealed class AgentParticipant
     /// <summary>
     /// The captured <see cref="Agent.Name"/>.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Name { get; init; }
 
     /// <summary>

@@ -84,21 +84,6 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         }
 
         Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
-
-        await using MemoryStream stream = new(); // %%% NEED REAL SAMPLE
-        await AgentChatSerializer.SerializeAsync(chat, stream);
-
-        stream.Position = 0;
-        using StreamReader reader = new(stream);
-        Console.WriteLine(await reader.ReadToEndAsync());
-
-        stream.Position = 0;
-        chat = new(agentWriter, agentReviewer);
-        AgentChatSerializer serializer = await AgentChatSerializer.DeserializeAsync(stream);
-        await serializer.DeserializeAsync(chat);
-        //await InvokeAgentAsync("What is the special drink?");
-        //await InvokeAgentAsync("What was the first question I asked?");
-
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
