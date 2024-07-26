@@ -16,6 +16,7 @@ about: Plan the graduation of an experimental feature
 
 Checklist to be completed when graduating an experimental feature
 
+- [ ]  Updates for Semantic Kernel Docs updates are complete and checked in here: https://github.com/MicrosoftDocs/semantic-kernel-pr
 - [ ] Notify PM's and EM's that feature is ready for graduation
 - [ ] Contact PM for list of sample use cases
 - [ ] Verify there are sample implementations​ for each of the use cases
