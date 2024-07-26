@@ -96,7 +96,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
 
         stream.Position = 0;
         chat = new(agentWriter, agentReviewer);
-        AgentChatSerializer serializer = await AgentChatSerializer.DeserializeAsync<AgentGroupChat>(chat, stream);
+        AgentChatSerializer serializer = await AgentChatSerializer.DeserializeAsync(stream);
         await serializer.DeserializeAsync(chat);
     }
 

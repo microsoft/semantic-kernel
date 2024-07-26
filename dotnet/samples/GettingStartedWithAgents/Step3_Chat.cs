@@ -94,7 +94,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
 
         stream.Position = 0;
         chat = new(agentWriter, agentReviewer);
-        AgentChatSerializer serializer = await AgentChatSerializer.DeserializeAsync<AgentGroupChat>(chat, stream);
+        AgentChatSerializer serializer = await AgentChatSerializer.DeserializeAsync(stream);
         await serializer.DeserializeAsync(chat);
         //await InvokeAgentAsync("What is the special drink?");
         //await InvokeAgentAsync("What was the first question I asked?");
