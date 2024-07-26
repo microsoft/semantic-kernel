@@ -5,7 +5,7 @@ import logging
 import sys
 from collections.abc import AsyncGenerator
 from functools import reduce
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -38,6 +38,7 @@ from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, Ser
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
+from semantic_kernel.utils.telemetry.decorators import trace_chat_completion
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -56,6 +57,8 @@ class InvokeTermination(Exception):
 class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     """OpenAI Chat completion class."""
 
+    MODEL_PROVIDER_NAME: ClassVar[str] = "openai"
+
     # region Overriding base class methods
     # most of the methods are overridden from the ChatCompletionClientBase class, otherwise it is mentioned
 
@@ -64,6 +67,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         return OpenAIChatPromptExecutionSettings
 
     @override
+    @trace_chat_completion(MODEL_PROVIDER_NAME)
     async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
