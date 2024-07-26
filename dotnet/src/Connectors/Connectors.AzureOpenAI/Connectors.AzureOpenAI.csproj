@@ -29,6 +29,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\Connectors.OpenAIV2\Connectors.OpenAIV2.csproj" />
+    <ProjectReference Include="..\Connectors.OpenAI\Connectors.OpenAI.csproj" />
   </ItemGroup>
 </Project>

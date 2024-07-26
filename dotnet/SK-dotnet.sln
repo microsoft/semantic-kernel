@@ -90,7 +90,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\test\AssertExtensions.cs = src\InternalUtilities\test\AssertExtensions.cs
 		src\InternalUtilities\test\HttpMessageHandlerStub.cs = src\InternalUtilities\test\HttpMessageHandlerStub.cs
-		src\Connectors\Connectors.OpenAIV2.UnitTests\Utils\MoqExtensions.cs = src\Connectors\Connectors.OpenAIV2.UnitTests\Utils\MoqExtensions.cs
+		src\Connectors\Connectors.OpenAI.UnitTests\Utils\MoqExtensions.cs = src\Connectors\Connectors.OpenAI.UnitTests\Utils\MoqExtensions.cs
 		src\InternalUtilities\test\MultipleHttpMessageHandlerStub.cs = src\InternalUtilities\test\MultipleHttpMessageHandlerStub.cs
 		src\InternalUtilities\test\TestInternalUtilities.props = src\InternalUtilities\test\TestInternalUtilities.props
 	EndProjectSection
@@ -313,9 +313,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimePlugin", "samples\Demos
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosmosDBNoSQL", "src\Connectors\Connectors.Memory.AzureCosmosDBNoSQL\Connectors.Memory.AzureCosmosDBNoSQL.csproj", "{B0B3901E-AF56-432B-8FAA-858468E5D0DF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.OpenAIV2", "src\Connectors\Connectors.OpenAIV2\Connectors.OpenAIV2.csproj", "{8AC4D976-BBBA-44C7-9CFD-567F0B4751D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.OpenAI", "src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj", "{8AC4D976-BBBA-44C7-9CFD-567F0B4751D8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.OpenAIV2.UnitTests", "src\Connectors\Connectors.OpenAIV2.UnitTests\Connectors.OpenAIV2.UnitTests.csproj", "{A2E659A5-0CE5-4CBF-B9F6-F8604B2AF0BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.OpenAI.UnitTests", "src\Connectors\Connectors.OpenAI.UnitTests\Connectors.OpenAI.UnitTests.csproj", "{A2E659A5-0CE5-4CBF-B9F6-F8604B2AF0BF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureOpenAI", "src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj", "{6744272E-8326-48CE-9A3F-6BE227A5E777}"
 EndProject
