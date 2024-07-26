@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Extensions.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Extensions.UnitTests</RootNamespace>
@@ -26,5 +26,12 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
+    <ProjectReference Include="..\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
+    <ProjectReference Include="..\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
+    <ProjectReference Include="..\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
+    <ProjectReference Include="..\Planning.PowerShell\Planning.PowerShell.csproj" />
+    <ProjectReference Include="..\Reliability.Basic\Reliability.Basic.csproj" />
+    <ProjectReference Include="..\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
+    <ProjectReference Include="..\Reliability.Polly\Reliability.Polly.csproj" />
   </ItemGroup>
 </Project>
