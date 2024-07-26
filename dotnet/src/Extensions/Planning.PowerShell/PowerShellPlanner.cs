@@ -130,6 +130,10 @@ catch (Exception ex)
             throw new SKException("The goal specified is empty");
         }
         {
+            _logger.LogWarning("The goal specified is empty");
+            throw new SKException("The goal specified is empty");
+        }
+        {
             throw new SKException("The goal specified is empty");
         }
 
