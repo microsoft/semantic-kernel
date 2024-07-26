@@ -251,8 +251,7 @@ kernel.add_service(AzureChatCompletion(service_id="agent", ...))
 # Include desired plugins / functions    
 kernel.add_plugin(...)
 
-# Include desired filters
-builder.add_filter(...);
+# Include desired filters (via @kernel.filter decorator)
 
 # Create the agent
 agent = ChatCompletionAgent(service_id="agent", kernel=kernel, name="name", instructions="instructions")
@@ -295,9 +294,6 @@ OpenAIAssistantAgent agent =
 # Start with the Kernel
 kernel = Kernel()
 
-# Add any ChatCompletionClientBase
-kernel.add_service(AzureChatCompletion(service_id="agent", ...))
-
 # Include desired plugins / functions    
 kernel.add_plugin(...)
 
@@ -305,7 +301,7 @@ kernel.add_plugin(...)
 config = OpenAIServiceConfiguration("apikey", "endpoint")
 definition = OpenAIAssistantDefinition(instructions="instructions", name="name", model="gpt-4")
 
-agent = OpenAIAssistantAgent(kernel=kernel, config=config, definition=definition);
+agent = OpenAIAssistantAgent.create(kernel=kernel, config=config, definition=definition)
 ```
 
 
@@ -313,20 +309,26 @@ agent = OpenAIAssistantAgent(kernel=kernel, config=config, definition=definition
 
 (_dotnet_)
 ```c#
+// Start with the Kernel
+Kernel kernel = ...;
+
 // Create config
 OpenAIServiceConfiguration config = new("apikey", "endpoint");
 
 // Create the agent based on an existing definition
-OpenAIAssistantAgent agent =  OpenAIAssistantAgent.RetrieveAsync(config, "agent-id");
+OpenAIAssistantAgent agent =  OpenAIAssistantAgent.RetrieveAsync(kernel, config, "agent-id");
 ```
 
 (_python_)
 ```python
+# Start with the Kernel
+kernel = Kernel()
+
 # Create config
 config = OpenAIServiceConfiguration("apikey", "endpoint")
 
 # Create the agent based on an existing definition
-agent = OpenAIAssistantAgent(config=config, agentid="agent-id")
+agent = OpenAIAssistantAgent.retrieve(kernel = kernel, config=config, agentid="agent-id")
 ```
 
 
@@ -347,7 +349,7 @@ IAsyncEnumerable<OpenAIAssistantDefinition> definitions = OpenAIAssistantAgent.L
 config = OpenAIServiceConfiguration("apikey", "endpoint")
 
 # Enumerate defined agents
-definitions = await OpenAIAssistantAgent.ListDefinitions(config=config)
+definitions = await OpenAIAssistantAgent.list_definitions(config=config)
 ```
 
 
@@ -384,26 +386,27 @@ await WriteMessagesAsync(chat.GetHistoryAsync(agent2));
 ```python
 # Define agents
 agent1 = ChatCompletionAgent(...)
-agent2 = OpenAIAssistantAgent(...)
+agent2 = OpenAIAssistantAgent.create(...)
 
 # Create chat
 chat = AgentGroupChat()
 
 # Provide input for chat
 input = ChatMessageContent(AuthorRole.User, "input")
-await WriteMessageAsync(input)
-chat.AddChatMessage(input)
+await write_message(input)
+chat.add_chat_message(input)
 
 # First invoke one agent, then the other, display each response.
-await WriteMessagesAsync(chat.InvokeAsync(agent1))
-await WriteMessagesAsync(chat.InvokeAsync(agent2))
+await write_message(chat.invoke(agent1))
+await write_message(chat.invoke(agent2))
 
 # The entire history may be accessed.  
 # Agent specific history is an adapataton of the primary history.
-await WriteMessagesAsync(chat.GetHistoryAsync())
-await WriteMessagesAsync(chat.GetHistoryAsync(agent1))
-await WriteMessagesAsync(chat.GetHistoryAsync(agent2))
+await write_message(chat.get_history())
+await write_message(chat.get_history(agent1))
+await write_message(chat.get_history(agent2))
 ```
+
 
 **4. Agent Chat: Multi-Turn**
 
@@ -443,28 +446,28 @@ await WriteMessagesAsync(chat.InvokeAsync());
 ```python
 # Define agents
 agent1 = ChatCompletionAgent(...)
-agent2 = OpenAIAssistantAgent(...)
+agent2 = OpenAIAssistantAgent.create(...)
 agent3 = ChatCompletionAgent(...)
 
 // Create chat with two agents.
 chat =
     AgentGroupChat(agent1, agent2)
     { 
-        ExecutionSettings =
+        execution_settings =
         {
             # Chat will continue until it meets the termination criteria.
-            TerminationionStrategy = MyTerminationStrategy(),
+            terminationion_strategy = MyTerminationStrategy(),
         } 
-    };
+    }
 
 # Provide input for chat
-input = ChatMessageContent(AuthorRole.User, "input");
-await WriteMessageAsync(input);
-chat.AddChatMessage(input);
+input = ChatMessageContent(AuthorRole.User, "input")
+await write_message(input)
+chat.add_chat_message(input)
 
 # Agent may be added to an existing chat
-chat.AddAgent(agent3);
+chat.add_agent(agent3)
 
 # Execute the chat until termination
-await WriteMessagesAsync(chat.InvokeAsync());
+await write_message(chat.invoke())
 ```
