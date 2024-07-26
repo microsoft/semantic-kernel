@@ -197,3 +197,28 @@ def test_annotated_no_vsr_field_no_default():
                 annotated_content: Annotated[str, "description"],
             ):
                 self.annotated_content = annotated_content
+
+
+def test_non_vector_list_and_dict():
+    @vectorstoremodel
+    @dataclass
+    class DataModelClass:
+        key: Annotated[str, VectorStoreRecordKeyField()]
+        list1: Annotated[list[int], VectorStoreRecordDataField()]
+        list2: Annotated[list[str], VectorStoreRecordDataField]
+        dict1: Annotated[dict[str, int], VectorStoreRecordDataField()]
+        dict2: Annotated[dict[str, str], VectorStoreRecordDataField]
+
+    assert hasattr(DataModelClass, "__kernel_vectorstoremodel__")
+    assert hasattr(DataModelClass, "__kernel_vectorstoremodel_definition__")
+    data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
+    assert len(data_model_definition.fields) == 5
+    assert data_model_definition.fields["list1"].name == "list1"
+    assert data_model_definition.fields["list1"].property_type == "list[int]"
+    assert data_model_definition.fields["list2"].name == "list2"
+    assert data_model_definition.fields["list2"].property_type == "list[str]"
+    assert data_model_definition.fields["dict1"].name == "dict1"
+    assert data_model_definition.fields["dict1"].property_type == "dict"
+    assert data_model_definition.fields["dict2"].name == "dict2"
+    assert data_model_definition.fields["dict2"].property_type == "dict"
+    assert data_model_definition.container_mode is False

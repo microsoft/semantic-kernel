@@ -87,12 +87,15 @@ def _parse_signature_to_definition(parameters) -> VectorStoreRecordDefinition:
                     if hasattr(property_type, "__args__"):
                         if isinstance(item, VectorStoreRecordVectorField):
                             field_type.property_type = property_type.__args__[0].__name__
-                        else:
+                        elif property_type.__name__ == "list":
                             field_type.property_type = f"{property_type.__name__}[{property_type.__args__[0].__name__}]"
+                        else:
+                            field_type.property_type = property_type.__name__
+
                     else:
                         field_type.property_type = property_type.__name__
             elif isinstance(item, type(VectorStoreRecordField)):
-                if hasattr(property_type, "__args__"):
+                if hasattr(property_type, "__args__") and property_type.__name__ == "list":
                     property_type_name = f"{property_type.__name__}[{property_type.__args__[0].__name__}]"
                 else:
                     property_type_name = property_type.__name__

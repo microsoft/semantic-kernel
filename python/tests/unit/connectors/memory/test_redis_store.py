@@ -2,6 +2,7 @@
 
 from unittest.mock import AsyncMock, patch
 
+import numpy as np
 from pytest import fixture, mark, raises
 from redis.asyncio.client import Redis
 
@@ -108,7 +109,7 @@ def mock_get_hash():
     with patch(f"{BASE_PATH}.hgetall", new=AsyncMock()) as mock_get:
         mock_get.return_value = {
             b"metadata": b'{"content": "content"}',
-            b"vector": b"[1.0, 2.0, 3.0]",
+            b"vector": np.array([1.0, 2.0, 3.0]).tobytes(),
         }
         yield mock_get
 
@@ -279,8 +280,8 @@ async def test_upsert_with_prefix(collection_with_prefix_hash, collection_with_p
 
 
 @mark.asyncio
-@mark.parametrize("type_", ["hashset", "json"])
 @mark.parametrize("prefix", [True, False])
+@mark.parametrize("type_", ["hashset", "json"])
 async def test_get(
     collection_hash, collection_json, collection_with_prefix_hash, collection_with_prefix_json, type_, prefix
 ):
@@ -316,6 +317,7 @@ async def test_does_collection_exist_false(collection_hash, mock_does_collection
 
 @mark.asyncio
 async def test_delete_collection(collection_hash, mock_delete_collection):
+    await collection_hash.delete_collection()
     await collection_hash.delete_collection()
 
 
