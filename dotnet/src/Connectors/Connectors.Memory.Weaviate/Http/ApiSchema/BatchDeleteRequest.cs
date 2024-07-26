@@ -36,7 +36,7 @@ internal sealed class BatchDeleteRequest
                 where = new
                 {
                     @operator = "ContainsAny",
-                    path = new[] { "sk_id" },
+                    path = new[] { "id" },
                     valueStringArray = this._ids
                 }
             },
