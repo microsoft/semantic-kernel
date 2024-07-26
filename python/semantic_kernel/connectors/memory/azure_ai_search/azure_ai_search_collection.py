@@ -151,7 +151,7 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
             *[client.get_document(key=key, selected_fields=kwargs.get("selected_fields", ["*"])) for key in keys],
             return_exceptions=True,
         )
-        return [res for res in result if not isinstance(res, Exception)]
+        return [res for res in result if not isinstance(res, BaseException)]
 
     @override
     async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:

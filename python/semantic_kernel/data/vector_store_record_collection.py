@@ -189,7 +189,10 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     async def upsert(
         self,
         record: TModel,
-        embedding_generation_function: Callable[[VectorStoreRecordDefinition, TModel], Awaitable[TModel]] | None = None,
+        embedding_generation_function: Callable[
+            [TModel, type[TModel] | None, VectorStoreRecordDefinition | None], Awaitable[TModel]
+        ]
+        | None = None,
         **kwargs: Any,
     ) -> OneOrMany[TKey] | None:
         """Upsert a record.
@@ -206,7 +209,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             The key of the upserted record or a list of keys, when a container type is used.
         """
         if embedding_generation_function:
-            record = await embedding_generation_function(record, data_model_definition=self.data_model_definition)
+            record = await embedding_generation_function(record, self.data_model_type, self.data_model_definition)
 
         try:
             data = self.serialize(record)
@@ -226,7 +229,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         self,
         records: OneOrMany[TModel],
         embedding_generation_function: Callable[
-            [VectorStoreRecordDefinition, OneOrMany[TModel]], Awaitable[OneOrMany[TModel]]
+            [OneOrMany[TModel], type[TModel] | None, VectorStoreRecordDefinition | None], Awaitable[OneOrMany[TModel]]
         ]
         | None = None,
         **kwargs: Any,
@@ -246,7 +249,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             corresponds to the input or the items in the container.
         """
         if embedding_generation_function:
-            records = await embedding_generation_function(records, data_model_definition=self.data_model_definition)
+            records = await embedding_generation_function(records, self.data_model_type, self.data_model_definition)
 
         try:
             data = self.serialize(records)
@@ -454,6 +457,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                     return ret
                 for field in self.data_model_definition.vector_fields:
                     if field.serialize_function:
+                        assert field.name is not None  # nosec
                         ret[field.name] = field.serialize_function(ret[field.name])
                 return ret
             except Exception as exc:
@@ -465,6 +469,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                     return ret
                 for field in self.data_model_definition.vector_fields:
                     if field.serialize_function:
+                        assert field.name is not None  # nosec
                         ret[field.name] = field.serialize_function(ret[field.name])
                 return ret
             except Exception as exc:

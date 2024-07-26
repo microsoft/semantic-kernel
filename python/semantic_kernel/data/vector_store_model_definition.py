@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from dataclasses import dataclass, field
-from functools import cached_property
 
 from semantic_kernel.data.vector_store_model_protocols import (
     DeserializeProtocol,
@@ -40,7 +39,7 @@ class VectorStoreRecordDefinition:
     serialize: SerializeProtocol | None = None
     deserialize: DeserializeProtocol | None = None
 
-    @cached_property
+    @property
     def field_names(self) -> list[str]:
         """Get the names of the fields."""
         return list(self.fields.keys())
@@ -50,12 +49,12 @@ class VectorStoreRecordDefinition:
         """Get the key field."""
         return self.fields[self.key_field_name]  # type: ignore
 
-    @cached_property
+    @property
     def vector_field_names(self) -> list[str]:
         """Get the names of the vector fields."""
         return [name for name, value in self.fields.items() if isinstance(value, VectorStoreRecordVectorField)]
 
-    @cached_property
+    @property
     def vector_fields(self) -> list["VectorStoreRecordVectorField"]:
         """Get the names of the vector fields."""
         return [field for field in self.fields.values() if isinstance(field, VectorStoreRecordVectorField)]

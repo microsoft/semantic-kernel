@@ -44,7 +44,7 @@ def collection_without_named_vectors(qdrant_unit_test_env, data_model_definition
     )
 
 
-@fixture
+@fixture(autouse=True)
 def mock_list_collection_names():
     with patch(f"{BASE_PATH}.get_collections") as mock_get_collections:
         from qdrant_client.conversions.common_types import CollectionsResponse
@@ -56,27 +56,27 @@ def mock_list_collection_names():
         yield mock_get_collections
 
 
-@fixture
+@fixture(autouse=True)
 def mock_does_collection_exist():
     with patch(f"{BASE_PATH}.collection_exists") as mock_collection_exists:
         mock_collection_exists.return_value = True
         yield mock_collection_exists
 
 
-@fixture
+@fixture(autouse=True)
 def mock_create_collection():
-    with patch(f"{BASE_PATH}.recreate_collection") as mock_recreate_collection:
+    with patch(f"{BASE_PATH}.create_collection") as mock_recreate_collection:
         yield mock_recreate_collection
 
 
-@fixture
+@fixture(autouse=True)
 def mock_delete_collection():
     with patch(f"{BASE_PATH}.delete_collection") as mock_delete_collection:
         mock_delete_collection.return_value = True
         yield mock_delete_collection
 
 
-@fixture
+@fixture(autouse=True)
 def mock_upsert():
     with patch(f"{BASE_PATH}.upsert") as mock_upsert:
         from qdrant_client.conversions.common_types import UpdateResult
@@ -87,7 +87,7 @@ def mock_upsert():
         yield mock_upsert
 
 
-@fixture
+@fixture(autouse=True)
 def mock_get(collection):
     with patch(f"{BASE_PATH}.retrieve") as mock_retrieve:
         from qdrant_client.http.models import Record
@@ -101,7 +101,7 @@ def mock_get(collection):
         yield mock_retrieve
 
 
-@fixture
+@fixture(autouse=True)
 def mock_delete():
     with patch(f"{BASE_PATH}.delete") as mock_delete:
         yield mock_delete
@@ -118,7 +118,7 @@ def test_vector_store_with_client():
     assert qdrant_store.qdrant_client._client.rest_uri == "http://localhost:6333"
 
 
-@mark.parametrize("exclude_list", [["QDRANT_HOST"]], indirect=True)
+@mark.parametrize("exclude_list", [["QDRANT_LOCATION"]], indirect=True)
 def test_vector_store_in_memory(qdrant_unit_test_env):
     from qdrant_client.local.async_qdrant_local import AsyncQdrantLocal
 
@@ -137,7 +137,7 @@ def test_vector_store_fail():
 
 
 @mark.asyncio
-async def test_store_list_collection_names(vector_store, mock_list_collection_names):
+async def test_store_list_collection_names(vector_store):
     collections = await vector_store.list_collection_names()
     assert collections == ["test"]
 
@@ -186,7 +186,7 @@ def test_collection_init_fail(data_model_definition):
     with raises(
         VectorStoreModelValidationError, match="Only one vector field is allowed when not using named vectors."
     ):
-        data_model_definition.fields["vector2"] = VectorStoreRecordVectorField(dimensions=3)
+        data_model_definition.fields["vector2"] = VectorStoreRecordVectorField(name="vector2", dimensions=3)
         QdrantCollection(
             data_model_type=dict,
             collection_name="test",
@@ -197,9 +197,11 @@ def test_collection_init_fail(data_model_definition):
 
 
 @mark.asyncio
-async def test_upsert(collection, mock_upsert):
+@mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
+async def test_upsert(collection_to_use, request):
     from qdrant_client.models import PointStruct
 
+    collection = request.getfixturevalue(collection_to_use)
     if collection.named_vectors:
         record = PointStruct(id="id1", payload={"content": "content"}, vector={"vector": [1.0, 2.0, 3.0]})
     else:
@@ -212,7 +214,7 @@ async def test_upsert(collection, mock_upsert):
 
 
 @mark.asyncio
-async def test_get(collection, mock_get):
+async def test_get(collection):
     records = await collection._inner_get(["id1"])
     assert records is not None
 
@@ -221,17 +223,17 @@ async def test_get(collection, mock_get):
 
 
 @mark.asyncio
-async def test_delete(collection, mock_delete):
+async def test_delete(collection):
     await collection._inner_delete(["id1"])
 
 
 @mark.asyncio
-async def test_does_collection_exist(collection, mock_does_collection_exist):
+async def test_does_collection_exist(collection):
     await collection.does_collection_exist()
 
 
 @mark.asyncio
-async def test_delete_collection(collection, mock_delete_collection):
+async def test_delete_collection(collection):
     await collection.delete_collection()
 
 
@@ -262,7 +264,7 @@ async def test_create_index_with_named_vectors(collection_to_use, results, mock_
 
 @mark.asyncio
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
-async def test_create_index_fail(collection_to_use, mock_create_collection, request):
+async def test_create_index_fail(collection_to_use, request):
     collection = request.getfixturevalue(collection_to_use)
     collection.data_model_definition.fields["vector"].dimensions = None
     with raises(MemoryConnectorException, match="Vector field must have dimensions."):

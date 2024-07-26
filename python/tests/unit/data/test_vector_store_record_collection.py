@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 from copy import deepcopy
 from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
 
+import numpy as np
+from pandas import DataFrame
 from pytest import fixture, mark, raises
 
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
@@ -23,11 +24,13 @@ def vector_store_record_collection(
     data_model_to_from_dict_definition,
     data_model_container_definition,
     data_model_container_serialize_definition,
+    data_model_pandas_definition,
     data_model_type_vanilla,
     data_model_type_vanilla_serialize,
     data_model_type_vanilla_to_from_dict,
     data_model_type_pydantic,
     data_model_type_dataclass,
+    data_model_type_vector_array,
     request,
 ) -> VectorStoreRecordCollection:
     item = request.param if request and hasattr(request, "param") else "definition_basic"
@@ -37,12 +40,20 @@ def vector_store_record_collection(
         "definition_with_to_from": data_model_to_from_dict_definition,
         "definition_container": data_model_container_definition,
         "definition_container_serialize": data_model_container_serialize_definition,
+        "definition_pandas": data_model_pandas_definition,
         "type_vanilla": data_model_type_vanilla,
         "type_vanilla_with_serialize": data_model_type_vanilla_serialize,
         "type_vanilla_with_to_from_dict": data_model_type_vanilla_to_from_dict,
         "type_pydantic": data_model_type_pydantic,
         "type_dataclass": data_model_type_dataclass,
+        "type_vector_array": data_model_type_vector_array,
     }
+    if item.endswith("pandas"):
+        return DictVectorStoreRecordCollection(
+            collection_name="test",
+            data_model_type=DataFrame,
+            data_model_definition=defs[item],
+        )
     if item.startswith("definition_"):
         return DictVectorStoreRecordCollection(
             collection_name="test",
@@ -92,12 +103,17 @@ async def test_context_manager(DictVectorStoreRecordCollection, data_model_defin
         "type_vanilla_with_to_from_dict",
         "type_pydantic",
         "type_dataclass",
+        "type_vector_array",
     ],
     indirect=True,
 )
 async def test_crud_operations(vector_store_record_collection):
     id = "test_id"
     record = {"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    if vector_store_record_collection.data_model_definition.fields["vector"].deserialize_function is not None:
+        record["vector"] = vector_store_record_collection.data_model_definition.fields["vector"].deserialize_function(
+            record["vector"]
+        )
     if vector_store_record_collection.data_model_type is not dict:
         model = vector_store_record_collection.data_model_type
         record = model(**record)
@@ -110,7 +126,15 @@ async def test_crud_operations(vector_store_record_collection):
     else:
         assert vector_store_record_collection.inner_storage[id]["content"] == record.content
     record_2 = await vector_store_record_collection.get(id)
-    assert record_2 == record
+    if vector_store_record_collection.data_model_type is dict:
+        assert record_2 == record
+    else:
+        if isinstance(record.vector, list):
+            assert record_2 == record
+        else:
+            assert record_2.id == record.id
+            assert record_2.content == record.content
+            assert np.array_equal(record_2.vector, record.vector)
     await vector_store_record_collection.delete(id)
     assert len(vector_store_record_collection.inner_storage) == 0
 
@@ -194,6 +218,50 @@ async def test_crud_batch_operations_container(vector_store_record_collection):
     assert vector_store_record_collection.inner_storage[ids[0]]["vector"] == batch[ids[0]]["vector"]
     records = await vector_store_record_collection.get_batch(ids)
     assert records == batch
+    await vector_store_record_collection.delete_batch(ids)
+    assert len(vector_store_record_collection.inner_storage) == 0
+
+
+@mark.asyncio
+@mark.parametrize(
+    "vector_store_record_collection",
+    ["definition_pandas"],
+    indirect=True,
+)
+async def test_crud_operations_pandas(vector_store_record_collection):
+    id = "test_id"
+    record = DataFrame([{"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]}])
+    no_records = await vector_store_record_collection.get(id)
+    assert no_records is None
+    await vector_store_record_collection.upsert(record)
+    assert len(vector_store_record_collection.inner_storage) == 1
+
+    assert vector_store_record_collection.inner_storage[id]["content"] == record["content"].values[0]
+    assert vector_store_record_collection.inner_storage[id]["vector"] == record["vector"].values[0]
+    record_2 = await vector_store_record_collection.get(id)
+    assert record_2.equals(record)
+    await vector_store_record_collection.delete(id)
+    assert len(vector_store_record_collection.inner_storage) == 0
+
+
+@mark.asyncio
+@mark.parametrize(
+    "vector_store_record_collection",
+    ["definition_pandas"],
+    indirect=True,
+)
+async def test_crud_batch_operations_pandas(vector_store_record_collection):
+    ids = ["test_id_1", "test_id_2"]
+
+    batch = DataFrame([{"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]} for id in ids])
+    no_records = await vector_store_record_collection.get_batch(ids)
+    assert no_records is None
+    await vector_store_record_collection.upsert_batch(batch)
+    assert len(vector_store_record_collection.inner_storage) == 2
+    assert vector_store_record_collection.inner_storage[ids[0]]["content"] == batch["content"].values[0]
+    assert vector_store_record_collection.inner_storage[ids[0]]["vector"] == batch["vector"].values[0]
+    records = await vector_store_record_collection.get_batch(ids)
+    assert records.equals(batch)
     await vector_store_record_collection.delete_batch(ids)
     assert len(vector_store_record_collection.inner_storage) == 0
 
@@ -472,7 +540,7 @@ async def test_upsert_with_vectorizing(vector_store_record_collection):
     record = {"id": "test_id", "content": "test_content"}
     record2 = {"id": "test_id", "content": "test_content"}
 
-    async def embedding_func(definition, record):
+    async def embedding_func(record, type, definition):
         if isinstance(record, list):
             for r in record:
                 r["vector"] = [1.0, 2.0, 3.0]

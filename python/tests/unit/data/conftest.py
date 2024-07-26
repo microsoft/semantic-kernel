@@ -5,6 +5,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Annotated, Any
 
+import numpy as np
 from pydantic import BaseModel, Field
 from pytest import fixture
 
@@ -158,6 +159,33 @@ def data_model_container_serialize_definition() -> object:
 
 
 @fixture
+def data_model_pandas_definition() -> object:
+    from pandas import DataFrame
+
+    return VectorStoreRecordDefinition(
+        fields={
+            "vector": VectorStoreRecordVectorField(
+                name="vector",
+                index_kind="hnsw",
+                dimensions=5,
+                distance_function="cosine",
+                property_type="float",
+            ),
+            "id": VectorStoreRecordKeyField(name="id"),
+            "content": VectorStoreRecordDataField(
+                name="content",
+                has_embedding=True,
+                embedding_property_name="vector",
+                property_type="str",
+            ),
+        },
+        container_mode=True,
+        to_dict=lambda x: x.to_dict(orient="records"),
+        from_dict=lambda x, **_: DataFrame(x),
+    )
+
+
+@fixture
 def data_model_type_vanilla():
     @vectorstoremodel
     class DataModelClass:
@@ -165,6 +193,32 @@ def data_model_type_vanilla():
             self,
             content: Annotated[str, VectorStoreRecordDataField()],
             vector: Annotated[list[float], VectorStoreRecordVectorField()],
+            id: Annotated[str, VectorStoreRecordKeyField()],
+        ):
+            self.content = content
+            self.vector = vector
+            self.id = id
+
+        def __eq__(self, other) -> bool:
+            return self.content == other.content and self.id == other.id and self.vector == other.vector
+
+    return DataModelClass
+
+
+@fixture
+def data_model_type_vector_array():
+    @vectorstoremodel
+    class DataModelClass:
+        def __init__(
+            self,
+            content: Annotated[str, VectorStoreRecordDataField()],
+            vector: Annotated[
+                np.array,
+                VectorStoreRecordVectorField(
+                    serialize_function=np.ndarray.tolist,
+                    deserialize_function=np.array,
+                ),
+            ],
             id: Annotated[str, VectorStoreRecordKeyField()],
         ):
             self.content = content

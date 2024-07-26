@@ -22,7 +22,7 @@ async def test_add_vector_to_records(data_model_definition):
     utils = VectorStoreRecordUtils(kernel)
     assert utils is not None
     record = {"id": "test_id", "content": "content"}
-    await utils.add_vector_to_records(data_model_definition, record)
+    await utils.add_vector_to_records(record, None, data_model_definition)
     kernel.add_embedding_to_object.assert_called_once()
 
 
@@ -41,4 +41,4 @@ async def test_add_vector_wrong_fields():
     assert utils is not None
     record = {"id": "test_id", "content": "content"}
     with raises(VectorStoreModelException, match="Embedding field"):
-        await utils.add_vector_to_records(data_model, record)
+        await utils.add_vector_to_records(record, None, data_model)
