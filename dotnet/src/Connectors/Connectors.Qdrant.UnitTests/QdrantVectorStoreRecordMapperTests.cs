@@ -381,7 +381,7 @@ public class QdrantVectorStoreRecordMapperTests
         [VectorStoreRecordKey]
         public TKey? Key { get; set; } = default;
 
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "Vector1")]
+        [VectorStoreRecordData]
         public string DataString { get; set; } = string.Empty;
 
         [JsonPropertyName("data_int_json")]

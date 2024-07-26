@@ -216,7 +216,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         public string HotelName { get; set; }
 
         [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.EnLucene)]
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding")]
+        [VectorStoreRecordData]
         public string Description { get; set; }
 
         [VectorStoreRecordVector(4)]
