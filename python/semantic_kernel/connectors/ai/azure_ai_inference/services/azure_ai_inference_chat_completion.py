@@ -7,7 +7,7 @@ from collections.abc import AsyncGenerator
 from functools import reduce
 from typing import TYPE_CHECKING, Any
 
-from semantic_kernel.connectors.telemetry import SEMANTIC_KERNEL_USER_AGENT
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
