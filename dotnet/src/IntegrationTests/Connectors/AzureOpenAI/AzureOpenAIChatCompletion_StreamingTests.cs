@@ -7,16 +7,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTestsV2.Connectors.OpenAI;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
+public sealed class AzureOpenAIChatCompletionStreamingTests : BaseIntegrationTest
 {
     [Fact]
     public async Task ChatCompletionShouldUseChatSystemPromptAsync()
@@ -26,7 +26,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 
         var chatCompletion = kernel.Services.GetRequiredService<IChatCompletionService>();
 
-        var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         var stringBuilder = new StringBuilder();
 
@@ -61,10 +61,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 
             foreach (var key in update.Metadata!.Keys)
             {
-                if (!metadata.TryGetValue(key, out var value) || value is null)
-                {
-                    metadata[key] = update.Metadata[key];
-                }
+                metadata[key] = update.Metadata[key];
             }
         }
 
@@ -92,7 +89,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 
         var textGeneration = kernel.Services.GetRequiredService<ITextGenerationService>();
 
-        var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+        var settings = new AzureOpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
 
         var stringBuilder = new StringBuilder();
 
@@ -125,10 +122,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 
             foreach (var key in update.Metadata!.Keys)
             {
-                if (!metadata.TryGetValue(key, out var value) || value is null)
-                {
-                    metadata[key] = update.Metadata[key];
-                }
+                metadata[key] = update.Metadata[key];
             }
         }
 
@@ -152,16 +146,19 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
 
     private Kernel CreateAndInitializeKernel()
     {
-        var OpenAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
-        Assert.NotNull(OpenAIConfiguration);
-        Assert.NotNull(OpenAIConfiguration.ChatModelId!);
-        Assert.NotNull(OpenAIConfiguration.ApiKey);
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+        Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+        Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
         var kernelBuilder = base.CreateKernelBuilder();
 
-        kernelBuilder.AddOpenAIChatCompletion(
-            modelId: OpenAIConfiguration.ChatModelId,
-            apiKey: OpenAIConfiguration.ApiKey);
+        kernelBuilder.AddAzureOpenAIChatCompletion(
+            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
+            modelId: azureOpenAIConfiguration.ChatModelId,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            apiKey: azureOpenAIConfiguration.ApiKey);
 
         return kernelBuilder.Build();
     }
@@ -170,7 +167,7 @@ public sealed class OpenAIChatCompletionStreamingTests : BaseIntegrationTest
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<OpenAIChatCompletionTests>()
+        .AddUserSecrets<AzureOpenAIChatCompletionTests>()
         .Build();
 
     #endregion
