@@ -65,7 +65,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
         AgentChat chat = chatProvider.Invoke();
         AgentChatState agentChatState =
             JsonSerializer.Deserialize<AgentChatState>(channelState) ??
-            throw new KernelException("%%%");
+            throw new KernelException("Unable to restore channel: invalid state.");
 
         await chat.DeserializeAsync(agentChatState).ConfigureAwait(false); ;
         AggregatorChannel channel = new(chat);

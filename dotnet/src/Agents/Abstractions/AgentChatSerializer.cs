@@ -38,7 +38,7 @@ public sealed class AgentChatSerializer
     {
         AgentChatState state =
             await JsonSerializer.DeserializeAsync<AgentChatState>(stream).ConfigureAwait(false) ??
-            throw new KernelException("%%%");
+            throw new KernelException("Unable to restore chat: invalid format.");
 
         return new AgentChatSerializer(state);
     }

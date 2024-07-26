@@ -121,6 +121,7 @@ public class AgentChatSerializerTests
 
         // Serialize and deserialize chat
         AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
+        Assert.Single(serializer.Participants);
 
         TestChat copy = new(new TestAgent());
 
