@@ -4,11 +4,9 @@ import logging
 
 from google.generativeai.protos import Blob, Candidate, Part
 
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 
@@ -30,24 +28,6 @@ def finish_reason_from_google_ai_to_semantic_kernel(
 
     if finish_reason == Candidate.FinishReason.SAFETY:
         return SemanticKernelFinishReason.CONTENT_FILTER
-
-    return None
-
-
-def filter_system_message(chat_history: ChatHistory) -> str | None:
-    """Filter the first system message from the chat history.
-
-    If there are multiple system messages, raise an error.
-    If there are no system messages, return None.
-    """
-    if len([message for message in chat_history if message.role == AuthorRole.SYSTEM]) > 1:
-        raise ServiceInvalidRequestError(
-            "Multiple system messages in chat history. Only one system message is expected."
-        )
-
-    for message in chat_history:
-        if message.role == AuthorRole.SYSTEM:
-            return message.content
 
     return None
 
