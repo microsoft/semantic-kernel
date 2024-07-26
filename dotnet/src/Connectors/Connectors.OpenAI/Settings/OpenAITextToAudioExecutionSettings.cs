@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 /* Phase 4
-Bringing the OpenAITextToAudioExecutionSettings class to the OpenAIV2 connector as is
+Bringing the OpenAITextToAudioExecutionSettings class to the OpenAI connector as is
 
 */
 
