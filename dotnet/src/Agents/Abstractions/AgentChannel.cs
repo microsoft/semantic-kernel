@@ -19,7 +19,7 @@ public abstract class AgentChannel
     public ILogger Logger { get; set; } = NullLogger.Instance;
 
     /// <summary>
-    /// %%%
+    /// Responsible for providing the serialized representation of the channel.
     /// </summary>
     protected internal abstract string Serialize();
 

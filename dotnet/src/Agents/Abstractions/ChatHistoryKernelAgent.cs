@@ -32,11 +32,11 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task<AgentChannel> RestoreChannelAsync(string state, CancellationToken cancellationToken)
+    protected internal sealed override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         ChatHistory history =
-            JsonSerializer.Deserialize<ChatHistory>(state) ??
-            throw new KernelException("%%%"); // %%%
+            JsonSerializer.Deserialize<ChatHistory>(channelState) ??
+            throw new KernelException("Unable to restore channel: invalid state.");
         return Task.FromResult<AgentChannel>(new ChatHistoryChannel(history));
     }
 

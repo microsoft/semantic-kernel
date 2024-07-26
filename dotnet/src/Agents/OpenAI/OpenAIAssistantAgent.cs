@@ -312,16 +312,15 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
-    protected override async Task<AgentChannel> RestoreChannelAsync(string state, CancellationToken cancellationToken)
+    protected override async Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
-        // %%% LOGGING
-        //this.Logger.LogDebug("[{MethodName}] Restoring assistant thread", nameof(CreateChannelAsync));
+        string threadId = channelState;
 
-        string threadId = state;
+        this.Logger.LogOpenAIAssistantAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(OpenAIAssistantChannel), threadId);
 
         AssistantThread thread = await this._client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
 
-        //this.Logger.LogInformation("[{MethodName}] Restored assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
+        this.Logger.LogOpenAIAssistantAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(OpenAIAssistantChannel), threadId);
 
         return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
     }

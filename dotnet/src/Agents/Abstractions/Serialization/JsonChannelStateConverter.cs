@@ -6,8 +6,30 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Agents.Serialization;
 
 /// <summary>
-/// %%%
+/// Translates the serialized state to avoid escaping nested JSON as string.
 /// </summary>
+/// <example>
+/// Without converter:
+/// <code>
+/// {
+///   "state": "{\"key\":\"value\"}"
+/// }
+/// </code>
+///
+/// With converter:
+/// <code>
+/// {
+///   "state": {"key": "value"}
+/// }
+/// </code>
+///
+/// Always:
+/// <code>
+/// {
+///   "state": "text",
+/// }
+/// </code>
+/// </example>
 internal class JsonChannelStateConverter : JsonConverter<string>
 {
     /// <inheritdoc/>
@@ -26,7 +48,8 @@ internal class JsonChannelStateConverter : JsonConverter<string>
     /// <inheritdoc/>
     public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
     {
-        if (value.StartsWith("[", StringComparison.Ordinal) && value.EndsWith("]", StringComparison.Ordinal))
+        if ((value.StartsWith("[", StringComparison.Ordinal) && value.EndsWith("]", StringComparison.Ordinal)) ||
+            (value.StartsWith("{", StringComparison.Ordinal) && value.EndsWith("}", StringComparison.Ordinal)))
         {
             writer.WriteRawValue(value);
         }

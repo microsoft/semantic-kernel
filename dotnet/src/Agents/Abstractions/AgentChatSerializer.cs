@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -8,14 +9,13 @@ using Microsoft.SemanticKernel.Agents.Serialization;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// %%%
+/// Able to serialize and deserialize an <see cref="AgentChat"/>.
 /// </summary>
 public sealed class AgentChatSerializer
 {
-    /// <summary>
-    /// %%%
-    /// </summary>
-    public static readonly JsonSerializerOptions DefaultOptions =
+    private readonly AgentChatState _state;
+
+    private static readonly JsonSerializerOptions s_defaultOptions =
         new()
         {
             WriteIndented = true,
@@ -23,23 +23,40 @@ public sealed class AgentChatSerializer
         };
 
     /// <summary>
-    /// %%%
+    /// Serialize the provided <see cref="AgentChat"/> to the target stream.
     /// </summary>
     public static async Task SerializeAsync<TChat>(TChat chat, Stream stream) where TChat : AgentChat
     {
         AgentChatState state = chat.Serialize();
-        await JsonSerializer.SerializeAsync(stream, state, DefaultOptions).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(stream, state, s_defaultOptions).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// %%%
+    /// Provides a <see cref="AgentChatSerializer"/> that is able to restore an <see cref="AgentChat"/>.
     /// </summary>
-    public static async Task DeserializeAsync<TChat>(TChat chat, Stream stream) where TChat : AgentChat
+    public static async Task<AgentChatSerializer> DeserializeAsync<TChat>(TChat chat, Stream stream) where TChat : AgentChat
     {
         AgentChatState state =
             await JsonSerializer.DeserializeAsync<AgentChatState>(stream).ConfigureAwait(false) ??
             throw new KernelException("%%%");
 
-        await chat.DeserializeAsync(state).ConfigureAwait(false);
+        return new AgentChatSerializer(state);
+    }
+
+    /// <summary>
+    /// Enumerates the participants of the original <see cref="AgentChat"/> so that
+    /// the caller may be include them in the restored <see cref="AgentChat"/>.
+    /// </summary>
+    public IEnumerable<AgentParticipant> Participants => this._state.Participants;
+
+    /// <summary>
+    /// Restore the <see cref="AgentChat"/> to the previously captured state.
+    /// </summary>
+    public async Task DeserializeAsync<TChat>(TChat chat) where TChat : AgentChat =>
+        await chat.DeserializeAsync(this._state).ConfigureAwait(false);
+
+    private AgentChatSerializer(AgentChatState state)
+    {
+        this._state = state;
     }
 }
