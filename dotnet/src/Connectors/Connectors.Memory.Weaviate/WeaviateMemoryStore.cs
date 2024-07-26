@@ -391,7 +391,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
         if (keyArray.Length != 0)
         {
             string className = ToWeaviateFriendlyClassName(collectionName);
-            var requestBuilder = BatchDeleteRequest.Create(collectionName, keyArray);
+            var requestBuilder = BatchDeleteRequest.Create(className, keyArray);
             using HttpRequestMessage request = requestBuilder.Build();
 
             try
