@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import sys
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, AsyncIterable
 from typing import TYPE_CHECKING, Any
 
 import vertexai
@@ -55,7 +55,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         If no arguments are provided, the service will attempt to load the settings from the environment.
         The following environment variables are used:
         - VERTEX_AI_GEMINI_MODEL_ID
-        - VERTEX_AI_API_KEY
+        - VERTEX_AI_PROJECT_ID
 
         Args:
             project_id (str): The Google Cloud project ID.
@@ -98,7 +98,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
     async def _send_chat_request(
         self, chat_history: ChatHistory, settings: VertexAIChatPromptExecutionSettings
     ) -> list[ChatMessageContent]:
-        """Send a chat request to the Google AI service."""
+        """Send a chat request to the Vertex AI service."""
         vertexai.init(project=self.service_settings.project_id)
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
@@ -146,7 +146,63 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         settings: "PromptExecutionSettings",
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
-        pass
+        settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, VertexAIChatPromptExecutionSettings)  # nosec
+
+        async_generator = self._send_chat_streaming_request(chat_history, settings)
+
+        async for messages in async_generator:
+            yield messages
+
+    async def _send_chat_streaming_request(
+        self,
+        chat_history: ChatHistory,
+        settings: VertexAIChatPromptExecutionSettings,
+    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
+        """Send a streaming chat request to the Vertex AI service."""
+        vertexai.init(project=self.service_settings.project_id)
+        model = GenerativeModel(
+            self.service_settings.gemini_model_id,
+            system_instruction=filter_system_message(chat_history),
+        )
+
+        response: AsyncIterable[GenerationResponse] = await model.generate_content_async(
+            contents=self._prepare_chat_history_for_request(chat_history),
+            generation_config=settings.prepare_settings_dict(),
+            stream=True,
+        )
+
+        async for chunk in response:
+            yield [self._create_streaming_chat_message_content(chunk, candidate) for candidate in chunk.candidates]
+
+    def _create_streaming_chat_message_content(
+        self,
+        chunk: GenerationResponse,
+        candidate: Candidate,
+    ) -> StreamingChatMessageContent:
+        """Create a streaming chat message content object.
+
+        Args:
+            chunk: The response from the service.
+            candidate: The candidate from the response.
+
+        Returns:
+            A streaming chat message content object.
+        """
+        # Best effort conversion of finish reason. The raw value will be available in metadata.
+        finish_reason: FinishReason | None = finish_reason_from_vertex_ai_to_semantic_kernel(candidate.finish_reason)
+        response_metadata = self._get_metadata_from_response(chunk)
+        response_metadata.update(self._get_metadata_from_candidate(candidate))
+
+        return StreamingChatMessageContent(
+            ai_model_id=self.ai_model_id,
+            role=AuthorRole.ASSISTANT,
+            choice_index=candidate.index,
+            content=candidate.content.parts[0].text,
+            inner_content=chunk,
+            finish_reason=finish_reason,
+            metadata=response_metadata,
+        )
 
     # endregion
 

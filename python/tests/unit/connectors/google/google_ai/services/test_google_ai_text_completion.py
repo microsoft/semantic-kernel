@@ -39,10 +39,10 @@ def test_google_ai_text_completion_init_with_service_id(google_ai_unit_test_env,
 
 def test_google_ai_text_completion_init_with_model_id_in_argument(google_ai_unit_test_env) -> None:
     """Test initialization of GoogleAIChatCompletion with model_id in argument"""
-    google_ai_chat_completion = GoogleAITextCompletion(gemini_model_id="custom_model_id")
+    google_ai_text_completion = GoogleAITextCompletion(gemini_model_id="custom_model_id")
 
-    assert google_ai_chat_completion.ai_model_id == "custom_model_id"
-    assert google_ai_chat_completion.service_id == "custom_model_id"
+    assert google_ai_text_completion.ai_model_id == "custom_model_id"
+    assert google_ai_text_completion.service_id == "custom_model_id"
 
 
 @pytest.mark.parametrize("exclude_list", [["GOOGLE_AI_GEMINI_MODEL_ID"]], indirect=True)

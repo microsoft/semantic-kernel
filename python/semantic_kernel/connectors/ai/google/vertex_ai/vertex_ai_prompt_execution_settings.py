@@ -55,4 +55,5 @@ class VertexAIChatPromptExecutionSettings(VertexAIPromptExecutionSettings):
 class VertexAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     """Google AI Embedding Prompt Execution Settings."""
 
+    auto_truncate: bool | None = None
     output_dimensionality: int | None = None

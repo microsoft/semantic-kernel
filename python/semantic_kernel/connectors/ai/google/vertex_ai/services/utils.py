@@ -12,7 +12,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestE
 def finish_reason_from_vertex_ai_to_semantic_kernel(
     finish_reason: Candidate.FinishReason,
 ) -> SemanticKernelFinishReason | None:
-    """Convert a Google AI FinishReason to a Semantic Kernel FinishReason.
+    """Convert a Vertex AI FinishReason to a Semantic Kernel FinishReason.
 
     This is best effort and may not cover all cases as the enums are not identical.
     """
