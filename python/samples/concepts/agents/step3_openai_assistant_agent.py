@@ -2,9 +2,13 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.openai.open_ai_assistant_agent import OpenAIAssistantAgent
-from semantic_kernel.agents.openai.open_ai_assistant_definition import OpenAIAssistantDefinition
-from semantic_kernel.agents.openai.open_ai_service_configuration import OpenAIServiceConfiguration
+from semantic_kernel.agents.open_ai.azure_open_ai_assistant_agent import AzureOpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
+from semantic_kernel.agents.open_ai.open_ai_service_configuration import (
+    AzureOpenAIServiceConfiguration,
+    OpenAIServiceConfiguration,
+)
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -12,6 +16,9 @@ from semantic_kernel.kernel import Kernel
 
 HOST_NAME = "Host"
 HOST_INSTRUCTIONS = "Answer questions about the menu."
+
+# Note: you may toggle this to switch between AzureOpenAI and OpenAI
+use_azure_openai = True
 
 
 # Define a sample plugin for the sample
@@ -49,28 +56,37 @@ async def main():
     # Create the instance of the Kernel
     kernel = Kernel()
 
-    # Add the OpenAIChatCompletion AI Service to the Kernel
     service_id = "agent"
 
+    # Add the sample plugin to the kernel
     kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
 
-    # Create the agent
-    configuration = OpenAIServiceConfiguration.for_openai(service_id=service_id)
-    definition = OpenAIAssistantDefinition(name=HOST_NAME, instructions=HOST_INSTRUCTIONS, enable_code_interpreter=True)
+    # Create the agent definition
+    definition = OpenAIAssistantDefinition(name=HOST_NAME, instructions=HOST_INSTRUCTIONS)
 
-    # First define the OpenAIAssistantAgent object
-    agent = OpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+    # Create the agent
+    if use_azure_openai:
+        configuration = AzureOpenAIServiceConfiguration.create(service_id=service_id)
+        agent = AzureOpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+    else:
+        configuration = OpenAIServiceConfiguration.create(service_id=service_id)
+        agent = OpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
 
     # Next create the assistant
     await agent.create_assistant()
 
-    # Note: this can be done in one step if desired
-    # agent = await OpenAIAssistantAgent.create(configuration=configuration, definition=definition, kernel=kernel)
+    # Note: the agent creation can be done in one step if desired
+    # if use_azure_openai:
+    #     agent = await AzureOpenAIAssistantAgent.create(
+    #         configuration=configuration, definition=definition, kernel=kernel
+    #     )
+    # else:
+    #     agent = await OpenAIAssistantAgent.create(configuration=configuration, definition=definition, kernel=kernel)
 
     thread_id = await agent.create_thread()
 
     try:
-        # await invoke_agent(agent, thread_id=thread_id, input="Hello")
+        await invoke_agent(agent, thread_id=thread_id, input="Hello")
         await invoke_agent(agent, thread_id=thread_id, input="What is the special soup?")
         await invoke_agent(agent, thread_id=thread_id, input="What is the special drink?")
         await invoke_agent(agent, thread_id=thread_id, input="Thank you")

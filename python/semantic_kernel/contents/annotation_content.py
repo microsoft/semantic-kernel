@@ -1,9 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, TypeVar
+from typing import Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
+from pydantic import Field
+
+from semantic_kernel.contents.const import ANNOTATION_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -14,6 +17,8 @@ _T = TypeVar("_T", bound="AnnotationContent")
 
 @experimental_class
 class AnnotationContent(KernelContent):
+    content_type: Literal[ContentTypes.ANNOTATION_CONTENT] = Field(ANNOTATION_CONTENT_TAG, init=False)  # type: ignore
+    tag: ClassVar[str] = ANNOTATION_CONTENT_TAG
     file_id: str | None = None
     quote: str | None = None
     start_index: int | None = None

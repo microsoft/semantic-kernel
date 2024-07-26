@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from typing import Any
+
 from pydantic import Field
 
-from semantic_kernel.agents.openai.open_ai_assistant_execution_options import OpenAIAssistantExecutionOptions
+from semantic_kernel.agents.open_ai.open_ai_assistant_execution_options import OpenAIAssistantExecutionOptions
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -24,5 +26,5 @@ class OpenAIAssistantDefinition(KernelBaseModel):
     temperature: float | None = Field(None)
     top_p: float | None = Field(None)
     vector_store_ids: list[str] | None = Field(default_factory=list, max_length=1)
-    metadata: dict[str, str] | None = Field(default_factory=dict, max_length=16)
+    metadata: dict[str, Any] | None = Field(default_factory=dict, max_length=16)
     exection_options: OpenAIAssistantExecutionOptions | None = Field(None)

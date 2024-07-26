@@ -2,16 +2,23 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.openai.open_ai_assistant_agent import OpenAIAssistantAgent
-from semantic_kernel.agents.openai.open_ai_assistant_definition import OpenAIAssistantDefinition
-from semantic_kernel.agents.openai.open_ai_service_configuration import OpenAIServiceConfiguration
-from semantic_kernel.agents.openai.open_ai_thread_creation_options import OpenAIThreadCreationOptions
+from semantic_kernel.agents.open_ai.azure_open_ai_assistant_agent import AzureOpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
+from semantic_kernel.agents.open_ai.open_ai_service_configuration import (
+    AzureOpenAIServiceConfiguration,
+    OpenAIServiceConfiguration,
+)
+from semantic_kernel.agents.open_ai.open_ai_thread_creation_options import OpenAIThreadCreationOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
 AGENT_NAME = "CodeRunner"
 AGENT_INSTRUCTIONS = "Run the provided code file and return the result."
+
+# Note: you may toggle this to switch between AzureOpenAI and OpenAI
+use_azure_openai = True
 
 
 # A helper method to invoke the agent with the user input
@@ -34,12 +41,17 @@ async def main():
     service_id = "agent"
 
     # Create the agent
-    configuration = OpenAIServiceConfiguration.for_openai(service_id=service_id)
     definition = OpenAIAssistantDefinition(
         name=AGENT_NAME, instructions=AGENT_INSTRUCTIONS, enable_code_interpreter=True
     )
 
-    agent = OpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+    # Create the agent
+    if use_azure_openai:
+        configuration = AzureOpenAIServiceConfiguration.create(service_id=service_id)
+        agent = AzureOpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+    else:
+        configuration = OpenAIServiceConfiguration.create(service_id=service_id)
+        agent = OpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
 
     await agent.create_assistant()
 

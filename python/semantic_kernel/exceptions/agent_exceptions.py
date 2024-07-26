@@ -16,5 +16,9 @@ class AgentInitializationError(AgentException):
     pass
 
 
+class AgentExecutionError(AgentException):
+    pass
+
+
 class AgentInvokeError(AgentException):
     pass

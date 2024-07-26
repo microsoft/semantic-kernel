@@ -11,6 +11,7 @@ from pydantic import Field
 
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.const import (
+    ANNOTATION_CONTENT_TAG,
     CHAT_MESSAGE_CONTENT_TAG,
     DISCRIMINATOR_FIELD,
     FUNCTION_CALL_CONTENT_TAG,
@@ -30,6 +31,7 @@ from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 TAG_CONTENT_MAP = {
+    ANNOTATION_CONTENT_TAG: AnnotationContent,
     TEXT_CONTENT_TAG: TextContent,
     FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
     FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,

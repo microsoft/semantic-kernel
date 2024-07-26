@@ -19,6 +19,6 @@ class OpenAIAssistantInvocationOptions(KernelBaseModel):
     max_prompt_tokens: int | None = Field(None)
     parallel_tool_calls_enabled: bool | None = Field(False)
     truncation_message_count: int | None = Field(None)
-    temperature: float | None = Field(None)
-    top_p: float | None = Field(None)
+    temperature: float | None = Field(None, ge=0.0, le=2.0)
+    top_p: float | None = Field(None, ge=0.0, le=1.0)
     metadata: dict[str, str] | None = Field(default_factory=dict, max_length=16)

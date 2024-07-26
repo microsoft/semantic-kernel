@@ -57,10 +57,10 @@ class ImageContent(BinaryContent):
 
     content_type: Literal[ContentTypes.IMAGE_CONTENT] = Field(IMAGE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = IMAGE_CONTENT_TAG
-    detail: ClassVar[ImageContentDetail] = ImageContentDetail.AUTO
+    detail: ImageContentDetail = Field(default_factory=lambda: ImageContentDetail.AUTO)
 
     @classmethod
-    def from_image_path(cls: type[_T], image_path: str, detail: ImageContentDetail) -> _T:
+    def from_image_path(cls: type[_T], image_path: str, detail: ImageContentDetail = ImageContentDetail.AUTO) -> _T:
         """Create an instance from an image file."""
         mime_type = mimetypes.guess_type(image_path)[0]
         with open(image_path, "rb") as image_file:

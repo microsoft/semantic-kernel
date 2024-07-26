@@ -3,7 +3,6 @@
 import asyncio
 import logging
 from collections.abc import AsyncIterable
-from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from openai import AsyncOpenAI
@@ -14,13 +13,11 @@ from openai.types.beta.threads.runs import RunStep
 from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.openai.open_ai_assistant_definition import OpenAIAssistantDefinition
-from semantic_kernel.agents.openai.open_ai_service_configuration import OpenAIServiceConfiguration
-from semantic_kernel.agents.openai.open_ai_thread_creation_options import OpenAIThreadCreationOptions
-from semantic_kernel.agents.openai.run_polling_options import RunPollingOptions
+from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
+from semantic_kernel.agents.open_ai.open_ai_service_configuration import OpenAIServiceConfiguration
+from semantic_kernel.agents.open_ai.open_ai_thread_creation_options import OpenAIThreadCreationOptions
+from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
-from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
-from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -30,6 +27,7 @@ from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
+    AgentExecutionError,
     AgentFileNotFoundException,
     AgentInitializationError,
     AgentInvokeError,
@@ -68,33 +66,28 @@ class OpenAIAssistantBase(Agent):
 
     def __init__(
         self,
-        api_key: str,
         ai_model_id: str,
         configuration: OpenAIServiceConfiguration,
         definition: OpenAIAssistantDefinition,
+        client: AsyncOpenAI,
+        service_id: str,
+        kernel: "Kernel",
         *,
-        client: AsyncOpenAI | None = None,
-        org_id: str | None = None,
-        service_id: str | None = None,
-        kernel: "Kernel | None" = None,
         id: str | None = None,
         name: str | None = None,
         description: str | None = None,
-        default_headers: dict[str, str] | None = None,
         instructions: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an OpenAIAssistant Base.
 
         Args:
-            api_key (str): The API key.
             ai_model_id (str): The AI model id. Defaults to None.
             configuration (OpenAIAssistantConfiguration): The configuration. Defaults to None.
             definition (OpenAIAssistantDefinition): The definition. Defaults to None.
-            client (AsyncOpenAI): The client. Defaults to None. (optional)
-            org_id (str): The organization id. Defaults to None. (optional)
-            service_id (str): The service id. Defaults to None. (optional)
-            kernel (Kernel): The kernel. Defaults to None. (optional)
+            client (AsyncOpenAI): The client, either AsyncOpenAI or AsyncAzureOpenAI.
+            service_id (str): The service id.
+            kernel (Kernel): The kernel.
             id (str): The id. Defaults to None. (optional)
             name (str): The name. Defaults to None. (optional)
             description (str): The description. Defaults to None. (optional)
@@ -103,23 +96,6 @@ class OpenAIAssistantBase(Agent):
             kwargs (Any): The keyword arguments.
         """
         args: dict[str, Any] = {}
-
-        # Merge APP_INFO into the headers if it exists
-        merged_headers = dict(copy(default_headers)) if default_headers else {}
-        if APP_INFO:
-            merged_headers.update(APP_INFO)
-            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
-
-        if not client:
-            if not api_key:
-                raise AgentInitializationError("Please provide an api_key")
-            client = AsyncOpenAI(
-                api_key=api_key,
-                organization=org_id,
-                default_headers=merged_headers,
-            )
-
-        service_id = configuration.service_id if (configuration and configuration.service_id) else DEFAULT_SERVICE_NAME
 
         args = {
             "ai_model_id": ai_model_id,
@@ -130,16 +106,48 @@ class OpenAIAssistantBase(Agent):
             "description": description,
             "configuration": configuration,
             "definition": definition,
+            "kernel": kernel,
         }
 
         if id is not None:
             args["id"] = id
-        if kernel is not None:
-            args["kernel"] = kernel
         if kwargs:
             args.update(kwargs)
 
         super().__init__(**args)
+
+    async def create_assistant(
+        self,
+    ) -> "Assistant":
+        """Create the assistant."""
+        kwargs: dict[str, Any] = {}
+
+        tools = []
+        if self.definition.enable_code_interpreter:
+            tools.append({"type": "code_interpreter"})
+        if self.definition.enable_file_search:
+            tools.append({"type": "file_search"})
+
+        kwargs["tools"] = tools if tools else None
+
+        tool_resources = {}
+        if self.definition.file_ids:
+            tool_resources["code_interpreter"] = {"file_ids": self.definition.file_ids}
+        if self.definition.vector_store_ids:
+            tool_resources["file_search"] = {"vector_store_ids": self.definition.vector_store_ids}
+
+        kwargs["tool_resources"] = tool_resources if tool_resources else None
+
+        # Filter out None values to avoid passing them as kwargs
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+
+        self.assistant = await self.client.beta.assistants.create(
+            model=self.ai_model_id,
+            instructions=self.instructions,
+            name=self.name,
+            **kwargs,
+        )
+        return self.assistant
 
     # endregion
 
@@ -148,15 +156,17 @@ class OpenAIAssistantBase(Agent):
     @property
     def metadata(self) -> dict[str, str]:
         """The metadata."""
-        if not self.assistant or not isinstance(self.assistant.metadata, dict):
+        if self.assistant is None:
+            raise AgentInitializationError("The assistant has not been created.")
+        if not isinstance(self.assistant.metadata, dict):
             return {}
         return dict(self.assistant.metadata)
 
     @property
     def tools(self) -> list["AssistantTool"]:
         """The tools."""
-        if not self.assistant:
-            return []
+        if self.assistant is None:
+            raise AgentInitializationError("The assistant has not been created.")
         tools: list[AssistantTool] = []
         tools.extend(self.assistant.tools)
         tools.extend(
@@ -198,7 +208,7 @@ class OpenAIAssistantBase(Agent):
                 messages = []
                 for message in thread_creation_settings.messages:
                     if message.role.value not in self.allowed_message_roles:
-                        raise AgentInitializationError(
+                        raise AgentExecutionError(
                             f"Invalid message role `{message.role.value}`. Allowed roles are {self.allowed_message_roles}."  # noqa: E501
                         )
                     message_contents = self._get_message_contents(message=message)
@@ -239,9 +249,6 @@ class OpenAIAssistantBase(Agent):
         Raises:
             AgentInitializationError: If the client has not been initialized or the file is not found.
         """
-        if self.client is None:
-            raise AgentInitializationError("The client has not been initialized.")
-
         try:
             with open(file_path, "rb") as file:
                 file: "FileObject" = await self.client.files.create(file=file, purpose=purpose)  # type: ignore
@@ -260,7 +267,7 @@ class OpenAIAssistantBase(Agent):
             Message: The message.
         """
         if message.role.value not in self.allowed_message_roles:
-            raise AgentInitializationError(
+            raise AgentExecutionError(
                 f"Invalid message role `{message.role.value}`. Allowed roles are {self.allowed_message_roles}."
             )
 
@@ -342,9 +349,7 @@ class OpenAIAssistantBase(Agent):
             raise AgentInitializationError("The assistant has not been created.")
 
         if self._is_deleted:
-            raise AgentInitializationError(
-                "The assistant has been deleted."
-            )  # TODO(evmattso): update type of exception
+            raise AgentInitializationError("The assistant has been deleted.")
 
         self._check_if_deleted()
         tools = self._get_tools()
@@ -363,7 +368,9 @@ class OpenAIAssistantBase(Agent):
             run = await self._poll_run_status(run=run, thread_id=thread_id)
 
             if run.status in self.error_message_states:
-                raise AgentInvokeError(f"Run failed: {run.status} for agent `{self.name}` and thread `{thread_id}`")
+                raise AgentInvokeError(
+                    f"Run failed with status: `{run.status}` for agent `{self.name}` and thread `{thread_id}`"
+                )
 
             # Check if function calling required
             if run.status == "requires_action":
@@ -401,7 +408,7 @@ class OpenAIAssistantBase(Agent):
                                 tool_call.code_interpreter.input,  # type: ignore
                             )
                             is_visible = True
-                        elif tool_call.type == "function_call":
+                        elif tool_call.type == "function":
                             function_step = function_steps.get(tool_call.id)
                             assert function_step is not None  # nosec
                             content = self._generate_function_result_content(
@@ -499,8 +506,8 @@ class OpenAIAssistantBase(Agent):
         return run
 
     async def _retrieve_message(self, thread_id: str, message_id: str) -> Message | None:
+        """Retrieve a message from a thread."""
         message: Message | None = None
-        retry = False
         count = 0
         max_retries = 3
 
@@ -509,12 +516,15 @@ class OpenAIAssistantBase(Agent):
                 message = await self.client.beta.threads.messages.retrieve(message_id, thread_id=thread_id)
                 break
             except Exception as ex:
-                logger.error(f"Failed to retrieve message {message_id} from thread {thread_id}.", ex)
-                retry = True
-
-            if retry:
-                await asyncio.sleep(self.polling_options.message_synchronization_delay.total_seconds())
+                logger.error(f"Failed to retrieve message {message_id} from thread {thread_id}: {ex}")
                 count += 1
+                if count >= max_retries:
+                    logger.error(
+                        f"Max retries reached. Unable to retrieve message {message_id} from thread {thread_id}."
+                    )
+                    break
+                backoff_time: float = self.polling_options.message_synchronization_delay.total_seconds() * (2**count)
+                await asyncio.sleep(backoff_time)
 
         return message
 
@@ -579,12 +589,13 @@ class OpenAIAssistantBase(Agent):
             function_steps (dict[str, FunctionCallContent]): The function steps
 
         Returns:
-            list[FunctionCallContent]: The list of function
+            list[FunctionCallContent]: The list of function call contents.
         """
         function_call_contents: list[FunctionCallContent] = []
-        if not run.required_action or not run.required_action.submit_tool_outputs:
+        required_action = getattr(run, "required_action", None)
+        if not required_action or not getattr(required_action, "submit_tool_outputs", False):
             return function_call_contents
-        for tool in run.required_action.submit_tool_outputs.tool_calls:
+        for tool in required_action.submit_tool_outputs.tool_calls:
             fcc = FunctionCallContent(
                 id=tool.id,
                 index=getattr(tool, "index", None),

@@ -5,13 +5,16 @@ from collections.abc import AsyncIterable
 from copy import copy
 from typing import TYPE_CHECKING, Any
 
-from openai import AsyncOpenAI
+from openai import AsyncAzureOpenAI
 
-from semantic_kernel.agents.openai.open_ai_assistant_base import OpenAIAssistantBase
-from semantic_kernel.agents.openai.open_ai_assistant_definition import OpenAIAssistantDefinition
-from semantic_kernel.agents.openai.open_ai_assistant_execution_options import OpenAIAssistantExecutionOptions
-from semantic_kernel.agents.openai.open_ai_service_configuration import OpenAIServiceConfiguration
+from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
+from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
+from semantic_kernel.agents.open_ai.open_ai_assistant_execution_options import OpenAIAssistantExecutionOptions
+from semantic_kernel.agents.open_ai.open_ai_service_configuration import (
+    AzureOpenAIServiceConfiguration,
+)
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
+from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -25,7 +28,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class OpenAIAssistantAgent(OpenAIAssistantBase):
+class AzureOpenAIAssistantAgent(OpenAIAssistantBase):
     """OpenAI Assistant Agent class."""
 
     _options_metadata_key: str = "__run_options"
@@ -35,23 +38,23 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
     def __init__(
         self,
         kernel: "Kernel",
-        configuration: OpenAIServiceConfiguration,
+        configuration: AzureOpenAIServiceConfiguration,
         definition: OpenAIAssistantDefinition,
     ) -> None:
-        """Initialize an OpenAIAssistant service."""
+        """Initialize an AzureOpenAI Assistant Agent."""
+        client = self._create_client_from_configuration(configuration)
+        service_id = configuration.service_id if configuration.service_id else DEFAULT_SERVICE_NAME
+
         args: dict[str, Any] = {
             "kernel": kernel,
-            "api_key": configuration.api_key if configuration.api_key else None,
-            "org_id": configuration.org_id,
             "ai_model_id": configuration.ai_model_id,
-            "service_id": configuration.service_id,
-            "client": configuration.openai_client,
+            "service_id": service_id,
+            "client": client,
             "name": definition.name,
             "description": definition.description,
             "instructions": definition.instructions,
             "configuration": configuration,
             "definition": definition,
-            "default_headers": configuration.default_headers,
         }
 
         if definition.id is not None:
@@ -63,9 +66,9 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         cls,
         *,
         kernel: "Kernel",
-        configuration: OpenAIServiceConfiguration,
+        configuration: AzureOpenAIServiceConfiguration,
         definition: OpenAIAssistantDefinition,
-    ) -> "OpenAIAssistantAgent":
+    ) -> "AzureOpenAIAssistantAgent":
         """Asynchronous class method used to create the OpenAI Assistant Agent."""
         agent = cls(
             kernel=kernel,
@@ -75,57 +78,13 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         agent.assistant = await agent.create_assistant()
         return agent
 
-    async def create_assistant(
-        self,
-    ) -> "Assistant":
-        """Create the assistant."""
-        kwargs: dict[str, Any] = {}
-
-        tools = []
-        if self.definition.enable_code_interpreter:
-            tools.append({"type": "code_interpreter"})
-        if self.definition.enable_file_search:
-            tools.append({"type": "file_search"})
-
-        kwargs["tools"] = tools if tools else None
-
-        tool_resources = {}
-        if self.definition.file_ids:
-            tool_resources["code_interpreter"] = {"file_ids": self.definition.file_ids}
-        if self.definition.vector_store_ids:
-            tool_resources["file_search"] = {"vector_store_ids": self.definition.vector_store_ids}
-
-        kwargs["tool_resources"] = tool_resources if tool_resources else None
-
-        # Filter out None values to avoid passing them as kwargs
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-
-        self.assistant = await self.client.beta.assistants.create(
-            model=self.ai_model_id,
-            instructions=self.instructions,
-            name=self.name,
-            **kwargs,
-        )
-        return self.assistant
-
     @classmethod
     def create_client(
-        cls, configuration: OpenAIServiceConfiguration, default_headers: dict[str, str] | None = None
-    ) -> AsyncOpenAI:
+        cls,
+        configuration: AzureOpenAIServiceConfiguration,
+    ) -> AsyncAzureOpenAI:
         """Create the OpenAI client."""
-        merged_headers = dict(copy(default_headers)) if default_headers else {}
-        if APP_INFO:
-            merged_headers.update(APP_INFO)
-            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
-
-        if not configuration.api_key:
-            raise AgentInitializationError("The OpenAI API key is required.")
-
-        return AsyncOpenAI(
-            api_key=configuration.api_key,
-            organization=configuration.org_id,
-            default_headers=merged_headers,
-        )
+        return cls._create_client_from_configuration(configuration)
 
     def _create_open_ai_assistant_definition(self, assistant: "Assistant") -> OpenAIAssistantDefinition:
         """Create an OpenAI Assistant Definition from an OpenAI Assistant."""
@@ -161,9 +120,32 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             execution_settings=settings,
         )
 
+    @staticmethod
+    def _create_client_from_configuration(configuration: AzureOpenAIServiceConfiguration) -> AsyncAzureOpenAI:
+        """Create the OpenAI client from configuration."""
+        merged_headers = dict(copy(configuration.default_headers)) if configuration.default_headers else {}
+        if APP_INFO:
+            merged_headers.update(APP_INFO)
+            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
+
+        if not configuration.api_key and not configuration.ad_token and not configuration.ad_token_provider:
+            raise AgentInitializationError(
+                "Please provide either AzureOpenAI api_key, an ad_token or an ad_token_provider or a client."
+            )
+        if not configuration.endpoint:
+            raise AgentInitializationError("Please provide an AzureOpenAI endpoint.")
+        return AsyncAzureOpenAI(
+            azure_endpoint=str(configuration.endpoint),
+            api_version=configuration.api_version,
+            api_key=configuration.api_key,
+            azure_ad_token=configuration.ad_token,
+            azure_ad_token_provider=configuration.ad_token_provider,
+            default_headers=merged_headers,
+        )
+
     async def list_definitions(
         self,
-        configuration: OpenAIServiceConfiguration,
+        configuration: AzureOpenAIServiceConfiguration,
     ) -> AsyncIterable[OpenAIAssistantDefinition]:
         """List the assistant definitions.
 
@@ -173,18 +155,18 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         Yields:
             An AsyncIterable of OpenAIAssistantDefinition.
         """
-        super().__init__(**configuration.model_dump())
-        assistants = await self.client.beta.assistants.list(order="desc")
+        client = self._create_client_from_configuration(configuration)
+        assistants = await client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
             yield self._create_open_ai_assistant_definition(assistant)
 
     async def retrieve(
-        self, kernel: "Kernel", configuration: OpenAIServiceConfiguration, id: str
-    ) -> "OpenAIAssistantAgent":
+        self, kernel: "Kernel", configuration: AzureOpenAIServiceConfiguration, id: str
+    ) -> "AzureOpenAIAssistantAgent":
         """Retrieve an assistant by ID."""
-        super().__init__(**configuration.model_dump())
-        assistant = await self.client.beta.assistants.retrieve(id)
+        client = self._create_client_from_configuration(configuration)
+        assistant = await client.beta.assistants.retrieve(id)
         definition = self._create_open_ai_assistant_definition(assistant)
-        return OpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+        return AzureOpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
 
     # endregion
