@@ -533,9 +533,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
             throw new ArgumentException("collectionName must start with a letter.", nameof(collectionName));
         }
 
-        return !char.IsUpper(sanitised[0])
+        return (!char.IsUpper(sanitised[0])
             ? string.Concat(sanitised[0].ToString().ToUpper(CultureInfo.InvariantCulture), sanitised.Substring(1))
-            : sanitised;
+            : sanitised).Trim();
     }
 
     // Execute the HTTP request

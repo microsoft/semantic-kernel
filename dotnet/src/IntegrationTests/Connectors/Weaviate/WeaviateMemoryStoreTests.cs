@@ -275,6 +275,9 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(memoryRecord3.Metadata.ExternalSourceName, closest.Value.Item1.Metadata.ExternalSourceName);
         Assert.Equal(memoryRecord3.Metadata.IsReference, closest.Value.Item1.Metadata.IsReference);
 
+        var doesCollectionExist = await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName);
+        Assert.True(doesCollectionExist);
+
         await this._weaviateMemoryStore.RemoveBatchAsync(collectionName, [id1, id2, id3]);
         var memoryRecordsAfterDeletion = await this._weaviateMemoryStore.GetBatchAsync(collectionName, [id1, id2, id3]).ToListAsync();
         Assert.Empty(memoryRecordsAfterDeletion);
