@@ -938,22 +938,16 @@ def test_merge_options(configuration, definition, kernel):
 
     expected_options = {
         "ai_model_id": "model-id",
-        "description": None,
-        "id": None,
-        "instructions": None,
-        "name": None,
-        "enable_code_interpreter": False,
-        "enable_file_search": False,
-        "enable_json_response": False,
-        "file_ids": [],
-        "temperature": None,
-        "top_p": None,
-        "vector_store_ids": [],
-        "metadata": {"key1": "value1"},
+        "enable_code_interpreter": True,
+        "enable_file_search": True,
+        "enable_json_response": True,
         "max_completion_tokens": 150,
         "max_prompt_tokens": None,
         "parallel_tool_calls_enabled": True,
         "truncation_message_count": None,
+        "temperature": None,
+        "top_p": None,
+        "metadata": {},
     }
 
     assert merged_options == expected_options, f"Expected {expected_options}, but got {merged_options}"
@@ -980,7 +974,6 @@ def test_generate_options(configuration, definition, kernel):
         "max_prompt_tokens": None,
         "model": "model-id",
         "top_p": None,
-        "parallel_tool_calls_enabled": True,
         "response_format": None,
         "temperature": None,
         "truncation_strategy": None,

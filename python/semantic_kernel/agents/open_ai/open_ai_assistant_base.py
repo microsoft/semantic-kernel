@@ -589,7 +589,7 @@ class OpenAIAssistantBase(Agent):
             "max_prompt_tokens": merged_options.get("max_prompt_tokens"),
             "model": merged_options.get("ai_model_id"),
             "top_p": merged_options.get("top_p"),
-            "parallel_tool_calls_enabled": merged_options.get("parallel_tool_calls_enabled"),
+            # TODO(evmattso): Support `parallel_tool_calls` when I can figure out how to enable it
             "response_format": "json" if merged_options.get("enable_json_response") else None,
             "temperature": merged_options.get("temperature"),
             "truncation_strategy": truncation_message_count if truncation_message_count else None,
