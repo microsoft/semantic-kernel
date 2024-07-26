@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-/* Phase 03
-Adapted from OpenAI SDK original policy with warning updates.
-
-Original file: https://github.com/openai/openai-dotnet/blob/0b97311f58dfb28bd883d990f68d548da040a807/src/Utility/GenericActionPipelinePolicy.cs#L8
-*/
-
 using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;

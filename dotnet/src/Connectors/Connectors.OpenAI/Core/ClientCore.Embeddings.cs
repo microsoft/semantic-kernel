@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-/* 
-Phase 01
-
-This class was created to simplify any Text Embeddings Support from the v1 ClientCore
-*/
-
 using System;
 using System.ClientModel;
 using System.Collections.Generic;

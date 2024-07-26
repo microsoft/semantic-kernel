@@ -18,14 +18,6 @@ namespace Microsoft.SemanticKernel;
 
 #pragma warning disable IDE0039 // Use local function
 
-/* Phase 02
-- Add endpoint parameter for both Embedding and TextToImage services extensions.
-- Removed unnecessary Validation checks (that are already happening in the service/client constructors)
-- Added openAIClient extension for TextToImage service.
-- Changed parameters order for TextToImage service extension (modelId comes first).
-- Made modelId a required parameter of TextToImage services.
-
-*/
 /// <summary>
 /// Sponsor extensions class for <see cref="IServiceCollection"/>.
 /// </summary>
