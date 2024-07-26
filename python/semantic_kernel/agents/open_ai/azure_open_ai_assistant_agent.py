@@ -13,10 +13,10 @@ from semantic_kernel.agents.open_ai.open_ai_assistant_execution_options import O
 from semantic_kernel.agents.open_ai.open_ai_service_configuration import (
     AzureOpenAIServiceConfiguration,
 )
-from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
     from openai.resources.beta.assistants import Assistant
