@@ -11,8 +11,8 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceTextEmbedding,
 )
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
-from semantic_kernel.connectors.telemetry import SEMANTIC_KERNEL_USER_AGENT
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 
 def test_azure_ai_inference_text_embedding_init(azure_ai_inference_unit_test_env, model_id) -> None:
