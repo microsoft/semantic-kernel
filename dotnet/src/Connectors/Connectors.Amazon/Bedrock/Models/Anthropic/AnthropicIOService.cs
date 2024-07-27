@@ -18,7 +18,7 @@ public class AnthropicIOService : IBedrockModelIOService
     private const double DefaultTemperature = 1.0;
     private const double DefaultTopP = 1.0;
     private const int DefaultMaxTokensToSample = 4096;
-    private static readonly List<string> DefaultStopSequences = new() { "\n\nHuman:" };
+    private static readonly List<string> s_defaultStopSequences = new() { "\n\nHuman:" };
     private const int DefaultTopK = 250;
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Anthropic Claude.
@@ -32,7 +32,7 @@ public class AnthropicIOService : IBedrockModelIOService
         var temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature);
         var topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", (double?)DefaultTopP);
         var maxTokensToSample = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens_to_sample", (int?)DefaultMaxTokensToSample);
-        var stopSequences = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stop_sequences", DefaultStopSequences);
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stop_sequences", s_defaultStopSequences);
         var topK = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_k", (int?)DefaultTopK);
 
         var requestBody = new ClaudeRequest.ClaudeTextGenerationRequest()
@@ -94,9 +94,9 @@ public class AnthropicIOService : IBedrockModelIOService
             MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
         };
 
-        var additionalModelRequestFields = new Document { };
+        var additionalModelRequestFields = new Document();
 
-        var tools = BedrockModelUtilities.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null);
+        var tools = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "tools", new List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>());
         var toolChoice = BedrockModelUtilities.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null);
 
         if (modelId != "anthropic.claude-instant-v1")
@@ -170,9 +170,9 @@ public class AnthropicIOService : IBedrockModelIOService
             MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
         };
 
-        var additionalModelRequestFields = new Document { };
+        var additionalModelRequestFields = new Document();
 
-        var tools = BedrockModelUtilities.GetExtensionDataValue<List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>>(settings?.ExtensionData, "tools", null);
+        var tools = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "tools", new List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>());
         var toolChoice = BedrockModelUtilities.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null);
 
         if (modelId != "anthropic.claude-instant-v1")

@@ -71,7 +71,7 @@ public static class ClaudeRequest
             /// <summary>
             /// The type of tool choice. Possible values are any (use any available tool), auto (the model decides), and tool (use the specified tool).
             /// </summary>
-            public required string Type { get; set; }
+            public string Type { get; set; }
             /// <summary>
             /// (Optional) The name of the tool to use. Required if you specify tool in the type field.
             /// </summary>

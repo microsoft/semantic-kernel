@@ -18,7 +18,7 @@ public class AmazonIOService : IBedrockModelIOService
     private const float DefaultTemperature = 0.7f;
     private const float DefaultTopP = 0.9f;
     private const int DefaultMaxTokenCount = 512;
-    private static readonly List<string> DefaultStopSequences = new() { "User:" };
+    private static readonly List<string> s_defaultStopSequences = new() { "User:" };
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Amazon Titan.
     /// </summary>
@@ -31,7 +31,7 @@ public class AmazonIOService : IBedrockModelIOService
         float temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", DefaultTemperature);
         float topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "topP", DefaultTopP);
         int maxTokenCount = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount);
-        List<string> stopSequences = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stopSequences", DefaultStopSequences);
+        List<string> stopSequences = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stopSequences", s_defaultStopSequences);
 
         var requestBody = new
         {

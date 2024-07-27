@@ -133,12 +133,12 @@ public static class MistralRequest
         /// </summary>
         [JsonPropertyName("role")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string? Role { get; set; }
+        public string? NewRole { get; set; }
         /// <summary>
         /// The content of the chat completion message.
         /// </summary>
         [JsonPropertyName("content")]
-        public string? Content { get; set; }
+        public string? NewContent { get; set; }
         /// <summary>
         /// List of tool calls for the chat message.
         /// </summary>
@@ -159,8 +159,8 @@ public static class MistralRequest
                 throw new ArgumentException($"Role must be one of: system, user, assistant or tool. {role} is an invalid role.", nameof(role));
             }
 
-            this.Role = role;
-            this.Content = content;
+            this.NewRole = role;
+            this.NewContent = content;
         }
     }
     /// <summary>
