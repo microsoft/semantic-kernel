@@ -9,7 +9,7 @@ namespace Connectors.Amazon.Models;
 /// <summary>
 /// Utilities class for functions all Bedrock models need to use.
 /// </summary>
-public class BedrockModelUtilities
+public static class BedrockModelUtilities
 {
     /// <summary>
     /// Maps the AuthorRole to the corresponding ConversationRole because AuthorRole is static and { readonly get; }.
@@ -17,7 +17,7 @@ public class BedrockModelUtilities
     /// <param name="role"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public ConversationRole MapRole(AuthorRole role)
+    public static ConversationRole MapRole(AuthorRole role)
     {
         if (role == AuthorRole.User)
         {
@@ -28,14 +28,14 @@ public class BedrockModelUtilities
         {
             return ConversationRole.Assistant;
         }
-        throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}");
+        throw new ArgumentException($"Invalid role: {role}");
     }
     /// <summary>
     /// Gets the system messages from the ChatHistory and adds them to the ConverseRequest System parameter.
     /// </summary>
     /// <param name="chatHistory"></param>
     /// <returns></returns>
-    public List<SystemContentBlock> GetSystemMessages(ChatHistory chatHistory)
+    public static List<SystemContentBlock> GetSystemMessages(ChatHistory chatHistory)
     {
         return chatHistory
             .Where(m => m.Role == AuthorRole.System)
@@ -47,13 +47,13 @@ public class BedrockModelUtilities
     /// </summary>
     /// <param name="chatHistory"></param>
     /// <returns></returns>
-    public List<Message> BuildMessageList(ChatHistory chatHistory)
+    public static List<Message> BuildMessageList(ChatHistory chatHistory)
     {
         return chatHistory
             .Where(m => m.Role != AuthorRole.System)
             .Select(m => new Message
             {
-                Role = new BedrockModelUtilities().MapRole(m.Role),
+                Role = MapRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             })
             .ToList();
@@ -66,7 +66,7 @@ public class BedrockModelUtilities
     /// <param name="defaultValue"></param>
     /// <typeparam name="TValue"></typeparam>
     /// <returns></returns>
-    public TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
+    public static TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
     {
         if (extensionData?.TryGetValue(key, out object? value) == true && value is TValue typedValue)
         {

@@ -13,7 +13,6 @@ namespace Connectors.Amazon.Models.Cohere;
 /// </summary>
 public class CohereCommandIOService : IBedrockModelIOService
 {
-    private readonly BedrockModelUtilities _util = new();
     // Define constants for default values
     private const double DefaultTemperature = 0.9;
     private const double DefaultTopP = 0.75;
@@ -32,16 +31,16 @@ public class CohereCommandIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        var temperature = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature);
-        var topP = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "p", (double?)DefaultTopP);
-        var topK = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "k", (double?)DefaultTopK);
-        var maxTokens = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", (int?)DefaultMaxTokens);
-        var stopSequences = this._util.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop_sequences", null);
-        var returnLikelihoods = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "return_likelihoods", DefaultReturnLikelihoods);
-        var stream = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "stream", (bool?)DefaultStream);
-        var numGenerations = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "num_generations", (int?)DefaultNumGenerations);
-        var logitBias = this._util.GetExtensionDataValue<Dictionary<int, double>>(executionSettings?.ExtensionData, "logit_bias", null);
-        var truncate = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "truncate", DefaultTruncate);
+        var temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature);
+        var topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "p", (double?)DefaultTopP);
+        var topK = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "k", (double?)DefaultTopK);
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", (int?)DefaultMaxTokens);
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop_sequences", null);
+        var returnLikelihoods = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "return_likelihoods", DefaultReturnLikelihoods);
+        var stream = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stream", (bool?)DefaultStream);
+        var numGenerations = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "num_generations", (int?)DefaultNumGenerations);
+        var logitBias = BedrockModelUtilities.GetExtensionDataValue<Dictionary<int, double>>(executionSettings?.ExtensionData, "logit_bias", null);
+        var truncate = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "truncate", DefaultTruncate);
 
         var requestBody = new CommandTextRequest.CohereCommandTextGenerationRequest
         {

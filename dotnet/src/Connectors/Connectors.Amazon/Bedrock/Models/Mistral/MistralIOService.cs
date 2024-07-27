@@ -14,7 +14,6 @@ namespace Connectors.Amazon.Models.Mistral;
 /// </summary>
 public class MistralIOService : IBedrockModelIOService
 {
-    private readonly BedrockModelUtilities _util = new();
     // Define constants for default values
     private const float DefaultTemperatureInstruct = 0.5f;
     private const float DefaultTopPInstruct = 0.9f;
@@ -37,11 +36,11 @@ public class MistralIOService : IBedrockModelIOService
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
         var isInstructModel = modelId.Contains("instruct", StringComparison.OrdinalIgnoreCase);
-        var temperature = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", isInstructModel ? (double?)DefaultTemperatureInstruct : (double?)DefaultTemperatureNonInstruct);
-        var topP = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", isInstructModel ? (double?)DefaultTopPInstruct : (double?)DefaultTopPNonInstruct);
-        var maxTokens = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", isInstructModel ? (int?)DefaultMaxTokensInstruct : (int?)DefaultMaxTokensNonInstruct);
-        var stop = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "stop", isInstructModel ? DefaultStopSequencesInstruct : DefaultStopSequencesNonInstruct);
-        var topK = this._util.GetExtensionDataValue(executionSettings?.ExtensionData, "top_k", isInstructModel ? (int?)DefaultTopKInstruct : (int?)DefaultTopKNonInstruct);
+        var temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", isInstructModel ? DefaultTemperatureInstruct : (double?)DefaultTemperatureNonInstruct);
+        var topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", isInstructModel ? DefaultTopPInstruct : (double?)DefaultTopPNonInstruct);
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", isInstructModel ? DefaultMaxTokensInstruct : (int?)DefaultMaxTokensNonInstruct);
+        var stop = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stop", isInstructModel ? DefaultStopSequencesInstruct : DefaultStopSequencesNonInstruct);
+        var topK = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_k", isInstructModel ? DefaultTopKInstruct : (int?)DefaultTopKNonInstruct);
 
         var requestBody = new
         {
@@ -93,8 +92,8 @@ public class MistralIOService : IBedrockModelIOService
     {
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(settings);
         var request = this.CreateChatCompletionRequest(modelId, false, chatHistory, mistralExecutionSettings, new Kernel());
-        var messages = this._util.BuildMessageList(chatHistory);
-        var systemMessages = this._util.GetSystemMessages(chatHistory);
+        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
         var converseRequest = new ConverseRequest
         {
             ModelId = modelId,
@@ -253,12 +252,12 @@ public class MistralIOService : IBedrockModelIOService
     /// <param name="chatHistory">The messages between assistant and user.</param>
     /// <param name="settings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings settings)
+    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(settings);
         var request = this.CreateChatCompletionRequest(modelId, false, chatHistory, mistralExecutionSettings, new Kernel());
-        var messages = this._util.BuildMessageList(chatHistory);
-        var systemMessages = this._util.GetSystemMessages(chatHistory);
+        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
         var converseStreamRequest = new ConverseStreamRequest()
         {
             ModelId = modelId,
