@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -21,11 +22,7 @@ public sealed class AnthropicServiceCollectionExtensionsTests
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddAnthropicChatCompletion(new AnthropicClientOptions
-        {
-            ModelId = "modelId",
-            ApiKey = "apiKey"
-        });
+        kernelBuilder.AddAnthropicChatCompletion("modelId", "apiKey");
 
         var kernel = kernelBuilder.Build();
 
@@ -42,7 +39,7 @@ public sealed class AnthropicServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddAnthropicChatCompletion(new AnthropicClientOptions() { ModelId = "modelId", ApiKey = "apiKey" });
+        services.AddAnthropicChatCompletion("modelId", "apiKey");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -58,11 +55,8 @@ public sealed class AnthropicServiceCollectionExtensionsTests
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddAnthropicChatCompletion(new AnthropicClientOptions
-        {
-            ModelId = "modelId",
-            Endpoint = new Uri("https://example.com")
-        });
+        kernelBuilder.AddAnthropicVertextAIChatCompletion("modelId", bearerTokenProvider: () => ValueTask.FromResult("token"), endpoint: new Uri("https://example.com"));
+
         var kernel = kernelBuilder.Build();
 
         // Assert
@@ -78,12 +72,7 @@ public sealed class AnthropicServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddAnthropicChatCompletion(
-            new AnthropicClientOptions
-            {
-                ModelId = "modelId",
-                Endpoint = new Uri("https://example.com"),
-            });
+        services.AddAnthropicVertexAIChatCompletion("modelId", () => ValueTask.FromResult("token"), endpoint: new Uri("https://example.com"));
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert

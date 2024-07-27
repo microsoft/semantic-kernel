@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
@@ -26,6 +27,8 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 internal sealed class AnthropicClient
 {
     private const string ModelProvider = "anthropic";
+    private readonly Func<ValueTask<string>>? _bearerTokenProvider;
+    private readonly Dictionary<string, object?> _attributesInternal = new();
 
     internal static JsonSerializerOptions SerializerOptions { get; }
         = new(JsonOptionsCache.Default)
@@ -75,47 +78,78 @@ internal sealed class AnthropicClient
             unit: "{token}",
             description: "Number of tokens used");
 
-    private readonly string? _bearerKey;
+    internal IReadOnlyDictionary<string, object?> Attributes => this._attributesInternal;
 
     /// <summary>
     /// Represents a client for interacting with the Anthropic chat completion models.
     /// </summary>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="apiKey">ApiKey for the client</param>
     /// <param name="options">Options for the client</param>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     internal AnthropicClient(
-        ClientOptions options,
+        string modelId,
+        string apiKey,
+        AnthropicClientOptions options,
         HttpClient httpClient,
         ILogger? logger = null)
     {
+        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(options);
         Verify.NotNull(httpClient);
-        Verify.NotNullOrWhiteSpace(options.ModelId);
 
-        if (options is AnthropicClientOptions anthropicOptions
-            && options.Endpoint is null
-            && httpClient.BaseAddress is null)
+        Uri targetUri = httpClient.BaseAddress;
+        if (httpClient.BaseAddress is null)
         {
             // If a custom endpoint is not provided, the ApiKey is required
-            Verify.NotNullOrWhiteSpace(anthropicOptions.ApiKey);
-            this._apiKey = anthropicOptions.ApiKey;
-        }
-        else if (options is VertexAIAnthropicClientOptions vertexOptions)
-        {
-            Verify.NotNullOrWhiteSpace(vertexOptions.BearerKey);
-            this._bearerKey = vertexOptions.BearerKey;
-        }
-        else if (options is AmazonBedrockAnthropicClientOptions amazonOptions)
-        {
-            Verify.NotNullOrWhiteSpace(amazonOptions.BearerKey);
-            this._bearerKey = amazonOptions.BearerKey;
+            Verify.NotNullOrWhiteSpace(apiKey);
+            this._apiKey = apiKey;
+            targetUri = new Uri("https://api.anthropic.com/v1/messages");
         }
 
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
-        this._modelId = options.ModelId;
+        this._modelId = modelId;
         this._version = options.Version;
-        this._endpoint = options.Endpoint ?? httpClient.BaseAddress ?? new Uri("https://api.anthropic.com/v1/messages");
+        this._endpoint = targetUri;
+
+        this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
+    }
+
+    /// <summary>
+    /// Represents a client for interacting with the Anthropic chat completion models.
+    /// </summary>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="endpoint">Endpoint for the client</param>
+    /// <param name="bearerTokenProvider">Bearer token provider</param>
+    /// <param name="options">Options for the client</param>
+    /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
+    /// <param name="logger">Logger instance used for logging (optional)</param>
+    internal AnthropicClient(
+        string modelId,
+        Uri? endpoint,
+        Func<ValueTask<string>> bearerTokenProvider,
+        ClientOptions options,
+        HttpClient httpClient,
+        ILogger? logger = null)
+    {
+        this._version = options.Version;
+
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(bearerTokenProvider);
+        Verify.NotNull(options);
+        Verify.NotNull(httpClient);
+
+        Uri targetUri = endpoint ?? httpClient.BaseAddress
+            ?? throw new ArgumentException("Endpoint is required if HttpClient.BaseAddress is not set.");
+
+        this._httpClient = httpClient;
+        this._logger = logger ?? NullLogger.Instance;
+        this._bearerTokenProvider = bearerTokenProvider;
+        this._modelId = modelId;
+        this._version = options?.Version;
+        this._endpoint = targetUri;
     }
 
     /// <summary>
@@ -235,7 +269,7 @@ internal sealed class AnthropicClient
         AnthropicRequest anthropicRequest,
         CancellationToken cancellationToken)
     {
-        using var httpRequestMessage = this.CreateHttpRequest(anthropicRequest, endpoint);
+        using var httpRequestMessage = await this.CreateHttpRequestAsync(anthropicRequest, endpoint).ConfigureAwait(false);
         var body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var response = DeserializeResponse<AnthropicResponse>(body);
         return response;
@@ -342,9 +376,9 @@ internal sealed class AnthropicClient
         }
     }
 
-    private HttpRequestMessage CreateHttpRequest(object requestData, Uri endpoint)
+    private async Task<HttpRequestMessage> CreateHttpRequestAsync(object requestData, Uri endpoint)
     {
-        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, endpoint) { Content = CreateJsonContent(requestData) };
+        var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
         if (!httpRequestMessage.Headers.Contains("User-Agent"))
         {
             httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
@@ -364,10 +398,10 @@ internal sealed class AnthropicClient
         {
             httpRequestMessage.Headers.Add("x-api-key", this._apiKey);
         }
-
-        if (this._bearerKey is not null && !httpRequestMessage.Headers.Contains("Authorization"))
+        else
+        if (this._bearerTokenProvider is not null && !httpRequestMessage.Headers.Contains("Authentication") && await this._bearerTokenProvider().ConfigureAwait(false) is { } bearerKey)
         {
-            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._bearerKey);
+            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerKey);
         }
 
         return httpRequestMessage;

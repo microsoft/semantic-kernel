@@ -228,13 +228,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     {
         // Arrange
         var options = new AnthropicClientOptions();
-        var client = new AnthropicClient(
-            options: new AnthropicClientOptions
-            {
-                ModelId = "fake-model",
-                Endpoint = new Uri("https://fake-uri.com")
-            },
-            httpClient: this._httpClient);
+        var client = new AnthropicClient("fake-model", "api-key", options: new(), httpClient: this._httpClient);
 
         var chatHistory = CreateSampleChatHistory();
 
@@ -379,9 +373,8 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         Uri uri = new("https://fake-uri.com");
         using var httpHandler = new CustomHeadersHandler(headerName, headerValue);
         using var httpClient = new HttpClient(httpHandler);
-        var client = new AnthropicClient(
-            httpClient: httpClient,
-            options: new AnthropicClientOptions { ModelId = "fake-model", Endpoint = uri });
+        httpClient.BaseAddress = uri;
+        var client = new AnthropicClient("fake-model", "api-key", options: new(), httpClient: httpClient);
 
         var chatHistory = CreateSampleChatHistory();
 
@@ -409,9 +402,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
         AnthropicClientOptions? options = null,
         HttpClient? httpClient = null)
     {
-        return new AnthropicClient(
-            options: new AnthropicClientOptions { ModelId = modelId, ApiKey = apiKey ?? "fake-key" },
-            httpClient: httpClient ?? this._httpClient);
+        return new AnthropicClient(modelId, apiKey ?? "fake-key", options: new(), httpClient: this._httpClient);
     }
 
     private static T? Deserialize<T>(string json)

@@ -79,7 +79,8 @@ internal sealed class AnthropicRequest
     [JsonPropertyName("top_k")]
     public int? TopK { get; set; }
 
-    private AnthropicRequest() { }
+    [JsonConstructor]
+    internal AnthropicRequest() { }
 
     public void AddChatMessage(ChatMessageContent message)
     {
