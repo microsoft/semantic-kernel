@@ -50,7 +50,7 @@ public abstract class BedrockTextGenerationClient<TRequest, TResponse>
             ContentType = "application/json",
             Body = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(requestBody))
         };
-        var response = await this._bedrockApi.InvokeModelAsync(invokeRequest, cancellationToken).ConfigureAwait(true);
+        var response = await this._bedrockApi.InvokeModelAsync(invokeRequest, cancellationToken).ConfigureAwait(false);
         return this._ioService.GetInvokeResponseBody(response);
     }
 

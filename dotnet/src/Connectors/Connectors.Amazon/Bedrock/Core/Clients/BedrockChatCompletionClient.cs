@@ -54,7 +54,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         {
             throw new ArgumentException("Did not enter proper chat completion message. Text was null or whitespace.");
         }
-        return await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(true);
+        return await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(false);
     }
     internal async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
@@ -181,6 +181,6 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         CancellationToken cancellationToken = default)
     {
         var converseRequest = this._ioService.GetConverseStreamRequest(this._modelId, chatHistory, executionSettings);
-        return await this._bedrockApi.ConverseStreamAsync(converseRequest, cancellationToken).ConfigureAwait(true);
+        return await this._bedrockApi.ConverseStreamAsync(converseRequest, cancellationToken).ConfigureAwait(false);
     }
 }
