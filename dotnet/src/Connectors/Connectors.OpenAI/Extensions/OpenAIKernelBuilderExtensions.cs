@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-/* Phase 4 
-- Added missing OpenAIClient extensions for audio
-- Updated the Experimental attribute to the correct value 0001 -> 0010 (Connector)
- */
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;

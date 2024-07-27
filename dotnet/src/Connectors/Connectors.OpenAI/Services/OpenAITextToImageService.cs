@@ -8,20 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.TextToImage;
 
-/* Phase 02
-- Breaking the current constructor parameter order to follow the same order as the other services.
-- Added custom endpoint support, and removed ApiKey validation, as it is performed by the ClientCore when the Endpoint is not provided.
-- Added custom OpenAIClient support.
-- Updated "organization" parameter to "organizationId".
-- "modelId" parameter is now required in the constructor.
-
-- Added OpenAIClient breaking glass constructor.
-
-Phase 08
-- Removed OpenAIClient breaking glass constructor
-- Reverted the order and parameter names.
-*/
-
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>

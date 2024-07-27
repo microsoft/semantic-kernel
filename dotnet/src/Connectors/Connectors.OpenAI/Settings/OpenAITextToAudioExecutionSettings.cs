@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-/* Phase 4
-Bringing the OpenAITextToAudioExecutionSettings class to the OpenAI connector as is
-
-*/
-
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;

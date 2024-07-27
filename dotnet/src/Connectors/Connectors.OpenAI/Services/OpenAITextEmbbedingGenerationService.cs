@@ -12,10 +12,6 @@ using OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-/* Phase 02
-Adding the non-default endpoint parameter to the constructor.
-*/
-
 /// <summary>
 /// OpenAI implementation of <see cref="ITextEmbeddingGenerationService"/>
 /// </summary>
