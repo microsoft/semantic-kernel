@@ -29,19 +29,7 @@ This sample uses the same tooling as the [Semantic Kernel](https://github.com/mi
 
 1. `poetry install`
 1. Activate `.venv` that was created by poetry
-1. Create a `.env` file, replacing `.env.example` file depending on which service you want to use.
-    ```bash
-    GLOBAL_LLM_SERVICE="AzureOpenAI" # Set this to either OpenAI or AzureOpenAI
-    OPEN_AI_CHAT_COMPLETION_MODEL_ID="gpt-4-1106-preview"
-    OPENAI_API_KEY=""
-    OPENAI_ORG_ID=""
-    AZURE_OPEN_AI_DEPLOYMENT_TYPE="chat-completion"
-    AZURE_OPEN_AI_CHAT_COMPLETION_DEPLOYMENT_NAME="gpt-4-1106-preview"
-    AZURE_OPENAI_ENDPOINT=""
-    AZURE_OPENAI_API_KEY=""
-    AZURE_OPENAI_API_VERSION="2024-05-01-preview"
-    ```
-    
+1. Set up the environment variables or a `.env` file for the LLM service you want to use.
 1. If you add new dependencies to the `pyproject.toml` file; run `poetry update`.
 
 
@@ -49,7 +37,7 @@ This sample uses the same tooling as the [Semantic Kernel](https://github.com/mi
 1. Fork the repository.
 1. Install dependencies (see Installation) & set up environment variables
 1. Try the [01_guided_conversation_teaching.ipynb](./notebooks/01_guided_conversation_teaching.ipynb) as an example.
-1. Note that for the time being, this sample is only compatible with OpenAI and Azure OpenAI services. For best quality and reliability, we recommend using the `gpt-4-1106-preview` model since this sample requires complex reasoning and function calling abilities.
+1. For best quality and reliability, we recommend using the `gpt-4-1106-preview` or `gpt-4o` models since this sample requires complex reasoning and function calling abilities.
 
 
 ## How You Can Use This Framework 

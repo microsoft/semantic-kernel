@@ -7,12 +7,13 @@ fit your needs & try out new scenarios!
 
 import asyncio
 
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from pydantic import BaseModel, Field
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
 from guided_conversation.guided_conversation_agent import GCInput, GuidedConversation
 from guided_conversation.utils.resources import ResourceConstraint, ResourceConstraintMode, ResourceConstraintUnit
-from guided_conversation.utils.services import add_service
 
 
 # Artifact - The artifact is like a form that the agent must complete throughout the conversation.
@@ -79,7 +80,14 @@ async def main() -> None:
 
     kernel = Kernel()
     service_id = "gc_main"
-    kernel = add_service(kernel, service_id)
+    token_provider = get_bearer_token_provider(DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+    chat_service = AzureChatCompletion(
+        service_id=service_id,
+        deployment_name="gpt-4o-2024-05-13",
+        api_version="2024-05-01-preview",
+        ad_token_provider=token_provider,
+    )
+    kernel.add_service(chat_service)
 
     # Wrap these inputs into a GCInput object and instantiate the GuidedConversationAgent
     guided_conversation_input = GCInput(

@@ -3,7 +3,7 @@
 from typing import Annotated
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions import FunctionResult, KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -56,7 +56,7 @@ async def execution(
         FunctionResult: The result of the execution.
     """
     filter = {"included_plugins": filter}
-    req_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(auto_invoke=False, filters=filter)
+    req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(auto_invoke=False, filters=filter)
 
     kernel_function = kernel.add_function(
         prompt=execution_template,

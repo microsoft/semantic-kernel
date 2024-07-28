@@ -5,7 +5,7 @@ from typing import Annotated
 
 from pydantic import Field, ValidationError
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
@@ -179,10 +179,10 @@ class Agenda:
         """Calls an LLM to try and fix an error in the agenda update."""
         req_settings = self.kernel.get_prompt_execution_settings_from_service_id(self.service_id)
         req_settings.max_tokens = 2000
-        req_settings.tool_choice = "auto"
+
         self.kernel.add_function(plugin_name=self.id, function=self.update_agenda_items)
         filter = {"included_plugins": [self.id]}
-        req_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(auto_invoke=False, filters=filter)
+        req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(auto_invoke=False, filters=filter)
 
         arguments = KernelArguments(
             conversation_history=conversation.get_repr_for_prompt(exclude_types=[ConversationMessageType.REASONING]),

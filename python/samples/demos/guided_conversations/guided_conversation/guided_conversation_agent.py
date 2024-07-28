@@ -274,7 +274,7 @@ class GuidedConversation:
 
         # Then generate the functions to be executed
         req_settings = self.kernel.get_prompt_execution_settings_from_service_id(self.service_id)
-        req_settings.tool_choice = "auto"
+
         functions = [ToolName.UPDATE_ARTIFACT_TOOL.value]
         execution_response = await execution(
             kernel=self.kernel,
@@ -296,7 +296,12 @@ class GuidedConversation:
             for i in range(len(parsed_result["tool_names"])):
                 tool_name = parsed_result["tool_names"][i]
                 tool_args = parsed_result["tool_args_list"][i]
-                if tool_name == f"{ToolName.UPDATE_ARTIFACT_TOOL.value}-{ToolName.UPDATE_ARTIFACT_TOOL.value}":
+                if (
+                    tool_name == f"{ToolName.UPDATE_ARTIFACT_TOOL.value}-{ToolName.UPDATE_ARTIFACT_TOOL.value}"
+                    and "field" in tool_args
+                    and "value" in tool_args
+                ):
+                    # Check if tool_args contains the field and value to update
                     plugin_output = await self.artifact.update_artifact(
                         field_name=tool_args["field_name"],
                         field_value=tool_args["field_value"],

@@ -5,7 +5,7 @@ from typing import Annotated, Any, Literal, get_args, get_origin, get_type_hints
 
 from pydantic import BaseModel, create_model
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
@@ -348,7 +348,7 @@ Remember that when updating the artifact, the field will be the original field n
         field_definitions = {
             name: (field_info.annotation, field_info) for name, field_info in artifact_model.model_fields.items()
         }
-        artifact_model = create_model(__model_name="Artifact", __base__=BaseModelLLM, **field_definitions)
+        artifact_model = create_model("Artifact", __base__=BaseModelLLM, **field_definitions)
         return artifact_model
 
     def _is_valid_field(self, field_name: str) -> tuple[bool, ConversationMessage]:
@@ -372,11 +372,11 @@ Remember that when updating the artifact, the field will be the original field n
 
         req_settings = self.kernel.get_prompt_execution_settings_from_service_id(self.service_id)
         req_settings.max_tokens = 2000
-        req_settings.tool_choice = "auto"
+
         self.kernel.add_function(plugin_name=self.id, function=self.update_artifact_field)
         self.kernel.add_function(plugin_name=self.id, function=self.resume_conversation)
         filter = {"included_plugins": [self.id]}
-        req_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(auto_invoke=False, filters=filter)
+        req_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(auto_invoke=False, filters=filter)
 
         arguments = KernelArguments(
             field_name=field_name,

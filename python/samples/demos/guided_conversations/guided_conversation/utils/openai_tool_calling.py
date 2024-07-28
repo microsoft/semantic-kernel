@@ -6,6 +6,7 @@ import json
 import logging
 from typing import Any
 
+from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.functions import FunctionResult
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,9 @@ def parse_function_result(response: FunctionResult) -> dict[str, Any]:
         if finish_reason == "tool_calls":
             tool_names = []
             tool_args_list = []
-            for tool_call in response_choice.items:
+            # Only look at the items that are of instance `FunctionCallContent`
+            tool_calls = [item for item in response_choice.items if isinstance(item, FunctionCallContent)]
+            for tool_call in tool_calls:
                 if "-" not in tool_call.name:
                     logger.info(f"Tool call name {tool_call.name} does not match naming convention - modifying name.")
                     tool_names.append(tool_call.name + "-" + tool_call.name)

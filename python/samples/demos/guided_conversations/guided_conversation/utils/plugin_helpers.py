@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 from pydantic import ValidationError
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.connectors.ai.open_ai.services.utils import kernel_function_metadata_to_openai_tool_format
 from semantic_kernel.functions import KernelArguments
 
 from guided_conversation.utils.conversation_helpers import ConversationMessage
@@ -33,7 +33,7 @@ def format_kernel_functions_as_tools(kernel: Kernel, functions: list[str]):
         for function_name, function_def in kernel_plugin_def.functions.items():
             if function_name in functions:
                 func_metadata = function_def.metadata
-                formatted_tools.append(kernel_function_metadata_to_openai_tool_format(func_metadata))
+                formatted_tools.append(kernel_function_metadata_to_function_call_format(func_metadata))
     return formatted_tools
 
 
@@ -73,7 +73,7 @@ async def fix_error(
     for _, kernel_plugin_def in kernel.plugins.items():
         for _, function_def in kernel_plugin_def.functions.items():
             func_metadata = function_def.metadata
-            formatted_tools.append(kernel_function_metadata_to_openai_tool_format(func_metadata))
+            formatted_tools.append(kernel_function_metadata_to_function_call_format(func_metadata))
 
     # Add any tools from req_settings
     if req_settings.tools:

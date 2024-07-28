@@ -9,11 +9,10 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
 
-semantic-kernel = { version = "==1.1.1"}
-pydantic = "==2.7.4"
-python-dotenv = "==1.0.1"
-# There was an issue with the autoresolved version of "==1.64.1"
-grpcio = "==1.64.0"
+azure-identity = "^1.7"
+semantic-kernel = "^1.3"
+pydantic = "^2.7"
+python-dotenv = "^1.0"
 
 [tool.poetry.dev-dependencies]
 ipykernel = "*"
