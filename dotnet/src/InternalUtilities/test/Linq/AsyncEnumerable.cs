@@ -113,12 +113,12 @@ internal static class AsyncEnumerable
     /// <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
     public static ValueTask<bool> AnyAsync<TSource>(this IAsyncEnumerable<TSource> source, Func<TSource, bool> predicate, CancellationToken cancellationToken = default)
     {
-        if (source == null)
+        if (source is null)
         {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (predicate == null)
+        if (predicate is null)
         {
             throw new ArgumentNullException(nameof(predicate));
         }

@@ -39,7 +39,7 @@ public static class KustoSerializer
     /// <param name="metadata">Instance of <see cref="MemoryRecordMetadata"/> for serialization.</param>
     public static string SerializeMetadata(MemoryRecordMetadata metadata)
     {
-        if (metadata == null)
+        if (metadata is null)
         {
             return string.Empty;
         }
@@ -62,7 +62,7 @@ public static class KustoSerializer
     /// <param name="dateTimeOffset">Instance of <see cref="DateTimeOffset"/> for serialization.</param>
     public static string SerializeDateTimeOffset(DateTimeOffset? dateTimeOffset)
     {
-        if (dateTimeOffset == null)
+        if (dateTimeOffset is null)
         {
             return string.Empty;
         }

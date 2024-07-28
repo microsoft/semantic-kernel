@@ -15,7 +15,7 @@ internal abstract class OpenAIListModel<TModel>
     /// List of steps.
     /// </summary>
     [JsonPropertyName("data")]
-    public List<TModel> Data { get; set; } = new List<TModel>();
+    public List<TModel> Data { get; set; } = [];
 
     /// <summary>
     /// The identifier of the first data record.

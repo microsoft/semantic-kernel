@@ -16,13 +16,8 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests;
 
-public sealed class KernelFunctionExtensionsTests : IDisposable
+public sealed class KernelFunctionExtensionsTests(ITestOutputHelper output) : IDisposable
 {
-    public KernelFunctionExtensionsTests(ITestOutputHelper output)
-    {
-        this._logger = new RedirectOutput(output);
-    }
-
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
     {
@@ -101,7 +96,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
     }
 
-    private readonly RedirectOutput _logger;
+    private readonly RedirectOutput _logger = new(output);
 
     public void Dispose()
     {
@@ -116,7 +111,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
 
         public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent> { new(prompt) });
+            return Task.FromResult<IReadOnlyList<TextContent>>([new(prompt)]);
         }
 
         public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)

@@ -99,7 +99,7 @@ public class PineconeDocument
     {
         this.Id = id ?? Guid.NewGuid().ToString();
         this.Values = values;
-        this.Metadata = metadata ?? new Dictionary<string, object>();
+        this.Metadata = metadata ?? [];
         this.SparseValues = sparseValues;
         this.Score = score;
     }
@@ -141,7 +141,7 @@ public class PineconeDocument
     {
         // return a dictionary from the metadata without the text, document_Id, and source_Id properties
 
-        if (this.Metadata == null)
+        if (this.Metadata is null)
         {
             return string.Empty;
         }

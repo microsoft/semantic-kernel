@@ -43,7 +43,7 @@ public class FlowOrchestrator
 
         this._kernelBuilder = kernelBuilder;
         this._flowStatusProvider = flowStatusProvider;
-        this._globalPluginCollection = globalPluginCollection ?? new Dictionary<object, string?>();
+        this._globalPluginCollection = globalPluginCollection ?? [];
         this._flowValidator = validator ?? new FlowValidator();
         this._config = config;
     }

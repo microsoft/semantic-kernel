@@ -24,13 +24,13 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     /// </summary>
     private const string ClientRequestIdHeaderName = "client-request-id";
 
-    private readonly List<string> _headerNamesToLog = new()
-    {
+    private readonly List<string> _headerNamesToLog =
+    [
         ClientRequestIdHeaderName,
         "request-id",
         "x-ms-ags-diagnostic",
         "Date"
-    };
+    ];
 
     private readonly ILogger _logger;
 
@@ -65,13 +65,26 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     {
         if (this._logger.IsEnabled(LogLevel.Debug))
         {
-            StringBuilder message = new();
-            message.AppendLine($"{prefix} {uri}");
+            var message = new StringBuilder().Append(prefix).Append(' ').Append(uri).AppendLine();
             foreach (string headerName in this._headerNamesToLog)
             {
                 if (headers.TryGetValues(headerName, out IEnumerable<string>? values))
                 {
-                    message.AppendLine($"{headerName}: {string.Join(", ", values)}");
+                    message.Append(headerName).Append(": ");
+
+                    using (IEnumerator<string> e = values.GetEnumerator())
+                    {
+                        if (e.MoveNext())
+                        {
+                            message.Append(e.Current);
+                            while (e.MoveNext())
+                            {
+                                message.Append(", ").Append(e.Current);
+                            }
+                        }
+                    }
+
+                    message.AppendLine();
                 }
             }
 

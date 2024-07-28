@@ -178,8 +178,7 @@ public class PineconeMemoryStoreTests
             this._description3,
             this._embedding3);
 
-        List<MemoryRecord> records = new()
-            { memoryRecord, memoryRecord2, memoryRecord3 };
+        List<MemoryRecord> records = [memoryRecord, memoryRecord2, memoryRecord3];
 
         this._mockPineconeClient
             .Setup<IAsyncEnumerable<PineconeDocument?>>(x =>
@@ -223,8 +222,8 @@ public class PineconeMemoryStoreTests
         // Arrange
         ReadOnlyMemory<float> embedding = new float[] { 0.1f, 0.2f };
 
-        List<(PineconeDocument, double)> queryResults = new()
-        {
+        List<(PineconeDocument, double)> queryResults =
+        [
             new(new()
             {
                 Id = this._id,
@@ -240,7 +239,7 @@ public class PineconeMemoryStoreTests
                 Metadata = new Dictionary<string, object> { { "document_Id", "value2" } },
                 Values = this._embedding2,
             }, 0.5)
-        };
+        ];
 
         this._mockPineconeClient
             .Setup<IAsyncEnumerable<(PineconeDocument, double)>>(x => x.GetMostRelevantAsync(

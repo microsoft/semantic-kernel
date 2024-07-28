@@ -139,8 +139,11 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
         String query = "Where are you from originally?";
         List<MemoryQueryResult> results =
+<<<<<<< HEAD
                 memory.searchAsync("aboutMe", query, 10, .5f, false).block();
+=======
                 memory.searchAsync("aboutMe", query, 10, .5, false).block();
+>>>>>>> main
         results.forEach(
                 result ->
                         System.out.printf(

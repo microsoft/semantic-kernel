@@ -42,42 +42,33 @@ internal sealed class ChatMessage : IChatMessage
         var content = model.Content.First();
 
         this.Annotations =
-            content.Text == null ?
+            content.Text is null ?
                 Array.Empty<IAnnotation>() :
                 content.Text.Annotations.Select(a => new Annotation(a.Text, a.StartIndex, a.EndIndex, a.FileCitation?.FileId ?? a.FilePath!.FileId, a.FileCitation?.Quote)).ToArray();
 
         this.Id = model.Id;
         this.AgentId = string.IsNullOrWhiteSpace(model.AssistantId) ? null : model.AssistantId;
         this.Role = model.Role;
-        this.ContentType = content.Text == null ? ChatMessageType.Image : ChatMessageType.Text;
+        this.ContentType = content.Text is null ? ChatMessageType.Image : ChatMessageType.Text;
         this.Content = content.Text?.Value ?? content.Image?.FileId ?? string.Empty;
         this.Properties = new ReadOnlyDictionary<string, object>(model.Metadata);
     }
 
-    private class Annotation : IAnnotation
+    private sealed class Annotation(string label, int startIndex, int endIndex, string fileId, string? quote) : IAnnotation
     {
-        public Annotation(string label, int startIndex, int endIndex, string fileId, string? quote)
-        {
-            this.FileId = fileId;
-            this.Label = label;
-            this.Quote = quote;
-            this.StartIndex = startIndex;
-            this.EndIndex = endIndex;
-        }
+        /// <inheritdoc/>
+        public string FileId { get; } = fileId;
 
         /// <inheritdoc/>
-        public string FileId { get; }
+        public string Label { get; } = label;
 
         /// <inheritdoc/>
-        public string Label { get; }
+        public string? Quote { get; } = quote;
 
         /// <inheritdoc/>
-        public string? Quote { get; }
+        public int StartIndex { get; } = startIndex;
 
         /// <inheritdoc/>
-        public int StartIndex { get; }
-
-        /// <inheritdoc/>
-        public int EndIndex { get; }
+        public int EndIndex { get; } = endIndex;
     }
 }

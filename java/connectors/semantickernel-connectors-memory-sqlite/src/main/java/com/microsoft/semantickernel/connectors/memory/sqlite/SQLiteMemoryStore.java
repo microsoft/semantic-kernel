@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.sqlite;
 
+<<<<<<< HEAD
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore;
 import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnector;
@@ -71,6 +72,7 @@ public class SQLiteMemoryStore extends JDBCMemoryStore {
          */
         public Builder withFilename(String filename) throws SQLException {
             return withConnection(DriverManager.getConnection("jdbc:sqlite:" + filename));
+=======
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
@@ -368,6 +370,7 @@ public class SQLiteMemoryStore implements MemoryStore {
         @Override
         public MemoryStore build() {
             return new SQLiteMemoryStore();
+>>>>>>> main
         }
     }
 }

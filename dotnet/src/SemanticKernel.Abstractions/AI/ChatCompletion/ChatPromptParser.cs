@@ -30,7 +30,11 @@ internal static class ChatPromptParser
         // the text contains "<message", as that's required in any valid XML prompt.
         const string MessageTagStart = "<" + MessageTagName;
         if (prompt is not null &&
+#if NET
+            prompt.Contains(MessageTagStart, StringComparison.OrdinalIgnoreCase) &&
+#else
             prompt.IndexOf(MessageTagStart, StringComparison.OrdinalIgnoreCase) >= 0 &&
+#endif
             XmlPromptParser.TryParse(prompt, out var nodes) &&
             TryParse(nodes, out chatHistory))
         {
@@ -53,7 +57,7 @@ internal static class ChatPromptParser
 
         foreach (var node in nodes.Where(IsValidChatMessage))
         {
-            (chatHistory ??= new()).Add(ParseChatNode(node));
+            (chatHistory ??= []).Add(ParseChatNode(node));
         }
 
         return chatHistory is not null;
@@ -66,7 +70,7 @@ internal static class ChatPromptParser
     /// <returns><see cref="ChatMessageContent"/> object.</returns>
     private static ChatMessageContent ParseChatNode(PromptNode node)
     {
-        ChatMessageContentItemCollection items = new();
+        ChatMessageContentItemCollection items = [];
         foreach (var childNode in node.ChildNodes.Where(childNode => childNode.Content is not null))
         {
             if (childNode.TagName.Equals(ImageTagName, StringComparison.OrdinalIgnoreCase))

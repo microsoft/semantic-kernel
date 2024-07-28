@@ -21,23 +21,16 @@ namespace SemanticKernel.Experimental.Agents.UnitTests.Integration;
 /// </remarks>
 [Trait("Category", "Integration Tests")]
 [Trait("Feature", "Agent")]
-public sealed class AgentHarness
+public sealed class AgentHarness(ITestOutputHelper output)
 {
+    private const string SkipReason =
 #if DISABLEHOST
-    private const string SkipReason = "Harness only for local/dev environment";
+        "Harness only for local/dev environment";
 #else
-    private const string SkipReason = null;
+        null;
 #endif
 
-    private readonly ITestOutputHelper _output;
-
-    /// <summary>
-    /// Test constructor.
-    /// </summary>
-    public AgentHarness(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     /// <summary>
     /// Verify creation and retrieval of agent.

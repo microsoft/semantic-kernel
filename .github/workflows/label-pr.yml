@@ -16,6 +16,6 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/labeler@v4
+      - uses: actions/labeler@v5
         with:
           repo-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"

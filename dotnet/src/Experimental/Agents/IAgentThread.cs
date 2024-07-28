@@ -17,6 +17,12 @@ public interface IAgentThread
     string Id { get; }
 
     /// <summary>
+    /// Allow the <see cref="KernelArguments"/> provided to <see cref="IAgentThread.InvokeAsync(IAgent, KernelArguments?, CancellationToken)"/>
+    /// to be passed through to any function calling.
+    /// </summary>
+    bool EnableFunctionArgumentPassThrough { get; set; }
+
+    /// <summary>
     /// Add a textual user message to the thread.
     /// </summary>
     /// <param name="message">The user message</param>
@@ -24,6 +30,15 @@ public interface IAgentThread
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns></returns>
     Task<IChatMessage> AddUserMessageAsync(string message, IEnumerable<string>? fileIds = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieve thread messages in descending order (most recent first).
+    /// </summary>
+    /// <param name="count">The maximum number of messages requested</param>
+    /// <param name="lastMessageId">The identifier of the last message retrieved</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>An list of <see cref="IChatMessage"/>.</returns>
+    Task<IReadOnlyList<IChatMessage>> GetMessagesAsync(int? count = null, string? lastMessageId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Advance the thread with the specified agent.

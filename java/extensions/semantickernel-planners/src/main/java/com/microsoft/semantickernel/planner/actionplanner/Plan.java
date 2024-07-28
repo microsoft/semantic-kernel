@@ -10,8 +10,11 @@ import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
+<<<<<<< HEAD
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.PlanningException.ErrorCodes;
+=======
+>>>>>>> main
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -19,7 +22,10 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParame
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import java.util.ArrayList;
 import java.util.Arrays;
+<<<<<<< HEAD
 import java.util.Collections;
+=======
+>>>>>>> main
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -54,6 +60,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
             String goal,
             ContextVariables state,
             @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
+<<<<<<< HEAD
         super(
                 new ArrayList<>(),
                 Plan.class.getName(),
@@ -61,7 +68,9 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                 goal,
                 Collections.emptyList(),
                 kernelSkillsSupplier);
+=======
         super(new ArrayList<>(), Plan.class.getName(), "", goal, kernelSkillsSupplier);
+>>>>>>> main
         this.state = state;
     }
 
@@ -79,7 +88,10 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                 function.getSkillName(),
                 function.getName(),
                 function.getDescription(),
+<<<<<<< HEAD
                 formReturnParameters(functionOutputs),
+=======
+>>>>>>> main
                 kernelSkillsSupplier);
 
         this.parameters = null;
@@ -99,7 +111,10 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                 function.getSkillName(),
                 function.getName(),
                 function.getDescription(),
+<<<<<<< HEAD
                 formReturnParameters(functionOutputs),
+=======
+>>>>>>> main
                 kernelSkillsSupplier);
         this.parameters = parameters;
         this.function = function;
@@ -107,10 +122,13 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         this.state = state;
     }
 
+<<<<<<< HEAD
     private static List<ParameterView> formReturnParameters(List<String> functionOutputs) {
         return functionOutputs.stream().map(ParameterView::new).collect(Collectors.toList());
     }
 
+=======
+>>>>>>> main
     public Plan(
             SKFunction<?> function,
             List<String> functionOutputs,
@@ -249,6 +267,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 
                     return step.invokeAsync(functionContext, settings)
                             .flatMap(
+<<<<<<< HEAD
                                     result ->
                                             processInvocationResult(
                                                     context, step, currentContext, result))
@@ -300,6 +319,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         updatedContext.setVariable(DefaultResultKey, finalResultValue);
 
         return Mono.just(SKBuilders.context().clone(context).withVariables(updatedContext).build());
+=======
                                     result -> {
                                         String resultValue = result.getResult();
                                         if (resultValue == null) {
@@ -352,6 +372,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                                                         .build());
                                     });
                 });
+>>>>>>> main
     }
 
     public Mono<SKContext> invokeAsync(

@@ -3,10 +3,13 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
+<<<<<<< HEAD
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
+=======
 import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.SKBuilders;
+>>>>>>> main
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
@@ -14,6 +17,7 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputA
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import reactor.core.publisher.Mono;
 
+<<<<<<< HEAD
 /**
  * Demonstrates using skill in combination with LLM prompts.
  * <p>
@@ -61,6 +65,7 @@ public class Example04_CombineLLMPromptsAndNativeCode {
 
     System.out.println(result.block().getResult());
   }
+=======
 public class Example04_CombineLLMPromptsAndNativeCode {
 
     public static class SearchEngineSkill {
@@ -98,4 +103,5 @@ public class Example04_CombineLLMPromptsAndNativeCode {
 
         System.out.println(result.block().getResult());
     }
+>>>>>>> main
 }

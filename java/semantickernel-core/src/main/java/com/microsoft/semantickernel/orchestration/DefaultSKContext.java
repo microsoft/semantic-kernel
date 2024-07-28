@@ -3,17 +3,23 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
+<<<<<<< HEAD
+=======
 import com.microsoft.semantickernel.memory.NullMemory;
+>>>>>>> main
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import javax.annotation.Nullable;
 
 public class DefaultSKContext extends AbstractSKContext {
+<<<<<<< HEAD
 
     protected DefaultSKContext(SKContext toClone, String errorDescription, Exception exception) {
         super(toClone, errorDescription, exception);
     }
 
+=======
+>>>>>>> main
     public DefaultSKContext(ContextVariables variables) {
         super(variables);
     }
@@ -45,11 +51,14 @@ public class DefaultSKContext extends AbstractSKContext {
         private SemanticTextMemory memory;
 
         @Override
+<<<<<<< HEAD
         public SKContext failed(SKContext toClone, String errorDescription, Exception exception) {
             return new DefaultSKContext(toClone, errorDescription, exception);
         }
 
         @Override
+=======
+>>>>>>> main
         public SKContext build() {
             if (variables == null) {
                 variables = SKBuilders.variables().build();

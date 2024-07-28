@@ -104,6 +104,7 @@ public class DefaultKernel implements Kernel {
         return defaultSkillCollection.getFunction(skill, function, null);
     }
 
+<<<<<<< HEAD
     @Override
     public CompletionSKFunction registerSemanticFunction(
             String skillName, String functionName, SemanticFunctionConfig functionConfig) {
@@ -118,6 +119,7 @@ public class DefaultKernel implements Kernel {
                 .withKernel(this)
                 .build();
     }
+=======
     /*
     /// <inheritdoc/>
     public SKFunction registerSemanticFunction(
@@ -130,6 +132,7 @@ public class DefaultKernel implements Kernel {
 
       return this.createSemanticFunction(skillName, functionName, functionConfig);
     }*/
+>>>>>>> main
 
     /// <summary>
     /// Import a set of functions from the given skill. The functions must have the `SKFunction`
@@ -247,8 +250,11 @@ public class DefaultKernel implements Kernel {
 
     @Override
     public ReadOnlyFunctionCollection importSkillFromResources(
+<<<<<<< HEAD
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) throws KernelException {
+=======
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) {
+>>>>>>> main
         Map<String, SemanticFunctionConfig> skills =
                 KernelExtensions.importSemanticSkillFromResourcesDirectory(
                         pluginDirectory, skillName, functionName, clazz, promptTemplateEngine);

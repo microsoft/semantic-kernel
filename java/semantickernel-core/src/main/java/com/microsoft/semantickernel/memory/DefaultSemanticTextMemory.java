@@ -42,6 +42,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
             @Nullable String description,
             @Nullable String additionalMetadata) {
 
+<<<<<<< HEAD
         Mono<String> embedAndSave =
                 _embeddingGenerator
                         .generateEmbeddingsAsync(Collections.singletonList(text))
@@ -80,6 +81,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                 .switchIfEmpty(embedAndSave);
     }
 
+=======
         return _embeddingGenerator
                 .generateEmbeddingsAsync(Collections.singletonList(text))
                 .flatMap(
@@ -105,6 +107,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
     }
 
     @Override
+>>>>>>> main
     public Mono<MemoryQueryResult> getAsync(String collection, String key, boolean withEmbedding) {
         return _storage.getAsync(collection, key, withEmbedding)
                 .map(record -> new MemoryQueryResult(record.getMetadata(), 1d));
@@ -141,8 +144,11 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
             @Nonnull String collection,
             @Nonnull String query,
             int limit,
+<<<<<<< HEAD
             float minRelevanceScore,
+=======
             double minRelevanceScore,
+>>>>>>> main
             boolean withEmbeddings) {
 
         // TODO: break this up into smaller methods

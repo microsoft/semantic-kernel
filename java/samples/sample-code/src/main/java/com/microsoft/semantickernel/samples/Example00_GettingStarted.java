@@ -22,17 +22,23 @@ import java.io.IOException;
 /**
  * Getting started
  * <p>
+<<<<<<< HEAD
+=======
  * Create a conf.properties file based on the examples files at the root of this
  * module.
  * <p>
+>>>>>>> main
  * <a href=
  * "https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart">Get
  * started with Azure OpenAI</a>
  * <a href="https://openai.com/product">Get started with OpenAI</a>
+<<<<<<< HEAD
  * <p>
  * Refer to the <a href=
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
+=======
+>>>>>>> main
  */
 public class Example00_GettingStarted {
 

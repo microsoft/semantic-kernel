@@ -32,6 +32,7 @@ public class InlineFunctionTest extends AbstractKernelTest {
 
         String text =
                 """
+<<<<<<< HEAD
             Demo (ancient Greek poet)
             From Wikipedia, the free encyclopedia
             Demo or Damo (Greek: Δεμώ, Δαμώ; fl. c. AD 200) was a Greek woman of the Roman period, known for a single epigram, engraved upon the Colossus of Memnon, which bears her name. She speaks of herself therein as a lyric poetess dedicated to the Muses, but nothing is known of her life.[1]
@@ -42,6 +43,7 @@ public class InlineFunctionTest extends AbstractKernelTest {
             In the poem, Demo explains that Memnon has shown her special respect. In return, Demo offers the gift for poetry, as a gift to the hero. At the end of this epigram, she addresses Memnon, highlighting his divine status by recalling his strength and holiness.[2]
             Demo, like Julia Balbilla, writes in the artificial and poetic Aeolic dialect. The language indicates she was knowledgeable in Homeric poetry—'bearing a pleasant gift', for example, alludes to the use of that phrase throughout the Iliad and Odyssey.[a][2]
             """;
+=======
                         Demo (ancient Greek poet)
                         From Wikipedia, the free encyclopedia
                         Demo or Damo (Greek: Δεμώ, Δαμώ; fl. c. AD 200) was a Greek woman of the Roman period, known for a single epigram, engraved upon the Colossus of Memnon, which bears her name. She speaks of herself therein as a lyric poetess dedicated to the Muses, but nothing is known of her life.[1]
@@ -52,6 +54,7 @@ public class InlineFunctionTest extends AbstractKernelTest {
                         In the poem, Demo explains that Memnon has shown her special respect. In return, Demo offers the gift for poetry, as a gift to the hero. At the end of this epigram, she addresses Memnon, highlighting his divine status by recalling his strength and holiness.[2]
                         Demo, like Julia Balbilla, writes in the artificial and poetic Aeolic dialect. The language indicates she was knowledgeable in Homeric poetry—'bearing a pleasant gift', for example, alludes to the use of that phrase throughout the Iliad and Odyssey.[a][2]
                         """;
+>>>>>>> main
 
         Mono<SKContext> result = summarize.invokeAsync(text);
 
