@@ -12,6 +12,13 @@ internal sealed class AnthropicImageContent : AnthropicContent
     [JsonPropertyName("source")]
     public SourceEntity? Source { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AnthropicImageContent"/> class.
+    /// </summary>
+    public AnthropicImageContent() : base("image")
+    {
+    }
+
     internal sealed class SourceEntity
     {
         /// <summary>

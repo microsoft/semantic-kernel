@@ -72,6 +72,7 @@ public static class AnthropicKernelBuilderExtensions
                 modelId: modelId,
                 bearerTokenProvider: bearerTokenProvider,
                 options: options ?? new VertexAIAnthropicClientOptions(),
+                endpoint: endpoint,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 

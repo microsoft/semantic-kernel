@@ -68,6 +68,7 @@ public static class AnthropicServiceCollectionExtensions
             new AnthropicChatCompletionService(
                 modelId: modelId,
                 bearerTokenProvider: bearerTokenProvider,
+                endpoint: endpoint,
                 options: options ?? new VertexAIAnthropicClientOptions(),
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));

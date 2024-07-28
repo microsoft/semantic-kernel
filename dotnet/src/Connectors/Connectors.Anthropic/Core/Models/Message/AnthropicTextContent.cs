@@ -12,4 +12,11 @@ internal sealed class AnthropicTextContent : AnthropicContent
     [JsonRequired]
     [JsonPropertyName("text")]
     public string? Text { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AnthropicTextContent"/> class.
+    /// </summary>
+    public AnthropicTextContent() : base("text")
+    {
+    }
 }
