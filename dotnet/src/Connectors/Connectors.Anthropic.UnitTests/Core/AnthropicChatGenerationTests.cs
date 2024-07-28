@@ -87,7 +87,7 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
             item => Assert.Equal(chatHistory[2].Content, GetTextFrom(item.Contents[0])),
             item => Assert.Equal(chatHistory[3].Content, GetTextFrom(item.Contents[0])));
 
-        string? GetTextFrom(AnthropicContent content) => ((AnthropicTextContent)content).Text;
+        string? GetTextFrom(AnthropicContent content) => ((AnthropicContent)content).Text;
     }
 
     [Fact]
