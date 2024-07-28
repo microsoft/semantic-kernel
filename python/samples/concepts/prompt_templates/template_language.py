@@ -11,7 +11,12 @@ from semantic_kernel.prompt_template import KernelPromptTemplate, PromptTemplate
 async def main():
     kernel = Kernel()
 
-    service_id = "template_language"
+SERVICE_ID = "template_language"
+
+# ... other code ...
+
+kernel.add_service(
+    OpenAIChatCompletion(service_id=SERVICE_ID, ai_model_id=model),
     kernel.add_service(
         OpenAIChatCompletion(service_id=service_id),
     )

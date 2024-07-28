@@ -282,7 +282,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
         Assert.Single(messages);
 
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
+        chat.Add(new ChatMessageContent(AuthorRole.User, "hi"));
 
         messages = await chat.GetChatMessagesAsync().ToArrayAsync();
         Assert.Equal(2, messages.Length);

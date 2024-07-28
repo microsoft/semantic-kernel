@@ -94,8 +94,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         this.Logger.LogInformation("[{MethodName}] Created run: {RunId}", nameof(InvokeAsync), run.Id);
 
         // Evaluate status and process steps and messages, as encountered.
-        HashSet<string> processedStepIds = [];
-        Dictionary<string, FunctionCallContent> functionSteps = [];
+        HashSet<string> processedStepIds = new HashSet<string>();
+        Dictionary<string, FunctionCallContent> functionSteps = new Dictionary<string, FunctionCallContent>();
 
         do
         {

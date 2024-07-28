@@ -30,7 +30,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
     parameters: dict[str, str] = Field(default_factory=dict)
     data_format: str | None = None
 
-    def update_data(self, value: str | bytes):
+    def update_data(self, value: str | bytes) -> None:
         """Update the data, using either a string or bytes."""
         if isinstance(value, str):
             self.data_str = value
@@ -64,7 +64,7 @@ class DataUri(KernelBaseModel, validate_assignment=True):
         return self
 
     @field_validator("parameters", mode="before")
-    def _validate_parameters(cls, value: list[str] | dict[str, str] | None = None) -> dict[str, str]:
+    def _parse_parameters(cls, value: list[str] | dict[str, str] | None = None) -> dict[str, str]:
         if not value:
             return {}
         if isinstance(value, dict):
