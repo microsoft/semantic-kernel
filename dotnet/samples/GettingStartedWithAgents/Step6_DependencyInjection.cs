@@ -30,7 +30,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseDependencyInjectionToCreateAgentAsync()
     {
         ServiceCollection serviceContainer = new();
 

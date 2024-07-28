@@ -4,17 +4,22 @@ from enum import Enum
 from typing import Any, Union, overload
 from xml.etree.ElementTree import Element  # nosec
 
-from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
-from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions import ContentAdditionException
 
-ITEM_TYPES = Union[StreamingTextContent, FunctionCallContent, FunctionResultContent]
+ITEM_TYPES = Union[
+    ImageContent,
+    StreamingTextContent,
+    FunctionCallContent,
+    FunctionResultContent,
+]
 
 
 class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
@@ -88,7 +93,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         Args:
             role: ChatRole - The role of the chat message.
             choice_index: int - The index of the choice that generated this response.
-            items: list[TextContent, FunctionCallContent, FunctionResultContent] - The content.
+            items: list[TextContent, FunctionCallContent, FunctionResultContent, ImageContent] - The content.
             content: str - The text of the response.
             inner_content: Optional[Any] - The inner content of the response,
                 this should hold all the information from the response so even
@@ -170,12 +175,15 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
                 if not added:
                     self.items.append(other_item)
         if not isinstance(self.inner_content, list):
-            self.inner_content = [self.inner_content]
-            if other.inner_content:
-                self.inner_content.append(other.inner_content)
-        else:
-            if other.inner_content:
-                self.inner_content.append(other.inner_content)
+            self.inner_content = [self.inner_content] if self.inner_content else []
+        other_content = (
+            other.inner_content
+            if isinstance(other.inner_content, list)
+            else [other.inner_content]
+            if other.inner_content
+            else []
+        )
+        self.inner_content.extend(other_content)
         return StreamingChatMessageContent(
             role=self.role,
             items=self.items,  # type: ignore
@@ -196,7 +204,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         Returns:
             Element - The XML Element representing the StreamingChatMessageContent.
         """
-        root = Element(CHAT_MESSAGE_CONTENT_TAG)
+        root = Element(self.tag)
         for field in self.model_fields_set:
             if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id", "choice_index"]:
                 continue

@@ -31,7 +31,7 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
         """Return the content of the response encoded in the encoding."""
         return self.text.encode(self.encoding if self.encoding else "utf-8") if self.text else b""
 
-    def __add__(self, other: "TextContent") -> "StreamingTextContent":
+    def __add__(self, other: TextContent) -> "StreamingTextContent":
         """When combining two StreamingTextContent instances, the text fields are combined.
 
         The inner_content of the first one is used, choice_index, ai_model_id and encoding should be the same.

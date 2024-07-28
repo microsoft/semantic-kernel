@@ -18,7 +18,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
     private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseSingleOpenAIAssistantAgentAsync()
     {
         // Define the agent
         OpenAIAssistantAgent agent =

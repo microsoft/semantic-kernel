@@ -49,7 +49,7 @@ public class OpenAI_ChatCompletionWithVision(ITestOutputHelper output) : BaseTes
         chatHistory.AddUserMessage(
         [
             new TextContent("What’s in this image?"),
-            new ImageContent(imageBytes) { MimeType = "image/jpg" }
+            new ImageContent(imageBytes, "image/jpg")
         ]);
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);

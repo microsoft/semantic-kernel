@@ -49,7 +49,7 @@ public abstract class TerminationStrategy
     /// <summary>
     /// Evaluate the input message and determine if the chat has met its completion criteria.
     /// </summary>
-    /// <param name="agent">The agent actively interacting with the nexus.</param>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="history">The most recent message</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>True to terminate chat loop.</returns>

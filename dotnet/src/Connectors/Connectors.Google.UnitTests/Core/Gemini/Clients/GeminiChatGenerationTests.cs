@@ -416,6 +416,57 @@ public sealed class GeminiChatGenerationTests : IDisposable
         Assert.Equal(expectedVersion, header);
     }
 
+    [Fact]
+    public async Task ItCanUseValueTasksSequentiallyForBearerTokenAsync()
+    {
+        // Arrange
+        var bearerTokenGenerator = new BearerTokenGenerator()
+        {
+            BearerKeys = new List<string> { "key1", "key2", "key3" }
+        };
+
+        var responseContent = File.ReadAllText(ChatTestDataFilePath);
+        using var content1 = new HttpResponseMessage { Content = new StringContent(responseContent) };
+        using var content2 = new HttpResponseMessage { Content = new StringContent(responseContent) };
+
+        using MultipleHttpMessageHandlerStub multipleMessageHandlerStub = new()
+        {
+            ResponsesToReturn = [content1, content2]
+        };
+        using var httpClient = new HttpClient(multipleMessageHandlerStub, false);
+
+        var client = new GeminiChatCompletionClient(
+                httpClient: httpClient,
+                modelId: "fake-model",
+                apiVersion: VertexAIVersion.V1,
+                bearerTokenProvider: () => bearerTokenGenerator.GetBearerToken(),
+                location: "fake-location",
+                projectId: "fake-project-id");
+
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+        await client.GenerateChatMessageAsync(chatHistory);
+        var firstRequestHeader = multipleMessageHandlerStub.RequestHeaders[0]?.GetValues("Authorization").SingleOrDefault();
+        var secondRequestHeader = multipleMessageHandlerStub.RequestHeaders[1]?.GetValues("Authorization").SingleOrDefault();
+
+        // Assert
+        Assert.NotNull(firstRequestHeader);
+        Assert.NotNull(secondRequestHeader);
+        Assert.NotEqual(firstRequestHeader, secondRequestHeader);
+        Assert.Equal("Bearer key1", firstRequestHeader);
+        Assert.Equal("Bearer key2", secondRequestHeader);
+    }
+
+    private sealed class BearerTokenGenerator()
+    {
+        private int _index = 0;
+        public required List<string> BearerKeys { get; init; }
+
+        public ValueTask<string> GetBearerToken() => ValueTask.FromResult(this.BearerKeys[this._index++]);
+    }
+
     private static ChatHistory CreateSampleChatHistory()
     {
         var chatHistory = new ChatHistory();
@@ -436,7 +487,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
                 httpClient: httpClient ?? this._httpClient,
                 modelId: modelId,
                 apiVersion: VertexAIVersion.V1,
-                bearerTokenProvider: () => Task.FromResult(bearerKey),
+                bearerTokenProvider: () => new ValueTask<string>(bearerKey),
                 location: "fake-location",
                 projectId: "fake-project-id");
         }

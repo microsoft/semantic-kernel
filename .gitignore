@@ -493,3 +493,4 @@ swa-cli.config.json
 
 # python devcontainer
 /python/.devcontainer/*
+/SK.AI/**

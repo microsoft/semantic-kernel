@@ -1,10 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from typing import Any
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class PromptExecutionSettings(KernelBaseModel):
@@ -18,6 +22,7 @@ class PromptExecutionSettings(KernelBaseModel):
     Attributes:
         service_id (str | None): The service ID to use for the request.
         extension_data (Dict[str, Any]): Any additional data to send with the request.
+        function_choice_behavior (FunctionChoiceBehavior | None): The function choice behavior settings.
 
     Methods:
         prepare_settings_dict: Prepares the settings as a dictionary for sending to the AI service.
@@ -27,6 +32,21 @@ class PromptExecutionSettings(KernelBaseModel):
 
     service_id: str | None = Field(None, min_length=1)
     extension_data: dict[str, Any] = Field(default_factory=dict)
+    function_choice_behavior: FunctionChoiceBehavior | None = Field(None, exclude=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def parse_function_choice_behavior(cls, data: dict[str, Any]) -> dict[str, Any] | None:
+        """Parse the function choice behavior data."""
+        if data:
+            function_choice_behavior_data = data.get("function_choice_behavior")
+            if function_choice_behavior_data:
+                if isinstance(function_choice_behavior_data, str):
+                    data["function_choice_behavior"] = FunctionChoiceBehavior.from_string(function_choice_behavior_data)
+                elif isinstance(function_choice_behavior_data, dict):
+                    data["function_choice_behavior"] = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
+            return data
+        return None
 
     def __init__(self, service_id: str | None = None, **kwargs: Any):
         """Initialize the prompt execution settings.
@@ -37,8 +57,11 @@ class PromptExecutionSettings(KernelBaseModel):
                 these are attempted to parse into the keys of the specific prompt execution settings.
         """
         extension_data = kwargs.pop("extension_data", {})
+        function_choice_behavior = kwargs.pop("function_choice_behavior", None)
         extension_data.update(kwargs)
-        super().__init__(service_id=service_id, extension_data=extension_data)
+        super().__init__(
+            service_id=service_id, extension_data=extension_data, function_choice_behavior=function_choice_behavior
+        )
         self.unpack_extension_data()
 
     @property
@@ -76,6 +99,7 @@ class PromptExecutionSettings(KernelBaseModel):
         return cls(
             service_id=config.service_id,
             extension_data=config.extension_data,
+            function_choice_behavior=config.function_choice_behavior,
         )
 
     def unpack_extension_data(self) -> None:

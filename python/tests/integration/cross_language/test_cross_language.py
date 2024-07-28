@@ -195,7 +195,7 @@ async def test_prompt_with_chat_roles(is_inline, is_streaming, template_format, 
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="test",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -249,7 +249,7 @@ async def test_prompt_with_complex_objects(is_inline, is_streaming, template_for
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="default",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -308,7 +308,7 @@ async def test_prompt_with_helper_functions(is_inline, is_streaming, template_fo
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="default",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -378,7 +378,7 @@ async def test_prompt_with_simple_variable(is_inline, is_streaming, template_for
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="default",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -437,7 +437,7 @@ async def test_simple_prompt(is_inline, is_streaming, template_format, prompt):
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="default",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 
@@ -495,7 +495,7 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
     async_client, logging_client = get_new_client()
     ai_service = OpenAIChatCompletion(
         service_id="default",
-        ai_model_id="gpt-3.5-turbo-1106",
+        ai_model_id="gpt-3.5-turbo",
         async_client=async_client,
     )
 

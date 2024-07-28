@@ -6,9 +6,10 @@ from collections.abc import Awaitable, Callable, Mapping
 from openai import AsyncAzureOpenAI
 from pydantic import ConfigDict, validate_call
 
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION, USER_AGENT
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler, OpenAIModelTypes
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
+from semantic_kernel.const import USER_AGENT
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
 

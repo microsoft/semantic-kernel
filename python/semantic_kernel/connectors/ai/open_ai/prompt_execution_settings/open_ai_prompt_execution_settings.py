@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any, Literal
+
+if sys.version_info >= (3, 11):
+    from typing import Self  # pragma: no cover
+else:
+    from typing_extensions import Self  # pragma: no cover
 
 from pydantic import Field, field_validator, model_validator
 
@@ -70,6 +76,32 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
         if v is not None:
             logger.warning(
                 "The function_call and functions parameters are deprecated. Please use the tool_choice and tools parameters instead."  # noqa: E501
+            )
+        return v
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_function_calling_behaviors(cls, data) -> Any:
+        """Check if function_call_behavior is set and if so, move to use function_choice_behavior instead."""
+        # In an attempt to phase out the use of `function_call_behavior` in favor of `function_choice_behavior`,
+        # we are syncing the `function_call_behavior` with `function_choice_behavior` if the former is set.
+        # This allows us to make decisions off of `function_choice_behavior`. Anytime the `function_call_behavior`
+        # is updated, this validation will run to ensure the `function_choice_behavior` stays in sync.
+        from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+
+        if isinstance(data, dict) and "function_call_behavior" in data.get("extension_data", {}):
+            data["function_choice_behavior"] = FunctionChoiceBehavior.from_function_call_behavior(
+                data.get("extension_data").get("function_call_behavior")
+            )
+        return data
+
+    @field_validator("function_call_behavior", mode="after")
+    @classmethod
+    def check_for_function_call_behavior(cls, v) -> Self:
+        """Check if function_choice_behavior is set, if not, set it to default."""
+        if v is not None:
+            logger.warning(
+                "The `function_call_behavior` parameter is deprecated. Please use the `function_choice_behavior` parameter instead."  # noqa: E501
             )
         return v
 

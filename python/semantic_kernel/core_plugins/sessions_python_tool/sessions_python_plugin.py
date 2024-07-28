@@ -10,8 +10,8 @@ from typing import Annotated, Any
 import httpx
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, version_info
+from semantic_kernel.const import USER_AGENT
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings import (
     ACASessionsSettings,
     SessionsPythonSettings,
@@ -93,7 +93,7 @@ class SessionsPythonTool(KernelBaseModel):
         code = re.sub(r"^(\s|`)*(?i:python)?\s*", "", code)
         # Removes whitespace & ` from end
         return re.sub(r"(\s|`)*$", "", code)
-    
+
     def _construct_remote_file_path(self, remote_file_path: str) -> str:
         """Construct the remote file path.
 
@@ -109,8 +109,8 @@ class SessionsPythonTool(KernelBaseModel):
 
     def _build_url_with_version(self, base_url, endpoint, params):
         """Builds a URL with the provided base URL, endpoint, and query parameters."""
-        params['api-version'] = SESSIONS_API_VERSION
-        query_string = '&'.join([f"{key}={value}" for key, value in params.items()])
+        params["api-version"] = SESSIONS_API_VERSION
+        query_string = "&".join([f"{key}={value}" for key, value in params.items()])
         return f"{base_url}{endpoint}?{query_string}"
 
     @kernel_function(
@@ -178,7 +178,9 @@ class SessionsPythonTool(KernelBaseModel):
         self,
         *,
         local_file_path: Annotated[str, "The path to the local file on the machine"],
-        remote_file_path: Annotated[str | None, "The remote path to the file in the session. Defaults to /mnt/data"] = None,  # noqa: E501
+        remote_file_path: Annotated[
+            str | None, "The remote path to the file in the session. Defaults to /mnt/data"
+        ] = None,
     ) -> Annotated[SessionsRemoteFileMetadata, "The metadata of the uploaded file"]:
         """Upload a file to the session pool.
 
@@ -222,7 +224,7 @@ class SessionsPythonTool(KernelBaseModel):
             response.raise_for_status()
 
             response_json = response.json()
-            return SessionsRemoteFileMetadata.from_dict(response_json['$values'][0])
+            return SessionsRemoteFileMetadata.from_dict(response_json["$values"][0])
 
     @kernel_function(name="list_files", description="Lists all files in the provided Session ID")
     async def list_files(self) -> list[SessionsRemoteFileMetadata]:
@@ -242,7 +244,7 @@ class SessionsPythonTool(KernelBaseModel):
         url = self._build_url_with_version(
             base_url=self.pool_management_endpoint,
             endpoint="python/files",
-            params={"identifier": self.settings.session_id}
+            params={"identifier": self.settings.session_id},
         )
 
         response = await self.http_client.get(
@@ -275,10 +277,7 @@ class SessionsPythonTool(KernelBaseModel):
         url = self._build_url_with_version(
             base_url=self.pool_management_endpoint,
             endpoint="python/downloadFile",
-            params={
-                "identifier": self.settings.session_id,
-                "filename": remote_file_path
-            }
+            params={"identifier": self.settings.session_id, "filename": remote_file_path},
         )
 
         response = await self.http_client.get(

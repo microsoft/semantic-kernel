@@ -15,9 +15,11 @@ class GooglePalmSettings(KernelBaseSettings):
     encoding 'utf-8'. If the settings are not found in the .env file, the settings are ignored;
     however, validation will fail alerting that the settings are missing.
 
-    Optional settings for prefix 'GOOGLE_PALM_' are:
+    Required settings for prefix 'GOOGLE_PALM_' are:
     - api_key: SecretStr - GooglePalm API key, see https://developers.generativeai.google/products/palm
         (Env var GOOGLE_PALM_API_KEY)
+
+    Optional settings for prefix 'GOOGLE_PALM_' are:
     - env_file_path: {str | None} - Use the environment settings file as a fallback to environment variables. (Optional)
     - chat_model_id: str | None - The GooglePalm chat model ID to use.
         (Env var GOOGLE_PALM_CHAT_MODEL_ID)

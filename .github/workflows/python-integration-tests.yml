@@ -92,6 +92,10 @@ jobs:
           AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
           AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
           MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+          AZURE_KEY_VAULT_ENDPOINT: ${{secrets.AZURE_KEY_VAULT_ENDPOINT}}
+          AZURE_KEY_VAULT_CLIENT_ID: ${{secrets.AZURE_KEY_VAULT_CLIENT_ID}}
+          AZURE_KEY_VAULT_CLIENT_SECRET: ${{secrets.AZURE_KEY_VAULT_CLIENT_SECRET}}
+          ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
@@ -99,6 +103,7 @@ jobs:
 
           cd python
           poetry run pytest ./tests/integration -v
+          poetry run pytest ./tests/samples -v
 
   python-integration-tests:
     needs: paths-filter
@@ -154,6 +159,10 @@ jobs:
           AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
           AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
           MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+          AZURE_KEY_VAULT_ENDPOINT: ${{secrets.AZURE_KEY_VAULT_ENDPOINT}}
+          AZURE_KEY_VAULT_CLIENT_ID: ${{secrets.AZURE_KEY_VAULT_CLIENT_ID}}
+          AZURE_KEY_VAULT_CLIENT_SECRET: ${{secrets.AZURE_KEY_VAULT_CLIENT_SECRET}}
+          ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
@@ -161,6 +170,7 @@ jobs:
 
           cd python
           poetry run pytest ./tests/integration -v
+          poetry run pytest ./tests/samples -v
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   python-integration-tests-check:

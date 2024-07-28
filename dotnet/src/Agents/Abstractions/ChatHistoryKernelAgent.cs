@@ -18,14 +18,19 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task<AgentChannel> CreateChannelAsync(ILogger logger, CancellationToken cancellationToken)
+    protected internal sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult<AgentChannel>(new ChatHistoryChannel());
+        ChatHistoryChannel channel =
+            new()
+            {
+                Logger = this.LoggerFactory.CreateLogger<ChatHistoryChannel>()
+            };
+
+        return Task.FromResult<AgentChannel>(channel);
     }
 
     /// <inheritdoc/>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
-        ILogger logger,
         CancellationToken cancellationToken = default);
 }

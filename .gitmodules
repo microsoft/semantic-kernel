@@ -5,3 +5,9 @@
 [submodule "semantic-kernel"]
 	path = semantic-kernel
 	url = git@github.com:Bryan-Roe/semantic-kernel.git
+[submodule "SK.AI"]
+	path = SK.AI
+	url = https://Bryan-Roe@github.com/Bryan-Roe/SK.AI
+[submodule "tree-sitter-python"]
+	path = tree-sitter-python
+	url = https://Bryan-Roe@github.com/sourcery-ai/tree-sitter-python

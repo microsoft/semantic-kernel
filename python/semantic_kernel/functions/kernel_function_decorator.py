@@ -24,7 +24,7 @@ def kernel_function(
     The name and description can be left empty, and then the function name and docstring will be used.
 
     The parameters are parsed from the function signature, use typing.Annotated to provide a description for the
-    parameter, in python 3.8, use typing_extensions.Annotated.
+    parameter.
 
     To parse the type, first it checks if the parameter is annotated, and get's the description from there.
     After that it checks recursively until it reaches the lowest level, and it combines
@@ -115,7 +115,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
     logger.debug(f"Parsing param: {name}")
     logger.debug(f"Parsing annotation: {param}")
     ret: dict[str, Any] = {"name": name}
-    if default:
+    if default is not None:
         ret["default_value"] = default
         ret["is_required"] = False
     else:
@@ -140,9 +140,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
                     arg = arg.__forward_arg__
                 args.append(_parse_parameter(name, arg, default))
             if ret.get("type_") in ["list", "dict"]:
-                ret["type_"] = (
-                    f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
-                )
+                ret["type_"] = f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
             elif len(args) > 1:
                 ret["type_"] = ", ".join([arg["type_"] for arg in args])
             else:

@@ -29,7 +29,11 @@ class AIServiceClientBase(KernelBaseModel, ABC):
             self.service_id = self.ai_model_id
 
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        """Get the request settings class."""
+        """Get the request settings class.
+
+        Overwrite this in subclass to return the proper prompt execution type the
+        service is expecting.
+        """
         return PromptExecutionSettings  # pragma: no cover
 
     def instantiate_prompt_execution_settings(self, **kwargs) -> "PromptExecutionSettings":
@@ -41,4 +45,8 @@ class AIServiceClientBase(KernelBaseModel, ABC):
 
     def get_prompt_execution_settings_from_settings(self, settings: PromptExecutionSettings) -> PromptExecutionSettings:
         """Get the request settings from a settings object."""
-        return self.get_prompt_execution_settings_class().from_prompt_execution_settings(settings)
+        prompt_execution_settings_type = self.get_prompt_execution_settings_class()
+        if isinstance(settings, prompt_execution_settings_type):
+            return settings
+
+        return prompt_execution_settings_type.from_prompt_execution_settings(settings)

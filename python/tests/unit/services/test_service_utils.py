@@ -5,8 +5,8 @@ from typing import Annotated
 import pytest
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.open_ai.services.utils import (
-    kernel_function_metadata_to_openai_tool_format,
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    kernel_function_metadata_to_function_call_format,
 )
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
@@ -17,9 +17,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 class BooleanPlugin:
     @kernel_function(name="GetBoolean", description="Get a boolean value.")
-    def get_boolean(
-        self, value: Annotated[bool, "The boolean value."]
-    ) -> Annotated[bool, "The boolean value."]:
+    def get_boolean(self, value: Annotated[bool, "The boolean value."]) -> Annotated[bool, "The boolean value."]:
         return value
 
 
@@ -105,9 +103,7 @@ def test_bool_schema(setup_kernel):
         filters={"included_plugins": ["BooleanPlugin"]}
     )
 
-    boolean_schema = kernel_function_metadata_to_openai_tool_format(
-        boolean_func_metadata[0]
-    )
+    boolean_schema = kernel_function_metadata_to_function_call_format(boolean_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -116,9 +112,7 @@ def test_bool_schema(setup_kernel):
             "description": "Get a boolean value.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "value": {"type": "boolean", "description": "The boolean value."}
-                },
+                "properties": {"value": {"type": "boolean", "description": "The boolean value."}},
                 "required": ["value"],
             },
         },
@@ -130,13 +124,9 @@ def test_bool_schema(setup_kernel):
 def test_string_schema(setup_kernel):
     kernel = setup_kernel
 
-    string_func_metadata = kernel.get_list_of_function_metadata_filters(
-        filters={"included_plugins": ["StringPlugin"]}
-    )
+    string_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["StringPlugin"]})
 
-    string_schema = kernel_function_metadata_to_openai_tool_format(
-        string_func_metadata[0]
-    )
+    string_schema = kernel_function_metadata_to_function_call_format(string_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -166,9 +156,7 @@ def test_complex_schema(setup_kernel):
         filters={"included_plugins": ["ComplexTypePlugin"]}
     )
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
-        complex_func_metadata[0]
-    )
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -205,13 +193,9 @@ def test_complex_schema(setup_kernel):
 def test_list_schema(setup_kernel):
     kernel = setup_kernel
 
-    complex_func_metadata = kernel.get_list_of_function_metadata_filters(
-        filters={"included_plugins": ["ListPlugin"]}
-    )
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["ListPlugin"]})
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
-        complex_func_metadata[0]
-    )
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -236,16 +220,11 @@ def test_list_schema(setup_kernel):
 
 
 def test_list_of_items_plugin(setup_kernel):
-
     kernel = setup_kernel
 
-    complex_func_metadata = kernel.get_list_of_function_metadata_filters(
-        filters={"included_plugins": ["ItemsPlugin"]}
-    )
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["ItemsPlugin"]})
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
-        complex_func_metadata[0]
-    )
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
 
     expected_schema = {
         "type": "function",

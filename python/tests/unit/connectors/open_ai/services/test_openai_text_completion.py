@@ -43,7 +43,9 @@ def test_open_ai_text_completion_init_with_default_header(openai_unit_test_env) 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
 def test_open_ai_text_completion_init_with_empty_api_key(openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
-        OpenAITextCompletion()
+        OpenAITextCompletion(
+            env_file_path="test.env",
+        )
 
 
 def test_open_ai_text_completion_serialize(openai_unit_test_env) -> None:
