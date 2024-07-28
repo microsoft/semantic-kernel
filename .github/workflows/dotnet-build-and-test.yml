@@ -121,11 +121,10 @@ jobs:
 
       # Generate test reports and check coverage
       - name: Generate test reports
-<<<<<<< main
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
-=======
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.6
->>>>>>> origin/main-auto-tune
+=======
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.3
+>>>>>>> semantic-kernel/dependabot/github_actions/danielpalme/ReportGenerator-GitHub-Action-5.2.3
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
