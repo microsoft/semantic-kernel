@@ -25,7 +25,8 @@ internal sealed class AnthropicRequest
     /// from the content in that message. This can be used to constrain part of the model's response.
     /// </summary>
     [JsonPropertyName("messages")]
-    public IList<Message> Messages { get; init; } = new List<Message>();
+    [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
+    public IList<Message> Messages { get; } = new List<Message>();
 
     [JsonPropertyName("model")]
     public string ModelId { get; set; } = null!;
