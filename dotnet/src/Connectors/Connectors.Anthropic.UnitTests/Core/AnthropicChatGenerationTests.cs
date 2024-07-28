@@ -54,8 +54,6 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     public async Task ShouldContainRolesInRequestAsync()
     {
         // Arrange
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
-            await File.ReadAllTextAsync(ChatTestDataFilePath));
         var client = this.CreateChatCompletionClient();
         var chatHistory = CreateSampleChatHistory();
 
@@ -69,6 +67,27 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
             item => Assert.Equal(chatHistory[1].Role, item.Role),
             item => Assert.Equal(chatHistory[2].Role, item.Role),
             item => Assert.Equal(chatHistory[3].Role, item.Role));
+    }
+
+    [Fact]
+    public async Task ShouldContainMessagesInRequestAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        AnthropicRequest? request = Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.Collection(request.Messages,
+            item => Assert.Equal(chatHistory[1].Content, GetTextFrom(item.Contents[0])),
+            item => Assert.Equal(chatHistory[2].Content, GetTextFrom(item.Contents[0])),
+            item => Assert.Equal(chatHistory[3].Content, GetTextFrom(item.Contents[0])));
+
+        string? GetTextFrom(AnthropicContent content) => ((AnthropicTextContent)content).Text;
     }
 
     [Fact]
