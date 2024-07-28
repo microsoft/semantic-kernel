@@ -70,6 +70,27 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
     }
 
     [Fact]
+    public async Task ShouldContainMessagesInRequestAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory);
+
+        // Assert
+        AnthropicRequest? request = Deserialize<AnthropicRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.Collection(request.Messages,
+            item => Assert.Equal(chatHistory[1].Content, GetTextFrom(item.Contents[0])),
+            item => Assert.Equal(chatHistory[2].Content, GetTextFrom(item.Contents[0])),
+            item => Assert.Equal(chatHistory[3].Content, GetTextFrom(item.Contents[0])));
+
+        string? GetTextFrom(AnthropicContent content) => ((AnthropicTextContent)content).Text;
+    }
+
+    [Fact]
     public async Task ShouldReturnValidChatResponseAsync()
     {
         // Arrange
