@@ -17,7 +17,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
@@ -29,13 +28,6 @@ internal sealed class AnthropicClient
     private const string ModelProvider = "anthropic";
     private readonly Func<ValueTask<string>>? _bearerTokenProvider;
     private readonly Dictionary<string, object?> _attributesInternal = new();
-
-    internal static JsonSerializerOptions SerializerOptions { get; }
-        = new(JsonOptionsCache.Default)
-        {
-            Converters = { new PolymorphicJsonConverterFactory() },
-            TypeInfoResolver = JsonTypeDiscriminatorHelper.TypeInfoResolver
-        };
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
@@ -239,15 +231,15 @@ internal sealed class AnthropicClient
 
     private AnthropicChatMessageContent GetChatMessageContentFromAnthropicContent(AnthropicResponse response, AnthropicContent content)
     {
-        if (content is not AnthropicTextContent textContent)
+        if (!string.Equals(content.Type, "text", StringComparison.OrdinalIgnoreCase))
         {
-            throw new NotSupportedException($"Content type {content.GetType()} is not supported yet.");
+            throw new NotSupportedException($"Content type {content.Type} is not supported yet.");
         }
 
         return new AnthropicChatMessageContent
         {
             Role = response.Role,
-            Items = [new TextContent(textContent.Text ?? string.Empty)],
+            Items = [new TextContent(content.Text ?? string.Empty)],
             ModelId = response.ModelId ?? this._modelId,
             InnerContent = response,
             Metadata = GetResponseMetadata(response)
@@ -365,7 +357,7 @@ internal sealed class AnthropicClient
     {
         try
         {
-            return JsonSerializer.Deserialize<T>(body, options: SerializerOptions) ?? throw new JsonException("Response is null");
+            return JsonSerializer.Deserialize<T>(body) ?? throw new JsonException("Response is null");
         }
         catch (JsonException exc)
         {
@@ -414,7 +406,7 @@ internal sealed class AnthropicClient
         {
             byte[] utf8Bytes = payload is string s
                 ? Encoding.UTF8.GetBytes(s)
-                : JsonSerializer.SerializeToUtf8Bytes(payload, SerializerOptions);
+                : JsonSerializer.SerializeToUtf8Bytes(payload);
 
             content = new ByteArrayContent(utf8Bytes);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };

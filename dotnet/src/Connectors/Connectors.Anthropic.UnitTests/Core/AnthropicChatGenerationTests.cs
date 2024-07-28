@@ -407,12 +407,12 @@ public sealed class AnthropicClientChatGenerationTests : IDisposable
 
     private static T? Deserialize<T>(string json)
     {
-        return JsonSerializer.Deserialize<T>(json, options: AnthropicClient.SerializerOptions);
+        return JsonSerializer.Deserialize<T>(json);
     }
 
     private static T? Deserialize<T>(ReadOnlySpan<byte> json)
     {
-        return JsonSerializer.Deserialize<T>(json, options: AnthropicClient.SerializerOptions);
+        return JsonSerializer.Deserialize<T>(json);
     }
 
     public void Dispose()

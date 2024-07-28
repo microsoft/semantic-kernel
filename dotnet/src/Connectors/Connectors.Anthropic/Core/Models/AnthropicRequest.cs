@@ -25,7 +25,7 @@ internal sealed class AnthropicRequest
     /// from the content in that message. This can be used to constrain part of the model's response.
     /// </summary>
     [JsonPropertyName("messages")]
-    public IList<Message> Messages { get; } = new List<Message>();
+    public IList<Message> Messages { get; set; } = [];
 
     [JsonPropertyName("model")]
     public string ModelId { get; set; } = null!;
@@ -146,12 +146,12 @@ internal sealed class AnthropicRequest
 
     private static AnthropicContent GetAnthropicMessageFromKernelContent(KernelContent content) => content switch
     {
-        TextContent textContent => new AnthropicTextContent { Text = textContent.Text ?? string.Empty },
+        TextContent textContent => new AnthropicContent("text") { Text = textContent.Text ?? string.Empty },
         ImageContent imageContent => CreateAnthropicImageContent(imageContent),
         _ => throw new NotSupportedException($"Content type '{content.GetType().Name}' is not supported.")
     };
 
-    private static AnthropicImageContent CreateAnthropicImageContent(ImageContent imageContent)
+    private static AnthropicContent CreateAnthropicImageContent(ImageContent imageContent)
     {
         var dataUri = DataUriParser.Parse(imageContent.DataUri);
         if (dataUri.DataFormat?.Equals("base64", StringComparison.OrdinalIgnoreCase) != true)
@@ -159,7 +159,7 @@ internal sealed class AnthropicRequest
             throw new InvalidOperationException("Image content must be base64 encoded.");
         }
 
-        return new AnthropicImageContent
+        return new AnthropicContent("image")
         {
             Source = new()
             {

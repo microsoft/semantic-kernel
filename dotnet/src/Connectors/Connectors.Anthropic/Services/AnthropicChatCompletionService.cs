@@ -37,7 +37,6 @@ public sealed class AnthropicChatCompletionService : IChatCompletionService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-
         this._client = new AnthropicClient(
             modelId: modelId,
             apiKey: apiKey,
