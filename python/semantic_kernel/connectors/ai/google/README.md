@@ -6,7 +6,7 @@ Gemini models are Google's large language models. Semantic Kernel provides two c
 
 You can access the Gemini API from Google AI Studio. This mode of access is for quick prototyping as it relies on API keys.
 
-Follow [these instructions](https://ai.google.dev/gemini-api/docs/api-key?_gl=1*109189w*_up*MQ..*_ga*MTA2NTIxNzYzLjE3MjIyNjk2OTM.*_ga_P1DBVKWT6V*MTcyMjI2OTY5Mi4xLjAuMTcyMjI2OTY5Mi4wLjAuMjAzNTgzMTM4Mw..) to get an API key.
+Follow [these instructions](https://ai.google.dev/gemini-api/docs/api-key) to get an API key.
 
 Once you have an API key, you can start using Gemini models in SK using the `google_ai` connector. Example:
 ```Python
