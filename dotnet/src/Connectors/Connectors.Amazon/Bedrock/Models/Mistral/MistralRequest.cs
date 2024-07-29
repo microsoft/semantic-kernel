@@ -2,7 +2,6 @@
 
 using System.Text.Json.Serialization;
 using Amazon.BedrockRuntime.Model;
-using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.Mistral;
 
@@ -15,7 +14,7 @@ public static class MistralRequest
     /// Text generation request structure for Mistral to be passed into the InvokeModelRequest body.
     /// </summary>
     [Serializable]
-    public sealed class MistralTextGenerationRequest : ITextGenerationRequest
+    public sealed class MistralTextGenerationRequest
     {
         /// <summary>
         /// (Required) The prompt that you want to pass to the model, as shown in the following example.
@@ -52,8 +51,6 @@ public static class MistralRequest
         [JsonPropertyName("top_k")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? TopK { get; set; }
-
-        string ITextGenerationRequest.InputText => this.Prompt;
     }
 
     internal sealed class MistralChatCompletionRequest

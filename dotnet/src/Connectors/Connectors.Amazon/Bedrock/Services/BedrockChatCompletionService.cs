@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Amazon.BedrockRuntime;
-using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Services;
@@ -12,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Services;
 /// <summary>
 /// Represents a chat completion service using Amazon Bedrock API.
 /// </summary>
-public class BedrockChatCompletionService : BedrockChatCompletionClient<IChatCompletionRequest, IChatCompletionResponse>, IChatCompletionService
+public class BedrockChatCompletionService : BedrockChatCompletionClient, IChatCompletionService
 {
     private readonly Dictionary<string, object?> _attributesInternal = [];
 

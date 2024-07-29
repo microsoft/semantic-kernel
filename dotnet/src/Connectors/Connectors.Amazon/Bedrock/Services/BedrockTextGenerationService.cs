@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Amazon.BedrockRuntime;
-using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core;
 using Microsoft.SemanticKernel.Services;
@@ -13,7 +11,7 @@ namespace Connectors.Amazon.Services;
 /// <summary>
 /// Represents a text generation service using Amazon Bedrock API.
 /// </summary>
-public class BedrockTextGenerationService : BedrockTextGenerationClient<ITextGenerationRequest, ITextGenerationResponse>, ITextGenerationService
+public class BedrockTextGenerationService : BedrockTextGenerationClient, ITextGenerationService
 {
     private readonly Dictionary<string, object?> _attributesInternal = [];
 

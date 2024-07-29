@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
-using Connectors.Amazon.Core.Requests;
 
 namespace Connectors.Amazon.Models.Cohere;
 

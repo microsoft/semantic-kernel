@@ -4,8 +4,6 @@ using System.Runtime.CompilerServices;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Bedrock.Core;
-using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
 using Connectors.Amazon.Models;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -15,11 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Represents a client for interacting with the chat completion through Bedrock.
 /// </summary>
-/// <typeparam name="TRequest"> Request object which is an IChatCompletionRequest. </typeparam>
-/// <typeparam name="TResponse"> Response object which is an IChatCompletionResponse. </typeparam>
-public class BedrockChatCompletionClient<TRequest, TResponse>
-    where TRequest : IChatCompletionRequest
-    where TResponse : IChatCompletionResponse
+public class BedrockChatCompletionClient
 {
     private readonly string _modelId;
     private readonly string _modelProvider;

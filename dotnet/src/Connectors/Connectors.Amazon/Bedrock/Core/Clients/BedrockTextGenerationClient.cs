@@ -6,8 +6,6 @@ using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Bedrock.Core;
-using Connectors.Amazon.Core.Requests;
-using Connectors.Amazon.Core.Responses;
 using Connectors.Amazon.Models;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core;
@@ -15,11 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core;
 /// <summary>
 /// Represents a client for interacting with the text generation through Bedrock.
 /// </summary>
-/// <typeparam name="TRequest"> Request object which is an ITextGenerationRequest. </typeparam>
-/// <typeparam name="TResponse"> Response object which is an ITextGenerationResponse. </typeparam>
-public abstract class BedrockTextGenerationClient<TRequest, TResponse>
-    where TRequest : ITextGenerationRequest
-    where TResponse : ITextGenerationResponse
+public abstract class BedrockTextGenerationClient
 {
     private readonly string _modelId;
     private readonly IAmazonBedrockRuntime _bedrockApi;
