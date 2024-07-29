@@ -1,3 +1,27 @@
+# BugBash Guidance
+
+- Get the Bugbash branch `features/bugbash-prep` from `microsoft/semantic-kernel`
+- Open the Solution in Visual Studio
+- Go to `samples`, `Before` and try to build each project individually.
+
+  Each project may have different impacts on preparing it to be compatible with OpenAI V2 connector.
+
+  All required changes are what the customers will have to do to migrate their code to the new OpenAI Connector.
+
+## Goals:
+
+### 1. Low code changes required to make the code compatible
+
+### 2. (Before) Projects build successfully
+
+### 3. (Before) Tests run and pass successfully
+
+### 4. Identify any lacking information or guidance provided below towards the migration.
+
+## Troubleshooting
+
+If you are having trouble migrating, check the (After) folders on how that was done. Sometimes some thats had to be dropped/changed completely like: `Multiple Choices` and `Text Generation` for example.
+
 # OpenAI Connector Migration Guide
 
 This manual prepares you for the migration of your OpenAI Connector to the new OpenAI Connector. The new OpenAI Connector is a complete rewrite of the existing OpenAI Connector and is designed to be more efficient, reliable, and scalable. This manual will guide you through the migration process and help you understand the changes that have been made to the OpenAI Connector.
