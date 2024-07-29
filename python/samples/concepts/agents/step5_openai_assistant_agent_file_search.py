@@ -4,11 +4,6 @@ import os
 
 from semantic_kernel.agents.open_ai.azure_open_ai_assistant_agent import AzureOpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
-from semantic_kernel.agents.open_ai.open_ai_service_configuration import (
-    AzureOpenAIServiceConfiguration,
-    OpenAIServiceConfiguration,
-)
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
@@ -41,11 +36,13 @@ async def main():
 
     # Create the agent configuration
     if use_azure_openai:
-        configuration = AzureOpenAIServiceConfiguration.create(service_id=service_id)
-        client = AzureOpenAIAssistantAgent.create_client(configuration=configuration)
+        agent = AzureOpenAIAssistantAgent(
+            kernel=kernel, service_id=service_id, name=AGENT_NAME, instructions=AGENT_INSTRUCTIONS
+        )
     else:
-        configuration = OpenAIServiceConfiguration.create(service_id=service_id)
-        client = OpenAIAssistantAgent.create_client(configuration=configuration)
+        agent = OpenAIAssistantAgent(
+            kernel=kernel, service_id=service_id, name=AGENT_NAME, instructions=AGENT_INSTRUCTIONS
+        )
 
     txt_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
@@ -55,23 +52,11 @@ async def main():
     )
 
     with open(txt_file_path, "rb") as file:
-        file = await client.files.create(file=file, purpose="assistants")  # type: ignore
+        file = await agent.client.files.create(file=file, purpose="assistants")  # type: ignore
 
-        vector_store = await client.beta.vector_stores.create(file_ids=[file.id])
+        vector_store = await agent.client.beta.vector_stores.create(file_ids=[file.id])
 
-        definition = OpenAIAssistantDefinition(
-            name=AGENT_NAME,
-            instructions=AGENT_INSTRUCTIONS,
-            enable_file_search=True,
-            vector_store_ids=[vector_store.id],
-        )
-
-        if use_azure_openai:
-            agent = AzureOpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
-        else:
-            agent = OpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
-
-        await agent.create_assistant()
+        await agent.create_assistant(vector_store_id=vector_store.id)
 
         thread_id = await agent.create_thread()
 

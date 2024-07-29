@@ -9,14 +9,11 @@ from openai import AsyncOpenAI
 from openai.resources.beta.assistants import Assistant
 from openai.resources.beta.threads.messages import Message
 from openai.resources.beta.threads.runs.runs import Run
+from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.threads.runs import RunStep
 from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
-from semantic_kernel.agents.open_ai.open_ai_assistant_invocation_options import OpenAIAssistantInvocationOptions
-from semantic_kernel.agents.open_ai.open_ai_service_configuration import OpenAIServiceConfiguration
-from semantic_kernel.agents.open_ai.open_ai_thread_creation_options import OpenAIThreadCreationOptions
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.annotation_content import AnnotationContent
@@ -53,12 +50,24 @@ class OpenAIAssistantBase(Agent):
     Manages the interaction with OpenAI Assistants.
     """
 
+    _options_metadata_key: str = "__run_options"
+
     ai_model_id: str
     client: AsyncOpenAI
     assistant: Assistant | None = None
-    configuration: OpenAIServiceConfiguration
-    definition: OpenAIAssistantDefinition
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
+    enable_code_interpreter: bool | None = Field(False)
+    enable_file_search: bool | None = Field(False)
+    enable_json_response: bool | None = Field(False)
+    file_ids: list[str] | None = Field(default_factory=list, max_length=20)
+    temperature: float | None = Field(None)
+    top_p: float | None = Field(None)
+    vector_store_ids: list[str] | None = Field(default_factory=list, max_length=1)
+    metadata: dict[str, Any] | None = Field(default_factory=dict, max_length=16)
+    max_completion_tokens: int | None = Field(None)
+    max_prompt_tokens: int | None = Field(None)
+    parallel_tool_calls_enabled: bool | None = Field(True)
+    truncation_message_count: int | None = Field(None)
 
     allowed_message_roles: ClassVar[list[str]] = [AuthorRole.USER, AuthorRole.ASSISTANT]
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
@@ -71,32 +80,52 @@ class OpenAIAssistantBase(Agent):
     def __init__(
         self,
         ai_model_id: str,
-        configuration: OpenAIServiceConfiguration,
-        definition: OpenAIAssistantDefinition,
         client: AsyncOpenAI,
         service_id: str,
-        kernel: "Kernel",
         *,
+        kernel: "Kernel | None" = None,
         id: str | None = None,
         name: str | None = None,
         description: str | None = None,
         instructions: str | None = None,
+        enable_code_interpreter: bool | None = None,
+        enable_file_search: bool | None = None,
+        enable_json_response: bool | None = None,
+        file_ids: list[str] | None = [],
+        temperature: float | None = None,
+        top_p: float | None = None,
+        vector_store_id: str | None = None,
+        metadata: dict[str, Any] | None = {},
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize an OpenAIAssistant Base.
 
         Args:
             ai_model_id (str): The AI model id. Defaults to None.
-            configuration (OpenAIAssistantConfiguration): The configuration. Defaults to None.
-            definition (OpenAIAssistantDefinition): The definition. Defaults to None.
             client (AsyncOpenAI): The client, either AsyncOpenAI or AsyncAzureOpenAI.
             service_id (str): The service id.
-            kernel (Kernel): The kernel.
+            kernel (Kernel): The kernel. (optional)
             id (str): The id. Defaults to None. (optional)
             name (str): The name. Defaults to None. (optional)
             description (str): The description. Defaults to None. (optional)
             default_headers (dict[str, str]): The default headers. Defaults to None. (optional)
             instructions (str): The instructions. Defaults to None. (optional)
+            enable_code_interpreter (bool): Enable code interpreter. Defaults to False. (optional)
+            enable_file_search (bool): Enable file search. Defaults to False. (optional)
+            enable_json_response (bool): Enable JSON response. Defaults to False. (optional)
+            file_ids (list[str]): The file ids. Defaults to []. (optional)
+            temperature (float): The temperature. Defaults to None. (optional)
+            top_p (float): The top p. Defaults to None. (optional)
+            vector_store_id (str): The vector store id. Defaults to None. (optional)
+            metadata (dict[str, Any]): The metadata. Defaults to {}. (optional)
+            max_completion_tokens (int): The max completion tokens. Defaults to None. (optional)
+            max_prompt_tokens (int): The max prompt tokens. Defaults to None. (optional)
+            parallel_tool_calls_enabled (bool): Enable parallel tool calls. Defaults to True. (optional)
+            truncation_message_count (int): The truncation message count. Defaults to None. (optional)
             kwargs (Any): The keyword arguments.
         """
         args: dict[str, Any] = {}
@@ -106,15 +135,27 @@ class OpenAIAssistantBase(Agent):
             "client": client,
             "service_id": service_id,
             "instructions": instructions,
-            "name": name,
             "description": description,
-            "configuration": configuration,
-            "definition": definition,
-            "kernel": kernel,
+            "enable_code_interpreter": enable_code_interpreter,
+            "enable_file_search": enable_file_search,
+            "enable_json_response": enable_json_response,
+            "file_ids": file_ids,
+            "temperature": temperature,
+            "top_p": top_p,
+            "vector_store_id": vector_store_id,
+            "metadata": metadata,
+            "max_completion_tokens": max_completion_tokens,
+            "max_prompt_tokens": max_prompt_tokens,
+            "parallel_tool_calls_enabled": parallel_tool_calls_enabled,
+            "truncation_message_count": truncation_message_count,
         }
 
+        if name is not None:
+            args["name"] = name
         if id is not None:
             args["id"] = id
+        if kernel is not None:
+            args["kernel"] = kernel
         if kwargs:
             args.update(kwargs)
 
@@ -122,57 +163,136 @@ class OpenAIAssistantBase(Agent):
 
     async def create_assistant(
         self,
+        ai_model_id: str | None = None,
+        instructions: str | None = None,
+        name: str | None = None,
+        enable_code_interpreter: bool | None = None,
+        enable_file_search: bool | None = None,
+        file_ids: list[str] | None = None,
+        vector_store_id: str | None = None,
+        metadata: dict[str, str] | None = {},
+        **kwargs: Any,
     ) -> "Assistant":
         """Create the assistant.
 
         Returns:
             Assistant: The assistant
         """
-        kwargs: dict[str, Any] = {}
+        create_assistant_kwargs: dict[str, Any] = {}
+
+        if ai_model_id is not None:
+            create_assistant_kwargs["model"] = ai_model_id
+        elif self.ai_model_id:
+            create_assistant_kwargs["model"] = self.ai_model_id
+
+        if instructions is not None:
+            create_assistant_kwargs["instructions"] = instructions
+        elif self.instructions:
+            create_assistant_kwargs["instructions"] = self.instructions
+
+        if name is not None:
+            create_assistant_kwargs["name"] = name
+        elif self.name:
+            create_assistant_kwargs["name"] = self.name
 
         tools = []
-        if self.definition.enable_code_interpreter:
+        if enable_code_interpreter is not None:
+            if enable_code_interpreter:
+                tools.append({"type": "code_interpreter"})
+        elif self.enable_code_interpreter:
             tools.append({"type": "code_interpreter"})
-        if self.definition.enable_file_search:
+
+        if enable_file_search is not None:
+            if enable_file_search:
+                tools.append({"type": "file_search"})
+        elif self.enable_file_search:
             tools.append({"type": "file_search"})
 
-        kwargs["tools"] = tools if tools else None
+        create_assistant_kwargs["tools"] = tools if tools else None
 
         tool_resources = {}
-        if self.definition.file_ids:
-            tool_resources["code_interpreter"] = {"file_ids": self.definition.file_ids}
-        if self.definition.vector_store_ids:
-            tool_resources["file_search"] = {"vector_store_ids": self.definition.vector_store_ids}
+        if file_ids is not None:
+            if file_ids:
+                tool_resources["code_interpreter"] = {"file_ids": file_ids}
+        elif self.file_ids:
+            tool_resources["code_interpreter"] = {"file_ids": self.file_ids}
 
-        kwargs["tool_resources"] = tool_resources if tool_resources else None
+        if vector_store_id is not None:
+            if vector_store_id:
+                tool_resources["file_search"] = {"vector_store_ids": [vector_store_id]}
+        elif self.vector_store_ids:
+            tool_resources["file_search"] = {"vector_store_ids": self.vector_store_ids}
+
+        create_assistant_kwargs["tool_resources"] = tool_resources if tool_resources else None
+
+        if metadata:
+            create_assistant_kwargs["metadata"] = metadata
+        elif self.metadata:
+            create_assistant_kwargs["metadata"] = self.metadata
+
+        if kwargs:
+            create_assistant_kwargs.update(kwargs)
 
         # Filter out None values to avoid passing them as kwargs
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+        create_assistant_kwargs = {k: v for k, v in create_assistant_kwargs.items() if v is not None}
 
         self.assistant = await self.client.beta.assistants.create(
-            model=self.ai_model_id,
-            instructions=self.instructions,
-            name=self.name,
-            **kwargs,
+            **create_assistant_kwargs,
         )
         return self.assistant
+
+    def _create_open_ai_assistant_definition(self, assistant: "Assistant") -> dict[str, Any]:
+        """Create an OpenAI Assistant Definition from the provided assistant dictionary.
+
+        Args:
+            assistant: The assistant dictionary.
+
+        Returns:
+            An OpenAI Assistant Definition.
+        """
+        execution_settings = {}
+        if isinstance(assistant.metadata, dict) and self._options_metadata_key in assistant.metadata:
+            settings_data = assistant.metadata[self._options_metadata_key]
+            execution_settings = {key: value for key, value in settings_data.items()}
+
+        file_ids: list[str] = []
+        vector_store_id = None
+
+        tool_resources = getattr(assistant, "tool_resources", None)
+        if tool_resources:
+            if hasattr(tool_resources, "code_interpreter") and tool_resources.code_interpreter:
+                file_ids = getattr(tool_resources.code_interpreter, "file_ids", [])
+
+            if hasattr(tool_resources, "file_search") and tool_resources.file_search:
+                vector_store_ids = getattr(tool_resources.file_search, "vector_store_ids", [])
+                if vector_store_ids:
+                    vector_store_id = vector_store_ids[0]
+
+        enable_json_response = assistant.response_format == {"type": "json_object"}
+
+        enable_code_interpreter = any(isinstance(tool, CodeInterpreterTool) for tool in assistant.tools)
+        enable_file_search = any(isinstance(tool, FileSearchTool) for tool in assistant.tools)
+
+        return {
+            "ai_model_id": assistant.model,
+            "description": assistant.description,
+            "id": assistant.id,
+            "instructions": assistant.instructions,
+            "name": assistant.name,
+            "enable_code_interpreter": enable_code_interpreter,
+            "enable_file_search": enable_file_search,
+            "enable_json_response": enable_json_response,
+            "file_ids": file_ids,
+            "temperature": assistant.temperature,
+            "top_p": assistant.top_p,
+            "vector_store_ids": [vector_store_id] if vector_store_id else None,
+            "metadata": assistant.metadata,
+            **execution_settings,
+        }
 
     # endregion
 
     # region Agent Properties
-
-    @property
-    def metadata(self) -> dict[str, str]:
-        """The metadata.
-
-        Returns:
-            dict[str, str]: The metadata.
-        """
-        if self.assistant is None:
-            raise AgentInitializationError("The assistant has not been created.")
-        if not isinstance(self.assistant.metadata, dict):
-            return {}
-        return dict(self.assistant.metadata)
 
     @property
     def tools(self) -> list["AssistantTool"]:
@@ -197,46 +317,54 @@ class OpenAIAssistantBase(Agent):
 
     # region Agent Methods
 
-    async def create_thread(self, thread_creation_settings: OpenAIThreadCreationOptions | None = None) -> str:
+    async def create_thread(
+        self,
+        *,
+        code_interpreter_file_ids: list[str] | None = [],
+        messages: list[ChatMessageContent] | None = [],
+        vector_store_id: str | None = None,
+        metadata: dict[str, str] = {},
+    ) -> str:
         """Create a thread.
 
         Args:
-            thread_creation_settings (OpenAIThreadCreationSettings): The thread creation settings.
-                Defaults to None. (optional)
+            code_interpreter_file_ids (list[str]): The code interpreter file ids. Defaults to []. (optional)
+            messages (list[ChatMessageContent]): The chat messages. Defaults to []. (optional)
+            vector_store_id (str): The vector store id. Defaults to None. (optional)
+            metadata (dict[str, str]): The metadata. Defaults to {}. (optional)
 
         Returns:
             str: The thread id.
         """
-        create_kwargs: dict[str, Any] = {}
+        create_thread_kwargs: dict[str, Any] = {}
 
-        if thread_creation_settings:
-            tool_resources = {}
+        tool_resources = {}
 
-            if thread_creation_settings.code_interpreter_file_ids:
-                tool_resources["code_interpreter"] = {"file_ids": thread_creation_settings.code_interpreter_file_ids}
+        if code_interpreter_file_ids:
+            tool_resources["code_interpreter"] = {"file_ids": code_interpreter_file_ids}
 
-            if thread_creation_settings.vector_store_id:
-                tool_resources["file_search"] = {"vector_store_ids": [thread_creation_settings.vector_store_id]}
+        if vector_store_id:
+            tool_resources["file_search"] = {"vector_store_ids": [vector_store_id]}
 
-            if tool_resources:
-                create_kwargs["tool_resources"] = tool_resources
+        if tool_resources:
+            create_thread_kwargs["tool_resources"] = tool_resources
 
-            if thread_creation_settings.messages:
-                messages = []
-                for message in thread_creation_settings.messages:
-                    if message.role.value not in self.allowed_message_roles:
-                        raise AgentExecutionError(
-                            f"Invalid message role `{message.role.value}`. Allowed roles are {self.allowed_message_roles}."  # noqa: E501
-                        )
-                    message_contents = self._get_message_contents(message=message)
-                    for content in message_contents:
-                        messages.append({"role": message.role.value, "content": content})
-                create_kwargs["messages"] = messages
+        if messages:
+            messages_to_add = []
+            for message in messages:
+                if message.role.value not in self.allowed_message_roles:
+                    raise AgentExecutionError(
+                        f"Invalid message role `{message.role.value}`. Allowed roles are {self.allowed_message_roles}."
+                    )
+                message_contents = self._get_message_contents(message=message)
+                for content in message_contents:
+                    messages_to_add.append({"role": message.role.value, "content": content})
+            create_thread_kwargs["messages"] = messages_to_add
 
-            if thread_creation_settings.metadata:
-                create_kwargs["metadata"] = thread_creation_settings.metadata
+        if metadata:
+            create_thread_kwargs["metadata"] = metadata
 
-        thread = await self.client.beta.threads.create(**create_kwargs)
+        thread = await self.client.beta.threads.create(**create_thread_kwargs)
         return thread.id
 
     async def delete_thread(self, thread_id: str) -> None:
@@ -353,31 +481,97 @@ class OpenAIAssistantBase(Agent):
     # region Agent Invoke Methods
 
     async def invoke(
-        self, thread_id: str, invocation_options: OpenAIAssistantInvocationOptions | None = None
+        self,
+        thread_id: str,
+        *,
+        ai_model_id: str | None = None,
+        enable_code_interpreter: bool | None = False,
+        enable_file_search: bool | None = False,
+        enable_json_response: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = {},
+        **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """Invoke the chat assistant.
 
+        The supplied arguments will take precedence over the specified assistant level attributes.
+
         Args:
             thread_id (str): The thread id.
-            invocation_options (OpenAIAssistantInvocationOptions): The invocation options. Defaults to None. (optional)
+            ai_model_id (str): The AI model id. Defaults to None. (optional)
+            enable_code_interpreter (bool): Enable code interpreter. Defaults to False. (optional)
+            enable_file_search (bool): Enable file search. Defaults to False. (optional)
+            enable_json_response (bool): Enable JSON response. Defaults to False. (optional)
+            max_completion_tokens (int): The max completion tokens. Defaults to None. (optional)
+            max_prompt_tokens (int): The max prompt tokens. Defaults to None. (optional)
+            parallel_tool_calls_enabled (bool): Enable parallel tool calls. Defaults to True. (optional)
+            truncation_message_count (int): The truncation message count. Defaults to None. (optional)
+            temperature (float): The temperature. Defaults to None. (optional)
+            top_p (float): The top p. Defaults to None. (optional)
+            metadata (dict[str, str]): The metadata. Defaults to {}. (optional)
+            kwargs (Any): Extra keyword arguments.
 
         Yields:
             ChatMessageContent: The chat message content.
         """
         async for is_visible, content in self._invoke_internal(
-            thread_id=thread_id, invocation_options=invocation_options
+            thread_id=thread_id,
+            ai_model_id=ai_model_id,
+            enable_code_interpreter=enable_code_interpreter,
+            enable_file_search=enable_file_search,
+            enable_json_response=enable_json_response,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
+            truncation_message_count=truncation_message_count,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            kwargs=kwargs,
         ):
             if is_visible:
                 yield content
 
     async def _invoke_internal(
-        self, thread_id: str, invocation_options: OpenAIAssistantInvocationOptions | None = None
+        self,
+        thread_id: str,
+        *,
+        ai_model_id: str | None = None,
+        enable_code_interpreter: bool | None = False,
+        enable_file_search: bool | None = False,
+        enable_json_response: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = {},
+        kwargs: Any,
     ) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Internal invoke method.
 
+        The supplied arguments will take precedence over the specified assistant level attributes.
+
         Args:
             thread_id (str): The thread id.
-            invocation_options (OpenAIAssistantInvocationOptions): The invocation options. Defaults to None. (optional)
+            ai_model_id (str): The AI model id. Defaults to None. (optional)
+            enable_code_interpreter (bool): Enable code interpreter. Defaults to False. (optional)
+            enable_file_search (bool): Enable file search. Defaults to False. (optional)
+            enable_json_response (bool): Enable JSON response. Defaults to False. (optional)
+            max_completion_tokens (int): The max completion tokens. Defaults to None. (optional)
+            max_prompt_tokens (int): The max prompt tokens. Defaults to None. (optional)
+            parallel_tool_calls_enabled (bool): Enable parallel tool calls. Defaults to True. (optional)
+            truncation_message_count (int): The truncation message count. Defaults to None. (optional)
+            temperature (float): The temperature. Defaults to None. (optional)
+            top_p (float): The top p. Defaults to None. (optional)
+            metadata (dict[str, str]): The metadata. Defaults to {}. (optional)
+            kwargs (Any): Extra keyword arguments.
 
         Yields:
             tuple[bool, ChatMessageContent]: A tuple of visibility and chat message content.
@@ -392,8 +586,18 @@ class OpenAIAssistantBase(Agent):
         tools = self._get_tools()
 
         run_options = self._generate_options(
-            definition=self.definition,
-            invocation_options=invocation_options,
+            ai_model_id=ai_model_id,
+            enable_code_interpreter=enable_code_interpreter,
+            enable_file_search=enable_file_search,
+            enable_json_response=enable_json_response,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
+            truncation_message_count=truncation_message_count,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            kwargs=kwargs,
         )
 
         # Filter out None values to avoid passing them as kwargs
@@ -530,56 +734,36 @@ class OpenAIAssistantBase(Agent):
 
     # region Agent Helper Methods
 
-    @staticmethod
-    def _resolve_execution_setting(setting: Any, agent_setting: Any) -> Any:
-        """Resolve the execution setting."""
-        return setting if setting is not None else agent_setting
-
-    @staticmethod
-    def _merge_options(
-        definition: OpenAIAssistantDefinition, invocation_options: OpenAIAssistantInvocationOptions | None = None
-    ) -> dict[str, Any]:
-        """Merge the invocation options with the definition options.
-
-        The invocation options take precedence over the definition options.
-
-        Args:
-            definition (OpenAIAssistantDefinition): The definition.
-            invocation_options (OpenAIAssistantInvocationOptions): The invocation options. (optional)
-
-        Returns:
-            dict[str, Any]: The merged options.
-        """
-        definition_dict = definition.model_dump()
-        invocation_dict = invocation_options.model_dump() if invocation_options else {}
-
-        execution_options_dict = definition_dict.pop("execution_options", None)
-
-        merged_options = {
-            key: OpenAIAssistantBase._resolve_execution_setting(invocation_dict.get(key, None), definition_dict[key])
-            for key in definition_dict
-        }
-
-        if execution_options_dict:
-            merged_options.update(
-                {
-                    key: OpenAIAssistantBase._resolve_execution_setting(
-                        invocation_dict.get(key, None), execution_options_dict[key]
-                    )
-                    for key in execution_options_dict
-                }
-            )
-
-        return merged_options
-
     def _generate_options(
         self,
-        definition: OpenAIAssistantDefinition,
-        invocation_options: OpenAIAssistantInvocationOptions | None = None,
+        *,
+        ai_model_id: str | None = None,
+        enable_code_interpreter: bool | None = False,
+        enable_file_search: bool | None = False,
+        enable_json_response: bool | None = False,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = {},
+        kwargs: Any = {},
     ) -> dict[str, Any]:
         """Generate options for the assistant invocation."""
         merged_options = self._merge_options(
-            invocation_options=invocation_options if invocation_options else None, definition=definition
+            ai_model_id=ai_model_id,
+            enable_code_interpreter=enable_code_interpreter,
+            enable_file_search=enable_file_search,
+            enable_json_response=enable_json_response,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
+            truncation_message_count=truncation_message_count,
+            temperature=temperature,
+            top_p=top_p,
+            metadata=metadata,
+            **kwargs,
         )
 
         truncation_message_count = merged_options.get("truncation_message_count")
@@ -589,12 +773,56 @@ class OpenAIAssistantBase(Agent):
             "max_prompt_tokens": merged_options.get("max_prompt_tokens"),
             "model": merged_options.get("ai_model_id"),
             "top_p": merged_options.get("top_p"),
-            # TODO(evmattso): Support `parallel_tool_calls` when I can figure out how to enable it
+            # TODO(evmattso): Support `parallel_tool_calls` when it is ready
             "response_format": "json" if merged_options.get("enable_json_response") else None,
             "temperature": merged_options.get("temperature"),
             "truncation_strategy": truncation_message_count if truncation_message_count else None,
             "metadata": merged_options.get("metadata", None),
         }
+
+    def _merge_options(
+        self,
+        ai_model_id: str | None = None,
+        enable_code_interpreter: bool | None = False,
+        enable_file_search: bool | None = False,
+        enable_json_response: bool | None = False,
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        metadata: dict[str, str] | None = {},
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Merge the run-time options with the agent level attribute options."""
+        merged_options = {
+            "ai_model_id": ai_model_id if ai_model_id is not None else self.ai_model_id,
+            "enable_code_interpreter": enable_code_interpreter
+            if enable_code_interpreter is not None
+            else self.enable_code_interpreter,
+            "enable_file_search": enable_file_search if enable_file_search is not None else self.enable_file_search,
+            "enable_json_response": enable_json_response
+            if enable_json_response is not None
+            else self.enable_json_response,
+            "max_completion_tokens": max_completion_tokens
+            if max_completion_tokens is not None
+            else self.max_completion_tokens,
+            "max_prompt_tokens": max_prompt_tokens if max_prompt_tokens is not None else self.max_prompt_tokens,
+            "parallel_tool_calls_enabled": parallel_tool_calls_enabled
+            if parallel_tool_calls_enabled is not None
+            else self.parallel_tool_calls_enabled,
+            "truncation_message_count": truncation_message_count
+            if truncation_message_count is not None
+            else self.truncation_message_count,
+            "temperature": temperature if temperature is not None else self.temperature,
+            "top_p": top_p if top_p is not None else self.top_p,
+            "metadata": metadata if metadata is not None else self.metadata,
+        }
+
+        # Update merged_options with any additional kwargs
+        merged_options.update(kwargs)
+        return merged_options
 
     async def _poll_run_status(self, run: Run, thread_id: str) -> Run:
         """Poll the run status."""
@@ -687,9 +915,9 @@ class OpenAIAssistantBase(Agent):
             list[dict[str, str]]: The list of tools.
         """
         tools = []
-        if self.definition and self.definition.enable_code_interpreter:
+        if self.enable_code_interpreter:
             tools.append({"type": "code_interpreter"})
-        if self.definition and self.definition.enable_file_search:
+        if self.enable_file_search:
             tools.append({"type": "file_search"})
         funcs = self.kernel.get_full_list_of_function_metadata()
         tools.extend([kernel_function_metadata_to_function_call_format(f) for f in funcs])

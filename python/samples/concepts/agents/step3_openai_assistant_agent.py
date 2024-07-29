@@ -4,11 +4,6 @@ from typing import Annotated
 
 from semantic_kernel.agents.open_ai.azure_open_ai_assistant_agent import AzureOpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
-from semantic_kernel.agents.open_ai.open_ai_service_configuration import (
-    AzureOpenAIServiceConfiguration,
-    OpenAIServiceConfiguration,
-)
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -61,16 +56,15 @@ async def main():
     # Add the sample plugin to the kernel
     kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
 
-    # Create the agent definition
-    definition = OpenAIAssistantDefinition(name=HOST_NAME, instructions=HOST_INSTRUCTIONS)
-
     # Create the agent
     if use_azure_openai:
-        configuration = AzureOpenAIServiceConfiguration.create(service_id=service_id)
-        agent = AzureOpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+        agent = AzureOpenAIAssistantAgent(
+            kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
+        )
     else:
-        configuration = OpenAIServiceConfiguration.create(service_id=service_id)
-        agent = OpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+        agent = OpenAIAssistantAgent(
+            kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
+        )
 
     # Next create the assistant
     await agent.create_assistant()
@@ -78,15 +72,17 @@ async def main():
     # Note: the agent creation can be done in one step if desired
     # if use_azure_openai:
     #     agent = await AzureOpenAIAssistantAgent.create(
-    #         configuration=configuration, definition=definition, kernel=kernel
+    #         kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
     #     )
     # else:
-    #     agent = await OpenAIAssistantAgent.create(configuration=configuration, definition=definition, kernel=kernel)
+    #     agent = await OpenAIAssistantAgent.create(
+    #         kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
+    #     )
 
     thread_id = await agent.create_thread()
 
     try:
-        await invoke_agent(agent, thread_id=thread_id, input="Hello")
+        # await invoke_agent(agent, thread_id=thread_id, input="Hello")
         await invoke_agent(agent, thread_id=thread_id, input="What is the special soup?")
         await invoke_agent(agent, thread_id=thread_id, input="What is the special drink?")
         await invoke_agent(agent, thread_id=thread_id, input="Thank you")

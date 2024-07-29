@@ -4,12 +4,6 @@ import os
 
 from semantic_kernel.agents.open_ai.azure_open_ai_assistant_agent import AzureOpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
-from semantic_kernel.agents.open_ai.open_ai_service_configuration import (
-    AzureOpenAIServiceConfiguration,
-    OpenAIServiceConfiguration,
-)
-from semantic_kernel.agents.open_ai.open_ai_thread_creation_options import OpenAIThreadCreationOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
@@ -41,17 +35,24 @@ async def main():
     service_id = "agent"
 
     # Create the agent
-    definition = OpenAIAssistantDefinition(
-        name=AGENT_NAME, instructions=AGENT_INSTRUCTIONS, enable_code_interpreter=True
-    )
 
     # Create the agent
     if use_azure_openai:
-        configuration = AzureOpenAIServiceConfiguration.create(service_id=service_id)
-        agent = AzureOpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+        agent = AzureOpenAIAssistantAgent(
+            kernel=kernel,
+            service_id=service_id,
+            name=AGENT_NAME,
+            instructions=AGENT_INSTRUCTIONS,
+            enable_code_interpreter=True,
+        )
     else:
-        configuration = OpenAIServiceConfiguration.create(service_id=service_id)
-        agent = OpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+        agent = OpenAIAssistantAgent(
+            kernel=kernel,
+            service_id=service_id,
+            name=AGENT_NAME,
+            instructions=AGENT_INSTRUCTIONS,
+            enable_code_interpreter=True,
+        )
 
     await agent.create_assistant()
 
@@ -64,9 +65,7 @@ async def main():
 
     file_id = await agent.add_file(code_file_path, purpose="assistants")
 
-    thread_options = OpenAIThreadCreationOptions(code_interpreter_file_ids=[file_id])
-
-    thread_id = await agent.create_thread(thread_options)
+    thread_id = await agent.create_thread(code_interpreter_file_ids=[file_id])
 
     try:
         await invoke_agent(

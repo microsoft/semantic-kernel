@@ -6,19 +6,16 @@ from copy import copy
 from typing import TYPE_CHECKING, Any
 
 from openai import AsyncOpenAI
+from pydantic import ValidationError
 
 from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
-from semantic_kernel.agents.open_ai.open_ai_assistant_definition import OpenAIAssistantDefinition
-from semantic_kernel.agents.open_ai.open_ai_assistant_execution_options import OpenAIAssistantExecutionOptions
-from semantic_kernel.agents.open_ai.open_ai_service_configuration import OpenAIServiceConfiguration
+from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
-    from openai.resources.beta.assistants import Assistant
-
     from semantic_kernel.kernel import Kernel
 
 
@@ -32,190 +29,282 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
     Provides the ability to interact with OpenAI Assistants.
     """
 
-    _options_metadata_key: str = "__run_options"
-
     # region Agent Initialization
 
     def __init__(
         self,
-        kernel: "Kernel",
-        configuration: OpenAIServiceConfiguration,
-        definition: OpenAIAssistantDefinition,
+        *,
+        kernel: "Kernel | None" = None,
+        service_id: str | None = None,
+        ai_model_id: str | None = None,
+        api_key: str | None = None,
+        org_id: str | None = None,
+        client: AsyncOpenAI | None = None,
+        default_headers: dict[str, str] | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+        description: str | None = None,
+        id: str | None = None,
+        instructions: str | None = None,
+        name: str | None = None,
+        enable_code_interpreter: bool | None = None,
+        enable_file_search: bool | None = None,
+        enable_json_response: bool | None = None,
+        file_ids: list[str] | None = [],
+        temperature: float | None = None,
+        top_p: float | None = None,
+        vector_store_id: str | None = None,
+        metadata: dict[str, Any] | None = {},
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize an OpenAIAssistant service.
 
         Args:
-            kernel: The Kernel instance.
-            configuration: The OpenAI Service Configuration.
-            definition: The OpenAI Assistant Definition
+            kernel: The Kernel instance. (optional)
+            service_id: The service ID. (optional) If not provided the default service name (default) is used.
+            ai_model_id: The AI model ID. (optional)
+            api_key: The OpenAI API key. (optional)
+            org_id: The OpenAI organization ID. (optional)
+            client: The OpenAI client. (optional)
+            default_headers: The default headers. (optional)
+            env_file_path: The environment file path. (optional)
+            env_file_encoding: The environment file encoding. (optional)
+            description: The assistant description. (optional)
+            id: The assistant ID. (optional)
+            instructions: The assistant instructions. (optional)
+            name: The assistant name. (optional)
+            enable_code_interpreter: Enable code interpreter. (optional)
+            enable_file_search: Enable file search. (optional)
+            enable_json_response: Enable JSON response. (optional)
+            file_ids: The file IDs. (optional)
+            temperature: The temperature. (optional)
+            top_p: The top p. (optional)
+            vector_store_id: The vector store ID. (optional)
+            metadata: The assistant metadata. (optional)
+            max_completion_tokens: The max completion tokens. (optional)
+            max_prompt_tokens: The max prompt tokens. (optional)
+            parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
+            truncation_message_count: The truncation message count. (optional)
+            kwargs: Additional keyword arguments.
 
         Raises:
             AgentInitializationError: If the api_key is not provided in the configuration.
         """
-        client = self._create_client_from_configuration(configuration)
-        service_id = configuration.service_id if configuration.service_id else DEFAULT_SERVICE_NAME
+        try:
+            openai_settings = OpenAISettings.create(
+                api_key=api_key,
+                org_id=org_id,
+                chat_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise AgentInitializationError("Failed to create OpenAI settings.", ex) from ex
+
+        if not client and not openai_settings.api_key:
+            raise AgentInitializationError("The OpenAI API key is required, if a client is not provided.")
+        if not openai_settings.chat_model_id:
+            raise AgentInitializationError("The OpenAI model ID is required.")
+
+        if not client:
+            client = self._create_client(
+                api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+                org_id=openai_settings.org_id,
+                default_headers=default_headers,
+            )
+
+        service_id = service_id if service_id else DEFAULT_SERVICE_NAME
 
         args: dict[str, Any] = {
-            "kernel": kernel,
-            "api_key": configuration.api_key if configuration.api_key else None,
-            "org_id": configuration.org_id,
-            "ai_model_id": configuration.ai_model_id,
+            "ai_model_id": openai_settings.chat_model_id,
             "service_id": service_id,
             "client": client,
-            "name": definition.name,
-            "description": definition.description,
-            "instructions": definition.instructions,
-            "configuration": configuration,
-            "definition": definition,
+            "description": description,
+            "instructions": instructions,
+            "enable_code_interpreter": enable_code_interpreter,
+            "enable_file_search": enable_file_search,
+            "enable_json_response": enable_json_response,
+            "file_ids": file_ids,
+            "temperature": temperature,
+            "top_p": top_p,
+            "vector_store_id": vector_store_id,
+            "metadata": metadata,
+            "max_completion_tokens": max_completion_tokens,
+            "max_prompt_tokens": max_prompt_tokens,
+            "parallel_tool_calls_enabled": parallel_tool_calls_enabled,
+            "truncation_message_count": truncation_message_count,
         }
 
-        if definition.id is not None:
-            args["id"] = definition.id
+        if name is not None:
+            args["name"] = name
+        if id is not None:
+            args["id"] = id
+        if kernel is not None:
+            args["kernel"] = kernel
+        if kwargs:
+            args.update(kwargs)
         super().__init__(**args)
-
-    @classmethod
-    def create_client(
-        cls,
-        configuration: OpenAIServiceConfiguration,
-    ) -> AsyncOpenAI:
-        """Create the OpenAI client.
-
-        Args:
-            configuration: The OpenAI Service Configuration.
-
-        Returns:
-            An OpenAI client instance.
-        """
-        return cls._create_client_from_configuration(configuration)
 
     @classmethod
     async def create(
         cls,
         *,
-        kernel: "Kernel",
-        configuration: OpenAIServiceConfiguration,
-        definition: OpenAIAssistantDefinition,
+        kernel: "Kernel | None" = None,
+        service_id: str | None = None,
+        ai_model_id: str | None = None,
+        api_key: str | None = None,
+        org_id: str | None = None,
+        client: AsyncOpenAI | None = None,
+        default_headers: dict[str, str] | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+        description: str | None = None,
+        id: str | None = None,
+        instructions: str | None = None,
+        name: str | None = None,
+        enable_code_interpreter: bool | None = None,
+        enable_file_search: bool | None = None,
+        enable_json_response: bool | None = None,
+        file_ids: list[str] | None = [],
+        temperature: float | None = None,
+        top_p: float | None = None,
+        vector_store_id: str | None = None,
+        metadata: dict[str, Any] | None = {},
+        max_completion_tokens: int | None = None,
+        max_prompt_tokens: int | None = None,
+        parallel_tool_calls_enabled: bool | None = True,
+        truncation_message_count: int | None = None,
     ) -> "OpenAIAssistantAgent":
         """Asynchronous class method used to create the OpenAI Assistant Agent.
 
         Args:
-            kernel: The Kernel instance.
-            configuration: The OpenAI Service Configuration.
-            definition: The OpenAI Assistant Definition.
+            kernel: The Kernel instance. (optional)
+            service_id: The service ID. (optional) If not provided the default service name (default) is used.
+            ai_model_id: The AI model ID. (optional)
+            api_key: The OpenAI API key. (optional)
+            org_id: The OpenAI organization ID. (optional)
+            client: The OpenAI client. (optional)
+            default_headers: The default headers. (optional)
+            env_file_path: The environment file path. (optional)
+            env_file_encoding: The environment file encoding. (optional)
+            description: The assistant description. (optional)
+            id: The assistant ID. (optional)
+            instructions: The assistant instructions. (optional)
+            name: The assistant name. (optional)
+            enable_code_interpreter: Enable code interpreter. (optional)
+            enable_file_search: Enable file search. (optional)
+            enable_json_response: Enable JSON response. (optional)
+            file_ids: The file IDs. (optional)
+            temperature: The temperature. (optional)
+            top_p: The top p. (optional)
+            vector_store_id: The vector store ID. (optional)
+            metadata: The assistant metadata. (optional)
+            max_completion_tokens: The max completion tokens. (optional)
+            max_prompt_tokens: The max prompt tokens. (optional)
+            parallel_tool_calls_enabled: Enable parallel tool calls. (optional)
+            truncation_message_count: The truncation message count. (optional)
 
         Returns:
             An OpenAIAssistantAgent instance.
         """
         agent = cls(
             kernel=kernel,
-            configuration=configuration,
-            definition=definition,
+            service_id=service_id,
+            ai_model_id=ai_model_id,
+            api_key=api_key,
+            org_id=org_id,
+            client=client,
+            default_headers=default_headers,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+            description=description,
+            id=id,
+            instructions=instructions,
+            name=name,
+            enable_code_interpreter=enable_code_interpreter,
+            enable_file_search=enable_file_search,
+            enable_json_response=enable_json_response,
+            file_ids=file_ids,
+            temperature=temperature,
+            top_p=top_p,
+            vector_store_id=vector_store_id,
+            metadata=metadata,
+            max_completion_tokens=max_completion_tokens,
+            max_prompt_tokens=max_prompt_tokens,
+            parallel_tool_calls_enabled=parallel_tool_calls_enabled,
+            truncation_message_count=truncation_message_count,
         )
         agent.assistant = await agent.create_assistant()
         return agent
 
     @staticmethod
-    def _create_client_from_configuration(
-        configuration: OpenAIServiceConfiguration,
+    def _create_client(
+        api_key: str | None = None, org_id: str | None = None, default_headers: dict[str, str] | None = None
     ) -> AsyncOpenAI:
-        """Create the OpenAI client from configuration.
+        """An internal method to create the OpenAI client from the provided arguments.
 
         Args:
-            configuration: The OpenAI Service Configuration.
+            api_key: The OpenAI API key.
+            org_id: The OpenAI organization ID. (optional)
+            default_headers: The default headers. (optional)
 
         Returns:
             An OpenAI client instance.
         """
-        merged_headers = dict(copy(configuration.default_headers)) if configuration.default_headers else {}
-        if configuration.default_headers:
-            merged_headers.update(configuration.default_headers)
+        merged_headers = dict(copy(default_headers)) if default_headers else {}
+        if default_headers:
+            merged_headers.update(default_headers)
         if APP_INFO:
             merged_headers.update(APP_INFO)
             merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
-        if not configuration.api_key:
+        if not api_key:
             raise AgentInitializationError("Please provide an OpenAI api_key")
 
         return AsyncOpenAI(
-            api_key=configuration.api_key,
-            organization=configuration.org_id,
+            api_key=api_key,
+            organization=org_id,
             default_headers=merged_headers,
         )
 
-    def _create_open_ai_assistant_definition(self, assistant: "Assistant") -> OpenAIAssistantDefinition:
-        """Create an OpenAI Assistant Definition from an OpenAI Assistant.
-
-        Args:
-            assistant: The OpenAI Assistant.
-
-        Returns:
-            An OpenAIAssistantDefinition instance.
-        """
-        settings: OpenAIAssistantExecutionOptions | None = None
-        if isinstance(assistant.metadata, dict) and self._options_metadata_key in assistant.metadata:
-            settings = OpenAIAssistantExecutionOptions(**assistant.metadata[self._options_metadata_key])
-
-        tool_resources = getattr(assistant, "tool_resources", None)
-        file_ids = []
-        vector_store_id = None
-        if tool_resources:
-            file_ids = tool_resources.get("code_interpreter", {}).get("file_ids", [])
-            file_search_resource = tool_resources.get("file_search", {})
-            vector_store_ids = file_search_resource.get("vector_store_ids", [])
-            if vector_store_ids:
-                vector_store_id = vector_store_ids[0]
-        enable_json_response = assistant.response_format == {"type": "json_object"}
-
-        return OpenAIAssistantDefinition(
-            ai_model_id=assistant.model,
-            description=assistant.description,
-            id=assistant.id,
-            instructions=assistant.instructions,
-            name=assistant.name,
-            enable_code_interpreter="code_interpreter" in assistant.tools,
-            enable_file_search="file_search" in assistant.tools,
-            enable_json_response=enable_json_response,
-            file_ids=file_ids,
-            temperature=assistant.temperature,
-            top_p=assistant.top_p,
-            vector_store_ids=[vector_store_id] if vector_store_id else None,
-            metadata=assistant.metadata,
-            execution_settings=settings,
-        )
-
-    async def list_definitions(
-        self,
-        configuration: OpenAIServiceConfiguration,
-    ) -> AsyncIterable[OpenAIAssistantDefinition]:
+    async def list_definitions(self) -> AsyncIterable[dict[str, Any]]:
         """List the assistant definitions.
 
-        Args:
-            configuration: The OpenAI Service Configuration.
-
         Yields:
-            An AsyncIterable of OpenAIAssistantDefinition.
+            An AsyncIterable of dictionaries representing the OpenAIAssistantDefinition.
         """
-        client = self._create_client_from_configuration(configuration)
-        assistants = await client.beta.assistants.list(order="desc")
+        assistants = await self.client.beta.assistants.list(order="desc")
         for assistant in assistants.data:
             yield self._create_open_ai_assistant_definition(assistant)
 
     async def retrieve(
-        self, kernel: "Kernel", configuration: OpenAIServiceConfiguration, id: str
+        self,
+        id: str,
+        api_key: str,
+        kernel: "Kernel | None" = None,
+        org_id: str | None = None,
+        default_headers: dict[str, str] | None = None,
     ) -> "OpenAIAssistantAgent":
         """Retrieve an assistant by ID.
 
         Args:
-            kernel: The Kernel instance.
-            configuration: The OpenAI Service Configuration.
             id: The assistant ID.
+            api_key: The OpenAI API
+            kernel: The Kernel instance. (optional)
+            org_id: The OpenAI organization ID. (optional)
+            default_headers: The default headers. (optional)
+
 
         Returns:
             An OpenAIAssistantAgent instance.
         """
-        client = self._create_client_from_configuration(configuration)
+        client = self._create_client(api_key=api_key, org_id=org_id, default_headers=default_headers)
         assistant = await client.beta.assistants.retrieve(id)
-        definition = self._create_open_ai_assistant_definition(assistant)
-        return OpenAIAssistantAgent(kernel=kernel, configuration=configuration, definition=definition)
+        assistant_definition = self._create_open_ai_assistant_definition(assistant)
+        return OpenAIAssistantAgent(kernel=kernel, **assistant_definition)
 
     # endregion
