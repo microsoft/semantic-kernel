@@ -16,14 +16,21 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel> : IVe
     /// <summary>The name of the temporary json property that the key field will be serialized / parsed from.</summary>
     private readonly string _keyFieldJsonPropertyName;
 
+    /// <summary>The JSON serializer options to use when converting between the data model and the Redis record.</summary>
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisJsonVectorStoreRecordMapper{TConsumerDataModel}"/> class.
     /// </summary>
     /// <param name="keyFieldJsonPropertyName">The name of the key field on the model when serialized to json.</param>
-    public RedisJsonVectorStoreRecordMapper(string keyFieldJsonPropertyName)
+    /// <param name="jsonSerializerOptions">The JSON serializer options to use when converting between the data model and the Redis record.</param>
+    public RedisJsonVectorStoreRecordMapper(string keyFieldJsonPropertyName, JsonSerializerOptions jsonSerializerOptions)
     {
         Verify.NotNullOrWhiteSpace(keyFieldJsonPropertyName);
+        Verify.NotNull(jsonSerializerOptions);
+
         this._keyFieldJsonPropertyName = keyFieldJsonPropertyName;
+        this._jsonSerializerOptions = jsonSerializerOptions;
     }
 
     /// <inheritdoc />
@@ -32,7 +39,7 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel> : IVe
         // Convert the provided record into a JsonNode object and try to get the key field for it.
         // Since we already checked that the key field is a string in the constructor, and that it exists on the model,
         // the only edge case we have to be concerned about is if the key field is null.
-        var jsonNode = JsonSerializer.SerializeToNode(dataModel);
+        var jsonNode = JsonSerializer.SerializeToNode(dataModel, this._jsonSerializerOptions);
         if (jsonNode!.AsObject().TryGetPropertyValue(this._keyFieldJsonPropertyName, out var keyField) && keyField is JsonValue jsonValue)
         {
             // Remove the key field from the JSON object since we don't want to store it in the redis payload.
@@ -73,6 +80,6 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel> : IVe
         // Since the key is not stored in the redis value, add it back in before deserializing into the data model.
         jsonObject.Add(this._keyFieldJsonPropertyName, storageModel.Key);
 
-        return JsonSerializer.Deserialize<TConsumerDataModel>(jsonObject)!;
+        return JsonSerializer.Deserialize<TConsumerDataModel>(jsonObject, this._jsonSerializerOptions)!;
     }
 }

@@ -135,7 +135,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         }
         else
         {
-            this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(this._keyJsonPropertyName);
+            this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(this._keyJsonPropertyName, this._jsonSerializerOptions);
         }
     }
 
