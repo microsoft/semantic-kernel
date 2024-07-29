@@ -178,10 +178,10 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         {
             if (dataProperty.PropertyType is null)
             {
-                throw new InvalidOperationException($"Property {nameof(dataProperty.PropertyType)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.PropertyName}' must be set to create a collection, since the property is filterable.");
+                throw new InvalidOperationException($"Property {nameof(dataProperty.PropertyType)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' must be set to create a collection, since the property is filterable.");
             }
 
-            var storageFieldName = this._storagePropertyNames[dataProperty.PropertyName];
+            var storageFieldName = this._storagePropertyNames[dataProperty.DataModelPropertyName];
             var schemaType = QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap[dataProperty.PropertyType!];
 
             await this.RunOperationAsync(

@@ -131,19 +131,19 @@ internal static class VectorStoreRecordPropertyReader
                     throw new ArgumentException($"Multiple key properties configured for type {type.FullName}.");
                 }
 
-                keyProperty = type.GetProperty(keyPropertyInfo.PropertyName);
+                keyProperty = type.GetProperty(keyPropertyInfo.DataModelPropertyName);
                 if (keyProperty == null)
                 {
-                    throw new ArgumentException($"Key property '{keyPropertyInfo.PropertyName}' not found on type {type.FullName}.");
+                    throw new ArgumentException($"Key property '{keyPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
                 }
             }
             // Data.
             else if (property is VectorStoreRecordDataProperty dataPropertyInfo)
             {
-                var dataProperty = type.GetProperty(dataPropertyInfo.PropertyName);
+                var dataProperty = type.GetProperty(dataPropertyInfo.DataModelPropertyName);
                 if (dataProperty == null)
                 {
-                    throw new ArgumentException($"Data property '{dataPropertyInfo.PropertyName}' not found on type {type.FullName}.");
+                    throw new ArgumentException($"Data property '{dataPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
                 }
 
                 dataProperties.Add(dataProperty);
@@ -151,10 +151,10 @@ internal static class VectorStoreRecordPropertyReader
             // Vector.
             else if (property is VectorStoreRecordVectorProperty vectorPropertyInfo)
             {
-                var vectorProperty = type.GetProperty(vectorPropertyInfo.PropertyName);
+                var vectorProperty = type.GetProperty(vectorPropertyInfo.DataModelPropertyName);
                 if (vectorProperty == null)
                 {
-                    throw new ArgumentException($"Vector property '{vectorPropertyInfo.PropertyName}' not found on type {type.FullName}.");
+                    throw new ArgumentException($"Vector property '{vectorPropertyInfo.DataModelPropertyName}' not found on type {type.FullName}.");
                 }
 
                 // Add all vector properties if we support multiple vectors.
@@ -341,7 +341,7 @@ internal static class VectorStoreRecordPropertyReader
         if (vectorStoreRecordDefinition is not null)
         {
             // First check to see if the developer configured a storage property name on the record definition.
-            if (vectorStoreRecordDefinition.Properties.FirstOrDefault(p => p.PropertyName == property.Name) is VectorStoreRecordProperty recordProperty && recordProperty.StoragePropertyName is not null)
+            if (vectorStoreRecordDefinition.Properties.FirstOrDefault(p => p.DataModelPropertyName == property.Name) is VectorStoreRecordProperty recordProperty && recordProperty.StoragePropertyName is not null)
             {
                 return recordProperty.StoragePropertyName;
             }

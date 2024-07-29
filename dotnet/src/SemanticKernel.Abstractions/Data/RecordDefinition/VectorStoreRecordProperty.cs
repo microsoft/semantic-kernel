@@ -13,26 +13,29 @@ public abstract class VectorStoreRecordProperty
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordProperty"/> class.
     /// </summary>
-    /// <param name="propertyName">The name of the property.</param>
-    private protected VectorStoreRecordProperty(string propertyName)
+    /// <param name="dataModelPropertyName">The name of the property on the data model.</param>
+    private protected VectorStoreRecordProperty(string dataModelPropertyName)
     {
-        this.PropertyName = propertyName;
+        this.DataModelPropertyName = dataModelPropertyName;
     }
 
     private protected VectorStoreRecordProperty(VectorStoreRecordProperty source)
     {
-        this.PropertyName = source.PropertyName;
+        this.DataModelPropertyName = source.DataModelPropertyName;
         this.StoragePropertyName = source.StoragePropertyName;
     }
 
     /// <summary>
-    /// Gets or sets the name of the property.
+    /// Gets or sets the name of the property on the data model.
     /// </summary>
-    public string PropertyName { get; set; }
+    public string DataModelPropertyName { get; private set; }
 
     /// <summary>
     /// Gets or sets an optional name to use for the property in storage, if different from the property name.
     /// E.g. the property name might be "MyProperty" but the storage name might be "my_property".
+    /// This property will only be respected by implementations that do not support a well known
+    /// serialization mechanism like JSON, in which case the attributes used by that seriallization system will
+    /// be used.
     /// </summary>
-    public string? StoragePropertyName { get; set; }
+    public string? StoragePropertyName { get; init; }
 }

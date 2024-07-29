@@ -57,12 +57,12 @@ internal static class QdrantVectorStoreCollectionCreateMapping
     {
         if (vectorProperty!.Dimensions is not > 0)
         {
-            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive integer to create a collection.");
+            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' must be set to a positive integer to create a collection.");
         }
 
         if (vectorProperty!.IndexKind is not null && vectorProperty!.IndexKind != IndexKind.Hnsw)
         {
-            throw new InvalidOperationException($"Unsupported index kind '{vectorProperty!.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}'.");
+            throw new InvalidOperationException($"Unsupported index kind '{vectorProperty!.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.");
         }
 
         return new VectorParams { Size = (ulong)vectorProperty.Dimensions, Distance = QdrantVectorStoreCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty) };
@@ -81,7 +81,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
 
         foreach (var vectorProperty in vectorProperties)
         {
-            var storageName = storagePropertyNames[vectorProperty.PropertyName];
+            var storageName = storagePropertyNames[vectorProperty.DataModelPropertyName];
 
             // Add each vector property to the vectors map.
             vectorParamsMap.Map.Add(
@@ -112,7 +112,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
             DistanceFunction.DotProductSimilarity => Distance.Dot,
             DistanceFunction.EuclideanDistance => Distance.Euclid,
             DistanceFunction.ManhattanDistance => Distance.Manhattan,
-            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}'.")
+            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
         };
     }
 }
