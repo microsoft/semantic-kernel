@@ -38,6 +38,7 @@ public sealed class TestConfiguration
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
+    public static AstraDBConfig MongoDB => LoadSection<AstraDBConfig>();
     public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
     public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
     public static MistralAIConfig MistralAI => LoadSection<MistralAIConfig>();
@@ -181,6 +182,15 @@ public sealed class TestConfiguration
     {
         public string ConnectionString { get; set; }
     }
+
+    public class AstraDBConfig
+    {
+        public string ApiEndpoint { get; set; }
+        public string AppToken { get; set; }
+        public string KeySpace { get; set; }
+        public int VectorSize { get; set; }
+    }
+
 
     public class ChatGPTRetrievalPluginConfig
     {

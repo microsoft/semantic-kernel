@@ -55,5 +55,39 @@ namespace Microsoft.SemanticKernel.Connectors.AstraDB
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The found document as a JSON string, or null if not found.</returns>
     Task<MemoryRecord?> FindOneAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default);
+
+    /// </summary>
+    /// <param name="collectionName">The name of the collection from which the document will be deleted.</param>
+    /// <param name="key">The key of the document to be deleted.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task DeleteOneAsync(string collectionName, string key, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes multiple entries from a specified collection in the AstraDB.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection from which entries are to be deleted.</param>
+    /// <param name="keys">An enumerable list of keys identifying the entries to be deleted.</param>
+    /// <param name="cancellationToken">An optional token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous delete operation.</returns>
+    Task DeleteManyAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the nearest matches to a given embedding from a specified collection in AstraDB.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection to search for matches.</param>
+    /// <param name="embedding">The embedding vector to compare against stored entries.</param>
+    /// <param name="limit">The maximum number of matches to return.</param>
+    /// <param name="minRelevanceScore">The minimum similarity score required for a match to be included in the results. Defaults to 0.</param>
+    /// <param name="withEmbeddings">Indicates whether to include the embeddings in the results. Defaults to false.</param>
+    /// <param name="cancellationToken">An optional token to cancel the asynchronous operation.</param>
+    /// <returns>
+    IAsyncEnumerable<(AstraDBMemoryEntry, double)> GetNearestMatchesAsync(
+            string collectionName,
+            ReadOnlyMemory<float> embedding,
+            int limit,
+            double minRelevanceScore = 0,
+            bool withEmbeddings = false,
+            CancellationToken cancellationToken = default);
   }
 }
