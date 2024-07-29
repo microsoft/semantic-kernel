@@ -7,6 +7,8 @@ from collections.abc import AsyncGenerator
 from functools import reduce
 from typing import TYPE_CHECKING, Any
 
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -104,6 +106,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             client = ChatCompletionsClient(
                 endpoint=str(azure_ai_inference_settings.endpoint),
                 credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
+                user_agent=SEMANTIC_KERNEL_USER_AGENT,
             )
 
         super().__init__(

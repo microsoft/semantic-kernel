@@ -6,8 +6,8 @@ from inspect import isawaitable
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
 
-from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.exceptions import ServiceInvalidRequestError
+from semantic_kernel.utils.telemetry.user_agent import HTTP_USER_AGENT
 
 logger: logging.Logger = logging.getLogger(__name__)
 

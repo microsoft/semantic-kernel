@@ -126,8 +126,8 @@ async def test_chat_completion(mock_chat_client, model_id, service_id, chat_hist
 
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     response = await ollama.get_chat_message_contents(
-        chat_history,
-        OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
+        chat_history=chat_history,
+        settings=OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
     )
 
     assert len(response) == 1
@@ -168,8 +168,8 @@ async def test_text_completion(mock_chat_client, model_id, service_id, prompt, d
     mock_chat_client.return_value = {"message": {"content": "test_response"}}
     ollama = OllamaChatCompletion(ai_model_id=model_id)
     response = await ollama.get_text_contents(
-        prompt,
-        OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+        prompt=prompt,
+        settings=OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
     )
 
     assert len(response) == 1
