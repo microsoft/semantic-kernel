@@ -55,9 +55,9 @@ public class ChatMessageContent : KernelContent
                 this.Items.Add(new TextContent(
                     text: value,
                 ////modelId: this.ModelId, // %%% REDUNDANT
-                ////innerContent: this.InnerContent, // %%% MUTATION RISK / INCONSISTENT / INVALID ASSUMPTION  (IGNORED FOR SERIALIZATION)
+                ////innerContent: this.InnerContent, // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION / MUTATION RISK (IGNORED FOR SERIALIZATION)
                     encoding: this.Encoding // %%% WEIRD, BUT WHO CARES (IGNORED FOR SERIALIZATION)
-                ////metadata: this.Metadata, // %%% MUTATION RISK / INCONSISTENT
+                ////metadata: this.Metadata, // %%% CARDINALITY MISMATCH / MUTATION RISK
                 )
                 { MimeType = this.MimeType }); // %%% CARDINALITY MISMATCH / INVALID ASSUMPTION
             }
