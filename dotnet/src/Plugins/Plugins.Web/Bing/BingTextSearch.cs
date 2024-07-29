@@ -2,8 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,14 +79,12 @@ public sealed class BingTextSearch : ITextSearch<TextSearchResult>, ITextSearch<
     /// Execute a Bing search query and return the results.
     /// </summary>
     /// <param name="query">What to search for.</param>
-    /// <param name="searchSettings">Search options.</param>
+    /// <param name="searchOptions">Search options.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    private async Task<BingSearchResponse<BingWebPage>?> ExecuteSearchAsync(string query, SearchOptions? searchSettings = null, CancellationToken cancellationToken = default)
+    private async Task<BingSearchResponse<BingWebPage>?> ExecuteSearchAsync(string query, SearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        searchSettings ??= new SearchOptions();
-        var count = searchSettings.Count;
-        var offset = searchSettings.Offset;
-        using HttpResponseMessage response = await this.SendGetRequestAsync(query, count, offset, cancellationToken).ConfigureAwait(false);
+        searchOptions ??= new SearchOptions();
+        using HttpResponseMessage response = await this.SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
@@ -100,18 +100,20 @@ public sealed class BingTextSearch : ITextSearch<TextSearchResult>, ITextSearch<
     /// Sends a GET request to the specified URI.
     /// </summary>
     /// <param name="query">The query string.</param>
-    /// <param name="count">The number of results to return.</param>
-    /// <param name="offset">The index of the first result to return.</param>
+    /// <param name="searchOptions">The search options.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
-    private async Task<HttpResponseMessage> SendGetRequestAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
+    private async Task<HttpResponseMessage> SendGetRequestAsync(string query, SearchOptions searchOptions, CancellationToken cancellationToken = default)
     {
+        var count = searchOptions.Count;
+        var offset = searchOptions.Offset;
+
         if (count is <= 0 or >= 50)
         {
-            throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be greater than 0 and less than 50.");
+            throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and less than 50.");
         }
 
-        Uri uri = new($"{this._uri}?q={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
+        Uri uri = new($"{this._uri}?q={BuildQuery(query, searchOptions)}");
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
@@ -208,6 +210,33 @@ public sealed class BingTextSearch : ITextSearch<TextSearchResult>, ITextSearch<
     private static TextSearchResult DefaultMapToTextSearchResult(BingWebPage webPage)
     {
         return new TextSearchResult(webPage.Name, webPage.Snippet, webPage.Url, webPage);
+    }
+
+    // Uri.EscapeDataString(query.Trim())
+
+    /// <summary>
+    /// Build a query string from the <see cref="SearchOptions"/>
+    /// </summary>
+    /// <param name="query">The query.</param>
+    /// <param name="searchOptions">The search options.</param>
+    private static string BuildQuery(string query, SearchOptions searchOptions)
+    {
+        StringBuilder retVal = new();
+
+        retVal.Append(Uri.EscapeDataString(query.Trim()));
+
+        if (searchOptions.Filter is not null)
+        {
+            // NeedsWork: Add support for other filter types
+            var filterClauses = searchOptions.Filter.FilterClauses;
+            var filterClause = filterClauses.FirstOrDefault(c => (c as EqualityFilterClause)?.Field.Equals("site", StringComparison.OrdinalIgnoreCase) ?? false);
+            if (filterClause is EqualityFilterClause equalityFilterClause)
+            {
+                retVal.Append("+site%3A").Append(equalityFilterClause.Value);
+            }
+        }
+
+        return retVal.ToString();
     }
 
     #endregion

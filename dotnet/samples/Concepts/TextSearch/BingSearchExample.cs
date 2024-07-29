@@ -22,7 +22,7 @@ public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(outpu
         var textSearch = new BingTextSearch(apiKey: TestConfiguration.Bing.ApiKey);
 
         // Search with String result type
-        KernelSearchResults<string> stringResults = await ((ITextSearch<string>)textSearch).SearchAsync(query, new() { Count = 2, Offset = 4 });
+        KernelSearchResults<string> stringResults = await ((ITextSearch<string>)textSearch).SearchAsync(query, new() { Count = 4, Offset = 0 });
         await foreach (string result in stringResults.Results)
         {
             Console.WriteLine(result);
@@ -30,7 +30,7 @@ public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(outpu
         }
 
         // Search with TextSearchResult result type
-        KernelSearchResults<TextSearchResult> textResults = await ((ITextSearch<TextSearchResult>)textSearch).SearchAsync(query, new() { Count = 2, Offset = 4 });
+        KernelSearchResults<TextSearchResult> textResults = await ((ITextSearch<TextSearchResult>)textSearch).SearchAsync(query, new() { Count = 4, Offset = 4 });
         await foreach (TextSearchResult result in textResults.Results)
         {
             Console.WriteLine($"Name: {result.Name}");
@@ -41,7 +41,7 @@ public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(outpu
         }
 
         // Search with a the default result type
-        KernelSearchResults<BingWebPage> fullResults = await ((ITextSearch<BingWebPage>)textSearch).SearchAsync(query, new() { Count = 2, Offset = 6 });
+        KernelSearchResults<BingWebPage> fullResults = await ((ITextSearch<BingWebPage>)textSearch).SearchAsync(query, new() { Count = 4, Offset = 8 });
         await foreach (BingWebPage result in fullResults.Results)
         {
             Console.WriteLine($"Name: {result.Name}");
@@ -70,6 +70,31 @@ public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(outpu
 
         // Search with TextSearchResult result type
         KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Count = 2, Offset = 4 });
+        await foreach (string result in stringResults.Results)
+        {
+            Console.WriteLine(result);
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+        }
+    }
+
+    /// <summary>
+    /// Show how to create a <see cref="BingTextSearch"/> with a custom mapper and use it to perform a text search.
+    /// </summary>
+    [Fact]
+    public async Task UseBingTextSearchWithFilterForNewsAsync()
+    {
+        var query = "What is the Semantic Kernel?";
+
+        // Create an ITextSearch instance using Bing search
+        ITextSearch<string> textSearch = new BingTextSearch(apiKey: TestConfiguration.Bing.ApiKey, options: new()
+        {
+            MapToString = webPage => JsonSerializer.Serialize(webPage),
+        });
+
+        // Search with TextSearchResult result type
+        SearchOptions searchOptions = new() { Count = 4, Offset = 0 };
+        searchOptions.Filter = new FilterOptions().Equals("site", "devblogs.microsoft.com");
+        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, searchOptions);
         await foreach (string result in stringResults.Results)
         {
             Console.WriteLine(result);
