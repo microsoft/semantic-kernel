@@ -31,9 +31,7 @@ class FunctionResultContent(KernelContent):
     content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(FUNCTION_RESULT_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = FUNCTION_RESULT_CONTENT_TAG
     id: str
-    result: Any = Field(
-        ...,
-    )
+    result: Any
     name: str | None = None
     function_name: str
     plugin_name: str | None = None
