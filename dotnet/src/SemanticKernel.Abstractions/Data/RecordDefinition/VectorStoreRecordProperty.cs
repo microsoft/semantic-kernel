@@ -19,6 +19,12 @@ public abstract class VectorStoreRecordProperty
         this.PropertyName = propertyName;
     }
 
+    private protected VectorStoreRecordProperty(VectorStoreRecordProperty source)
+    {
+        this.PropertyName = source.PropertyName;
+        this.StoragePropertyName = source.StoragePropertyName;
+    }
+
     /// <summary>
     /// Gets or sets the name of the property.
     /// </summary>

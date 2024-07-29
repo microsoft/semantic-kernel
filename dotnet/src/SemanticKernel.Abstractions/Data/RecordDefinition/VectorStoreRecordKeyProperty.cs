@@ -24,7 +24,7 @@ public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty
     /// </summary>
     /// <param name="source">The source to clone</param>
     public VectorStoreRecordKeyProperty(VectorStoreRecordKeyProperty source)
-        : base(source.PropertyName)
+        : base(source)
     {
     }
 }

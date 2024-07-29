@@ -291,7 +291,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public List<string> Tags { get; set; } = new List<string>();
 
         /// <summary>A data field.</summary>
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding")]
+        [VectorStoreRecordData]
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>
@@ -314,7 +314,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public string? HotelName { get; set; }
 
         /// <summary>A data field.</summary>
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding")]
+        [VectorStoreRecordData]
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>

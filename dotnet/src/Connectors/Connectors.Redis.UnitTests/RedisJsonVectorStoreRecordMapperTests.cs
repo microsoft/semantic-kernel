@@ -80,7 +80,7 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "Vector1")]
+        [VectorStoreRecordData]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]

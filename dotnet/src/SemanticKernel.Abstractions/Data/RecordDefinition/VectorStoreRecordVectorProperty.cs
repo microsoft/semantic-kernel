@@ -24,8 +24,11 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
     /// </summary>
     /// <param name="source">The source to clone</param>
     public VectorStoreRecordVectorProperty(VectorStoreRecordVectorProperty source)
-        : base(source.PropertyName)
+        : base(source)
     {
+        this.Dimensions = source.Dimensions;
+        this.IndexKind = source.IndexKind;
+        this.DistanceFunction = source.DistanceFunction;
     }
 
     /// <summary>

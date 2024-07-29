@@ -168,11 +168,6 @@ public class VectorStoreRecordPropertyReaderTests
         Assert.True(data1.IsFilterable);
         Assert.False(data2.IsFilterable);
 
-        Assert.True(data1.HasEmbedding);
-        Assert.False(data2.HasEmbedding);
-
-        Assert.Equal("Vector1", data1.EmbeddingPropertyName);
-
         Assert.Equal(typeof(string), data1.PropertyType);
         Assert.Equal(typeof(string), data2.PropertyType);
 
@@ -333,7 +328,7 @@ public class VectorStoreRecordPropertyReaderTests
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "Vector1", IsFilterable = true)]
+        [VectorStoreRecordData(IsFilterable = true)]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]
@@ -354,7 +349,7 @@ public class VectorStoreRecordPropertyReaderTests
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("Data1") { HasEmbedding = true, EmbeddingPropertyName = "Vector1", IsFilterable = true },
+            new VectorStoreRecordDataProperty("Data1") { IsFilterable = true },
             new VectorStoreRecordDataProperty("Data2") { StoragePropertyName = "data_2" },
             new VectorStoreRecordVectorProperty("Vector1") { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity },
             new VectorStoreRecordVectorProperty("Vector2")

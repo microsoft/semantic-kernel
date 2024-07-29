@@ -183,7 +183,7 @@ public class VectorStore_DataIngestion(ITestOutputHelper output) : BaseTest(outp
         [VectorStoreRecordData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = nameof(DefinitionEmbedding))]
+        [VectorStoreRecordData]
         public string Definition { get; set; }
 
         [VectorStoreRecordVector(1536)]
