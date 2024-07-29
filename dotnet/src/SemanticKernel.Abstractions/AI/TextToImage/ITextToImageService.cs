@@ -5,10 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
-/* Phase 02
-- Changing "description" parameter to "prompt" to better match the OpenAI API and avoid confusion.
-*/
-
 namespace Microsoft.SemanticKernel.TextToImage;
 
 /// <summary>
