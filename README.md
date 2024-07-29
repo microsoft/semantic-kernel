@@ -29,11 +29,21 @@ plugins with AI. With Semantic Kernel
 can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards,
 Semantic Kernel will execute the plan for the user.
 
+
+It provides:
+- abstractions for AI services (such as chat, text to images, audio to text, etc.) and memory stores
+- implementations of those abstractions for services from [OpenAI](https://platform.openai.com/docs/introduction), [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service), [Hugging Face](https://huggingface.co/), local models, and more, and for a multitude of vector databases, such as those from [Chroma](https://docs.trychroma.com/getting-started), [Qdrant](https://qdrant.tech/), [Milvus](https://milvus.io/), and [Azure](https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search)
+- a common representation for [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins), which can then be orchestrated automatically by AI
+- the ability to create such plugins from a multitude of sources, including from OpenAPI specifications, prompts, and arbitrary code written in the target language
+- extensible support for prompt management and rendering, including built-in handling of common formats like Handlebars and Liquid
+- and a wealth of functionality layered on top of these abstractions, such as filters for responsible AI, dependency injection integration, and more.
+
+Semantic Kernel is utilized by enterprises due to its flexibility, modularity and observability. Backed with security enhancing capabilities like telemetry support, and hooks and filters so you’ll feel confident you’re delivering responsible AI solutions at scale.
+Semantic Kernel was designed to be future proof, easily connecting your code to the latest AI models evolving with the technology as it advances. When new models are released, you’ll simply swap them out without needing to rewrite your entire codebase.
+
 #### Please star the repo to show your support for this project!
 
-![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
-
-
+![Enterprise-ready](https://learn.microsoft.com/en-us/semantic-kernel/media/enterprise-ready.png)
 
 ## Getting started with Semantic Kernel
 
@@ -70,25 +80,21 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 
 ### For C#:
 
-1. Create a new console app.
-2. Add the semantic kernel nuget [Microsoft.SemanticKernel](https://www.nuget.org/packages/Microsoft.SemanticKernel/).
-3. Copy the code from [here](dotnet/README.md) into the app `Program.cs` file.
-4. Replace the configuration placeholders for API key and other params with your key and settings.
-5. Run with `F5` or `dotnet run`
+1. Go to the Quick start page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-csharp) and follow the steps to dive in.
+2. After Installing the SDK, we advise you follow the steps and code detailed to write your first console app.
+   ![dotnetmap](https://learn.microsoft.com/en-us/semantic-kernel/media/dotnetmap.png)
 
 ### For Python:
 
-1. Install the pip package: `python -m pip install semantic-kernel`.
-2. Create a new script e.g. `hello-world.py`.
-3. Store your API key and settings in an `.env` file as described [here](python/README.md).
-4. Copy the code from [here](python/README.md) into the `hello-world.py` script.
-5. Run the python script.
+1. Go to the Quick start page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-csharp) and follow the steps to dive in.
+2. You'll need to ensure that you toggle to C# in the the Choose a programming language table at the top of the page.
+ ![csharpmap](https://learn.microsoft.com/en-us/semantic-kernel/media/pythonmap.png)
 
 ### For Java:
 
 1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
     1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
-2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/main/java/samples/sample-code/README.md)
+2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/tree/main/java/samples/README.md)
 
 ## Learning how to use Semantic Kernel
 
@@ -101,19 +107,18 @@ demonstrate how to use Semantic Kernel with code snippets that you can run with 
 Once you've finished the getting started notebooks, you can then check out the main walkthroughs
 on our Learn site. Each sample comes with a completed C# and Python project that you can run locally.
 
-1. 📖 [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
-1. 🔌 [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
-1. 👄 [Creating semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions)
-1. 💽 [Creating native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions)
-1. ⛓️ [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
-1. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
-1. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
+1. 📖 [Getting Started](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)
+1. 🔌 [Detailed Samples](https://learn.microsoft.com/en-us/semantic-kernel/get-started/detailed-samples)
+1. 💡 [Concepts](https://learn.microsoft.com/en-us/semantic-kernel/concepts/agents)
 
 Finally, refer to our API references for more details on the C# and Python APIs:
 
 - [C# API reference](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel?view=semantic-kernel-dotnet)
 - Python API reference (coming soon)
 - Java API reference (coming soon)
+
+## Visual Studio Code extension: design semantic functions with ease
+The Semantic Kernel extension for Visual Studio Code makes it easy to design and test semantic functions. The extension provides an interface for designing semantic functions and allows you to test them with the push of a button with your existing models and data.
 
 ## Join the community
 
@@ -129,7 +134,9 @@ To learn more and get started:
 
 - Read the [documentation](https://aka.ms/sk/learn)
 - Learn how to [contribute](https://learn.microsoft.com/en-us/semantic-kernel/get-started/contributing) to the project
-- Join the [Discord community](https://aka.ms/SKDiscord)
+- Ask questions in the [GitHub discussions](https://github.com/microsoft/semantic-kernel/discussions)
+- Ask questions in the [Discord community](https://aka.ms/SKDiscord)
+
 - Attend [regular office hours and SK community events](COMMUNITY.md)
 - Follow the team on our [blog](https://aka.ms/sk/blog)
 
