@@ -26,6 +26,11 @@ openai = ">=1.0"
 
 # openapi and swagger
 openapi_core = ">=0.18,<0.20"
+
+# OpenTelemetry
+opentelemetry-api = "^1.24.0"
+opentelemetry-sdk = "^1.24.0"
+
 prance = "^23.6.21.0"
 
 # templating
