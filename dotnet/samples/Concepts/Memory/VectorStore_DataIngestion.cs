@@ -4,10 +4,13 @@ using System.Text.Json;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
+using Qdrant.Client;
+using StackExchange.Redis;
 
 namespace Memory;
 
@@ -24,17 +27,18 @@ namespace Memory;
 ///
 /// For some databases in this sample (Redis &amp; Qdrant), you need a local instance of Docker running, since the associated fixtures will try and start containers in the local docker instance to run against.
 /// </summary>
+[Collection("Sequential")]
 public class VectorStore_DataIngestion(ITestOutputHelper output, VectorStoreRedisContainerFixture redisFixture, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreRedisContainerFixture>, IClassFixture<VectorStoreQdrantContainerFixture>
 {
     /// <summary>
-    /// Main entry point for example.
+    /// Example with dependency injection.
     /// </summary>
     /// <param name="databaseType">The type of database to run the example for.</param>
     [Theory]
     [InlineData("Redis")]
     [InlineData("Qdrant")]
     [InlineData("Volatile")]
-    public async Task ExampleAsync(string databaseType)
+    public async Task ExampleWithDIAsync(string databaseType)
     {
         // Use the kernel for DI purposes.
         var kernelBuilder = Kernel
@@ -70,6 +74,60 @@ public class VectorStore_DataIngestion(ITestOutputHelper output, VectorStoreRedi
 
         // Build a DataIngestor object using the DI container.
         var dataIngestor = kernel.GetRequiredService<DataIngestor>();
+
+        // Invoke the data ingestor using an appropriate key generator function for each database type.
+        // Redis and Volatile supports string keys, while Qdrant supports ulong or Guid keys, so we use a different key generator for each key type.
+        if (databaseType == "Redis" || databaseType == "Volatile")
+        {
+            await this.UpsertDataAndReadFromVectorStoreAsync(dataIngestor, () => Guid.NewGuid().ToString());
+        }
+        else if (databaseType == "Qdrant")
+        {
+            await this.UpsertDataAndReadFromVectorStoreAsync(dataIngestor, () => Guid.NewGuid());
+        }
+    }
+
+    /// <summary>
+    /// Example without dependency injection.
+    /// </summary>
+    /// <param name="databaseType">The type of database to run the example for.</param>
+    [Theory]
+    [InlineData("Redis")]
+    [InlineData("Qdrant")]
+    [InlineData("Volatile")]
+    public async Task ExampleWithoutDIAsync(string databaseType)
+    {
+        // Create an embedding generation service.
+        var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+                TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+
+        // Construt the chosen vector store and initialize docker containers via the fixtures where needed.
+        IVectorStore vectorStore;
+        if (databaseType == "Redis")
+        {
+            await redisFixture.ManualInitializeAsync();
+            var database = ConnectionMultiplexer.Connect("localhost:6379").GetDatabase();
+            vectorStore = new RedisVectorStore(database);
+        }
+        else if (databaseType == "Qdrant")
+        {
+            await qdrantFixture.ManualInitializeAsync();
+            var qdrantClient = new QdrantClient("localhost");
+            vectorStore = new QdrantVectorStore(qdrantClient);
+        }
+        else if (databaseType == "Volatile")
+        {
+            vectorStore = new VolatileVectorStore();
+        }
+        else
+        {
+            throw new ArgumentException("Invalid database type.");
+        }
+
+        // Create the DataIngestor.
+        var dataIngestor = new DataIngestor(vectorStore, textEmbeddingGenerationService);
 
         // Invoke the data ingestor using an appropriate key generator function for each database type.
         // Redis and Volatile supports string keys, while Qdrant supports ulong or Guid keys, so we use a different key generator for each key type.
