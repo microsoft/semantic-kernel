@@ -8,6 +8,11 @@ informed:
 ---
 # Java Folder Structure
 
+> [!NOTE]
+> The Semantic Kernel for Java code has moved to
+> [semantic-kernel-java](https://github.com/microsoft/semantic-kernel-java).
+> The information in this decision record is obsolete.
+
 ## Context and Problem Statement
 
 A port of the Semantic Kernel to Java is under development in the `experimental-java` branch. The folder structure being used has diverged from the .Net implementation.

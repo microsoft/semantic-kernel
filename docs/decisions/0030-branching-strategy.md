@@ -44,11 +44,17 @@ Cons:
 - Spaghetti history in Git - [GitFlow considered harmful](https://www.endoflineblog.com/gitflow-considered-harmful)
 
 # SK branching strategies
+
+> [!NOTE]
+> The Semantic Kernel for Java code has moved to
+> [semantic-kernel-java](https://github.com/microsoft/semantic-kernel-java).
+> The information regarding Java given below is obsolete.
+
 Today, the SK SDK is available in three languages: .NET, Java and Python. All of them coexist in the same Git repository, organized under corresponding folders. However, the branching strategies for those differ.
 
 For both .NET and Python versions, development takes place in short-lived topic branches that branch off the 'main' branch. These topic branches are merged back into the 'main' branch when features are considered production-ready through PR reviews, unit tests, and integration test runs. Releases are carried out directly from the 'main' branch. This approach aligns with the GitHub Flow branching strategy, with a minor deviation where releases are conducted weekly rather than being continuously deployed.
 
-The Java version of SK adheres to the Git-Flow strategy by being developed in a dedicated development branch. Topic branches are created from the development branch and merged back through pull requests after unit tests and integration test runs. Release branches are also created from the development branch and merged to both the development branch and the 'main' one when a release is considered production-ready. This strategy deviates slightly from vanilla Git-Flow in that release artifacts are generated from release branches rather than from the 'main' branch.
+~~The Java version of SK adheres to the Git-Flow strategy by being developed in a dedicated development branch. Topic branches are created from the development branch and merged back through pull requests after unit tests and integration test runs. Release branches are also created from the development branch and merged to both the development branch and the 'main' one when a release is considered production-ready. This strategy deviates slightly from vanilla Git-Flow in that release artifacts are generated from release branches rather than from the 'main' branch.~~
 
 ## Decision Drivers  
 - The strategy should be easy to implement and maintain without requiring significant investments.
