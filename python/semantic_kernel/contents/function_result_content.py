@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
-from pydantic import Field
+from pydantic import Field, field_serializer
 from typing_extensions import deprecated
 
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG, ContentTypes
@@ -31,7 +31,9 @@ class FunctionResultContent(KernelContent):
     content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(FUNCTION_RESULT_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = FUNCTION_RESULT_CONTENT_TAG
     id: str
-    result: Any
+    result: Any = Field(
+        ...,
+    )
     name: str | None = None
     function_name: str
     plugin_name: str | None = None
@@ -169,3 +171,8 @@ class FunctionResultContent(KernelContent):
     def split_name(self) -> list[str]:
         """Split the name into a plugin and function name."""
         return [self.plugin_name or "", self.function_name]
+
+    @field_serializer("result")
+    def serialize_result(self, value: Any) -> str:
+        """Serialize the result."""
+        return str(value)
