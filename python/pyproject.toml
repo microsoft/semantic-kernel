@@ -52,7 +52,7 @@ google-generativeai = { version = "^0.7.2", optional = true}
 # hugging face
 transformers = { version = "^4.28.1", extras=['torch'], optional = true}
 sentence-transformers = { version = "^2.2.2", optional = true}
-torch = {version = "2.2.2", source='pypi', optional = true}
+torch = {version = "2.2.2", optional = true}
 # mongo
 motor = { version = "^3.3.2", optional = true }
 # notebooks
@@ -77,11 +77,10 @@ types-redis = { version="^4.6.0.20240425", optional = true }
 usearch = { version = "^2.9", optional = true}
 pyarrow = { version = ">=12.0.1,<17.0.0", optional = true}
 weaviate-client = { version = ">=3.18,<5.0", optional = true}
-ruff = "0.5.2"
+pandas = {version = "^2.2.2", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = ">=3.7.1"
-ruff = ">=0.4.5"
 ipykernel = "^6.29.4"
 nbconvert = "^7.16.4"
 pytest = "^8.2.1"
@@ -90,6 +89,7 @@ snoop = "^0.4.3"
 pytest-cov = ">=5.0.0"
 mypy = ">=1.10.0"
 types-PyYAML = "^6.0.12.20240311"
+ruff = "^0.5.2"
 
 [tool.poetry.group.unit-tests]
 optional = true
@@ -104,11 +104,12 @@ ollama = "^0.2.1"
 google-generativeai = "^0.7.2"
 transformers = { version = "^4.28.1", extras=['torch']}
 sentence-transformers = { version = "^2.2.2"}
-torch = {version = "2.2.2", source='pypi'}
+torch = {version = "2.2.2"}
 # qdrant
 qdrant-client = '^1.9'
 # redis
 redis = { version = "^5.0.7", extras=['hiredis']}
+pandas = {version = "^2.2.2"}
 
 [tool.poetry.group.tests]
 optional = true
@@ -128,7 +129,7 @@ google-generativeai = "^0.7.2"
 # hugging face
 transformers = { version = "^4.28.1", extras=['torch']}
 sentence-transformers = { version = "^2.2.2"}
-torch = {version = "2.2.2", source='pypi'}
+torch = {version = "2.2.2"}
 # milvus
 pymilvus = ">=2.3,<2.4.4"
 milvus = { version = ">=2.3,<2.3.8", markers = 'sys_platform != "win32"'}
@@ -152,6 +153,7 @@ usearch = "^2.9"
 pyarrow = ">=12.0.1,<17.0.0"
 # weaviate
 weaviate-client = ">=3.18,<5.0"
+pandas = {version = "^2.2.2"}
 
 # Extras are exposed to pip, this allows a user to easily add the right dependencies to their environment
 [tool.poetry.extras]
@@ -172,16 +174,6 @@ qdrant = ["qdrant-client"]
 redis = ["redis", "types-redis"]
 usearch = ["usearch", "pyarrow"]
 weaviate = ["weaviate-client"]
-
-[[tool.poetry.source]]
-name = "pytorch"
-url = "https://download.pytorch.org/whl/cpu/"
-priority = "explicit"
-
-[[tool.poetry.source]]
-name = "pytorch-nightly"
-url = "https://download.pytorch.org/whl/nightly/cpu"
-priority = "explicit"
 
 [tool.ruff]
 line-length = 120
