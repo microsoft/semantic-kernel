@@ -135,6 +135,7 @@ public class QdrantVectorStoreRecordCollectionTests
     [Theory]
     [MemberData(nameof(TestOptions))]
     public async Task CanGetRecordWithVectorsAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
+        where TKey : notnull
     {
         var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
 
@@ -171,6 +172,7 @@ public class QdrantVectorStoreRecordCollectionTests
     [Theory]
     [MemberData(nameof(TestOptions))]
     public async Task CanGetRecordWithoutVectorsAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
+        where TKey : notnull
     {
         // Arrange.
         var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
@@ -206,6 +208,7 @@ public class QdrantVectorStoreRecordCollectionTests
     [Theory]
     [MemberData(nameof(MultiRecordTestOptions))]
     public async Task CanGetManyRecordsWithVectorsAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey[] testRecordKeys)
+        where TKey : notnull
     {
         // Arrange.
         var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
@@ -406,6 +409,7 @@ public class QdrantVectorStoreRecordCollectionTests
     [Theory]
     [MemberData(nameof(TestOptions))]
     public async Task CanUpsertRecordAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
+        where TKey : notnull
     {
         // Arrange
         var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
@@ -432,6 +436,7 @@ public class QdrantVectorStoreRecordCollectionTests
     [Theory]
     [MemberData(nameof(MultiRecordTestOptions))]
     public async Task CanUpsertManyRecordsAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey[] testRecordKeys)
+        where TKey : notnull
     {
         // Arrange
         var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
@@ -614,6 +619,7 @@ public class QdrantVectorStoreRecordCollectionTests
     }
 
     private IVectorStoreRecordCollection<T, SinglePropsModel<T>> CreateRecordCollection<T>(bool useDefinition, bool hasNamedVectors)
+        where T : notnull
     {
         var store = new QdrantVectorStoreRecordCollection<SinglePropsModel<T>>(
             this._qdrantClientMock.Object,

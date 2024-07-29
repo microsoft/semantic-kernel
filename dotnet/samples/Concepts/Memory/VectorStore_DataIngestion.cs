@@ -142,6 +142,7 @@ public class VectorStore_DataIngestion(ITestOutputHelper output, VectorStoreRedi
     }
 
     private async Task UpsertDataAndReadFromVectorStoreAsync<TKey>(DataIngestor dataIngestor, Func<TKey> uniqueKeyGenerator)
+            where TKey : notnull
     {
         // Ingest some data into the vector store.
         var upsertedKeys = await dataIngestor.ImportDataAsync(uniqueKeyGenerator);
@@ -167,6 +168,7 @@ public class VectorStore_DataIngestion(ITestOutputHelper output, VectorStoreRedi
         /// <returns>The keys of the upserted glossary entries.</returns>
         /// <typeparam name="TKey">The type of the keys in the vector store.</typeparam>
         public async Task<IEnumerable<TKey>> ImportDataAsync<TKey>(Func<TKey> uniqueKeyGenerator)
+            where TKey : notnull
         {
             // Get and create collection if it doesn't exist.
             var collection = vectorStore.GetCollection<TKey, Glossary<TKey>>("skglossary");
@@ -192,6 +194,7 @@ public class VectorStore_DataIngestion(ITestOutputHelper output, VectorStoreRedi
         /// <returns>The glossary entry.</returns>
         /// <typeparam name="TKey">The type of the keys in the vector store.</typeparam>
         public Task<Glossary<TKey>?> GetGlossaryAsync<TKey>(TKey key)
+            where TKey : notnull
         {
             var collection = vectorStore.GetCollection<TKey, Glossary<TKey>>("skglossary");
             return collection.GetAsync(key, new() { IncludeVectors = true });

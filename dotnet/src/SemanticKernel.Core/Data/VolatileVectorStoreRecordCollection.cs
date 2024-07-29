@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -14,35 +13,31 @@ namespace Microsoft.SemanticKernel.Data;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses an in memory dictionary as the underlying storage.
 /// </summary>
+/// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 [Experimental("SKEXP0001")]
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+    where TKey : notnull
     where TRecord : class
 {
     /// <summary>Internal storage for the record collection.</summary>
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _internalCollection;
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollection;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly VolatileVectorStoreRecordCollectionOptions _options;
 
-    /// <summary>The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> will access.</summary>
+    /// <summary>The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</summary>
     private readonly string _collectionName;
-
-    /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes =
-    [
-        typeof(string)
-    ];
 
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
     /// </summary>
-    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public VolatileVectorStoreRecordCollection(string collectionName, VolatileVectorStoreRecordCollectionOptions? options = default)
     {
@@ -65,18 +60,16 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
             properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), supportsMultipleVectors: true);
         }
 
-        // Validate property types and store for later use.
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
         this._keyPropertyInfo = properties.keyProperty;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
     /// </summary>
     /// <param name="internalCollection">Allows passing in the dictionary used for storage, for testing purposes.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    internal VolatileVectorStoreRecordCollection(ConcurrentDictionary<string, ConcurrentDictionary<string, object>> internalCollection, string collectionName, VolatileVectorStoreRecordCollectionOptions? options = default)
+    internal VolatileVectorStoreRecordCollection(ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection, string collectionName, VolatileVectorStoreRecordCollectionOptions? options = default)
         : this(collectionName, options)
     {
         this._internalCollection = internalCollection;
@@ -94,7 +87,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// <inheritdoc />
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        this._internalCollection.TryAdd(this._collectionName, new ConcurrentDictionary<string, object>());
+        this._internalCollection.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>());
         return Task.CompletedTask;
     }
 
@@ -115,7 +108,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         var collectionDictionary = this.GetCollectionDictionary();
 
@@ -128,7 +121,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var key in keys)
         {
@@ -142,7 +135,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(string key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(TKey key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         var collectionDictionary = this.GetCollectionDictionary();
 
@@ -151,7 +144,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<string> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         var collectionDictionary = this.GetCollectionDictionary();
 
@@ -164,18 +157,18 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public Task<string> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         var collectionDictionary = this.GetCollectionDictionary();
 
-        var key = this._keyPropertyInfo.GetValue(record) as string;
+        var key = (TKey)this._keyPropertyInfo.GetValue(record)!;
         collectionDictionary.AddOrUpdate(key!, record, (key, currentValue) => record);
 
         return Task.FromResult(key!);
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var record in records)
         {
@@ -187,7 +180,7 @@ public sealed class VolatileVectorStoreRecordCollection<TRecord> : IVectorStoreR
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>
     /// <returns>The retrieved collection dictionary.</returns>
-    private ConcurrentDictionary<string, object> GetCollectionDictionary()
+    private ConcurrentDictionary<object, object> GetCollectionDictionary()
     {
         if (!this._internalCollection.TryGetValue(this._collectionName, out var collectionDictionary))
         {
