@@ -109,7 +109,134 @@ Some observations:
 
 ### Option 1: Vertical slices with tests embedded into each slice
 
+```text
+.
+└── typescript/
+    ├── .vscode
+    ├── samples/
+    ├── src/
+    │   ├── agents/
+    │   │   ├── core
+    │   │   └── openAI
+    │   ├── connectors/
+    │   │   ├── AI/
+    │   │   │   ├── openAI/
+    │   │   │   │   ├── services/
+    │   │   │   │   │   ├── openAI.ts
+    │   │   │   │   │   └── openAI.test.ts
+    │   │   │   │   └── index.ts
+    │   │   │   ├── huggingFace/
+    │   │   │   │   ├── services/
+    │   │   │   │   │   ├── huggingFace.ts
+    │   │   │   │   │   └── huggingFace.test.ts
+    │   │   │   │   └── index.ts
+    │   │   │   └── ...
+    │   │   └── memory/
+    │   │       ├── azureCongnitiveSearch
+    │   │       └── ...
+    │   ├── core/
+    │   │   ├── kernel.ts
+    │   │   ├── kernel.test.ts
+    │   │   ├── ...
+    │   │   └── index.ts
+    │   ├── extensions/
+    │   │   ├── handlebars/
+    │   │   │   ├── handlebarsPromptTemplate.ts
+    │   │   │   ├── handlebarsPromptTemplate.test.ts
+    │   │   │   └── index.ts
+    │   │   └── liquid/
+    │   ├── functions/
+    │   │   ├── markdown/
+    │   │   ├── prompty/
+    │   │   └── ...
+    │   ├── planners/
+    │   │   ├── handlebars/
+    │   │   ├── openAI
+    │   │   └── ...
+    │   └── plugins/
+    │       ├── document
+    │       ├── memory
+    │       └── MSGraph
+    ├── index.ts
+    ├── tsconfig.js
+    ├── package.json
+    └── README.md
+```
+
+Notes:
+
+- This folder structure is based on vertical slices which brings modularity and adaptability.
+- Each parent folder represents vertical slice or a feature of Semantic Kernel (e.g. Planners) as opposed to horizontal slices where each parent folder represents a functions (e.g. unit tests, services, utils).
+- There is no dedicated tests folder. Test files are co-located next to their implementations which makes them easier to find and locate in the project.
+
+
 ### Option 2: Vertical slices with a separate tests folder
+
+This open is very similar to Option 1 but the main difference is that tests are not in the `src/` folder and there is a dedicated `tests/` parent folder:
+
+
+```
+typescript
+  .vscode
+  samples/
+  src
+    agents
+      core
+      openAI
+    connectors
+      AI
+        openAI
+          services
+            openAI.ts
+          index.ts
+        huggingFace
+          services
+            huggingFace.ts
+          index.ts
+        ...
+      memory
+        azureCongnitiveSearch
+        ...
+    core
+      kernel.ts
+      ...
+      index.ts
+    extensions
+      handlebars
+        handlebarsPromptTemplate.ts
+        index.ts
+      liquid/
+    functions
+      markdown/
+      prompty/
+      ...
+    planners
+      handlebars/
+      openAI
+      ...
+    plugins
+      document
+      memory
+      MSGraph
+    tests
+      agents/
+        ...
+      connectors
+        AI
+          openAI
+            services
+              openAI.test.ts
+      core
+        ...
+      extensions
+        handlebars
+          handlebarsPromptTemplate.test.ts
+        ...
+  index.ts
+  tsconfig.js
+  package.json
+  README.md
+  ```
 
 ## Decision Outcome
 
