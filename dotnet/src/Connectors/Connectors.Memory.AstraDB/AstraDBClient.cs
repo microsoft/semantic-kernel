@@ -83,7 +83,7 @@ namespace Microsoft.SemanticKernel.Connectors.AstraDB
 
         foreach (var collection in collectionsArray)
         {
-          yield return collection.GetString();
+          yield return collection?.GetString();
         }
       }
     }
@@ -171,7 +171,7 @@ namespace Microsoft.SemanticKernel.Connectors.AstraDB
         {
           var metadata = MemoryRecord.FromJsonMetadata(
                 json: document.Data.Document.MetadataString,
-                embedding: document.Data.Document.Vector?.ToArray() ?? new float[0], // Adjust if embedding is provided
+                embedding: document.Data.Document.Vector?.ToArray() ?? Array.Empty<float>(), // Adjust if embedding is provided
                 key: document.Data.Document.Id,
                 timestamp: null // Assuming no timestamp is available
             );

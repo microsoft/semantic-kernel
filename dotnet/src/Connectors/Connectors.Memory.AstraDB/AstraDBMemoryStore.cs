@@ -51,7 +51,6 @@ public class AstraDBMemoryStore : IMemoryStore
     return false;
   }
 
-
   /// <inheritdoc/>
   public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default) =>
     await this._astraDbClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
@@ -118,7 +117,6 @@ public class AstraDBMemoryStore : IMemoryStore
   /// <inheritdoc/>
   public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
   {
-
     await this._astraDbClient.DeleteOneAsync(collectionName, key, cancellationToken).ConfigureAwait(false);
   }
 
