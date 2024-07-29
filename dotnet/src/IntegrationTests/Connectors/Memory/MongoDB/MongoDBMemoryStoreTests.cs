@@ -81,7 +81,7 @@ public class MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture) : I
         Assert.False(await memoryStore.DoesCollectionExistAsync(collectionName));
     }
 
-    [Fact(Skip = null)]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanBatchGetAsync()
     {
         // Arrange
@@ -90,7 +90,6 @@ public class MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture) : I
         var memoryStore = this._fixture.MemoryStore;
 
         var testRecord = DataHelper.CreateRecord(Id);
-        Console.WriteLine($"Upserting record: {testRecord}");
 
         // Act
         await memoryStore.CreateCollectionAsync(collectionName);
