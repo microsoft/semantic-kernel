@@ -7,9 +7,9 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
 /// <summary>
-/// Represents a Claude Finish Reason.
+/// Represents a Anthropic Finish Reason.
 /// </summary>
-[JsonConverter(typeof(ClaudeFinishReasonConverter))]
+[JsonConverter(typeof(AnthropicFinishReasonConverter))]
 public readonly struct AnthropicFinishReason : IEquatable<AnthropicFinishReason>
 {
     /// <summary>
@@ -28,13 +28,18 @@ public readonly struct AnthropicFinishReason : IEquatable<AnthropicFinishReason>
     public static AnthropicFinishReason StopSequence { get; } = new("stop_sequence");
 
     /// <summary>
+    /// The model invoked one or more tools
+    /// </summary>
+    public static AnthropicFinishReason ToolUse { get; } = new("tool_use");
+
+    /// <summary>
     /// Gets the label of the property.
     /// Label is used for serialization.
     /// </summary>
     public string Label { get; }
 
     /// <summary>
-    /// Represents a Claude Finish Reason.
+    /// Represents a Anthropic Finish Reason.
     /// </summary>
     [JsonConstructor]
     public AnthropicFinishReason(string label)
@@ -77,7 +82,7 @@ public readonly struct AnthropicFinishReason : IEquatable<AnthropicFinishReason>
     public override string ToString() => this.Label ?? string.Empty;
 }
 
-internal sealed class ClaudeFinishReasonConverter : JsonConverter<AnthropicFinishReason>
+internal sealed class AnthropicFinishReasonConverter : JsonConverter<AnthropicFinishReason>
 {
     public override AnthropicFinishReason Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         => new(reader.GetString()!);

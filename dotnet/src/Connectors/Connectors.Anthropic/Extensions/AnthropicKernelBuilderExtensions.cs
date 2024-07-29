@@ -20,31 +20,30 @@ public static class AnthropicKernelBuilderExtensions
     /// Add Anthropic Chat Completion and Text Generation services to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
-    /// <param name="modelId">The model for chat completion.</param>
-    /// <param name="apiKey">The API key for authentication Claude API.</param>
+    /// <param name="modelId">Model identifier.</param>
+    /// <param name="apiKey">API key.</param>
     /// <param name="options">Optional options for the anthropic client</param>
-    /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="serviceId">Service identifier.</param>
     /// <returns>The updated kernel builder.</returns>
     public static IKernelBuilder AddAnthropicChatCompletion(
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
         AnthropicClientOptions? options = null,
-        string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
-        Verify.NotNull(apiKey);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new AnthropicChatCompletionService(
                 modelId: modelId,
                 apiKey: apiKey,
-                options: options,
+                options: options ?? new AnthropicClientOptions(),
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+
         return builder;
     }
 
@@ -52,34 +51,31 @@ public static class AnthropicKernelBuilderExtensions
     /// Add Anthropic Chat Completion and Text Generation services to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
-    /// <param name="modelId">The model for chat completion.</param>
-    /// <param name="endpoint">Endpoint for the chat completion model</param>
-    /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
+    /// <param name="modelId">Model identifier.</param>
+    /// <param name="bearerTokenProvider">Bearer token provider.</param>
+    /// <param name="endpoint">Vertex AI Anthropic endpoint.</param>
     /// <param name="options">Optional options for the anthropic client</param>
-    /// <param name="serviceId">The optional service ID.</param>
-    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="serviceId">Service identifier.</param>
     /// <returns>The updated kernel builder.</returns>
-    public static IKernelBuilder AddAnthropicChatCompletion(
+    public static IKernelBuilder AddAnthropicVertextAIChatCompletion(
         this IKernelBuilder builder,
         string modelId,
-        Uri endpoint,
-        Func<HttpRequestMessage, Task>? requestHandler,
-        AnthropicClientOptions? options = null,
-        string? serviceId = null,
-        HttpClient? httpClient = null)
+        Func<ValueTask<string>> bearerTokenProvider,
+        Uri? endpoint = null,
+        VertexAIAnthropicClientOptions? options = null,
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
-        Verify.NotNull(endpoint);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new AnthropicChatCompletionService(
                 modelId: modelId,
+                bearerTokenProvider: bearerTokenProvider,
+                options: options ?? new VertexAIAnthropicClientOptions(),
                 endpoint: endpoint,
-                requestHandler: requestHandler,
-                options: options,
-                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+
         return builder;
     }
 }

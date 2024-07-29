@@ -8,7 +8,7 @@ using System.Linq;
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
 /// <summary>
-/// Represents the metadata associated with a Claude response.
+/// Represents the metadata associated with a Anthropic response.
 /// </summary>
 public sealed class AnthropicMetadata : ReadOnlyDictionary<string, object?>
 {
@@ -46,20 +46,26 @@ public sealed class AnthropicMetadata : ReadOnlyDictionary<string, object?>
     /// <summary>
     /// The number of input tokens which were used.
     /// </summary>
-    public int InputTokenCount
+    public int? InputTokenCount
     {
-        get => (this.GetValueFromDictionary(nameof(this.InputTokenCount)) as int?) ?? 0;
+        get => this.GetValueFromDictionary(nameof(this.InputTokenCount)) as int?;
         internal init => this.SetValueInDictionary(value, nameof(this.InputTokenCount));
     }
 
     /// <summary>
     /// The number of output tokens which were used.
     /// </summary>
-    public int OutputTokenCount
+    public int? OutputTokenCount
     {
-        get => (this.GetValueFromDictionary(nameof(this.OutputTokenCount)) as int?) ?? 0;
+        get => this.GetValueFromDictionary(nameof(this.OutputTokenCount)) as int?;
         internal init => this.SetValueInDictionary(value, nameof(this.OutputTokenCount));
     }
+
+    /// <summary>
+    /// Represents the total count of tokens in the Anthropic response,
+    /// which is calculated by summing the input token count and the output token count.
+    /// </summary>
+    public int? TotalTokenCount => this.InputTokenCount + this.OutputTokenCount;
 
     /// <summary>
     /// Converts a dictionary to a <see cref="AnthropicMetadata"/> object.

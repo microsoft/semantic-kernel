@@ -3,14 +3,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
 internal sealed class AnthropicRequest
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Version { get; set; }
+
     /// <summary>
     /// Input messages.<br/>
     /// Our models are trained to operate on alternating user and assistant conversational turns.
@@ -22,11 +25,7 @@ internal sealed class AnthropicRequest
     /// from the content in that message. This can be used to constrain part of the model's response.
     /// </summary>
     [JsonPropertyName("messages")]
-    public IList<Message> Messages { get; set; } = null!;
-
-    [JsonPropertyName("tools")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<AnthropicToolFunctionDeclaration>? Tools { get; set; }
+    public IList<Message> Messages { get; set; } = [];
 
     [JsonPropertyName("model")]
     public string ModelId { get; set; } = null!;
@@ -35,7 +34,7 @@ internal sealed class AnthropicRequest
     public int MaxTokens { get; set; }
 
     /// <summary>
-    /// A system prompt is a way of providing context and instructions to Claude, such as specifying a particular goal or persona.
+    /// A system prompt is a way of providing context and instructions to Anthropic, such as specifying a particular goal or persona.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("system")]
@@ -80,18 +79,15 @@ internal sealed class AnthropicRequest
     [JsonPropertyName("top_k")]
     public int? TopK { get; set; }
 
-    public void AddFunction(AnthropicFunction function)
-    {
-        this.Tools ??= new List<AnthropicToolFunctionDeclaration>();
-        this.Tools.Add(function.ToFunctionDeclaration());
-    }
+    [JsonConstructor]
+    internal AnthropicRequest() { }
 
     public void AddChatMessage(ChatMessageContent message)
     {
         Verify.NotNull(this.Messages);
         Verify.NotNull(message);
 
-        this.Messages.Add(CreateClaudeMessageFromChatMessage(message));
+        this.Messages.Add(CreateAnthropicMessageFromChatMessage(message));
     }
 
     /// <summary>
@@ -107,19 +103,19 @@ internal sealed class AnthropicRequest
         bool streamingMode = false)
     {
         AnthropicRequest request = CreateRequest(chatHistory, executionSettings, streamingMode);
-        AddMessages(chatHistory, request);
+        AddMessages(chatHistory.Where(msg => msg.Role != AuthorRole.System), request);
         return request;
     }
 
-    private static void AddMessages(ChatHistory chatHistory, AnthropicRequest request)
-        => request.Messages = chatHistory.Select(CreateClaudeMessageFromChatMessage).ToList();
+    private static void AddMessages(IEnumerable<ChatMessageContent> chatHistory, AnthropicRequest request)
+        => request.Messages.AddRange(chatHistory.Select(CreateAnthropicMessageFromChatMessage));
 
-    private static Message CreateClaudeMessageFromChatMessage(ChatMessageContent message)
+    private static Message CreateAnthropicMessageFromChatMessage(ChatMessageContent message)
     {
         return new Message
         {
             Role = message.Role,
-            Contents = CreateClaudeMessages(message)
+            Contents = CreateAnthropicMessages(message)
         };
     }
 
@@ -129,7 +125,11 @@ internal sealed class AnthropicRequest
         {
             ModelId = executionSettings.ModelId ?? throw new InvalidOperationException("Model ID must be provided."),
             MaxTokens = executionSettings.MaxTokens ?? throw new InvalidOperationException("Max tokens must be provided."),
-            SystemPrompt = chatHistory.SingleOrDefault(c => c.Role == AuthorRole.System)?.Content,
+            SystemPrompt = string.Join("\n", chatHistory
+                .Where(msg => msg.Role == AuthorRole.System)
+                .SelectMany(msg => msg.Items)
+                .OfType<TextContent>()
+                .Select(content => content.Text)),
             StopSequences = executionSettings.StopSequences,
             Stream = streamingMode,
             Temperature = executionSettings.Temperature,
@@ -139,60 +139,44 @@ internal sealed class AnthropicRequest
         return request;
     }
 
-    private static List<AnthropicContent> CreateClaudeMessages(ChatMessageContent content)
+    private static List<AnthropicContent> CreateAnthropicMessages(ChatMessageContent content)
     {
-        List<AnthropicContent> messages = new();
-        switch (content)
-        {
-            case AnthropicChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
-                messages.Add(new AnthropicToolResultContent
-                {
-                    ToolId = contentWithCalledTool.CalledToolResult.ToolUseId ?? throw new InvalidOperationException("Tool ID must be provided."),
-                    Content = new AnthropicTextContent(contentWithCalledTool.CalledToolResult.FunctionResult.ToString())
-                });
-                break;
-            case AnthropicChatMessageContent { ToolCalls: not null } contentWithToolCalls:
-                messages.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
-                    new AnthropicToolCallContent
-                    {
-                        ToolId = toolCall.ToolUseId,
-                        FunctionName = toolCall.FullyQualifiedName,
-                        Arguments = JsonSerializer.SerializeToNode(toolCall.Arguments),
-                    }));
-                break;
-            default:
-                messages.AddRange(content.Items.Select(GetClaudeMessageFromKernelContent));
-                break;
-        }
-
-        if (messages.Count == 0)
-        {
-            messages.Add(new AnthropicTextContent(content.Content ?? string.Empty));
-        }
-
-        return messages;
+        return content.Items.Select(GetAnthropicMessageFromKernelContent).ToList();
     }
 
-    private static AnthropicContent GetClaudeMessageFromKernelContent(KernelContent content) => content switch
+    private static AnthropicContent GetAnthropicMessageFromKernelContent(KernelContent content) => content switch
     {
-        TextContent textContent => new AnthropicTextContent(textContent.Text ?? string.Empty),
-        ImageContent imageContent => new AnthropicImageContent(
-            type: "base64",
-            mediaType: imageContent.MimeType ?? throw new InvalidOperationException("Image content must have a MIME type."),
-            data: imageContent.Data.HasValue
-                ? Convert.ToBase64String(imageContent.Data.Value.ToArray())
-                : throw new InvalidOperationException("Image content must have a data.")
-        ),
+        TextContent textContent => new AnthropicContent("text") { Text = textContent.Text ?? string.Empty },
+        ImageContent imageContent => CreateAnthropicImageContent(imageContent),
         _ => throw new NotSupportedException($"Content type '{content.GetType().Name}' is not supported.")
     };
+
+    private static AnthropicContent CreateAnthropicImageContent(ImageContent imageContent)
+    {
+        var dataUri = DataUriParser.Parse(imageContent.DataUri);
+        if (dataUri.DataFormat?.Equals("base64", StringComparison.OrdinalIgnoreCase) != true)
+        {
+            throw new InvalidOperationException("Image content must be base64 encoded.");
+        }
+
+        return new AnthropicContent("image")
+        {
+            Source = new()
+            {
+                Type = dataUri.DataFormat,
+                MediaType = imageContent.MimeType ?? throw new InvalidOperationException("Image content must have a MIME type."),
+                Data = dataUri.Data ?? throw new InvalidOperationException("Image content must have a data.")
+            }
+        };
+    }
 
     internal sealed class Message
     {
         [JsonConverter(typeof(AuthorRoleConverter))]
         [JsonPropertyName("role")]
-        public AuthorRole Role { get; set; }
+        public AuthorRole Role { get; init; }
 
         [JsonPropertyName("content")]
-        public IList<AnthropicContent> Contents { get; set; } = null!;
+        public IList<AnthropicContent> Contents { get; init; } = null!;
     }
 }
