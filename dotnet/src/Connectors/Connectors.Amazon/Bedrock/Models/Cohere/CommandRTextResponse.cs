@@ -51,7 +51,7 @@ public class CommandRTextResponse
     /// </summary>
     [JsonPropertyName("meta")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Meta? Meta { get; set; }
+    public MetaCommandR? Meta { get; set; }
 }
 /// <summary>
 /// Citation object for array of inline citations and associated metadata for the generated reply.
@@ -101,7 +101,7 @@ public class ToolCall
 /// API usage data (only exists for streaming).
 /// </summary>
 [Serializable]
-public class Meta
+public class MetaCommandR
 {
     /// <summary>
     /// The API version. The version is in the version field.

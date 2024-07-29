@@ -5,6 +5,9 @@ using Microsoft.SemanticKernel;
 
 namespace Connectors.Amazon.Models.Mistral;
 
+/// <summary>
+/// Mistral function parameters.
+/// </summary>
 public class MistralParameters
 {
     /// <summary>

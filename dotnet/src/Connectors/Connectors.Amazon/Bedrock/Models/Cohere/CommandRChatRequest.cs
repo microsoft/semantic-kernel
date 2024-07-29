@@ -63,7 +63,7 @@ public class CohereCommandRequest : IChatCompletionRequest
     /// Defaults to OFF. Dictates how the prompt is constructed. With prompt_truncation set to AUTO_PRESERVE_ORDER, some elements from chat_history and documents will be dropped to construct a prompt that fits within the model's context length limit. During this process the order of the documents and chat history will be preserved. With prompt_truncation` set to OFF, no elements will be dropped.
     /// </summary>
     [JsonPropertyName("prompt_truncation")]
-    public string PromptTruncation { get; set; }
+    public string? PromptTruncation { get; set; }
     /// <summary>
     /// Used to reduce repetitiveness of generated tokens. The higher the value, the stronger a penalty is applied to previously present tokens, proportional to how many times they have already appeared in the prompt or prior generation.
     /// </summary>

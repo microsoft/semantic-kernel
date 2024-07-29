@@ -96,18 +96,18 @@ public class AnthropicIOService : IBedrockModelIOService
 
         var additionalModelRequestFields = new Document();
 
-        var tools = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "tools", new List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>());
-        var toolChoice = BedrockModelUtilities.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null);
+        var tools = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "tools", new List<ClaudeRequest.ClaudeTool>());
+        var toolChoice = BedrockModelUtilities.GetExtensionDataValue<ClaudeRequest.ClaudeToolChoice?>(settings?.ExtensionData, "tool_choice", null);
 
         if (modelId != "anthropic.claude-instant-v1")
         {
             additionalModelRequestFields.Add(
-                "tools", new Document(tools?.Select(t => new Document
+                "tools", new Document(tools.Select(t => new Document
                 {
                     { "name", t.Name },
                     { "description", t.Description },
                     { "input_schema", t.InputSchema }
-                }).ToList() ?? new List<Document>())
+                }).ToList())
             );
 
             additionalModelRequestFields.Add(
@@ -172,18 +172,18 @@ public class AnthropicIOService : IBedrockModelIOService
 
         var additionalModelRequestFields = new Document();
 
-        var tools = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "tools", new List<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeTool>());
-        var toolChoice = BedrockModelUtilities.GetExtensionDataValue<ClaudeRequest.ClaudeChatCompletionRequest.ClaudeToolChoice>(settings?.ExtensionData, "tool_choice", null);
+        var tools = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "tools", new List<ClaudeRequest.ClaudeTool>());
+        var toolChoice = BedrockModelUtilities.GetExtensionDataValue<ClaudeRequest.ClaudeToolChoice?>(settings?.ExtensionData, "tool_choice", null);
 
         if (modelId != "anthropic.claude-instant-v1")
         {
             additionalModelRequestFields.Add(
-                "tools", new Document(tools?.Select(t => new Document
+                "tools", new Document(tools.Select(t => new Document
                 {
                     { "name", t.Name },
                     { "description", t.Description },
                     { "input_schema", t.InputSchema }
-                }).ToList() ?? new List<Document>())
+                }).ToList())
             );
 
             additionalModelRequestFields.Add(

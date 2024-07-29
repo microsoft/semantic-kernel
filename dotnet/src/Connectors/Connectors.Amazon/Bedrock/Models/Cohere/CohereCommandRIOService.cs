@@ -12,7 +12,9 @@ namespace Connectors.Amazon.Models.Cohere;
 /// <summary>
 /// Input-output service for Cohere Command R.
 /// </summary>
+// ReSharper disable InconsistentNaming
 public class CohereCommandRIOService : IBedrockModelIOService
+// ReSharper restore InconsistentNaming
 {
     // Define constants for default values
     private const float DefaultTemperature = 0.3f;
@@ -38,14 +40,14 @@ public class CohereCommandRIOService : IBedrockModelIOService
         var topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "p", (double?)DefaultTopP);
         var topK = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "k", (double?)DefaultTopK);
         var maxTokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", (int?)DefaultMaxTokens);
-        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop_sequences", null);
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop_sequences", []);
         var promptTruncation = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation);
         var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "frequency_penalty", (double?)DefaultFrequencyPenalty);
         var presencePenalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "presence_penalty", (double?)DefaultPresencePenalty);
         var seed = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "seed", (int?)DefaultSeed);
         var returnPrompt = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "return_prompt", (bool?)DefaultReturnPrompt);
-        var tools = BedrockModelUtilities.GetExtensionDataValue<List<CommandRTextRequest.Tool>>(executionSettings?.ExtensionData, "tools", null);
-        var toolResults = BedrockModelUtilities.GetExtensionDataValue<List<CommandRTextRequest.ToolResult>>(executionSettings?.ExtensionData, "tool_results", null);
+        var tools = BedrockModelUtilities.GetExtensionDataValue<List<CommandRTextRequest.Tool>>(executionSettings?.ExtensionData, "tools", []);
+        var toolResults = BedrockModelUtilities.GetExtensionDataValue<List<CommandRTextRequest.ToolResult>?>(executionSettings?.ExtensionData, "tool_results", null);
         var rawPrompting = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "raw_prompting", (bool?)DefaultRawPrompting);
 
         var requestBody = new CommandRTextRequest.CommandRTextGenerationRequest
@@ -123,7 +125,7 @@ public class CohereCommandRIOService : IBedrockModelIOService
                 { "presence_penalty", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) },
                 { "seed", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed) },
                 { "return_prompt", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt) },
-                { "stop_sequences", new Document(BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null)?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
+                { "stop_sequences", new Document(BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []).Select(s => new Document(s)).ToList()) },
                 { "raw_prompting", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", DefaultRawPrompting) }
             },
             AdditionalModelResponseFieldPaths = new List<string>(),
@@ -173,7 +175,7 @@ public class CohereCommandRIOService : IBedrockModelIOService
             { "presence_penalty", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) },
             { "seed", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed) },
             { "return_prompt", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt) },
-            { "stop_sequences", new Document(BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", null)?.Select(s => new Document(s)).ToList() ?? new List<Document>()) },
+            { "stop_sequences", new Document(BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []).Select(s => new Document(s)).ToList()) },
             { "raw_prompting", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", false) }
         };
 

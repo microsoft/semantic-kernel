@@ -113,7 +113,7 @@ public abstract class MistralAIToolCallBehavior
 
     /// <summary>Configures the <paramref name="request"/> with any tools this <see cref="MistralAIToolCallBehavior"/> provides.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> used for the operation. This can be queried to determine what tools to provide into the <paramref name="request"/>.</param>
-    /// <param name="request">The destination <see cref="ChatCompletionRequest"/> to configure.</param>
+    /// <param name="request">The destination</param>
     internal abstract void ConfigureRequest(Kernel? kernel, MistralRequest.MistralChatCompletionRequest request);
 
     /// <summary>

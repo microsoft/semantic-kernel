@@ -98,17 +98,18 @@ public static class CommandRTextRequest
         [JsonPropertyName("return_prompt")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? ReturnPrompt { get; set; }
+
         /// <summary>
         /// A list of available tools (functions) that the model may suggest invoking before producing a text response. When tools is passed (without tool_results), the text field in the response will be "" and the tool_calls field in the response will be populated with a list of tool calls that need to be made. If no calls need to be made, the tool_calls array will be empty.
         /// </summary>
         [JsonPropertyName("tools")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public IList<Tool>? Tools { get; set; }
         /// <summary>
         /// A list of results from invoking tools recommended by the model in the previous chat turn. Results are used to produce a text response and are referenced in citations. When using tool_results, tools must be passed as well. Each tool_result contains information about how it was invoked, as well as a list of outputs in the form of dictionaries. Cohere’s unique fine-grained citation logic requires the output to be a list. In case the output is just one item, such as {"status": 200}, you should still wrap it inside a list.
         /// </summary>
         [JsonPropertyName("tool_results")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public IList<ToolResult>? ToolResults { get; set; }
         /// <summary>
         /// A list of stop sequences. After a stop sequence is detected, the model stops generating further tokens.
@@ -226,7 +227,7 @@ public static class CommandRTextRequest
         /// Outputs from the tool call.
         /// </summary>
         [JsonPropertyName("outputs")]
-        public required IList<Dictionary<string, object>> Outputs { get; set; }
+        public required List<Dictionary<string, string>> Outputs { get; set; }
     }
     /// <summary>
     /// Tool call object to be passed into the tool call.
@@ -244,5 +245,11 @@ public static class CommandRTextRequest
         /// </summary>
         [JsonPropertyName("parameters")]
         public required Dictionary<string, string> Parameters { get; set; }
+
+        /// <summary>
+        /// GenerationID.
+        /// </summary>
+        [JsonPropertyName("generation_id")]
+        public required string GenerationId { get; set; }
     }
 }

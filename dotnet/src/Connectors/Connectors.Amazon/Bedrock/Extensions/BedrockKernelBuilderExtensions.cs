@@ -29,7 +29,7 @@ public static class BedrockKernelBuilderExtensions
         string modelId,
         IAmazonBedrockRuntime bedrockApi)
     {
-        builder.Services.AddSingleton<IChatCompletionService>(services =>
+        builder.Services.AddSingleton<IChatCompletionService>(_ =>
         {
             try
             {
@@ -71,6 +71,14 @@ public static class BedrockKernelBuilderExtensions
 
         return builder;
     }
+    /// <summary>
+    /// Chat completion service that uses AWS credentials to authenticate.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="modelId"></param>
+    /// <param name="awsCredentials"></param>
+    /// <returns></returns>
+    /// <exception cref="KernelException"></exception>
     public static IKernelBuilder AddBedrockChatCompletionService(
         this IKernelBuilder builder,
         string modelId,
@@ -99,7 +107,16 @@ public static class BedrockKernelBuilderExtensions
 
         return builder;
     }
-
+    /// <summary>
+    /// Chat completion service that uses access keys and token.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="modelId"></param>
+    /// <param name="awsAccessKeyId"></param>
+    /// <param name="awsSecretAccessKey"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    /// <exception cref="KernelException"></exception>
     public static IKernelBuilder AddBedrockChatCompletionService(
         this IKernelBuilder builder,
         string modelId,
@@ -142,7 +159,7 @@ public static class BedrockKernelBuilderExtensions
         string modelId,
         IAmazonBedrockRuntime bedrockApi)
     {
-        builder.Services.AddSingleton<ITextGenerationService>(services =>
+        builder.Services.AddSingleton<ITextGenerationService>(_ =>
         {
             try
             {

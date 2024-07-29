@@ -114,7 +114,7 @@ public class Completion
     /// The data, which contains the text (string) and tokens (list of TokenData) for the completion.
     /// </summary>
     [JsonPropertyName("data")]
-    public Data? Data { get; set; }
+    public DataJurassic? Data { get; set; }
     /// <summary>
     /// This nested data structure explains why the generation process was halted for a specific completion.
     /// </summary>
@@ -125,7 +125,7 @@ public class Completion
 /// The data, which contains the text (string) and tokens (list of TokenData) for the completion
 /// </summary>
 [Serializable]
-public class Data
+public class DataJurassic
 {
     /// <summary>
     /// The text string from the data provided.
