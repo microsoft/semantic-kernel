@@ -263,5 +263,3 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
 
     #endregion
 }
-
-
