@@ -199,7 +199,7 @@ This open is very similar to Option 1 but the main difference is that tests are 
     │   │   │   │   └── index.ts
     │   │   │   └── ...
     │   │   └── memory/
-    │   │       ├── azureCongnitiveSearch
+    │   │       ├── azureCognitiveSearch
     │   │       └── ...
     │   ├── core/
     │   │   ├── kernel.ts
