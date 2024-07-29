@@ -1,11 +1,13 @@
 ---
 status: proposed
-contact: amehrabani_microsoft
+contact: afshinm
 date: 2024-07-29
-deciders: markwallace-microsoft, rogerbarreto, westey-m, amehrabani_microsoft
+deciders: markwallace-microsoft, rogerbarreto, westey-m, afshinm
 ---
 
 # TypeScript Project Structure
+
+This document proposes a folder structure for the TypeScript implementation of Semantic Kernel.
 
 ## Context and Problem Statement
 
@@ -163,11 +165,12 @@ Some observations:
     └── README.md
 ```
 
-Notes:
+**_Notes:_**
 
 - This folder structure is based on vertical slices which brings modularity and adaptability.
 - Each parent folder represents vertical slice or a feature of Semantic Kernel (e.g. Planners) as opposed to horizontal slices where each parent folder represents a functions (e.g. unit tests, services, utils).
 - There is no dedicated tests folder. Test files are co-located next to their implementations which makes them easier to find and locate in the project.
+- Each component exposes its public APIs using the `index.ts` file and other files should only depend on the component, instead of its internal implementations (e.g. `import { openAI } from "connectors/ai/openAI";`)
 
 
 ### Option 2: Vertical slices with a separate tests folder
@@ -176,67 +179,68 @@ This open is very similar to Option 1 but the main difference is that tests are 
 
 
 ```
-typescript
-  .vscode
-  samples/
-  src
-    agents
-      core
-      openAI
-    connectors
-      AI
-        openAI
-          services
-            openAI.ts
-          index.ts
-        huggingFace
-          services
-            huggingFace.ts
-          index.ts
-        ...
-      memory
-        azureCongnitiveSearch
-        ...
-    core
-      kernel.ts
-      ...
-      index.ts
-    extensions
-      handlebars
-        handlebarsPromptTemplate.ts
-        index.ts
-      liquid/
-    functions
-      markdown/
-      prompty/
-      ...
-    planners
-      handlebars/
-      openAI
-      ...
-    plugins
-      document
-      memory
-      MSGraph
-    tests
-      agents/
-        ...
-      connectors
-        AI
-          openAI
-            services
-              openAI.test.ts
-      core
-        ...
-      extensions
-        handlebars
-          handlebarsPromptTemplate.test.ts
-        ...
-  index.ts
-  tsconfig.js
-  package.json
-  README.md
-  ```
+.
+└── typescript/
+    ├── .vscode
+    ├── samples/
+    ├── src/
+    │   ├── agents/
+    │   │   ├── core
+    │   │   └── openAI
+    │   ├── connectors/
+    │   │   ├── AI/
+    │   │   │   ├── openAI/
+    │   │   │   │   ├── services/
+    │   │   │   │   │   └── openAI.ts
+    │   │   │   │   └── index.ts
+    │   │   │   ├── huggingFace/
+    │   │   │   │   ├── services/
+    │   │   │   │   │   └── huggingFace.ts
+    │   │   │   │   └── index.ts
+    │   │   │   └── ...
+    │   │   └── memory/
+    │   │       ├── azureCongnitiveSearch
+    │   │       └── ...
+    │   ├── core/
+    │   │   ├── kernel.ts
+    │   │   ├── ...
+    │   │   └── index.ts
+    │   ├── extensions/
+    │   │   ├── handlebars/
+    │   │   │   ├── handlebarsPromptTemplate.ts
+    │   │   │   └── index.ts
+    │   │   └── liquid/
+    │   ├── functions/
+    │   │   ├── markdown/
+    │   │   ├── prompty/
+    │   │   └── ...
+    │   ├── planners/
+    │   │   ├── handlebars/
+    │   │   ├── openAI
+    │   │   └── ...
+    │   └── plugins/
+    │       ├── document
+    │       ├── memory
+    │       └── MSGraph
+    ├── tests/
+    │   ├── agents/
+    │   │   └── ...
+    │   ├── connectors/
+    │   │   └── AI/
+    │   │       └── openAI/
+    │   │           └── services/
+    │   │               └── openAI.test.ts
+    │   ├── core/
+    │   │   └── ...
+    │   └── extensions/
+    │       ├── handlebars/
+    │       │   └── handlebarsPromptTemplate.test.ts
+    │       └── ...
+    ├── index.ts
+    ├── tsconfig.js
+    ├── package.json
+    └── README.md
+```
 
 ## Decision Outcome
 
