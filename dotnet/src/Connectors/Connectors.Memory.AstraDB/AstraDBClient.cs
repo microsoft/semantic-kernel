@@ -83,7 +83,7 @@ namespace Microsoft.SemanticKernel.Connectors.AstraDB
 
         foreach (var collection in collectionsArray)
         {
-          yield return collection?.GetString();
+          yield return collection.GetString();
         }
       }
     }

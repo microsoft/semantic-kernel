@@ -1,5 +1,3 @@
-
-
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -11,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AstraDB;
 using Xunit;
 using Xunit.Abstractions;
-
 
 namespace SemanticKernel.IntegrationTests.Connectors.AstraDB;
 public class AstraDBMemoryStoreTests : IAsyncLifetime
@@ -35,11 +32,10 @@ public class AstraDBMemoryStoreTests : IAsyncLifetime
         .AddUserSecrets<AstraDBMemoryStoreTests>()
         .Build();
 
-    this._keySpace = configuration["AstraDB:KeySpace"];
-    this._apiEndpoint = configuration["AstraDB:ApiEndpoint"];
-    this._appToken = configuration["AstraDB:AppToken"];
-    this._vectorSize = int.Parse(configuration["AstraDB:VectorSize"]);
-
+    this._keySpace = configuration["AstraDB:KeySpace"] ?? "default_keyspace";
+    this._apiEndpoint = configuration["AstraDB:ApiEndpoint"] ?? "";
+    this._appToken = configuration["AstraDB:AppToken"] ?? "";
+    this._vectorSize = int.Parse(configuration["AstraDB:VectorSize"] ?? "1536");
   }
   public async Task DisposeAsync()
   {
@@ -180,7 +176,7 @@ public class AstraDBMemoryStoreTests : IAsyncLifetime
   }
 
   [Fact(Skip = SkipReason)]
-  public async Task GetAsync_ReturnsNullIfCollectionDoesNotExist()
+  public async Task GetAsyncReturnsNullIfCollectionDoesNotExist()
   {
     AstraDBMemoryStore astraDbMemoryStore = this.CreateMemoryStore();
     // Arrange: Use a non-existing collection name
@@ -285,7 +281,6 @@ public class AstraDBMemoryStoreTests : IAsyncLifetime
     )).ToList();
 
     await foreach (var key in astraDbMemoryStore.UpsertBatchAsync(collection, testRecords)) { }
-
 
     // Act: Delete the records
     var keys = testRecords.Select(r => r.Key).ToList();
@@ -395,17 +390,14 @@ public class AstraDBMemoryStoreTests : IAsyncLifetime
 
   #region private ================================================================================
 
-  private string _apiEndpoint = null;
-  private string _appToken = null;
-  private string _keySpace;
+  private string _apiEndpoint = "";
+  private string _appToken = "";
+  private string _keySpace = "";
   private int _vectorSize;
-
 
   private AstraDBMemoryStore CreateMemoryStore()
   {
     return new AstraDBMemoryStore(this._apiEndpoint!, this._appToken, this._keySpace, this._vectorSize);
   }
-
-  private readonly AstraDBMemoryStore _astraDbMemoryStore;
   #endregion
 }
