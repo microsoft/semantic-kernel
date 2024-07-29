@@ -22,9 +22,9 @@ namespace Memory;
 /// 3. Ingest some data into the vector store.
 /// 4. Read the data back from the vector store.
 ///
-/// To run this sample, you need a local instance of Docker running, since the associated fixtures will try and start Redis and Qdrant containers in the local docker instance.
+/// For some databases in this sample (Redis &amp; Qdrant), you need a local instance of Docker running, since the associated fixtures will try and start containers in the local docker instance to run against.
 /// </summary>
-public class VectorStore_DataIngestion(ITestOutputHelper output) : BaseTest(output), IClassFixture<VectorStoreRedisContainerFixture>, IClassFixture<VectorStoreQdrantContainerFixture>
+public class VectorStore_DataIngestion(ITestOutputHelper output, VectorStoreRedisContainerFixture redisFixture, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreRedisContainerFixture>, IClassFixture<VectorStoreQdrantContainerFixture>
 {
     /// <summary>
     /// Main entry point for example.
@@ -46,13 +46,15 @@ public class VectorStore_DataIngestion(ITestOutputHelper output) : BaseTest(outp
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
 
-        // Register the chosen vector store with the DI container.
+        // Register the chosen vector store with the DI container and initialize docker containers via the fixtures where needed.
         if (databaseType == "Redis")
         {
+            await redisFixture.ManualInitializeAsync();
             kernelBuilder.AddRedisVectorStore("localhost:6379");
         }
         else if (databaseType == "Qdrant")
         {
+            await qdrantFixture.ManualInitializeAsync();
             kernelBuilder.AddQdrantVectorStore("localhost");
         }
         else if (databaseType == "Volatile")
@@ -84,10 +86,10 @@ public class VectorStore_DataIngestion(ITestOutputHelper output) : BaseTest(outp
     private async Task UpsertDataAndReadFromVectorStoreAsync<TKey>(DataIngestor dataIngestor, Func<TKey> uniqueKeyGenerator)
     {
         // Ingest some data into the vector store.
-        var upsertedKeys = dataIngestor.ImportDataAsync(uniqueKeyGenerator).Result;
+        var upsertedKeys = await dataIngestor.ImportDataAsync(uniqueKeyGenerator);
 
         // Get one of the upserted records.
-        var upsertedRecord = dataIngestor.GetGlossaryAsync(upsertedKeys.First()).Result;
+        var upsertedRecord = await dataIngestor.GetGlossaryAsync(upsertedKeys.First());
 
         // Write upserted keys and one of the upserted records to the console.
         Console.WriteLine($"Upserted keys: {string.Join(", ", upsertedKeys)}");
@@ -114,10 +116,11 @@ public class VectorStore_DataIngestion(ITestOutputHelper output) : BaseTest(outp
 
             // Create glossary entries and generate embeddings for them.
             var glossaryEntries = CreateGlossaryEntries(uniqueKeyGenerator).ToList();
-            await Parallel.ForEachAsync(glossaryEntries, async (entry, cancellationToken) =>
+            var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
             {
-                entry.DefinitionEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Definition, cancellationToken: cancellationToken);
-            });
+                entry.DefinitionEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Definition);
+            }));
+            await Task.WhenAll(tasks);
 
             // Upsert the glossary entries into the collection and return their keys.
             var upsertedKeys = glossaryEntries.Select(x => collection.UpsertAsync(x));
@@ -183,7 +186,7 @@ public class VectorStore_DataIngestion(ITestOutputHelper output) : BaseTest(outp
         [VectorStoreRecordData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = nameof(DefinitionEmbedding))]
+        [VectorStoreRecordData]
         public string Definition { get; set; }
 
         [VectorStoreRecordVector(1536)]

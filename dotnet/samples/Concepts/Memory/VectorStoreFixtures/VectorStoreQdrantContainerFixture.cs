@@ -14,6 +14,10 @@ public class VectorStoreQdrantContainerFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+    }
+
+    public async Task ManualInitializeAsync()
+    {
         // Connect to docker and start the docker container.
         using var dockerClientConfiguration = new DockerClientConfiguration();
         this._dockerClient = dockerClientConfiguration.CreateClient();
