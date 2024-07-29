@@ -31,6 +31,7 @@ public interface IVectorStore
     /// <seealso cref="VectorStoreRecordDataAttribute"/>
     /// <seealso cref="VectorStoreRecordVectorAttribute"/>
     IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        where TKey : notnull
         where TRecord : class;
 
     /// <summary>
