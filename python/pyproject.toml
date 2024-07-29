@@ -50,8 +50,9 @@ chromadb = { version = ">=0.4.13,<0.6.0", optional = true}
 # google
 google-generativeai = { version = "^0.7.2", optional = true}
 # hugging face
-transformers = { version = "^4.28.1", extras=["torch"], optional = true}
+transformers = { version = "^4.28.1", extras=['torch'], optional = true}
 sentence-transformers = { version = "^2.2.2", optional = true}
+torch = {version = "2.2.2", source='pypi', optional = true}
 # mongo
 motor = { version = "^3.3.2", optional = true }
 # notebooks
@@ -101,8 +102,9 @@ azure-cosmos = "^4.7.0"
 mistralai = "^0.4.1"
 ollama = "^0.2.1"
 google-generativeai = "^0.7.2"
-transformers = { version = "^4.28.1", extras=["torch"]}
-sentence-transformers = "^2.2.2"
+transformers = { version = "^4.28.1", extras=['torch']}
+sentence-transformers = { version = "^2.2.2"}
+torch = {version = "2.2.2", source='pypi'}
 # qdrant
 qdrant-client = '^1.9'
 # redis
@@ -124,8 +126,9 @@ chromadb = ">=0.4.13,<0.6.0"
 # google
 google-generativeai = "^0.7.2"
 # hugging face
-transformers = { version = "^4.28.1", extras=["torch"]}
-sentence-transformers = "^2.2.2"
+transformers = { version = "^4.28.1", extras=['torch']}
+sentence-transformers = { version = "^2.2.2"}
+torch = {version = "2.2.2", source='pypi'}
 # milvus
 pymilvus = ">=2.3,<2.4.4"
 milvus = { version = ">=2.3,<2.3.8", markers = 'sys_platform != "win32"'}
@@ -152,12 +155,12 @@ weaviate-client = ">=3.18,<5.0"
 
 # Extras are exposed to pip, this allows a user to easily add the right dependencies to their environment
 [tool.poetry.extras]
-all = ["transformers", "sentence-transformers", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "google", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
+all = ["transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "google", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
 
 azure = ["azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "msgraph-sdk"]
 chromadb = ["chromadb"]
 google = ["google-generativeai"]
-hugging_face = ["transformers", "sentence-transformers"]
+hugging_face = ["transformers", "sentence-transformers", "torch"]
 milvus = ["pymilvus", "milvus"]
 mistralai = ["mistralai"]
 ollama = ["ollama"]
@@ -169,6 +172,16 @@ qdrant = ["qdrant-client"]
 redis = ["redis", "types-redis"]
 usearch = ["usearch", "pyarrow"]
 weaviate = ["weaviate-client"]
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cpu/"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name = "pytorch-nightly"
+url = "https://download.pytorch.org/whl/nightly/cpu"
+priority = "explicit"
 
 [tool.ruff]
 line-length = 120

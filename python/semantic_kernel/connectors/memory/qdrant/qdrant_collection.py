@@ -16,7 +16,6 @@ from qdrant_client.models import PointStruct, VectorParams
 
 from semantic_kernel.connectors.memory.qdrant.const import DISTANCE_FUNCTION_MAP, TYPE_MAPPER_VECTOR
 from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
-from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.data.vector_store_record_fields import VectorStoreRecordVectorField
@@ -27,6 +26,7 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 logger: logging.Logger = logging.getLogger(__name__)
 
