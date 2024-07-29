@@ -22,7 +22,7 @@ An agent is expected to be able to support two interaction patterns:
 1. **Direct Invocation ("No Chat"):**
 
     The caller is able to directly invoke any single agent without any intervening machinery or infrastructure.
-    For different agents to take turns in a coveration using direct invocation, the caller is expected to invoke each agent per turn.
+    For different agents to take turns in a conversation using direct invocation, the caller is expected to invoke each agent per turn.
     Coordinating interaction between different agent types must also be explicitly managed by the caller.
 
 2. **Agent Chat:**  
