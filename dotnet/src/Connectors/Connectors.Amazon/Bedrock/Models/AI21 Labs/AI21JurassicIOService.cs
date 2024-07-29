@@ -26,24 +26,16 @@ public class AI21JurassicIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        var temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature);
-        var topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "topP", (double?)DefaultTopP);
-        var maxTokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "maxTokens", (int?)DefaultMaxTokens);
-        var stopSequences = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stopSequences", new List<string>());
-        var countPenalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "countPenalty", new AI21JurassicRequest.CountPenalty());
-        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "presencePenalty", new AI21JurassicRequest.PresencePenalty());
-        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "frequencyPenalty", new AI21JurassicRequest.FrequencyPenalty());
-
-        var requestBody = new AI21JurassicRequest.AI21JurassicTextGenerationRequest()
+        var requestBody = new
         {
-            Prompt = prompt,
-            Temperature = temperature,
-            TopP = topP,
-            MaxTokens = maxTokens,
-            StopSequences = stopSequences,
-            CountPenalty = countPenalty,
-            PresencePenalty = presencePenalty,
-            FrequencyPenalty = frequencyPenalty
+            prompt,
+            temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature),
+            topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "topP", (double?)DefaultTopP),
+            maxTokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "maxTokens", (int?)DefaultMaxTokens),
+            stopSequences = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stopSequences", new List<string>()),
+            countPenalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "countPenalty", new Dictionary<string, object>()),
+            presencePenalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "presencePenalty", new Dictionary<string, object>()),
+            frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "frequencyPenalty", new Dictionary<string, object>())
         };
 
         return requestBody;
@@ -55,26 +47,18 @@ public class AI21JurassicIOService : IBedrockModelIOService
     /// <returns></returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
-        using (var memoryStream = new MemoryStream())
+        using var memoryStream = new MemoryStream();
+        response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
+        memoryStream.Position = 0;
+        using var reader = new StreamReader(memoryStream);
+        var responseBody = JsonSerializer.Deserialize<AI21JurassicResponse>(reader.ReadToEnd());
+        var textContents = new List<TextContent>();
+        if (responseBody?.Completions is not { Count: > 0 })
         {
-            response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
-            memoryStream.Position = 0;
-            using (var reader = new StreamReader(memoryStream))
-            {
-                var responseBody = JsonSerializer.Deserialize<AI21JurassicResponse>(reader.ReadToEnd());
-                var textContents = new List<TextContent>();
-
-                if (responseBody?.Completions != null && responseBody.Completions.Count > 0)
-                {
-                    foreach (var completion in responseBody.Completions)
-                    {
-                        textContents.Add(new TextContent(completion.Data?.Text));
-                    }
-                }
-
-                return textContents;
-            }
+            return textContents;
         }
+        textContents.AddRange(responseBody.Completions.Select(completion => new TextContent(completion.Data?.Text)));
+        return textContents;
     }
     /// <summary>
     /// Jurassic does not support converse.

@@ -53,23 +53,19 @@ public class AmazonIOService : IBedrockModelIOService
     /// <returns></returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
-        using (var memoryStream = new MemoryStream())
+        using var memoryStream = new MemoryStream();
+        response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
+        memoryStream.Position = 0;
+        using var reader = new StreamReader(memoryStream);
+        var responseBody = JsonSerializer.Deserialize<TitanTextResponse>(reader.ReadToEnd());
+        var textContents = new List<TextContent>();
+        if (responseBody?.Results is not { Count: > 0 })
         {
-            response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
-            memoryStream.Position = 0;
-            using (var reader = new StreamReader(memoryStream))
-            {
-                var responseBody = JsonSerializer.Deserialize<TitanTextResponse>(reader.ReadToEnd());
-                var textContents = new List<TextContent>();
-
-                if (responseBody?.Results != null && responseBody.Results.Count > 0)
-                {
-                    string? outputText = responseBody.Results[0].OutputText;
-                    textContents.Add(new TextContent(outputText));
-                }
-                return textContents;
-            }
+            return textContents;
         }
+        string? outputText = responseBody.Results[0].OutputText;
+        textContents.Add(new TextContent(outputText));
+        return textContents;
     }
     /// <summary>
     /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Amazon Titan.
@@ -141,7 +137,7 @@ public class AmazonIOService : IBedrockModelIOService
             System = systemMessages,
             InferenceConfig = inferenceConfig,
             AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>()
+            AdditionalModelResponseFieldPaths = []
         };
 
         return converseStreamRequest;

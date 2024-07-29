@@ -50,6 +50,7 @@ public class BedrockChatCompletionClient<TRequest, TResponse>
         ConverseRequest converseRequest,
         CancellationToken cancellationToken = default)
     {
+        // Check that the text from the latest message in the request object is not empty.
         string? text = converseRequest.Messages?[^1]?.Content?[0]?.Text;
         if (string.IsNullOrWhiteSpace(text))
         {

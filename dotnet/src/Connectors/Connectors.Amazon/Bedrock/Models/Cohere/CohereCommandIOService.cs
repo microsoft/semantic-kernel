@@ -31,30 +31,19 @@ public class CohereCommandIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        var temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature);
-        var topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "p", (double?)DefaultTopP);
-        var topK = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "k", (double?)DefaultTopK);
-        var maxTokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", (int?)DefaultMaxTokens);
-        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop_sequences", []);
-        var returnLikelihoods = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "return_likelihoods", DefaultReturnLikelihoods);
-        var stream = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stream", (bool?)DefaultStream);
-        var numGenerations = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "num_generations", (int?)DefaultNumGenerations);
-        var logitBias = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "logit_bias", new Dictionary<int, double>());
-        var truncate = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "truncate", DefaultTruncate);
-
-        var requestBody = new CommandTextRequest.CohereCommandTextGenerationRequest
+        var requestBody = new
         {
-            Prompt = prompt,
-            Temperature = temperature,
-            TopP = topP,
-            TopK = topK,
-            MaxTokens = maxTokens,
-            StopSequences = stopSequences,
-            ReturnLikelihoods = returnLikelihoods,
-            Stream = stream,
-            NumGenerations = numGenerations,
-            LogitBias = logitBias,
-            Truncate = truncate
+            prompt,
+            temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature),
+            p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "p", (double?)DefaultTopP),
+            k = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "k", (double?)DefaultTopK),
+            max_tokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", (int?)DefaultMaxTokens),
+            stop_sequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop_sequences", []),
+            return_likelihoods = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "return_likelihoods", DefaultReturnLikelihoods),
+            stream = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stream", (bool?)DefaultStream),
+            num_generations = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "num_generations", (int?)DefaultNumGenerations),
+            logit_bias = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "logit_bias", new Dictionary<int, double>()),
+            truncate = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "truncate", DefaultTruncate)
         };
 
         return requestBody;
@@ -66,28 +55,18 @@ public class CohereCommandIOService : IBedrockModelIOService
     /// <returns>A list of text content objects as required by the semantic kernel.</returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
-        using (var memoryStream = new MemoryStream())
+        using var memoryStream = new MemoryStream();
+        response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
+        memoryStream.Position = 0;
+        using var reader = new StreamReader(memoryStream);
+        var responseBody = JsonSerializer.Deserialize<CommandTextResponse>(reader.ReadToEnd());
+        var textContents = new List<TextContent>();
+        if (responseBody?.Generations is not { Count: > 0 })
         {
-            response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
-            memoryStream.Position = 0;
-            using (var reader = new StreamReader(memoryStream))
-            {
-                var responseBody = JsonSerializer.Deserialize<CommandTextResponse>(reader.ReadToEnd());
-                var textContents = new List<TextContent>();
-
-                if (responseBody?.Generations != null && responseBody.Generations.Count > 0)
-                {
-                    foreach (var generation in responseBody.Generations)
-                    {
-                        if (!string.IsNullOrEmpty(generation.Text))
-                        {
-                            textContents.Add(new TextContent(generation.Text));
-                        }
-                    }
-                }
-                return textContents;
-            }
+            return textContents;
         }
+        textContents.AddRange(from generation in responseBody.Generations where !string.IsNullOrEmpty(generation.Text) select new TextContent(generation.Text));
+        return textContents;
     }
     /// <summary>
     /// Extracts the text generation streaming output from the Cohere Command response object structure.

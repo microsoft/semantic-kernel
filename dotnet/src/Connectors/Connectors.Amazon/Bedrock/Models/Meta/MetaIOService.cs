@@ -15,8 +15,8 @@ namespace Connectors.Amazon.Models.Meta;
 public class MetaIOService : IBedrockModelIOService
 {
     // Define constants for default values
-    private const double DefaultTemperature = 0.5;
-    private const double DefaultTopP = 0.9;
+    private const double DefaultTemperature = 0.5f;
+    private const double DefaultTopP = 0.9f;
     private const int DefaultMaxGenLen = 512;
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Meta Llama.
@@ -27,16 +27,12 @@ public class MetaIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        var temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature);
-        var topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", (double?)DefaultTopP);
-        var maxGenLen = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_gen_len", (int?)DefaultMaxGenLen);
-
-        var requestBody = new LlamaTextRequest.LlamaTextGenerationRequest
+        var requestBody = new
         {
-            Prompt = prompt,
-            Temperature = temperature,
-            TopP = topP,
-            MaxGenLen = maxGenLen
+            prompt,
+            temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", DefaultTemperature),
+            top_p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", DefaultTopP),
+            max_gen_len = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_gen_len", (int?)DefaultMaxGenLen)
         };
 
         return requestBody;
@@ -48,23 +44,17 @@ public class MetaIOService : IBedrockModelIOService
     /// <returns></returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
-        using (var memoryStream = new MemoryStream())
+        using var memoryStream = new MemoryStream();
+        response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
+        memoryStream.Position = 0;
+        using var reader = new StreamReader(memoryStream);
+        var responseBody = JsonSerializer.Deserialize<LlamaTextResponse>(reader.ReadToEnd());
+        var textContents = new List<TextContent>();
+        if (!string.IsNullOrEmpty(responseBody?.Generation))
         {
-            response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
-            memoryStream.Position = 0;
-            using (var reader = new StreamReader(memoryStream))
-            {
-                var responseBody = JsonSerializer.Deserialize<LlamaTextResponse>(reader.ReadToEnd());
-                var textContents = new List<TextContent>();
-
-                if (!string.IsNullOrEmpty(responseBody?.Generation))
-                {
-                    textContents.Add(new TextContent(responseBody.Generation));
-                }
-
-                return textContents;
-            }
+            textContents.Add(new TextContent(responseBody.Generation));
         }
+        return textContents;
     }
     /// <summary>
     /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Meta Llama.

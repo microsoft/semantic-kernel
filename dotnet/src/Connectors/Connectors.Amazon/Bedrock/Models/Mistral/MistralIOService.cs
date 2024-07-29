@@ -61,25 +61,18 @@ public class MistralIOService : IBedrockModelIOService
     /// <returns>A list of text content objects as required by the semantic kernel.</returns>
     public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
     {
-        using (var memoryStream = new MemoryStream())
+        using var memoryStream = new MemoryStream();
+        response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
+        memoryStream.Position = 0;
+        using var reader = new StreamReader(memoryStream);
+        var responseBody = JsonSerializer.Deserialize<MistralRequest.MistralTextResponse>(reader.ReadToEnd());
+        var textContents = new List<TextContent>();
+        if (responseBody?.Outputs is not { Count: > 0 })
         {
-            response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
-            memoryStream.Position = 0;
-            using (var reader = new StreamReader(memoryStream))
-            {
-                var responseBody = JsonSerializer.Deserialize<MistralRequest.MistralTextResponse>(reader.ReadToEnd());
-                var textContents = new List<TextContent>();
-
-                if (responseBody?.Outputs != null && responseBody.Outputs.Count > 0)
-                {
-                    foreach (var output in responseBody.Outputs)
-                    {
-                        textContents.Add(new TextContent(output.Text));
-                    }
-                }
-                return textContents;
-            }
+            return textContents;
         }
+        textContents.AddRange(responseBody.Outputs.Select(output => new TextContent(output.Text)));
+        return textContents;
     }
     /// <summary>
     /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Mistral.
