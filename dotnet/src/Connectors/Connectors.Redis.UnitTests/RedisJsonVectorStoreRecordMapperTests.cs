@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Data;
@@ -18,7 +19,7 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("Key");
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("Key", JsonSerializerOptions.Default);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
@@ -34,20 +35,66 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     }
 
     [Fact]
+    public void MapsAllFieldsFromDataToStorageModelWithCustomSerializerOptions()
+    {
+        // Arrange.
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("key", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        // Act.
+        var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
+
+        // Assert.
+        Assert.NotNull(actual.Node);
+        Assert.Equal("test key", actual.Key);
+        var jsonObject = actual.Node.AsObject();
+        Assert.Equal("data 1", jsonObject?["data1"]?.ToString());
+        Assert.Equal("data 2", jsonObject?["data2"]?.ToString());
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, jsonObject?["vector1"]?.AsArray().GetValues<float>().ToArray());
+        Assert.Equal(new float[] { 5, 6, 7, 8 }, jsonObject?["vector2"]?.AsArray().GetValues<float>().ToArray());
+    }
+
+    [Fact]
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("Key");
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("Key", JsonSerializerOptions.Default);
 
         // Act.
-        var actual = sut.MapFromStorageToDataModel(("test key", CreateJsonNode()), new());
+        var jsonObject = new JsonObject();
+        jsonObject.Add("Data1", "data 1");
+        jsonObject.Add("Data2", "data 2");
+        jsonObject.Add("Vector1", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()));
+        jsonObject.Add("Vector2", new JsonArray(new[] { 5, 6, 7, 8 }.Select(x => JsonValue.Create(x)).ToArray()));
+        var actual = sut.MapFromStorageToDataModel(("test key", jsonObject), new());
 
         // Assert.
         Assert.NotNull(actual);
         Assert.Equal("test key", actual.Key);
         Assert.Equal("data 1", actual.Data1);
         Assert.Equal("data 2", actual.Data2);
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector1!.Value.ToArray());
+        Assert.Equal(new float[] { 5, 6, 7, 8 }, actual.Vector2!.Value.ToArray());
+    }
 
+    [Fact]
+    public void MapsAllFieldsFromStorageToDataModelWithCustomSerializerOptions()
+    {
+        // Arrange.
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("key", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        // Act.
+        var jsonObject = new JsonObject();
+        jsonObject.Add("data1", "data 1");
+        jsonObject.Add("data2", "data 2");
+        jsonObject.Add("vector1", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()));
+        jsonObject.Add("vector2", new JsonArray(new[] { 5, 6, 7, 8 }.Select(x => JsonValue.Create(x)).ToArray()));
+        var actual = sut.MapFromStorageToDataModel(("test key", jsonObject), new());
+
+        // Assert.
+        Assert.NotNull(actual);
+        Assert.Equal("test key", actual.Key);
+        Assert.Equal("data 1", actual.Data1);
+        Assert.Equal("data 2", actual.Data2);
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector1!.Value.ToArray());
         Assert.Equal(new float[] { 5, 6, 7, 8 }, actual.Vector2!.Value.ToArray());
     }
@@ -63,16 +110,6 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
             Vector2 = new float[] { 5, 6, 7, 8 },
             NotAnnotated = "notAnnotated",
         };
-    }
-
-    private static JsonObject CreateJsonNode()
-    {
-        var jsonObject = new JsonObject();
-        jsonObject.Add("Data1", "data 1");
-        jsonObject.Add("Data2", "data 2");
-        jsonObject.Add("Vector1", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()));
-        jsonObject.Add("Vector2", new JsonArray(new[] { 5, 6, 7, 8 }.Select(x => JsonValue.Create(x)).ToArray()));
-        return jsonObject;
     }
 
     private sealed class MultiPropsModel
