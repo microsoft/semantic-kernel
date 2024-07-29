@@ -108,46 +108,6 @@ public static class BedrockKernelBuilderExtensions
         return builder;
     }
     /// <summary>
-    /// Chat completion service that uses access keys and token.
-    /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="modelId"></param>
-    /// <param name="awsAccessKeyId"></param>
-    /// <param name="awsSecretAccessKey"></param>
-    /// <param name="token"></param>
-    /// <returns></returns>
-    /// <exception cref="KernelException"></exception>
-    public static IKernelBuilder AddBedrockChatCompletionService(
-        this IKernelBuilder builder,
-        string modelId,
-        string awsAccessKeyId,
-        string awsSecretAccessKey,
-        string token)
-    {
-        // Create AWSOptions with the provided credentials
-        var awsOptions = new AWSOptions
-        {
-            Credentials = new SessionAWSCredentials(awsAccessKeyId, awsSecretAccessKey, token)
-        };
-        // Add IAmazonBedrockRuntime service client to the DI container
-        builder.Services.AddAWSService<IAmazonBedrockRuntime>(awsOptions);
-
-        builder.Services.AddSingleton<IChatCompletionService>(services =>
-        {
-            try
-            {
-                var bedrockRuntime = services.GetRequiredService<IAmazonBedrockRuntime>();
-                return new BedrockChatCompletionService(modelId, bedrockRuntime);
-            }
-            catch (Exception ex)
-            {
-                throw new KernelException($"An error occurred while initializing the BedrockChatCompletionService: {ex.Message}", ex);
-            }
-        });
-
-        return builder;
-    }
-    /// <summary>
     /// Add Amazon Bedrock Text Generation service to the kernel builder using IAmazonBedrockRuntime object.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
@@ -217,46 +177,6 @@ public static class BedrockKernelBuilderExtensions
         var awsOptions = new AWSOptions
         {
             Credentials = awsCredentials
-        };
-        // Add IAmazonBedrockRuntime service client to the DI container
-        builder.Services.AddAWSService<IAmazonBedrockRuntime>(awsOptions);
-
-        builder.Services.AddSingleton<ITextGenerationService>(services =>
-        {
-            try
-            {
-                var bedrockRuntime = services.GetRequiredService<IAmazonBedrockRuntime>();
-                return new BedrockTextGenerationService(modelId, bedrockRuntime);
-            }
-            catch (Exception ex)
-            {
-                throw new KernelException($"An error occurred while initializing the BedrockTextGenerationService: {ex.Message}", ex);
-            }
-        });
-
-        return builder;
-    }
-    /// <summary>
-    /// Add Amazon Bedrock Chat Completion service to the kernel builder using secret keys and tokens.
-    /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="modelId"></param>
-    /// <param name="awsAccessKeyId"></param>
-    /// <param name="awsSecretAccessKey"></param>
-    /// <param name="token"></param>
-    /// <returns></returns>
-    /// <exception cref="KernelException"></exception>
-    public static IKernelBuilder AddBedrockTextGenerationService(
-        this IKernelBuilder builder,
-        string modelId,
-        string awsAccessKeyId,
-        string awsSecretAccessKey,
-        string token)
-    {
-        // Create AWSOptions with the provided credentials
-        var awsOptions = new AWSOptions
-        {
-            Credentials = new SessionAWSCredentials(awsAccessKeyId, awsSecretAccessKey, token)
         };
         // Add IAmazonBedrockRuntime service client to the DI container
         builder.Services.AddAWSService<IAmazonBedrockRuntime>(awsOptions);
