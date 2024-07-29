@@ -14,10 +14,17 @@ public class VectorStoreRedisContainerFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        // Connect to docker and start the docker container.
-        using var dockerClientConfiguration = new DockerClientConfiguration();
-        this._dockerClient = dockerClientConfiguration.CreateClient();
-        this._redisContainerId = await VectorStoreInfra.SetupRedisContainerAsync(this._dockerClient);
+    }
+
+    public async Task ManualInitializeAsync()
+    {
+        if (this._redisContainerId == null)
+        {
+            // Connect to docker and start the docker container.
+            using var dockerClientConfiguration = new DockerClientConfiguration();
+            this._dockerClient = dockerClientConfiguration.CreateClient();
+            this._redisContainerId = await VectorStoreInfra.SetupRedisContainerAsync(this._dockerClient);
+        }
     }
 
     public async Task DisposeAsync()
