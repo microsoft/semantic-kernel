@@ -23,6 +23,7 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel> : IVe
     /// Initializes a new instance of the <see cref="RedisJsonVectorStoreRecordMapper{TConsumerDataModel}"/> class.
     /// </summary>
     /// <param name="keyFieldJsonPropertyName">The name of the key field on the model when serialized to json.</param>
+    /// <param name="jsonSerializerOptions">The JSON serializer options to use when converting between the data model and the Redis record.</param>
     public RedisJsonVectorStoreRecordMapper(string keyFieldJsonPropertyName, JsonSerializerOptions jsonSerializerOptions)
     {
         Verify.NotNullOrWhiteSpace(keyFieldJsonPropertyName);
