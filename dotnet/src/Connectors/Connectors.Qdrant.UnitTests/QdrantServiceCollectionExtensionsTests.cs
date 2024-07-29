@@ -28,7 +28,7 @@ public class QdrantServiceCollectionExtensionsTests
         this._serviceCollection.AddSingleton<QdrantClient>(qdrantClient);
 
         // Act.
-        this._serviceCollection.AddQdrantVectorStoreWithRegisteredClient();
+        this._serviceCollection.AddQdrantVectorStore();
 
         // Assert.
         this.AssertVectorStoreCreated();

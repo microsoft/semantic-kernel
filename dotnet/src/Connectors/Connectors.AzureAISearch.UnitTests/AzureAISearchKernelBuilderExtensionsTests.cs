@@ -32,7 +32,7 @@ public class AzureAISearchKernelBuilderExtensionsTests
         this._kernelBuilder.Services.AddSingleton<SearchIndexClient>(Mock.Of<SearchIndexClient>());
 
         // Act.
-        this._kernelBuilder.AddAzureAISearchVectorStoreWithRegisteredClient();
+        this._kernelBuilder.AddAzureAISearchVectorStore();
 
         // Assert.
         this.AssertVectorStoreCreated();

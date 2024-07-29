@@ -28,7 +28,7 @@ public class RedisServiceCollectionExtensionsTests
         this._serviceCollection.AddSingleton<IDatabase>(Mock.Of<IDatabase>());
 
         // Act.
-        this._serviceCollection.AddRedisVectorStoreWithRegisteredClient();
+        this._serviceCollection.AddRedisVectorStore();
 
         // Assert.
         this.AssertVectorStoreCreated();

@@ -18,7 +18,7 @@ public static class QdrantServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IServiceCollection AddQdrantVectorStoreWithRegisteredClient(this IServiceCollection services, QdrantVectorStoreOptions? options = default, string? serviceId = default)
+    public static IServiceCollection AddQdrantVectorStore(this IServiceCollection services, QdrantVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are not constructing the QdrantClient, add the IVectorStore as transient, since we
         // cannot make assumptions about how QdrantClient is being managed.

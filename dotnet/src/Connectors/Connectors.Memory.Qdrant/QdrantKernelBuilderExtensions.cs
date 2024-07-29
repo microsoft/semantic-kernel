@@ -17,9 +17,9 @@ public static class QdrantKernelBuilderExtensions
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IKernelBuilder AddQdrantVectorStoreWithRegisteredClient(this IKernelBuilder builder, QdrantVectorStoreOptions? options = default, string? serviceId = default)
+    public static IKernelBuilder AddQdrantVectorStore(this IKernelBuilder builder, QdrantVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddQdrantVectorStoreWithRegisteredClient(options, serviceId);
+        builder.Services.AddQdrantVectorStore(options, serviceId);
         return builder;
     }
     /// <summary>

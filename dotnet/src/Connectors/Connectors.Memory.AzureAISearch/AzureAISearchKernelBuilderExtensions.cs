@@ -20,9 +20,9 @@ public static class AzureAISearchKernelBuilderExtensions
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IKernelBuilder AddAzureAISearchVectorStoreWithRegisteredClient(this IKernelBuilder builder, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
+    public static IKernelBuilder AddAzureAISearchVectorStore(this IKernelBuilder builder, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddAzureAISearchVectorStoreWithRegisteredClient(options, serviceId);
+        builder.Services.AddAzureAISearchVectorStore(options, serviceId);
         return builder;
     }
 

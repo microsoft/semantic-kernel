@@ -29,7 +29,7 @@ public class RedisKernelBuilderExtensionsTests
         this._kernelBuilder.Services.AddSingleton<IDatabase>(Mock.Of<IDatabase>());
 
         // Act.
-        this._kernelBuilder.AddRedisVectorStoreWithRegisteredClient();
+        this._kernelBuilder.AddRedisVectorStore();
 
         // Assert.
         this.AssertVectorStoreCreated();

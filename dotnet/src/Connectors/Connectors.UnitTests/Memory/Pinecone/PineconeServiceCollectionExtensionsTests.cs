@@ -28,7 +28,7 @@ public class PineconeServiceCollectionExtensionsTests
         this._serviceCollection.AddSingleton<Sdk.PineconeClient>(client);
 
         // Act.
-        this._serviceCollection.AddPineconeVectorStoreWithRegisteredClient();
+        this._serviceCollection.AddPineconeVectorStore();
 
         // Assert.
         this.AssertVectorStoreCreated();

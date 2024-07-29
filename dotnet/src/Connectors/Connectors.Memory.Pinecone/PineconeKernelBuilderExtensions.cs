@@ -17,9 +17,9 @@ public static class PineconeKernelBuilderExtensions
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IKernelBuilder AddPineconeVectorStoreWithRegisteredClient(this IKernelBuilder builder, PineconeVectorStoreOptions? options = default, string? serviceId = default)
+    public static IKernelBuilder AddPineconeVectorStore(this IKernelBuilder builder, PineconeVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddPineconeVectorStoreWithRegisteredClient(options, serviceId);
+        builder.Services.AddPineconeVectorStore(options, serviceId);
         return builder;
     }
 
