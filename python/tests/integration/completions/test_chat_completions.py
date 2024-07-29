@@ -18,6 +18,10 @@ from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inferenc
 )
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
+    GoogleAIChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import GoogleAIChatCompletion
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
@@ -111,6 +115,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
         "mistral_ai": (MistralAIChatCompletion() if mistral_ai_setup else None, MistralAIChatPromptExecutionSettings),
         "ollama": (OllamaChatCompletion(), OllamaChatPromptExecutionSettings),
+        "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
     }
 
 
@@ -390,6 +395,10 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
+            marks=pytest.mark.skip(
+                reason="Possible regression on the Azure AI Inference side when"
+                " returning tool calls in streaming responses. Investigating..."
+            ),
             id="azure_ai_inference_tool_call_auto",
         ),
         pytest.param(
@@ -452,6 +461,39 @@ pytestmark = pytest.mark.parametrize(
             ["Hello", "well"],
             marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
+        ),
+        pytest.param(
+            "google_ai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            id="google_ai_text_input",
+        ),
+        pytest.param(
+            "google_ai",
+            {
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
+                ),
+            ],
+            ["house", "germany"],
+            id="google_ai_image_input_file",
         ),
     ],
 )

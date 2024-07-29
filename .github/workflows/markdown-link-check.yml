@@ -3,7 +3,7 @@ name: Check .md links
 on:
   workflow_dispatch:
   pull_request:
-    branches: ["main", "java-development"]
+    branches: ["main"]
 
 permissions:
   contents: read

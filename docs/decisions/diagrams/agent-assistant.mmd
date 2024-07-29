@@ -1,0 +1,43 @@
+classDiagram
+
+    Agent
+    AgentChannel
+    Agent <|-- KernelAgent
+    
+    KernelAgent <|-- OpenAIAssistantAgent
+    OpenAIAssistantAgent --> OpenAIAssistantChannel
+    OpenAIAssistantAgent --> OpenAIAssistantDefinition  
+    class OpenAIAssistantAgent {
+        <<Final>>
+        +bool IsDeleted
+        +IReadOnlyList~string~ FileIds
+        ~IReadOnlyList~ToolDefinition~ Tools
+        +IReadOnlyDictionary~string,string~ Metadata
+        +Task~OpenAIAssistantAgent~ CreateAsync(Kernel kernel, OpenAIAssistantConfiguration config, OpenAIAssistantDefinition definition)$
+        +IAsyncEnumerable~OpenAIAssistantDefinition~ ListDefinitionsAsync(OpenAIAssistantConfiguration config,  maxResults = 100, string? lastId = null)$
+        +Task~OpenAIAssistantAgent~ RetrieveAsync(Kernel kernel, OpenAIAssistantConfiguration config, string id)$
+        +Task DeleteAsync()
+        #IEnumerable~String~ GetChannelKeys()
+        #Task~AgentChannel~ CreateChannelAsync()
+    }
+
+    AgentChannel <|-- OpenAIAssistantChannel
+    class OpenAIAssistantChannel {
+        <<Final>>
+        -string _threadId
+        #IAsyncEnumerable~ChatMessageContent~ InvokeAsync(OpenAIAssistantAgent agent)
+        #IAsyncEnumerable~ChatMessageContent~ GetHistoryAsync()
+        #Task ReceiveAsync(IReadOnlyList~ChatMessageContent~ history)
+    }
+
+    class OpenAIAssistantDefinition {
+        +string? ModelId
+        +string? Description
+        +string? Id
+        +string? Instructions
+        +string? Name
+        +bool EnableCodeInterpreter
+        +bool EnableRetrieval
+        +IEnumerable<string>? FileIds
+        +IReadOnlyDictionary<string, string>? Metadata
+    }

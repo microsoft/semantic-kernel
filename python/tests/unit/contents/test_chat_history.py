@@ -572,3 +572,21 @@ def test_to_from_file(chat_history: ChatHistory, tmp_path):
     assert chat_history_2.messages[2] == chat_history.messages[2]
     assert chat_history_2.messages[3] == chat_history.messages[3]
     assert chat_history_2.messages[4] == chat_history.messages[4]
+
+
+def test_chat_history_serialize(chat_history: ChatHistory):
+    class CustomResultClass:
+        def __init__(self, result):
+            self.result = result
+
+        def __str__(self) -> str:
+            return self.result
+
+    custom_result = CustomResultClass(result="CustomResultTestValue")
+    chat_history.add_system_message("You are an AI assistant")
+    chat_history.add_user_message("What is the weather in Seattle?")
+    chat_history.add_assistant_message(
+        [FunctionCallContent(id="test1", name="WeatherPlugin-GetWeather", arguments='{{ "location": "Seattle" }}')]
+    )
+    chat_history.add_tool_message([FunctionResultContent(id="test1", result=custom_result)])
+    assert "CustomResultTestValue" in chat_history.serialize()

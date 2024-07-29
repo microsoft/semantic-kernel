@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from typing import TYPE_CHECKING, Any
 
 from azure.ai.inference.aio import EmbeddingsClient
@@ -8,15 +9,20 @@ from azure.core.credentials import AzureKeyCredential
 from numpy import array, ndarray
 from pydantic import ValidationError
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceEmbeddingPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_base import AzureAIInferenceBase
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.telemetry import SEMANTIC_KERNEL_USER_AGENT
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -98,7 +104,13 @@ class AzureAIInferenceTextEmbedding(EmbeddingGeneratorBase, AzureAIInferenceBase
             dimensions=settings.dimensions if settings else None,
             encoding_format=settings.encoding_format if settings else None,
             input_type=settings.input_type if settings else None,
-            kwargs=kwargs,
         )
 
         return array([array(item.embedding) for item in response.data])
+
+    @override
+    def get_prompt_execution_settings_class(
+        self,
+    ) -> type["PromptExecutionSettings"]:
+        """Get the request settings class."""
+        return AzureAIInferenceEmbeddingPromptExecutionSettings

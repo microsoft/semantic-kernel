@@ -9,9 +9,9 @@ from pydantic import ConfigDict, Field, validate_call
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
-from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.const import USER_AGENT
 from semantic_kernel.exceptions import ServiceInitializationError
+from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 logger: logging.Logger = logging.getLogger(__name__)
 

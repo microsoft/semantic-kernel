@@ -187,7 +187,8 @@ through prompt_template_config or in the prompt_template."
         if isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
             try:
                 texts = await prompt_render_result.ai_service.get_text_contents(
-                    unescape(prompt_render_result.rendered_prompt), prompt_render_result.execution_settings
+                    prompt=unescape(prompt_render_result.rendered_prompt),
+                    settings=prompt_render_result.execution_settings,
                 )
             except Exception as exc:
                 raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc

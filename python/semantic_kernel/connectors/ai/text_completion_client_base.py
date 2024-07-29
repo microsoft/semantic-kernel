@@ -40,7 +40,7 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             TextContent: A string or list of strings representing the response(s) from the LLM.
         """
-        result = await self.get_text_contents(prompt, settings)
+        result = await self.get_text_contents(prompt=prompt, settings=settings)
         if result:
             return result[0]
         # this should not happen, should error out before returning an empty list

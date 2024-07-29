@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -432,7 +433,12 @@ public abstract class KernelFunction
         // visible to a consumer if that's needed.
         if (ex is OperationCanceledException cancelEx)
         {
-            throw new KernelFunctionCanceledException(kernel, kernelFunction, arguments, result, cancelEx);
+            KernelFunctionCanceledException kernelEx = new(kernel, kernelFunction, arguments, result, cancelEx);
+            foreach (DictionaryEntry entry in cancelEx.Data)
+            {
+                kernelEx.Data.Add(entry.Key, entry.Value);
+            }
+            throw kernelEx;
         }
     }
 }

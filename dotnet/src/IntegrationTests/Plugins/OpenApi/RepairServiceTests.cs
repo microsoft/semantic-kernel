@@ -201,6 +201,8 @@ public class RepairServiceTests
         catch (KernelFunctionCanceledException ex)
         {
             Assert.Equal("The invocation of function 'updateRepair' was canceled.", ex.Message);
+            Assert.Equal("Patch", ex.Data["http.request.method"]);
+            Assert.Equal("https://piercerepairsapi.azurewebsites.net/repairs", ex.Data["url.full"]);
             Assert.NotNull(ex.InnerException);
             Assert.Equal("Patch", ex.InnerException.Data["http.request.method"]);
             Assert.Equal("https://piercerepairsapi.azurewebsites.net/repairs", ex.InnerException.Data["url.full"]);

@@ -1,2 +1,0 @@
-[THOUGHT] To answer this question, we need to find out the year of the first world cup and then divide it by 2. We can use a web search to find the year of the first world cup and then perform the necessary calculation.
-[ACTION] {{"action": "WebSearch.search","action_variables": {"query":"first world cup year","count":"1"}}}

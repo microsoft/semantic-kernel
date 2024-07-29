@@ -80,8 +80,8 @@ async def test_completion(mock_completion_client, model_id, service_id, prompt, 
 
     ollama = OllamaTextCompletion(ai_model_id=model_id)
     response = await ollama.get_text_contents(
-        prompt,
-        OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
+        prompt=prompt,
+        settings=OllamaTextPromptExecutionSettings(service_id=service_id, options=default_options),
     )
 
     assert response[0].text == "test_response"

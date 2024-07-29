@@ -44,8 +44,7 @@ internal static class AssistantThreadActions
     /// <throws><see cref="KernelException"/> if a system message is present, without taking any other action</throws>
     public static async Task CreateMessageAsync(AssistantsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(message.Content) ||
-            message.Items.Any(i => i is FunctionCallContent))
+        if (message.Items.Any(i => i is FunctionCallContent))
         {
             return;
         }
@@ -76,8 +75,6 @@ internal static class AssistantThreadActions
             messages = await client.GetMessagesAsync(threadId, limit: 100, ListSortOrder.Descending, after: lastId, null, cancellationToken).ConfigureAwait(false);
             foreach (ThreadMessage message in messages)
             {
-                AuthorRole role = new(message.Role.ToString());
-
                 string? assistantName = null;
                 if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
                     !agentNames.TryGetValue(message.AssistantId, out assistantName))
@@ -91,23 +88,11 @@ internal static class AssistantThreadActions
 
                 assistantName ??= message.AssistantId;
 
-                foreach (MessageContent item in message.ContentItems)
+                ChatMessageContent content = GenerateMessageContent(assistantName, message);
+
+                if (content.Items.Count > 0)
                 {
-                    ChatMessageContent? content = null;
-
-                    if (item is MessageTextContent contentMessage)
-                    {
-                        content = GenerateTextMessageContent(assistantName, role, contentMessage);
-                    }
-                    else if (item is MessageImageFileContent contentImage)
-                    {
-                        content = GenerateImageFileContent(assistantName, role, contentImage);
-                    }
-
-                    if (content is not null)
-                    {
-                        yield return content;
-                    }
+                    yield return content;
                 }
 
                 lastId = message.Id;
@@ -247,29 +232,13 @@ internal static class AssistantThreadActions
 
                     if (message is not null)
                     {
-                        AuthorRole role = new(message.Role.ToString());
+                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message);
 
-                        foreach (MessageContent itemContent in message.ContentItems)
+                        if (content.Items.Count > 0)
                         {
-                            ChatMessageContent? content = null;
+                            ++messageCount;
 
-                            // Process text content
-                            if (itemContent is MessageTextContent contentMessage)
-                            {
-                                content = GenerateTextMessageContent(agent.GetName(), role, contentMessage);
-                            }
-                            // Process image content
-                            else if (itemContent is MessageImageFileContent contentImage)
-                            {
-                                content = GenerateImageFileContent(agent.GetName(), role, contentImage);
-                            }
-
-                            if (content is not null)
-                            {
-                                ++messageCount;
-
-                                yield return (IsVisible: true, Message: content);
-                            }
+                            yield return (IsVisible: true, Message: content);
                         }
                     }
                 }
@@ -375,6 +344,38 @@ internal static class AssistantThreadActions
         }
     }
 
+    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message)
+    {
+        AuthorRole role = new(message.Role.ToString());
+
+        ChatMessageContent content =
+            new(role, content: null)
+            {
+                AuthorName = assistantName,
+            };
+
+        foreach (MessageContent itemContent in message.ContentItems)
+        {
+            // Process text content
+            if (itemContent is MessageTextContent contentMessage)
+            {
+                content.Items.Add(new TextContent(contentMessage.Text.Trim()));
+
+                foreach (MessageTextAnnotation annotation in contentMessage.Annotations)
+                {
+                    content.Items.Add(GenerateAnnotationContent(annotation));
+                }
+            }
+            // Process image content
+            else if (itemContent is MessageImageFileContent contentImage)
+            {
+                content.Items.Add(new FileReferenceContent(contentImage.FileId));
+            }
+        }
+
+        return content;
+    }
+
     private static AnnotationContent GenerateAnnotationContent(MessageTextAnnotation annotation)
     {
         string? fileId = null;
@@ -397,47 +398,11 @@ internal static class AssistantThreadActions
             };
     }
 
-    private static ChatMessageContent GenerateImageFileContent(string agentName, AuthorRole role, MessageImageFileContent contentImage)
-    {
-        return
-            new ChatMessageContent(
-                role,
-                [
-                    new FileReferenceContent(contentImage.FileId)
-                ])
-            {
-                AuthorName = agentName,
-            };
-    }
-
-    private static ChatMessageContent? GenerateTextMessageContent(string agentName, AuthorRole role, MessageTextContent contentMessage)
-    {
-        ChatMessageContent? messageContent = null;
-
-        string textContent = contentMessage.Text.Trim();
-
-        if (!string.IsNullOrWhiteSpace(textContent))
-        {
-            messageContent =
-                new(role, textContent)
-                {
-                    AuthorName = agentName
-                };
-
-            foreach (MessageTextAnnotation annotation in contentMessage.Annotations)
-            {
-                messageContent.Items.Add(GenerateAnnotationContent(annotation));
-            }
-        }
-
-        return messageContent;
-    }
-
     private static ChatMessageContent GenerateCodeInterpreterContent(string agentName, RunStepCodeInterpreterToolCall contentCodeInterpreter)
     {
         return
             new ChatMessageContent(
-                AuthorRole.Tool,
+                AuthorRole.Assistant,
                 [
                     new TextContent(contentCodeInterpreter.Input)
                 ])

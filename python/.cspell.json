@@ -41,6 +41,10 @@
         "kernelfunction",
         "skprompt",
         "templating",
-        "vectordb"
+        "vectordb",
+        "generativeai",
+        "genai",
+        "protos",
+        "endregion"
     ]
 }

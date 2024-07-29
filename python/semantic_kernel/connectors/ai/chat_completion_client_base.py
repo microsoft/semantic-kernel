@@ -50,7 +50,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             A string representing the response from the LLM.
         """
-        results = await self.get_chat_message_contents(chat_history, settings, **kwargs)
+        results = await self.get_chat_message_contents(chat_history=chat_history, settings=settings, **kwargs)
         if results:
             return results[0]
         # this should not happen, should error out before returning an empty list
