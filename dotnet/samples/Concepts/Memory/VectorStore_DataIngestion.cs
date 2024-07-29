@@ -103,7 +103,7 @@ public class VectorStore_DataIngestion(ITestOutputHelper output, VectorStoreRedi
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
 
-        // Construt the chosen vector store and initialize docker containers via the fixtures where needed.
+        // Construct the chosen vector store and initialize docker containers via the fixtures where needed.
         IVectorStore vectorStore;
         if (databaseType == "Redis")
         {
