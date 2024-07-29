@@ -4,12 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBMongoDB;
 
 [Collection("AzureCosmosDBMongoDBVectorStoreCollection")]
-public class AzureCosmosDBMongoDBVectorStoreTests(ITestOutputHelper output, AzureCosmosDBMongoDBVectorStoreFixture fixture)
+public class AzureCosmosDBMongoDBVectorStoreTests(AzureCosmosDBMongoDBVectorStoreFixture fixture)
 {
     private const string? SkipReason = "Azure CosmosDB MongoDB cluster is required";
 
@@ -23,12 +22,8 @@ public class AzureCosmosDBMongoDBVectorStoreTests(ITestOutputHelper output, Azur
         var collectionNames = await sut.ListCollectionNamesAsync().ToListAsync();
 
         // Assert
-        Assert.Equal(3, collectionNames.Count);
-        Assert.Contains("hotels", collectionNames);
-        Assert.Contains("contacts", collectionNames);
-        Assert.Contains("addresses", collectionNames);
-
-        // Output
-        output.WriteLine(string.Join(",", collectionNames));
+        Assert.Contains("sk-test-hotels", collectionNames);
+        Assert.Contains("sk-test-contacts", collectionNames);
+        Assert.Contains("sk-test-addresses", collectionNames);
     }
 }

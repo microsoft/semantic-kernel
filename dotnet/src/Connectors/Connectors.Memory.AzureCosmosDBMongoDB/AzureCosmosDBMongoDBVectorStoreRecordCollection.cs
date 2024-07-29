@@ -27,6 +27,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "AzureCosmosDBMongoDB";
 
+    /// <summary>Reserved key property name in Azure CosmosDB MongoDB.</summary>
+    private const string MongoReservedKeyPropertyName = "_id";
+
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
@@ -222,7 +225,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
         var storageModel = this.MapToStorageModel(OperationName, record);
 
-        var key = storageModel[this._keyStoragePropertyName].AsString;
+        var key = storageModel[MongoReservedKeyPropertyName].AsString;
 
         return this.RunOperationAsync(OperationName, async () =>
         {
@@ -261,8 +264,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         // Create separate index for each vector property
         foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>())
         {
-            // Use index name same as vector property name
-            var indexName = this._storagePropertyNames[property.PropertyName];
+            // Use index name same as vector property name with underscore
+            var indexName = $"{this._storagePropertyNames[property.PropertyName]}_";
 
             // If index already exists, proceed to the next vector property
             if (uniqueIndexes.Contains(indexName))
@@ -294,20 +297,23 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             indexArray.Add(indexDocument);
         }
 
-        var createIndexCommand = new BsonDocument
+        if (indexArray.Count > 0)
         {
-            { "createIndexes", collectionName },
-            { "indexes", indexArray }
-        };
+            var createIndexCommand = new BsonDocument
+            {
+                { "createIndexes", collectionName },
+                { "indexes", indexArray }
+            };
 
-        await this._mongoDatabase.RunCommandAsync<BsonDocument>(createIndexCommand, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await this._mongoDatabase.RunCommandAsync<BsonDocument>(createIndexCommand, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private FilterDefinition<BsonDocument> GetFilterById(string id)
-        => Builders<BsonDocument>.Filter.Eq(document => document[this._keyStoragePropertyName], id);
+        => Builders<BsonDocument>.Filter.Eq(document => document[MongoReservedKeyPropertyName], id);
 
     private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<string> ids)
-        => Builders<BsonDocument>.Filter.In(document => document[this._keyStoragePropertyName].ToString(), ids);
+        => Builders<BsonDocument>.Filter.In(document => document[MongoReservedKeyPropertyName].ToString(), ids);
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {
@@ -329,6 +335,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
     private TRecord MapToDataModel(string operationName, BsonDocument storageModel)
     {
+        // Replace reserved Azure CosmosDB MongoDB property name with data model key property name
+        if (!this._keyStoragePropertyName.Equals(MongoReservedKeyPropertyName, StringComparison.OrdinalIgnoreCase))
+        {
+            storageModel[this._keyStoragePropertyName] = storageModel[MongoReservedKeyPropertyName];
+            storageModel.Remove(MongoReservedKeyPropertyName);
+        }
+
         // Use the user provided serializer.
         if (this._options.BsonCustomSerializer is not null)
         {
@@ -349,26 +362,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
     private BsonDocument MapToStorageModel(string operationName, TRecord dataModel)
     {
-        // Use the user provided serializer.
-        if (this._options.BsonCustomSerializer is not null)
-        {
-            return VectorStoreErrorHandler.RunModelConversion(DatabaseName, this.CollectionName, operationName, () =>
-            {
-                var bsonDocument = new BsonDocument();
-                using var writer = new BsonDocumentWriter(bsonDocument);
-                var context = BsonSerializationContext.CreateRoot(writer);
-
-                this._options.BsonCustomSerializer.Serialize(context, dataModel);
-
-                return bsonDocument;
-            });
-        }
-
-        // Use the built in Azure CosmosDB MongoDB serializer.
-        return VectorStoreErrorHandler.RunModelConversion(
+        var storageModel = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
             this.CollectionName,
-            operationName, () => dataModel.ToBsonDocument());
+            operationName, () => dataModel.ToBsonDocument(this._options.BsonCustomSerializer));
+
+        // Replace data model key property name with reserved Azure CosmosDB MongoDB property name
+        if (!this._keyStoragePropertyName.Equals(MongoReservedKeyPropertyName, StringComparison.OrdinalIgnoreCase))
+        {
+            storageModel[MongoReservedKeyPropertyName] = storageModel[this._keyStoragePropertyName];
+            storageModel.Remove(this._keyStoragePropertyName);
+        }
+
+        return storageModel;
     }
 
     private async Task RunOperationAsync(string operationName, Func<Task> operation)

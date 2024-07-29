@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
 using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson.Serialization;
 
