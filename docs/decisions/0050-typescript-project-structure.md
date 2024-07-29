@@ -134,7 +134,7 @@ Some observations:
     │   │   │   │   └── index.ts
     │   │   │   └── ...
     │   │   └── memory/
-    │   │       ├── azureCongnitiveSearch
+    │   │       ├── azureCognitiveSearch
     │   │       └── ...
     │   ├── core/
     │   │   ├── kernel.ts
