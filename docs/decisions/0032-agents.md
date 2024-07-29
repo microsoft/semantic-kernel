@@ -17,7 +17,7 @@ The initial `Assistants` work was never intended to evolve into a general _Agent
 
 This ADR defines that general _Agent Framework_.
 
-An agent is expected to be able to support to interaction patterns:
+An agent is expected to be able to support two interaction patterns:
 
 1. **Direct Invocation ("No Chat"):**
 
