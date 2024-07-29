@@ -55,7 +55,7 @@ public class ChatMessageContent : KernelContent
                 this.Items.Add(new TextContent(
                     text: value,
                 ////modelId: this.ModelId, // %%% REDUNDANT
-                ////innerContent: this.InnerContent, // %%% MUTATION RISK / INCONSISTENT / INVALID ASSUMPTION
+                ////innerContent: this.InnerContent, // %%% MUTATION RISK / INCONSISTENT / INVALID ASSUMPTION  (IGNORED FOR SERIALIZATION)
                     encoding: this.Encoding // %%% WEIRD, BUT WHO CARES (IGNORED FOR SERIALIZATION)
                 ////metadata: this.Metadata, // %%% MUTATION RISK / INCONSISTENT
                 )
