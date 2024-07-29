@@ -29,7 +29,7 @@ public class PineconeKernelBuilderExtensionsTests
         this._kernelBuilder.Services.AddSingleton<Sdk.PineconeClient>(client);
 
         // Act.
-        this._kernelBuilder.AddPineconeVectorStore();
+        this._kernelBuilder.AddPineconeVectorStoreWithRegisteredClient();
 
         // Assert.
         this.AssertVectorStoreCreated();

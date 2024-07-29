@@ -29,7 +29,7 @@ public class QdrantKernelBuilderExtensionsTests
         this._kernelBuilder.Services.AddSingleton<QdrantClient>(qdrantClient);
 
         // Act.
-        this._kernelBuilder.AddQdrantVectorStore();
+        this._kernelBuilder.AddQdrantVectorStoreWithRegisteredClient();
 
         // Assert.
         this.AssertVectorStoreCreated();

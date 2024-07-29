@@ -21,8 +21,10 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IServiceCollection AddAzureAISearchVectorStore(this IServiceCollection services, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
+    public static IServiceCollection AddAzureAISearchVectorStoreWithRegisteredClient(this IServiceCollection services, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
+        // If we are not constructing the SearchIndexClient, add the IVectorStore as transient, since we
+        // cannot make assumptions about how SearchIndexClient is being managed.
         services.AddKeyedTransient<IVectorStore>(
             serviceId,
             (sp, obj) =>
@@ -52,7 +54,7 @@ public static class AzureAISearchServiceCollectionExtensions
         Verify.NotNull(endpoint);
         Verify.NotNull(tokenCredential);
 
-        services.AddKeyedTransient<IVectorStore>(
+        services.AddKeyedSingleton<IVectorStore>(
             serviceId,
             (sp, obj) =>
             {
@@ -81,7 +83,7 @@ public static class AzureAISearchServiceCollectionExtensions
         Verify.NotNull(endpoint);
         Verify.NotNull(credential);
 
-        services.AddKeyedTransient<IVectorStore>(
+        services.AddKeyedSingleton<IVectorStore>(
             serviceId,
             (sp, obj) =>
             {

@@ -31,7 +31,7 @@ public class AzureAISearchServiceCollectionExtensionsTests
         this._serviceCollection.AddSingleton<SearchIndexClient>(Mock.Of<SearchIndexClient>());
 
         // Act.
-        this._serviceCollection.AddAzureAISearchVectorStore();
+        this._serviceCollection.AddAzureAISearchVectorStoreWithRegisteredClient();
 
         // Assert.
         this.AssertVectorStoreCreated();
