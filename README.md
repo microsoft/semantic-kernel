@@ -6,8 +6,6 @@
 [![Python package](https://img.shields.io/pypi/v/semantic-kernel)](https://pypi.org/project/semantic-kernel/)
  - .NET <br/>
 [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)[![dotnet Docker](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml)[![dotnet Windows](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml)
- - Java <br/>
-[![Java CICD Builds](https://github.com/microsoft/semantic-kernel/actions/workflows/java-build.yml/badge.svg?branch=java-development)](https://github.com/microsoft/semantic-kernel/actions/workflows/java-build.yml)[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.microsoft.semantic-kernel/semantickernel-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.microsoft.semantic-kernel/semantickernel-api)
 
 ## Overview
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
@@ -68,7 +66,7 @@ feature parity between our currently supported languages.
       <td>
         <img align="left" width=52px height=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" alt="Java logo">
         <div>
-          <a href="https://github.com/microsoft/semantic-kernel/blob/main/java/README.md">Using Semantic Kernel in Java</a>
+          <a href="https://github.com/microsoft/semantic-kernel-java/blob/main/README.md">Using Semantic Kernel in Java</a>
         </div>
       </td>
     </tr>
