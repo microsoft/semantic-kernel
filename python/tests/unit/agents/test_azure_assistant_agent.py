@@ -57,16 +57,16 @@ def mock_assistant():
     )
 
 
-def test_initialization(azure_openai_assistant_agent: AzureAssistantAgent):
+def test_initialization(azure_openai_assistant_agent: AzureAssistantAgent, azure_openai_unit_test_env):
     agent = azure_openai_assistant_agent
     assert agent is not None
 
 
-def test_create_client(azure_openai_assistant_agent):
+def test_create_client(azure_openai_assistant_agent, azure_openai_unit_test_env):
     assert isinstance(azure_openai_assistant_agent.client, AsyncAzureOpenAI)
 
 
-def test_create_client_from_configuration(azure_openai_assistant_agent):
+def test_create_client_from_configuration(azure_openai_assistant_agent, azure_openai_unit_test_env):
     assert isinstance(azure_openai_assistant_agent.client, AsyncAzureOpenAI)
     assert azure_openai_assistant_agent.client.api_key == "test_api_key"
 
@@ -88,7 +88,7 @@ def test_create_client_from_configuration_missing_endpoint():
 
 
 @pytest.mark.asyncio
-async def test_create_agent(kernel: Kernel):
+async def test_create_agent(kernel: Kernel, azure_openai_unit_test_env):
     with patch.object(AzureAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant:
         mock_create_assistant.return_value = MagicMock(spec=Assistant)
         agent = await AzureAssistantAgent.create(
@@ -99,7 +99,7 @@ async def test_create_agent(kernel: Kernel):
 
 
 @pytest.mark.asyncio
-async def test_list_definitions(kernel: Kernel, mock_assistant):
+async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_unit_test_env):
     agent = AzureAssistantAgent(
         kernel=kernel, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
     )

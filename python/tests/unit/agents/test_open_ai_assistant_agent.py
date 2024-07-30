@@ -54,13 +54,13 @@ def mock_assistant():
     )
 
 
-def test_initialization(openai_assistant_agent: OpenAIAssistantAgent):
+def test_initialization(openai_assistant_agent: OpenAIAssistantAgent, azure_openai_unit_test_env):
     agent = openai_assistant_agent
     assert agent is not None
     agent.kernel is not None
 
 
-def test_create_client():
+def test_create_client(openai_unit_test_env):
     client = OpenAIAssistantAgent._create_client(api_key="test_api_key", default_headers={"User-Agent": "test-agent"})
     assert isinstance(client, AsyncOpenAI)
     assert client.api_key == "test_api_key"
@@ -86,7 +86,7 @@ async def test_create_agent(kernel: Kernel):
 
 
 @pytest.mark.asyncio
-async def test_list_definitions(kernel: Kernel, mock_assistant):
+async def test_list_definitions(kernel: Kernel, mock_assistant, openai_unit_test_env):
     agent = OpenAIAssistantAgent(
         kernel=kernel, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
     )
