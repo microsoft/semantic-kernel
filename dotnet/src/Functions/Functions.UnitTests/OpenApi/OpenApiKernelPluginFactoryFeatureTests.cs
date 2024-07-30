@@ -17,7 +17,7 @@ public class OpenApiKernelPluginFactoryFeatureTests
     {
         await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_any_of.json");
 
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters{EnableDynamicPayload = false});
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
         var postFoobarFunction = plugin["PostFoobar"];
         Assert.NotNull(postFoobarFunction);
@@ -55,7 +55,7 @@ public class OpenApiKernelPluginFactoryFeatureTests
             schemas["fooBar"] = schema;
         });
 
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters{EnableDynamicPayload = false});
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
         var postFoobarFunction = plugin["PostFoobar"];
         Assert.NotNull(postFoobarFunction);
@@ -85,7 +85,7 @@ public class OpenApiKernelPluginFactoryFeatureTests
             schemas["fooBar"] = schema;
         });
 
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters{EnableDynamicPayload = false});
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
         var postFoobarFunction = plugin["PostFoobar"];
         Assert.NotNull(postFoobarFunction);
