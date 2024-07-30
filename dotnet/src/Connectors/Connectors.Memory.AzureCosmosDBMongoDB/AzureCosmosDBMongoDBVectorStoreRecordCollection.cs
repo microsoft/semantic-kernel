@@ -5,13 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
-using MongoDB.Bson.IO;
-using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -27,9 +24,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "AzureCosmosDBMongoDB";
 
-    /// <summary>Reserved key property name in Azure CosmosDB MongoDB.</summary>
-    private const string MongoReservedKeyPropertyName = "_id";
-
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
@@ -42,41 +36,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 
-    /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes =
-    [
-        typeof(string)
-    ];
-
-    /// <summary>A set of types that data properties on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedDataTypes =
-    [
-        typeof(bool),
-        typeof(bool?),
-        typeof(string),
-        typeof(int),
-        typeof(int?),
-        typeof(long),
-        typeof(long?),
-        typeof(float),
-        typeof(float?),
-        typeof(double),
-        typeof(double?),
-        typeof(decimal),
-        typeof(decimal?),
-    ];
-
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<double>?)
-    ];
-
-    /// <summary>The storage name of the key field for the collections that this class is used with.</summary>
-    private readonly string _keyStoragePropertyName;
+    /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
+    private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
 
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames = [];
@@ -117,15 +78,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), supportsMultipleVectors: true);
         }
 
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.DataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
+        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._options.VectorStoreRecordDefinition);
 
-        // Get storage name for key property and store for later use
-        this._keyStoragePropertyName = VectorStoreRecordPropertyReader.GetStoragePropertyName(properties.KeyProperty, this._vectorStoreRecordDefinition);
-
-        // Build a map of property names to storage names.
-        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._vectorStoreRecordDefinition);
+        this._mapper = this._options.BsonDocumentCustomMapper ??
+            new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(
+                properties.KeyProperty,
+                properties.DataProperties,
+                properties.VectorProperties,
+                this._storagePropertyNames);
     }
 
     /// <inheritdoc />
@@ -189,7 +149,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             return await cursor.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }).ConfigureAwait(false);
 
-        return this.MapToDataModel(OperationName, record);
+        return VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
+            this.CollectionName,
+            OperationName,
+            () => this._mapper.MapFromStorageToDataModel(record, new()));
     }
 
     /// <inheritdoc />
@@ -210,7 +174,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         {
             foreach (var record in cursor.Current)
             {
-                yield return this.MapToDataModel(OperationName, record);
+                yield return VectorStoreErrorHandler.RunModelConversion(
+                    DatabaseName,
+                    this.CollectionName,
+                    OperationName,
+                    () => this._mapper.MapFromStorageToDataModel(record, new()));
             }
         }
     }
@@ -223,17 +191,21 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         const string OperationName = "ReplaceOne";
 
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
-        var storageModel = this.MapToStorageModel(OperationName, record);
+        var storageModel = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
+            this.CollectionName,
+            OperationName,
+            () => this._mapper.MapFromDataToStorageModel(record));
 
-        var key = storageModel[MongoReservedKeyPropertyName].AsString;
+        var key = storageModel[AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName].AsString;
 
         return this.RunOperationAsync(OperationName, async () =>
         {
-            await this._mongoCollection
+            var result = await this._mongoCollection
                 .ReplaceOneAsync(this.GetFilterById(key), storageModel, replaceOptions, cancellationToken)
                 .ConfigureAwait(false);
 
-            return key;
+            return result.UpsertedId.AsString;
         });
     }
 
@@ -310,10 +282,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     }
 
     private FilterDefinition<BsonDocument> GetFilterById(string id)
-        => Builders<BsonDocument>.Filter.Eq(document => document[MongoReservedKeyPropertyName], id);
+        => Builders<BsonDocument>.Filter.Eq(document => document[AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName], id);
 
     private FilterDefinition<BsonDocument> GetFilterByIds(IEnumerable<string> ids)
-        => Builders<BsonDocument>.Filter.In(document => document[MongoReservedKeyPropertyName].ToString(), ids);
+        => Builders<BsonDocument>.Filter.In(document => document[AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName].AsString, ids);
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {
@@ -331,50 +303,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         }
 
         return false;
-    }
-
-    private TRecord MapToDataModel(string operationName, BsonDocument storageModel)
-    {
-        // Replace reserved Azure CosmosDB MongoDB property name with data model key property name
-        if (!this._keyStoragePropertyName.Equals(MongoReservedKeyPropertyName, StringComparison.OrdinalIgnoreCase))
-        {
-            storageModel[this._keyStoragePropertyName] = storageModel[MongoReservedKeyPropertyName];
-            storageModel.Remove(MongoReservedKeyPropertyName);
-        }
-
-        // Use the user provided serializer.
-        if (this._options.BsonCustomSerializer is not null)
-        {
-            return VectorStoreErrorHandler.RunModelConversion(DatabaseName, this.CollectionName, operationName, () =>
-            {
-                using var reader = new BsonDocumentReader(storageModel);
-                var context = BsonDeserializationContext.CreateRoot(reader);
-                return this._options.BsonCustomSerializer.Deserialize(context);
-            });
-        }
-
-        // Use the built in Azure CosmosDB MongoDB serializer.
-        return VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this.CollectionName,
-            operationName, () => BsonSerializer.Deserialize<TRecord>(storageModel));
-    }
-
-    private BsonDocument MapToStorageModel(string operationName, TRecord dataModel)
-    {
-        var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this.CollectionName,
-            operationName, () => dataModel.ToBsonDocument(this._options.BsonCustomSerializer));
-
-        // Replace data model key property name with reserved Azure CosmosDB MongoDB property name
-        if (!this._keyStoragePropertyName.Equals(MongoReservedKeyPropertyName, StringComparison.OrdinalIgnoreCase))
-        {
-            storageModel[MongoReservedKeyPropertyName] = storageModel[this._keyStoragePropertyName];
-            storageModel.Remove(this._keyStoragePropertyName);
-        }
-
-        return storageModel;
     }
 
     private async Task RunOperationAsync(string operationName, Func<Task> operation)

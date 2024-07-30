@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Data;
-using MongoDB.Bson.Serialization;
+using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
@@ -11,9 +11,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord> where TRecord : class
 {
     /// <summary>
-    /// Gets or sets an optional custom serializer to use when converting between the data model and the Azure CosmosDB MongoDB record.
+    /// Gets or sets an optional custom mapper to use when converting between the data model and the Azure CosmosDB MongoDB BSON object.
     /// </summary>
-    public IBsonSerializer<TRecord>? BsonCustomSerializer { get; init; } = null;
+    public IVectorStoreRecordMapper<TRecord, BsonDocument>? BsonDocumentCustomMapper { get; init; } = null;
 
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
