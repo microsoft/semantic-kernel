@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
@@ -19,6 +20,7 @@ internal sealed class BedrockChatCompletionClient
     private readonly string _modelProvider;
     private readonly IAmazonBedrockRuntime _bedrockApi;
     private readonly IBedrockModelIOService _ioService;
+    private readonly BedrockClientUtilities _clientUtilities;
     private Uri? _chatGenerationEndpoint;
 
     /// <summary>
@@ -33,6 +35,7 @@ internal sealed class BedrockChatCompletionClient
         this._bedrockApi = bedrockApi;
         this._ioService = new BedrockClientIOService().GetIOService(modelId);
         this._modelProvider = new BedrockClientIOService().GetModelProvider(modelId);
+        this._clientUtilities = new BedrockClientUtilities();
     }
     /// <summary>
     /// Builds the convert request body given the model ID (as stored in ioService object) and calls the ConverseAsync Bedrock Runtime action to get the result.
@@ -62,54 +65,51 @@ internal sealed class BedrockChatCompletionClient
         ConverseRequest converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory, executionSettings);
         var regionEndpoint = this._bedrockApi.DetermineServiceOperationEndpoint(converseRequest).URL;
         this._chatGenerationEndpoint = new Uri(regionEndpoint);
-        ConverseResponse response;
-        using (var activity = ModelDiagnostics.StartCompletionActivity(
-                   this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings))
+        ConverseResponse? response = null;
+        using var activity = ModelDiagnostics.StartCompletionActivity(
+            this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings);
+        ActivityStatusCode activityStatus;
+        try
         {
-            try
-            {
-                response = await this.ConverseBedrockModelAsync(converseRequest, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (activity is not null)
-            {
-                activity.SetError(ex);
-                throw;
-            }
-
-            IReadOnlyList<ChatMessageContent> chatMessages = ConvertToMessageContent(response).ToList();
-            activity?.SetCompletionResponse(chatMessages);
-            return chatMessages;
+            response = await this.ConverseBedrockModelAsync(converseRequest, cancellationToken).ConfigureAwait(false);
         }
+        catch (Exception ex) when (activity is not null)
+        {
+            activity.SetError(ex);
+            if (response != null)
+            {
+                activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                activity.SetStatus(activityStatus);
+                activity.SetPromptTokenUsage(response.Usage.InputTokens);
+                activity.SetCompletionTokenUsage(response.Usage.OutputTokens);
+            }
+            throw;
+        }
+        IReadOnlyList<ChatMessageContent> chatMessages = this.ConvertToMessageContent(response).ToList();
+        activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+        activity?.SetStatus(activityStatus);
+        activity?.SetCompletionResponse(chatMessages, response.Usage.InputTokens, response.Usage.OutputTokens);
+        return chatMessages;
     }
     /// <summary>
     /// Converts the ConverseResponse object as outputted by the Bedrock Runtime API call to a ChatMessageContent for the Semantic Kernel.
     /// </summary>
     /// <param name="response"> ConverseResponse object outputted by Bedrock. </param>
     /// <returns></returns>
-    private static IEnumerable<ChatMessageContent> ConvertToMessageContent(ConverseResponse response)
+    private ChatMessageContent[] ConvertToMessageContent(ConverseResponse response)
     {
-        if (response.Output.Message != null)
+        if (response.Output.Message == null)
         {
-            var message = response.Output.Message;
-            return new[]
-            {
-                new ChatMessageContent
-                {
-                    Role = MapRole(message.Role.Value),
-                    Items = CreateChatMessageContentItemCollection(message.Content)
-                }
-            };
+            return [];
         }
-        return Enumerable.Empty<ChatMessageContent>();
-    }
-    private static AuthorRole MapRole(string role)
-    {
-        return role switch
+        var message = response.Output.Message;
+        return new[]
         {
-            "user" => AuthorRole.User,
-            "assistant" => AuthorRole.Assistant,
-            "system" => AuthorRole.System,
-            _ => throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}")
+            new ChatMessageContent
+            {
+                Role = this._clientUtilities.MapConversationRoleToAuthorRole(message.Role.Value),
+                Items = CreateChatMessageContentItemCollection(message.Content)
+            }
         };
     }
     private static ChatMessageContentItemCollection CreateChatMessageContentItemCollection(List<ContentBlock> contentBlocks)
@@ -137,24 +137,22 @@ internal sealed class BedrockChatCompletionClient
         var converseStreamRequest = this._ioService.GetConverseStreamRequest(this._modelId, chatHistory, executionSettings);
         var regionEndpoint = this._bedrockApi.DetermineServiceOperationEndpoint(converseStreamRequest).URL;
         this._chatGenerationEndpoint = new Uri(regionEndpoint);
-        ConverseStreamResponse response;
+        ConverseStreamResponse? response = null;
         using var activity = ModelDiagnostics.StartCompletionActivity(
             this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings);
+        ActivityStatusCode activityStatus;
         try
         {
-            try
-            {
-                response = await this._bedrockApi.ConverseStreamAsync(converseStreamRequest, cancellationToken).ConfigureAwait(false);
-            }
-            catch (AmazonBedrockRuntimeException e)
-            {
-                Console.WriteLine($"ERROR: Can't invoke '{this._modelId}'. Reason: {e.Message}");
-                throw;
-            }
+            response = await this._bedrockApi.ConverseStreamAsync(converseStreamRequest, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (activity is not null)
         {
             activity.SetError(ex);
+            if (response != null)
+            {
+                activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                activity.SetStatus(activityStatus);
+            }
             throw;
         }
 
@@ -169,6 +167,8 @@ internal sealed class BedrockChatCompletionClient
                 yield return content;
             }
         }
+        activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+        activity?.SetStatus(activityStatus);
         activity?.EndStreaming(streamedContents);
     }
 }

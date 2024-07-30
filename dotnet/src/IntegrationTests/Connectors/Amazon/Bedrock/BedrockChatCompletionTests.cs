@@ -56,6 +56,7 @@ public class BedrockChatCompletionTests
     }
 
     [Theory]
+    [InlineData("ai21.jamba-instruct-v1:0")]
     [InlineData("amazon.titan-text-premier-v1:0")]
     [InlineData("amazon.titan-text-lite-v1")]
     [InlineData("amazon.titan-text-express-v1")]

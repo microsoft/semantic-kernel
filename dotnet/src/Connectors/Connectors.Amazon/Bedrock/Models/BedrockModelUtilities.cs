@@ -17,7 +17,7 @@ public static class BedrockModelUtilities
     /// <param name="role"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static ConversationRole MapRole(AuthorRole role)
+    public static ConversationRole MapAuthorRoleToConversationRole(AuthorRole role)
     {
         if (role == AuthorRole.User)
         {
@@ -53,7 +53,7 @@ public static class BedrockModelUtilities
             .Where(m => m.Role != AuthorRole.System)
             .Select(m => new Message
             {
-                Role = MapRole(m.Role),
+                Role = MapAuthorRoleToConversationRole(m.Role),
                 Content = new List<ContentBlock> { new() { Text = m.Content } }
             })
             .ToList();
