@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <PropertyGroup>
-      <NoWarn>$(NoWarn);SKEXP0001,SKEXP0010</NoWarn>
+      <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
     </PropertyGroup>
   
     <ItemGroup>
