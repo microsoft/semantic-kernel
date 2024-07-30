@@ -21,6 +21,7 @@ def openai_assistant_agent(kernel: Kernel):
         name="test_name",
         instructions="test_instructions",
         api_key="test_api_key",
+        kwargs={"temperature": 0.1},
     )
 
 
@@ -119,7 +120,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant):
             "file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,
-            "vector_store_ids": ["vector_store1"],
+            "vector_store_id": "vector_store1",
             "metadata": {
                 "__run_options": {
                     "max_completion_tokens": 100,
@@ -185,7 +186,7 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
                 "file_ids": ["file1", "file2"],
                 "temperature": 0.7,
                 "top_p": 0.9,
-                "vector_store_ids": ["vector_store1"],
+                "vector_store_id": "vector_store1",
                 "metadata": {
                     "__run_options": {
                         "max_completion_tokens": 100,
@@ -215,7 +216,7 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
                 "file_ids",
                 "temperature",
                 "top_p",
-                "vector_store_ids",
+                "vector_store_id",
                 "metadata",
                 "max_completion_tokens",
                 "max_prompt_tokens",
@@ -234,7 +235,7 @@ async def test_retrieve_agent(kernel, openai_unit_test_env):
             "file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,
-            "vector_store_ids": ["vector_store1"],
+            "vector_store_id": "vector_store1",
             "metadata": {
                 "__run_options": {
                     "max_completion_tokens": 100,

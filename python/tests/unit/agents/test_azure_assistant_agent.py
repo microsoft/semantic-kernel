@@ -8,14 +8,14 @@ from openai.resources.beta.assistants import Assistant
 from openai.types.beta.assistant import ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
 from pydantic import ValidationError
 
-from semantic_kernel.agents.open_ai.azure_open_ai_assistant_agent import AzureOpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
 from semantic_kernel.kernel import Kernel
 
 
 @pytest.fixture
 def azure_openai_assistant_agent(kernel: Kernel):
-    return AzureOpenAIAssistantAgent(
+    return AzureAssistantAgent(
         kernel=kernel,
         service_id="test_service",
         name="test_name",
@@ -57,7 +57,7 @@ def mock_assistant():
     )
 
 
-def test_initialization(azure_openai_assistant_agent: AzureOpenAIAssistantAgent):
+def test_initialization(azure_openai_assistant_agent: AzureAssistantAgent):
     agent = azure_openai_assistant_agent
     assert agent is not None
 
@@ -76,7 +76,7 @@ def test_create_client_from_configuration_missing_api_key():
         AgentInitializationError,
         match="Please provide either AzureOpenAI api_key, an ad_token or an ad_token_provider or a client.",
     ):
-        AzureOpenAIAssistantAgent._create_client(None)
+        AzureAssistantAgent._create_client(None)
 
 
 def test_create_client_from_configuration_missing_endpoint():
@@ -84,14 +84,14 @@ def test_create_client_from_configuration_missing_endpoint():
         AgentInitializationError,
         match="Please provide an AzureOpenAI endpoint.",
     ):
-        AzureOpenAIAssistantAgent._create_client(api_key="test")
+        AzureAssistantAgent._create_client(api_key="test")
 
 
 @pytest.mark.asyncio
 async def test_create_agent(kernel: Kernel):
-    with patch.object(AzureOpenAIAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant:
+    with patch.object(AzureAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant:
         mock_create_assistant.return_value = MagicMock(spec=Assistant)
-        agent = await AzureOpenAIAssistantAgent.create(
+        agent = await AzureAssistantAgent.create(
             kernel=kernel, service_id="test_service", name="test_name", api_key="test_api_key", api_version="2024-05-01"
         )
         assert agent.assistant is not None
@@ -100,12 +100,12 @@ async def test_create_agent(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_list_definitions(kernel: Kernel, mock_assistant):
-    agent = AzureOpenAIAssistantAgent(
+    agent = AzureAssistantAgent(
         kernel=kernel, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
     )
 
     with patch.object(
-        AzureOpenAIAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncAzureOpenAI)
+        AzureAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncAzureOpenAI)
     ) as mock_create_client:
         mock_client_instance = mock_create_client.return_value
         mock_client_instance.beta = MagicMock()
@@ -133,7 +133,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant):
             "file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,
-            "vector_store_ids": ["vector_store1"],
+            "vector_store_id": "vector_store1",
             "metadata": {
                 "__run_options": {
                     "max_completion_tokens": 100,
@@ -152,7 +152,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant):
 @pytest.mark.asyncio
 async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
     with patch.object(
-        AzureOpenAIAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncAzureOpenAI)
+        AzureAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncAzureOpenAI)
     ) as mock_create_client:
         mock_client_instance = mock_create_client.return_value
         mock_client_instance.beta = MagicMock()
@@ -183,7 +183,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
 
         mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=mock_assistant)
 
-        agent = AzureOpenAIAssistantAgent(
+        agent = AzureAssistantAgent(
             kernel=kernel, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
         )
         agent._create_open_ai_assistant_definition = MagicMock(
@@ -199,7 +199,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
                 "file_ids": ["file1", "file2"],
                 "temperature": 0.7,
                 "top_p": 0.9,
-                "vector_store_ids": ["vector_store1"],
+                "vector_store_id": "vector_store1",
                 "metadata": {
                     "__run_options": {
                         "max_completion_tokens": 100,
@@ -229,7 +229,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
                 "file_ids",
                 "temperature",
                 "top_p",
-                "vector_store_ids",
+                "vector_store_id",
                 "metadata",
                 "max_completion_tokens",
                 "max_prompt_tokens",
@@ -248,7 +248,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
             "file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,
-            "vector_store_ids": ["vector_store1"],
+            "vector_store_id": "vector_store1",
             "metadata": {
                 "__run_options": {
                     "max_completion_tokens": 100,
@@ -273,13 +273,13 @@ def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
         mock_create.side_effect = ValidationError.from_exception_data("test", line_errors=[], input_type="python")
 
         with pytest.raises(AgentInitializationError, match="Failed to create Azure OpenAI settings."):
-            AzureOpenAIAssistantAgent(service_id="test", api_key="test_api_key", deployment_name="test_deployment_name")
+            AzureAssistantAgent(service_id="test", api_key="test_api_key", deployment_name="test_deployment_name")
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True)
 def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_test_env):
     with pytest.raises(AgentInitializationError, match="The Azure OpenAI chat_deployment_name is required."):
-        AzureOpenAIAssistantAgent(
+        AzureAssistantAgent(
             service_id="test_service", api_key="test_key", endpoint="https://example.com", env_file_path="test.env"
         )
 
@@ -287,4 +287,4 @@ def test_azure_openai_agent_create_missing_deployment_name(azure_openai_unit_tes
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 def test_azure_openai_agent_create_missing_api_key(azure_openai_unit_test_env):
     with pytest.raises(AgentInitializationError, match="Please provide either api_key, ad_token or ad_token_provider."):
-        AzureOpenAIAssistantAgent(service_id="test_service", endpoint="https://example.com", env_file_path="test.env")
+        AzureAssistantAgent(service_id="test_service", endpoint="https://example.com", env_file_path="test.env")

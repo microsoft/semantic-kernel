@@ -10,7 +10,9 @@ from openai.resources.beta.assistants import Assistant
 from openai.resources.beta.threads.messages import Message
 from openai.resources.beta.threads.runs.runs import Run
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
+from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.runs import RunStep
+from openai.types.beta.threads.text_content_block import TextContentBlock
 from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
@@ -19,6 +21,7 @@ from semantic_kernel.connectors.ai.function_calling_utils import kernel_function
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -33,7 +36,6 @@ from semantic_kernel.exceptions.agent_exceptions import (
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
-    from openai.types.beta.assistant_tool import AssistantTool
     from openai.types.beta.threads.annotation import Annotation
     from openai.types.beta.threads.runs.tool_call import ToolCall
     from openai.types.file_object import FileObject
@@ -62,7 +64,7 @@ class OpenAIAssistantBase(Agent):
     file_ids: list[str] | None = Field(default_factory=list, max_length=20)
     temperature: float | None = Field(None)
     top_p: float | None = Field(None)
-    vector_store_ids: list[str] | None = Field(default_factory=list, max_length=1)
+    vector_store_id: str | None = None
     metadata: dict[str, Any] | None = Field(default_factory=dict, max_length=16)
     max_completion_tokens: int | None = Field(None)
     max_prompt_tokens: int | None = Field(None)
@@ -164,6 +166,7 @@ class OpenAIAssistantBase(Agent):
     async def create_assistant(
         self,
         ai_model_id: str | None = None,
+        description: str | None = None,
         instructions: str | None = None,
         name: str | None = None,
         enable_code_interpreter: bool | None = None,
@@ -184,6 +187,11 @@ class OpenAIAssistantBase(Agent):
             create_assistant_kwargs["model"] = ai_model_id
         elif self.ai_model_id:
             create_assistant_kwargs["model"] = self.ai_model_id
+
+        if description is not None:
+            create_assistant_kwargs["description"] = description
+        elif self.description:
+            create_assistant_kwargs["description"] = self.description
 
         if instructions is not None:
             create_assistant_kwargs["instructions"] = instructions
@@ -208,22 +216,22 @@ class OpenAIAssistantBase(Agent):
         elif self.enable_file_search:
             tools.append({"type": "file_search"})
 
-        create_assistant_kwargs["tools"] = tools if tools else None
+        if tools:
+            create_assistant_kwargs["tools"] = tools
 
         tool_resources = {}
         if file_ids is not None:
-            if file_ids:
-                tool_resources["code_interpreter"] = {"file_ids": file_ids}
+            tool_resources["code_interpreter"] = {"file_ids": file_ids}
         elif self.file_ids:
             tool_resources["code_interpreter"] = {"file_ids": self.file_ids}
 
         if vector_store_id is not None:
-            if vector_store_id:
-                tool_resources["file_search"] = {"vector_store_ids": [vector_store_id]}
-        elif self.vector_store_ids:
-            tool_resources["file_search"] = {"vector_store_ids": self.vector_store_ids}
+            tool_resources["file_search"] = {"vector_store_ids": [vector_store_id]}
+        elif self.vector_store_id:
+            tool_resources["file_search"] = {"vector_store_ids": [self.vector_store_id]}
 
-        create_assistant_kwargs["tool_resources"] = tool_resources if tool_resources else None
+        if tool_resources:
+            create_assistant_kwargs["tool_resources"] = tool_resources
 
         if metadata:
             create_assistant_kwargs["metadata"] = metadata
@@ -233,12 +241,13 @@ class OpenAIAssistantBase(Agent):
         if kwargs:
             create_assistant_kwargs.update(kwargs)
 
-        # Filter out None values to avoid passing them as kwargs
-        create_assistant_kwargs = {k: v for k, v in create_assistant_kwargs.items() if v is not None}
-
         self.assistant = await self.client.beta.assistants.create(
             **create_assistant_kwargs,
         )
+
+        if self._is_deleted:
+            self._is_deleted = False
+
         return self.assistant
 
     def _create_open_ai_assistant_definition(self, assistant: "Assistant") -> dict[str, Any]:
@@ -285,7 +294,7 @@ class OpenAIAssistantBase(Agent):
             "file_ids": file_ids,
             "temperature": assistant.temperature,
             "top_p": assistant.top_p,
-            "vector_store_ids": [vector_store_id] if vector_store_id else None,
+            "vector_store_id": vector_store_id if vector_store_id else None,
             "metadata": assistant.metadata,
             **execution_settings,
         }
@@ -295,23 +304,15 @@ class OpenAIAssistantBase(Agent):
     # region Agent Properties
 
     @property
-    def tools(self) -> list["AssistantTool"]:
+    def tools(self) -> list[dict[str, str]]:
         """The tools.
 
         Returns:
-            list[AssistantTool]: The tools.
+            list[dict[str, str]]: The tools.
         """
         if self.assistant is None:
             raise AgentInitializationError("The assistant has not been created.")
-        tools: list[AssistantTool] = []
-        tools.extend(self.assistant.tools)
-        tools.extend(
-            [
-                kernel_function_metadata_to_function_call_format(f)  # type: ignore
-                for f in self.kernel.get_full_list_of_function_metadata()
-            ]
-        )
-        return self.assistant.tools
+        return self._get_tools()
 
     # endregion
 
@@ -383,6 +384,7 @@ class OpenAIAssistantBase(Agent):
         """
         if not self._is_deleted and self.assistant:
             await self.client.beta.assistants.delete(self.assistant.id)
+            self._is_deleted = True
         return self._is_deleted
 
     async def add_file(self, file_path: str, purpose: Literal["assistants", "vision"]) -> str:
@@ -433,50 +435,31 @@ class OpenAIAssistantBase(Agent):
             metadata=metadata,
         )
 
-    async def get_thread_messages(self, thread_id: str) -> AsyncIterable[list[ChatMessageContent]]:
+    async def get_thread_messages(self, thread_id: str) -> AsyncIterable[ChatMessageContent]:
         """Get the messages for the specified thread.
 
         Args:
             thread_id (str): The thread id.
 
         Yields:
-            list[ChatMessageContent]: The chat messages.
+            ChatMessageContent: The chat message.
         """
         agent_names: dict[str, Any] = {}
 
         thread_messages = await self.client.beta.threads.messages.list(thread_id=thread_id, limit=100, order="desc")
         for message in thread_messages.data:
-            role = AuthorRole(message.role)
-
             assistant_name = None
             if message.assistant_id and message.assistant_id not in agent_names:
                 agent = await self.client.beta.assistants.retrieve(message.assistant_id)
-                agent_names[message.assistant_id] = agent.name
+                if agent.name:
+                    agent_names[message.assistant_id] = agent.name
+            assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else message.assistant_id
+            assistant_name = assistant_name or message.assistant_id
 
-            assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else None
-            contents: list[ChatMessageContent] = []
-            for item in message.content:
-                content: ChatMessageContent | ImageContent | None = None
-                if item.type == "text":
-                    content = ChatMessageContent(
-                        role=role,
-                        content=item.text.value,
-                        name=assistant_name,
-                    )
-                    contents.append(content)
-                    for annotation in item.text.annotations:
-                        annotation_content = self._generate_annotation_content(annotation)
-                        contents.append(annotation_content)  # type: ignore
-                elif item.type == "image":
-                    content = ImageContent(
-                        role=role,
-                        uri=item.image.url,
-                        name=assistant_name,
-                    )
-                    contents.append(content)
+            content: ChatMessageContent = self._generate_message_content(str(assistant_name), message)
 
-            if contents:
-                yield contents
+            if len(content.items) > 0:
+                yield content
 
     # region Agent Invoke Methods
 
@@ -888,6 +871,7 @@ class OpenAIAssistantBase(Agent):
 
         for item_content in message.content:
             if item_content.type == "text":
+                assert isinstance(item_content, TextContentBlock)  # nosec
                 content.items.append(
                     TextContent(
                         text=item_content.text.value,
@@ -895,10 +879,11 @@ class OpenAIAssistantBase(Agent):
                 )
                 for annotation in item_content.text.annotations:
                     content.items.append(self._generate_annotation_content(annotation))
-            elif item_content.type == "image":
+            elif item_content.type == "image_file":
+                assert isinstance(item_content, ImageFileContentBlock)  # nosec
                 content.items.append(
-                    ImageContent(
-                        uri=item_content.image.url,
+                    FileReferenceContent(
+                        file_id=item_content.image_file.file_id,
                     )
                 )
         return content
@@ -915,12 +900,18 @@ class OpenAIAssistantBase(Agent):
             list[dict[str, str]]: The list of tools.
         """
         tools = []
-        if self.enable_code_interpreter:
-            tools.append({"type": "code_interpreter"})
-        if self.enable_file_search:
-            tools.append({"type": "file_search"})
+        if self.assistant is None:
+            raise AgentInitializationError("The assistant has not been created.")
+
+        for tool in self.assistant.tools:
+            if isinstance(tool, CodeInterpreterTool):
+                tools.append({"type": "code_interpreter"})
+            elif isinstance(tool, FileSearchTool):
+                tools.append({"type": "file_search"})
+
         funcs = self.kernel.get_full_list_of_function_metadata()
         tools.extend([kernel_function_metadata_to_function_call_format(f) for f in funcs])
+
         return tools
 
     def _get_function_call_contents(

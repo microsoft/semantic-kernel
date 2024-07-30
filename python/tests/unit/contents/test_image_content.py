@@ -57,4 +57,4 @@ def test_element_roundtrip(image):
 
 @pytest.mark.parametrize("image", test_cases)
 def test_to_dict(image):
-    assert image.to_dict() == {"type": "image_url", "image_url": {"url": str(image), "detail": "auto"}}
+    assert image.to_dict() == {"type": "image_url", "image_url": {"url": str(image)}}

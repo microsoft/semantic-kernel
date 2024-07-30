@@ -2,7 +2,6 @@
 
 import logging
 import mimetypes
-from enum import Enum
 from typing import Any, ClassVar, Literal, TypeVar
 
 from pydantic import Field
@@ -14,12 +13,6 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T", bound="ImageContent")
-
-
-class ImageContentDetail(Enum):
-    AUTO = "auto"
-    LOW = "low"
-    HIGH = "high"
 
 
 @experimental_class
@@ -57,15 +50,14 @@ class ImageContent(BinaryContent):
 
     content_type: Literal[ContentTypes.IMAGE_CONTENT] = Field(IMAGE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = IMAGE_CONTENT_TAG
-    detail: ImageContentDetail = Field(default_factory=lambda: ImageContentDetail.AUTO)
 
     @classmethod
-    def from_image_path(cls: type[_T], image_path: str, detail: ImageContentDetail = ImageContentDetail.AUTO) -> _T:
+    def from_image_path(cls: type[_T], image_path: str) -> _T:
         """Create an instance from an image file."""
         mime_type = mimetypes.guess_type(image_path)[0]
         with open(image_path, "rb") as image_file:
-            return cls(data=image_file.read(), data_format="base64", mime_type=mime_type, detail=detail)
+            return cls(data=image_file.read(), data_format="base64", mime_type=mime_type)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
-        return {"type": "image_url", "image_url": {"url": str(self), "detail": self.detail.value}}
+        return {"type": "image_url", "image_url": {"url": str(self)}}

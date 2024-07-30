@@ -2,7 +2,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.open_ai.azure_open_ai_assistant_agent import AzureOpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -58,7 +58,7 @@ async def main():
 
     # Create the agent
     if use_azure_openai:
-        agent = AzureOpenAIAssistantAgent(
+        agent = AzureAssistantAgent(
             kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
         )
     else:
@@ -82,7 +82,7 @@ async def main():
     thread_id = await agent.create_thread()
 
     try:
-        # await invoke_agent(agent, thread_id=thread_id, input="Hello")
+        await invoke_agent(agent, thread_id=thread_id, input="Hello")
         await invoke_agent(agent, thread_id=thread_id, input="What is the special soup?")
         await invoke_agent(agent, thread_id=thread_id, input="What is the special drink?")
         await invoke_agent(agent, thread_id=thread_id, input="Thank you")

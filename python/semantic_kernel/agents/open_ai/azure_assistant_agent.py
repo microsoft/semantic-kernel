@@ -24,7 +24,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class AzureOpenAIAssistantAgent(OpenAIAssistantBase):
+class AzureAssistantAgent(OpenAIAssistantBase):
     """Azure OpenAI Assistant Agent class.
 
     Provides the ability to interact with Azure OpenAI Assistants.
@@ -190,7 +190,7 @@ class AzureOpenAIAssistantAgent(OpenAIAssistantBase):
         parallel_tool_calls_enabled: bool | None = True,
         truncation_message_count: int | None = None,
         **kwargs: Any,
-    ) -> "AzureOpenAIAssistantAgent":
+    ) -> "AzureAssistantAgent":
         """Asynchronous class method used to create the OpenAI Assistant Agent.
 
         Args:
@@ -324,7 +324,7 @@ class AzureOpenAIAssistantAgent(OpenAIAssistantBase):
         client: AsyncAzureOpenAI | None = None,
         kernel: "Kernel | None" = None,
         default_headers: dict[str, str] | None = None,
-    ) -> "AzureOpenAIAssistantAgent":
+    ) -> "AzureAssistantAgent":
         """Retrieve an assistant by ID.
 
         Args:
@@ -351,6 +351,6 @@ class AzureOpenAIAssistantAgent(OpenAIAssistantBase):
         )
         assistant = await client.beta.assistants.retrieve(id)
         assistant_definition = self._create_open_ai_assistant_definition(assistant)
-        return AzureOpenAIAssistantAgent(kernel=kernel, **assistant_definition)
+        return AzureAssistantAgent(kernel=kernel, **assistant_definition)
 
     # endregion
