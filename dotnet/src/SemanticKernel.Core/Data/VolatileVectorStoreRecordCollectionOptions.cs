@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Options when creating a <see cref="VolatileVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
 public sealed class VolatileVectorStoreRecordCollectionOptions

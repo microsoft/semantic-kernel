@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -61,7 +62,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 .ThrowsAsync(new RequestFailedException(404, "Index not found"));
         }
 
-        var sut = new AzureAISearchVectorStoreRecordCollection<SinglePropsModel>(this._searchIndexClientMock.Object, collectionName);
+        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(this._searchIndexClientMock.Object, collectionName);
 
         // Act.
         var actual = await sut.CollectionExistsAsync(this._testCancellationToken);
@@ -71,25 +72,28 @@ public class AzureAISearchVectorStoreRecordCollectionTests
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CreateCollectionCallsSDKAsync(bool useDefinition)
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task CreateCollectionCallsSDKAsync(bool useDefinition, bool useCustomJsonSerializerOptions)
     {
         // Arrange.
         this._searchIndexClientMock
             .Setup(x => x.CreateIndexAsync(It.IsAny<SearchIndex>(), this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(new SearchIndex(TestCollectionName), Mock.Of<Response>()));
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
 
         // Act.
         await sut.CreateCollectionAsync();
 
         // Assert.
+        var expectedFieldNames = useCustomJsonSerializerOptions ? new[] { "key", "storage_data1", "data2", "storage_vector1", "vector2" } : new[] { "Key", "storage_data1", "Data2", "storage_vector1", "Vector2" };
         this._searchIndexClientMock
             .Verify(
                 x => x.CreateIndexAsync(
-                    It.Is<SearchIndex>(si => si.Fields.Count == 3 && si.Name == TestCollectionName && si.VectorSearch.Profiles.Count == 1 && si.VectorSearch.Algorithms.Count == 1),
+                    It.Is<SearchIndex>(si => si.Fields.Count == 5 && si.Fields.Select(f => f.Name).SequenceEqual(expectedFieldNames) && si.Name == TestCollectionName && si.VectorSearch.Profiles.Count == 2 && si.VectorSearch.Algorithms.Count == 2),
                     this._testCancellationToken),
                 Times.Once);
     }
@@ -139,7 +143,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             this._searchIndexClientMock
                 .Verify(
                     x => x.CreateIndexAsync(
-                        It.Is<SearchIndex>(si => si.Fields.Count == 3 && si.Name == TestCollectionName && si.VectorSearch.Profiles.Count == 1 && si.VectorSearch.Algorithms.Count == 1),
+                        It.Is<SearchIndex>(si => si.Fields.Count == 5 && si.Name == TestCollectionName && si.VectorSearch.Profiles.Count == 2 && si.VectorSearch.Algorithms.Count == 2),
                         this._testCancellationToken),
                     Times.Once);
         }
@@ -169,7 +173,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
     {
         // Arrange.
         this._searchClientMock.Setup(
-            x => x.GetDocumentAsync<SinglePropsModel>(
+            x => x.GetDocumentAsync<MultiPropsModel>(
                 TestRecordKey1,
                 It.Is<GetDocumentOptions>(x => !x.SelectedFields.Any()),
                 this._testCancellationToken))
@@ -186,26 +190,31 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Assert.
         Assert.NotNull(actual);
         Assert.Equal(TestRecordKey1, actual.Key);
-        Assert.Equal("data 1", actual.Data);
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector!.Value.ToArray());
+        Assert.Equal("data 1", actual.Data1);
+        Assert.Equal("data 2", actual.Data2);
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector1!.Value.ToArray());
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector2!.Value.ToArray());
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CanGetRecordWithoutVectorsAsync(bool useDefinition)
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task CanGetRecordWithoutVectorsAsync(bool useDefinition, bool useCustomJsonSerializerOptions)
     {
         // Arrange.
         var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, false))!.AsObject();
 
+        var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "key", "storage_data1", "data2" } : new[] { "Key", "storage_data1", "Data2" };
         this._searchClientMock.Setup(
-            x => x.GetDocumentAsync<SinglePropsModel>(
+            x => x.GetDocumentAsync<MultiPropsModel>(
                 TestRecordKey1,
-                It.Is<GetDocumentOptions>(x => x.SelectedFields.Contains("Key") && x.SelectedFields.Contains("Data")),
+                It.Is<GetDocumentOptions>(x => x.SelectedFields.SequenceEqual(expectedSelectFields)),
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(CreateModel(TestRecordKey1, true), Mock.Of<Response>()));
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
 
         // Act.
         var actual = await sut.GetAsync(
@@ -216,7 +225,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Assert.
         Assert.NotNull(actual);
         Assert.Equal(TestRecordKey1, actual.Key);
-        Assert.Equal("data 1", actual.Data);
+        Assert.Equal("data 1", actual.Data1);
+        Assert.Equal("data 2", actual.Data2);
     }
 
     [Theory]
@@ -226,7 +236,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
     {
         // Arrange.
         this._searchClientMock.Setup(
-            x => x.GetDocumentAsync<SinglePropsModel>(
+            x => x.GetDocumentAsync<MultiPropsModel>(
                 It.IsAny<string>(),
                 It.IsAny<GetDocumentOptions>(),
                 this._testCancellationToken))
@@ -265,7 +275,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             .ReturnsAsync(Response.FromValue(storageObject, Mock.Of<Response>()));
 
         // Arrange mapper mock from JsonObject to data model.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel, JsonObject>>(MockBehavior.Strict);
+        var mapperMock = new Mock<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>(MockBehavior.Strict);
         mapperMock.Setup(
             x => x.MapFromStorageToDataModel(
                 storageObject,
@@ -273,7 +283,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             .Returns(CreateModel(TestRecordKey1, true));
 
         // Arrange target with custom mapper.
-        var sut = new AzureAISearchVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new()
@@ -287,8 +297,10 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Assert.
         Assert.NotNull(actual);
         Assert.Equal(TestRecordKey1, actual.Key);
-        Assert.Equal("data 1", actual.Data);
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector!.Value.ToArray());
+        Assert.Equal("data 1", actual.Data1);
+        Assert.Equal("data 2", actual.Data2);
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector1!.Value.ToArray());
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector2!.Value.ToArray());
     }
 
     [Theory]
@@ -377,7 +389,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Arrange upload.
         this._searchClientMock.Setup(
             x => x.UploadDocumentsAsync(
-                It.IsAny<IEnumerable<SinglePropsModel>>(),
+                It.IsAny<IEnumerable<MultiPropsModel>>(),
                 It.IsAny<IndexDocumentsOptions>(),
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
@@ -397,7 +409,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         Assert.Equal(TestRecordKey1, actual);
         this._searchClientMock.Verify(
             x => x.UploadDocumentsAsync(
-                It.Is<IEnumerable<SinglePropsModel>>(x => x.Count() == 1 && x.First().Key == TestRecordKey1),
+                It.Is<IEnumerable<MultiPropsModel>>(x => x.Count() == 1 && x.First().Key == TestRecordKey1),
                 It.Is<IndexDocumentsOptions>(x => x.ThrowOnAnyError == true),
                 this._testCancellationToken),
             Times.Once);
@@ -422,7 +434,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Arrange upload.
         this._searchClientMock.Setup(
             x => x.UploadDocumentsAsync(
-                It.IsAny<IEnumerable<SinglePropsModel>>(),
+                It.IsAny<IEnumerable<MultiPropsModel>>(),
                 It.IsAny<IndexDocumentsOptions>(),
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
@@ -446,7 +458,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
 
         this._searchClientMock.Verify(
             x => x.UploadDocumentsAsync(
-                It.Is<IEnumerable<SinglePropsModel>>(x => x.Count() == 2 && x.First().Key == TestRecordKey1 && x.ElementAt(1).Key == TestRecordKey2),
+                It.Is<IEnumerable<MultiPropsModel>>(x => x.Count() == 2 && x.First().Key == TestRecordKey1 && x.ElementAt(1).Key == TestRecordKey2),
                 It.Is<IndexDocumentsOptions>(x => x.ThrowOnAnyError == true),
                 this._testCancellationToken),
             Times.Once);
@@ -480,13 +492,13 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             });
 
         // Arrange mapper mock from data model to JsonObject.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel, JsonObject>>(MockBehavior.Strict);
+        var mapperMock = new Mock<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>(MockBehavior.Strict);
         mapperMock
-            .Setup(x => x.MapFromDataToStorageModel(It.IsAny<SinglePropsModel>()))
+            .Setup(x => x.MapFromDataToStorageModel(It.IsAny<MultiPropsModel>()))
             .Returns(storageObject);
 
         // Arrange target with custom mapper.
-        var sut = new AzureAISearchVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new()
@@ -503,52 +515,70 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Assert.
         mapperMock
             .Verify(
-                x => x.MapFromDataToStorageModel(It.Is<SinglePropsModel>(x => x.Key == TestRecordKey1)),
+                x => x.MapFromDataToStorageModel(It.Is<MultiPropsModel>(x => x.Key == TestRecordKey1)),
                 Times.Once);
     }
 
-    private AzureAISearchVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
+    private AzureAISearchVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
     {
-        return new AzureAISearchVectorStoreRecordCollection<SinglePropsModel>(
+        return new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new()
             {
-                VectorStoreRecordDefinition = useDefinition ? this._singlePropsDefinition : null
+                VectorStoreRecordDefinition = useDefinition ? this._multiPropsDefinition : null,
+                JsonSerializerOptions = useCustomJsonSerializerOptions ? this._customJsonSerializerOptions : null
             });
     }
 
-    private static SinglePropsModel CreateModel(string key, bool withVectors)
+    private static MultiPropsModel CreateModel(string key, bool withVectors)
     {
-        return new SinglePropsModel
+        return new MultiPropsModel
         {
             Key = key,
-            Data = "data 1",
-            Vector = withVectors ? new float[] { 1, 2, 3, 4 } : null,
+            Data1 = "data 1",
+            Data2 = "data 2",
+            Vector1 = withVectors ? new float[] { 1, 2, 3, 4 } : null,
+            Vector2 = withVectors ? new float[] { 1, 2, 3, 4 } : null,
             NotAnnotated = null,
         };
     }
 
-    private readonly VectorStoreRecordDefinition _singlePropsDefinition = new()
+    private readonly JsonSerializerOptions _customJsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    private readonly VectorStoreRecordDefinition _multiPropsDefinition = new()
     {
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("Data") { PropertyType = typeof(string) },
-            new VectorStoreRecordVectorProperty("Vector") { Dimensions = 4 }
+            new VectorStoreRecordDataProperty("Data1") { PropertyType = typeof(string) },
+            new VectorStoreRecordDataProperty("Data2") { PropertyType = typeof(string) },
+            new VectorStoreRecordVectorProperty("Vector1") { Dimensions = 4 },
+            new VectorStoreRecordVectorProperty("Vector2") { Dimensions = 4 }
         ]
     };
 
-    public sealed class SinglePropsModel
+    public sealed class MultiPropsModel
     {
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
+        [JsonPropertyName("storage_data1")]
         [VectorStoreRecordData]
-        public string Data { get; set; } = string.Empty;
+        public string Data1 { get; set; } = string.Empty;
+
+        [VectorStoreRecordData]
+        public string Data2 { get; set; } = string.Empty;
+
+        [JsonPropertyName("storage_vector1")]
+        [VectorStoreRecordVector(4)]
+        public ReadOnlyMemory<float>? Vector1 { get; set; }
 
         [VectorStoreRecordVector(4)]
-        public ReadOnlyMemory<float>? Vector { get; set; }
+        public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string? NotAnnotated { get; set; }
     }

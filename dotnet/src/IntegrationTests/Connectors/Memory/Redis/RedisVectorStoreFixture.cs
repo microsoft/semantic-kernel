@@ -230,7 +230,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordData(IsFilterable = true)]
         public int HotelCode { get; init; }
 
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding")]
+        [VectorStoreRecordData]
         public string Description { get; init; }
 
         [VectorStoreRecordVector(4)]
@@ -278,7 +278,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordData(IsFilterable = true)]
         public int HotelCode { get; init; }
 
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding")]
+        [VectorStoreRecordData]
         public string Description { get; init; }
 
         [VectorStoreRecordVector(4)]

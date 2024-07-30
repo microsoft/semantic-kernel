@@ -11,17 +11,19 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Data;
 
 /// <summary>
-/// Contains tests for the <see cref="VolatileVectorStoreRecordCollection{TRecord}"/> class.
+/// Contains tests for the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
 /// </summary>
 public class VolatileVectorStoreRecordCollectionTests
 {
     private const string TestCollectionName = "testcollection";
     private const string TestRecordKey1 = "testid1";
     private const string TestRecordKey2 = "testid2";
+    private const int TestRecordIntKey1 = 1;
+    private const int TestRecordIntKey2 = 2;
 
     private readonly CancellationToken _testCancellationToken = new(false);
 
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _collectionStore;
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _collectionStore;
 
     public VolatileVectorStoreRecordCollectionTests()
     {
@@ -34,10 +36,10 @@ public class VolatileVectorStoreRecordCollectionTests
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange
-        var collection = new ConcurrentDictionary<string, object>();
+        var collection = new ConcurrentDictionary<object, object>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = new VolatileVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new VolatileVectorStoreRecordCollection<string, SinglePropsModel<string>>(
             this._collectionStore,
             collectionName);
 
@@ -52,7 +54,7 @@ public class VolatileVectorStoreRecordCollectionTests
     public async Task CanCreateCollectionAsync()
     {
         // Arrange
-        var sut = this.CreateRecordCollection(false);
+        var sut = this.CreateRecordCollection<string>(false);
 
         // Act
         await sut.CreateCollectionAsync(this._testCancellationToken);
@@ -65,10 +67,10 @@ public class VolatileVectorStoreRecordCollectionTests
     public async Task DeleteCollectionRemovesCollectionFromDictionaryAsync()
     {
         // Arrange
-        var collection = new ConcurrentDictionary<string, object>();
+        var collection = new ConcurrentDictionary<object, object>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateRecordCollection(false);
+        var sut = this.CreateRecordCollection<string>(false);
 
         // Act
         await sut.DeleteCollectionAsync(this._testCancellationToken);
@@ -78,21 +80,24 @@ public class VolatileVectorStoreRecordCollectionTests
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CanGetRecordWithVectorsAsync(bool useDefinition)
+    [InlineData(true, TestRecordKey1)]
+    [InlineData(true, TestRecordIntKey1)]
+    [InlineData(false, TestRecordKey1)]
+    [InlineData(false, TestRecordIntKey1)]
+    public async Task CanGetRecordWithVectorsAsync<TKey>(bool useDefinition, TKey testKey)
+        where TKey : notnull
     {
         // Arrange
-        var record = CreateModel(TestRecordKey1, withVectors: true);
-        var collection = new ConcurrentDictionary<string, object>();
-        collection.TryAdd(TestRecordKey1, record);
+        var record = CreateModel(testKey, withVectors: true);
+        var collection = new ConcurrentDictionary<object, object>();
+        collection.TryAdd(testKey!, record);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
-            TestRecordKey1,
+            testKey,
             new()
             {
                 IncludeVectors = true
@@ -103,29 +108,32 @@ public class VolatileVectorStoreRecordCollectionTests
         var expectedArgs = new object[] { TestRecordKey1 };
 
         Assert.NotNull(actual);
-        Assert.Equal(TestRecordKey1, actual.Key);
-        Assert.Equal("data testid1", actual.Data);
+        Assert.Equal(testKey, actual.Key);
+        Assert.Equal($"data {testKey}", actual.Data);
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector!.Value.ToArray());
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CanGetManyRecordsWithVectorsAsync(bool useDefinition)
+    [InlineData(true, TestRecordKey1, TestRecordKey2)]
+    [InlineData(true, TestRecordIntKey1, TestRecordIntKey2)]
+    [InlineData(false, TestRecordKey1, TestRecordKey2)]
+    [InlineData(false, TestRecordIntKey1, TestRecordIntKey2)]
+    public async Task CanGetManyRecordsWithVectorsAsync<TKey>(bool useDefinition, TKey testKey1, TKey testKey2)
+        where TKey : notnull
     {
         // Arrange
-        var record1 = CreateModel(TestRecordKey1, withVectors: true);
-        var record2 = CreateModel(TestRecordKey2, withVectors: true);
-        var collection = new ConcurrentDictionary<string, object>();
-        collection.TryAdd(TestRecordKey1, record1);
-        collection.TryAdd(TestRecordKey2, record2);
+        var record1 = CreateModel(testKey1, withVectors: true);
+        var record2 = CreateModel(testKey2, withVectors: true);
+        var collection = new ConcurrentDictionary<object, object>();
+        collection.TryAdd(testKey1!, record1);
+        collection.TryAdd(testKey2!, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
         var actual = await sut.GetBatchAsync(
-            [TestRecordKey1, TestRecordKey2],
+            [testKey1, testKey2],
             new()
             {
                 IncludeVectors = true
@@ -135,73 +143,82 @@ public class VolatileVectorStoreRecordCollectionTests
         // Assert
         Assert.NotNull(actual);
         Assert.Equal(2, actual.Count);
-        Assert.Equal(TestRecordKey1, actual[0].Key);
-        Assert.Equal("data testid1", actual[0].Data);
-        Assert.Equal(TestRecordKey2, actual[1].Key);
-        Assert.Equal("data testid2", actual[1].Data);
+        Assert.Equal(testKey1, actual[0].Key);
+        Assert.Equal($"data {testKey1}", actual[0].Data);
+        Assert.Equal(testKey2, actual[1].Key);
+        Assert.Equal($"data {testKey2}", actual[1].Data);
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CanDeleteRecordAsync(bool useDefinition)
+    [InlineData(true, TestRecordKey1, TestRecordKey2)]
+    [InlineData(true, TestRecordIntKey1, TestRecordIntKey2)]
+    [InlineData(false, TestRecordKey1, TestRecordKey2)]
+    [InlineData(false, TestRecordIntKey1, TestRecordIntKey2)]
+    public async Task CanDeleteRecordAsync<TKey>(bool useDefinition, TKey testKey1, TKey testKey2)
+        where TKey : notnull
     {
         // Arrange
-        var record1 = CreateModel(TestRecordKey1, withVectors: true);
-        var record2 = CreateModel(TestRecordKey2, withVectors: true);
-        var collection = new ConcurrentDictionary<string, object>();
-        collection.TryAdd(TestRecordKey1, record1);
-        collection.TryAdd(TestRecordKey2, record2);
+        var record1 = CreateModel(testKey1, withVectors: true);
+        var record2 = CreateModel(testKey2, withVectors: true);
+        var collection = new ConcurrentDictionary<object, object>();
+        collection.TryAdd(testKey1, record1);
+        collection.TryAdd(testKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
         await sut.DeleteAsync(
-            TestRecordKey1,
+            testKey1,
             cancellationToken: this._testCancellationToken);
 
         // Assert
-        Assert.False(collection.ContainsKey(TestRecordKey1));
-        Assert.True(collection.ContainsKey(TestRecordKey2));
+        Assert.False(collection.ContainsKey(testKey1));
+        Assert.True(collection.ContainsKey(testKey2));
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CanDeleteManyRecordsWithVectorsAsync(bool useDefinition)
+    [InlineData(true, TestRecordKey1, TestRecordKey2)]
+    [InlineData(true, TestRecordIntKey1, TestRecordIntKey2)]
+    [InlineData(false, TestRecordKey1, TestRecordKey2)]
+    [InlineData(false, TestRecordIntKey1, TestRecordIntKey2)]
+    public async Task CanDeleteManyRecordsWithVectorsAsync<TKey>(bool useDefinition, TKey testKey1, TKey testKey2)
+        where TKey : notnull
     {
         // Arrange
-        var record1 = CreateModel(TestRecordKey1, withVectors: true);
-        var record2 = CreateModel(TestRecordKey2, withVectors: true);
-        var collection = new ConcurrentDictionary<string, object>();
-        collection.TryAdd(TestRecordKey1, record1);
-        collection.TryAdd(TestRecordKey2, record2);
+        var record1 = CreateModel(testKey1, withVectors: true);
+        var record2 = CreateModel(testKey2, withVectors: true);
+        var collection = new ConcurrentDictionary<object, object>();
+        collection.TryAdd(testKey1, record1);
+        collection.TryAdd(testKey2, record2);
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
         await sut.DeleteBatchAsync(
-            [TestRecordKey1, TestRecordKey2],
+            [testKey1, testKey2],
             cancellationToken: this._testCancellationToken);
 
         // Assert
-        Assert.False(collection.ContainsKey(TestRecordKey1));
-        Assert.False(collection.ContainsKey(TestRecordKey2));
+        Assert.False(collection.ContainsKey(testKey1));
+        Assert.False(collection.ContainsKey(testKey2));
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CanUpsertRecordAsync(bool useDefinition)
+    [InlineData(true, TestRecordKey1)]
+    [InlineData(true, TestRecordIntKey1)]
+    [InlineData(false, TestRecordKey1)]
+    [InlineData(false, TestRecordIntKey1)]
+    public async Task CanUpsertRecordAsync<TKey>(bool useDefinition, TKey testKey1)
+        where TKey : notnull
     {
         // Arrange
-        var record1 = CreateModel(TestRecordKey1, withVectors: true);
-        var collection = new ConcurrentDictionary<string, object>();
+        var record1 = CreateModel(testKey1, withVectors: true);
+        var collection = new ConcurrentDictionary<object, object>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
         var upsertResult = await sut.UpsertAsync(
@@ -209,25 +226,28 @@ public class VolatileVectorStoreRecordCollectionTests
             cancellationToken: this._testCancellationToken);
 
         // Assert
-        Assert.Equal(TestRecordKey1, upsertResult);
-        Assert.True(collection.ContainsKey(TestRecordKey1));
-        Assert.IsType<SinglePropsModel>(collection[TestRecordKey1]);
-        Assert.Equal("data testid1", (collection[TestRecordKey1] as SinglePropsModel)!.Data);
+        Assert.Equal(testKey1, upsertResult);
+        Assert.True(collection.ContainsKey(testKey1));
+        Assert.IsType<SinglePropsModel<TKey>>(collection[testKey1]);
+        Assert.Equal($"data {testKey1}", (collection[testKey1] as SinglePropsModel<TKey>)!.Data);
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CanUpsertManyRecordsAsync(bool useDefinition)
+    [InlineData(true, TestRecordKey1, TestRecordKey2)]
+    [InlineData(true, TestRecordIntKey1, TestRecordIntKey2)]
+    [InlineData(false, TestRecordKey1, TestRecordKey2)]
+    [InlineData(false, TestRecordIntKey1, TestRecordIntKey2)]
+    public async Task CanUpsertManyRecordsAsync<TKey>(bool useDefinition, TKey testKey1, TKey testKey2)
+        where TKey : notnull
     {
         // Arrange
-        var record1 = CreateModel(TestRecordKey1, withVectors: true);
-        var record2 = CreateModel(TestRecordKey2, withVectors: true);
+        var record1 = CreateModel(testKey1, withVectors: true);
+        var record2 = CreateModel(testKey2, withVectors: true);
 
-        var collection = new ConcurrentDictionary<string, object>();
+        var collection = new ConcurrentDictionary<object, object>();
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
         var actual = await sut.UpsertBatchAsync(
@@ -237,17 +257,17 @@ public class VolatileVectorStoreRecordCollectionTests
         // Assert
         Assert.NotNull(actual);
         Assert.Equal(2, actual.Count);
-        Assert.Equal(TestRecordKey1, actual[0]);
-        Assert.Equal(TestRecordKey2, actual[1]);
+        Assert.Equal(testKey1, actual[0]);
+        Assert.Equal(testKey2, actual[1]);
 
-        Assert.True(collection.ContainsKey(TestRecordKey1));
-        Assert.IsType<SinglePropsModel>(collection[TestRecordKey1]);
-        Assert.Equal("data testid1", (collection[TestRecordKey1] as SinglePropsModel)!.Data);
+        Assert.True(collection.ContainsKey(testKey1));
+        Assert.IsType<SinglePropsModel<TKey>>(collection[testKey1]);
+        Assert.Equal($"data {testKey1}", (collection[testKey1] as SinglePropsModel<TKey>)!.Data);
     }
 
-    private static SinglePropsModel CreateModel(string key, bool withVectors)
+    private static SinglePropsModel<TKey> CreateModel<TKey>(TKey key, bool withVectors)
     {
-        return new SinglePropsModel
+        return new SinglePropsModel<TKey>
         {
             Key = key,
             Data = "data " + key,
@@ -256,9 +276,10 @@ public class VolatileVectorStoreRecordCollectionTests
         };
     }
 
-    private VolatileVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
+    private VolatileVectorStoreRecordCollection<TKey, SinglePropsModel<TKey>> CreateRecordCollection<TKey>(bool useDefinition)
+        where TKey : notnull
     {
-        return new VolatileVectorStoreRecordCollection<SinglePropsModel>(
+        return new VolatileVectorStoreRecordCollection<TKey, SinglePropsModel<TKey>>(
             this._collectionStore,
             TestCollectionName,
             new()
@@ -277,10 +298,10 @@ public class VolatileVectorStoreRecordCollectionTests
         ]
     };
 
-    public sealed class SinglePropsModel
+    public sealed class SinglePropsModel<TKey>
     {
         [VectorStoreRecordKey]
-        public string Key { get; set; } = string.Empty;
+        public TKey? Key { get; set; }
 
         [VectorStoreRecordData]
         public string Data { get; set; } = string.Empty;

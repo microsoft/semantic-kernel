@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -16,7 +15,7 @@ namespace Microsoft.SemanticKernel.Data;
 public sealed class VolatileVectorStore : IVectorStore
 {
     /// <summary>Internal storage for the record collection.</summary>
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _internalCollection;
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollection;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VolatileVectorStore"/> class.
@@ -30,20 +29,17 @@ public sealed class VolatileVectorStore : IVectorStore
     /// Initializes a new instance of the <see cref="VolatileVectorStore"/> class.
     /// </summary>
     /// <param name="internalCollection">Allows passing in the dictionary used for storage, for testing purposes.</param>
-    internal VolatileVectorStore(ConcurrentDictionary<string, ConcurrentDictionary<string, object>> internalCollection)
+    internal VolatileVectorStore(ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection)
     {
         this._internalCollection = internalCollection;
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null) where TRecord : class
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        where TKey : notnull
+        where TRecord : class
     {
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
-        var collection = new VolatileVectorStoreRecordCollection<TRecord>(this._internalCollection, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+        var collection = new VolatileVectorStoreRecordCollection<TKey, TRecord>(this._internalCollection, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
         return collection!;
     }
 

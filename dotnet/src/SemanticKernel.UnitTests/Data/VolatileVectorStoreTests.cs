@@ -27,26 +27,30 @@ public class VolatileVectorStoreTests
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<VolatileVectorStoreRecordCollection<SinglePropsModel<string>>>(actual);
+        Assert.IsType<VolatileVectorStoreRecordCollection<string, SinglePropsModel<string>>>(actual);
     }
 
     [Fact]
-    public void GetCollectionThrowsForInvalidKeyType()
+    public void GetCollectionReturnsCollectionWithNonStringKey()
     {
         // Arrange.
         var sut = new VolatileVectorStore();
 
-        // Act & Assert.
-        Assert.Throws<NotSupportedException>(() => sut.GetCollection<int, SinglePropsModel<int>>(TestCollectionName));
+        // Act.
+        var actual = sut.GetCollection<int, SinglePropsModel<int>>(TestCollectionName);
+
+        // Assert.
+        Assert.NotNull(actual);
+        Assert.IsType<VolatileVectorStoreRecordCollection<int, SinglePropsModel<int>>>(actual);
     }
 
     [Fact]
     public async Task ListCollectionNamesReadsDictionaryAsync()
     {
         // Arrange.
-        var collectionStore = new ConcurrentDictionary<string, ConcurrentDictionary<string, object>>();
-        collectionStore.TryAdd("collection1", new ConcurrentDictionary<string, object>());
-        collectionStore.TryAdd("collection2", new ConcurrentDictionary<string, object>());
+        var collectionStore = new ConcurrentDictionary<string, ConcurrentDictionary<object, object>>();
+        collectionStore.TryAdd("collection1", new ConcurrentDictionary<object, object>());
+        collectionStore.TryAdd("collection2", new ConcurrentDictionary<object, object>());
         var sut = new VolatileVectorStore(collectionStore);
 
         // Act.

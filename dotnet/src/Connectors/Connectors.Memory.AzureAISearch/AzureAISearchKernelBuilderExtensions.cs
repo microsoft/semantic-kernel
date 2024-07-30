@@ -17,12 +17,12 @@ public static class AzureAISearchKernelBuilderExtensions
     /// Register an Azure AI Search <see cref="IVectorStore"/> with the specified service ID and where <see cref="SearchIndexClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <param name="builder">The builder to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IKernelBuilder AddAzureAISearchVectorStore(this IKernelBuilder builder, string? serviceId = default, AzureAISearchVectorStoreOptions? options = default)
+    public static IKernelBuilder AddAzureAISearchVectorStore(this IKernelBuilder builder, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddAzureAISearchVectorStore(serviceId, options);
+        builder.Services.AddAzureAISearchVectorStore(options, serviceId);
         return builder;
     }
 
@@ -32,12 +32,12 @@ public static class AzureAISearchKernelBuilderExtensions
     /// <param name="builder">The builder to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
     /// <param name="tokenCredential">The credential to authenticate to Azure AI Search with.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IKernelBuilder AddAzureAISearchVectorStore(this IKernelBuilder builder, Uri endpoint, TokenCredential tokenCredential, string? serviceId = default, AzureAISearchVectorStoreOptions? options = default)
+    public static IKernelBuilder AddAzureAISearchVectorStore(this IKernelBuilder builder, Uri endpoint, TokenCredential tokenCredential, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddAzureAISearchVectorStore(endpoint, tokenCredential, serviceId, options);
+        builder.Services.AddAzureAISearchVectorStore(endpoint, tokenCredential, options, serviceId);
         return builder;
     }
 
@@ -47,12 +47,12 @@ public static class AzureAISearchKernelBuilderExtensions
     /// <param name="builder">The builder to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
     /// <param name="credential">The credential to authenticate to Azure AI Search with.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IKernelBuilder AddAzureAISearchVectorStore(this IKernelBuilder builder, Uri endpoint, AzureKeyCredential credential, string? serviceId = default, AzureAISearchVectorStoreOptions? options = default)
+    public static IKernelBuilder AddAzureAISearchVectorStore(this IKernelBuilder builder, Uri endpoint, AzureKeyCredential credential, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddAzureAISearchVectorStore(endpoint, credential, serviceId, options);
+        builder.Services.AddAzureAISearchVectorStore(endpoint, credential, options, serviceId);
         return builder;
     }
 }

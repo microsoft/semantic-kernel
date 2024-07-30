@@ -135,7 +135,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         // Get storage names for data properties and store for later use.
         foreach (var property in properties.dataProperties)
         {
-            var jsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(JsonSerializerOptions.Default, property);
+            var jsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(jsonSerializerOptions, property);
             this._storagePropertyNames[property.Name] = jsonPropertyName;
             this._nonVectorStoragePropertyNames.Add(jsonPropertyName);
         }
@@ -143,7 +143,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         // Get storage names for vector properties and store for later use.
         foreach (var property in properties.vectorProperties)
         {
-            var jsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(JsonSerializerOptions.Default, property);
+            var jsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(jsonSerializerOptions, property);
             this._storagePropertyNames[property.Name] = jsonPropertyName;
         }
     }

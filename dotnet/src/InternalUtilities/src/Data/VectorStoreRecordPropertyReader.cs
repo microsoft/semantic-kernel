@@ -217,8 +217,6 @@ internal static class VectorStoreRecordPropertyReader
             {
                 definitionProperties.Add(new VectorStoreRecordDataProperty(dataProperty.Name)
                 {
-                    HasEmbedding = dataAttribute.HasEmbedding,
-                    EmbeddingPropertyName = dataAttribute.EmbeddingPropertyName,
                     IsFilterable = dataAttribute.IsFilterable,
                     PropertyType = dataProperty.PropertyType,
                     StoragePropertyName = dataAttribute.StoragePropertyName
