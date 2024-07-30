@@ -49,6 +49,12 @@ public static class BedrockModelUtilities
     /// <returns></returns>
     public static List<Message> BuildMessageList(ChatHistory chatHistory)
     {
+        // Check that the text from the latest message in the chat history  is not empty.
+        string? text = chatHistory[^1].Content;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            throw new ArgumentException("Last message in chat history was null or whitespace.");
+        }
         return chatHistory
             .Where(m => m.Role != AuthorRole.System)
             .Select(m => new Message

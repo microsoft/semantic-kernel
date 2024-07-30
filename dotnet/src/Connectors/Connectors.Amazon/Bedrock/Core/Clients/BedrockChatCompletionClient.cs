@@ -38,23 +38,15 @@ internal sealed class BedrockChatCompletionClient
         this._clientUtilities = new BedrockClientUtilities();
     }
     /// <summary>
-    /// Builds the convert request body given the model ID (as stored in ioService object) and calls the ConverseAsync Bedrock Runtime action to get the result.
+    /// Generates a chat message based on the provided chat history and execution settings.
     /// </summary>
-    /// <param name="converseRequest"> The converse request for ConverseAsync bedrock runtime action. </param>
-    /// <param name="cancellationToken"> A cancellation token to cancel the operation. </param>
-    /// <returns></returns>
-    private async Task<ConverseResponse> ConverseBedrockModelAsync(
-        ConverseRequest converseRequest,
-        CancellationToken cancellationToken = default)
-    {
-        // Check that the text from the latest message in the request object is not empty.
-        string? text = converseRequest.Messages?[^1]?.Content?[0]?.Text;
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            throw new ArgumentException("Did not enter proper chat completion message. Text was null or whitespace.");
-        }
-        return await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(false);
-    }
+    /// <param name="chatHistory">The chat history to use for generating the chat message.</param>
+    /// <param name="executionSettings">The execution settings for the chat generation.</param>
+    /// <param name="kernel">The Semantic Kernel instance.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The generated chat message.</returns>
+    /// <exception cref="ArgumentException">Thrown when the chat history is null or empty.</exception>
+    /// <exception cref="Exception">Thrown when an error occurs during the chat generation process.</exception>
     internal async Task<IReadOnlyList<ChatMessageContent>> GenerateChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
@@ -71,7 +63,7 @@ internal sealed class BedrockChatCompletionClient
         ActivityStatusCode activityStatus;
         try
         {
-            response = await this.ConverseBedrockModelAsync(converseRequest, cancellationToken).ConfigureAwait(false);
+            response = await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(false);
             if (activity is not null)
             {
                 activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
