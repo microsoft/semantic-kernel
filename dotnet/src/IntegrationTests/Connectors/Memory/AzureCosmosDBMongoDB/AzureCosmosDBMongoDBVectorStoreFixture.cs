@@ -53,7 +53,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("ParkingIncluded") { PropertyType = typeof(bool), StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("HotelRating") { PropertyType = typeof(float) },
                 new VectorStoreRecordDataProperty("Tags"),
-                new VectorStoreRecordDataProperty("Description") { HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding" },
+                new VectorStoreRecordDataProperty("Description"),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding") { Dimensions = 4, IndexKind = "vector-ivf", DistanceFunction = "COS" }
             ]
         };
@@ -103,7 +103,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         public List<string> Tags { get; set; } = [];
 
         /// <summary>A data field.</summary>
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding")]
+        [VectorStoreRecordData]
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>
