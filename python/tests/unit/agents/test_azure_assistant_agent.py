@@ -96,6 +96,7 @@ async def test_create_agent(kernel: Kernel, azure_openai_unit_test_env):
         )
         assert agent.assistant is not None
         mock_create_assistant.assert_called_once()
+        await agent.client.close()
 
 
 @pytest.mark.asyncio

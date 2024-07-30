@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
@@ -254,7 +254,7 @@ def mock_run_in_progress():
             self.id = "run_id"
             self.status = "requires_action"
             self.assistant_id = "assistant_id"
-            self.created_at = int(datetime.utcnow().timestamp())
+            self.created_at = int(datetime.now(timezone.utc).timestamp())
             self.instructions = "instructions"
             self.model = "model"
             self.object = "run"
@@ -280,8 +280,8 @@ def mock_run_step_tool_call():
     return RunStep(
         id="step_id_1",
         type="tool_calls",
-        completed_at=int(datetime.utcnow().timestamp()),
-        created_at=int((datetime.utcnow() - timedelta(minutes=1)).timestamp()),
+        completed_at=int(datetime.now(timezone.utc).timestamp()),
+        created_at=int((datetime.now(timezone.utc) - timedelta(minutes=1)).timestamp()),
         step_details=ToolCallsStepDetails(
             tool_calls=[
                 CodeInterpreterToolCall(
@@ -316,8 +316,8 @@ def mock_run_step_message_creation():
     return RunStep(
         id="step_id_2",
         type="message_creation",
-        completed_at=int(datetime.utcnow().timestamp()),
-        created_at=int((datetime.utcnow() - timedelta(minutes=2)).timestamp()),
+        completed_at=int(datetime.now(timezone.utc).timestamp()),
+        created_at=int((datetime.now(timezone.utc) - timedelta(minutes=2)).timestamp()),
         step_details=MessageCreationStepDetails(
             type="message_creation", message_creation=MessageCreation(message_id="test")
         ),

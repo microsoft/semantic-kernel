@@ -8,8 +8,8 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
-AGENT_NAME = "CodeRunner"
-AGENT_INSTRUCTIONS = "Run the provided code file and return the result."
+AGENT_NAME = "FileSearch"
+AGENT_INSTRUCTIONS = "Find answers to the user's questions in the provided file."
 
 # Note: you may toggle this to switch between AzureOpenAI and OpenAI
 use_azure_openai = True
@@ -37,11 +37,19 @@ async def main():
     # Create the agent configuration
     if use_azure_openai:
         agent = AzureAssistantAgent(
-            kernel=kernel, service_id=service_id, name=AGENT_NAME, instructions=AGENT_INSTRUCTIONS
+            kernel=kernel,
+            service_id=service_id,
+            name=AGENT_NAME,
+            instructions=AGENT_INSTRUCTIONS,
+            enable_file_search=True,
         )
     else:
         agent = OpenAIAssistantAgent(
-            kernel=kernel, service_id=service_id, name=AGENT_NAME, instructions=AGENT_INSTRUCTIONS
+            kernel=kernel,
+            service_id=service_id,
+            name=AGENT_NAME,
+            instructions=AGENT_INSTRUCTIONS,
+            enable_file_search=True,
         )
 
     txt_file_path = os.path.join(

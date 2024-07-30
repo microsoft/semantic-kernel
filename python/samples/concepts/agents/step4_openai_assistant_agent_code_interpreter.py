@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
-import os
 
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
@@ -35,8 +34,6 @@ async def main():
     service_id = "agent"
 
     # Create the agent
-
-    # Create the agent
     if use_azure_openai:
         agent = AzureAssistantAgent(
             kernel=kernel,
@@ -54,22 +51,15 @@ async def main():
             enable_code_interpreter=True,
         )
 
-    await agent.create_assistant()
+    await agent.create_assistant(enable_code_interpreter=True)
 
-    code_file_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-        "resources",
-        "agent_assistant_code_interpreter_file",
-        "fibonacci.py",
-    )
-
-    file_id = await agent.add_file(code_file_path, purpose="assistants")
-
-    thread_id = await agent.create_thread(code_interpreter_file_ids=[file_id])
+    thread_id = await agent.create_thread()
 
     try:
         await invoke_agent(
-            agent, thread_id=thread_id, input="Use code interpreter to run the provided file and give me the result"
+            agent,
+            thread_id=thread_id,
+            input="Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?",  # noqa: E501
         )
     finally:
         await agent.delete_thread(thread_id)
