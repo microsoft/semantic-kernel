@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel;
 
 namespace Connectors.Amazon.Models.Amazon;
 
