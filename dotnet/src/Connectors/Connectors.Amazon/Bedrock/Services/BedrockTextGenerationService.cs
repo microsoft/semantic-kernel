@@ -11,9 +11,10 @@ namespace Connectors.Amazon.Services;
 /// <summary>
 /// Represents a text generation service using Amazon Bedrock API.
 /// </summary>
-public class BedrockTextGenerationService : BedrockTextGenerationClient, ITextGenerationService
+public class BedrockTextGenerationService : ITextGenerationService
 {
     private readonly Dictionary<string, object?> _attributesInternal = [];
+    private readonly BedrockTextGenerationClient _textGenerationClient;
 
     /// <summary>
     /// Initializes an instance of the BedrockTextGenerationService using an IAmazonBedrockRuntime object passed in by the user.
@@ -21,8 +22,8 @@ public class BedrockTextGenerationService : BedrockTextGenerationClient, ITextGe
     /// <param name="modelId"></param>
     /// <param name="bedrockApi"></param>
     public BedrockTextGenerationService(string modelId, IAmazonBedrockRuntime bedrockApi)
-        : base(modelId, bedrockApi)
     {
+        this._textGenerationClient = new BedrockTextGenerationClient(modelId, bedrockApi);
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 
@@ -35,7 +36,7 @@ public class BedrockTextGenerationService : BedrockTextGenerationClient, ITextGe
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this.InvokeBedrockModelAsync(prompt, executionSettings, cancellationToken);
+        => this._textGenerationClient.InvokeBedrockModelAsync(prompt, executionSettings, cancellationToken);
 
     /// <inheritdoc />
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -43,5 +44,5 @@ public class BedrockTextGenerationService : BedrockTextGenerationClient, ITextGe
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this.StreamTextAsync(prompt, executionSettings, kernel, cancellationToken);
+        => this._textGenerationClient.StreamTextAsync(prompt, executionSettings, kernel, cancellationToken);
 }

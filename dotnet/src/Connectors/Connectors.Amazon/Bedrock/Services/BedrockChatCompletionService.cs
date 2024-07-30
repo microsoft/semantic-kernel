@@ -10,9 +10,10 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Services;
 /// <summary>
 /// Represents a chat completion service using Amazon Bedrock API.
 /// </summary>
-public class BedrockChatCompletionService : BedrockChatCompletionClient, IChatCompletionService
+public class BedrockChatCompletionService : IChatCompletionService
 {
     private readonly Dictionary<string, object?> _attributesInternal = [];
+    private readonly BedrockChatCompletionClient _chatCompletionClient;
 
     /// <summary>
     /// Initializes an instance of the BedrockChatCompletionService using an IAmazonBedrockRuntime object passed in by the user.
@@ -20,8 +21,8 @@ public class BedrockChatCompletionService : BedrockChatCompletionClient, IChatCo
     /// <param name="modelId">The model to be used for chat completion.</param>
     /// <param name="bedrockApi">The IAmazonBedrockRuntime object to be used for DI.</param>
     public BedrockChatCompletionService(string modelId, IAmazonBedrockRuntime bedrockApi)
-        : base(modelId, bedrockApi)
     {
+        this._chatCompletionClient = new BedrockChatCompletionClient(modelId, bedrockApi);
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 
@@ -35,7 +36,7 @@ public class BedrockChatCompletionService : BedrockChatCompletionClient, IChatCo
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        return this._chatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -45,6 +46,6 @@ public class BedrockChatCompletionService : BedrockChatCompletionClient, IChatCo
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.StreamChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        return this._chatCompletionClient.StreamChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 }

@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core;
 /// <summary>
 /// Represents a client for interacting with the text generation through Bedrock.
 /// </summary>
-public abstract class BedrockTextGenerationClient
+internal sealed class BedrockTextGenerationClient
 {
     private readonly string _modelId;
     private readonly IAmazonBedrockRuntime _bedrockApi;
@@ -25,14 +25,14 @@ public abstract class BedrockTextGenerationClient
     /// <param name="modelId"></param>
     /// <param name="bedrockApi"></param>
     /// <exception cref="ArgumentException"></exception>
-    protected BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockApi)
+    public BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockApi)
     {
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
         this._ioService = new BedrockClientIOService().GetIOService(modelId);
     }
 
-    private protected async Task<IReadOnlyList<TextContent>> InvokeBedrockModelAsync(
+    internal async Task<IReadOnlyList<TextContent>> InvokeBedrockModelAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
@@ -49,7 +49,7 @@ public abstract class BedrockTextGenerationClient
         return this._ioService.GetInvokeResponseBody(response);
     }
 
-    private protected async IAsyncEnumerable<StreamingTextContent> StreamTextAsync(
+    internal async IAsyncEnumerable<StreamingTextContent> StreamTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
@@ -77,17 +77,19 @@ public abstract class BedrockTextGenerationClient
 
         foreach (var item in streamingResponse.Body)
         {
-            if (item is PayloadPart payloadPart)
+            if (item is not PayloadPart payloadPart)
             {
-                var chunk = JsonSerializer.Deserialize<JsonNode>(payloadPart.Bytes);
-                if (chunk is not null)
-                {
-                    IEnumerable<string> texts = this._ioService.GetTextStreamOutput(chunk);
-                    foreach (var text in texts)
-                    {
-                        yield return new StreamingTextContent(text);
-                    }
-                }
+                continue;
+            }
+            var chunk = JsonSerializer.Deserialize<JsonNode>(payloadPart.Bytes);
+            if (chunk is null)
+            {
+                continue;
+            }
+            IEnumerable<string> texts = this._ioService.GetTextStreamOutput(chunk);
+            foreach (var text in texts)
+            {
+                yield return new StreamingTextContent(text);
             }
         }
     }

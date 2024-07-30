@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Represents a client for interacting with the chat completion through Bedrock.
 /// </summary>
-public class BedrockChatCompletionClient
+internal sealed class BedrockChatCompletionClient
 {
     private readonly string _modelId;
     private readonly string _modelProvider;
@@ -27,7 +27,7 @@ public class BedrockChatCompletionClient
     /// <param name="modelId"></param>
     /// <param name="bedrockApi"></param>
     /// <exception cref="ArgumentException"></exception>
-    protected BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockApi)
+    public BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockApi)
     {
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
@@ -144,7 +144,7 @@ public class BedrockChatCompletionClient
         {
             try
             {
-                response = await this.StreamConverseBedrockModelAsync(chatHistory, executionSettings, cancellationToken).ConfigureAwait(false);
+                response = await this._bedrockApi.ConverseStreamAsync(converseStreamRequest, cancellationToken).ConfigureAwait(false);
             }
             catch (AmazonBedrockRuntimeException e)
             {
@@ -170,13 +170,5 @@ public class BedrockChatCompletionClient
             }
         }
         activity?.EndStreaming(streamedContents);
-    }
-    private async Task<ConverseStreamResponse> StreamConverseBedrockModelAsync(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        var converseRequest = this._ioService.GetConverseStreamRequest(this._modelId, chatHistory, executionSettings);
-        return await this._bedrockApi.ConverseStreamAsync(converseRequest, cancellationToken).ConfigureAwait(false);
     }
 }
