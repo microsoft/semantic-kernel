@@ -9,7 +9,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from pydantic import ValidationError
@@ -24,6 +23,9 @@ from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
+    from azure.core.credentials import AzureKeyCredential, TokenCredential
+    from azure.core.credentials_async import AsyncTokenCredential
+
     from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 
 
@@ -40,29 +42,24 @@ class AzureAISearchStore(VectorStore):
         self,
         search_endpoint: str | None = None,
         api_key: str | None = None,
-        azure_credentials: AzureKeyCredential | None = None,
-        token_credentials: TokenCredential | None = None,
+        azure_credentials: "AzureKeyCredential | None" = None,
+        token_credentials: "AsyncTokenCredential | TokenCredential | None" = None,
         search_index_client: SearchIndexClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the AzureAISearchStore client.
 
-        Instantiate using Async Context Manager:
-            async with AzureAISearchStore(<...>) as memory:
-                await memory.<...>
-
         Args:
-            search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
-                (default: {None}).
-            api_key (str | None): Azure Cognitive Search API key (default: {None}).
-            azure_credentials (AzureKeyCredential | None): Azure Cognitive Search credentials (default: {None}).
-            token_credentials (TokenCredential | None): Azure Cognitive Search token credentials
-                (default: {None}).
-            search_index_client (SearchIndexClient | None): The search index client (default: {None}).
-            env_file_path (str | None): Use the environment settings file as a fallback
-                to environment variables
-            env_file_encoding (str | None): The encoding of the environment settings file
+        search_endpoint (str): The endpoint of the Azure AI Search service, optional.
+            Can be read from environment variables.
+        api_key (str): Azure AI Search API key, optional. Can be read from environment variables.
+        azure_credentials (AzureKeyCredential ): Azure AI Search credentials, optional.
+        token_credentials (AsyncTokenCredential | TokenCredential): Azure AI Search token credentials, optional.
+        search_index_client (SearchIndexClient): The search index client, optional.
+        env_file_path (str): Use the environment settings file as a fallback
+            to environment variables.
+        env_file_encoding (str): The encoding of the environment settings file.
 
         """
         from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_settings import (
@@ -78,7 +75,7 @@ class AzureAISearchStore(VectorStore):
                     env_file_encoding=env_file_encoding,
                 )
             except ValidationError as exc:
-                raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
+                raise MemoryConnectorInitializationError("Failed to create Azure AI Search settings.") from exc
             search_index_client = get_search_index_client(
                 azure_ai_search_settings=azure_ai_search_settings,
                 azure_credential=azure_credentials,

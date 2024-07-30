@@ -49,26 +49,22 @@ class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[
     ) -> None:
         """Initializes a new instance of the AzureAISearchCollection class.
 
-        Instantiate using Async Context Manager:
-            async with AzureAISearchCollection(<...>) as memory:
-                await memory.<...>
-
         Args:
             data_model_type (type[TModel]): The type of the data model.
-            data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
+            data_model_definition (VectorStoreRecordDefinition): The model definition, optional.
             collection_name (str): The name of the collection, optional.
             search_index_client (SearchIndexClient): The search index client for interacting with Azure AI Search,
                 used for creating and deleting indexes.
             search_client (SearchClient): The search client for interacting with Azure AI Search,
                 used for record operations.
             **kwargs: Additional keyword arguments, including:
-            The first set are the same keyword arguments used for AzureAISearchVectorStore.
-                search_endpoint: str | None = None,
-                api_key: str | None = None,
-                azure_credentials: AzureKeyCredential | None = None,
-                token_credentials: TokenCredential | None = None,
-                env_file_path: str | None = None,
-                env_file_encoding: str | None = None
+                The same keyword arguments used for AzureAISearchVectorStore:
+                    search_endpoint: str | None = None,
+                    api_key: str | None = None,
+                    azure_credentials: AzureKeyCredential | None = None,
+                    token_credentials: AsyncTokenCredential | TokenCredential | None = None,
+                    env_file_path: str | None = None,
+                    env_file_encoding: str | None = None
 
         """
         if search_client and search_index_client:
