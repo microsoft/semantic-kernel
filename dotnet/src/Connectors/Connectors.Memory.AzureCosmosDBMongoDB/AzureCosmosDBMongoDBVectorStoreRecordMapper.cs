@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
-using System.Reflection;
 using MongoDB.Bson.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
