@@ -5,7 +5,7 @@
     "version": "0"
   },
   "paths": {
-    "/fooOrBar": {
+    "/fooBar": {
       "get": {
         "responses": {
           "200": {
@@ -17,6 +17,22 @@
               }
             },
             "description": "response"
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/fooBar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
           }
         }
       }
