@@ -149,6 +149,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             return await cursor.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }).ConfigureAwait(false);
 
+        if (record is null)
+        {
+            return null;
+        }
+
         return VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
             this.CollectionName,
@@ -174,11 +179,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         {
             foreach (var record in cursor.Current)
             {
-                yield return VectorStoreErrorHandler.RunModelConversion(
-                    DatabaseName,
-                    this.CollectionName,
-                    OperationName,
-                    () => this._mapper.MapFromStorageToDataModel(record, new()));
+                if (record is not null)
+                {
+                    yield return VectorStoreErrorHandler.RunModelConversion(
+                        DatabaseName,
+                        this.CollectionName,
+                        OperationName,
+                        () => this._mapper.MapFromStorageToDataModel(record, new()));
+                }
             }
         }
     }
@@ -205,7 +213,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                 .ReplaceOneAsync(this.GetFilterById(key), storageModel, replaceOptions, cancellationToken)
                 .ConfigureAwait(false);
 
-            return result.UpsertedId.AsString;
+            return key;
         });
     }
 

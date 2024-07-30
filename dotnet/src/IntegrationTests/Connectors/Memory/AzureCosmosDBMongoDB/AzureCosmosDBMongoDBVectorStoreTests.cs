@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBMongoDB;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
 [Collection("AzureCosmosDBMongoDBVectorStoreCollection")]
 public class AzureCosmosDBMongoDBVectorStoreTests(AzureCosmosDBMongoDBVectorStoreFixture fixture)

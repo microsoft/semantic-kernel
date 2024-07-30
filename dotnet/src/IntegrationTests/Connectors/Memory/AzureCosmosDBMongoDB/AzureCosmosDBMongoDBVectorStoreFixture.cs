@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Data;
 using MongoDB.Driver;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBMongoDB;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
 public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
 {
@@ -20,7 +20,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     public IMongoDatabase MongoDatabase { get; }
 
-    /// <summary>Gets the manually created vector store record definition for our test model.</summary>
+    /// <summary>Gets the manually created vector store record definition for Azure CosmosDB MongoDB test model.</summary>
     public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
 
     /// <summary>
@@ -48,12 +48,12 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
             Properties =
             [
                 new VectorStoreRecordKeyProperty("HotelId"),
-                new VectorStoreRecordDataProperty("HotelName") { IsFilterable = true, PropertyType = typeof(string) },
-                new VectorStoreRecordDataProperty("HotelCode") { IsFilterable = true, PropertyType = typeof(int) },
-                new VectorStoreRecordDataProperty("ParkingIncluded") { IsFilterable = true, PropertyType = typeof(bool), StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating") { IsFilterable = true, PropertyType = typeof(float) },
+                new VectorStoreRecordDataProperty("HotelName") { PropertyType = typeof(string) },
+                new VectorStoreRecordDataProperty("HotelCode") { PropertyType = typeof(int) },
+                new VectorStoreRecordDataProperty("ParkingIncluded") { PropertyType = typeof(bool), StoragePropertyName = "parking_is_included" },
+                new VectorStoreRecordDataProperty("HotelRating") { PropertyType = typeof(float) },
                 new VectorStoreRecordDataProperty("Tags"),
-                new VectorStoreRecordDataProperty("Description"),
+                new VectorStoreRecordDataProperty("Description") { HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbedding" },
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding") { Dimensions = 4, IndexKind = "vector-ivf", DistanceFunction = "COS" }
             ]
         };
@@ -83,21 +83,22 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         public string HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData]
         public string? HotelName { get; set; }
 
         /// <summary>An int metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData]
         public int HotelCode { get; set; }
 
-        /// <summary>A  float metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true)]
+        /// <summary>A float metadata field.</summary>
+        [VectorStoreRecordData]
         public float? HotelRating { get; set; }
 
         /// <summary>A bool metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true, StoragePropertyName = "parking_is_included")]
+        [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
         public bool ParkingIncluded { get; set; }
 
+        /// <summary>An array metadata field.</summary>
         [VectorStoreRecordData]
         public List<string> Tags { get; set; } = [];
 

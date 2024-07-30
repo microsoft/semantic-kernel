@@ -2,7 +2,7 @@
 
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBMongoDB;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
 [CollectionDefinition("AzureCosmosDBMongoDBVectorStoreCollection")]
 public class AzureCosmosDBMongoDBVectorStoreCollectionFixture : ICollectionFixture<AzureCosmosDBMongoDBVectorStoreFixture>

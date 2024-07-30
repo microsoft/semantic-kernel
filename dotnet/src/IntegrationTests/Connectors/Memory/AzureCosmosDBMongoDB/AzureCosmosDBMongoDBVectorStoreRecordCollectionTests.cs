@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Xunit;
-using static SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBMongoDB.AzureCosmosDBMongoDBVectorStoreFixture;
+using static SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB.AzureCosmosDBMongoDBVectorStoreFixture;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBMongoDB;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
 [Collection("AzureCosmosDBMongoDBVectorStoreCollection")]
 public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBMongoDBVectorStoreFixture fixture)
 {
-    //private const string? SkipReason = "Azure CosmosDB MongoDB cluster is required";
-    private const string? SkipReason = null;
+    private const string? SkipReason = "Azure CosmosDB MongoDB cluster is required";
 
     [Theory(Skip = SkipReason)]
     [InlineData("sk-test-hotels", true)]
@@ -81,6 +81,108 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal(record.Tags.ToArray(), getResult.Tags.ToArray());
         Assert.Equal(record.Description, getResult.Description);
         Assert.Equal(record.DescriptionEmbedding!.Value.ToArray(), getResult.DescriptionEmbedding!.Value.ToArray());
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanDeleteCollectionAsync()
+    {
+        // Arrange
+        const string TempCollectionName = "temp-test";
+        await fixture.MongoDatabase.CreateCollectionAsync(TempCollectionName);
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, TempCollectionName);
+
+        Assert.True(await sut.CollectionExistsAsync());
+
+        // Act
+        await sut.DeleteCollectionAsync();
+
+        // Assert
+        Assert.False(await sut.CollectionExistsAsync());
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanGetAndDeleteRecordAsync()
+    {
+        // Arrange
+        const string HotelId = "55555555-5555-5555-5555-555555555555";
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+
+        var record = this.CreateTestHotel(HotelId);
+
+        var upsertResult = await sut.UpsertAsync(record);
+        var getResult = await sut.GetAsync(HotelId);
+
+        Assert.Equal(HotelId, upsertResult);
+        Assert.NotNull(getResult);
+
+        // Act
+        await sut.DeleteAsync(HotelId);
+
+        getResult = await sut.GetAsync(HotelId);
+
+        // Assert
+        Assert.Null(getResult);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanGetAndDeleteBatchAsync()
+    {
+        // Arrange
+        const string HotelId1 = "11111111-1111-1111-1111-111111111111";
+        const string HotelId2 = "22222222-2222-2222-2222-222222222222";
+        const string HotelId3 = "33333333-3333-3333-3333-333333333333";
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+
+        var record1 = this.CreateTestHotel(HotelId1);
+        var record2 = this.CreateTestHotel(HotelId2);
+        var record3 = this.CreateTestHotel(HotelId3);
+
+        var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
+        var getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+
+        Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
+
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId1));
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId2));
+        Assert.NotNull(getResults.First(l => l.HotelId == HotelId3));
+
+        // Act
+        await sut.DeleteBatchAsync([HotelId1, HotelId2, HotelId3]);
+
+        getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+
+        // Assert
+        Assert.Empty(getResults);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertRecordAsync()
+    {
+        // Arrange
+        const string HotelId = "55555555-5555-5555-5555-555555555555";
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+
+        var record = this.CreateTestHotel(HotelId);
+
+        var upsertResult = await sut.UpsertAsync(record);
+        var getResult = await sut.GetAsync(HotelId);
+
+        Assert.Equal(HotelId, upsertResult);
+        Assert.NotNull(getResult);
+
+        // Act
+        record.HotelName = "Updated name";
+        record.HotelRating = 10;
+
+        upsertResult = await sut.UpsertAsync(record);
+        getResult = await sut.GetAsync(HotelId);
+
+        // Assert
+        Assert.NotNull(getResult);
+        Assert.Equal("Updated name", getResult.HotelName);
+        Assert.Equal(10, getResult.HotelRating);
     }
 
     #region private
