@@ -16,6 +16,7 @@ from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collectio
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
+from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.data.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -66,32 +67,35 @@ class MyDataModelList:
     ] = "content1"
 
 
-kernel = Kernel()
-
+# configuration,
+# specify which store (redis_json, redis_hash, qdrant, Azure AI Search) to use
+# and which model (vectors as list or as numpy arrays)
 store = "qdrant"
+collection_name = "test"
 MyDataModel = MyDataModelList
 
-stores = {
+stores: dict[str, VectorStoreRecordCollection] = {
+    "ai_search": AzureAISearchCollection[MyDataModel](
+        data_model_type=MyDataModel,
+    ),
     "redis_json": RedisJsonCollection[MyDataModel](
         data_model_type=MyDataModel,
-        collection_name="test",
+        collection_name=collection_name,
         prefix_collection_name_to_key_names=True,
     ),
     "redis_hashset": RedisHashsetCollection[MyDataModel](
         data_model_type=MyDataModel,
-        collection_name="test_hashset",
+        collection_name=collection_name,
         prefix_collection_name_to_key_names=True,
     ),
-    "ai_search": AzureAISearchCollection[MyDataModel](
-        data_model_type=MyDataModel,
-    ),
     "qdrant": QdrantCollection[MyDataModel](
-        data_model_type=MyDataModel, collection_name="test_non_named", prefer_grpc=True, named_vectors=False
+        data_model_type=MyDataModel, collection_name=collection_name, prefer_grpc=True, named_vectors=False
     ),
 }
 
 
 async def main():
+    kernel = Kernel()
     service_id = "embedding"
     ai_model_id = "text-embedding-3-small"
     kernel.add_service(OpenAITextEmbedding(service_id=service_id, ai_model_id=ai_model_id))
@@ -101,8 +105,9 @@ async def main():
         record1 = MyDataModel(content="My text", id="e6103c03-487f-4d7d-9c23-4723651c17f4")
         record2 = MyDataModel(content="My other text", id="09caec77-f7e1-466a-bcec-f1d51c5b15be")
 
-        embedder = VectorStoreRecordUtils(kernel)
-        records = await embedder.add_vector_to_records([record1, record2], data_model_type=MyDataModel)
+        records = await VectorStoreRecordUtils(kernel).add_vector_to_records(
+            [record1, record2], data_model_type=MyDataModel
+        )
         keys = await record_store.upsert_batch(records)
         print(f"upserted {keys=}")
 
