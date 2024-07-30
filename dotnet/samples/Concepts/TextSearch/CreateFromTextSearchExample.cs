@@ -67,8 +67,42 @@ public sealed class CreateFromTextSearchExample(ITestOutputHelper output) : Base
 
     private static KernelPluginFromTextSearchOptions<T> CreateCustomOptions<T>(ITextSearch<T> textSearch) where T : class
     {
-        KernelFunctionFromMethodOptions search = new()
+        List<KernelFunctionFromTextSearchOptions> functions = [];
+        KernelPluginFromTextSearchOptions<T> options = new()
         {
+            Functions = functions
+        };
+
+        async Task<string> SearchAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        {
+            try
+            {
+                arguments.TryGetValue("query", out var query);
+                query = query?.ToString() ?? string.Empty;
+
+                var parameters = function.Metadata.Parameters;
+
+                arguments.TryGetValue("count", out var count);
+                arguments.TryGetValue("count", out var skip);
+                SearchOptions searchOptions = new()
+                {
+                    Count = (count as int?) ?? 2,
+                    Offset = (skip as int?) ?? 0,
+                };
+
+                var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
+                var resultList = await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
+                return options.MapToString!(resultList);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        KernelFunctionFromTextSearchOptions search = new()
+        {
+            Delegate = SearchAsync,
             FunctionName = "SearchForTenResults",
             Description = "Perform a search for content related to the specified query and return 10 results",
             Parameters =
@@ -79,10 +113,8 @@ public sealed class CreateFromTextSearchExample(ITestOutputHelper output) : Base
             ],
             ReturnParameter = new() { ParameterType = typeof(T) },
         };
+        functions.Add(search);
 
-        return new()
-        {
-            Functions = [search],
-        };
+        return options;
     }
 }

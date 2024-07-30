@@ -24,6 +24,25 @@ public static class TextSearchKernelPluginFactory
     {
         options ??= CreateDefaultOptions(textSearch);
 
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, options.CreateKernelFunctions());
+    }
+
+    #region private
+
+    private static int GetDefaultValue(IReadOnlyList<KernelParameterMetadata> parameters, string name, int defaultValue)
+    {
+        var value = parameters.FirstOrDefault(parameter => parameter.Name == name)?.DefaultValue;
+        return value is int intValue ? intValue : defaultValue;
+    }
+
+    private static KernelPluginFromTextSearchOptions<T> CreateDefaultOptions<T>(ITextSearch<T> textSearch) where T : class
+    {
+        List<KernelFunctionFromTextSearchOptions> functions = [];
+        KernelPluginFromTextSearchOptions<T> options = new()
+        {
+            Functions = functions
+        };
+
         async Task<string> SearchAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
             try
@@ -77,29 +96,24 @@ public static class TextSearchKernelPluginFactory
             }
         }
 
-        var search = KernelFunctionFactory.CreateFromMethod(
-                SearchAsync,
-                options.Functions!.First());
-
-        var getSearchResults = KernelFunctionFactory.CreateFromMethod(
-                GetSearchResultsAsync,
-                options.Functions!.First());
-
-        return KernelPluginFactory.CreateFromFunctions(pluginName, description, [search, getSearchResults]);
-    }
-
-    #region private
-
-    private static int GetDefaultValue(IReadOnlyList<KernelParameterMetadata> parameters, string name, int defaultValue)
-    {
-        var value = parameters.FirstOrDefault(parameter => parameter.Name == name)?.DefaultValue;
-        return value is int intValue ? intValue : defaultValue;
-    }
-
-    private static KernelPluginFromTextSearchOptions<T> CreateDefaultOptions<T>(ITextSearch<T> textSearch) where T : class
-    {
-        KernelFunctionFromMethodOptions search = new()
+        KernelFunctionFromTextSearchOptions search = new()
         {
+            Delegate = SearchAsync,
+            FunctionName = "Search",
+            Description = "Perform a search for content related to the specified query and return string results",
+            Parameters =
+            [
+                new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
+                new KernelParameterMetadata("count") { Description = "Number of results", IsRequired = false, DefaultValue = 2 },
+                new KernelParameterMetadata("skip") { Description = "Number of results skip", IsRequired = false, DefaultValue = 0 },
+            ],
+            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
+        };
+        functions.Add(search);
+
+        KernelFunctionFromTextSearchOptions getSearchResults = new()
+        {
+            Delegate = GetSearchResultsAsync,
             FunctionName = "Search",
             Description = "Perform a search for content related to the specified query",
             Parameters =
@@ -110,11 +124,9 @@ public static class TextSearchKernelPluginFactory
             ],
             ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<T>) },
         };
+        functions.Add(getSearchResults);
 
-        return new()
-        {
-            Functions = [search],
-        };
+        return options;
     }
 
     #endregion
