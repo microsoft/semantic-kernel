@@ -20,7 +20,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 # using dataclasses, Pydantic, and Python classes.
 # As well as using types like Pandas Dataframes.
 
-# There are a number of univeral things about these data models:
+# There are a number of universal things about these data models:
 # they must specify the type of field through the annotation (or the definition).
 # there must be at least one field of type VectorStoreRecordKeyField.
 # If you set the embedding_property_name in the VectorStoreRecordDataField, that field must exist and be a vector field.
