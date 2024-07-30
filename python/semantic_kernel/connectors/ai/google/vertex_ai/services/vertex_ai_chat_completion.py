@@ -2,7 +2,7 @@
 
 import sys
 from collections.abc import AsyncGenerator, AsyncIterable
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import vertexai
 from google.cloud.aiplatform_v1beta1.types.content import Content
@@ -34,9 +34,6 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-
-if TYPE_CHECKING:
-    pass
 
 
 class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):

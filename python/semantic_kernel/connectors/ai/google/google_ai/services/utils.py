@@ -52,7 +52,7 @@ def format_user_message(message: ChatMessageContent) -> list[Part]:
             if item.data_uri:
                 parts.append(Part(inline_data=Blob(mime_type=item.mime_type, data=item.data)))
             else:
-                # The Google AI API doesn't support image from an arbitrary URI:
+                # The Google AI API doesn't support images from arbitrary URIs:
                 # https://github.com/google-gemini/generative-ai-python/issues/357
                 raise ServiceInvalidRequestError(
                     "ImageContent without data_uri in User message while formatting chat history for Google AI"
