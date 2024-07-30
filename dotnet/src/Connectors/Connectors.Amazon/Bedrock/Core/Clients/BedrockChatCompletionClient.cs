@@ -75,10 +75,10 @@ internal sealed class BedrockChatCompletionClient
                 activity.SetError(ex);
                 throw;
             }
-            IEnumerable<ChatMessageContent> chat = ConvertToMessageContent(response);
-            IReadOnlyList<ChatMessageContent> chatMessagesList = chat.ToList();
-            activity?.SetCompletionResponse(chatMessagesList);
-            return chatMessagesList;
+
+            IReadOnlyList<ChatMessageContent> chatMessages = ConvertToMessageContent(response).ToList();
+            activity?.SetCompletionResponse(chatMessages);
+            return chatMessages;
         }
     }
     /// <summary>
