@@ -112,7 +112,7 @@ public class AI21JambaIOService : IBedrockModelIOService
         return converseRequest;
     }
     /// <summary>
-    /// Gets the streamed text output. AI21 Labs Jamba does not support streaming, but otherwise getting the text response body output would look like the following.
+    /// Gets the streamed text output.
     /// </summary>
     /// <param name="chunk"></param>
     /// <returns></returns>
@@ -126,7 +126,7 @@ public class AI21JambaIOService : IBedrockModelIOService
         }
     }
     /// <summary>
-    /// AI21 Labs Jamba does not support streaming otherwise getting the converse stream output would look like the following (if model ever decides to add).
+    /// Gets converse stream output.
     /// </summary>
     /// <param name="modelId"></param>
     /// <param name="chatHistory"></param>

@@ -52,6 +52,7 @@ public class BedrockTextGenerationTests
     }
 
     [Theory]
+    [InlineData("ai21.jamba-instruct-v1:0")]
     [InlineData("anthropic.claude-v2")]
     [InlineData("anthropic.claude-v2:1")]
     [InlineData("anthropic.claude-instant-v1")]
