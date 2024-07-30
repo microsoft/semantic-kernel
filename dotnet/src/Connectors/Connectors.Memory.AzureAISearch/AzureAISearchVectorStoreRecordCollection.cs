@@ -192,7 +192,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             // Data property.
             if (property is VectorStoreRecordDataProperty dataProperty)
             {
-                searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty, this._storagePropertyNames[dataProperty.PropertyName]));
+                searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty, this._storagePropertyNames[dataProperty.DataModelPropertyName]));
             }
 
             // Vector property.
@@ -200,7 +200,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
             {
                 (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(
                     vectorProperty,
-                    this._storagePropertyNames[vectorProperty.PropertyName]);
+                    this._storagePropertyNames[vectorProperty.DataModelPropertyName]);
 
                 // Add the search field, plus its profile and algorithm configuration to the search config.
                 searchFields.Add(vectorSearchField);

@@ -150,11 +150,11 @@ public class VectorStoreRecordPropertyReaderTests
 
         // Assert.
         Assert.Equal(5, definition.Properties.Count);
-        Assert.Equal("Key", definition.Properties[0].PropertyName);
-        Assert.Equal("Data1", definition.Properties[1].PropertyName);
-        Assert.Equal("Data2", definition.Properties[2].PropertyName);
-        Assert.Equal("Vector1", definition.Properties[3].PropertyName);
-        Assert.Equal("Vector2", definition.Properties[4].PropertyName);
+        Assert.Equal("Key", definition.Properties[0].DataModelPropertyName);
+        Assert.Equal("Data1", definition.Properties[1].DataModelPropertyName);
+        Assert.Equal("Data2", definition.Properties[2].DataModelPropertyName);
+        Assert.Equal("Vector1", definition.Properties[3].DataModelPropertyName);
+        Assert.Equal("Vector2", definition.Properties[4].DataModelPropertyName);
 
         Assert.IsType<VectorStoreRecordKeyProperty>(definition.Properties[0]);
         Assert.IsType<VectorStoreRecordDataProperty>(definition.Properties[1]);
