@@ -81,7 +81,7 @@ jobs:
         run: |
           ollama pull ${{ vars.OLLAMA_MODEL }}
           ollama list
-      - name: Google Auth
+      - name: Google auth
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
@@ -177,7 +177,7 @@ jobs:
           ollama pull ${{ vars.OLLAMA_MODEL }}
           ollama list
 
-      - name: Google Auth
+      - name: Google auth
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}

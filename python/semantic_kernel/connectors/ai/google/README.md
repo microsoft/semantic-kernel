@@ -6,9 +6,10 @@ Gemini models are Google's large language models. Semantic Kernel provides two c
 
 You can access the Gemini API from Google AI Studio. This mode of access is for quick prototyping as it relies on API keys.
 
-Follow [these instructions](https://ai.google.dev/gemini-api/docs/api-key) to get an API key.
+Follow [these instructions](https://ai.google.dev/api?lang=python#authenticate) to get an API key.
 
 Once you have an API key, you can start using Gemini models in SK using the `google_ai` connector. Example:
+
 ```Python
 kernel = Kernel()
 kernel.add_service(
@@ -19,6 +20,7 @@ kernel.add_service(
 )
 ...
 ```
+
 > Alternatively, you can use an .env file to store the model id and api key.
 
 ## Vertex AI
@@ -28,10 +30,12 @@ Google also offers access to Gemini through its Vertex AI platform. Vertex AI pr
 This mode of access requires a Google Cloud service account. Follow these [instructions](https://cloud.google.com/vertex-ai/generative-ai/docs/migrate/migrate-google-ai) to create a Google Cloud project if you don't have one already. Remember the `project id` as it is required to access the models.
 
 Follow the steps below to set up your environment to use the Vertex AI API:
+
 - [Install the gcloud CLI](https://cloud.google.com/sdk/docs/install)
 - [Initialize the gcloud CLI](https://cloud.google.com/sdk/docs/initializing)
 
 Once you have your project and your environment is set up, you can start using Gemini models in SK using the `vertex_ai` connector. Example:
+
 ```Python
 kernel = Kernel()
 kernel.add_service(
@@ -42,4 +46,5 @@ kernel.add_service(
 )
 ...
 ```
+
 > Alternatively, you can use an .env file to store the model id and project id.
