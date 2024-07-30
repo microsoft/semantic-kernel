@@ -9,7 +9,7 @@ from google.cloud.aiplatform_v1beta1.types.content import Content
 from pydantic import ValidationError
 from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
-from semantic_kernel.connectors.ai.google.shared import filter_system_message
+from semantic_kernel.connectors.ai.google.shared_utils import filter_system_message
 from semantic_kernel.connectors.ai.google.vertex_ai.services.utils import (
     finish_reason_from_vertex_ai_to_semantic_kernel,
     format_assistant_message,

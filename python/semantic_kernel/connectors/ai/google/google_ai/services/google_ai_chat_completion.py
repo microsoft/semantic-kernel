@@ -20,7 +20,7 @@ from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     format_assistant_message,
     format_user_message,
 )
-from semantic_kernel.connectors.ai.google.shared import filter_system_message
+from semantic_kernel.connectors.ai.google.shared_utils import filter_system_message
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
