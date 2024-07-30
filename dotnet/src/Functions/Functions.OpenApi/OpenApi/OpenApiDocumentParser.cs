@@ -123,13 +123,39 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <returns>JSON content stream.</returns>
     private static async Task<JsonObject?> ConvertContentToJsonAsync(Stream stream, CancellationToken cancellationToken = default)
     {
+        var inputStream = stream;
+        try
+        {
+            if (stream.CanSeek)
+            {
+                // Fast path if stream is already json and seekable
+                return await JsonSerializer.DeserializeAsync<JsonObject>(inputStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+
+            inputStream = new MemoryStream();
+            // Copy stream if it cannot be seeked. Needed for YAML streams which will fail JSON deserialization.
+            await stream.CopyToAsync(inputStream).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<JsonObject>(inputStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (JsonException)
+        { /*Not JSON. Maybe YAML*/
+        }
+        finally
+        {
+            if (inputStream != stream)
+            {
+                inputStream.Dispose();
+            }
+        }
+
+        inputStream.Seek(0, SeekOrigin.Begin);
         var serializer = new SharpYaml.Serialization.Serializer();
 
-        var obj = serializer.Deserialize(stream);
-
-        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj)));
-
-        return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var obj = serializer.Deserialize(inputStream);
+        using var serializedStream = new MemoryStream();
+        await JsonSerializer.SerializeAsync(serializedStream, obj, cancellationToken: cancellationToken).ConfigureAwait(false);
+        serializedStream.Seek(0, SeekOrigin.Begin);
+        return await JsonSerializer.DeserializeAsync<JsonObject>(serializedStream, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
