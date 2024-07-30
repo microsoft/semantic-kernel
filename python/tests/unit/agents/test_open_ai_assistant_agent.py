@@ -14,7 +14,7 @@ from semantic_kernel.kernel import Kernel
 
 
 @pytest.fixture
-def openai_assistant_agent(kernel: Kernel):
+def openai_assistant_agent(kernel: Kernel, openai_unit_test_env):
     return OpenAIAssistantAgent(
         kernel=kernel,
         service_id="test_service",
@@ -54,7 +54,7 @@ def mock_assistant():
     )
 
 
-def test_initialization(openai_assistant_agent: OpenAIAssistantAgent, azure_openai_unit_test_env):
+def test_initialization(openai_assistant_agent: OpenAIAssistantAgent, openai_unit_test_env):
     agent = openai_assistant_agent
     assert agent is not None
     agent.kernel is not None
@@ -75,11 +75,15 @@ def test_create_client_from_configuration_missing_api_key():
 
 
 @pytest.mark.asyncio
-async def test_create_agent(kernel: Kernel):
+async def test_create_agent(kernel: Kernel, openai_unit_test_env):
     with patch.object(OpenAIAssistantAgent, "create_assistant", new_callable=AsyncMock) as mock_create_assistant:
         mock_create_assistant.return_value = MagicMock(spec=Assistant)
         agent = await OpenAIAssistantAgent.create(
-            kernel=kernel, service_id="test_service", name="test_name", api_key="test_api_key"
+            kernel=kernel,
+            ai_model_id="test_model_id",
+            service_id="test_service",
+            name="test_name",
+            api_key="test_api_key",
         )
         assert agent.assistant is not None
         mock_create_assistant.assert_called_once()
