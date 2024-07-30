@@ -495,6 +495,20 @@ pytestmark = pytest.mark.parametrize(
             ["house", "germany"],
             id="google_ai_image_input_file",
         ),
+        pytest.param(
+            "google_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
+                ),
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="google_ai_tool_call_auto",
+        ),
     ],
 )
 
@@ -560,6 +574,7 @@ async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stre
         response = invocation.value[0]
     print(response)
     if isinstance(response, ChatMessageContent):
+        assert response.items, "No items in response"
         for item in response.items:
             if isinstance(item, TextContent):
                 assert item.text is not None

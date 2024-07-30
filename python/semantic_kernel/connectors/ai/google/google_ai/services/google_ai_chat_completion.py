@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import asyncio
+import logging
 import sys
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
@@ -11,6 +13,7 @@ from google.generativeai.protos import Candidate, Content
 from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
@@ -19,11 +22,18 @@ from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     filter_system_message,
     finish_reason_from_google_ai_to_semantic_kernel,
     format_assistant_message,
+    format_gemini_function_name_to_kernel_function_fully_qualified_name,
+    format_tool_message,
     format_user_message,
+    update_settings_from_function_choice_configuration,
 )
+from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -33,11 +43,16 @@ else:
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidExecutionSettingsError,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
@@ -97,7 +112,40 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
-        return await self._send_chat_request(chat_history, settings)
+        if (
+            settings.function_choice_behavior is None
+            or not settings.function_choice_behavior.auto_invoke_kernel_functions
+        ):
+            return await self._send_chat_request(chat_history, settings)
+
+        kernel = kwargs.get("kernel")
+        if not isinstance(kernel, Kernel):
+            raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
+
+        self._configure_function_choice_behavior(settings, kernel)
+
+        for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
+            completions = await self._send_chat_request(chat_history, settings)
+            chat_history.add_message(message=completions[0])
+            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
+            if (fc_count := len(function_calls)) == 0:
+                return completions
+
+            results = await self._invoke_function_calls(
+                function_calls=function_calls,
+                chat_history=chat_history,
+                kernel=kernel,
+                arguments=kwargs.get("argument", None),
+                function_call_count=fc_count,
+                request_index=request_index,
+                function_behavior=settings.function_choice_behavior,
+            )
+
+            if any(result.terminate for result in results if result is not None):
+                return completions
+        else:
+            # do a final call without auto function calling
+            return await self._send_chat_request(chat_history, settings)
 
     async def _send_chat_request(
         self, chat_history: ChatHistory, settings: GoogleAIChatPromptExecutionSettings
@@ -112,6 +160,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response: AsyncGenerateContentResponse = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
+            tools=settings.tools,
+            tool_config=settings.tool_config,
         )
 
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
@@ -133,10 +183,25 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response_metadata = self._get_metadata_from_response(response)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
+        items: list[ITEM_TYPES] = []
+        for idx, part in enumerate(candidate.content.parts):
+            if part.text:
+                items.append(TextContent(text=part.text, inner_content=response, metadata=response_metadata))
+            elif part.function_call:
+                items.append(
+                    FunctionCallContent(
+                        id=f"{part.function_call.name}_{idx!s}",
+                        name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
+                            part.function_call.name
+                        ),
+                        arguments={k: v for k, v in part.function_call.args.items()},
+                    )
+                )
+
         return ChatMessageContent(
             ai_model_id=self.ai_model_id,
             role=AuthorRole.ASSISTANT,
-            content=candidate.content.parts[0].text,
+            items=items,
             inner_content=response,
             finish_reason=finish_reason,
             metadata=response_metadata,
@@ -230,6 +295,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 chat_request_messages.append(Content(role="user", parts=format_user_message(message)))
             elif message.role == AuthorRole.ASSISTANT:
                 chat_request_messages.append(Content(role="model", parts=format_assistant_message(message)))
+            elif message.role == AuthorRole.TOOL:
+                chat_request_messages.append(Content(role="function", parts=format_tool_message(message)))
             else:
                 raise ValueError(f"Unsupported role: {message.role}")
 
@@ -266,6 +333,44 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             "safety_ratings": candidate.safety_ratings,
             "token_count": candidate.token_count,
         }
+
+    def _configure_function_choice_behavior(self, settings: GoogleAIChatPromptExecutionSettings, kernel: Kernel):
+        """Configure the function choice behavior to include the kernel functions."""
+        if not settings.function_choice_behavior:
+            raise ServiceInvalidExecutionSettingsError("Function choice behavior is required for tool calls.")
+
+        settings.function_choice_behavior.configure(
+            kernel=kernel,
+            update_settings_callback=update_settings_from_function_choice_configuration,
+            settings=settings,
+        )
+
+    async def _invoke_function_calls(
+        self,
+        function_calls: list[FunctionCallContent],
+        chat_history: ChatHistory,
+        kernel: Kernel,
+        arguments: KernelArguments | None,
+        function_call_count: int,
+        request_index: int,
+        function_behavior: FunctionChoiceBehavior,
+    ):
+        """Invoke function calls."""
+        logger.info(f"processing {function_call_count} tool calls in parallel.")
+
+        return await asyncio.gather(
+            *[
+                kernel.invoke_function_call(
+                    function_call=function_call,
+                    chat_history=chat_history,
+                    arguments=arguments,
+                    function_call_count=function_call_count,
+                    request_index=request_index,
+                    function_behavior=function_behavior,
+                )
+                for function_call in function_calls
+            ],
+        )
 
     @override
     def get_prompt_execution_settings_class(
