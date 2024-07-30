@@ -62,16 +62,29 @@ internal sealed class BedrockTextGenerationClient
         try
         {
             response = await this._bedrockApi.InvokeModelAsync(invokeRequest, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (activity is not null)
-        {
-            activity.SetError(ex);
-            if (response != null)
+            if (activity is not null)
             {
                 activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                 activity.SetStatus(activityStatus);
             }
-
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: Can't invoke '{this._modelId}'. Reason: {ex.Message}");
+            if (activity is not null)
+            {
+                activity.SetError(ex);
+                if (response != null)
+                {
+                    activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                    activity.SetStatus(activityStatus);
+                }
+                else
+                {
+                    // If response is null, set a default status or leave it unset
+                    activity.SetStatus(ActivityStatusCode.Error); // or ActivityStatusCode.Unset
+                }
+            }
             throw;
         }
         activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
@@ -101,18 +114,33 @@ internal sealed class BedrockTextGenerationClient
         InvokeModelWithResponseStreamResponse? streamingResponse = null;
         using var activity = ModelDiagnostics.StartCompletionActivity(
             this._textGenerationEndpoint, this._modelId, this._modelProvider, prompt, executionSettings);
+        ActivityStatusCode activityStatus;
         try
         {
             streamingResponse = await this._bedrockApi.InvokeModelWithResponseStreamAsync(invokeRequest, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (activity is not null)
-        {
-            activity.SetError(ex);
-            if (streamingResponse != null)
+            if (activity is not null)
             {
-                activity.SetStatus(this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(streamingResponse.HttpStatusCode));
+                activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(streamingResponse.HttpStatusCode);
+                activity.SetStatus(activityStatus);
             }
-
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: Can't invoke '{this._modelId}'. Reason: {ex.Message}");
+            if (activity is not null)
+            {
+                activity.SetError(ex);
+                if (streamingResponse != null)
+                {
+                    activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(streamingResponse.HttpStatusCode);
+                    activity.SetStatus(activityStatus);
+                }
+                else
+                {
+                    // If streamingResponse is null, set a default status or leave it unset
+                    activity.SetStatus(ActivityStatusCode.Error); // or ActivityStatusCode.Unset
+                }
+            }
             throw;
         }
 

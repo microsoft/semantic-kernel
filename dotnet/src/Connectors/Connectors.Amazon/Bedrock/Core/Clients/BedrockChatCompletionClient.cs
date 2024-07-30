@@ -72,16 +72,32 @@ internal sealed class BedrockChatCompletionClient
         try
         {
             response = await this.ConverseBedrockModelAsync(converseRequest, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (activity is not null)
-        {
-            activity.SetError(ex);
-            if (response != null)
+            if (activity is not null)
             {
                 activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                 activity.SetStatus(activityStatus);
                 activity.SetPromptTokenUsage(response.Usage.InputTokens);
                 activity.SetCompletionTokenUsage(response.Usage.OutputTokens);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: Can't converse with '{this._modelId}'. Reason: {ex.Message}");
+            if (activity is not null)
+            {
+                activity.SetError(ex);
+                if (response != null)
+                {
+                    activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                    activity.SetStatus(activityStatus);
+                    activity.SetPromptTokenUsage(response.Usage.InputTokens);
+                    activity.SetCompletionTokenUsage(response.Usage.OutputTokens);
+                }
+                else
+                {
+                    // If response is null, set a default status or leave it unset
+                    activity.SetStatus(ActivityStatusCode.Error); // or ActivityStatusCode.Unset
+                }
             }
             throw;
         }
@@ -144,18 +160,31 @@ internal sealed class BedrockChatCompletionClient
         try
         {
             response = await this._bedrockApi.ConverseStreamAsync(converseStreamRequest, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (activity is not null)
-        {
-            activity.SetError(ex);
-            if (response != null)
+            if (activity is not null)
             {
                 activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
                 activity.SetStatus(activityStatus);
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: Can't converse stream with '{this._modelId}'. Reason: {ex.Message}");
+            if (activity is not null)
+            {
+                activity.SetError(ex);
+                if (response != null)
+                {
+                    activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
+                    activity.SetStatus(activityStatus);
+                }
+                else
+                {
+                    // If response is null, set a default status or leave it unset
+                    activity.SetStatus(ActivityStatusCode.Error); // or ActivityStatusCode.Unset
+                }
+            }
             throw;
         }
-
         List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
         foreach (var chunk in response.Stream.AsEnumerable())
         {
