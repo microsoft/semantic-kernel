@@ -2,6 +2,7 @@
 
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Connectors.Amazon.Models;
@@ -50,6 +51,7 @@ public static class BedrockModelUtilities
     public static List<Message> BuildMessageList(ChatHistory chatHistory)
     {
         // Check that the text from the latest message in the chat history  is not empty.
+        Verify.NotNullOrEmpty(chatHistory);
         string? text = chatHistory[^1].Content;
         if (string.IsNullOrWhiteSpace(text))
         {

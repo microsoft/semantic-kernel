@@ -105,7 +105,7 @@ public class BedrockChatCompletionServiceTests
 
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<IChatCompletionService>();
-        var chatHistory = new ChatHistory();
+        var chatHistory = CreateSampleChatHistory();
 
         // Act
         List<StreamingChatMessageContent> output = new();
