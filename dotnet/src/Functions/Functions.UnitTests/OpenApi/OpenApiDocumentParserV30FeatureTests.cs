@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.IO;
-using System.Text;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
+using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi;
@@ -12,21 +13,38 @@ public static class OpenApiDocumentParserV30FeatureTests
 {
     public class OneOfTests
     {
+        /// <summary>
+        /// System under test - an instance of OpenApiDocumentParser class.
+        /// </summary>
+        private readonly OpenApiDocumentParser _parser;
+
+        /// <summary>
+        /// OpenAPI document stream.
+        /// </summary>
+        private readonly Stream _openApiDocument;
+
+        public OneOfTests()
+        {
+            using var stream0 = ResourcePluginsProvider.LoadFromResource("openapi_any_of.json");
+            // /components/schemas/fooBar
+            this._openApiDocument = OpenApiTestHelper.ModifyOpenApiDocument(stream0, (doc) =>
+            {
+                var schemas = doc["components"]!["schemas"]!;
+                var anyOf = schemas["fooBar"]!["anyOf"];
+                schemas["fooBar"]!["anyOf"] = null;
+                var schema = new JsonObject
+                {
+                    ["oneOf"] = anyOf
+                };
+                schemas["fooBar"] = schema;
+            });
+            this._parser = new OpenApiDocumentParser();
+        }
+
         [Fact]
         public async Task ParsesOneOfAsync()
         {
-            var api = """
-                      {"openapi":"3.0.3","info":{"title":"Test OneOf0","version":"0"},
-                      "paths":{"/fooOrBar":{"get":{"responses":{"200":{"content":{"application/json":{
-                      "schema":{"$ref":"#/components/schemas/fooOrBar"}}},"description":"response"}}}}},
-                      "components":{"schemas":{"foo":{"type":"object","properties":{"name":{"type":"string"},
-                      "extra":{"type":"string"}}},"bar":{"type":"string"},
-                      "fooOrBar":{"oneOf":[{"$ref":"#/components/schemas/foo"},{"$ref":"#/components/schemas/bar"}]}}}}
-                      """.Trim();
-            var ms = new MemoryStream(Encoding.Default.GetBytes(api));
-            var parser = new OpenApiDocumentParser();
-
-            var spec = await parser.ParseAsync(ms);
+            var spec = await this._parser.ParseAsync(this._openApiDocument);
 
             Assert.NotEmpty(spec.Operations);
             var op0 = spec.Operations[0];
@@ -42,21 +60,46 @@ public static class OpenApiDocumentParserV30FeatureTests
 
     public class AllOfTests
     {
+        /// <summary>
+        /// System under test - an instance of OpenApiDocumentParser class.
+        /// </summary>
+        private readonly OpenApiDocumentParser _parser;
+
+        /// <summary>
+        /// OpenAPI document stream.
+        /// </summary>
+        private readonly Stream _openApiDocument;
+
+        public AllOfTests()
+        {
+            using var stream0 = ResourcePluginsProvider.LoadFromResource("openapi_any_of.json");
+            // /components/schemas/fooBar
+            this._openApiDocument = OpenApiTestHelper.ModifyOpenApiDocument(stream0, (doc) =>
+            {
+                var schemas = doc["components"]!["schemas"]!;
+                schemas["bar"]!["type"] = "object";
+                schemas["bar"]!["properties"] = new JsonObject
+                {
+                    ["name"] = new JsonObject
+                    {
+                        ["type"] = "string"
+                    }
+                };
+                var anyOf = schemas["fooBar"]!["anyOf"];
+                schemas["fooBar"]!["anyOf"] = null;
+                var schema = new JsonObject
+                {
+                    ["allOf"] = anyOf
+                };
+                schemas["fooBar"] = schema;
+            });
+            this._parser = new OpenApiDocumentParser();
+        }
+
         [Fact]
         public async Task ParsesAllOfAsync()
         {
-            var api = """
-                      {"openapi":"3.0.3","info":{"title":"Test AllOf0","version":"0"},
-                      "paths":{"/fooOrBar":{"get":{"responses":{"200":{"content":{"application/json":{
-                      "schema":{"$ref":"#/components/schemas/fooAndBar"}}},"description":"response"}}}}},
-                      "components":{"schemas":{"foo":{"type":"object","properties":{"name":{"type":"string"},
-                      "extra":{"type":"string"}}},"bar":{"type":"object","properties":{"description":{"type":"string"}}},
-                      "fooAndBar":{"allOf":[{"$ref":"#/components/schemas/foo"},{"$ref":"#/components/schemas/bar"}]}}}}
-                      """.Trim();
-            var ms = new MemoryStream(Encoding.Default.GetBytes(api));
-            var parser = new OpenApiDocumentParser();
-
-            var spec = await parser.ParseAsync(ms);
+            var spec = await this._parser.ParseAsync(this._openApiDocument);
 
             Assert.NotEmpty(spec.Operations);
             var op0 = spec.Operations[0];
@@ -72,21 +115,26 @@ public static class OpenApiDocumentParserV30FeatureTests
 
     public class AnyOfTests
     {
+        /// <summary>
+        /// System under test - an instance of OpenApiDocumentParser class.
+        /// </summary>
+        private readonly OpenApiDocumentParser _parser;
+
+        /// <summary>
+        /// OpenAPI document stream.
+        /// </summary>
+        private readonly Stream _openApiDocument;
+
+        public AnyOfTests()
+        {
+            this._openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_any_of.json");
+            this._parser = new OpenApiDocumentParser();
+        }
+
         [Fact]
         public async Task ParsesAnyOfAsync()
         {
-            var api = """
-                      {"openapi":"3.0.3","info":{"title":"Test AnyOf0","version":"0"},
-                      "paths":{"/fooOrBar":{"get":{"responses":{"200":{"content":{"application/json":{
-                      "schema":{"$ref":"#/components/schemas/fooOrBar"}}},"description":"response"}}}}},
-                      "components":{"schemas":{"foo":{"type":"object","properties":{"name":{"type":"string"},
-                      "extra":{"type":"string"}}},"bar":{"type":"string"},
-                      "fooOrBar":{"anyOf":[{"$ref":"#/components/schemas/foo"},{"$ref":"#/components/schemas/bar"}]}}}}
-                      """.Trim();
-            var ms = new MemoryStream(Encoding.Default.GetBytes(api));
-            var parser = new OpenApiDocumentParser();
-
-            var spec = await parser.ParseAsync(ms);
+            var spec = await this._parser.ParseAsync(this._openApiDocument);
 
             Assert.NotEmpty(spec.Operations);
             var op0 = spec.Operations[0];

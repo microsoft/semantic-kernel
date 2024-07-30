@@ -15,6 +15,7 @@
     <None Remove="OpenApi\TestPlugins\ai-plugin.json" />
     <None Remove="OpenApi\TestPlugins\ai-plugin2.json" />
     <None Remove="OpenApi\TestPlugins\documentV3_1.yaml" />
+    <None Remove="OpenApi\TestPlugins\openapi_any_of.json" />
     <None Remove="OpenApi\TestPlugins\nonCompliant_documentV3_0.json" />
     <None Remove="OpenApi\TestPlugins\OpenApi.json" />
   </ItemGroup>
@@ -26,6 +27,7 @@
     <EmbeddedResource Include="OpenApi\TestPlugins\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV3_1.yaml" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV3_0.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\openapi_any_of.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\repair-service.json" />
     <EmbeddedResource Include="OpenApi\TestResponses\ObjectResponseSchema.json" />
     <EmbeddedResource Include="OpenApi\TestResponses\ProductResponseSchema.json" />
