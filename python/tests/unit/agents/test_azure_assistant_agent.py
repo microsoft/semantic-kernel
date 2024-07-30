@@ -14,7 +14,7 @@ from semantic_kernel.kernel import Kernel
 
 
 @pytest.fixture
-def azure_openai_assistant_agent(kernel: Kernel):
+def azure_openai_assistant_agent(kernel: Kernel, azure_openai_unit_test_env):
     return AzureAssistantAgent(
         kernel=kernel,
         service_id="test_service",
