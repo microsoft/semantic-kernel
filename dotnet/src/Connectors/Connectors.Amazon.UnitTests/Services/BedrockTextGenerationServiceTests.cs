@@ -507,9 +507,9 @@ public class BedrockTextGenerationServiceTests
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new InvokeModelResponse
             {
-                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new MistralRequest.MistralTextResponse
+                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new MistralTextResponse
                 {
-                    Outputs = new List<MistralRequest.MistralTextResponse.Output>
+                    Outputs = new List<MistralTextResponse.Output>
                     {
                         new() {
                             Text = "Hello! This is a mock Mistral response.",
