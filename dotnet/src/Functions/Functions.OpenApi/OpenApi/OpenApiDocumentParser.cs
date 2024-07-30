@@ -133,8 +133,12 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
             }
 
             inputStream = new MemoryStream();
-            // Copy stream if it cannot be seeked. Needed for YAML streams which will fail JSON deserialization.
+            // Copy stream if we can't seek. Needed for YAML streams which will fail JSON deserialization.
+#if NETSTANDARD2_0
             await stream.CopyToAsync(inputStream).ConfigureAwait(false);
+#else
+            await stream.CopyToAsync(inputStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+#endif
             return await JsonSerializer.DeserializeAsync<JsonObject>(inputStream, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (JsonException)
