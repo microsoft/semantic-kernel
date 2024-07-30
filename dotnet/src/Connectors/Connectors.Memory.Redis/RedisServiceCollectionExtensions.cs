@@ -12,34 +12,41 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 public static class RedisServiceCollectionExtensions
 {
     /// <summary>
-    /// Register a Redis <see cref="IVectorStore"/> with the specified service ID.
+    /// Register a Redis <see cref="IVectorStore"/> with the specified service ID and where the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <returns>The kernel builder.</returns>
+    public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, RedisVectorStoreOptions? options = default, string? serviceId = default)
+    {
+        // If we are not constructing the ConnectionMultiplexer, add the IVectorStore as transient, since we
+        // cannot make assumptions about how IDatabase is being managed.
+        services.AddKeyedTransient<IVectorStore>(
+            serviceId,
+            (sp, obj) =>
+            {
+                var database = sp.GetRequiredService<IDatabase>();
+                var selectedOptions = options ?? sp.GetService<RedisVectorStoreOptions>();
+
+                return new RedisVectorStore(
+                    database,
+                    selectedOptions);
+            });
+
+        return services;
+    }
+
+    /// <summary>
+    /// Register a Redis <see cref="IVectorStore"/> with the specified service ID and where the Redis <see cref="IDatabase"/> is constructed using the provided <paramref name="redisConnectionConfiguration"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="redisConnectionConfiguration">The Redis connection configuration string. If not provided, an <see cref="IDatabase"/> instance will be requested from the dependency injection container.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, string? redisConnectionConfiguration = default, RedisVectorStoreOptions? options = default, string? serviceId = default)
+    public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, string redisConnectionConfiguration, RedisVectorStoreOptions? options = default, string? serviceId = default)
     {
-        if (redisConnectionConfiguration == null)
-        {
-            // If we are not constructing the ConnectionMultiplexer, add the IVectorStore as transient, since we
-            // cannot make assumptions about how IDatabase is being managed.
-            services.AddKeyedTransient<IVectorStore>(
-                serviceId,
-                (sp, obj) =>
-                {
-                    var database = sp.GetRequiredService<IDatabase>();
-                    var selectedOptions = options ?? sp.GetService<RedisVectorStoreOptions>();
-
-                    return new RedisVectorStore(
-                        database,
-                        selectedOptions);
-                });
-
-            return services;
-        }
-
         // If we are constructing the ConnectionMultiplexer, add the IVectorStore as singleton, since we are managing the lifetime
         // of the ConnectionMultiplexer, and the recommendation from StackExchange.Redis is to share the ConnectionMultiplexer.
         services.AddKeyedSingleton<IVectorStore>(
