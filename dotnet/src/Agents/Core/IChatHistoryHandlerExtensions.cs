@@ -12,10 +12,10 @@ namespace Microsoft.SemanticKernel.Agents;
 public static class IChatHistoryHandlerExtensions
 {
     /// <summary>
-    /// %%%
+    /// Reduce history for an agent that implements <see cref="IChatHistoryHandler"/>.
     /// </summary>
-    /// <param name="agent"></param>
-    /// <param name="history"></param>
+    /// <param name="agent">The target agent</param>
+    /// <param name="history">The source history</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
     public static Task<(bool isReduced, ChatHistory history)> ReduceAsync(this IChatHistoryHandler agent, ChatHistory history, CancellationToken cancellationToken = default) =>
