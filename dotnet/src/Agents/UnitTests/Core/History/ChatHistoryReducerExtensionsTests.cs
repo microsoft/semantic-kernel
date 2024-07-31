@@ -77,12 +77,16 @@ public class ChatHistoryReducerExtensionsTests
     [Fact]
     public async Task VerifyChatHistoryNotReducedAsync()
     {
-        Mock<IChatHistoryReducer> mockReducer = new();
-        mockReducer.Setup(r => r.ReduceAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), default)).ReturnsAsync((IEnumerable<ChatMessageContent>?)null);
-
         ChatHistory history = [];
 
-        (bool isReduced, ChatHistory reducedHistory) = await history.ReduceHistoryAsync(mockReducer.Object, default);
+        (bool isReduced, ChatHistory reducedHistory) = await history.ReduceAsync(null, default);
+
+        Assert.False(isReduced);
+        Assert.StrictEqual(history, reducedHistory);
+
+        Mock<IChatHistoryReducer> mockReducer = new();
+        mockReducer.Setup(r => r.ReduceAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), default)).ReturnsAsync((IEnumerable<ChatMessageContent>?)null);
+        (isReduced, reducedHistory) = await history.ReduceAsync(mockReducer.Object, default);
 
         Assert.False(isReduced);
         Assert.StrictEqual(history, reducedHistory);
@@ -99,7 +103,7 @@ public class ChatHistoryReducerExtensionsTests
 
         ChatHistory history = [];
 
-        (bool isReduced, ChatHistory reducedHistory) = await history.ReduceHistoryAsync(mockReducer.Object, default);
+        (bool isReduced, ChatHistory reducedHistory) = await history.ReduceAsync(mockReducer.Object, default);
 
         Assert.True(isReduced);
         Assert.NotStrictEqual(history, reducedHistory);

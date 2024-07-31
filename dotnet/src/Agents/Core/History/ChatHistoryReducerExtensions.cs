@@ -128,8 +128,13 @@ internal static class ChatHistoryReducerExtensions
     /// <param name="reducer">The target reducer</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A named tuple indicating if reduction has occurred along with a <see cref="ChatHistory"/> instance.</returns>
-    public static async Task<(bool isReduced, ChatHistory history)> ReduceHistoryAsync(this ChatHistory history, IChatHistoryReducer reducer, CancellationToken cancellationToken)
+    public static async Task<(bool isReduced, ChatHistory history)> ReduceAsync(this ChatHistory history, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
     {
+        if (reducer == null)
+        {
+            return (false, history);
+        }
+
         IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
 
         if (reducedHistory == null)

@@ -115,7 +115,7 @@ public sealed class ChatHistoryChannel : AgentChannel
             history = this._history;
         }
 
-        (bool isReduced, ChatHistory reducedHistory) = await history.ReduceHistoryAsync(reducer, cancellationToken).ConfigureAwait(false);
+        (bool isReduced, ChatHistory reducedHistory) = await history.ReduceAsync(reducer, cancellationToken).ConfigureAwait(false);
 
         if (isReduced)
         {
