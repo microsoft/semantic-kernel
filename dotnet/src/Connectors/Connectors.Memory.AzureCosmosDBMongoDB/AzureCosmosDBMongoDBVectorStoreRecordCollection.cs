@@ -215,9 +215,15 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     {
         Verify.NotNull(records);
 
-        foreach (var record in records)
+        var tasks = records.Select(record => this.UpsertAsync(record, options, cancellationToken));
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        foreach (var result in results)
         {
-            yield return await this.UpsertAsync(record, options, cancellationToken).ConfigureAwait(false);
+            if (result is not null)
+            {
+                yield return result;
+            }
         }
     }
 
