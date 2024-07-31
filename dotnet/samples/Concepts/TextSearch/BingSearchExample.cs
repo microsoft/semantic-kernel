@@ -93,7 +93,7 @@ public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(outpu
 
         // Search with TextSearchResult result type
         SearchOptions searchOptions = new() { Count = 4, Offset = 0 };
-        searchOptions.Filter = new FilterOptions().Equals("site", "devblogs.microsoft.com");
+        searchOptions.BasicFilter = new BasicFilterOptions().Equality("site", "devblogs.microsoft.com");
         KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, searchOptions);
         await foreach (string result in stringResults.Results)
         {

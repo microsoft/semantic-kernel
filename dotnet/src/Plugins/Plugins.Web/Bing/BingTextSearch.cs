@@ -225,10 +225,10 @@ public sealed class BingTextSearch : ITextSearch<TextSearchResult>, ITextSearch<
 
         retVal.Append(Uri.EscapeDataString(query.Trim()));
 
-        if (searchOptions.Filter is not null)
+        if (searchOptions.BasicFilter is not null)
         {
             // NeedsWork: Add support for other filter types
-            var filterClauses = searchOptions.Filter.FilterClauses;
+            var filterClauses = searchOptions.BasicFilter.FilterClauses;
             var filterClause = filterClauses.FirstOrDefault(c => (c as EqualityFilterClause)?.Field.Equals("site", StringComparison.OrdinalIgnoreCase) ?? false);
             if (filterClause is EqualityFilterClause equalityFilterClause)
             {

@@ -15,9 +15,12 @@ public sealed class SearchOptions
     public string? Index { get; set; }
 
     /// <summary>
-    /// The filter expression to apply to the search query.
+    /// The basic filter expression to apply to the search query.
     /// </summary>
-    public FilterOptions? Filter { get; set; }
+    /// <remarks>
+    /// A basic filter supports the following features:
+    /// </remarks>
+    public BasicFilterOptions? BasicFilter { get; set; }
 
     /// <summary>
     /// Number of search results to return.
