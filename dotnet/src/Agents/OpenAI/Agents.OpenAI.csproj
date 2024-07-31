@@ -38,7 +38,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Agents.UnitTests" />
-    <InternalsVisibleTo Include="Concepts" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
