@@ -428,6 +428,29 @@ internal static class VectorStoreRecordPropertyReader
     }
 
     /// <summary>
+    /// Get the JSON property name of a property by using the <see cref="JsonPropertyNameAttribute"/> if available, otherwise
+    /// using the <see cref="JsonNamingPolicy"/> if available, otherwise falling back to the property name.
+    /// </summary>
+    /// <param name="options">The options used for JSON serialization.</param>
+    /// <param name="property">The property to retrieve a storage name for.</param>
+    /// <returns>The JSON storage property name.</returns>
+    public static string GetJsonPropertyName(JsonSerializerOptions options, PropertyInfo property)
+    {
+        var jsonPropertyNameAttribute = property.GetCustomAttribute<JsonPropertyNameAttribute>();
+        if (jsonPropertyNameAttribute is not null)
+        {
+            return jsonPropertyNameAttribute.Name;
+        }
+
+        if (options.PropertyNamingPolicy is not null)
+        {
+            return options.PropertyNamingPolicy.ConvertName(property.Name);
+        }
+
+        return property.Name;
+    }
+
+    /// <summary>
     /// Build a map of property names to the names under which they should be saved in storage if using JSON serialization.
     /// </summary>
     /// <param name="properties">The properties to build the map for.</param>
@@ -456,26 +479,31 @@ internal static class VectorStoreRecordPropertyReader
     }
 
     /// <summary>
-    /// Get the JSON property name of a property by using the <see cref="JsonPropertyNameAttribute"/> if available, otherwise
-    /// using the <see cref="JsonNamingPolicy"/> if available, otherwise falling back to the property name.
+    /// Build a map of property names to the names under which they should be saved in storage if using JSON serialization.
     /// </summary>
+    /// <param name="properties">The properties to build the map for.</param>
+    /// <param name="dataModel">The data model type that the property belongs to.</param>
     /// <param name="options">The options used for JSON serialization.</param>
-    /// <param name="property">The property to retrieve a storage name for.</param>
-    /// <returns>The JSON storage property name.</returns>
-    public static string GetJsonPropertyName(JsonSerializerOptions options, PropertyInfo property)
+    /// <returns>The map from property names to the names under which they should be saved in storage if using JSON serialization.</returns>
+    public static Dictionary<string, string> BuildPropertyNameToJsonPropertyNameMap(
+        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties,
+        Type dataModel,
+        JsonSerializerOptions options)
     {
-        var jsonPropertyNameAttribute = property.GetCustomAttribute<JsonPropertyNameAttribute>();
-        if (jsonPropertyNameAttribute is not null)
+        var jsonPropertyNameMap = new Dictionary<string, string>();
+        jsonPropertyNameMap.Add(properties.keyProperty.Name, GetJsonPropertyName(options, properties.keyProperty));
+
+        foreach (var dataProperty in properties.dataProperties)
         {
-            return jsonPropertyNameAttribute.Name;
+            jsonPropertyNameMap.Add(dataProperty.Name, GetJsonPropertyName(options, dataProperty));
         }
 
-        if (options.PropertyNamingPolicy is not null)
+        foreach (var vectorProperty in properties.vectorProperties)
         {
-            return options.PropertyNamingPolicy.ConvertName(property.Name);
+            jsonPropertyNameMap.Add(vectorProperty.Name, GetJsonPropertyName(options, vectorProperty));
         }
 
-        return property.Name;
+        return jsonPropertyNameMap;
     }
 
     /// <summary>

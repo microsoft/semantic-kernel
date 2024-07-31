@@ -307,21 +307,29 @@ public class VectorStoreRecordPropertyReaderTests
         // Arrange.
         var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseUpper };
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify("testType", this._multiPropsDefinition, true, true);
+        var propertiesInfo = VectorStoreRecordPropertyReader.FindProperties(typeof(MultiPropsModel), true);
 
         // Act.
-        var jsonNameMap = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(MultiPropsModel), options);
+        var jsonNameMap1 = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(MultiPropsModel), options);
+        var jsonNameMap2 = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(propertiesInfo, typeof(MultiPropsModel), options);
+
+        void assertJsonNameMap(Dictionary<string, string> jsonNameMap)
+        {
+            Assert.Equal(5, jsonNameMap.Count);
+
+            // From JsonNamingPolicy.
+            Assert.Equal("KEY", jsonNameMap["Key"]);
+            Assert.Equal("DATA1", jsonNameMap["Data1"]);
+            Assert.Equal("DATA2", jsonNameMap["Data2"]);
+            Assert.Equal("VECTOR1", jsonNameMap["Vector1"]);
+
+            // From JsonPropertyName attribute.
+            Assert.Equal("vector-2", jsonNameMap["Vector2"]);
+        };
 
         // Assert.
-        Assert.Equal(5, jsonNameMap.Count);
-
-        // From JsonNamingPolicy.
-        Assert.Equal("KEY", jsonNameMap["Key"]);
-        Assert.Equal("DATA1", jsonNameMap["Data1"]);
-        Assert.Equal("DATA2", jsonNameMap["Data2"]);
-        Assert.Equal("VECTOR1", jsonNameMap["Vector1"]);
-
-        // From JsonPropertyName attribute.
-        Assert.Equal("vector-2", jsonNameMap["Vector2"]);
+        assertJsonNameMap(jsonNameMap1);
+        assertJsonNameMap(jsonNameMap2);
     }
 
 #pragma warning disable CA1812 // Invalid unused classes error, since I am using these for testing purposes above.

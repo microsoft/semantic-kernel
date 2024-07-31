@@ -70,15 +70,15 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         VectorStoreRecordDefinition vectorStoreRecordDefinition)
     {
         // Validate property types.
-        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: false);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([keyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(dataProperties, s_supportedDataTypes, s_supportedEnumerableDataElementTypes, "Data");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(vectorProperties, s_supportedVectorTypes, "Vector");
+        var propertiesInfo = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: false);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes([propertiesInfo.keyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.dataProperties, s_supportedDataTypes, s_supportedEnumerableDataElementTypes, "Data");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.vectorProperties, s_supportedVectorTypes, "Vector");
 
         // Assign.
-        this._keyPropertyInfo = keyProperty;
-        this._dataPropertiesInfo = dataProperties;
-        this._vectorPropertyInfo = vectorProperties[0];
+        this._keyPropertyInfo = propertiesInfo.keyProperty;
+        this._dataPropertiesInfo = propertiesInfo.dataProperties;
+        this._vectorPropertyInfo = propertiesInfo.vectorProperties[0];
 
         // Get storage names and store for later use.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: false, requiresAtLeastOneVector: true);
