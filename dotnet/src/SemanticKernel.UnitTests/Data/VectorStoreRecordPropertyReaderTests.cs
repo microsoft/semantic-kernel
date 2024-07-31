@@ -393,7 +393,7 @@ public class VectorStoreRecordPropertyReaderTests
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "Vector1", IsFilterable = true)]
+        [VectorStoreRecordData(IsFilterable = true)]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]
