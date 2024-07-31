@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -110,42 +109,22 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
         this._options = options ?? new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>();
         this._searchClient = this._searchIndexClient.GetSearchClient(collectionName);
         this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
-
-        // Enumerate public properties using configuration or attributes.
-        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
-        if (this._options.VectorStoreRecordDefinition is not null)
-        {
-            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), this._options.VectorStoreRecordDefinition, supportsMultipleVectors: true);
-        }
-        else
-        {
-            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), supportsMultipleVectors: true);
-        }
+        var jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
 
         // Validate property types.
-        var jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
+        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
 
-        // Get storage name for key property and store for later use.
-        this._keyStoragePropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(jsonSerializerOptions, properties.keyProperty);
-        this._nonVectorStoragePropertyNames.Add(this._keyStoragePropertyName);
-
-        // Get storage names for data properties and store for later use.
-        foreach (var property in properties.dataProperties)
-        {
-            var jsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(jsonSerializerOptions, property);
-            this._storagePropertyNames[property.Name] = jsonPropertyName;
-            this._nonVectorStoragePropertyNames.Add(jsonPropertyName);
-        }
-
-        // Get storage names for vector properties and store for later use.
-        foreach (var property in properties.vectorProperties)
-        {
-            var jsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(jsonSerializerOptions, property);
-            this._storagePropertyNames[property.Name] = jsonPropertyName;
-        }
+        // Get storage names and store for later use.
+        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), jsonSerializerOptions);
+        this._keyStoragePropertyName = this._storagePropertyNames[properties.keyProperty.DataModelPropertyName];
+        this._nonVectorStoragePropertyNames = properties.dataProperties
+            .Cast<VectorStoreRecordProperty>()
+            .Concat([properties.keyProperty])
+            .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
+            .ToList();
     }
 
     /// <inheritdoc />

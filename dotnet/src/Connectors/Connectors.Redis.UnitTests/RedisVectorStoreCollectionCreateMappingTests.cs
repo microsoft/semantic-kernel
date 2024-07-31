@@ -20,16 +20,16 @@ public class RedisVectorStoreCollectionCreateMappingTests
         // Arrange.
         var properties = new VectorStoreRecordProperty[]
         {
-            new VectorStoreRecordKeyProperty("Key"),
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
 
-            new VectorStoreRecordDataProperty("FilterableString") { PropertyType = typeof(string), IsFilterable = true },
-            new VectorStoreRecordDataProperty("FilterableInt") { PropertyType = typeof(int), IsFilterable = true },
-            new VectorStoreRecordDataProperty("FilterableNullableInt") { PropertyType = typeof(int?), IsFilterable = true },
+            new VectorStoreRecordDataProperty("FilterableString", typeof(string)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("FilterableInt", typeof(int)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("FilterableNullableInt", typeof(int)) { IsFilterable = true },
 
-            new VectorStoreRecordDataProperty("NonFilterableString") { PropertyType = typeof(string) },
+            new VectorStoreRecordDataProperty("NonFilterableString", typeof(string)),
 
-            new VectorStoreRecordVectorProperty("VectorDefaultIndexingOptions") { Dimensions = 10 },
-            new VectorStoreRecordVectorProperty("VectorSpecificIndexingOptions") { Dimensions = 20, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.EuclideanDistance },
+            new VectorStoreRecordVectorProperty("VectorDefaultIndexingOptions", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 },
+            new VectorStoreRecordVectorProperty("VectorSpecificIndexingOptions", typeof(ReadOnlyMemory<float>)) { Dimensions = 20, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.EuclideanDistance },
         };
 
         var storagePropertyNames = new Dictionary<string, string>()
@@ -71,24 +71,13 @@ public class RedisVectorStoreCollectionCreateMappingTests
         Assert.Equal("L2", ((VectorField)schema.Fields[4]).Attributes!["DISTANCE_METRIC"]);
     }
 
-    [Fact]
-    public void MapToSchemaThrowsOnMissingPropertyType()
-    {
-        // Arrange.
-        var properties = new VectorStoreRecordProperty[] { new VectorStoreRecordDataProperty("FilterableString") { IsFilterable = true } };
-        var storagePropertyNames = new Dictionary<string, string>() { { "FilterableString", "FilterableString" } };
-
-        // Act and assert.
-        Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, storagePropertyNames));
-    }
-
     [Theory]
     [InlineData(null)]
     [InlineData(0)]
     public void MapToSchemaThrowsOnInvalidVectorDimensions(int? dimensions)
     {
         // Arrange.
-        var properties = new VectorStoreRecordProperty[] { new VectorStoreRecordVectorProperty("VectorProperty") { Dimensions = dimensions } };
+        var properties = new VectorStoreRecordProperty[] { new VectorStoreRecordVectorProperty("VectorProperty", typeof(ReadOnlyMemory<float>)) { Dimensions = dimensions } };
         var storagePropertyNames = new Dictionary<string, string>() { { "VectorProperty", "VectorProperty" } };
 
         // Act and assert.
@@ -99,7 +88,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
     public void GetSDKIndexKindThrowsOnUnsupportedIndexKind()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorProperty("VectorProperty") { IndexKind = "Unsupported" };
+        var vectorProperty = new VectorStoreRecordVectorProperty("VectorProperty", typeof(ReadOnlyMemory<float>)) { IndexKind = "Unsupported" };
 
         // Act and assert.
         Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.GetSDKIndexKind(vectorProperty));
@@ -109,7 +98,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
     public void GetSDKDistanceAlgorithmThrowsOnUnsupportedDistanceFunction()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorProperty("VectorProperty") { DistanceFunction = "Unsupported" };
+        var vectorProperty = new VectorStoreRecordVectorProperty("VectorProperty", typeof(ReadOnlyMemory<float>)) { DistanceFunction = "Unsupported" };
 
         // Act and assert.
         Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty));

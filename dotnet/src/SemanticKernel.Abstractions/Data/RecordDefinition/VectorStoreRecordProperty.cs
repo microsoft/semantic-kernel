@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -14,15 +15,21 @@ public abstract class VectorStoreRecordProperty
     /// Initializes a new instance of the <see cref="VectorStoreRecordProperty"/> class.
     /// </summary>
     /// <param name="dataModelPropertyName">The name of the property on the data model.</param>
-    private protected VectorStoreRecordProperty(string dataModelPropertyName)
+    /// <param name="propertyType">The type of the property.</param>
+    private protected VectorStoreRecordProperty(string dataModelPropertyName, Type propertyType)
     {
+        Verify.NotNullOrWhiteSpace(dataModelPropertyName);
+        Verify.NotNull(propertyType);
+
         this.DataModelPropertyName = dataModelPropertyName;
+        this.PropertyType = propertyType;
     }
 
     private protected VectorStoreRecordProperty(VectorStoreRecordProperty source)
     {
         this.DataModelPropertyName = source.DataModelPropertyName;
         this.StoragePropertyName = source.StoragePropertyName;
+        this.PropertyType = source.PropertyType;
     }
 
     /// <summary>
@@ -38,4 +45,9 @@ public abstract class VectorStoreRecordProperty
     /// be used.
     /// </summary>
     public string? StoragePropertyName { get; init; }
+
+    /// <summary>
+    /// Gets or sets the type of the property.
+    /// </summary>
+    public Type PropertyType { get; private set; }
 }

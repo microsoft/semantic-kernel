@@ -13,6 +13,44 @@ namespace SemanticKernel.UnitTests.Data;
 
 public class VectorStoreRecordPropertyReaderTests
 {
+    [Fact]
+    public void SplitDefinitionsAndVerifyReturnsProperties()
+    {
+        // Act.
+        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify("testType", this._multiPropsDefinition, true, true);
+
+        // Assert.
+        Assert.Equal("Key", properties.keyProperty.DataModelPropertyName);
+        Assert.Equal(2, properties.dataProperties.Count);
+        Assert.Equal(2, properties.vectorProperties.Count);
+        Assert.Equal("Data1", properties.dataProperties[0].DataModelPropertyName);
+        Assert.Equal("Data2", properties.dataProperties[1].DataModelPropertyName);
+        Assert.Equal("Vector1", properties.vectorProperties[0].DataModelPropertyName);
+        Assert.Equal("Vector2", properties.vectorProperties[1].DataModelPropertyName);
+    }
+
+    [Theory]
+    [InlineData(false, true, "MultiProps")]
+    [InlineData(true, true, "NoKey")]
+    [InlineData(true, true, "MultiKeys")]
+    [InlineData(false, true, "NoVector")]
+    [InlineData(true, true, "NoVector")]
+    public void SplitDefinitionsAndVerifyThrowsForInvalidModel(bool supportsMultipleVectors, bool requiresAtLeastOneVector, string definitionName)
+    {
+        // Arrange.
+        var definition = definitionName switch
+        {
+            "MultiProps" => this._multiPropsDefinition,
+            "NoKey" => this._noKeyDefinition,
+            "MultiKeys" => this._multiKeysDefinition,
+            "NoVector" => this._noVectorDefinition,
+            _ => throw new ArgumentException("Invalid definition.")
+        };
+
+        // Act & Assert.
+        Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.SplitDefinitionAndVerify("testType", definition, supportsMultipleVectors, requiresAtLeastOneVector));
+    }
+
     [Theory]
     [InlineData(true, false)]
     [InlineData(false, false)]
@@ -127,9 +165,9 @@ public class VectorStoreRecordPropertyReaderTests
     [InlineData("Vector", "MissingVector")]
     public void FindPropertiesUsingConfigThrowsForNotFoundProperties(string propertyType, string propertyName)
     {
-        var missingKeyDefinition = new VectorStoreRecordDefinition { Properties = [new VectorStoreRecordKeyProperty(propertyName)] };
-        var missingDataDefinition = new VectorStoreRecordDefinition { Properties = [new VectorStoreRecordDataProperty(propertyName)] };
-        var missingVectorDefinition = new VectorStoreRecordDefinition { Properties = [new VectorStoreRecordVectorProperty(propertyName)] };
+        var missingKeyDefinition = new VectorStoreRecordDefinition { Properties = [new VectorStoreRecordKeyProperty(propertyName, typeof(string))] };
+        var missingDataDefinition = new VectorStoreRecordDefinition { Properties = [new VectorStoreRecordDataProperty(propertyName, typeof(string))] };
+        var missingVectorDefinition = new VectorStoreRecordDefinition { Properties = [new VectorStoreRecordVectorProperty(propertyName, typeof(ReadOnlyMemory<float>))] };
 
         var definition = propertyType switch
         {
@@ -184,6 +222,7 @@ public class VectorStoreRecordPropertyReaderTests
 
         // Act.
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, [typeof(string)], "Data");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(this._singlePropsDefinition.Properties.OfType<VectorStoreRecordDataProperty>(), [typeof(string)], "Data");
     }
 
     [Fact]
@@ -194,6 +233,7 @@ public class VectorStoreRecordPropertyReaderTests
 
         // Act.
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, [typeof(string)], "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(this._enumerablePropsDefinition.Properties.OfType<VectorStoreRecordDataProperty>(), [typeof(string)], "Data", supportEnumerable: true);
     }
 
     [Fact]
@@ -203,20 +243,22 @@ public class VectorStoreRecordPropertyReaderTests
         var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(SinglePropsModel), true);
 
         // Act.
-        var ex = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, [typeof(int), typeof(float)], "Data"));
+        var ex1 = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, [typeof(int), typeof(float)], "Data"));
+        var ex2 = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.VerifyPropertyTypes(this._singlePropsDefinition.Properties.OfType<VectorStoreRecordDataProperty>(), [typeof(int), typeof(float)], "Data"));
 
         // Assert.
-        Assert.Equal("Data properties must be one of the supported types: System.Int32, System.Single. Type of the property 'Data' is System.String.", ex.Message);
+        Assert.Equal("Data properties must be one of the supported types: System.Int32, System.Single. Type of the property 'Data' is System.String.", ex1.Message);
+        Assert.Equal("Data properties must be one of the supported types: System.Int32, System.Single. Type of the property 'Data' is System.String.", ex2.Message);
     }
 
     [Fact]
-    public void VerifyStoragePropertyNameMapChecksAttributeAndFallsBackToPropertyName()
+    public void VerifyStoragePropertyNameMapChecksStorageNameAndFallsBackToPropertyName()
     {
         // Arrange.
-        var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(MultiPropsModel), true);
+        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify("testType", this._multiPropsDefinition, true, true);
 
         // Act.
-        var storageNameMap = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._multiPropsDefinition);
+        var storageNameMap = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
 
         // Assert.
         Assert.Equal(5, storageNameMap.Count);
@@ -227,7 +269,7 @@ public class VectorStoreRecordPropertyReaderTests
         Assert.Equal("Vector1", storageNameMap["Vector1"]);
         Assert.Equal("Vector2", storageNameMap["Vector2"]);
 
-        // From storage property name on vector store record property attribute.
+        // From storage property name on vector store record data property.
         Assert.Equal("data_2", storageNameMap["Data2"]);
     }
 
@@ -245,6 +287,29 @@ public class VectorStoreRecordPropertyReaderTests
         var jsonNameMap = allProperties
             .Select(p => new { PropertyName = p.Name, JsonName = VectorStoreRecordPropertyReader.GetJsonPropertyName(options, p) })
             .ToDictionary(p => p.PropertyName, p => p.JsonName);
+
+        // Assert.
+        Assert.Equal(5, jsonNameMap.Count);
+
+        // From JsonNamingPolicy.
+        Assert.Equal("KEY", jsonNameMap["Key"]);
+        Assert.Equal("DATA1", jsonNameMap["Data1"]);
+        Assert.Equal("DATA2", jsonNameMap["Data2"]);
+        Assert.Equal("VECTOR1", jsonNameMap["Vector1"]);
+
+        // From JsonPropertyName attribute.
+        Assert.Equal("vector-2", jsonNameMap["Vector2"]);
+    }
+
+    [Fact]
+    public void VerifyBuildPropertyNameToJsonPropertyNameMapChecksJsonAttributesAndJsonOptionsAndFallsbackToPropertyNames()
+    {
+        // Arrange.
+        var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseUpper };
+        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify("testType", this._multiPropsDefinition, true, true);
+
+        // Act.
+        var jsonNameMap = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(MultiPropsModel), options);
 
         // Assert.
         Assert.Equal(5, jsonNameMap.Count);
@@ -277,7 +342,7 @@ public class VectorStoreRecordPropertyReaderTests
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("Key")
+            new VectorStoreRecordKeyProperty("Key", typeof(string))
         ]
     };
 
@@ -294,8 +359,8 @@ public class VectorStoreRecordPropertyReaderTests
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("Key1"),
-            new VectorStoreRecordKeyProperty("Key2")
+            new VectorStoreRecordKeyProperty("Key1", typeof(string)),
+            new VectorStoreRecordKeyProperty("Key2", typeof(string))
         ]
     };
 
@@ -317,9 +382,9 @@ public class VectorStoreRecordPropertyReaderTests
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("Data"),
-            new VectorStoreRecordVectorProperty("Vector")
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("Data", typeof(string)),
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
         ]
     };
 
@@ -328,7 +393,7 @@ public class VectorStoreRecordPropertyReaderTests
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(HasEmbedding = true, EmbeddingPropertyName = "Vector1", IsFilterable = true)]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]
@@ -348,11 +413,11 @@ public class VectorStoreRecordPropertyReaderTests
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("Data1") { IsFilterable = true },
-            new VectorStoreRecordDataProperty("Data2") { StoragePropertyName = "data_2" },
-            new VectorStoreRecordVectorProperty("Vector1") { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity },
-            new VectorStoreRecordVectorProperty("Vector2")
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("Data2", typeof(string)) { StoragePropertyName = "data_2" },
+            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity },
+            new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>))
         ]
     };
 
@@ -375,6 +440,18 @@ public class VectorStoreRecordPropertyReaderTests
 
         public string NotAnnotated { get; set; } = string.Empty;
     }
+
+    private readonly VectorStoreRecordDefinition _enumerablePropsDefinition = new()
+    {
+        Properties =
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("EnumerableData", typeof(IEnumerable<string>)),
+            new VectorStoreRecordDataProperty("ArrayData", typeof(string[])),
+            new VectorStoreRecordDataProperty("ListData", typeof(List<string>)),
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
+        ]
+    };
 
 #pragma warning restore CA1812 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }

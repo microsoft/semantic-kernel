@@ -69,27 +69,32 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordMapper{TDataModel}"/> class.
     /// </summary>
+    /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     /// <param name="hasNamedVectors">A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</param>
-    /// <param name="keyProperty">A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</param>
-    /// <param name="dataProperties">A list of property info objects that point at the data properties in the current model, and allows easy reading and writing of these properties.</param>
-    /// <param name="vectorProperties">A list of property info objects that point at the vector properties in the current model, and allows easy reading and writing of these properties.</param>
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
-    public QdrantVectorStoreRecordMapper(bool hasNamedVectors, PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties, Dictionary<string, string> storagePropertyNames)
+    public QdrantVectorStoreRecordMapper(
+        VectorStoreRecordDefinition vectorStoreRecordDefinition,
+        bool hasNamedVectors,
+        Dictionary<string, string> storagePropertyNames)
     {
+        Verify.NotNull(vectorStoreRecordDefinition);
+        Verify.NotNull(storagePropertyNames);
+
+        (PropertyInfo keyPropertyInfo, List<PropertyInfo> dataPropertiesInfo, List<PropertyInfo> vectorPropertiesInfo) = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: hasNamedVectors);
+
         this._hasNamedVectors = hasNamedVectors;
-        this._keyPropertyInfo = keyProperty;
-        this._dataPropertiesInfo = dataProperties;
-        this._vectorPropertiesInfo = vectorProperties;
+        this._keyPropertyInfo = keyPropertyInfo;
+        this._dataPropertiesInfo = dataPropertiesInfo;
+        this._vectorPropertiesInfo = vectorPropertiesInfo;
         this._storagePropertyNames = storagePropertyNames;
 
-        // Validate property types and store for later use.
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(vectorProperties, s_supportedVectorTypes, "Vector");
+        // Validate property types.
+        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: hasNamedVectors, requiresAtLeastOneVector: !hasNamedVectors);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
 
-        foreach (var property in dataProperties.Concat(vectorProperties).Concat([keyProperty]))
-        {
-            this._jsonPropertyNames[property.Name] = VectorStoreRecordPropertyReader.GetJsonPropertyName(JsonSerializerOptions.Default, property);
-        }
+        // Get json storage names and store for later use.
+        this._jsonPropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), JsonSerializerOptions.Default);
     }
 
     /// <inheritdoc />

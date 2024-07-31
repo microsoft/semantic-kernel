@@ -39,11 +39,6 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
             return new SearchableField(storagePropertyName) { IsFilterable = dataProperty.IsFilterable };
         }
 
-        if (dataProperty.PropertyType is null)
-        {
-            throw new InvalidOperationException($"Property {nameof(dataProperty.PropertyType)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' must be set to create a collection.");
-        }
-
         return new SimpleField(storagePropertyName, AzureAISearchVectorStoreCollectionCreateMapping.GetSDKFieldDataType(dataProperty.PropertyType)) { IsFilterable = dataProperty.IsFilterable };
     }
 

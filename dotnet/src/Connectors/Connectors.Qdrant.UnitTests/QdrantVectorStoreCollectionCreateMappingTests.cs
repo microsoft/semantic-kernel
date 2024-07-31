@@ -17,7 +17,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapSingleVectorCreatesVectorParams()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 4, DistanceFunction = DistanceFunction.DotProductSimilarity };
+        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.DotProductSimilarity };
 
         // Act.
         var actual = QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty);
@@ -32,7 +32,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapSingleVectorDefaultsToCosine()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 4 };
+        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 };
 
         // Act.
         var actual = QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty);
@@ -45,7 +45,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapSingleVectorThrowsForUnsupportedDistanceFunction()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 4, DistanceFunction = DistanceFunction.CosineDistance };
+        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.CosineDistance };
 
         // Act and assert.
         Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty));
@@ -57,7 +57,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapSingleVectorThrowsIfDimensionsIsInvalid(int? dimensions)
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = dimensions };
+        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = dimensions };
 
         // Act and assert.
         Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty));
@@ -69,8 +69,8 @@ public class QdrantVectorStoreCollectionCreateMappingTests
         // Arrange.
         var vectorProperties = new VectorStoreRecordVectorProperty[]
         {
-            new("testvector1") { Dimensions = 10, DistanceFunction = DistanceFunction.EuclideanDistance },
-            new("testvector2") { Dimensions = 20 }
+            new("testvector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 10, DistanceFunction = DistanceFunction.EuclideanDistance },
+            new("testvector2", typeof(ReadOnlyMemory<float>)) { Dimensions = 20 }
         };
 
         var storagePropertyNames = new Dictionary<string, string>

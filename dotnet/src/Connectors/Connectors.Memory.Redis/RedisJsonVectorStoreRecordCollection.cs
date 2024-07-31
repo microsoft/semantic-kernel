@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -57,12 +56,6 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     /// <summary>A definition of the current storage model.</summary>
     private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
 
-    /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
-    private readonly PropertyInfo _keyPropertyInfo;
-
-    /// <summary>The name of the temporary JSON property that the key property will be serialized / parsed from.</summary>
-    private readonly string _keyJsonPropertyName;
-
     /// <summary>An array of the storage names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties.</summary>
     private readonly string[] _dataStoragePropertyNames;
 
@@ -95,38 +88,20 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
         this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 
-        // Enumerate public properties using configuration or attributes.
-        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
-        if (this._options.VectorStoreRecordDefinition is not null)
-        {
-            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), this._options.VectorStoreRecordDefinition, supportsMultipleVectors: true);
-        }
-        else
-        {
-            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), supportsMultipleVectors: true);
-        }
-
-        // Validate property types and store for later use.
+        // Validate property types.
+        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
 
-        this._keyPropertyInfo = properties.keyProperty;
-        this._keyJsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(this._jsonSerializerOptions, this._keyPropertyInfo);
+        // Lookup json storage property names.
+        var keyJsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(properties.keyProperty, typeof(TRecord), this._jsonSerializerOptions);
 
-        this._dataStoragePropertyNames = new string[properties.dataProperties.Count];
-        var index = 0;
-        foreach (var property in properties.dataProperties)
-        {
-            var storagePropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(this._jsonSerializerOptions, property);
-            this._storagePropertyNames[property.Name] = storagePropertyName;
-            this._dataStoragePropertyNames[index++] = storagePropertyName;
-        }
-
-        foreach (var property in properties.vectorProperties)
-        {
-            var storagePropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(this._jsonSerializerOptions, property);
-            this._storagePropertyNames[property.Name] = storagePropertyName;
-        }
+        // Lookup storage property names.
+        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), this._jsonSerializerOptions);
+        this._dataStoragePropertyNames = properties
+            .dataProperties
+            .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
+            .ToArray();
 
         // Assign Mapper.
         if (this._options.JsonNodeCustomMapper is not null)
@@ -135,7 +110,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         }
         else
         {
-            this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(this._keyJsonPropertyName, this._jsonSerializerOptions);
+            this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(keyJsonPropertyName, this._jsonSerializerOptions);
         }
     }
 
