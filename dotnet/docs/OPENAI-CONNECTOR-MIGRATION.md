@@ -32,12 +32,12 @@ All services below now belong to the `Microsoft.SemanticKernel.Connectors.AzureO
 
 ## 2. Text Generation Deprecated
 
-The lastest `OpenAI` SDK does not support text generation modality, when migrating to their underlying SDK we had to drop the support and removed `TextGeneration` specific services but the existing `ChatCompletion` ones still supports (implements `ITextGenerationService`).
+The latest `OpenAI` SDK does not support text generation modality, when migrating to their underlying SDK we had to drop the support and removed `TextGeneration` specific services but the existing `ChatCompletion` ones still supports (implements `ITextGenerationService`).
 
 If you were using any of the `OpenAITextGenerationService` or `AzureOpenAITextGenerationService` you will need to update your code to target a chat completion model instead, using `OpenAIChatCompletionService` or `AzureOpenAIChatCompletionService` instead.
 
 > [!NOTE]
-> OpenAI and AzureOpenAI `ChatCompletion` services also implement the `ITextGenerationService` interface and that may not require any changes to your code if you were targetting the `ITextGenerationService` interface.
+> OpenAI and AzureOpenAI `ChatCompletion` services also implement the `ITextGenerationService` interface and that may not require any changes to your code if you were targeting the `ITextGenerationService` interface.
 
 tags:
 `OpenAITextGenerationService`,`AzureOpenAITextGenerationService`,
@@ -45,7 +45,7 @@ tags:
 
 ## 3. ChatCompletion Multiple Choices Deprecated
 
-The lastest `OpenAI` SDK does not support multiple choices, when migrating to their underlying SDK we had to drop the support and removed `ResultsPerPrompt` also from the `OpenAIPromptExecutionSettings`.
+The latest `OpenAI` SDK does not support multiple choices, when migrating to their underlying SDK we had to drop the support and removed `ResultsPerPrompt` also from the `OpenAIPromptExecutionSettings`.
 
 tags: `ResultsPerPrompt`,`results_per_prompt`
 
