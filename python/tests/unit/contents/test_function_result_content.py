@@ -83,3 +83,19 @@ def test_to_cmc(unwrap: bool):
         assert cmc.items[0].text == "test-result"
     else:
         assert cmc.items[0].result == "test-result"
+
+
+def test_serialize():
+    class CustomResultClass:
+        def __init__(self, result):
+            self.result = result
+
+        def __str__(self) -> str:
+            return self.result
+
+    custom_result = CustomResultClass(result="test")
+    frc = FunctionResultContent(id="test", name="test-function", result=custom_result)
+    assert (
+        frc.model_dump_json(exclude_none=True)
+        == """{"metadata":{},"content_type":"function_result","id":"test","result":"test","name":"test-function","function_name":"function","plugin_name":"test"}"""  # noqa: E501
+    )
