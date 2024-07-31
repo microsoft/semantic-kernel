@@ -45,6 +45,10 @@
         "generativeai",
         "genai",
         "protos",
-        "endregion"
+        "endregion",
+        "serde",
+        "datamodel",
+        "vectorstoremodel",
+        "qdrant"
     ]
 }
