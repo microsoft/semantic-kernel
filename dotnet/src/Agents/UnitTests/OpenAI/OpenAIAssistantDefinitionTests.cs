@@ -28,7 +28,7 @@ public class OpenAIAssistantDefinitionTests
         Assert.Null(definition.Temperature);
         Assert.Null(definition.TopP);
         Assert.Null(definition.VectorStoreId);
-        Assert.Null(definition.CodeInterpterFileIds);
+        Assert.Null(definition.CodeInterpreterFileIds);
         Assert.False(definition.EnableCodeInterpreter);
         Assert.False(definition.EnableJsonResponse);
     }
@@ -59,7 +59,7 @@ public class OpenAIAssistantDefinitionTests
                         ParallelToolCallsEnabled = false,
                         TruncationMessageCount = 12,
                     },
-                CodeInterpterFileIds = ["file1"],
+                CodeInterpreterFileIds = ["file1"],
                 EnableCodeInterpreter = true,
                 EnableJsonResponse = true,
             };
@@ -78,7 +78,7 @@ public class OpenAIAssistantDefinitionTests
         Assert.Equal(12, definition.ExecutionOptions.TruncationMessageCount);
         Assert.False(definition.ExecutionOptions.ParallelToolCallsEnabled);
         Assert.Single(definition.Metadata);
-        Assert.Single(definition.CodeInterpterFileIds);
+        Assert.Single(definition.CodeInterpreterFileIds);
         Assert.True(definition.EnableCodeInterpreter);
         Assert.True(definition.EnableJsonResponse);
     }

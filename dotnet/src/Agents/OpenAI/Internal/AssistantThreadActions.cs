@@ -45,7 +45,7 @@ internal static class AssistantThreadActions
         ThreadCreationOptions createOptions =
             new()
             {
-                ToolResources = AssistantToolResourcesFactory.GenerateToolResources(options?.VectorStoreId, options?.CodeInterpterFileIds),
+                ToolResources = AssistantToolResourcesFactory.GenerateToolResources(options?.VectorStoreId, options?.CodeInterpreterFileIds),
             };
 
         if (options?.Messages != null)

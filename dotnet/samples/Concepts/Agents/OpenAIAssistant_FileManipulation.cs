@@ -39,7 +39,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
                 config,
                 new()
                 {
-                    CodeInterpterFileIds = [uploadFile.Id],
+                    CodeInterpreterFileIds = [uploadFile.Id],
                     EnableCodeInterpreter = true, // Enable code-interpreter
                     ModelId = this.Model,
                 });

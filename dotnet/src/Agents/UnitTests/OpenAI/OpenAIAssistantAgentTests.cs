@@ -89,7 +89,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             {
                 ModelId = "testmodel",
                 EnableCodeInterpreter = true,
-                CodeInterpterFileIds = ["file1", "file2"],
+                CodeInterpreterFileIds = ["file1", "file2"],
             };
 
         await this.VerifyAgentCreationAsync(definition);
@@ -596,7 +596,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Verify detail definition
         Assert.Equal(sourceDefinition.VectorStoreId, agent.Definition.VectorStoreId);
-        Assert.Equal(sourceDefinition.CodeInterpterFileIds, agent.Definition.CodeInterpterFileIds);
+        Assert.Equal(sourceDefinition.CodeInterpreterFileIds, agent.Definition.CodeInterpreterFileIds);
     }
 
     private Task<OpenAIAssistantAgent> CreateAgentAsync()
@@ -666,7 +666,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             builder.AppendLine(@$"  ""model"": ""{definition.ModelId}"",");
 
             bool hasCodeInterpreter = definition.EnableCodeInterpreter;
-            bool hasCodeInterpreterFiles = (definition.CodeInterpterFileIds?.Count ?? 0) > 0;
+            bool hasCodeInterpreterFiles = (definition.CodeInterpreterFileIds?.Count ?? 0) > 0;
             bool hasFileSearch = !string.IsNullOrWhiteSpace(definition.VectorStoreId);
             if (!hasCodeInterpreter && !hasFileSearch)
             {
@@ -699,7 +699,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
                 if (hasCodeInterpreterFiles)
                 {
-                    string fileIds = string.Join(",", definition.CodeInterpterFileIds!.Select(fileId => "\"" + fileId + "\""));
+                    string fileIds = string.Join(",", definition.CodeInterpreterFileIds!.Select(fileId => "\"" + fileId + "\""));
                     builder.AppendLine(@$"  ""code_interpreter"": {{ ""file_ids"": [{fileIds}] }}{(hasFileSearch ? "," : string.Empty)}");
                 }
 

@@ -46,7 +46,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseTest(output)
                 {
                     EnableCodeInterpreter = true, // Enable code-interpreter
                     ModelId = this.Model,
-                    CodeInterpterFileIds = [uploadFile.Id] // Associate uploaded file with assistant
+                    CodeInterpreterFileIds = [uploadFile.Id] // Associate uploaded file with assistant
                 });
 
         ChatCompletionAgent summaryAgent =
