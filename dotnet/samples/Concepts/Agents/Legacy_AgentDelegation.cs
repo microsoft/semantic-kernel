@@ -31,7 +31,7 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
 
         try
         {
-            var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+            var plugin = KernelPluginFactory.CreateFromType<LegacyMenuPlugin>();
             var menuAgent =
                 Track(
                     await new AgentBuilder()
