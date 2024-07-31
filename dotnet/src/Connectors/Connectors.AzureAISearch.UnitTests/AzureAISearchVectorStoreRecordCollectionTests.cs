@@ -546,7 +546,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         };
 
         // Act.
-        new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, JsonObjectCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>() });

@@ -38,7 +38,7 @@ public class PineconeVectorStoreRecordCollectionTests
         using var pineconeClient = new Sdk.PineconeClient("fake api key");
 
         // Act.
-        new PineconeVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new PineconeVectorStoreRecordCollection<SinglePropsModel>(
             pineconeClient,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, VectorCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, Sdk.Vector>>() });

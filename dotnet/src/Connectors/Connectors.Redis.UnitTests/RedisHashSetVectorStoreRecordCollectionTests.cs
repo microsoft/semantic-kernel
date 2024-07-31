@@ -435,7 +435,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         };
 
         // Act.
-        new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, HashEntriesCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, (string key, HashEntry[] hashEntries)>>() });

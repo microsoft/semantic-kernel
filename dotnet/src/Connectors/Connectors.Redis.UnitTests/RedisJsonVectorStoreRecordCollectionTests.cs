@@ -458,7 +458,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         };
 
         // Act.
-        new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
+        var sut = new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, JsonNodeCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, (string key, JsonNode node)>>() });

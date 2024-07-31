@@ -533,7 +533,7 @@ public class QdrantVectorStoreRecordCollectionTests
         };
 
         // Act.
-        new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
+        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, PointStructCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>() });
