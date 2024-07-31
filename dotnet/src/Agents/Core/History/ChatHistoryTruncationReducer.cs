@@ -12,16 +12,13 @@ namespace Microsoft.SemanticKernel.Agents.History;
 /// Truncate the chat history to the target message count.
 /// </summary>
 /// <remarks>
-/// Truncation will always Will avoid orphaning function-content as  the presense of
+/// Truncation will always Will avoid orphaning function-content as  the presence of
 /// a function-call _must_ be followed by a function-result.  When a threshold count is
 /// is provided (recommended), truncation will scan within the threshold window in an attempt to
 /// avoid orphaning a user message from an assistant response.
 /// </remarks>
 internal class ChatHistoryTruncationReducer : IChatHistoryReducer
 {
-    private readonly int _thresholdCount;
-    private readonly int _targetCount;
-
     /// <inheritdoc/>
     public override int GetHashCode() => HashCode.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
 
@@ -36,7 +33,7 @@ internal class ChatHistoryTruncationReducer : IChatHistoryReducer
         if (truncationIndex > 0)
         {
             // Second pass to truncate the history
-            truncatedHistory = this.TruncateHistory(history, truncationIndex);
+            truncatedHistory = TruncateHistory(history, truncationIndex);
         }
 
         return Task.FromResult(truncatedHistory);
@@ -61,7 +58,7 @@ internal class ChatHistoryTruncationReducer : IChatHistoryReducer
         this._thresholdCount = thresholdCount ?? 0;
     }
 
-    private IEnumerable<ChatMessageContent> TruncateHistory(IReadOnlyList<ChatMessageContent> history, int truncationIndex)
+    private static IEnumerable<ChatMessageContent> TruncateHistory(IReadOnlyList<ChatMessageContent> history, int truncationIndex)
     {
         for (int index = truncationIndex; index < history.Count; ++index)
         {
@@ -71,7 +68,7 @@ internal class ChatHistoryTruncationReducer : IChatHistoryReducer
 
     private int DetermineTruncationIndex(IReadOnlyList<ChatMessageContent> history)
     {
-        // Compute the index of the trunction threshold
+        // Compute the index of the truncation threshold
         int thresholdIndex = history.Count - this._thresholdCount - this._targetCount;
 
         if (thresholdIndex <= 0)
@@ -112,4 +109,7 @@ internal class ChatHistoryTruncationReducer : IChatHistoryReducer
         // No user message found, fallback to the earliest non-function related message
         return targetIndex;
     }
+
+    private readonly int _thresholdCount;
+    private readonly int _targetCount;
 }

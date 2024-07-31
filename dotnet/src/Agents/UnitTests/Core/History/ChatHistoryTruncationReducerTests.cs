@@ -22,9 +22,9 @@ public class ChatHistoryTruncationReducerTests
     [InlineData(-1)]
     [InlineData(-1, int.MaxValue)]
     [InlineData(int.MaxValue, -1)]
-    public void VerifyChatHistoryConstructorArgumentValidation(int targetCount, int? tresholdCount = null)
+    public void VerifyChatHistoryConstructorArgumentValidation(int targetCount, int? thresholdCount = null)
     {
-        Assert.Throws<ArgumentException>(() => new ChatHistoryTruncationReducer(targetCount, tresholdCount));
+        Assert.Throws<ArgumentException>(() => new ChatHistoryTruncationReducer(targetCount, thresholdCount));
     }
 
     /// <summary>
@@ -40,12 +40,12 @@ public class ChatHistoryTruncationReducerTests
     [InlineData(5, 5, 1)]
     [InlineData(900, 500, 400)]
     [InlineData(900, 500, int.MaxValue)]
-    public async Task VerifyChatHistoryNotReducedAsync(int messageCount, int targetCount, int? tresholdCount = null)
+    public async Task VerifyChatHistoryNotReducedAsync(int messageCount, int targetCount, int? thresholdCount = null)
     {
         // Shape of history doesn't matter since reduction is not expected
         ChatHistory sourceHistory = [.. GenerateHistory(messageCount)];
 
-        ChatHistoryTruncationReducer reducer = new(targetCount, tresholdCount);
+        ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
 
         IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
 
@@ -64,12 +64,12 @@ public class ChatHistoryTruncationReducerTests
     [InlineData(6, 5)]
     [InlineData(1000, 500, 400)]
     [InlineData(1000, 500, 499)]
-    public async Task VerifyChatHistoryReducedAsync(int messageCount, int targetCount, int? tresholdCount = null)
+    public async Task VerifyChatHistoryReducedAsync(int messageCount, int targetCount, int? thresholdCount = null)
     {
         // Generate history with only assistant messages
         ChatHistory sourceHistory = [.. GenerateHistory(messageCount, skipUser: true)];
 
-        ChatHistoryTruncationReducer reducer = new(targetCount, tresholdCount);
+        ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
 
         IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
 
@@ -90,12 +90,12 @@ public class ChatHistoryTruncationReducerTests
     [InlineData(6, 5)]
     [InlineData(1000, 500, 400)]
     [InlineData(1000, 500, 499)]
-    public async Task VerifyChatHistoryReducedWithUserAsync(int messageCount, int targetCount, int? tresholdCount = null)
+    public async Task VerifyChatHistoryReducedWithUserAsync(int messageCount, int targetCount, int? thresholdCount = null)
     {
         // Generate history with alternating user and assistant messages
         ChatHistory sourceHistory = [.. GenerateHistory(messageCount)];
 
-        ChatHistoryTruncationReducer reducer = new(targetCount, tresholdCount);
+        ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
 
         IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
 
@@ -103,7 +103,7 @@ public class ChatHistoryTruncationReducerTests
         ChatMessageContent[] messages = reducedHistory.ToArray();
 
         // The reduction length should align with a user message, if threshold is specified
-        bool hasThreshold = tresholdCount > 0;
+        bool hasThreshold = thresholdCount > 0;
         int expectedCount = targetCount + (hasThreshold && sourceHistory[^targetCount].Role != AuthorRole.User ? 1 : 0);
 
         Assert.Equal(expectedCount, messages.Length);
@@ -122,13 +122,13 @@ public class ChatHistoryTruncationReducerTests
     [InlineData(7)]
     [InlineData(8)]
     [InlineData(9)]
-    public async Task VerifyChatHistoryReducedWithFunctionContentAsync(int targetCount, int? tresholdCount = null)
+    public async Task VerifyChatHistoryReducedWithFunctionContentAsync(int targetCount, int? thresholdCount = null)
     {
         // Generate a history with function call on index 5 and 9 and
         // function result on index 6 and 10 (total length: 14)
         ChatHistory sourceHistory = [.. GenerateHistoryWithFunctionContent()];
 
-        ChatHistoryTruncationReducer reducer = new(targetCount, tresholdCount);
+        ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
 
         IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
 
