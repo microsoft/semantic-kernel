@@ -3,6 +3,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
+using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -70,7 +71,7 @@ public class AI21JurassicIOService : IBedrockModelIOService
     /// <exception cref="NotImplementedException"></exception>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        throw new NotImplementedException("Converse not supported by this model.");
+        throw new NotImplementedException("This model does not support chat history. Use text generation to invoke singular response to use this model.");
     }
     /// <summary>
     /// Jurassic does not support streaming.
