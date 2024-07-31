@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.History;
 /// is provided (recommended), reduction will scan within the threshold window in an attempt to
 /// avoid orphaning a user message from an assistant response.
 /// </remarks>
-internal class ChatHistoryTruncationReducer : IChatHistoryReducer
+public class ChatHistoryTruncationReducer : IChatHistoryReducer
 {
     /// <inheritdoc/>
     public override int GetHashCode() => HashCode.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
