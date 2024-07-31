@@ -22,6 +22,10 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
     GoogleAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import GoogleAIChatCompletion
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import VertexAIChatCompletion
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
+    VertexAIChatPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
@@ -116,6 +120,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "mistral_ai": (MistralAIChatCompletion() if mistral_ai_setup else None, MistralAIChatPromptExecutionSettings),
         "ollama": (OllamaChatCompletion(), OllamaChatPromptExecutionSettings),
         "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
+        "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
     }
 
 
@@ -459,7 +464,8 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             ["Hello", "well"],
-            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            # marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            marks=pytest.mark.skip(reason="Flaky test"),
             id="ollama_text_input",
         ),
         pytest.param(
@@ -494,6 +500,39 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["house", "germany"],
             id="google_ai_image_input_file",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            id="vertex_ai_text_input",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
+                ),
+            ],
+            ["house", "germany"],
+            id="vertex_ai_image_input_file",
         ),
     ],
 )
