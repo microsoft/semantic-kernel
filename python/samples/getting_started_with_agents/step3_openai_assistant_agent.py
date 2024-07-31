@@ -71,7 +71,7 @@ async def main():
 
     # Note: the agent creation can be done in one step if desired
     # if use_azure_openai:
-    #     agent = await AzureOpenAIAssistantAgent.create(
+    #     agent = await AzureAssistantAgent.create(
     #         kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
     #     )
     # else:

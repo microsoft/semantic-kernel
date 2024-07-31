@@ -51,7 +51,7 @@ async def main():
             enable_code_interpreter=True,
         )
 
-    await agent.create_assistant(enable_code_interpreter=True)
+    await agent.create_assistant()
 
     thread_id = await agent.create_thread()
 
