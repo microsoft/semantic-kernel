@@ -188,7 +188,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Delete the assistant definition.
     /// </summary>
-    /// <param name="cancellationToken"></param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>True if assistant definition has been deleted</returns>
     /// <remarks>
     /// Assistant based agent will not be useable after deletion.
