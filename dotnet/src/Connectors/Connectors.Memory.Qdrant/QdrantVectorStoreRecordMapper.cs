@@ -82,14 +82,14 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
 
         // Validate property types.
         var propertiesInfo = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: hasNamedVectors);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.vectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.DataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.VectorProperties, s_supportedVectorTypes, "Vector");
 
         // Assign.
         this._hasNamedVectors = hasNamedVectors;
-        this._keyPropertyInfo = propertiesInfo.keyProperty;
-        this._dataPropertiesInfo = propertiesInfo.dataProperties;
-        this._vectorPropertiesInfo = propertiesInfo.vectorProperties;
+        this._keyPropertyInfo = propertiesInfo.KeyProperty;
+        this._dataPropertiesInfo = propertiesInfo.DataProperties;
+        this._vectorPropertiesInfo = propertiesInfo.VectorProperties;
         this._storagePropertyNames = storagePropertyNames;
 
         // Get json storage names and store for later use.

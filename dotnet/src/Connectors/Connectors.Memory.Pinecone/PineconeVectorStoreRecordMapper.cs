@@ -71,14 +71,14 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     {
         // Validate property types.
         var propertiesInfo = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: false);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([propertiesInfo.keyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.dataProperties, s_supportedDataTypes, s_supportedEnumerableDataElementTypes, "Data");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.vectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes([propertiesInfo.KeyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.DataProperties, s_supportedDataTypes, s_supportedEnumerableDataElementTypes, "Data");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.VectorProperties, s_supportedVectorTypes, "Vector");
 
         // Assign.
-        this._keyPropertyInfo = propertiesInfo.keyProperty;
-        this._dataPropertiesInfo = propertiesInfo.dataProperties;
-        this._vectorPropertyInfo = propertiesInfo.vectorProperties[0];
+        this._keyPropertyInfo = propertiesInfo.KeyProperty;
+        this._dataPropertiesInfo = propertiesInfo.DataProperties;
+        this._vectorPropertyInfo = propertiesInfo.VectorProperties[0];
 
         // Get storage names and store for later use.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: false, requiresAtLeastOneVector: true);
