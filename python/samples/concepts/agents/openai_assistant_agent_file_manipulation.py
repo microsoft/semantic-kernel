@@ -38,7 +38,7 @@ async def main():
     # Create the instance of the Kernel
     kernel = Kernel()
 
-    # Add the OpenAIChatCompletion AI Service to the Kernel
+    # Define a service_id for the sample
     service_id = "agent"
 
     # Create the agent configuration
@@ -61,8 +61,10 @@ async def main():
             enable_code_interpreter=True,
         )
 
+    # Create the OpenAI assistant
     await agent.create_assistant()
 
+    # Get the path to the sales.csv file
     csv_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
         "resources",
@@ -70,8 +72,10 @@ async def main():
         "sales.csv",
     )
 
+    # Upload the file for use with the assistant
     file_id = await agent.add_file(csv_file_path, purpose="assistants")
 
+    # Create a thread and specify the file to use for code interpretation
     thread_id = await agent.create_thread(code_interpreter_file_ids=[file_id])
 
     try:

@@ -7,7 +7,7 @@ This project contains a step by step guide to get started with _Semantic Kernel 
 
 #### Source
 
-- [Semantic Kernel Agent Framework](../../../semantic_kernel/agents/)
+- [Semantic Kernel Agent Framework](../../semantic_kernel/agents/)
 
 ## Examples
 
@@ -24,7 +24,7 @@ Example|Description
 ## Configuring the Kernel
 
 Similar to the Semantic Kernel Python concept samples, it is necessary to configure the secrets
-and keys used by the kernel. See the follow "Configuring the Kernel" [guide](../README.md#configuring-the-kernel) for
+and keys used by the kernel. See the follow "Configuring the Kernel" [guide](../concepts/README.md#configuring-the-kernell) for
 more information.
 
 ## Running Concept Samples

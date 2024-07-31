@@ -30,7 +30,7 @@ async def main():
     # Create the instance of the Kernel
     kernel = Kernel()
 
-    # Add the OpenAIChatCompletion AI Service to the Kernel
+    # Define a service_id for the sample
     service_id = "agent"
 
     # Create the agent
