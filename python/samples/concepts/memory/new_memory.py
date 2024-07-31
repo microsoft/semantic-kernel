@@ -68,8 +68,8 @@ class MyDataModelList:
     ] = "content1"
 
 
-# configuration,
-# specify which store (redis_json, redis_hash, qdrant, Azure AI Search) to use
+# configuration
+# specify which store (redis_json, redis_hash, qdrant, Azure AI Search or volatile) to use
 # and which model (vectors as list or as numpy arrays)
 store = "volatile"
 collection_name = "test"
