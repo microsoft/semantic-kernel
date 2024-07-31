@@ -113,17 +113,9 @@ async def test_create_agent_second_way(kernel: Kernel, mock_assistant, openai_un
         mock_client_instance = mock_create_client.return_value
         mock_client_instance.beta = MagicMock()
         mock_client_instance.beta.assistants.create = AsyncMock(return_value=mock_assistant)
-
-        # Assign the mock client to the agent's client
         agent.client = mock_client_instance
-
-        # Call the method to test
         assistant = await agent.create_assistant()
-
-        # Assertions to verify the behavior
         mock_client_instance.beta.assistants.create.assert_called_once()
-
-        # Verify the returned assistant is the mock_assistant
         assert assistant is not None
 
 

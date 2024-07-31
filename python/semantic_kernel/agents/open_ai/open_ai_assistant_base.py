@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import json
 import logging
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
@@ -259,7 +260,7 @@ class OpenAIAssistantBase(Agent):
                 create_assistant_kwargs["metadata"] = {}
             if self._options_metadata_key not in create_assistant_kwargs["metadata"]:
                 create_assistant_kwargs["metadata"][self._options_metadata_key] = {}
-            create_assistant_kwargs["metadata"][self._options_metadata_key].update(execution_settings)
+            create_assistant_kwargs["metadata"][self._options_metadata_key] = json.dumps(execution_settings)
 
         self.assistant = await self.client.beta.assistants.create(
             **create_assistant_kwargs,
