@@ -5,6 +5,7 @@ import asyncio
 import logging
 import sys
 from collections.abc import AsyncGenerator
+from functools import reduce
 from typing import TYPE_CHECKING, Any
 
 import google.generativeai as genai
@@ -28,7 +29,9 @@ from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
 )
 from semantic_kernel.connectors.ai.google.shared_utils import filter_system_message
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
@@ -220,10 +223,67 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
 
-        async_generator = self._send_chat_streaming_request(chat_history, settings)
+        if (
+            settings.function_choice_behavior is None
+            or not settings.function_choice_behavior.auto_invoke_kernel_functions
+        ):
+            # No auto invoke is required.
+            async_generator = self._send_chat_streaming_request(chat_history, settings)
+        else:
+            # Auto invoke is required.
+            async_generator = self._get_streaming_chat_message_contents_auto_invoke(chat_history, settings, **kwargs)
 
         async for messages in async_generator:
             yield messages
+
+    async def _get_streaming_chat_message_contents_auto_invoke(
+        self,
+        chat_history: ChatHistory,
+        settings: GoogleAIChatPromptExecutionSettings,
+        **kwargs: Any,
+    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
+        """Get streaming chat message contents from the Google AI service with auto invoking functions."""
+        kernel = kwargs.get("kernel")
+        if not isinstance(kernel, Kernel):
+            raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
+        if not settings.function_choice_behavior:
+            raise ServiceInvalidExecutionSettingsError(
+                "Function choice behavior is required for auto invoking functions."
+            )
+
+        self._configure_function_choice_behavior(settings, kernel)
+
+        for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
+            all_messages: list[StreamingChatMessageContent] = []
+            function_call_returned = False
+            async for messages in self._send_chat_streaming_request(chat_history, settings):
+                for message in messages:
+                    if message:
+                        all_messages.append(message)
+                        if any(isinstance(item, FunctionCallContent) for item in message.items):
+                            function_call_returned = True
+                yield messages
+
+            if not function_call_returned:
+                # Response doesn't contain any function calls. No need to proceed to the next request.
+                return
+
+            full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
+            function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
+            chat_history.add_message(message=full_completion)
+
+            results = await self._invoke_function_calls(
+                function_calls=function_calls,
+                chat_history=chat_history,
+                kernel=kernel,
+                arguments=kwargs.get("argument", None),
+                function_call_count=len(function_calls),
+                request_index=request_index,
+                function_behavior=settings.function_choice_behavior,
+            )
+
+            if any(result.terminate for result in results if result is not None):
+                return
 
     async def _send_chat_streaming_request(
         self,
@@ -240,6 +300,8 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response: AsyncGenerateContentResponse = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
             generation_config=GenerationConfig(**settings.prepare_settings_dict()),
+            tools=settings.tools,
+            tool_config=settings.tool_config,
             stream=True,
         )
 
@@ -265,11 +327,33 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         response_metadata = self._get_metadata_from_response(chunk)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
+        items: list[STREAMING_ITEM_TYPES] = []
+        for idx, part in enumerate(candidate.content.parts):
+            if part.text:
+                items.append(
+                    StreamingTextContent(
+                        choice_index=candidate.index,
+                        text=part.text,
+                        inner_content=chunk,
+                        metadata=response_metadata,
+                    )
+                )
+            elif part.function_call:
+                items.append(
+                    FunctionCallContent(
+                        id=f"{part.function_call.name}_{idx!s}",
+                        name=format_gemini_function_name_to_kernel_function_fully_qualified_name(
+                            part.function_call.name
+                        ),
+                        arguments={k: v for k, v in part.function_call.args.items()},
+                    )
+                )
+
         return StreamingChatMessageContent(
             ai_model_id=self.ai_model_id,
             role=AuthorRole.ASSISTANT,
             choice_index=candidate.index,
-            content=candidate.content.parts[0].text,
+            items=items,
             inner_content=chunk,
             finish_reason=finish_reason,
             metadata=response_metadata,
