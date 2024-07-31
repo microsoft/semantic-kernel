@@ -81,7 +81,7 @@ public class AggregatorAgentTests
         Assert.Equal(5, messages.Length); // Total messages on inner chat once synchronized (agent equivalent)
     }
 
-    private static Mock<ChatHistoryKernelAgent> CreateMockAgent()
+    private static MockAgent CreateMockAgent() => new() { Response = [new ChatMessageContent(AuthorRole.Assistant, "test")] };
     {
         Mock<ChatHistoryKernelAgent> agent = new();
 
