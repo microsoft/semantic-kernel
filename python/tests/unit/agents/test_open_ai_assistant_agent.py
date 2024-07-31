@@ -22,6 +22,10 @@ def openai_assistant_agent(kernel: Kernel, openai_unit_test_env):
         instructions="test_instructions",
         api_key="test_api_key",
         kwargs={"temperature": 0.1},
+        max_completion_tokens=100,
+        max_prompt_tokens=100,
+        parallel_tool_calls_enabled=True,
+        truncation_message_count=2,
     )
 
 
@@ -87,6 +91,40 @@ async def test_create_agent(kernel: Kernel, openai_unit_test_env):
         )
         assert agent.assistant is not None
         mock_create_assistant.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_create_agent_second_way(kernel: Kernel, mock_assistant, openai_unit_test_env):
+    agent = OpenAIAssistantAgent(
+        kernel=kernel,
+        ai_model_id="test_model_id",
+        service_id="test_service",
+        name="test_name",
+        api_key="test_api_key",
+        max_completion_tokens=100,
+        max_prompt_tokens=100,
+        parallel_tool_calls_enabled=True,
+        truncation_message_count=2,
+    )
+
+    with patch.object(
+        OpenAIAssistantAgent, "_create_client", return_value=MagicMock(spec=AsyncOpenAI)
+    ) as mock_create_client:
+        mock_client_instance = mock_create_client.return_value
+        mock_client_instance.beta = MagicMock()
+        mock_client_instance.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
+        # Assign the mock client to the agent's client
+        agent.client = mock_client_instance
+
+        # Call the method to test
+        assistant = await agent.create_assistant()
+
+        # Assertions to verify the behavior
+        mock_client_instance.beta.assistants.create.assert_called_once()
+
+        # Verify the returned assistant is the mock_assistant
+        assert assistant is not None
 
 
 @pytest.mark.asyncio

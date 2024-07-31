@@ -241,6 +241,26 @@ class OpenAIAssistantBase(Agent):
         if kwargs:
             create_assistant_kwargs.update(kwargs)
 
+        execution_settings = {}
+        if self.max_completion_tokens:
+            execution_settings["max_completion_tokens"] = self.max_completion_tokens
+
+        if self.max_prompt_tokens:
+            execution_settings["max_prompt_tokens"] = self.max_prompt_tokens
+
+        if self.parallel_tool_calls_enabled:
+            execution_settings["parallel_tool_calls_enabled"] = self.parallel_tool_calls_enabled
+
+        if self.truncation_message_count:
+            execution_settings["truncation_message_count"] = self.truncation_message_count
+
+        if execution_settings:
+            if "metadata" not in create_assistant_kwargs:
+                create_assistant_kwargs["metadata"] = {}
+            if self._options_metadata_key not in create_assistant_kwargs["metadata"]:
+                create_assistant_kwargs["metadata"][self._options_metadata_key] = {}
+            create_assistant_kwargs["metadata"][self._options_metadata_key].update(execution_settings)
+
         self.assistant = await self.client.beta.assistants.create(
             **create_assistant_kwargs,
         )
