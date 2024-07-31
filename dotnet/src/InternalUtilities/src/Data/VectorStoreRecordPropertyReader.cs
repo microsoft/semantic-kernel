@@ -400,7 +400,7 @@ internal static class VectorStoreRecordPropertyReader
     /// Get the JSON property name of a property by using the <see cref="JsonPropertyNameAttribute"/> if available, otherwise
     /// using the <see cref="JsonNamingPolicy"/> if available, otherwise falling back to the property name.
     /// The provided <paramref name="dataModel"/> may not actually contain the property, e.g. when the user has a data model that
-    /// doesn't resemble the stored data and where they havea a custom mapper.
+    /// doesn't resemble the stored data and where they are using a custom mapper.
     /// </summary>
     /// <param name="property">The property to retrieve a storage name for.</param>
     /// <param name="dataModel">The data model type that the property belongs to.</param>
