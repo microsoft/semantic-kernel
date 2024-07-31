@@ -32,10 +32,11 @@ internal sealed class BedrockTextGenerationClient
     /// <exception cref="ArgumentException"></exception>
     public BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockApi)
     {
+        var clientService = new BedrockClientIOService();
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
-        this._ioService = new BedrockClientIOService().GetIOService(modelId);
-        this._modelProvider = new BedrockClientIOService().GetModelProvider(modelId);
+        this._ioService = clientService.GetIOService(modelId);
+        this._modelProvider = clientService.GetModelProvider(modelId);
         this._clientUtilities = new BedrockClientUtilities();
     }
 
