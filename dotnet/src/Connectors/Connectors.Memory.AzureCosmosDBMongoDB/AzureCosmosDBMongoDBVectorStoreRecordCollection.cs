@@ -297,20 +297,12 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {
-        using var cursor = await this._mongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var filter = new BsonDocument("name", this.CollectionName);
+        var options = new ListCollectionNamesOptions { Filter = filter };
 
-        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
-        {
-            foreach (var name in cursor.Current)
-            {
-                if (name.Equals(this.CollectionName, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-        }
+        using var cursor = await this._mongoDatabase.ListCollectionNamesAsync(options, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        return false;
+        return await cursor.AnyAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private async Task RunOperationAsync(string operationName, Func<Task> operation)
