@@ -179,6 +179,18 @@ class OpenAIAssistantBase(Agent):
     ) -> "Assistant":
         """Create the assistant.
 
+        Args:
+            ai_model_id (str): The AI model id. Defaults to None. (optional)
+            description (str): The description. Defaults to None. (optional)
+            instructions (str): The instructions. Defaults to None. (optional)
+            name (str): The name. Defaults to None. (optional)
+            enable_code_interpreter (bool): Enable code interpreter. Defaults to None. (optional)
+            enable_file_search (bool): Enable file search. Defaults to None. (optional)
+            file_ids (list[str]): The file ids. Defaults to None. (optional)
+            vector_store_id (str): The vector store id. Defaults to None. (optional)
+            metadata (dict[str, str]): The metadata. Defaults to {}. (optional)
+            kwargs (Any): Extra keyword arguments.
+
         Returns:
             Assistant: The assistant
         """

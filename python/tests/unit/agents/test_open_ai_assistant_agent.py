@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -113,10 +114,23 @@ async def test_create_agent_second_way(kernel: Kernel, mock_assistant, openai_un
         mock_client_instance = mock_create_client.return_value
         mock_client_instance.beta = MagicMock()
         mock_client_instance.beta.assistants.create = AsyncMock(return_value=mock_assistant)
+
         agent.client = mock_client_instance
+
         assistant = await agent.create_assistant()
+
         mock_client_instance.beta.assistants.create.assert_called_once()
-        assert assistant is not None
+
+        assert assistant == mock_assistant
+
+        assert json.loads(
+            mock_client_instance.beta.assistants.create.call_args[1]["metadata"][agent._options_metadata_key]
+        ) == {
+            "max_completion_tokens": 100,
+            "max_prompt_tokens": 100,
+            "parallel_tool_calls_enabled": True,
+            "truncation_message_count": 2,
+        }
 
 
 @pytest.mark.asyncio
