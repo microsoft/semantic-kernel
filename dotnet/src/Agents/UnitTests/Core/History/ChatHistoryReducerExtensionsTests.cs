@@ -25,10 +25,10 @@ public class ChatHistoryReducerExtensionsTests
 
         ChatHistory history = [];
 
-        ChatHistory reducedHistory = await history.ReducedHistoryAsync(mockReducer.Object, default);
+        (bool isReduced, ChatHistory reducedHistory) = await history.ReduceHistoryAsync(mockReducer.Object, default);
 
+        Assert.False(isReduced);
         Assert.StrictEqual(history, reducedHistory);
-
     }
 
     /// <summary>
@@ -42,9 +42,9 @@ public class ChatHistoryReducerExtensionsTests
 
         ChatHistory history = [];
 
-        ChatHistory reducedHistory = await history.ReducedHistoryAsync(mockReducer.Object, default);
+        (bool isReduced, ChatHistory reducedHistory) = await history.ReduceHistoryAsync(mockReducer.Object, default);
 
+        Assert.True(isReduced);
         Assert.NotStrictEqual(history, reducedHistory);
-
     }
 }

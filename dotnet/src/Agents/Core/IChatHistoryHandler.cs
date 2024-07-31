@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -10,6 +11,11 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public interface IChatHistoryHandler
 {
+    /// <summary>
+    /// %%%
+    /// </summary>
+    IChatHistoryReducer? HistoryReducer { get; init; }
+
     /// <summary>
     /// Entry point for calling into an agent from a <see cref="ChatHistoryChannel"/>.
     /// </summary>

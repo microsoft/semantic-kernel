@@ -15,18 +15,18 @@ internal static class ChatHistoryReducerExtensions
     /// %%%
     /// </summary>
     /// <param name="history"></param>
-    /// <param name="strategy"></param>
+    /// <param name="reducer"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static async Task<ChatHistory> ReducedHistoryAsync(this ChatHistory history, IChatHistoryReducer strategy, CancellationToken cancellationToken)
+    public static async Task<(bool isReduced, ChatHistory history)> ReduceHistoryAsync(this ChatHistory history, IChatHistoryReducer reducer, CancellationToken cancellationToken)
     {
-        IEnumerable<ChatMessageContent>? reducedHistory = await strategy.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
 
         if (reducedHistory == null)
         {
-            return history;
+            return (false, history);
         }
 
-        return [.. reducedHistory];
+        return (true, [.. reducedHistory]);
     }
 }

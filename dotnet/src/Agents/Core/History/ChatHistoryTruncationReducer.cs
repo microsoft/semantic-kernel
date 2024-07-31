@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -20,6 +21,9 @@ internal class ChatHistoryTruncationReducer : IChatHistoryReducer
 {
     private readonly int _thresholdCount;
     private readonly int _targetCount;
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
 
     /// <inheritdoc/>
     public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)

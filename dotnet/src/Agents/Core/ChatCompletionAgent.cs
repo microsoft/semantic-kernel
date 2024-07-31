@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -21,6 +22,9 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
     /// Optional execution settings for the agent.
     /// </summary>
     public PromptExecutionSettings? ExecutionSettings { get; set; }
+
+    /// <inheritdoc/>
+    public IChatHistoryReducer? HistoryReducer { get; init; }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(

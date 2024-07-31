@@ -23,9 +23,9 @@ public class AggregatorAgentTests
     [InlineData(AggregatorMode.Flat, 2)]
     public async Task VerifyAggregatorAgentUsageAsync(AggregatorMode mode, int modeOffset)
     {
-        Agent agent1 = CreateMockAgent().Object;
-        Agent agent2 = CreateMockAgent().Object;
-        Agent agent3 = CreateMockAgent().Object;
+        Agent agent1 = CreateMockAgent();
+        Agent agent2 = CreateMockAgent();
+        Agent agent3 = CreateMockAgent();
 
         AgentGroupChat groupChat =
             new(agent1, agent2, agent3)
@@ -81,13 +81,5 @@ public class AggregatorAgentTests
         Assert.Equal(5, messages.Length); // Total messages on inner chat once synchronized (agent equivalent)
     }
 
-    private static MockAgent CreateMockAgent() => new() { Response = [new ChatMessageContent(AuthorRole.Assistant, "test")] };
-    {
-        Mock<ChatHistoryKernelAgent> agent = new();
-
-        ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test agent")];
-        agent.Setup(a => a.InvokeAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
-
-        return agent;
-    }
+    private static MockAgent CreateMockAgent() => new() { Response = [new(AuthorRole.Assistant, "test")] };
 }
