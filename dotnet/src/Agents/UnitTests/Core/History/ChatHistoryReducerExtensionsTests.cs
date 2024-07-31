@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.History;
@@ -14,6 +16,61 @@ namespace SemanticKernel.Agents.UnitTests.Core.History;
 /// </summary>
 public class ChatHistoryReducerExtensionsTests
 {
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Theory]
+    [InlineData(100, 0, 1)]
+    [InlineData(100, 0, 9)]
+    [InlineData(100, 0, 99)]
+    [InlineData(100, 80)]
+    [InlineData(100, 80, 81)]
+    [InlineData(100, 0)]
+    [InlineData(100, int.MaxValue, null, 0)]
+    [InlineData(100, 0, int.MaxValue, 100)]
+    public void VerifyChatHistoryExtraction(int messageCount, int startIndex, int? endIndex = null, int? expectedCount = null)
+    {
+        ChatHistory history = [.. GenerateHistory(messageCount)];
+
+        ChatMessageContent[] extractedHistory = history.Extract(startIndex, endIndex).ToArray();
+
+        int finalIndex = endIndex ?? messageCount - 1;
+        finalIndex = Math.Min(finalIndex, messageCount - 1);
+
+        expectedCount ??= finalIndex - startIndex + 1;
+
+        Assert.Equal(expectedCount, extractedHistory.Length);
+
+        if (extractedHistory.Length > 0)
+        {
+            Assert.Contains($"#{startIndex}", extractedHistory[0].Content);
+            Assert.Contains($"#{finalIndex}", extractedHistory[^1].Content);
+        }
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Theory]
+    [InlineData(0, 100)]
+    [InlineData(1, 100)]
+    [InlineData(100, 10)]
+    [InlineData(100, 0)]
+    public void VerifyGetFinalSummaryIndex(int summaryCount, int regularCount)
+    {
+        ChatHistory summaries = [.. GenerateHistory(summaryCount)];
+        foreach (ChatMessageContent summary in summaries)
+        {
+            summary.Metadata = new Dictionary<string, object?>() { { "summary", true } };
+        }
+
+        ChatHistory history = [.. summaries, .. GenerateHistory(regularCount)];
+
+        int finalSummaryIndex = history.GetFinalSummaryIndex("summary");
+
+        Assert.Equal(summaryCount, finalSummaryIndex);
+    }
+
     /// <summary>
     /// %%%
     /// </summary>
@@ -46,5 +103,13 @@ public class ChatHistoryReducerExtensionsTests
 
         Assert.True(isReduced);
         Assert.NotStrictEqual(history, reducedHistory);
+    }
+
+    private static IEnumerable<ChatMessageContent> GenerateHistory(int messageCount)
+    {
+        for (int index = 0; index < messageCount; ++index)
+        {
+            yield return new ChatMessageContent(AuthorRole.Assistant, $"message #{index}");
+        }
     }
 }

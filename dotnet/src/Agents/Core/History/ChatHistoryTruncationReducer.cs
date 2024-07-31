@@ -26,14 +26,14 @@ internal class ChatHistoryTruncationReducer : IChatHistoryReducer
     public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // First pass to determine the truncation index
-        int truncationIndex = this.DetermineTruncationIndex(history);
+        int truncationIndex = LocateReductionIndex(history, this._targetCount, this._thresholdCount);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
         if (truncationIndex > 0)
         {
             // Second pass to truncate the history
-            truncatedHistory = TruncateHistory(history, truncationIndex);
+            truncatedHistory = history.Extract(truncationIndex);
         }
 
         return Task.FromResult(truncatedHistory);
@@ -58,18 +58,10 @@ internal class ChatHistoryTruncationReducer : IChatHistoryReducer
         this._thresholdCount = thresholdCount ?? 0;
     }
 
-    private static IEnumerable<ChatMessageContent> TruncateHistory(IReadOnlyList<ChatMessageContent> history, int truncationIndex)
-    {
-        for (int index = truncationIndex; index < history.Count; ++index)
-        {
-            yield return history[index];
-        }
-    }
-
-    private int DetermineTruncationIndex(IReadOnlyList<ChatMessageContent> history)
+    private static int LocateReductionIndex(IReadOnlyList<ChatMessageContent> history, int targetCount, int thresholdCount)
     {
         // Compute the index of the truncation threshold
-        int thresholdIndex = history.Count - this._thresholdCount - this._targetCount;
+        int thresholdIndex = history.Count - thresholdCount - targetCount;
 
         if (thresholdIndex <= 0)
         {
@@ -78,7 +70,7 @@ internal class ChatHistoryTruncationReducer : IChatHistoryReducer
         }
 
         // Compute the index of truncation target
-        int messageIndex = history.Count - this._targetCount;
+        int messageIndex = history.Count - targetCount;
 
         // Skip function related content
         while (messageIndex >= 0)
