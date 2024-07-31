@@ -11,7 +11,7 @@ namespace SemanticKernel.Agents.UnitTests.Core.History;
 internal static class MockHistoryGenerator
 {
     /// <summary>
-    /// Create a homogenous list of assistant messages.
+    /// Create a homogeneous list of assistant messages.
     /// </summary>
     public static IEnumerable<ChatMessageContent> CreateSimpleHistory(int messageCount)
     {
