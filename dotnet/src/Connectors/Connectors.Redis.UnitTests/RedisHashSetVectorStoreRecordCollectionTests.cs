@@ -415,6 +415,32 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
+    /// <summary>
+    /// Tests that the collection can be created even if the definition and the type do not match.
+    /// In this case, the expectation is that a custom mapper will be provided to map between the
+    /// schema as defined by the definition and the different data model.
+    /// </summary>
+    [Fact]
+    public void CanCreateCollectionWithMismatchedDefinitionAndType()
+    {
+        // Arrange.
+        var definition = new VectorStoreRecordDefinition()
+        {
+            Properties = new List<VectorStoreRecordProperty>
+            {
+                new VectorStoreRecordKeyProperty("Id", typeof(string)),
+                new VectorStoreRecordDataProperty("Text", typeof(string)),
+                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+            }
+        };
+
+        // Act.
+        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
+            this._redisDatabaseMock.Object,
+            TestCollectionName,
+            new() { VectorStoreRecordDefinition = definition, HashEntriesCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, (string key, HashEntry[] hashEntries)>>() });
+    }
+
     private RedisHashSetVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
     {
         return new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
@@ -480,10 +506,10 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("OriginalNameData"),
-            new VectorStoreRecordDataProperty("Data") { StoragePropertyName = "data_storage_name" },
-            new VectorStoreRecordVectorProperty("Vector") { StoragePropertyName = "vector_storage_name" }
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)),
+            new VectorStoreRecordDataProperty("Data", typeof(string)) { StoragePropertyName = "data_storage_name" },
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector_storage_name" }
         ]
     };
 

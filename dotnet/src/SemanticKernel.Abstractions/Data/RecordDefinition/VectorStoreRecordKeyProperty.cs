@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -14,8 +15,9 @@ public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty
     /// Initializes a new instance of the <see cref="VectorStoreRecordKeyProperty"/> class.
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
-    public VectorStoreRecordKeyProperty(string propertyName)
-        : base(propertyName)
+    /// <param name="propertyType">The type of the property.</param>
+    public VectorStoreRecordKeyProperty(string propertyName, Type propertyType)
+        : base(propertyName, propertyType)
     {
     }
 

@@ -34,24 +34,24 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId"),
-                new VectorStoreRecordDataProperty("HotelName") { IsFilterable = true, PropertyType = typeof(string) },
-                new VectorStoreRecordDataProperty("HotelCode") { IsFilterable = true, PropertyType = typeof(int) },
-                new VectorStoreRecordDataProperty("ParkingIncluded") { IsFilterable = true, PropertyType = typeof(bool), StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating") { IsFilterable = true, PropertyType = typeof(float) },
-                new VectorStoreRecordDataProperty("Tags"),
-                new VectorStoreRecordDataProperty("Description"),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding") { Dimensions = 4, DistanceFunction = DistanceFunction.ManhattanDistance }
+                new VectorStoreRecordKeyProperty("HotelId", typeof(ulong)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
+                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreRecordDataProperty("Description", typeof(string)),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, DistanceFunction = DistanceFunction.ManhattanDistance }
             }
         };
         this.HotelWithGuidIdVectorStoreRecordDefinition = new VectorStoreRecordDefinition
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId"),
-                new VectorStoreRecordDataProperty("HotelName"),
-                new VectorStoreRecordDataProperty("Description"),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding")
+                new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)),
+                new VectorStoreRecordDataProperty("Description", typeof(string)),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?))
             }
         };
     }

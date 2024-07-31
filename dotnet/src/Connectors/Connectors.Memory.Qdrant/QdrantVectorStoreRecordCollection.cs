@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,22 +89,12 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         this._options = options ?? new QdrantVectorStoreRecordCollectionOptions<TRecord>();
         this._vectorStoreRecordDefinition = this._options.VectorStoreRecordDefinition ?? VectorStoreRecordPropertyReader.CreateVectorStoreRecordDefinitionFromType(typeof(TRecord), true);
 
-        // Enumerate public properties using configuration or attributes.
-        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) properties;
-        if (this._options.VectorStoreRecordDefinition is not null)
-        {
-            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), this._options.VectorStoreRecordDefinition, supportsMultipleVectors: this._options.HasNamedVectors);
-        }
-        else
-        {
-            properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), supportsMultipleVectors: this._options.HasNamedVectors);
-        }
-
-        // Validate key property types.
+        // Validate property types.
+        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: this._options.HasNamedVectors, requiresAtLeastOneVector: !this._options.HasNamedVectors);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
 
         // Build a map of property names to storage names.
-        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._options.VectorStoreRecordDefinition);
+        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
 
         // Assign Mapper.
         if (this._options.PointStructCustomMapper is not null)
@@ -117,10 +106,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         {
             // Default Mapper.
             this._mapper = new QdrantVectorStoreRecordMapper<TRecord>(
+                this._vectorStoreRecordDefinition,
                 this._options.HasNamedVectors,
-                properties.keyProperty,
-                properties.dataProperties,
-                properties.vectorProperties,
                 this._storagePropertyNames);
         }
     }
@@ -176,11 +163,6 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         var dataProperties = this._vectorStoreRecordDefinition.Properties.Where(x => x is VectorStoreRecordDataProperty).Select(x => (VectorStoreRecordDataProperty)x).Where(x => x.IsFilterable);
         foreach (var dataProperty in dataProperties)
         {
-            if (dataProperty.PropertyType is null)
-            {
-                throw new InvalidOperationException($"Property {nameof(dataProperty.PropertyType)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' must be set to create a collection, since the property is filterable.");
-            }
-
             var storageFieldName = this._storagePropertyNames[dataProperty.DataModelPropertyName];
             var schemaType = QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap[dataProperty.PropertyType!];
 

@@ -65,27 +65,25 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStoreRecordMapper{TDataModel}"/> class.
     /// </summary>
-    /// <param name="keyProperty">A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</param>
-    /// <param name="dataProperties">A list of property info objects that point at the data properties in the current model, and allows easy reading and writing of these properties.</param>
-    /// <param name="vectorProperties">A list of property info objects that point at the vector properties in the current model, and allows easy reading and writing of these properties.</param>
-    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
-    public PineconeVectorStoreRecordMapper(PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties, Dictionary<string, string> storagePropertyNames)
+    /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
+    public PineconeVectorStoreRecordMapper(
+        VectorStoreRecordDefinition vectorStoreRecordDefinition)
     {
-        Verify.True(vectorProperties.Count == 1, "There should be exactly one vector property in the data model.");
+        // Validate property types.
+        var propertiesInfo = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: false);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes([propertiesInfo.keyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.dataProperties, s_supportedDataTypes, s_supportedEnumerableDataElementTypes, "Data");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.vectorProperties, s_supportedVectorTypes, "Vector");
 
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([keyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(dataProperties, s_supportedDataTypes, "Data", s_supportedEnumerableDataElementTypes);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(vectorProperties, s_supportedVectorTypes, "Vector");
+        // Assign.
+        this._keyPropertyInfo = propertiesInfo.keyProperty;
+        this._dataPropertiesInfo = propertiesInfo.dataProperties;
+        this._vectorPropertyInfo = propertiesInfo.vectorProperties[0];
 
-        this._keyPropertyInfo = keyProperty;
-        this._dataPropertiesInfo = dataProperties;
-        this._vectorPropertyInfo = vectorProperties[0];
-        this._storagePropertyNames = storagePropertyNames;
-
-        foreach (var property in dataProperties.Concat(vectorProperties).Concat([keyProperty]))
-        {
-            this._jsonPropertyNames[property.Name] = VectorStoreRecordPropertyReader.GetJsonPropertyName(JsonSerializerOptions.Default, property);
-        }
+        // Get storage names and store for later use.
+        var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: false, requiresAtLeastOneVector: true);
+        this._jsonPropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), JsonSerializerOptions.Default);
+        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
     }
 
     /// <inheritdoc />

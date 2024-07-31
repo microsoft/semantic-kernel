@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Data;
@@ -20,8 +19,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(AllTypesModel), supportsMultipleVectors: true);
-        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(keyProperty, dataProperties, vectorProperties, s_storagePropertyNames);
+        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(s_vectorStoreRecordDefinition, s_storagePropertyNames);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
@@ -86,8 +84,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-        (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(AllTypesModel), supportsMultipleVectors: true);
-        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(keyProperty, dataProperties, vectorProperties, s_storagePropertyNames);
+        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(s_vectorStoreRecordDefinition, s_storagePropertyNames);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(("test key", CreateHashSet()), new() { IncludeVectors = true });
@@ -183,6 +180,31 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         ["NullableBoolData"] = "NullableBoolData",
         ["FloatVector"] = "FloatVector",
         ["DoubleVector"] = "DoubleVector",
+    };
+
+    private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
+    {
+        Properties = new List<VectorStoreRecordProperty>()
+        {
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("StringData", typeof(string)),
+            new VectorStoreRecordDataProperty("IntData", typeof(int)),
+            new VectorStoreRecordDataProperty("UIntData", typeof(uint)),
+            new VectorStoreRecordDataProperty("LongData", typeof(long)),
+            new VectorStoreRecordDataProperty("ULongData", typeof(ulong)),
+            new VectorStoreRecordDataProperty("DoubleData", typeof(double)),
+            new VectorStoreRecordDataProperty("FloatData", typeof(float)),
+            new VectorStoreRecordDataProperty("BoolData", typeof(bool)),
+            new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
+            new VectorStoreRecordDataProperty("NullableUIntData", typeof(uint?)),
+            new VectorStoreRecordDataProperty("NullableLongData", typeof(long?)),
+            new VectorStoreRecordDataProperty("NullableULongData", typeof(ulong?)),
+            new VectorStoreRecordDataProperty("NullableDoubleData", typeof(double?)),
+            new VectorStoreRecordDataProperty("NullableFloatData", typeof(float?)),
+            new VectorStoreRecordDataProperty("NullableBoolData", typeof(bool?)),
+            new VectorStoreRecordVectorProperty("FloatVector", typeof(float)),
+            new VectorStoreRecordVectorProperty("DoubleVector", typeof(double)),
+        }
     };
 
     private sealed class AllTypesModel

@@ -65,11 +65,6 @@ internal static class RedisVectorStoreCollectionCreateMapping
             // Data property.
             if (property is VectorStoreRecordDataProperty dataProperty && dataProperty.IsFilterable)
             {
-                if (dataProperty.PropertyType is null)
-                {
-                    throw new InvalidOperationException($"Property {nameof(dataProperty.PropertyType)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' must be set to create a collection, since the property is filterable.");
-                }
-
                 var storageName = storagePropertyNames[dataProperty.DataModelPropertyName];
 
                 if (dataProperty.PropertyType == typeof(string))

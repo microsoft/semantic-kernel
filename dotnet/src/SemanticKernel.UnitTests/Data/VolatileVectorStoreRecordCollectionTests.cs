@@ -292,9 +292,9 @@ public class VolatileVectorStoreRecordCollectionTests
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("Data"),
-            new VectorStoreRecordVectorProperty("Vector")
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("Data", typeof(string)),
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
         ]
     };
 

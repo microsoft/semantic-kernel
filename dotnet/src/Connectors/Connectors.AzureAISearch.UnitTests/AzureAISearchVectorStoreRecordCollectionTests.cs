@@ -206,11 +206,11 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Arrange.
         var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, false))!.AsObject();
 
-        var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "key", "storage_data1", "data2" } : new[] { "Key", "storage_data1", "Data2" };
+        var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "storage_data1", "data2", "key" } : new[] { "storage_data1", "Data2", "Key" };
         this._searchClientMock.Setup(
             x => x.GetDocumentAsync<MultiPropsModel>(
                 TestRecordKey1,
-                It.Is<GetDocumentOptions>(x => x.SelectedFields.SequenceEqual(expectedSelectFields)),
+                It.IsAny<GetDocumentOptions>(),
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(CreateModel(TestRecordKey1, true), Mock.Of<Response>()));
 
@@ -227,6 +227,13 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         Assert.Equal(TestRecordKey1, actual.Key);
         Assert.Equal("data 1", actual.Data1);
         Assert.Equal("data 2", actual.Data2);
+
+        this._searchClientMock.Verify(
+            x => x.GetDocumentAsync<MultiPropsModel>(
+                TestRecordKey1,
+                It.Is<GetDocumentOptions>(x => x.SelectedFields.SequenceEqual(expectedSelectFields)),
+                this._testCancellationToken),
+            Times.Once);
     }
 
     [Theory]
@@ -519,6 +526,32 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
+    /// <summary>
+    /// Tests that the collection can be created even if the definition and the type do not match.
+    /// In this case, the expectation is that a custom mapper will be provided to map between the
+    /// schema as defined by the definition and the different data model.
+    /// </summary>
+    [Fact]
+    public void CanCreateCollectionWithMismatchedDefinitionAndType()
+    {
+        // Arrange.
+        var definition = new VectorStoreRecordDefinition()
+        {
+            Properties = new List<VectorStoreRecordProperty>
+            {
+                new VectorStoreRecordKeyProperty("Id", typeof(string)),
+                new VectorStoreRecordDataProperty("Text", typeof(string)),
+                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+            }
+        };
+
+        // Act.
+        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+            this._searchIndexClientMock.Object,
+            TestCollectionName,
+            new() { VectorStoreRecordDefinition = definition, JsonObjectCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>() });
+    }
+
     private AzureAISearchVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
     {
         return new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
@@ -553,11 +586,11 @@ public class AzureAISearchVectorStoreRecordCollectionTests
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("Data1") { PropertyType = typeof(string) },
-            new VectorStoreRecordDataProperty("Data2") { PropertyType = typeof(string) },
-            new VectorStoreRecordVectorProperty("Vector1") { Dimensions = 4 },
-            new VectorStoreRecordVectorProperty("Vector2") { Dimensions = 4 }
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("Data1", typeof(string)),
+            new VectorStoreRecordDataProperty("Data2", typeof(string)),
+            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+            new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 }
         ]
     };
 

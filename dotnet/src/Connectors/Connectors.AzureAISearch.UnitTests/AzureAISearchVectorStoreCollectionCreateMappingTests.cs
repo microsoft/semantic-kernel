@@ -18,7 +18,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapKeyFieldCreatesSearchableField()
     {
         // Arrange
-        var keyProperty = new VectorStoreRecordKeyProperty("testkey");
+        var keyProperty = new VectorStoreRecordKeyProperty("testkey", typeof(string));
         var storagePropertyName = "test_key";
 
         // Act
@@ -37,7 +37,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapStringDataFieldCreatesSearchableField(bool isFilterable)
     {
         // Arrange
-        var dataProperty = new VectorStoreRecordDataProperty("testdata") { IsFilterable = isFilterable, PropertyType = typeof(string) };
+        var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(string)) { IsFilterable = isFilterable };
         var storagePropertyName = "test_data";
 
         // Act
@@ -57,7 +57,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapDataFieldCreatesSimpleField(bool isFilterable)
     {
         // Arrange
-        var dataProperty = new VectorStoreRecordDataProperty("testdata") { IsFilterable = isFilterable, PropertyType = typeof(int) };
+        var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(int)) { IsFilterable = isFilterable };
         var storagePropertyName = "test_data";
 
         // Act
@@ -73,21 +73,10 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     }
 
     [Fact]
-    public void MapDataFieldFailsForNullType()
-    {
-        // Arrange
-        var dataProperty = new VectorStoreRecordDataProperty("testdata");
-        var storagePropertyName = "test_data";
-
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty, storagePropertyName));
-    }
-
-    [Fact]
     public void MapVectorFieldCreatesVectorSearchField()
     {
         // Arrange
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 10, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity };
+        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 10, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity };
         var storagePropertyName = "test_vector";
 
         // Act
@@ -115,7 +104,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapVectorFieldCreatesExpectedAlgoConfigTypes(string indexKind, Type algoConfigType)
     {
         // Arrange
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 10, IndexKind = indexKind, DistanceFunction = DistanceFunction.DotProductSimilarity };
+        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 10, IndexKind = indexKind, DistanceFunction = DistanceFunction.DotProductSimilarity };
         var storagePropertyName = "test_vector";
 
         // Act
@@ -130,7 +119,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapVectorFieldDefaultsToHsnwAndCosine()
     {
         // Arrange
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 10 };
+        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 };
         var storagePropertyName = "test_vector";
 
         // Act
@@ -146,7 +135,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapVectorFieldThrowsForUnsupportedDistanceFunction()
     {
         // Arrange
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector") { Dimensions = 10, DistanceFunction = DistanceFunction.ManhattanDistance };
+        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 10, DistanceFunction = DistanceFunction.ManhattanDistance };
         var storagePropertyName = "test_vector";
 
         // Act
@@ -157,7 +146,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapVectorFieldThrowsForMissingDimensionsCount()
     {
         // Arrange
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector");
+        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>));
         var storagePropertyName = "test_vector";
 
         // Act
