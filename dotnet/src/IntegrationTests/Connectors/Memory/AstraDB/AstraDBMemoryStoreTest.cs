@@ -35,7 +35,7 @@ public class AstraDBMemoryStoreTests : IAsyncLifetime
     this._keySpace = configuration["AstraDB:KeySpace"] ?? "default_keyspace";
     this._apiEndpoint = configuration["AstraDB:ApiEndpoint"] ?? "";
     this._appToken = configuration["AstraDB:AppToken"] ?? "";
-    this._vectorSize = int.Parse(configuration["AstraDB:VectorSize"] ?? "1536");
+    this._vectorSize = int.Parse(configuration["AstraDB:VectorSize"] ?? "5"); // it should be given 5 for tests
   }
   public async Task DisposeAsync()
   {
