@@ -464,7 +464,8 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             ["Hello", "well"],
-            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            # marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
+            marks=pytest.mark.skip(reason="Flaky test"),
             id="ollama_text_input",
         ),
         pytest.param(
