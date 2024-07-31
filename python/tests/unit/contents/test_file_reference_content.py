@@ -31,7 +31,7 @@ def test_to_str():
 def test_to_element():
     file_reference = FileReferenceContent(file_id="12345")
     element = file_reference.to_element()
-    assert element.tag == "FileReferenceContent"
+    assert element.tag == "file_reference"
     assert element.get("file_id") == "12345"
 
 

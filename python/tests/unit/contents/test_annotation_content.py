@@ -76,7 +76,7 @@ def test_to_str():
 def test_to_element():
     annotation = AnnotationContent(file_id="12345", quote="This is a quote.", start_index=5, end_index=20)
     element = annotation.to_element()
-    assert element.tag == "AnnotationContent"
+    assert element.tag == "annotation"
     assert element.get("file_id") == "12345"
     assert element.get("quote") == "This is a quote."
     assert element.get("start_index") == "5"

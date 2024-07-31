@@ -30,7 +30,7 @@ class AnnotationContent(KernelContent):
 
     def to_element(self) -> Element:
         """Convert the annotation content to an Element."""
-        element = Element("AnnotationContent")
+        element = Element(self.tag)
         if self.file_id:
             element.set("file_id", self.file_id)
         if self.quote:

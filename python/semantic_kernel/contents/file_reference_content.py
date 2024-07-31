@@ -22,12 +22,12 @@ class FileReferenceContent(KernelContent):
     file_id: str | None = None
 
     def __str__(self) -> str:
-        """Return the string representation of the annotation content."""
+        """Return the string representation of the file reference content."""
         return f"FileReferenceContent(file_id={self.file_id})"
 
     def to_element(self) -> Element:
-        """Convert the annotation content to an Element."""
-        element = Element("FileReferenceContent")
+        """Convert the file reference content to an Element."""
+        element = Element(self.tag)
         if self.file_id:
             element.set("file_id", self.file_id)
         return element
