@@ -21,7 +21,7 @@ internal static class PineconeVectorStoreCollectionCreateMapping
     {
         if (vectorProperty!.Dimensions is not > 0)
         {
-            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive integer to create a collection.");
+            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' must be set to a positive integer to create a collection.");
         }
 
         return (Dimension: (uint)vectorProperty.Dimensions, Metric: GetSDKMetricAlgorithm(vectorProperty));
@@ -41,6 +41,6 @@ internal static class PineconeVectorStoreCollectionCreateMapping
             DistanceFunction.DotProductSimilarity => Metric.DotProduct,
             DistanceFunction.EuclideanDistance => Metric.Euclidean,
             null => Metric.Cosine,
-            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}'.")
+            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
         };
 }

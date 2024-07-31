@@ -53,14 +53,14 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId"),
-                new VectorStoreRecordDataProperty("HotelName") { PropertyType = typeof(string) },
-                new VectorStoreRecordDataProperty("Description") { PropertyType = typeof(string) },
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding") { Dimensions = 4 },
-                new VectorStoreRecordDataProperty("Tags") { PropertyType = typeof(string[]) },
-                new VectorStoreRecordDataProperty("ParkingIncluded") { PropertyType = typeof(bool?) },
-                new VectorStoreRecordDataProperty("LastRenovationDate") { PropertyType = typeof(DateTimeOffset?) },
-                new VectorStoreRecordDataProperty("Rating") { PropertyType = typeof(float?) }
+                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)),
+                new VectorStoreRecordDataProperty("Description", typeof(string)),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
+                new VectorStoreRecordDataProperty("Tags", typeof(string[])),
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool?)),
+                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset?)),
+                new VectorStoreRecordDataProperty("Rating", typeof(float?))
             }
         };
     }

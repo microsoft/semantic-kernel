@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Data;
+using Qdrant.Client;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
@@ -10,7 +11,19 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 public static class QdrantKernelBuilderExtensions
 {
     /// <summary>
-    /// Register a Qdrant <see cref="IVectorStore"/> with the specified service ID.
+    /// Register a Qdrant <see cref="IVectorStore"/> with the specified service ID and where <see cref="QdrantClient"/> is retrieved from the dependency injection container.
+    /// </summary>
+    /// <param name="builder">The builder to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <returns>The kernel builder.</returns>
+    public static IKernelBuilder AddQdrantVectorStore(this IKernelBuilder builder, QdrantVectorStoreOptions? options = default, string? serviceId = default)
+    {
+        builder.Services.AddQdrantVectorStore(options, serviceId);
+        return builder;
+    }
+    /// <summary>
+    /// Register a Qdrant <see cref="IVectorStore"/> with the specified service ID and where <see cref="QdrantClient"/> is constructed using the provided parameters.
     /// </summary>
     /// <param name="builder">The builder to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="host">The Qdrant service host name.</param>
@@ -20,7 +33,7 @@ public static class QdrantKernelBuilderExtensions
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IKernelBuilder AddQdrantVectorStore(this IKernelBuilder builder, string? host = default, int port = 6334, bool https = false, string? apiKey = default, QdrantVectorStoreOptions? options = default, string? serviceId = default)
+    public static IKernelBuilder AddQdrantVectorStore(this IKernelBuilder builder, string host, int port = 6334, bool https = false, string? apiKey = default, QdrantVectorStoreOptions? options = default, string? serviceId = default)
     {
         builder.Services.AddQdrantVectorStore(host, port, https, apiKey, options, serviceId);
         return builder;

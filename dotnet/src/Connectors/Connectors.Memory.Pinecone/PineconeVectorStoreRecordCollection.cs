@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,18 +60,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         if (this._options.VectorCustomMapper is null)
         {
-            (PropertyInfo KeyProperty, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) properties;
-            if (this._options.VectorStoreRecordDefinition is not null)
-            {
-                properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), this._options.VectorStoreRecordDefinition, supportsMultipleVectors: false);
-            }
-            else
-            {
-                properties = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), supportsMultipleVectors: false);
-            }
-
-            var storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties, this._options.VectorStoreRecordDefinition);
-            this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(properties.KeyProperty, properties.DataProperties, properties.VectorProperties, storagePropertyNames);
+            this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition);
         }
         else
         {

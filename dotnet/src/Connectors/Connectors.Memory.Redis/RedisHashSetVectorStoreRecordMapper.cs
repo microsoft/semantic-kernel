@@ -40,20 +40,16 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetVectorStoreRecordMapper{TConsumerDataModel}"/> class.
     /// </summary>
-    /// <param name="keyPropertyInfo">The property info object that points at the key property for the current model.</param>
-    /// <param name="dataPropertiesInfo">The property info objects that point at the payload properties in the current model.</param>
-    /// <param name="vectorPropertiesInfo">The property info objects that point at the vector properties in the current model.</param>
+    /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
     public RedisHashSetVectorStoreRecordMapper(
-        PropertyInfo keyPropertyInfo,
-        IEnumerable<PropertyInfo> dataPropertiesInfo,
-        IEnumerable<PropertyInfo> vectorPropertiesInfo,
+        VectorStoreRecordDefinition vectorStoreRecordDefinition,
         Dictionary<string, string> storagePropertyNames)
     {
-        Verify.NotNull(keyPropertyInfo);
-        Verify.NotNull(dataPropertiesInfo);
-        Verify.NotNull(vectorPropertiesInfo);
+        Verify.NotNull(vectorStoreRecordDefinition);
         Verify.NotNull(storagePropertyNames);
+
+        (PropertyInfo keyPropertyInfo, List<PropertyInfo> dataPropertiesInfo, List<PropertyInfo> vectorPropertiesInfo) = VectorStoreRecordPropertyReader.FindProperties(typeof(TConsumerDataModel), vectorStoreRecordDefinition, supportsMultipleVectors: true);
 
         this._keyPropertyInfo = keyPropertyInfo;
         this._dataPropertiesInfo = dataPropertiesInfo;

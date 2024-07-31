@@ -513,6 +513,32 @@ public class QdrantVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
+    /// <summary>
+    /// Tests that the collection can be created even if the definition and the type do not match.
+    /// In this case, the expectation is that a custom mapper will be provided to map between the
+    /// schema as defined by the definition and the different data model.
+    /// </summary>
+    [Fact]
+    public void CanCreateCollectionWithMismatchedDefinitionAndType()
+    {
+        // Arrange.
+        var definition = new VectorStoreRecordDefinition()
+        {
+            Properties = new List<VectorStoreRecordProperty>
+            {
+                new VectorStoreRecordKeyProperty("Id", typeof(ulong)),
+                new VectorStoreRecordDataProperty("Text", typeof(string)),
+                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+            }
+        };
+
+        // Act.
+        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
+            this._qdrantClientMock.Object,
+            TestCollectionName,
+            new() { VectorStoreRecordDefinition = definition, PointStructCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>() });
+    }
+
     private void SetupRetrieveMock(List<RetrievedPoint> retrievedPoints)
     {
         this._qdrantClientMock
@@ -626,7 +652,7 @@ public class QdrantVectorStoreRecordCollectionTests
             TestCollectionName,
             new()
             {
-                VectorStoreRecordDefinition = useDefinition ? this._singlePropsDefinition : null,
+                VectorStoreRecordDefinition = useDefinition ? CreateSinglePropsDefinition(typeof(T)) : null,
                 HasNamedVectors = hasNamedVectors
             }) as IVectorStoreRecordCollection<T, SinglePropsModel<T>>;
         return store!;
@@ -644,16 +670,19 @@ public class QdrantVectorStoreRecordCollectionTests
         };
     }
 
-    private readonly VectorStoreRecordDefinition _singlePropsDefinition = new()
+    private static VectorStoreRecordDefinition CreateSinglePropsDefinition(Type keyType)
     {
-        Properties =
-        [
-            new VectorStoreRecordKeyProperty("Key"),
-            new VectorStoreRecordDataProperty("OriginalNameData") { IsFilterable = true },
-            new VectorStoreRecordDataProperty("Data") { IsFilterable = true, StoragePropertyName = "data_storage_name" },
-            new VectorStoreRecordVectorProperty("Vector") { StoragePropertyName = "vector_storage_name" }
-        ]
-    };
+        return new()
+        {
+            Properties =
+            [
+                new VectorStoreRecordKeyProperty("Key", keyType),
+                new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("Data", typeof(string)) { IsFilterable = true, StoragePropertyName = "data_storage_name" },
+                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector_storage_name" }
+            ]
+        };
+    }
 
     public sealed class SinglePropsModel<T>
     {

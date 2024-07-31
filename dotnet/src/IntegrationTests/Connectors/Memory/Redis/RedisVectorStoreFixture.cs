@@ -39,29 +39,29 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId"),
-                new VectorStoreRecordDataProperty("HotelName") { IsFilterable = true, PropertyType = typeof(string) },
-                new VectorStoreRecordDataProperty("HotelCode") { IsFilterable = true, PropertyType = typeof(int) },
-                new VectorStoreRecordDataProperty("Description"),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding") { Dimensions = 4 },
-                new VectorStoreRecordDataProperty("Tags"),
-                new VectorStoreRecordDataProperty("ParkingIncluded") { StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("LastRenovationDate"),
-                new VectorStoreRecordDataProperty("Rating"),
-                new VectorStoreRecordDataProperty("Address")
+                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("Description", typeof(string)),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
+                new VectorStoreRecordDataProperty("Tags", typeof(string[])),
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset)),
+                new VectorStoreRecordDataProperty("Rating", typeof(double)),
+                new VectorStoreRecordDataProperty("Address", typeof(HotelAddress))
             }
         };
         this.BasicVectorStoreRecordDefinition = new VectorStoreRecordDefinition
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId"),
-                new VectorStoreRecordDataProperty("HotelName") { IsFilterable = true, PropertyType = typeof(string) },
-                new VectorStoreRecordDataProperty("HotelCode") { IsFilterable = true, PropertyType = typeof(int) },
-                new VectorStoreRecordDataProperty("Description"),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding") { Dimensions = 4 },
-                new VectorStoreRecordDataProperty("ParkingIncluded") { StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("Rating")
+                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("Description", typeof(string)),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+                new VectorStoreRecordDataProperty("Rating", typeof(double)),
             }
         };
     }

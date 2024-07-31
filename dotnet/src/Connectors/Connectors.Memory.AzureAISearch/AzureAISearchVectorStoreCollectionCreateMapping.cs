@@ -39,11 +39,6 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
             return new SearchableField(storagePropertyName) { IsFilterable = dataProperty.IsFilterable };
         }
 
-        if (dataProperty.PropertyType is null)
-        {
-            throw new InvalidOperationException($"Property {nameof(dataProperty.PropertyType)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.PropertyName}' must be set to create a collection.");
-        }
-
         return new SimpleField(storagePropertyName, AzureAISearchVectorStoreCollectionCreateMapping.GetSDKFieldDataType(dataProperty.PropertyType)) { IsFilterable = dataProperty.IsFilterable };
     }
 
@@ -58,7 +53,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     {
         if (vectorProperty.Dimensions is not > 0)
         {
-            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive integer to create a collection.");
+            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' must be set to a positive integer to create a collection.");
         }
 
         // Build a name for the profile and algorithm configuration based on the property name
@@ -74,7 +69,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
         {
             IndexKind.Hnsw => new HnswAlgorithmConfiguration(algorithmConfigName) { Parameters = new HnswParameters { Metric = algorithmMetric } },
             IndexKind.Flat => new ExhaustiveKnnAlgorithmConfiguration(algorithmConfigName) { Parameters = new ExhaustiveKnnParameters { Metric = algorithmMetric } },
-            _ => throw new InvalidOperationException($"Unsupported index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}'.")
+            _ => throw new InvalidOperationException($"Unsupported index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
         };
         var vectorSearchProfile = new VectorSearchProfile(vectorSearchProfileName, algorithmConfigName);
 
@@ -116,7 +111,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
             DistanceFunction.CosineSimilarity => VectorSearchAlgorithmMetric.Cosine,
             DistanceFunction.DotProductSimilarity => VectorSearchAlgorithmMetric.DotProduct,
             DistanceFunction.EuclideanDistance => VectorSearchAlgorithmMetric.Euclidean,
-            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}'.")
+            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
         };
     }
 

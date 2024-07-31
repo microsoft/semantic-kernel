@@ -65,12 +65,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
             // Data property.
             if (property is VectorStoreRecordDataProperty dataProperty && dataProperty.IsFilterable)
             {
-                if (dataProperty.PropertyType is null)
-                {
-                    throw new InvalidOperationException($"Property {nameof(dataProperty.PropertyType)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.PropertyName}' must be set to create a collection, since the property is filterable.");
-                }
-
-                var storageName = storagePropertyNames[dataProperty.PropertyName];
+                var storageName = storagePropertyNames[dataProperty.DataModelPropertyName];
 
                 if (dataProperty.PropertyType == typeof(string))
                 {
@@ -90,10 +85,10 @@ internal static class RedisVectorStoreCollectionCreateMapping
             {
                 if (vectorProperty.Dimensions is not > 0)
                 {
-                    throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}' must be set to a positive integer to create a collection.");
+                    throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' must be set to a positive integer to create a collection.");
                 }
 
-                var storageName = storagePropertyNames[vectorProperty.PropertyName];
+                var storageName = storagePropertyNames[vectorProperty.DataModelPropertyName];
                 var indexKind = GetSDKIndexKind(vectorProperty);
                 var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                 var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
@@ -127,7 +122,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
         {
             IndexKind.Hnsw => Schema.VectorField.VectorAlgo.HNSW,
             IndexKind.Flat => Schema.VectorField.VectorAlgo.FLAT,
-            _ => throw new InvalidOperationException($"Unsupported index kind '{vectorProperty.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}'.")
+            _ => throw new InvalidOperationException($"Unsupported index kind '{vectorProperty.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
         };
     }
 
@@ -150,7 +145,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
             DistanceFunction.CosineSimilarity => "COSINE",
             DistanceFunction.DotProductSimilarity => "IP",
             DistanceFunction.EuclideanDistance => "L2",
-            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.PropertyName}'.")
+            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
         };
     }
 }
