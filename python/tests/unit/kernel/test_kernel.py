@@ -174,7 +174,6 @@ async def test_invoke_function_cancelled(kernel: Kernel, create_mock_function):
 
     result = await kernel.invoke(mock_function, arguments=KernelArguments())
     assert result is None
-    assert False
 
 
 @pytest.mark.asyncio
