@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Diagnostics;
+using System.Threading;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Files;
 
 namespace Agents;
 
@@ -23,11 +26,15 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
+        OpenAIServiceConfiguration config = GetOpenAIConfiguration();
+
+        FileClient fileClient = config.CreateFileClient();
+
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: GetOpenAIConfiguration(),
+                config,
                 new()
                 {
                     Instructions = AgentInstructions,
@@ -55,6 +62,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
                 """);
 
             await InvokeAgentAsync("Can you regenerate this same chart using the category names as the bar colors?");
+            await InvokeAgentAsync("Perfect, can you regenerate this as a line chart?");
         }
         finally
         {
@@ -78,8 +86,29 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
                 foreach (var fileReference in message.Items.OfType<FileReferenceContent>())
                 {
                     Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: @{fileReference.FileId}");
+
+                    string downloadPath = await DownloadFileContentAsync(fileReference.FileId);
+
+                    Console.WriteLine($"# {message.Role}: @{fileReference.FileId} downloaded to {downloadPath}");
                 }
             }
+        }
+
+        async Task<string> DownloadFileContentAsync(string fileId)
+        {
+            string filePath = Path.Combine(Environment.CurrentDirectory, $"{fileId}.jpg");
+            BinaryData content = await fileClient.DownloadFileAsync(fileId);
+            await using var outputStream = File.OpenWrite(filePath);
+            await outputStream.WriteAsync(content.ToArray());
+
+            Process.Start(
+                new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/C start {filePath}"
+                });
+
+            return filePath;
         }
     }
 
