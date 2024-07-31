@@ -17,9 +17,9 @@ Example|Description
 ---|---
 [step1_agent](../getting_started_with_agents/step1_agent.py)|How to create and use an agent.
 [step2_plugins](../getting_started_with_agents/step2_plugins.py)|How to associate plugins with an agent.
-[step3_openai_assistant_agent](../getting_started_with_agents/step3_openai_assistant_agent.py)|How to create and use an OpenAI Assistant agent.
+[step8_openai_assistant_agent](../getting_started_with_agents/step8_openai_assistant_agent.py)|How to create and use an OpenAI Assistant agent.
 
-*Note: As we strive for parity with .NET, more getting_started_with_agent samples will be added. The current steps may be revised to further align with our .NET counterpart.*
+*Note: As we strive for parity with .NET, more getting_started_with_agent samples will be added. The current steps and names may be revised to further align with our .NET counterpart.*
 
 ## Configuring the Kernel
 
