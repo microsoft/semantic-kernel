@@ -38,7 +38,7 @@ internal static class MockHistoryGenerator
     /// <summary>
     /// Create an alternating list of user and assistant messages with function content
     /// injected at indexes:
-    /// 
+    ///
     /// - 5: function call
     /// - 6: function result
     /// - 9: function call
