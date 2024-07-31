@@ -39,7 +39,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
 
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it for data and vector properties.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames = [];
+    private readonly Dictionary<string, string> _storagePropertyNames;
+
+    /// <summary>Collection of record vector properties.</summary>
+    private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -73,6 +76,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             requiresAtLeastOneVector: false);
 
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
+        this._vectorProperties = properties.vectorProperties;
 
         this._mapper = this._options.BsonDocumentCustomMapper ??
             new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
@@ -132,8 +136,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         var record = await this.RunOperationAsync(OperationName, async () =>
         {
-            using var cursor = await this._mongoCollection
-                .FindAsync(this.GetFilterById(key), cancellationToken: cancellationToken)
+            using var cursor = await this
+                .FindAsync(this.GetFilterById(key), options, cancellationToken)
                 .ConfigureAwait(false);
 
             return await cursor.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
@@ -161,8 +165,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         const string OperationName = "Find";
 
-        using var cursor = await this._mongoCollection
-            .FindAsync(this.GetFilterByIds(keys), cancellationToken: cancellationToken)
+        using var cursor = await this
+            .FindAsync(this.GetFilterByIds(keys), options, cancellationToken)
             .ConfigureAwait(false);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
@@ -283,6 +287,35 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
             await this._mongoDatabase.RunCommandAsync<BsonDocument>(createIndexCommand, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private async Task<IAsyncCursor<BsonDocument>> FindAsync(FilterDefinition<BsonDocument> filter, GetRecordOptions? options, CancellationToken cancellationToken)
+    {
+        ProjectionDefinitionBuilder<BsonDocument> projectionBuilder = Builders<BsonDocument>.Projection;
+        ProjectionDefinition<BsonDocument>? projectionDefinition = null;
+
+        var includeVectors = options?.IncludeVectors ?? false;
+
+        if (!includeVectors && this._vectorProperties.Count > 0)
+        {
+            foreach (var vectorProperty in this._vectorProperties)
+            {
+                var propertyToExclude = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+
+                projectionDefinition = projectionDefinition is not null ?
+                    projectionDefinition.Exclude(propertyToExclude) :
+                    projectionBuilder.Exclude(propertyToExclude);
+            }
+        }
+
+        var query = this._mongoCollection.Find(filter);
+
+        if (projectionDefinition is not null)
+        {
+            query = query.Project(projectionDefinition);
+        }
+
+        return await query.ToCursorAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private FilterDefinition<BsonDocument> GetFilterById(string id)

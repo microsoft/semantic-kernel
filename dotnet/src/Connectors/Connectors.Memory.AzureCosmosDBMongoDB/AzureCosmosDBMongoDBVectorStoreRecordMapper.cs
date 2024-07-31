@@ -45,10 +45,10 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
     ];
 
     /// <summary>A dictionary that maps from a property name to the storage name.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames = [];
+    private readonly Dictionary<string, string> _storagePropertyNames;
 
     /// <summary>A dictionary that maps from a storage property name to the data model property name.</summary>
-    private readonly Dictionary<string, string> _reversedStoragePropertyNames = [];
+    private readonly Dictionary<string, string> _reversedStoragePropertyNames;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordMapper{TRecord}"/> class.

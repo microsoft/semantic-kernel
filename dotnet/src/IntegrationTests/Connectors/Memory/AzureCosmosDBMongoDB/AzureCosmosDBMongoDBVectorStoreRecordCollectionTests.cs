@@ -42,9 +42,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     }
 
     [Theory(Skip = SkipReason)]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ItCanCreateCollectionUpsertAndGetAsync(bool useRecordDefinition)
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task ItCanCreateCollectionUpsertAndGetAsync(bool includeVectors, bool useRecordDefinition)
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
@@ -64,7 +66,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         // Act
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(record);
-        var getResult = await sut.GetAsync(HotelId);
+        var getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = includeVectors });
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
@@ -80,7 +82,16 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal(record.ParkingIncluded, getResult.ParkingIncluded);
         Assert.Equal(record.Tags.ToArray(), getResult.Tags.ToArray());
         Assert.Equal(record.Description, getResult.Description);
-        Assert.Equal(record.DescriptionEmbedding!.Value.ToArray(), getResult.DescriptionEmbedding!.Value.ToArray());
+
+        if (includeVectors)
+        {
+            Assert.NotNull(getResult.DescriptionEmbedding);
+            Assert.Equal(record.DescriptionEmbedding!.Value.ToArray(), getResult.DescriptionEmbedding.Value.ToArray());
+        }
+        else
+        {
+            Assert.Null(getResult.DescriptionEmbedding);
+        }
     }
 
     [Fact(Skip = SkipReason)]
