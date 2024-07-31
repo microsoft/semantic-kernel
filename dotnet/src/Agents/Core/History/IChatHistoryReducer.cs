@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents.History;
 
 /// <summary>
-/// %%%
+/// Defines a contract for a reducing chat history.
 /// </summary>
 public interface IChatHistoryReducer
 {
     /// <summary>
-    /// %%%
+    /// Optionally reduces the chat history.
     /// </summary>
-    /// <param name="history"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="history">The source history (which may have been previously reduced)</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The reduced history, or 'null' if no reduction has occurred</returns>
     Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default);
 }

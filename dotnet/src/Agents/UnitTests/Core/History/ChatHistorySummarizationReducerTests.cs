@@ -1,7 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.History;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Core.History;
@@ -20,7 +25,33 @@ public class ChatHistorySummarizationReducerTests
     [InlineData(int.MaxValue, -1)]
     public void VerifyChatHistoryConstructorArgumentValidation(int targetCount, int? thresholdCount = null)
     {
-        Assert.Throws<ArgumentException>(() => new ChatHistorySummarizationReducer(new(), targetCount, thresholdCount));
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
+
+        Assert.Throws<ArgumentException>(() => new ChatHistorySummarizationReducer(mockCompletionService.Object, targetCount, thresholdCount));
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public void VerifyChatHistoryInitializationState()
+    {
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
+
+        ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 10);
+
+        Assert.Equal(ChatHistorySummarizationReducer.DefaultSummarizationPrompt, reducer.SummarizationInstructions);
+        Assert.True(reducer.FailOnError);
+
+        reducer =
+            new(mockCompletionService.Object, 10)
+            {
+                FailOnError = false,
+                SummarizationInstructions = "instructions",
+            };
+
+        Assert.NotEqual(ChatHistorySummarizationReducer.DefaultSummarizationPrompt, reducer.SummarizationInstructions);
+        Assert.False(reducer.FailOnError);
     }
 
     /// <summary>
@@ -30,6 +61,8 @@ public class ChatHistorySummarizationReducerTests
     public void VerifyChatHistoryHasCode()
     {
         HashSet<ChatHistorySummarizationReducer> reducers = [];
+
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
 
         int hashCode1 = GenerateHashCode(3, 4);
         int hashCode2 = GenerateHashCode(33, 44);
@@ -41,11 +74,126 @@ public class ChatHistorySummarizationReducerTests
 
         int GenerateHashCode(int targetCount, int thresholdCount)
         {
-            ChatHistorySummarizationReducer reducer = new(new(), targetCount, thresholdCount);
+            ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, targetCount, thresholdCount);
 
             reducers.Add(reducer);
 
             return reducer.GetHashCode();
         }
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatHistoryReductionSilentFailureAsync()
+    {
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService(throwException: true);
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+
+        ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 10) { FailOnError = false };
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
+
+        Assert.Null(reducedHistory);
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatHistoryReductionThrowsOnFailureAsync()
+    {
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService(throwException: true);
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+
+        ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 10);
+        await Assert.ThrowsAsync<HttpOperationException>(() => reducer.ReduceAsync(sourceHistory));
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatHistoryNotReducedAsync()
+    {
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+
+        ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 20);
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
+
+        Assert.Null(reducedHistory);
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatHistoryReducedAsync()
+    {
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+
+        ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 10);
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
+
+        ChatMessageContent[] messages = VerifyReducedHistory(reducedHistory, 11);
+        VerifySummarization(messages[0]);
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatHistoryRereducedAsync()
+    {
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
+        IReadOnlyList<ChatMessageContent> sourceHistory = MockHistoryGenerator.CreateSimpleHistory(20).ToArray();
+
+        ChatHistorySummarizationReducer reducer = new(mockCompletionService.Object, 10);
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
+        reducedHistory = await reducer.ReduceAsync([.. reducedHistory!, .. sourceHistory]);
+
+        ChatMessageContent[] messages = VerifyReducedHistory(reducedHistory, 12);
+        VerifySummarization(messages[0]);
+        VerifySummarization(messages[1]);
+    }
+
+    private static ChatMessageContent[] VerifyReducedHistory(IEnumerable<ChatMessageContent>? reducedHistory, int expectedCount)
+    {
+        Assert.NotNull(reducedHistory);
+        ChatMessageContent[] messages = reducedHistory.ToArray();
+        Assert.Equal(expectedCount, messages.Length);
+
+        return messages;
+    }
+
+    private static void VerifySummarization(ChatMessageContent message)
+    {
+        Assert.NotNull(message.Metadata);
+        Assert.True(message.Metadata!.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey));
+    }
+
+    private Mock<IChatCompletionService> CreateMockCompletionService(bool throwException = false)
+    {
+        Mock<IChatCompletionService> mock = new();
+        var setup = mock.Setup(
+            s =>
+                s.GetChatMessageContentsAsync(
+                    It.IsAny<ChatHistory>(),
+                    It.IsAny<PromptExecutionSettings>(),
+                    It.IsAny<Kernel>(),
+                    default));
+
+        if (throwException)
+        {
+            setup.ThrowsAsync(new HttpOperationException("whoops"));
+        }
+        else
+        {
+            setup.ReturnsAsync([new(AuthorRole.Assistant, "summary")]);
+        }
+
+        return mock;
     }
 }

@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.History;
 
@@ -12,9 +10,9 @@ namespace Microsoft.SemanticKernel.Agents.History;
 /// Truncate the chat history to the target message count.
 /// </summary>
 /// <remarks>
-/// Truncation will always Will avoid orphaning function-content as  the presence of
+/// Truncation will always avoid orphaning function-content as the presence of
 /// a function-call _must_ be followed by a function-result.  When a threshold count is
-/// is provided (recommended), truncation will scan within the threshold window in an attempt to
+/// is provided (recommended), reduction will scan within the threshold window in an attempt to
 /// avoid orphaning a user message from an assistant response.
 /// </remarks>
 internal class ChatHistoryTruncationReducer : IChatHistoryReducer
@@ -26,7 +24,7 @@ internal class ChatHistoryTruncationReducer : IChatHistoryReducer
     public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // First pass to determine the truncation index
-        int truncationIndex = LocateReductionIndex(history, this._targetCount, this._thresholdCount);
+        int truncationIndex = history.LocateSafeReductionIndex(this._targetCount, this._thresholdCount);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
@@ -56,50 +54,6 @@ internal class ChatHistoryTruncationReducer : IChatHistoryReducer
         this._targetCount = targetCount;
 
         this._thresholdCount = thresholdCount ?? 0;
-    }
-
-    private static int LocateReductionIndex(IReadOnlyList<ChatMessageContent> history, int targetCount, int thresholdCount)
-    {
-        // Compute the index of the truncation threshold
-        int thresholdIndex = history.Count - thresholdCount - targetCount;
-
-        if (thresholdIndex <= 0)
-        {
-            // History is too short to truncate
-            return 0;
-        }
-
-        // Compute the index of truncation target
-        int messageIndex = history.Count - targetCount;
-
-        // Skip function related content
-        while (messageIndex >= 0)
-        {
-            if (!history[messageIndex].Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
-            {
-                break;
-            }
-
-            --messageIndex;
-        }
-
-        // Capture the earliest non-function related message
-        int targetIndex = messageIndex;
-
-        // Scan for user message within truncation range to maximize chat cohesion
-        while (messageIndex >= thresholdIndex)
-        {
-            // A user message provides a superb truncation point
-            if (history[messageIndex].Role == AuthorRole.User)
-            {
-                return messageIndex;
-            }
-
-            --messageIndex;
-        }
-
-        // No user message found, fallback to the earliest non-function related message
-        return targetIndex;
     }
 
     private readonly int _thresholdCount;

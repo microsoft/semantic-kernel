@@ -30,7 +30,7 @@ public class ChatHistoryReducerExtensionsTests
     [InlineData(100, 0, int.MaxValue, 100)]
     public void VerifyChatHistoryExtraction(int messageCount, int startIndex, int? endIndex = null, int? expectedCount = null)
     {
-        ChatHistory history = [.. GenerateHistory(messageCount)];
+        ChatHistory history = [.. MockHistoryGenerator.CreateSimpleHistory(messageCount)];
 
         ChatMessageContent[] extractedHistory = history.Extract(startIndex, endIndex).ToArray();
 
@@ -58,15 +58,15 @@ public class ChatHistoryReducerExtensionsTests
     [InlineData(100, 0)]
     public void VerifyGetFinalSummaryIndex(int summaryCount, int regularCount)
     {
-        ChatHistory summaries = [.. GenerateHistory(summaryCount)];
+        ChatHistory summaries = [.. MockHistoryGenerator.CreateSimpleHistory(summaryCount)];
         foreach (ChatMessageContent summary in summaries)
         {
             summary.Metadata = new Dictionary<string, object?>() { { "summary", true } };
         }
 
-        ChatHistory history = [.. summaries, .. GenerateHistory(regularCount)];
+        ChatHistory history = [.. summaries, .. MockHistoryGenerator.CreateSimpleHistory(regularCount)];
 
-        int finalSummaryIndex = history.GetFinalSummaryIndex("summary");
+        int finalSummaryIndex = history.LocateSummarizationBoundary("summary");
 
         Assert.Equal(summaryCount, finalSummaryIndex);
     }
@@ -103,13 +103,5 @@ public class ChatHistoryReducerExtensionsTests
 
         Assert.True(isReduced);
         Assert.NotStrictEqual(history, reducedHistory);
-    }
-
-    private static IEnumerable<ChatMessageContent> GenerateHistory(int messageCount)
-    {
-        for (int index = 0; index < messageCount; ++index)
-        {
-            yield return new ChatMessageContent(AuthorRole.Assistant, $"message #{index}");
-        }
     }
 }

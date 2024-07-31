@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Agents;
 public interface IChatHistoryHandler
 {
     /// <summary>
-    /// %%%
+    /// An optional history reducer to apply to the chat history prior processing.
     /// </summary>
     IChatHistoryReducer? HistoryReducer { get; init; }
 

@@ -69,7 +69,7 @@ public class ChatHistoryTruncationReducerTests
     public async Task VerifyChatHistoryNotReducedAsync(int messageCount, int targetCount, int? thresholdCount = null)
     {
         // Shape of history doesn't matter since reduction is not expected
-        ChatHistory sourceHistory = [.. GenerateHistory(messageCount)];
+        ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateHistoryWithUserInput(messageCount)];
 
         ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
 
@@ -93,7 +93,7 @@ public class ChatHistoryTruncationReducerTests
     public async Task VerifyChatHistoryReducedAsync(int messageCount, int targetCount, int? thresholdCount = null)
     {
         // Generate history with only assistant messages
-        ChatHistory sourceHistory = [.. GenerateHistory(messageCount, skipUser: true)];
+        ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateSimpleHistory(messageCount)];
 
         ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
 
@@ -119,7 +119,7 @@ public class ChatHistoryTruncationReducerTests
     public async Task VerifyChatHistoryReducedWithUserAsync(int messageCount, int targetCount, int? thresholdCount = null)
     {
         // Generate history with alternating user and assistant messages
-        ChatHistory sourceHistory = [.. GenerateHistory(messageCount)];
+        ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateHistoryWithUserInput(messageCount)];
 
         ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
 
@@ -152,7 +152,7 @@ public class ChatHistoryTruncationReducerTests
     {
         // Generate a history with function call on index 5 and 9 and
         // function result on index 6 and 10 (total length: 14)
-        ChatHistory sourceHistory = [.. GenerateHistoryWithFunctionContent()];
+        ChatHistory sourceHistory = [.. MockHistoryGenerator.CreateHistoryWithFunctionContent()];
 
         ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
 
@@ -174,34 +174,5 @@ public class ChatHistoryTruncationReducerTests
         }
 
         Assert.Equal(expectedCount, messages.Length);
-    }
-
-    private static IEnumerable<ChatMessageContent> GenerateHistory(int messageCount, bool skipUser = false)
-    {
-        for (int index = 0; index < messageCount; ++index)
-        {
-            yield return
-                index % 2 == 1 || skipUser ?
-                    new ChatMessageContent(AuthorRole.Assistant, $"asistant response: {index}") :
-                    new ChatMessageContent(AuthorRole.User, $"user input: {index}");
-        }
-    }
-
-    private static IEnumerable<ChatMessageContent> GenerateHistoryWithFunctionContent()
-    {
-        yield return new ChatMessageContent(AuthorRole.User, "user input: 0");
-        yield return new ChatMessageContent(AuthorRole.Assistant, "asistant response: 1");
-        yield return new ChatMessageContent(AuthorRole.User, "user input: 2");
-        yield return new ChatMessageContent(AuthorRole.Assistant, "asistant response: 3");
-        yield return new ChatMessageContent(AuthorRole.User, "user input: 4");
-        yield return new ChatMessageContent(AuthorRole.Assistant, [new FunctionCallContent("function call: 5")]);
-        yield return new ChatMessageContent(AuthorRole.Tool, [new FunctionResultContent("function result: 6")]);
-        yield return new ChatMessageContent(AuthorRole.Assistant, "asistant response: 7");
-        yield return new ChatMessageContent(AuthorRole.User, "user input: 8");
-        yield return new ChatMessageContent(AuthorRole.Assistant, [new FunctionCallContent("function call: 9")]);
-        yield return new ChatMessageContent(AuthorRole.Tool, [new FunctionResultContent("function result: 10")]);
-        yield return new ChatMessageContent(AuthorRole.Assistant, "asistant response: 11");
-        yield return new ChatMessageContent(AuthorRole.User, "user input: 12");
-        yield return new ChatMessageContent(AuthorRole.Assistant, "asistant response: 13");
     }
 }

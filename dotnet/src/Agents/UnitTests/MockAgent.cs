@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -13,7 +12,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace SemanticKernel.Agents.UnitTests;
 
 /// <summary>
-/// %%%
+/// Mock definition of <see cref="KernelAgent"/> with a <see cref="IChatHistoryHandler"/> contract.
 /// </summary>
 internal sealed class MockAgent : KernelAgent, IChatHistoryHandler
 {
