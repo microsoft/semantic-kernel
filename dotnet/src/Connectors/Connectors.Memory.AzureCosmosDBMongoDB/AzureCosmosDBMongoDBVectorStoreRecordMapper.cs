@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -54,12 +53,12 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordMapper{TRecord}"/> class.
     /// </summary>
-    /// <param name="keyProperty">A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</param>
-    /// <param name="dataProperties">A list of property info objects that point at the data properties in the current model, and allows easy reading and writing of these properties.</param>
-    /// <param name="vectorProperties">A list of property info objects that point at the vector properties in the current model, and allows easy reading and writing of these properties.</param>
+    /// <param name="vectorStoreRecordDefinition">The record definition that defines the schema of the record type.</param>
     /// <param name="storagePropertyNames">A dictionary that maps from a property name to the configured name that should be used when storing it.</param>
-    public AzureCosmosDBMongoDBVectorStoreRecordMapper(PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties, Dictionary<string, string> storagePropertyNames)
+    public AzureCosmosDBMongoDBVectorStoreRecordMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition, Dictionary<string, string> storagePropertyNames)
     {
+        var (keyProperty, dataProperties, vectorProperties) = VectorStoreRecordPropertyReader.FindProperties(typeof(TRecord), vectorStoreRecordDefinition, supportsMultipleVectors: true);
+
         VectorStoreRecordPropertyReader.VerifyPropertyTypes([keyProperty], s_supportedKeyTypes, "Key");
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(vectorProperties, s_supportedVectorTypes, "Vector");

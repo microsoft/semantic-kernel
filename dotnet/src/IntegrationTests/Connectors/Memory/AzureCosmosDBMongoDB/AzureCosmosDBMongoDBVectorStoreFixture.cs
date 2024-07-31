@@ -47,14 +47,14 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("HotelId"),
-                new VectorStoreRecordDataProperty("HotelName") { PropertyType = typeof(string) },
-                new VectorStoreRecordDataProperty("HotelCode") { PropertyType = typeof(int) },
-                new VectorStoreRecordDataProperty("ParkingIncluded") { PropertyType = typeof(bool), StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating") { PropertyType = typeof(float) },
-                new VectorStoreRecordDataProperty("Tags"),
-                new VectorStoreRecordDataProperty("Description"),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding") { Dimensions = 4, IndexKind = "vector-ivf", DistanceFunction = "COS" }
+                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelCode", typeof(int)),
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+                new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
+                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreRecordDataProperty("Description", typeof(string)),
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = "vector-ivf", DistanceFunction = "COS" }
             ]
         };
     }
