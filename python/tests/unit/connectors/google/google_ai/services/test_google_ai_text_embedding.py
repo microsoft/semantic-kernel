@@ -36,7 +36,7 @@ def test_google_ai_text_embedding_init_with_service_id(google_ai_unit_test_env, 
 
 
 def test_google_ai_text_embedding_init_with_model_id_in_argument(google_ai_unit_test_env) -> None:
-    """Test initialization of GoogleAIChatCompletion with model_id in argument"""
+    """Test initialization of GoogleAITextEmbedding with model_id in argument"""
     google_ai_chat_completion = GoogleAITextEmbedding(embedding_model_id="custom_model_id")
 
     assert google_ai_chat_completion.ai_model_id == "custom_model_id"

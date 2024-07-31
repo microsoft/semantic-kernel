@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
-from google.generativeai.protos import Candidate, Part
+from google.cloud.aiplatform_v1beta1.types.content import Candidate, Part
 
-from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
-    finish_reason_from_google_ai_to_semantic_kernel,
+from semantic_kernel.connectors.ai.google.vertex_ai.services.utils import (
+    finish_reason_from_vertex_ai_to_semantic_kernel,
     format_user_message,
 )
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -16,12 +16,12 @@ from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 
 
-def test_finish_reason_from_google_ai_to_semantic_kernel():
-    """Test finish_reason_from_google_ai_to_semantic_kernel."""
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.STOP) == FinishReason.STOP
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.MAX_TOKENS) == FinishReason.LENGTH
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.SAFETY) == FinishReason.CONTENT_FILTER
-    assert finish_reason_from_google_ai_to_semantic_kernel(Candidate.FinishReason.OTHER) is None
+def test_finish_reason_from_vertex_ai_to_semantic_kernel():
+    """Test finish_reason_from_vertex_ai_to_semantic_kernel."""
+    assert finish_reason_from_vertex_ai_to_semantic_kernel(Candidate.FinishReason.STOP) == FinishReason.STOP
+    assert finish_reason_from_vertex_ai_to_semantic_kernel(Candidate.FinishReason.MAX_TOKENS) == FinishReason.LENGTH
+    assert finish_reason_from_vertex_ai_to_semantic_kernel(Candidate.FinishReason.SAFETY) == FinishReason.CONTENT_FILTER
+    assert finish_reason_from_vertex_ai_to_semantic_kernel(Candidate.FinishReason.OTHER) is None
 
 
 def test_format_user_message():

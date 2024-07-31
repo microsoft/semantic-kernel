@@ -11,6 +11,10 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
     GoogleAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_text_completion import GoogleAITextCompletion
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_text_completion import VertexAITextCompletion
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
+    VertexAITextPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
 from semantic_kernel.connectors.ai.hugging_face.services.hf_text_completion import HuggingFaceTextCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -70,6 +74,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
             HuggingFacePromptExecutionSettings,
         ),
         "google_ai": (GoogleAITextCompletion(), GoogleAITextPromptExecutionSettings),
+        "vertex_ai": (VertexAITextCompletion(), VertexAITextPromptExecutionSettings),
     }
 
 
@@ -125,6 +130,13 @@ pytestmark = pytest.mark.parametrize(
             ["Repeat the word Hello"],
             ["Hello"],
             id="google_ai_text_input",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {},
+            ["Repeat the word Hello"],
+            ["Hello"],
+            id="vertex_ai_text_input",
         ),
     ],
 )
