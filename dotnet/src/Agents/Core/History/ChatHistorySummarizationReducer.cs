@@ -76,7 +76,6 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         this._thresholdCount = thresholdCount ?? 0;
     }
 
-
     private readonly int _thresholdCount;
     private readonly int _targetCount;
 }
