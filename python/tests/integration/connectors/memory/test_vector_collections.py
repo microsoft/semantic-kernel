@@ -7,6 +7,7 @@ from typing import Annotated
 from uuid import uuid4
 
 import numpy as np
+import pytest
 from pytest import fixture, mark, param
 
 from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_store import AzureAISearchStore
@@ -141,9 +142,15 @@ async def collection_and_data(store, collection_details):
     collection = vector_store.get_collection(
         collection_name, data_model_type, data_model_definition, **collection_options
     )
-    await collection.create_collection_if_not_exists()
+    try:
+        await collection.create_collection_if_not_exists()
+    except Exception as exc:
+        pytest.fail(f"Failed to create collection: {exc}")
     yield collection, data_record
-    await collection.delete_collection()
+    try:
+        await collection.delete_collection()
+    except Exception as exc:
+        pytest.fail(f"Failed to delete collection: {exc}")
 
 
 @mark.asyncio
@@ -166,43 +173,3 @@ async def test_collections(collection_and_data):
         print("getting record again, expect None")
         result = await collection.get(compare_record["id"])
         assert result is None
-
-
-# @mark.asyncio
-# @mark.parametrize("collection_name, data_model_type, data_model_collection, data_record", [models[0]])
-# @mark.parametrize("store_id, store, collection_options", stores)
-# async def test_crud_collections(
-#     collection_name: str,
-#     data_model_type: type,
-#     data_model_collection: VectorStoreRecordDefinition | None,
-#     data_record: Any,
-#     store_id: str,
-#     store: VectorStore,
-#     collection_options: dict,
-# ):
-#     collection = store.get_collection(
-#         f"crud{store_id}{collection_name}", data_model_type, data_model_collection, **collection_options
-#     )
-#     assert collection.collection_name == f"crud{store_id}{collection_name}"
-
-#     print("creating collection")
-#     created = await collection.create_collection_if_not_exists()
-#     if created:
-#         print("collection created")
-#     else:
-#         print("collection already exists")
-
-#     try:
-#         print("creating collection")
-#         created = await collection.create_collection_if_not_exists()
-#         if created:
-#             print("collection created")
-#         else:
-#             print("collection already exists")
-#     except Exception:
-#         raise
-#     finally:
-#         print("deleting collection")
-#         await collection.delete_collection()
-#     print("deleting collection again, shouldn't fail")
-#     await collection.delete_collection()
