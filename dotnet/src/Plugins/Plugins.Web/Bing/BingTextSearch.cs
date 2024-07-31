@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// <summary>
 /// A Bing Text Search implementation that can be used to perform searches using the Bing Web Search API.
 /// </summary>
-public sealed class BingTextSearch : ITextSearch<TextSearchResult>, ITextSearch<BingWebPage>, ITextSearch<string>
+public sealed class BingTextSearch : ITextSearch<string>, ITextSearch<TextSearchResult>, ITextSearch<BingWebPage>
 {
     /// <summary>
     /// Create an instance of the <see cref="BingTextSearch"/> with API key authentication.
