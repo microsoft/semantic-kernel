@@ -358,7 +358,7 @@ def test_azure_openai_agent_create_missing_api_key_throws(openai_unit_test_env):
         OpenAIAssistantAgent(service_id="test_service", env_file_path="test.env")
 
 
-def test_create_open_ai_assistant_definition(mock_assistant):
+def test_create_open_ai_assistant_definition(mock_assistant, openai_unit_test_env):
     agent = OpenAIAssistantAgent(
         kernel=None, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
     )
@@ -393,7 +393,7 @@ def test_create_open_ai_assistant_definition(mock_assistant):
     }
 
 
-def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_json):
+def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_json, openai_unit_test_env):
     agent = OpenAIAssistantAgent(
         kernel=None, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
     )
