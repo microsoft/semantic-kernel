@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -31,6 +32,9 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     /// %%%
     /// </summary>
     public string SummarizationInstructions { get; init; } = DefaultSummarizationPrompt;
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistorySummarizationReducer), this._thresholdCount, this._targetCount);
 
     /// <summary>
     /// %%%

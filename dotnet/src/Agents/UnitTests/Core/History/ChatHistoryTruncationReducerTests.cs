@@ -30,6 +30,32 @@ public class ChatHistoryTruncationReducerTests
     /// <summary>
     /// %%%
     /// </summary>
+    [Fact]
+    public void VerifyChatHistoryHasCode()
+    {
+        HashSet<ChatHistoryTruncationReducer> reducers = [];
+
+        int hashCode1 = GenerateHashCode(3, 4);
+        int hashCode2 = GenerateHashCode(33, 44);
+        int hashCode3 = GenerateHashCode(3000, 4000);
+
+        Assert.NotEqual(hashCode1, hashCode2);
+        Assert.NotEqual(hashCode2, hashCode3);
+        Assert.Equal(3, reducers.Count);
+
+        int GenerateHashCode(int targetCount, int thresholdCount)
+        {
+            ChatHistoryTruncationReducer reducer = new(targetCount, thresholdCount);
+
+            reducers.Add(reducer);
+
+            return reducer.GetHashCode();
+        }
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
     [Theory]
     [InlineData(0, 1)]
     [InlineData(1, 1)]
