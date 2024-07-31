@@ -130,7 +130,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, azure_openai_uni
             "name": "test_name",
             "enable_code_interpreter": True,
             "enable_file_search": True,
-            "enable_json_response": False,
+            "enable_json_response": True,
             "file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,

@@ -6,7 +6,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from openai import AsyncOpenAI
 from openai.resources.beta.assistants import Assistant
-from openai.types.beta.assistant import ToolResources, ToolResourcesCodeInterpreter, ToolResourcesFileSearch
+from openai.types.beta.assistant import (
+    ToolResources,
+    ToolResourcesCodeInterpreter,
+    ToolResourcesFileSearch,
+)
 from pydantic import ValidationError
 
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
@@ -42,6 +46,37 @@ def mock_assistant():
                 "parallel_tool_calls_enabled": True,
                 "truncation_message_count": 10,
             }
+        },
+        model="test_model",
+        description="test_description",
+        id="test_id",
+        instructions="test_instructions",
+        name="test_name",
+        tools=[{"type": "code_interpreter"}, {"type": "file_search"}],
+        temperature=0.7,
+        top_p=0.9,
+        response_format={"type": "json_object"},
+        tool_resources=ToolResources(
+            code_interpreter=ToolResourcesCodeInterpreter(file_ids=["file1", "file2"]),
+            file_search=ToolResourcesFileSearch(vector_store_ids=["vector_store1"]),
+        ),
+    )
+
+
+@pytest.fixture
+def mock_assistant_json():
+    return Assistant(
+        created_at=123456789,
+        object="assistant",
+        metadata={
+            "__run_options": json.dumps(
+                {
+                    "max_completion_tokens": 100,
+                    "max_prompt_tokens": 50,
+                    "parallel_tool_calls_enabled": True,
+                    "truncation_message_count": 10,
+                }
+            )
         },
         model="test_model",
         description="test_description",
@@ -164,7 +199,7 @@ async def test_list_definitions(kernel: Kernel, mock_assistant, openai_unit_test
             "name": "test_name",
             "enable_code_interpreter": True,
             "enable_file_search": True,
-            "enable_json_response": False,
+            "enable_json_response": True,
             "file_ids": ["file1", "file2"],
             "temperature": 0.7,
             "top_p": 0.9,
@@ -321,3 +356,73 @@ def test_azure_openai_agent_create_missing_chat_model_id_throws(openai_unit_test
 def test_azure_openai_agent_create_missing_api_key_throws(openai_unit_test_env):
     with pytest.raises(AgentInitializationError, match="The OpenAI API key is required, if a client is not provided."):
         OpenAIAssistantAgent(service_id="test_service", env_file_path="test.env")
+
+
+def test_create_open_ai_assistant_definition(mock_assistant):
+    agent = OpenAIAssistantAgent(
+        kernel=None, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
+    )
+
+    definition = agent._create_open_ai_assistant_definition(mock_assistant)
+
+    assert definition == {
+        "ai_model_id": "test_model",
+        "description": "test_description",
+        "id": "test_id",
+        "instructions": "test_instructions",
+        "name": "test_name",
+        "enable_code_interpreter": True,
+        "enable_file_search": True,
+        "enable_json_response": True,
+        "file_ids": ["file1", "file2"],
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "vector_store_id": "vector_store1",
+        "metadata": {
+            "__run_options": {
+                "max_completion_tokens": 100,
+                "max_prompt_tokens": 50,
+                "parallel_tool_calls_enabled": True,
+                "truncation_message_count": 10,
+            }
+        },
+        "max_completion_tokens": 100,
+        "max_prompt_tokens": 50,
+        "parallel_tool_calls_enabled": True,
+        "truncation_message_count": 10,
+    }
+
+
+def test_create_open_ai_assistant_definition_with_json_metadata(mock_assistant_json):
+    agent = OpenAIAssistantAgent(
+        kernel=None, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
+    )
+
+    definition = agent._create_open_ai_assistant_definition(mock_assistant_json)
+
+    assert definition == {
+        "ai_model_id": "test_model",
+        "description": "test_description",
+        "id": "test_id",
+        "instructions": "test_instructions",
+        "name": "test_name",
+        "enable_code_interpreter": True,
+        "enable_file_search": True,
+        "enable_json_response": True,
+        "file_ids": ["file1", "file2"],
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "vector_store_id": "vector_store1",
+        "metadata": {
+            "__run_options": {
+                "max_completion_tokens": 100,
+                "max_prompt_tokens": 50,
+                "parallel_tool_calls_enabled": True,
+                "truncation_message_count": 10,
+            }
+        },
+        "max_completion_tokens": 100,
+        "max_prompt_tokens": 50,
+        "parallel_tool_calls_enabled": True,
+        "truncation_message_count": 10,
+    }

@@ -10,6 +10,7 @@ from openai import AsyncOpenAI
 from openai.resources.beta.assistants import Assistant
 from openai.resources.beta.threads.messages import Message
 from openai.resources.beta.threads.runs.runs import Run
+from openai.types.beta import AssistantResponseFormat
 from openai.types.beta.assistant_tool import CodeInterpreterTool, FileSearchTool
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
 from openai.types.beta.threads.runs import RunStep
@@ -295,6 +296,9 @@ class OpenAIAssistantBase(Agent):
         execution_settings = {}
         if isinstance(assistant.metadata, dict) and self._options_metadata_key in assistant.metadata:
             settings_data = assistant.metadata[self._options_metadata_key]
+            if isinstance(settings_data, str):
+                settings_data = json.loads(settings_data)
+                assistant.metadata[self._options_metadata_key] = settings_data
             execution_settings = {key: value for key, value in settings_data.items()}
 
         file_ids: list[str] = []
@@ -310,7 +314,11 @@ class OpenAIAssistantBase(Agent):
                 if vector_store_ids:
                     vector_store_id = vector_store_ids[0]
 
-        enable_json_response = assistant.response_format == {"type": "json_object"}
+        enable_json_response = (
+            hasattr(assistant, "response_format")
+            and isinstance(assistant.response_format, AssistantResponseFormat)
+            and assistant.response_format.type == "json_object"
+        )
 
         enable_code_interpreter = any(isinstance(tool, CodeInterpreterTool) for tool in assistant.tools)
         enable_file_search = any(isinstance(tool, FileSearchTool) for tool in assistant.tools)
