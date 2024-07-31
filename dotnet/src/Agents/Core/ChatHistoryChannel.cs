@@ -12,12 +12,12 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="IChatHistoryHandler"/>.
 /// </summary>
-public class ChatHistoryChannel : AgentChannel
+public sealed class ChatHistoryChannel : AgentChannel
 {
     private readonly ChatHistory _history;
 
     /// <inheritdoc/>
-    protected internal sealed override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
+    protected override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -74,7 +74,7 @@ public class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._history.AddRange(history);
 
@@ -82,7 +82,7 @@ public class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal sealed override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
+    protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._history.ToDescendingAsync();
     }

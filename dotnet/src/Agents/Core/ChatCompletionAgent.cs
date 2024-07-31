@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -14,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
 /// (<see cref="ChatCompletionAgent.ExecutionSettings"/>)
 /// </remarks>
-public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
+public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
 {
     /// <summary>
     /// Optional execution settings for the agent.
@@ -22,7 +23,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     public PromptExecutionSettings? ExecutionSettings { get; set; }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -63,7 +64,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -101,6 +102,24 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
             history.Add(message);
         }
+    }
+
+    /// <inheritdoc/>
+    protected override IEnumerable<string> GetChannelKeys()
+    {
+        yield return typeof(ChatHistoryChannel).FullName!;
+    }
+
+    /// <inheritdoc/>
+    protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+    {
+        ChatHistoryChannel channel =
+            new()
+            {
+                Logger = this.LoggerFactory.CreateLogger<ChatHistoryChannel>()
+            };
+
+        return Task.FromResult<AgentChannel>(channel);
     }
 
     private ChatHistory SetupAgentChatHistory(IReadOnlyList<ChatMessageContent> history)
