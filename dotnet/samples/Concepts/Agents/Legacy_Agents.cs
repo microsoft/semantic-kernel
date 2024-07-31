@@ -48,18 +48,12 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
         await ChatAsync(
             "Agents.ToolAgent.yaml", // Defined under ./Resources/Agents
             plugin,
-            arguments: new() { { LegacyMenuPlugin.CorrelationIdArgument, 3.141592653 } },
+            arguments: null,
             "Hello",
             "What is the special soup?",
             "What is the special drink?",
             "Do you have enough soup for 5 orders?",
             "Thank you!");
-
-        Console.WriteLine("\nCorrelation Ids:");
-        foreach (string correlationId in menuApi.CorrelationIds)
-        {
-            Console.WriteLine($"- {correlationId}");
-        }
     }
 
     /// <summary>
