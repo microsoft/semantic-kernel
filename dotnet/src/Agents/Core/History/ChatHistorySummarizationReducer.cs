@@ -62,7 +62,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         int insertionPoint = history.LocateSummarizationBoundary(SummaryMetadataKey);
 
         // First pass to determine the truncation index
-        int truncationIndex = history.LocateSafeReductionIndex(this._targetCount + insertionPoint, this._thresholdCount);
+        int truncationIndex = history.LocateSafeReductionIndex(this._targetCount, this._thresholdCount);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
