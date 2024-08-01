@@ -28,7 +28,7 @@ namespace Memory;
 /// For some databases in this sample (Redis &amp; Qdrant), you need a local instance of Docker running, since the associated fixtures will try and start containers in the local docker instance to run against.
 /// </summary>
 [Collection("Sequential")]
-public class VectorStore_DataIngestion(ITestOutputHelper output, VectorStoreRedisContainerFixture redisFixture, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreRedisContainerFixture>, IClassFixture<VectorStoreQdrantContainerFixture>
+public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, VectorStoreRedisContainerFixture redisFixture, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreRedisContainerFixture>, IClassFixture<VectorStoreQdrantContainerFixture>
 {
     /// <summary>
     /// Example with dependency injection.
