@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 from typing import Any
 
@@ -119,9 +120,12 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
     if text_items:
         part.text = text_items[0].text
     if function_call_items:
+        # Convert the arguments to a dictionary if it is a string
+        args = function_call_items[0].arguments
+        args = json.loads(args) if isinstance(args, str) else args
         part.function_call = FunctionCall(
             name=function_call_items[0].name,
-            args=function_call_items[0].arguments,
+            args=args,
         )
 
     return [part]
