@@ -34,8 +34,13 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// <exception cref="InvalidOperationException">Throws when the definition is missing required information.</exception>
     public static SimpleField MapDataField(VectorStoreRecordDataProperty dataProperty, string storagePropertyName)
     {
-        if (dataProperty.PropertyType == typeof(string))
+        if (dataProperty.IsFullTextSearchable)
         {
+            if (dataProperty.PropertyType != typeof(string))
+            {
+                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not a string.");
+            }
+
             return new SearchableField(storagePropertyName) { IsFilterable = dataProperty.IsFilterable };
         }
 

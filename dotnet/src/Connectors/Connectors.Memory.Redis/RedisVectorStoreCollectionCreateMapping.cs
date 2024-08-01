@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Microsoft.SemanticKernel.Data;
 using NRedisStack.Search;
 
@@ -63,18 +65,47 @@ internal static class RedisVectorStoreCollectionCreateMapping
             }
 
             // Data property.
-            if (property is VectorStoreRecordDataProperty dataProperty && dataProperty.IsFilterable)
+            if (property is VectorStoreRecordDataProperty dataProperty && (dataProperty.IsFilterable || dataProperty.IsFullTextSearchable))
             {
                 var storageName = storagePropertyNames[dataProperty.DataModelPropertyName];
 
-                if (dataProperty.PropertyType == typeof(string))
+                if (dataProperty.IsFilterable && dataProperty.IsFullTextSearchable)
                 {
-                    schema.AddTextField(new FieldName($"$.{storageName}", storageName));
+                    throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' has both {nameof(VectorStoreRecordDataProperty.IsFilterable)} and {nameof(VectorStoreRecordDataProperty.IsFullTextSearchable)} set to true, and this is not supported.");
                 }
 
-                if (RedisVectorStoreCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.PropertyType))
+                // Add full text search field index.
+                if (dataProperty.IsFullTextSearchable)
                 {
-                    schema.AddNumericField(new FieldName($"$.{storageName}", storageName));
+                    if (dataProperty.PropertyType == typeof(string) || (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType) && GetEnumerableType(dataProperty.PropertyType) == typeof(string)))
+                    {
+                        schema.AddTextField(new FieldName($"$.{storageName}", storageName));
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' is marked as {nameof(VectorStoreRecordDataProperty.IsFullTextSearchable)}, but the property type '{dataProperty.PropertyType}' is not supported. Only string and IEnumerable<string> properties are supported for full text search.");
+                    }
+                }
+
+                // Add filter field index.
+                if (dataProperty.IsFilterable)
+                {
+                    if (dataProperty.PropertyType == typeof(string))
+                    {
+                        schema.AddTagField(new FieldName($"$.{storageName}", storageName));
+                    }
+                    else if (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType) && GetEnumerableType(dataProperty.PropertyType) == typeof(string))
+                    {
+                        schema.AddTagField(new FieldName($"$.{storageName}.*", storageName));
+                    }
+                    else if (RedisVectorStoreCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.PropertyType))
+                    {
+                        schema.AddNumericField(new FieldName($"$.{storageName}", storageName));
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' is marked as {nameof(VectorStoreRecordDataProperty.IsFilterable)}, but the property type '{dataProperty.PropertyType}' is not supported. Only string, IEnumerable<string> and numeric properties are supported for filtering.");
+                    }
                 }
 
                 continue;
@@ -147,5 +178,35 @@ internal static class RedisVectorStoreCollectionCreateMapping
             DistanceFunction.EuclideanDistance => "L2",
             _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
         };
+    }
+
+    /// <summary>
+    /// Gets the type of object stored in the given enumerable type.
+    /// </summary>
+    /// <param name="type">The enumerable to get the stored type for.</param>
+    /// <returns>The type of object stored in the given enumerable type.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the given type is not enumerable.</exception>
+    private static Type GetEnumerableType(Type type)
+    {
+        if (type is IEnumerable)
+        {
+            return typeof(object);
+        }
+        else if (type.IsArray)
+        {
+            return type.GetElementType()!;
+        }
+
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+        {
+            return type.GetGenericArguments()[0];
+        }
+
+        if (type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface)
+        {
+            return enumerableInterface.GetGenericArguments()[0];
+        }
+
+        throw new InvalidOperationException($"Unsupported data type '{type}' for {nameof(VectorStoreRecordDataProperty)}.");
     }
 }

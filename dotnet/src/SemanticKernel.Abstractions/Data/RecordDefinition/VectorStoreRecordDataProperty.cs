@@ -29,10 +29,16 @@ public sealed class VectorStoreRecordDataProperty : VectorStoreRecordProperty
         : base(source)
     {
         this.IsFilterable = source.IsFilterable;
+        this.IsFullTextSearchable = source.IsFullTextSearchable;
     }
 
     /// <summary>
     /// Gets or sets a value indicating whether this data property is filterable.
     /// </summary>
     public bool IsFilterable { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this data property is full text searchable.
+    /// </summary>
+    public bool IsFullTextSearchable { get; init; }
 }
