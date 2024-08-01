@@ -75,9 +75,24 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
         int index = 1;
         while (index <= messageCount)
         {
-            // Display the message count of the chat-history for visibility into reduction
+            // Provide user input
+            chat.Add(new ChatMessageContent(AuthorRole.User, $"{index}"));
+            Console.WriteLine($"# {AuthorRole.User}: '{index}'");
+
+            // Reduce prior to invoking the agent
             (bool isReduced, chat) = await agent.ReduceAsync(chat);
-            Console.WriteLine($"\n@ Message Count: {chat.Count}");
+
+            // Invoke and display assistant response
+            await foreach (ChatMessageContent message in agent.InvokeAsync(chat))
+            {
+                chat.Add(message);
+                Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
+            }
+
+            index += 2;
+
+            // Display the message count of the chat-history for visibility into reduction
+            Console.WriteLine($"@ Message Count: {chat.Count}\n");
 
             // Display summary messages (if present) when reduction has occurred
             if (isReduced)
@@ -89,19 +104,6 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
                     ++summaryIndex;
                 }
             }
-
-            // Display user input
-            chat.Add(new ChatMessageContent(AuthorRole.User, $"{index}"));
-            Console.WriteLine($"# {AuthorRole.User}: '{index}'");
-
-            // Invoke and display assistant response
-            await foreach (ChatMessageContent message in agent.InvokeAsync(chat))
-            {
-                chat.Add(message);
-                Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
-            }
-
-            index += 2;
         }
     }
 
@@ -115,9 +117,21 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
         int index = 1;
         while (index <= messageCount)
         {
+            // Provide user input
+            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, $"{index}"));
+            Console.WriteLine($"# {AuthorRole.User}: '{index}'");
+
+            // Invoke and display assistant response
+            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
+            {
+                Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
+            }
+
+            index += 2;
+
             // Display the message count of the chat-history for visibility into reduction
             ChatMessageContent[] history = await chat.GetChatMessagesAsync(agent).ToArrayAsync();
-            Console.WriteLine($"\n@ Message Count: {history.Length}");
+            Console.WriteLine($"@ Message Count: {history.Length}\n");
 
             // Display summary messages (if present) when reduction has occurred
             if (lastHistoryCount < history.Length)
@@ -131,18 +145,6 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
             }
 
             lastHistoryCount = history.Length;
-
-            // Display user input
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, $"{index}"));
-            Console.WriteLine($"# {AuthorRole.User}: '{index}'");
-
-            // Invoke and display assistant response
-            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
-            {
-                Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
-            }
-
-            index += 2;
         }
     }
 
