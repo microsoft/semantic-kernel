@@ -75,13 +75,18 @@ internal static class ChatHistoryReducerExtensions
     /// The threshold, beyond targetCount, required to trigger reduction.
     /// History is not reduces it the message count is less than targetCount + thresholdCount.
     /// </param>
+    /// <param name="offsetCount">
+    /// Optionally ignore an offset from the start of the history.
+    /// This is useful when messages have been injected that are not part of the raw dialog
+    /// (such as summarization).
+    /// </param>
     /// <returns>An index that identifies the starting point for a reduced history that does not orphan sensitive content.</returns>
-    public static int LocateSafeReductionIndex(this IReadOnlyList<ChatMessageContent> history, int targetCount, int thresholdCount)
+    public static int LocateSafeReductionIndex(this IReadOnlyList<ChatMessageContent> history, int targetCount, int thresholdCount, int offsetCount = 0)
     {
         // Compute the index of the truncation threshold
         int thresholdIndex = history.Count - thresholdCount - targetCount;
 
-        if (thresholdIndex <= 0)
+        if (thresholdIndex <= offsetCount)
         {
             // History is too short to truncate
             return 0;

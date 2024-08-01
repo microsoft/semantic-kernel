@@ -23,7 +23,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     public async Task TruncatedAgentReductionAsync()
     {
         // Define the agent
-        ChatCompletionAgent agent = CreateTruncatingAgent(10, 5);
+        ChatCompletionAgent agent = CreateTruncatingAgent(10, 10);
 
         await InvokeAgentAsync(agent, 50);
     }
@@ -36,7 +36,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     public async Task SummarizedAgentReductionAsync()
     {
         // Define the agent
-        ChatCompletionAgent agent = CreateSummarizingAgent(10, 5);
+        ChatCompletionAgent agent = CreateSummarizingAgent(10, 10);
 
         await InvokeAgentAsync(agent, 50);
     }
@@ -49,7 +49,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     public async Task TruncatedChatReductionAsync()
     {
         // Define the agent
-        ChatCompletionAgent agent = CreateTruncatingAgent(10, 5);
+        ChatCompletionAgent agent = CreateTruncatingAgent(10, 10);
 
         await InvokeChatAsync(agent, 50);
     }
@@ -62,7 +62,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     public async Task SummarizedChatReductionAsync()
     {
         // Define the agent
-        ChatCompletionAgent agent = CreateSummarizingAgent(10, 5);
+        ChatCompletionAgent agent = CreateSummarizingAgent(10, 10);
 
         await InvokeChatAsync(agent, 50);
     }
@@ -94,7 +94,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
             // Display the message count of the chat-history for visibility into reduction
             Console.WriteLine($"@ Message Count: {chat.Count}\n");
 
-            // Display summary messages (if present) when reduction has occurred
+            // Display summary messages (if present) if reduction has occurred
             if (isReduced)
             {
                 int summaryIndex = 0;
@@ -130,17 +130,18 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
             index += 2;
 
             // Display the message count of the chat-history for visibility into reduction
+            // Note: Messages provided in descending order (newest first)
             ChatMessageContent[] history = await chat.GetChatMessagesAsync(agent).ToArrayAsync();
             Console.WriteLine($"@ Message Count: {history.Length}\n");
 
-            // Display summary messages (if present) when reduction has occurred
-            if (lastHistoryCount < history.Length)
+            // Display summary messages (if present) if reduction has occurred
+            if (history.Length < lastHistoryCount)
             {
-                int summaryIndex = 0;
+                int summaryIndex = history.Length - 1;
                 while (history[summaryIndex].Metadata?.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey) ?? false)
                 {
                     Console.WriteLine($"\tSummary: {history[summaryIndex].Content}");
-                    ++summaryIndex;
+                    --summaryIndex;
                 }
             }
 

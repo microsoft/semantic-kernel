@@ -112,12 +112,14 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
     {
-        yield return typeof(ChatHistoryChannel).FullName!;
-
         // Agents with different reducers shall not share the same channel.
         // Agents with the same or equivalent reducer shall share the same channel.
         if (this.HistoryReducer != null)
         {
+            // Explicitly include the reducer type to eliminate the possibility of hash collisions
+            // with custom implementations of IChatHistoryReducer.
+            yield return this.HistoryReducer.GetType().FullName!;
+
             yield return this.HistoryReducer.GetHashCode().ToString(CultureInfo.InvariantCulture);
         }
     }
