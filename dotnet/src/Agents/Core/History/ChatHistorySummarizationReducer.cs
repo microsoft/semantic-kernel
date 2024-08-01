@@ -33,7 +33,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         This summary must always:
         - Consider both user and assistant interactions
         - Maintain continuity for the purpose of further dialog
-        - Incude details from any existing summary
+        - Include details from any existing summary
         - Focus on the most significant aspects of the dialog
 
         This summary must never:
