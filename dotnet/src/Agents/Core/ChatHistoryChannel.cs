@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public sealed class ChatHistoryChannel : AgentChannel
 {
-    private ChatHistory _history;
+    private readonly ChatHistory _history;
 
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(

@@ -55,7 +55,7 @@ public class ChatHistorySummarizationReducerTests
     }
 
     /// <summary>
-    /// Vaidate hash-code expresses reducer equivalency.
+    /// Validate hash-code expresses reducer equivalency.
     /// </summary>
     [Fact]
     public void VerifyChatHistoryHasCode()
