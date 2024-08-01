@@ -15,6 +15,10 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     private const string TranslatorName = "NumeroTranslator";
     private const string TranslatorInstructions = "Add one to latest user number and spell it in spanish without explanation.";
 
+    /// <summary>
+    /// Demonstrate the use of <see cref="ChatHistoryTruncationReducer"/> when directly
+    /// invoking a <see cref="ChatCompletionAgent"/>.
+    /// </summary>
     [Fact]
     public async Task TruncatedAgentReductionAsync()
     {
@@ -24,6 +28,10 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
         await InvokeAgentAsync(agent, 50);
     }
 
+    /// <summary>
+    /// Demonstrate the use of <see cref="ChatHistorySummarizationReducer"/> when directly
+    /// invoking a <see cref="ChatCompletionAgent"/>.
+    /// </summary>
     [Fact]
     public async Task SummarizedAgentReductionAsync()
     {
@@ -33,6 +41,10 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
         await InvokeAgentAsync(agent, 50);
     }
 
+    /// <summary>
+    /// Demonstrate the use of <see cref="ChatHistoryTruncationReducer"/> when using
+    /// <see cref="AgentGroupChat"/> to invoke a <see cref="ChatCompletionAgent"/>.
+    /// </summary>
     [Fact]
     public async Task TruncatedChatReductionAsync()
     {
@@ -42,6 +54,10 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
         await InvokeChatAsync(agent, 50);
     }
 
+    /// <summary>
+    /// Demonstrate the use of <see cref="ChatHistorySummarizationReducer"/> when using
+    /// <see cref="AgentGroupChat"/> to invoke a <see cref="ChatCompletionAgent"/>.
+    /// </summary>
     [Fact]
     public async Task SummarizedChatReductionAsync()
     {
@@ -74,9 +90,11 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
                 }
             }
 
+            // Display user input
             chat.Add(new ChatMessageContent(AuthorRole.User, $"{index}"));
             Console.WriteLine($"# {AuthorRole.User}: '{index}'");
 
+            // Invoke and display assistant response
             await foreach (ChatMessageContent message in agent.InvokeAsync(chat))
             {
                 chat.Add(message);
@@ -114,9 +132,11 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
 
             lastHistoryCount = history.Length;
 
+            // Display user input
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, $"{index}"));
             Console.WriteLine($"# {AuthorRole.User}: '{index}'");
 
+            // Invoke and display assistant response
             await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
             {
                 Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
