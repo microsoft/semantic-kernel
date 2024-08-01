@@ -94,7 +94,7 @@ public class ChatHistoryTruncationReducerTests
         IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
         reducedHistory = await reducer.ReduceAsync([.. reducedHistory!, .. sourceHistory]);
 
-         VerifyReducedHistory(reducedHistory, 10);
+        VerifyReducedHistory(reducedHistory, 10);
     }
 
     private static void VerifyReducedHistory(IEnumerable<ChatMessageContent>? reducedHistory, int expectedCount)
