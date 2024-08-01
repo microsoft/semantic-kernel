@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-import asyncio
 import logging
 import sys
 from collections.abc import AsyncGenerator
@@ -14,7 +13,6 @@ from google.generativeai.protos import Candidate, Content
 from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
@@ -22,12 +20,16 @@ from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base impo
 from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
     finish_reason_from_google_ai_to_semantic_kernel,
     format_assistant_message,
-    format_gemini_function_name_to_kernel_function_fully_qualified_name,
     format_tool_message,
     format_user_message,
     update_settings_from_function_choice_configuration,
 )
-from semantic_kernel.connectors.ai.google.shared_utils import filter_system_message
+from semantic_kernel.connectors.ai.google.shared_utils import (
+    configure_function_choice_behavior,
+    filter_system_message,
+    format_gemini_function_name_to_kernel_function_fully_qualified_name,
+    invoke_function_calls,
+)
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -35,7 +37,6 @@ from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
 if sys.version_info >= (3, 12):
@@ -125,7 +126,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         if not isinstance(kernel, Kernel):
             raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
 
-        self._configure_function_choice_behavior(settings, kernel)
+        configure_function_choice_behavior(settings, kernel, update_settings_from_function_choice_configuration)
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
@@ -134,7 +135,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             if (fc_count := len(function_calls)) == 0:
                 return completions
 
-            results = await self._invoke_function_calls(
+            results = await invoke_function_calls(
                 function_calls=function_calls,
                 chat_history=chat_history,
                 kernel=kernel,
@@ -251,7 +252,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 "Function choice behavior is required for auto invoking functions."
             )
 
-        self._configure_function_choice_behavior(settings, kernel)
+        configure_function_choice_behavior(settings, kernel, update_settings_from_function_choice_configuration)
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             all_messages: list[StreamingChatMessageContent] = []
@@ -272,7 +273,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
 
-            results = await self._invoke_function_calls(
+            results = await invoke_function_calls(
                 function_calls=function_calls,
                 chat_history=chat_history,
                 kernel=kernel,
@@ -417,44 +418,6 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             "safety_ratings": candidate.safety_ratings,
             "token_count": candidate.token_count,
         }
-
-    def _configure_function_choice_behavior(self, settings: GoogleAIChatPromptExecutionSettings, kernel: Kernel):
-        """Configure the function choice behavior to include the kernel functions."""
-        if not settings.function_choice_behavior:
-            raise ServiceInvalidExecutionSettingsError("Function choice behavior is required for tool calls.")
-
-        settings.function_choice_behavior.configure(
-            kernel=kernel,
-            update_settings_callback=update_settings_from_function_choice_configuration,
-            settings=settings,
-        )
-
-    async def _invoke_function_calls(
-        self,
-        function_calls: list[FunctionCallContent],
-        chat_history: ChatHistory,
-        kernel: Kernel,
-        arguments: KernelArguments | None,
-        function_call_count: int,
-        request_index: int,
-        function_behavior: FunctionChoiceBehavior,
-    ):
-        """Invoke function calls."""
-        logger.info(f"processing {function_call_count} tool calls in parallel.")
-
-        return await asyncio.gather(
-            *[
-                kernel.invoke_function_call(
-                    function_call=function_call,
-                    chat_history=chat_history,
-                    arguments=arguments,
-                    function_call_count=function_call_count,
-                    request_index=request_index,
-                    function_behavior=function_behavior,
-                )
-                for function_call in function_calls
-            ],
-        )
 
     @override
     def get_prompt_execution_settings_class(

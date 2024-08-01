@@ -548,6 +548,20 @@ pytestmark = pytest.mark.parametrize(
             ["house", "germany"],
             id="vertex_ai_image_input_file",
         ),
+        pytest.param(
+            "vertex_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
+                ),
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="vertex_ai_tool_call_auto",
+        ),
     ],
 )
 

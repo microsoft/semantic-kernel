@@ -10,6 +10,11 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionCallC
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.google.shared_utils import (
+    FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE,
+    format_function_result_content_name_to_gemini_function_name,
+    format_kernel_function_fully_qualified_name_to_gemini_function_name,
+)
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -119,45 +124,7 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
     ]
 
 
-_FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE = {
-    FunctionChoiceType.AUTO: "AUTO",
-    FunctionChoiceType.NONE: "NONE",
-    FunctionChoiceType.REQUIRED: "ANY",
-}
-
-# The separator used in the fully qualified name of the function instead of the default "-" separator.
-# This is required since Gemini doesn't work well with "-" in the function name.
-# https://ai.google.dev/gemini-api/docs/function-calling#function_declarations
-GEMINI_FUNCTION_NAME_SEPARATOR = "_"
-
-
-def format_function_result_content_name_to_gemini_function_name(function_result_content: FunctionResultContent) -> str:
-    """Format the function result content name to the Gemini function name."""
-    return (
-        f"{function_result_content.plugin_name}{GEMINI_FUNCTION_NAME_SEPARATOR}{function_result_content.function_name}"
-        if function_result_content.plugin_name
-        else function_result_content.function_name
-    )
-
-
-def format_kernel_function_fully_qualified_name_to_gemini_function_name(metadata: KernelFunctionMetadata) -> str:
-    """Format the kernel function fully qualified name to the Gemini function name."""
-    return (
-        f"{metadata.plugin_name}{GEMINI_FUNCTION_NAME_SEPARATOR}{metadata.name}"
-        if metadata.plugin_name
-        else metadata.name
-    )
-
-
-def format_gemini_function_name_to_kernel_function_fully_qualified_name(gemini_function_name: str) -> str:
-    """Format the Gemini function name to the kernel function fully qualified name."""
-    if GEMINI_FUNCTION_NAME_SEPARATOR in gemini_function_name:
-        plugin_name, function_name = gemini_function_name.split(GEMINI_FUNCTION_NAME_SEPARATOR, 1)
-        return f"{plugin_name}-{function_name}"
-    return gemini_function_name
-
-
-def kernel_function_metadata_to_google_function_call_format(metadata: KernelFunctionMetadata) -> dict[str, Any]:
+def kernel_function_metadata_to_google_ai_function_call_format(metadata: KernelFunctionMetadata) -> dict[str, Any]:
     """Convert the kernel function metadata to function calling format."""
     return {
         "name": format_kernel_function_fully_qualified_name_to_gemini_function_name(metadata),
@@ -179,13 +146,13 @@ def update_settings_from_function_choice_configuration(
     if function_choice_configuration.available_functions:
         settings.tool_config = {
             "function_calling_config": {
-                "mode": _FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE[type],
+                "mode": FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE[type],
             }
         }
         settings.tools = [
             {
                 "function_declarations": [
-                    kernel_function_metadata_to_google_function_call_format(f)
+                    kernel_function_metadata_to_google_ai_function_call_format(f)
                     for f in function_choice_configuration.available_functions
                 ]
             }
