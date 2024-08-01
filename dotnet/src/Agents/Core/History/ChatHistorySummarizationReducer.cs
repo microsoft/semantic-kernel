@@ -28,17 +28,19 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     /// </summary>
     public const string DefaultSummarizationPrompt =
         """
-        Provide a concise and complete summarizion of the entire dialog that does not exceed 5 sentences..
+        Provide a concise and complete summarizion of the entire dialog that does not exceed 5 sentences
 
-        This summary should always:
-        - Serve to maintain continuity in the dialog for the purpose of further dialog.
-        - Summarize both user and assistant interactions with fidelity
-        - Pay attention to the relevance and importance of the information, focusing on capturing the most significant aspects.
+        This summary must always:
+        - Consider both user and assistant interactions
+        - Maintain continuity for the purpose of further dialog
+        - Incude details from any existing summary
+        - Focus on the most significant aspects of the dialog
 
-        This summary should never:
-        - Critique, correct, interpret, presume, or assume.
-        - Identify faults or correctness.
-        - Analyze what has not occurred.
+        This summary must never:
+        - Critique, correct, interpret, presume, or assume
+        - Identify faults, mistakes, misunderstanding, or correctness
+        - Analyze what has not occurred
+        - Exclude details from any existing summary
         """;
 
     /// <summary>
@@ -50,6 +52,15 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     /// Flag to indicate if an exception should be thrown if summarization fails.
     /// </summary>
     public bool FailOnError { get; init; } = true;
+
+    /// <summary>
+    /// Flag to indicate summarization is maintained in a single message, or if a series of
+    /// summations are generated over time.
+    /// </summary>
+    /// <remarks>
+    /// Not using a single summary may ultimately result in a chat history that exceeds the token limit.
+    /// </remarks>
+    public bool UseSingleSummary { get; init; } = true;
 
     /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
@@ -65,7 +76,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         if (truncationIndex > 0)
         {
             // Second pass to extract history for summarization
-            IEnumerable<ChatMessageContent> summarizedHistory = history.Extract(insertionPoint, truncationIndex);
+            IEnumerable<ChatMessageContent> summarizedHistory = history.Extract(this.UseSingleSummary ? 0 : insertionPoint, truncationIndex);
 
             try
             {
@@ -91,7 +102,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         // Inner function to assemble the summarized history
         IEnumerable<ChatMessageContent> AssemblySummarizedHistory(ChatMessageContent? summary)
         {
-            if (insertionPoint > 0)
+            if (insertionPoint > 0 && !this.UseSingleSummary)
             {
                 for (int index = 0; index <= insertionPoint - 1; ++index)
                 {
