@@ -113,16 +113,16 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorS
 
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.DataProperties, s_supportedDataTypes, "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
 
         // Get storage names and store for later use.
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), jsonSerializerOptions);
-        this._keyStoragePropertyName = this._storagePropertyNames[properties.keyProperty.DataModelPropertyName];
-        this._nonVectorStoragePropertyNames = properties.dataProperties
+        this._keyStoragePropertyName = this._storagePropertyNames[properties.KeyProperty.DataModelPropertyName];
+        this._nonVectorStoragePropertyNames = properties.DataProperties
             .Cast<VectorStoreRecordProperty>()
-            .Concat([properties.keyProperty])
+            .Concat([properties.KeyProperty])
             .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
             .ToList();
     }
