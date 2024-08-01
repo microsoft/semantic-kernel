@@ -156,7 +156,13 @@ public class ChatHistorySummarizationReducerTests
         IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(sourceHistory);
         reducedHistory = await reducer.ReduceAsync([.. reducedHistory!, .. sourceHistory]);
 
-        ChatMessageContent[] messages = VerifyReducedHistory(reducedHistory, 12);
+        ChatMessageContent[] messages = VerifyReducedHistory(reducedHistory, 11);
+        VerifySummarization(messages[0]);
+
+        reducer = new(mockCompletionService.Object, 10) { UseSingleSummary = false };
+        reducedHistory = await reducer.ReduceAsync([.. reducedHistory!, .. sourceHistory]);
+
+        messages = VerifyReducedHistory(reducedHistory, 12);
         VerifySummarization(messages[0]);
         VerifySummarization(messages[1]);
     }
