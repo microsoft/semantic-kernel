@@ -22,6 +22,10 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
     GoogleAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_chat_completion import GoogleAIChatCompletion
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import VertexAIChatCompletion
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
+    VertexAIChatPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
@@ -84,7 +88,7 @@ def history() -> ChatHistory:
 
 
 @pytest.fixture(scope="module")
-def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]:
+def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]:
     azure_openai_settings = AzureOpenAISettings.create()
     endpoint = azure_openai_settings.endpoint
     deployment_name = azure_openai_settings.chat_deployment_name
@@ -114,8 +118,9 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
         "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
         "mistral_ai": (MistralAIChatCompletion() if mistral_ai_setup else None, MistralAIChatPromptExecutionSettings),
-        "ollama": (OllamaChatCompletion(), OllamaChatPromptExecutionSettings),
+        "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
         "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
+        "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
     }
 
 
@@ -494,6 +499,39 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["house", "germany"],
             id="google_ai_image_input_file",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            id="vertex_ai_text_input",
+        ),
+        pytest.param(
+            "vertex_ai",
+            {
+                "max_tokens": 256,
+            },
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
+                ),
+            ],
+            ["house", "germany"],
+            id="vertex_ai_image_input_file",
         ),
     ],
 )

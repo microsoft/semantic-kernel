@@ -1,29 +1,32 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import sys
-from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, Any
+from collections.abc import AsyncGenerator, AsyncIterable
+from typing import Any
 
-import google.generativeai as genai
-from google.generativeai import GenerativeModel
-from google.generativeai.protos import Candidate, Content
-from google.generativeai.types import AsyncGenerateContentResponse, GenerateContentResponse, GenerationConfig
+import vertexai
+from google.cloud.aiplatform_v1beta1.types.content import Content
 from pydantic import ValidationError
+from vertexai.generative_models import Candidate, GenerationResponse, GenerativeModel
 
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
-    GoogleAIChatPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
-from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
-    finish_reason_from_google_ai_to_semantic_kernel,
+from semantic_kernel.connectors.ai.google.shared_utils import filter_system_message
+from semantic_kernel.connectors.ai.google.vertex_ai.services.utils import (
+    finish_reason_from_vertex_ai_to_semantic_kernel,
     format_assistant_message,
     format_user_message,
 )
-from semantic_kernel.connectors.ai.google.shared_utils import filter_system_message
+from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import VertexAIBase
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
+    VertexAIChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import VertexAISettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -31,59 +34,49 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_settings import GoogleAISettings
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-
-if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
-class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
-    """Google AI Chat Completion Client."""
+class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
+    """Google Vertex AI Chat Completion Service."""
 
     def __init__(
         self,
+        project_id: str | None = None,
         gemini_model_id: str | None = None,
-        api_key: str | None = None,
         service_id: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
-        """Initialize the Google AI Chat Completion Client.
+        """Initialize the Google Vertex AI Chat Completion Service.
 
         If no arguments are provided, the service will attempt to load the settings from the environment.
         The following environment variables are used:
-        - GOOGLE_AI_GEMINI_MODEL_ID
-        - GOOGLE_AI_API_KEY
+        - VERTEX_AI_GEMINI_MODEL_ID
+        - VERTEX_AI_PROJECT_ID
 
         Args:
-            gemini_model_id (str | None): The Gemini model ID. (Optional)
-            api_key (str | None): The API key. (Optional)
-            service_id (str | None): The service ID. (Optional)
-            env_file_path (str | None): The path to the .env file. (Optional)
-            env_file_encoding (str | None): The encoding of the .env file. (Optional)
-
-        Raises:
-            ServiceInitializationError: If an error occurs during initialization.
+            project_id (str): The Google Cloud project ID.
+            gemini_model_id (str): The Gemini model ID.
+            service_id (str): The Vertex AI service ID.
+            env_file_path (str): The path to the environment file.
+            env_file_encoding (str): The encoding of the environment file.
         """
         try:
-            google_ai_settings = GoogleAISettings.create(
+            vertex_ai_settings = VertexAISettings.create(
+                project_id=project_id,
                 gemini_model_id=gemini_model_id,
-                api_key=api_key,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
         except ValidationError as e:
-            raise ServiceInitializationError(f"Failed to validate Google AI settings: {e}") from e
-        if not google_ai_settings.gemini_model_id:
-            raise ServiceInitializationError("The Google AI Gemini model ID is required.")
+            raise ServiceInitializationError(f"Failed to validate Vertex AI settings: {e}") from e
+        if not vertex_ai_settings.gemini_model_id:
+            raise ServiceInitializationError("The Vertex AI Gemini model ID is required.")
 
         super().__init__(
-            ai_model_id=google_ai_settings.gemini_model_id,
-            service_id=service_id or google_ai_settings.gemini_model_id,
-            service_settings=google_ai_settings,
+            ai_model_id=vertex_ai_settings.gemini_model_id,
+            service_id=service_id or vertex_ai_settings.gemini_model_id,
+            service_settings=vertex_ai_settings,
         )
 
     # region Non-streaming
@@ -95,30 +88,28 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         **kwargs: Any,
     ) -> list[ChatMessageContent]:
         settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
+        assert isinstance(settings, VertexAIChatPromptExecutionSettings)  # nosec
 
         return await self._send_chat_request(chat_history, settings)
 
     async def _send_chat_request(
-        self, chat_history: ChatHistory, settings: GoogleAIChatPromptExecutionSettings
+        self, chat_history: ChatHistory, settings: VertexAIChatPromptExecutionSettings
     ) -> list[ChatMessageContent]:
-        """Send a chat request to the Google AI service."""
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
+        """Send a chat request to the Vertex AI service."""
+        vertexai.init(project=self.service_settings.project_id)
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
 
-        response: AsyncGenerateContentResponse = await model.generate_content_async(
+        response: GenerationResponse = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
-            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
+            generation_config=settings.prepare_settings_dict(),
         )
 
         return [self._create_chat_message_content(response, candidate) for candidate in response.candidates]
 
-    def _create_chat_message_content(
-        self, response: AsyncGenerateContentResponse, candidate: Candidate
-    ) -> ChatMessageContent:
+    def _create_chat_message_content(self, response: GenerationResponse, candidate: Candidate) -> ChatMessageContent:
         """Create a chat message content object.
 
         Args:
@@ -129,7 +120,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             A chat message content object.
         """
         # Best effort conversion of finish reason. The raw value will be available in metadata.
-        finish_reason: FinishReason | None = finish_reason_from_google_ai_to_semantic_kernel(candidate.finish_reason)
+        finish_reason: FinishReason | None = finish_reason_from_vertex_ai_to_semantic_kernel(candidate.finish_reason)
         response_metadata = self._get_metadata_from_response(response)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
@@ -153,7 +144,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, GoogleAIChatPromptExecutionSettings)  # nosec
+        assert isinstance(settings, VertexAIChatPromptExecutionSettings)  # nosec
 
         async_generator = self._send_chat_streaming_request(chat_history, settings)
 
@@ -163,18 +154,18 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
     async def _send_chat_streaming_request(
         self,
         chat_history: ChatHistory,
-        settings: GoogleAIChatPromptExecutionSettings,
+        settings: VertexAIChatPromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
-        """Send a streaming chat request to the Google AI service."""
-        genai.configure(api_key=self.service_settings.api_key.get_secret_value())
+        """Send a streaming chat request to the Vertex AI service."""
+        vertexai.init(project=self.service_settings.project_id)
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
         )
 
-        response: AsyncGenerateContentResponse = await model.generate_content_async(
+        response: AsyncIterable[GenerationResponse] = await model.generate_content_async(
             contents=self._prepare_chat_history_for_request(chat_history),
-            generation_config=GenerationConfig(**settings.prepare_settings_dict()),
+            generation_config=settings.prepare_settings_dict(),
             stream=True,
         )
 
@@ -183,7 +174,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
     def _create_streaming_chat_message_content(
         self,
-        chunk: GenerateContentResponse,
+        chunk: GenerationResponse,
         candidate: Candidate,
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object.
@@ -196,7 +187,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             A streaming chat message content object.
         """
         # Best effort conversion of finish reason. The raw value will be available in metadata.
-        finish_reason: FinishReason | None = finish_reason_from_google_ai_to_semantic_kernel(candidate.finish_reason)
+        finish_reason: FinishReason | None = finish_reason_from_vertex_ai_to_semantic_kernel(candidate.finish_reason)
         response_metadata = self._get_metadata_from_response(chunk)
         response_metadata.update(self._get_metadata_from_candidate(candidate))
 
@@ -235,9 +226,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
 
         return chat_request_messages
 
-    def _get_metadata_from_response(
-        self, response: AsyncGenerateContentResponse | GenerateContentResponse
-    ) -> dict[str, Any]:
+    def _get_metadata_from_response(self, response: GenerationResponse) -> dict[str, Any]:
         """Get metadata from the response.
 
         Args:
@@ -264,7 +253,6 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             "index": candidate.index,
             "finish_reason": candidate.finish_reason,
             "safety_ratings": candidate.safety_ratings,
-            "token_count": candidate.token_count,
         }
 
     @override
@@ -272,4 +260,4 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
         self,
     ) -> type["PromptExecutionSettings"]:
         """Get the request settings class."""
-        return GoogleAIChatPromptExecutionSettings
+        return VertexAIChatPromptExecutionSettings
