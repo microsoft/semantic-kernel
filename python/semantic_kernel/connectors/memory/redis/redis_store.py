@@ -66,6 +66,7 @@ class RedisStore(VectorStore):
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
         return [name.decode() for name in await self.redis_database.execute_command("FT._LIST")]
 
+    @override
     def get_collection(
         self,
         collection_name: str,
@@ -74,7 +75,7 @@ class RedisStore(VectorStore):
         collection_type: RedisCollectionTypes = RedisCollectionTypes.HASHSET,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
-        """Get a QdrantCollection tied to a collection.
+        """Get a RedisCollection..
 
         Args:
             collection_name (str): The name of the collection.
