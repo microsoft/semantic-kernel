@@ -71,16 +71,20 @@ jobs:
           cd python
           poetry install --with tests
       - name: Install Ollama
-        if: matrix.os == 'ubuntu-latest' && ${{ vars.OLLAMA_MODEL != '' }}
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          ollama serve &
-          sleep 5
+          if ${{ vars.OLLAMA_MODEL != '' }}; then
+            curl -fsSL https://ollama.com/install.sh | sh
+            ollama serve &
+            sleep 5
+          fi
       - name: Pull model in Ollama
-        if: matrix.os == 'ubuntu-latest' && ${{ vars.OLLAMA_MODEL != '' }}
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          ollama pull ${{ vars.OLLAMA_MODEL }}
-          ollama list
+          if ${{ vars.OLLAMA_MODEL != '' }}; then
+            ollama pull ${{ vars.OLLAMA_MODEL }}
+            ollama list
+          fi
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
