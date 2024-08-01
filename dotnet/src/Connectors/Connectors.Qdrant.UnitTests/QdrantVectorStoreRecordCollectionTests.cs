@@ -92,6 +92,15 @@ public class QdrantVectorStoreRecordCollectionTests
                 x => x.CreatePayloadIndexAsync(
                     TestCollectionName,
                     "OriginalNameData",
+                    PayloadSchemaType.Keyword,
+                    this._testCancellationToken),
+                Times.Once);
+
+        this._qdrantClientMock
+            .Verify(
+                x => x.CreatePayloadIndexAsync(
+                    TestCollectionName,
+                    "OriginalNameData",
                     PayloadSchemaType.Text,
                     this._testCancellationToken),
                 Times.Once);
@@ -101,7 +110,7 @@ public class QdrantVectorStoreRecordCollectionTests
                 x => x.CreatePayloadIndexAsync(
                     TestCollectionName,
                     "data_storage_name",
-                    PayloadSchemaType.Text,
+                    PayloadSchemaType.Keyword,
                     this._testCancellationToken),
                 Times.Once);
     }
@@ -677,7 +686,7 @@ public class QdrantVectorStoreRecordCollectionTests
             Properties =
             [
                 new VectorStoreRecordKeyProperty("Key", keyType),
-                new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
                 new VectorStoreRecordDataProperty("Data", typeof(string)) { IsFilterable = true, StoragePropertyName = "data_storage_name" },
                 new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector_storage_name" }
             ]
@@ -689,7 +698,7 @@ public class QdrantVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public required T Key { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
         public string OriginalNameData { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_data_json_name")]

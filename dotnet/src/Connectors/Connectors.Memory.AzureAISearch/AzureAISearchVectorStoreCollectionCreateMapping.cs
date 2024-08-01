@@ -34,8 +34,13 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// <exception cref="InvalidOperationException">Throws when the definition is missing required information.</exception>
     public static SimpleField MapDataField(VectorStoreRecordDataProperty dataProperty, string storagePropertyName)
     {
-        if (dataProperty.PropertyType == typeof(string))
+        if (dataProperty.IsFullTextSearchable)
         {
+            if (dataProperty.PropertyType != typeof(string))
+            {
+                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not a string. The Azure AI Search VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
+            }
+
             return new SearchableField(storagePropertyName) { IsFilterable = dataProperty.IsFilterable };
         }
 
@@ -69,7 +74,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
         {
             IndexKind.Hnsw => new HnswAlgorithmConfiguration(algorithmConfigName) { Parameters = new HnswParameters { Metric = algorithmMetric } },
             IndexKind.Flat => new ExhaustiveKnnAlgorithmConfiguration(algorithmConfigName) { Parameters = new ExhaustiveKnnParameters { Metric = algorithmMetric } },
-            _ => throw new InvalidOperationException($"Unsupported index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
+            _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Azure AI Search VectorStore.")
         };
         var vectorSearchProfile = new VectorSearchProfile(vectorSearchProfileName, algorithmConfigName);
 
@@ -111,7 +116,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
             DistanceFunction.CosineSimilarity => VectorSearchAlgorithmMetric.Cosine,
             DistanceFunction.DotProductSimilarity => VectorSearchAlgorithmMetric.DotProduct,
             DistanceFunction.EuclideanDistance => VectorSearchAlgorithmMetric.Euclidean,
-            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
+            _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Azure AI Search VectorStore.")
         };
     }
 
@@ -134,7 +139,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
             Type dateTimeType when dateTimeType == typeof(DateTime) || dateTimeType == typeof(DateTime?) => SearchFieldDataType.DateTimeOffset,
             Type dateTimeOffsetType when dateTimeOffsetType == typeof(DateTimeOffset) || dateTimeOffsetType == typeof(DateTimeOffset?) => SearchFieldDataType.DateTimeOffset,
             Type collectionType when typeof(IEnumerable).IsAssignableFrom(collectionType) => SearchFieldDataType.Collection(GetSDKFieldDataType(GetEnumerableType(propertyType))),
-            _ => throw new InvalidOperationException($"Unsupported data type '{propertyType}' for {nameof(VectorStoreRecordDataProperty)}.")
+            _ => throw new InvalidOperationException($"Data type '{propertyType}' for {nameof(VectorStoreRecordDataProperty)} is not supported by the Azure AI Search VectorStore.")
         };
     }
 
@@ -165,6 +170,6 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
             return enumerableInterface.GetGenericArguments()[0];
         }
 
-        throw new InvalidOperationException($"Unsupported data type '{type}' for {nameof(VectorStoreRecordDataProperty)}.");
+        throw new InvalidOperationException($"Data type '{type}' for {nameof(VectorStoreRecordDataProperty)} is not supported by the Azure AI Search VectorStore.");
     }
 }

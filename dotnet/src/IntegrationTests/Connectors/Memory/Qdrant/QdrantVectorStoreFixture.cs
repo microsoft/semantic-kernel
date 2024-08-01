@@ -35,7 +35,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
             Properties = new List<VectorStoreRecordProperty>
             {
                 new VectorStoreRecordKeyProperty("HotelId", typeof(ulong)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
                 new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsFilterable = true },
@@ -49,9 +49,9 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
             Properties = new List<VectorStoreRecordProperty>
             {
                 new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?))
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, DistanceFunction = DistanceFunction.ManhattanDistance }
             }
         };
     }
@@ -272,7 +272,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public ulong HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
         public string? HotelName { get; set; }
 
         /// <summary>An int metadata field.</summary>
@@ -310,7 +310,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public Guid HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
         public string? HotelName { get; set; }
 
         /// <summary>A data field.</summary>
@@ -318,7 +318,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(4, IndexKind.Hnsw, DistanceFunction.ManhattanDistance)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
     }
 }

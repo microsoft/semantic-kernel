@@ -39,7 +39,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
         { typeof(double?), PayloadSchemaType.Float },
         { typeof(decimal?), PayloadSchemaType.Float },
 
-        { typeof(string), PayloadSchemaType.Text },
+        { typeof(string), PayloadSchemaType.Keyword },
         { typeof(DateTime), PayloadSchemaType.Datetime },
         { typeof(bool), PayloadSchemaType.Bool },
 
@@ -62,7 +62,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
 
         if (vectorProperty!.IndexKind is not null && vectorProperty!.IndexKind != IndexKind.Hnsw)
         {
-            throw new InvalidOperationException($"Unsupported index kind '{vectorProperty!.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.");
+            throw new InvalidOperationException($"Index kind '{vectorProperty!.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Qdrant VectorStore.");
         }
 
         return new VectorParams { Size = (ulong)vectorProperty.Dimensions, Distance = QdrantVectorStoreCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty) };
@@ -112,7 +112,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
             DistanceFunction.DotProductSimilarity => Distance.Dot,
             DistanceFunction.EuclideanDistance => Distance.Euclid,
             DistanceFunction.ManhattanDistance => Distance.Manhattan,
-            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
+            _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Qdrant VectorStore.")
         };
     }
 }

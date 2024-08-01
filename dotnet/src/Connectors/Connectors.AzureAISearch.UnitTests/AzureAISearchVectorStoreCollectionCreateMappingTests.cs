@@ -34,10 +34,30 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void MapStringDataFieldCreatesSearchableField(bool isFilterable)
+    public void MapFilterableStringDataFieldCreatesSimpleField(bool isFilterable)
     {
         // Arrange
         var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(string)) { IsFilterable = isFilterable };
+        var storagePropertyName = "test_data";
+
+        // Act
+        var result = AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty, storagePropertyName);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<SimpleField>(result);
+        Assert.Equal(storagePropertyName, result.Name);
+        Assert.False(result.IsKey);
+        Assert.Equal(isFilterable, result.IsFilterable);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void MapFullTextSearchableStringDataFieldCreatesSearchableField(bool isFilterable)
+    {
+        // Arrange
+        var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(string)) { IsFilterable = isFilterable, IsFullTextSearchable = true };
         var storagePropertyName = "test_data";
 
         // Act
@@ -49,6 +69,17 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
         Assert.Equal(storagePropertyName, result.Name);
         Assert.False(result.IsKey);
         Assert.Equal(isFilterable, result.IsFilterable);
+    }
+
+    [Fact]
+    public void MapFullTextSearchableStringDataFieldThrowsForInvalidType()
+    {
+        // Arrange
+        var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(int)) { IsFullTextSearchable = true };
+        var storagePropertyName = "test_data";
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(dataProperty, storagePropertyName));
     }
 
     [Theory]
@@ -138,7 +169,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
         var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 10, DistanceFunction = DistanceFunction.ManhattanDistance };
         var storagePropertyName = "test_vector";
 
-        // Act
+        // Act & Assert
         Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty, storagePropertyName));
     }
 
@@ -149,7 +180,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
         var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>));
         var storagePropertyName = "test_vector";
 
-        // Act
+        // Act & Assert
         Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty, storagePropertyName));
     }
 

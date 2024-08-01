@@ -262,6 +262,7 @@ internal static class VectorStoreRecordPropertyReader
                 definitionProperties.Add(new VectorStoreRecordDataProperty(dataProperty.Name, dataProperty.PropertyType)
                 {
                     IsFilterable = dataAttribute.IsFilterable,
+                    IsFullTextSearchable = dataAttribute.IsFullTextSearchable,
                     StoragePropertyName = dataAttribute.StoragePropertyName
                 });
             }

@@ -128,8 +128,8 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     {
         if (!this._options.HasNamedVectors)
         {
-            // If we are not using named vectors, we can only have one vector property. We can assume we have at least one, since this is already verified in the constructor.
-            var singleVectorProperty = this._vectorStoreRecordDefinition.Properties.First(x => x is VectorStoreRecordVectorProperty vectorProperty) as VectorStoreRecordVectorProperty;
+            // If we are not using named vectors, we can only have one vector property. We can assume we have exactly one, since this is already verified in the constructor.
+            var singleVectorProperty = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>().First();
 
             // Map the single vector property to the qdrant config.
             var vectorParams = QdrantVectorStoreCollectionCreateMapping.MapSingleVector(singleVectorProperty!);
@@ -145,7 +145,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         else
         {
             // Since we are using named vectors, iterate over all vector properties.
-            var vectorProperties = this._vectorStoreRecordDefinition.Properties.Where(x => x is VectorStoreRecordVectorProperty).Select(x => (VectorStoreRecordVectorProperty)x);
+            var vectorProperties = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>();
 
             // Map the named vectors to the qdrant config.
             var vectorParamsMap = QdrantVectorStoreCollectionCreateMapping.MapNamedVectors(vectorProperties, this._storagePropertyNames);
@@ -160,7 +160,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         }
 
         // Add indexes for each of the data properties that require filtering.
-        var dataProperties = this._vectorStoreRecordDefinition.Properties.Where(x => x is VectorStoreRecordDataProperty).Select(x => (VectorStoreRecordDataProperty)x).Where(x => x.IsFilterable);
+        var dataProperties = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordDataProperty>().Where(x => x.IsFilterable);
         foreach (var dataProperty in dataProperties)
         {
             var storageFieldName = this._storagePropertyNames[dataProperty.DataModelPropertyName];
@@ -172,6 +172,26 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                     this._collectionName,
                     storageFieldName,
                     schemaType,
+                    cancellationToken: cancellationToken)).ConfigureAwait(false);
+        }
+
+        // Add indexes for each of the data properties that require full text search.
+        dataProperties = this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordDataProperty>().Where(x => x.IsFullTextSearchable);
+        foreach (var dataProperty in dataProperties)
+        {
+            if (dataProperty.PropertyType != typeof(string))
+            {
+                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
+            }
+
+            var storageFieldName = this._storagePropertyNames[dataProperty.DataModelPropertyName];
+
+            await this.RunOperationAsync(
+                "CreatePayloadIndex",
+                () => this._qdrantClient.CreatePayloadIndexAsync(
+                    this._collectionName,
+                    storageFieldName,
+                    PayloadSchemaType.Text,
                     cancellationToken: cancellationToken)).ConfigureAwait(false);
         }
     }
