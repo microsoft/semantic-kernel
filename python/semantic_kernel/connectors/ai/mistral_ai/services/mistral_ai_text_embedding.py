@@ -95,7 +95,7 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
         texts: list[str],
         settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
-    ) -> "Any":
+    ) -> Any:
         """Generate embeddings from the Mistral AI service."""
         try:
 
