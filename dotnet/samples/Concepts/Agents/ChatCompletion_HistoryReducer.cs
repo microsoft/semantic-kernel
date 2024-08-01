@@ -75,7 +75,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
         int index = 1;
         while (index <= messageCount)
         {
-            // Display the message count of the chat-history for visiblity into reduction
+            // Display the message count of the chat-history for visibility into reduction
             (bool isReduced, chat) = await agent.ReduceAsync(chat);
             Console.WriteLine($"\n@ Message Count: {chat.Count}");
 
@@ -115,7 +115,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
         int index = 1;
         while (index <= messageCount)
         {
-            // Display the message count of the chat-history for visiblity into reduction
+            // Display the message count of the chat-history for visibility into reduction
             ChatMessageContent[] history = await chat.GetChatMessagesAsync(agent).ToArrayAsync();
             Console.WriteLine($"\n@ Message Count: {history.Length}");
 
