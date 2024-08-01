@@ -71,13 +71,13 @@ jobs:
           cd python
           poetry install --with tests
       - name: Install Ollama
-        if: matrix.os == 'ubuntu-latest' and ${{ vars.OLLAMA_MODEL }} != ''
+        if: matrix.os == 'ubuntu-latest' && ${{ vars.OLLAMA_MODEL != '' }}
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
           ollama serve &
           sleep 5
       - name: Pull model in Ollama
-        if: matrix.os == 'ubuntu-latest' and ${{ vars.OLLAMA_MODEL }} != ''
+        if: matrix.os == 'ubuntu-latest' && ${{ vars.OLLAMA_MODEL != '' }}
         run: |
           ollama pull ${{ vars.OLLAMA_MODEL }}
           ollama list
