@@ -32,7 +32,7 @@ public interface IChatHistoryHandler
     /// <param name="history">The chat history at the point the channel is created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of streaming content.</returns>
-    public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         CancellationToken cancellationToken = default);
 }

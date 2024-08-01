@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -112,6 +113,13 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
     protected override IEnumerable<string> GetChannelKeys()
     {
         yield return typeof(ChatHistoryChannel).FullName!;
+
+        // Agents with different reducers shall not share the same channel.
+        // Agents with the same or equivalent reducer shall share the same channel.
+        if (this.HistoryReducer != null)
+        {
+            yield return this.HistoryReducer.GetHashCode().ToString(CultureInfo.InvariantCulture);
+        }
     }
 
     /// <inheritdoc/>

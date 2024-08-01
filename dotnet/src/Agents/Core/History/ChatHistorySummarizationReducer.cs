@@ -29,15 +29,17 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     /// </summary>
     public const string DefaultSummarizationPrompt =
         """
-        Provide a concise and complete summarizion of the entire chat that does not exceed 5 sentences.
+        Provide a concise and complete summarizion of the entire dialog that does not exceed 5 sentences..
 
-        Take care to to summarize both user and assistant interactions.
+        This summary should always:
+        - Serve to maintain continuity in the dialog for the purpose of further dialog.
+        - Summarize both user and assistant interactions with fidelity
+        - Pay attention to the relevance and importance of the information, focusing on capturing the most significant aspects.
 
-        Pay attention to the relevance and importance of the information, focusing on capturing the most significant aspects while maintaining the overall coherence of the summary. 
-
-        The updated summary should serve to maintain continuity in the dialog and help you respond accurately to the user based on the information.
-
-        Your response should only consist of the updated summary without explanation.;
+        This summary should never:
+        - Critique, correct, interpret, presume, or assume.
+        - Identify faults or correctness.
+        - Analyze what has not occurred.
         """;
 
     /// <summary>
@@ -56,16 +58,16 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
+        // Identify where summary messages end and regular history begins
+        int insertionPoint = history.LocateSummarizationBoundary(SummaryMetadataKey);
+
         // First pass to determine the truncation index
-        int truncationIndex = history.LocateSafeReductionIndex(this._targetCount, this._thresholdCount);
+        int truncationIndex = history.LocateSafeReductionIndex(this._targetCount + insertionPoint, this._thresholdCount);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
         if (truncationIndex > 0)
         {
-            // Identify where summary messages end and regular history begins
-            int insertionPoint = history.LocateSummarizationBoundary(SummaryMetadataKey);
-
             // Second pass to extract history for summarization
             IReadOnlyList<ChatMessageContent> summarizedHistory = history.Extract(insertionPoint, truncationIndex).ToArray();
 

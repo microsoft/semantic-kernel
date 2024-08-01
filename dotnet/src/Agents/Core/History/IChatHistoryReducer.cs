@@ -11,6 +11,12 @@ namespace Microsoft.SemanticKernel.Agents.History;
 public interface IChatHistoryReducer
 {
     /// <summary>
+    /// Each reducer shall implement custom hash-code generation so that different reducers
+    /// of the same configuration can be evaluated for equivalency.
+    /// </summary>
+    int GetHashCode();
+
+    /// <summary>
     /// Optionally reduces the chat history.
     /// </summary>
     /// <param name="history">The source history (which may have been previously reduced)</param>
