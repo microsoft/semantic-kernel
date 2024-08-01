@@ -49,9 +49,6 @@ jobs:
       matrix:
         python-version: ["3.11"]
         os: [ubuntu-latest]
-    defaults:
-      run:
-        working-directory: python
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
@@ -129,7 +126,9 @@ jobs:
           VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
-        run: poetry run pytest ./tests/integration ./tests/samples -v --junitxml=pytest.xml
+        run: |
+          cd python
+          poetry run pytest ./tests/integration ./tests/samples -v --junitxml=pytest.xml
       - name: Surface failing tests
         if: always()
         uses: pmeier/pytest-results-action@main
