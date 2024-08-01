@@ -3,14 +3,9 @@
 import asyncio
 import logging
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
-from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
-    GoogleAIChatPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
-    VertexAIChatPromptExecutionSettings,
-)
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -22,6 +17,14 @@ from semantic_kernel.exceptions.service_exceptions import (
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
+        GoogleAIChatPromptExecutionSettings,
+    )
+    from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
+        VertexAIChatPromptExecutionSettings,
+    )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -110,7 +113,7 @@ def format_gemini_function_name_to_kernel_function_fully_qualified_name(gemini_f
 
 
 def configure_function_choice_behavior(
-    settings: GoogleAIChatPromptExecutionSettings | VertexAIChatPromptExecutionSettings,
+    settings: "GoogleAIChatPromptExecutionSettings | VertexAIChatPromptExecutionSettings",
     kernel: Kernel,
     callback: Callable[..., None],
 ):

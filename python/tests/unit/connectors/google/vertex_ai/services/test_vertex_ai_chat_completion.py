@@ -7,6 +7,7 @@ import pytest
 from google.cloud.aiplatform_v1beta1.types.content import Content
 from vertexai.generative_models import GenerativeModel
 
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_chat_completion import VertexAIChatCompletion
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAIChatPromptExecutionSettings,
@@ -15,7 +16,10 @@ from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_settings import Ve
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.exceptions.service_exceptions import (
+    ServiceInitializationError,
+    ServiceInvalidExecutionSettingsError,
+)
 
 
 # region init
@@ -92,6 +96,8 @@ async def test_vertex_ai_chat_completion(
     mock_vertex_ai_model_generate_content_async.assert_called_once_with(
         contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
         generation_config=settings.prepare_settings_dict(),
+        tools=None,
+        tool_config=None,
     )
     assert len(responses) == 1
     assert responses[0].role == "assistant"
@@ -100,6 +106,100 @@ async def test_vertex_ai_chat_completion(
     assert "usage" in responses[0].metadata
     assert "prompt_feedback" in responses[0].metadata
     assert responses[0].inner_content == mock_vertex_ai_chat_completion_response
+
+
+@pytest.mark.asyncio
+@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
+async def test_vertex_ai_chat_completion_with_function_choice_behavior_fail_verification(
+    chat_history: ChatHistory,
+) -> None:
+    """Test completion of VertexAIChatCompletion with function choice behavior expect verification failure"""
+
+    # Missing kernel
+    with pytest.raises(ServiceInvalidExecutionSettingsError):
+        settings = VertexAIChatPromptExecutionSettings(
+            function_choice_behavior=FunctionChoiceBehavior.Auto(),
+        )
+
+        vertex_ai_chat_completion = VertexAIChatCompletion()
+
+        await vertex_ai_chat_completion.get_chat_message_contents(
+            chat_history=chat_history,
+            settings=settings,
+        )
+
+
+@pytest.mark.asyncio
+@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
+async def test_vertex_ai_chat_completion_with_function_choice_behavior(
+    mock_vertex_ai_model_generate_content_async,
+    kernel,
+    chat_history: ChatHistory,
+    mock_vertex_ai_chat_completion_response_with_tool_call,
+) -> None:
+    """Test completion of VertexAIChatCompletion with function choice behavior"""
+    mock_vertex_ai_model_generate_content_async.return_value = mock_vertex_ai_chat_completion_response_with_tool_call
+
+    settings = VertexAIChatPromptExecutionSettings(
+        function_choice_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    settings.function_choice_behavior.maximum_auto_invoke_attempts = 1
+
+    vertex_ai_chat_completion = VertexAIChatCompletion()
+
+    responses = await vertex_ai_chat_completion.get_chat_message_contents(
+        chat_history=chat_history,
+        settings=settings,
+        kernel=kernel,
+    )
+
+    # The function should be called twice:
+    # One for the tool call and one for the last completion
+    # after the maximum_auto_invoke_attempts is reached
+    assert mock_vertex_ai_model_generate_content_async.call_count == 2
+    assert len(responses) == 1
+    assert responses[0].role == "assistant"
+    # Google doesn't return STOP as the finish reason for tool calls
+    assert responses[0].finish_reason == FinishReason.STOP
+
+
+@pytest.mark.asyncio
+@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
+async def test_vertex_ai_chat_completion_with_function_choice_behavior_no_tool_call(
+    mock_vertex_ai_model_generate_content_async,
+    kernel,
+    chat_history: ChatHistory,
+    mock_vertex_ai_chat_completion_response,
+) -> None:
+    """Test completion of VertexAIChatCompletion with function choice behavior but no tool call returned"""
+    mock_vertex_ai_model_generate_content_async.return_value = mock_vertex_ai_chat_completion_response
+
+    settings = VertexAIChatPromptExecutionSettings(
+        function_choice_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    settings.function_choice_behavior.maximum_auto_invoke_attempts = 1
+
+    vertex_ai_chat_completion = VertexAIChatCompletion()
+
+    responses = await vertex_ai_chat_completion.get_chat_message_contents(
+        chat_history=chat_history,
+        settings=settings,
+        kernel=kernel,
+    )
+
+    # Remove the latest message since the response from the model will be added to the chat history
+    # even when the model doesn't return a tool call
+    chat_history.remove_message(chat_history[-1])
+
+    mock_vertex_ai_model_generate_content_async.assert_awaited_once_with(
+        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
+        generation_config=settings.prepare_settings_dict(),
+        tools=None,
+        tool_config=None,
+    )
+    assert len(responses) == 1
+    assert responses[0].role == "assistant"
+    assert responses[0].content == mock_vertex_ai_chat_completion_response.candidates[0].content.parts[0].text
 
 
 # endregion chat completion
@@ -130,6 +230,102 @@ async def test_vertex_ai_streaming_chat_completion(
     mock_vertex_ai_model_generate_content_async.assert_called_once_with(
         contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
         generation_config=settings.prepare_settings_dict(),
+        tools=None,
+        tool_config=None,
+        stream=True,
+    )
+
+
+@pytest.mark.asyncio
+@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
+async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior_fail_verification(
+    chat_history: ChatHistory,
+) -> None:
+    """Test streaming chat completion of VertexAIChatCompletion with function choice
+    behavior expect verification failure"""
+
+    # Missing kernel
+    with pytest.raises(ServiceInvalidExecutionSettingsError):
+        settings = VertexAIChatPromptExecutionSettings(
+            function_choice_behavior=FunctionChoiceBehavior.Auto(),
+        )
+
+        vertex_ai_chat_completion = VertexAIChatCompletion()
+
+        async for _ in vertex_ai_chat_completion.get_streaming_chat_message_contents(
+            chat_history=chat_history,
+            settings=settings,
+        ):
+            pass
+
+
+@pytest.mark.asyncio
+@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
+async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior(
+    mock_vertex_ai_model_generate_content_async,
+    kernel,
+    chat_history: ChatHistory,
+    mock_vertex_ai_streaming_chat_completion_response_with_tool_call,
+) -> None:
+    """Test streaming chat completion of VertexAIChatCompletion with function choice behavior"""
+    mock_vertex_ai_model_generate_content_async.return_value = (
+        mock_vertex_ai_streaming_chat_completion_response_with_tool_call
+    )
+
+    settings = VertexAIChatPromptExecutionSettings(
+        function_choice_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    settings.function_choice_behavior.maximum_auto_invoke_attempts = 1
+
+    vertex_ai_chat_completion = VertexAIChatCompletion()
+
+    async for messages in vertex_ai_chat_completion.get_streaming_chat_message_contents(
+        chat_history,
+        settings,
+        kernel=kernel,
+    ):
+        assert len(messages) == 1
+        assert messages[0].role == "assistant"
+        assert messages[0].content == ""
+        # Google doesn't return STOP as the finish reason for tool calls
+        assert messages[0].finish_reason == FinishReason.STOP
+
+    # Streaming completion with tool call does not invoke the model
+    # after maximum_auto_invoke_attempts is reached
+    assert mock_vertex_ai_model_generate_content_async.call_count == 1
+
+
+@pytest.mark.asyncio
+@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
+async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior_no_tool_call(
+    mock_vertex_ai_model_generate_content_async,
+    kernel,
+    chat_history: ChatHistory,
+    mock_vertex_ai_streaming_chat_completion_response,
+) -> None:
+    """Test completion of VertexAIChatCompletion with function choice behavior but no tool call returned"""
+    mock_vertex_ai_model_generate_content_async.return_value = mock_vertex_ai_streaming_chat_completion_response
+
+    settings = VertexAIChatPromptExecutionSettings(
+        function_choice_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    settings.function_choice_behavior.maximum_auto_invoke_attempts = 1
+
+    vertex_ai_chat_completion = VertexAIChatCompletion()
+
+    async for messages in vertex_ai_chat_completion.get_streaming_chat_message_contents(
+        chat_history=chat_history,
+        settings=settings,
+        kernel=kernel,
+    ):
+        assert len(messages) == 1
+        assert messages[0].role == "assistant"
+
+    mock_vertex_ai_model_generate_content_async.assert_awaited_once_with(
+        contents=vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history),
+        generation_config=settings.prepare_settings_dict(),
+        tools=None,
+        tool_config=None,
         stream=True,
     )
 

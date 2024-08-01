@@ -4,7 +4,7 @@ import json
 import logging
 from typing import Any
 
-from google.generativeai.protos import Blob, Candidate, FunctionResponse, Part
+from google.generativeai.protos import Blob, Candidate, FunctionCall, FunctionResponse, Part
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionCallChoiceConfiguration, FunctionChoiceType
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
@@ -16,6 +16,7 @@ from semantic_kernel.connectors.ai.google.shared_utils import (
     format_kernel_function_fully_qualified_name_to_gemini_function_name,
 )
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -88,7 +89,44 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
     Returns:
         The formatted assistant message as a list of parts.
     """
-    return [Part(text=message.content)]
+    text_items: list[TextContent] = []
+    function_call_items: list[FunctionCallContent] = []
+    for item in message.items:
+        if isinstance(item, TextContent):
+            text_items.append(item)
+        elif isinstance(item, FunctionCallContent):
+            function_call_items.append(item)
+        else:
+            raise ServiceInvalidRequestError(
+                "Unsupported item type in Assistant message while formatting chat history for Vertex AI"
+                f" Inference: {type(item)}"
+            )
+
+    if len(text_items) > 1:
+        raise ServiceInvalidRequestError(
+            "Unsupported number of text items in Assistant message while formatting chat history for Vertex AI"
+            f" Inference: {len(text_items)}"
+        )
+
+    if len(function_call_items) > 1:
+        raise ServiceInvalidRequestError(
+            "Unsupported number of function call items in Assistant message while formatting chat history for Vertex AI"
+            f" Inference: {len(function_call_items)}"
+        )
+
+    part = Part()
+    if text_items:
+        part.text = text_items[0].text
+    if function_call_items:
+        # Convert the arguments to a dictionary if it is a string
+        args = function_call_items[0].arguments
+        args = json.loads(args) if isinstance(args, str) else args
+        part.function_call = FunctionCall(
+            name=function_call_items[0].name,
+            args=args,
+        )
+
+    return [part]
 
 
 def format_tool_message(message: ChatMessageContent) -> list[Part]:

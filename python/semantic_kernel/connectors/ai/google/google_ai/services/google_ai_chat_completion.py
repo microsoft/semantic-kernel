@@ -382,8 +382,6 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
                 chat_request_messages.append(Content(role="model", parts=format_assistant_message(message)))
             elif message.role == AuthorRole.TOOL:
                 chat_request_messages.append(Content(role="function", parts=format_tool_message(message)))
-            else:
-                raise ValueError(f"Unsupported role: {message.role}")
 
         return chat_request_messages
 
