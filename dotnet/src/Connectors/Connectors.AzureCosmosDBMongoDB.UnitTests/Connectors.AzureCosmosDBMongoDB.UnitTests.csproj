@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>SemanticKernel.Connectors.AzureAISearch.UnitTests</AssemblyName>
-    <RootNamespace>SemanticKernel.Connectors.AzureAISearch.UnitTests</RootNamespace>
+    <AssemblyName>SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests</AssemblyName>
+    <RootNamespace>SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>

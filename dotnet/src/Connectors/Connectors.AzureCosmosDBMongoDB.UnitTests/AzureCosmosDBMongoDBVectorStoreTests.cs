@@ -11,7 +11,7 @@ using MongoDB.Driver;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
+namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 
 public sealed class AzureCosmosDBMongoDBVectorStoreTests
 {
@@ -24,7 +24,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
         var sut = new AzureCosmosDBMongoDBVectorStore(this._mockMongoDatabase.Object);
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, Hotel>("collection"));
+        Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, AzureCosmosDBMongoDBHotelModel>("collection"));
     }
 
     [Fact]
@@ -32,10 +32,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
     {
         // Arrange
         var mockFactory = new Mock<IAzureCosmosDBMongoDBVectorStoreRecordCollectionFactory>();
-        var mockRecordCollection = new Mock<IVectorStoreRecordCollection<string, Hotel>>();
+        var mockRecordCollection = new Mock<IVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>>();
 
         mockFactory
-            .Setup(l => l.CreateVectorStoreRecordCollection<string, Hotel>(
+            .Setup(l => l.CreateVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
                 this._mockMongoDatabase.Object,
                 "collection",
                 It.IsAny<VectorStoreRecordDefinition>()))
@@ -46,11 +46,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
             new AzureCosmosDBMongoDBVectorStoreOptions { VectorStoreCollectionFactory = mockFactory.Object });
 
         // Act
-        var collection = sut.GetCollection<string, Hotel>("collection");
+        var collection = sut.GetCollection<string, AzureCosmosDBMongoDBHotelModel>("collection");
 
         // Assert
         Assert.Same(mockRecordCollection.Object, collection);
-        mockFactory.Verify(l => l.CreateVectorStoreRecordCollection<string, Hotel>(
+        mockFactory.Verify(l => l.CreateVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection",
             It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
@@ -63,7 +63,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
         var sut = new AzureCosmosDBMongoDBVectorStore(this._mockMongoDatabase.Object);
 
         // Act
-        var collection = sut.GetCollection<string, Hotel>("collection");
+        var collection = sut.GetCollection<string, AzureCosmosDBMongoDBHotelModel>("collection");
 
         // Assert
         Assert.NotNull(collection);
@@ -97,43 +97,4 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
         // Assert
         Assert.Equal(expectedCollectionNames, actualCollectionNames);
     }
-
-    #region private
-
-    public class Hotel(string hotelId)
-    {
-        /// <summary>The key of the record.</summary>
-        [VectorStoreRecordKey]
-        public string HotelId { get; init; } = hotelId;
-
-        /// <summary>A string metadata field.</summary>
-        [VectorStoreRecordData]
-        public string? HotelName { get; set; }
-
-        /// <summary>An int metadata field.</summary>
-        [VectorStoreRecordData]
-        public int HotelCode { get; set; }
-
-        /// <summary>A float metadata field.</summary>
-        [VectorStoreRecordData]
-        public float? HotelRating { get; set; }
-
-        /// <summary>A bool metadata field.</summary>
-        [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
-        public bool ParkingIncluded { get; set; }
-
-        /// <summary>An array metadata field.</summary>
-        [VectorStoreRecordData]
-        public List<string> Tags { get; set; } = [];
-
-        /// <summary>A data field.</summary>
-        [VectorStoreRecordData]
-        public string? Description { get; set; }
-
-        /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector(Dimensions: 4, IndexKind: "vector-ivf", DistanceFunction: "COS")]
-        public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
-    }
-
-    #endregion
 }
