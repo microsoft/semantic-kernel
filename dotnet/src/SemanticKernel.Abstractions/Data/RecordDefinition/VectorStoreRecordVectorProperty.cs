@@ -36,17 +36,27 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
     /// <summary>
     /// Gets or sets the number of dimensions that the vector has.
     /// </summary>
+    /// <remarks>
+    /// This property is required when creating collections, but may be omitted if not using that functionality.
+    /// If not provided when trying to create a collection, create will fail.
+    /// </remarks>
     public int? Dimensions { get; init; }
 
     /// <summary>
     /// Gets the kind of index to use.
     /// </summary>
     /// <seealso cref="IndexKind"/>
+    /// <remarks>
+    /// Default varies by database type. See the documentation of your chosen database connector for more information.
+    /// </remarks>
     public string? IndexKind { get; init; }
 
     /// <summary>
     /// Gets the distance function to use when comparing vectors.
     /// </summary>
     /// <seealso cref="DistanceFunction"/>
+    /// <remarks>
+    /// Default varies by database type. See the documentation of your chosen database connector for more information.
+    /// </remarks>
     public string? DistanceFunction { get; init; }
 }

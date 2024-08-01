@@ -35,10 +35,16 @@ public sealed class VectorStoreRecordDataProperty : VectorStoreRecordProperty
     /// <summary>
     /// Gets or sets a value indicating whether this data property is filterable.
     /// </summary>
+    /// <remarks>
+    /// Default is <see langword="false" />.
+    /// </remarks>
     public bool IsFilterable { get; init; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this data property is full text searchable.
     /// </summary>
+    /// <remarks>
+    /// Default is <see langword="false" />.
+    /// </remarks>
     public bool IsFullTextSearchable { get; init; }
 }
