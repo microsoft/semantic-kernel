@@ -13,7 +13,7 @@ namespace Connectors.Amazon.Models;
 public static class BedrockModelUtilities
 {
     /// <summary>
-    /// Maps the AuthorRole to the corresponding ConversationRole because AuthorRole is static and { readonly get; }. Only called if AuthorRole is USer or Assistant (System set outside/beforehand).
+    /// Maps the AuthorRole to the corresponding ConversationRole because AuthorRole is static and { readonly get; }. Only called if AuthorRole is User or Assistant (System set outside/beforehand).
     /// </summary>
     /// <param name="role"></param>
     /// <returns></returns>

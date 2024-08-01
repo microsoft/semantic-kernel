@@ -19,13 +19,13 @@ public class MistralIOService : IBedrockModelIOService
     private const float DefaultTopPInstruct = 0.9f;
     private const int DefaultMaxTokensInstruct = 512;
     private const int DefaultTopKInstruct = 50;
-    private static readonly List<string> DefaultStopSequencesInstruct = new();
+    private static readonly List<string> s_defaultStopSequencesInstruct = new();
 
     private const float DefaultTemperatureNonInstruct = 0.7f;
     private const float DefaultTopPNonInstruct = 1.0f;
     private const int DefaultMaxTokensNonInstruct = 8192;
     private const int DefaultTopKNonInstruct = 0;
-    private static readonly List<string> DefaultStopSequencesNonInstruct = new();
+    private static readonly List<string> s_defaultStopSequencesNonInstruct = new();
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Mistral.
     /// </summary>
@@ -39,7 +39,7 @@ public class MistralIOService : IBedrockModelIOService
         var temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", isInstructModel ? DefaultTemperatureInstruct : (double?)DefaultTemperatureNonInstruct);
         var topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", isInstructModel ? DefaultTopPInstruct : (double?)DefaultTopPNonInstruct);
         var maxTokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", isInstructModel ? DefaultMaxTokensInstruct : (int?)DefaultMaxTokensNonInstruct);
-        var stop = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stop", isInstructModel ? DefaultStopSequencesInstruct : DefaultStopSequencesNonInstruct);
+        var stop = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stop", isInstructModel ? s_defaultStopSequencesInstruct : s_defaultStopSequencesNonInstruct);
         var topK = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_k", isInstructModel ? DefaultTopKInstruct : (int?)DefaultTopKNonInstruct);
 
         var requestBody = new

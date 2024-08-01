@@ -35,7 +35,7 @@ public static class ClaudeToolUse
     }
 
     /// <summary>
-    /// (Optional) Specifices how the model should use the provided tools. The model can use a specific tool, any available tool, or decide by itself.
+    /// (Optional) Specifies how the model should use the provided tools. The model can use a specific tool, any available tool, or decide by itself.
     /// </summary>
     public class ClaudeToolChoice
     {
