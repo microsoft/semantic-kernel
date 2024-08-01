@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding impor
 from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection import AzureAISearchCollection
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection, RedisJsonCollection
+from semantic_kernel.connectors.memory.volatile.volatile_collection import VolatileCollection
 from semantic_kernel.data.vector_store_model_decorator import vectorstoremodel
 from semantic_kernel.data.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.data.vector_store_record_fields import (
@@ -67,12 +68,12 @@ class MyDataModelList:
     ] = "content1"
 
 
-# configuration,
-# specify which store (redis_json, redis_hash, qdrant, Azure AI Search) to use
+# configuration
+# specify which store (redis_json, redis_hash, qdrant, Azure AI Search or volatile) to use
 # and which model (vectors as list or as numpy arrays)
-store = "qdrant"
+store = "volatile"
 collection_name = "test"
-MyDataModel = MyDataModelList
+MyDataModel = MyDataModelArray
 
 stores: dict[str, VectorStoreRecordCollection] = {
     "ai_search": AzureAISearchCollection[MyDataModel](
@@ -90,6 +91,10 @@ stores: dict[str, VectorStoreRecordCollection] = {
     ),
     "qdrant": QdrantCollection[MyDataModel](
         data_model_type=MyDataModel, collection_name=collection_name, prefer_grpc=True, named_vectors=False
+    ),
+    "volatile": VolatileCollection[MyDataModel](
+        data_model_type=MyDataModel,
+        collection_name=collection_name,
     ),
 }
 
