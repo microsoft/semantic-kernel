@@ -3,74 +3,54 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 #pragma warning disable SKEXP0001
 #pragma warning disable SKEXP0010
+#pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
 
 namespace AIModelRouter;
 
-internal class Program
+internal partial class Program
 {
     private static async Task Main(string[] args)
     {
+        Console.ForegroundColor = ConsoleColor.White;
+
         var config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
 
-        var services = new ServiceCollection();
-        var builder = services.AddKernel()
-            .AddOpenAIChatCompletion(serviceId: "lmstudio", modelId: "phi3", endpoint: new Uri("http://localhost:1234"), apiKey: null)
-            .AddOpenAIChatCompletion(serviceId: "ollama", modelId: "phi3", endpoint: new Uri("http://localhost:11434"), apiKey: null)
-            .AddOpenAIChatCompletion(serviceId: "openai", modelId: "gpt-4o", apiKey: config["OpenAI:ApiKey"]!);
+        ServiceCollection services = new();
 
-        builder.Services.AddSingleton<PromptRenderingFilter>();
+        // Adding multiple connectors targeting different providers / models.
+        services.AddKernel()                /* LMStudio model is selected in server side. */
+            .AddOpenAIChatCompletion(serviceId: "lmstudio", modelId: "N/A", endpoint: new Uri("http://localhost:1234"), apiKey: null)
+            .AddOpenAIChatCompletion(serviceId: "ollama", modelId: "phi3", endpoint: new Uri("http://localhost:11434"), apiKey: null)
+            .AddOpenAIChatCompletion(serviceId: "openai", modelId: "gpt-4o", apiKey: config["OpenAI:ApiKey"]!)
+
+            // Adding a custom filter to capture router selected service id
+            .Services.AddSingleton<IPromptRenderFilter>(new PromptRenderingFilter());
 
         var kernel = services.BuildServiceProvider().GetRequiredService<Kernel>();
+        var router = new CustomRouter();
 
-        //kernel.PromptRenderFilters.Add(new PromptRenderingFilter());
         while (true)
         {
-            Console.Write("\n\nEnter your message to AI: ");
+            Console.Write("\n\nUser message > ");
             var userMessage = Console.ReadLine();
 
+            // Exit application if the user enters an empty message
             if (string.IsNullOrWhiteSpace(userMessage)) { return; }
-            var arguments = new KernelArguments()
+
+            // Find the best service to use based on the user's input
+            KernelArguments arguments = new(new PromptExecutionSettings()
             {
-                ExecutionSettings = new Dictionary<string, PromptExecutionSettings>() { { new Router().FindService(userMessage),
-                new OpenAIPromptExecutionSettings() { ResponseFormat = "json" } } }
-            };
+                ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai"])
+            });
 
-            Console.Write("\n\nAI response: ");
-
+            // Invoke the prompt and print the response
             await foreach (var chatChunk in kernel.InvokePromptStreamingAsync(userMessage, arguments).ConfigureAwait(false))
             {
                 Console.Write(chatChunk);
             }
-        }
-    }
-
-    public class Router()
-    {
-        public string FindService(string prompt)
-        {
-            if (Contains(prompt, "ollama")) { return "ollama"; }
-            else if (Contains(prompt, "openai")) { return "openai"; }
-            return "lmstudio";
-        }
-
-        private static bool Contains(string prompt, string pattern)
-        {
-#pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-            return prompt.IndexOf(pattern, StringComparison.CurrentCultureIgnoreCase) >= 0;
-#pragma warning restore CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-        }
-    }
-
-    public class PromptRenderingFilter : IPromptRenderFilter
-    {
-        public Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
-        {
-            Console.WriteLine($"Rendering prompt for service '{context.Arguments.ExecutionSettings?.FirstOrDefault().Key}'");
-            return next(context);
         }
     }
 }
