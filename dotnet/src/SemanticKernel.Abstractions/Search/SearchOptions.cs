@@ -25,7 +25,7 @@ public sealed class SearchOptions
     /// <summary>
     /// Number of search results to return.
     /// </summary>
-    public int Count { get; set; } = 1;
+    public int Count { get; set; } = 2;
 
     /// <summary>
     /// The index of the first result to return.
