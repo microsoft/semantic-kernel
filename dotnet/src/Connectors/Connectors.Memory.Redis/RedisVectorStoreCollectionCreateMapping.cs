@@ -71,7 +71,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
 
                 if (dataProperty.IsFilterable && dataProperty.IsFullTextSearchable)
                 {
-                    throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' has both {nameof(VectorStoreRecordDataProperty.IsFilterable)} and {nameof(VectorStoreRecordDataProperty.IsFullTextSearchable)} set to true, and this is not supported.");
+                    throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' has both {nameof(VectorStoreRecordDataProperty.IsFilterable)} and {nameof(VectorStoreRecordDataProperty.IsFullTextSearchable)} set to true, and this is not supported by the Redis VectorStore.");
                 }
 
                 // Add full text search field index.
@@ -83,7 +83,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' is marked as {nameof(VectorStoreRecordDataProperty.IsFullTextSearchable)}, but the property type '{dataProperty.PropertyType}' is not supported. Only string and IEnumerable<string> properties are supported for full text search.");
+                        throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not a string or IEnumerable<string>. The Redis VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string or IEnumerable<string> properties only.");
                     }
                 }
 
@@ -104,7 +104,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' is marked as {nameof(VectorStoreRecordDataProperty.IsFilterable)}, but the property type '{dataProperty.PropertyType}' is not supported. Only string, IEnumerable<string> and numeric properties are supported for filtering.");
+                        throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' is marked as {nameof(VectorStoreRecordDataProperty.IsFilterable)}, but the property type '{dataProperty.PropertyType}' is not supported. Only string, IEnumerable<string> and numeric properties are supported for filtering by the Redis VectorStore.");
                     }
                 }
 
@@ -153,7 +153,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
         {
             IndexKind.Hnsw => Schema.VectorField.VectorAlgo.HNSW,
             IndexKind.Flat => Schema.VectorField.VectorAlgo.FLAT,
-            _ => throw new InvalidOperationException($"Unsupported index kind '{vectorProperty.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
+            _ => throw new InvalidOperationException($"Index kind '{vectorProperty.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
         };
     }
 
@@ -176,7 +176,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
             DistanceFunction.CosineSimilarity => "COSINE",
             DistanceFunction.DotProductSimilarity => "IP",
             DistanceFunction.EuclideanDistance => "L2",
-            _ => throw new InvalidOperationException($"Unsupported distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}'.")
+            _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
         };
     }
 
@@ -207,6 +207,6 @@ internal static class RedisVectorStoreCollectionCreateMapping
             return enumerableInterface.GetGenericArguments()[0];
         }
 
-        throw new InvalidOperationException($"Unsupported data type '{type}' for {nameof(VectorStoreRecordDataProperty)}.");
+        throw new InvalidOperationException($"Data type '{type}' for {nameof(VectorStoreRecordDataProperty)} is not supported by the Redis VectorStore.");
     }
 }

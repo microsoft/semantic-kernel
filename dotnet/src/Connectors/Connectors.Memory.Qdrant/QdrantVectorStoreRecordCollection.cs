@@ -181,7 +181,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         {
             if (dataProperty.PropertyType != typeof(string))
             {
-                throw new InvalidOperationException($"Property {nameof(dataProperty.PropertyType)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' must be set to 'string' to create a full text searchable index.");
+                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
             }
 
             var storageFieldName = this._storagePropertyNames[dataProperty.DataModelPropertyName];
