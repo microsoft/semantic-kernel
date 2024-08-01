@@ -10,10 +10,6 @@ on:
     types: 
       - in_progress
 
-env:
-  PYTHON_VERSION: "3.10"
-  RUN_OS: ubuntu-latest
-
 jobs:
   python-tests-coverage:
     runs-on: ubuntu-latest
@@ -27,13 +23,13 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'Python Unit Tests (${{ env.PYTHON_VERSION }}, ${{ env.RUN_OS }}, false)'
+          check-name: 'Python Test Coverage'
           repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           wait-interval: 90
           allowed-conclusions: success
       - uses: actions/checkout@v4
       - name: Setup filename variables
-        run: echo "FILE_ID=${{ github.event.number }}-${{ env.RUN_OS }}-${{ env.PYTHON_VERSION }}" >> $GITHUB_ENV
+        run: echo "FILE_ID=${{ github.event.number }}" >> $GITHUB_ENV
       - name: Download coverage
         uses: dawidd6/action-download-artifact@v3
         with:
@@ -57,9 +53,9 @@ jobs:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           pytest-coverage-path: python-coverage.txt
           coverage-path-prefix: "python/"
-          title: "Python ${{ env.PYTHON_VERSION }} Test Coverage Report"
-          badge-title: "Py${{ env.PYTHON_VERSION }} Test Coverage"
-          junitxml-title: "Python ${{ env.PYTHON_VERSION }} Unit Test Overview"
+          title: "Python Test Coverage Report"
+          badge-title: "Python Test Coverage"
+          junitxml-title: "Python Unit Test Overview"
           junitxml-path: pytest.xml
           default-branch: "main"
-          unique-id-for-comment: python-${{ env.PYTHON_VERSION }}
+          unique-id-for-comment: python-test-coverage
