@@ -18,9 +18,6 @@ namespace Microsoft.SemanticKernel.Agents.History;
 public class ChatHistoryTruncationReducer : IChatHistoryReducer
 {
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
-
-    /// <inheritdoc/>
     public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // First pass to determine the truncation index
@@ -55,6 +52,18 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
 
         this._thresholdCount = thresholdCount ?? 0;
     }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj)
+    {
+        ChatHistoryTruncationReducer? other = obj as ChatHistoryTruncationReducer;
+        return other != null &&
+               this._thresholdCount == other._thresholdCount &&
+               this._targetCount == other._targetCount;
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
 
     private readonly int _thresholdCount;
     private readonly int _targetCount;

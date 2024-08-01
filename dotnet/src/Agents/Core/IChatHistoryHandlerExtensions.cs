@@ -18,6 +18,6 @@ public static class IChatHistoryHandlerExtensions
     /// <param name="history">The source history</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
-    public static Task<(bool isReduced, ChatHistory history)> ReduceAsync(this IChatHistoryHandler agent, ChatHistory history, CancellationToken cancellationToken = default) =>
+    public static Task<bool> ReduceAsync(this IChatHistoryHandler agent, ChatHistory history, CancellationToken cancellationToken = default) =>
         history.ReduceAsync(agent.HistoryReducer, cancellationToken);
 }

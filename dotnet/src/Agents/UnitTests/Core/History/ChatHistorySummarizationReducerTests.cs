@@ -12,12 +12,12 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Core.History;
 
 /// <summary>
-/// %%%
+/// Unit testing of <see cref="ChatHistorySummarizationReducer"/>.
 /// </summary>
 public class ChatHistorySummarizationReducerTests
 {
     /// <summary>
-    /// %%%
+    /// Ensure that the constructor arguments are validated.
     /// </summary>
     [Theory]
     [InlineData(-1)]
@@ -31,7 +31,7 @@ public class ChatHistorySummarizationReducerTests
     }
 
     /// <summary>
-    /// %%%
+    /// Verify object state after initialization.
     /// </summary>
     [Fact]
     public void VerifyChatHistoryInitializationState()
@@ -55,7 +55,7 @@ public class ChatHistorySummarizationReducerTests
     }
 
     /// <summary>
-    /// %%%
+    /// Vaidate hash-code expresses reducer equivalency.
     /// </summary>
     [Fact]
     public void VerifyChatHistoryHasCode()
@@ -67,9 +67,11 @@ public class ChatHistorySummarizationReducerTests
         int hashCode1 = GenerateHashCode(3, 4);
         int hashCode2 = GenerateHashCode(33, 44);
         int hashCode3 = GenerateHashCode(3000, 4000);
+        int hashCode4 = GenerateHashCode(3000, 4000);
 
         Assert.NotEqual(hashCode1, hashCode2);
         Assert.NotEqual(hashCode2, hashCode3);
+        Assert.Equal(hashCode3, hashCode4);
         Assert.Equal(3, reducers.Count);
 
         int GenerateHashCode(int targetCount, int thresholdCount)
@@ -83,7 +85,7 @@ public class ChatHistorySummarizationReducerTests
     }
 
     /// <summary>
-    /// %%%
+    /// Validate silent summarization failure when <see cref="ChatHistorySummarizationReducer.FailOnError"/> set to 'false'.
     /// </summary>
     [Fact]
     public async Task VerifyChatHistoryReductionSilentFailureAsync()
@@ -98,7 +100,7 @@ public class ChatHistorySummarizationReducerTests
     }
 
     /// <summary>
-    /// %%%
+    /// Validate exception on summarization failure when <see cref="ChatHistorySummarizationReducer.FailOnError"/> set to 'true'.
     /// </summary>
     [Fact]
     public async Task VerifyChatHistoryReductionThrowsOnFailureAsync()
@@ -111,7 +113,7 @@ public class ChatHistorySummarizationReducerTests
     }
 
     /// <summary>
-    /// %%%
+    /// Validate history not reduced when source history does not exceed target threshold.
     /// </summary>
     [Fact]
     public async Task VerifyChatHistoryNotReducedAsync()
@@ -126,7 +128,7 @@ public class ChatHistorySummarizationReducerTests
     }
 
     /// <summary>
-    /// %%%
+    /// Validate history reduced when source history exceeds target threshold.
     /// </summary>
     [Fact]
     public async Task VerifyChatHistoryReducedAsync()
@@ -142,7 +144,7 @@ public class ChatHistorySummarizationReducerTests
     }
 
     /// <summary>
-    /// %%%
+    /// Validate history re-summarized on second occurrence of source history exceeding target threshold.
     /// </summary>
     [Fact]
     public async Task VerifyChatHistoryRereducedAsync()

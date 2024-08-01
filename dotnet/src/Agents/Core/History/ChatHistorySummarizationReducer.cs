@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -53,9 +52,6 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     public bool FailOnError { get; init; } = true;
 
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistorySummarizationReducer), this._thresholdCount, this._targetCount);
-
-    /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // Identify where summary messages end and regular history begins
@@ -69,7 +65,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         if (truncationIndex > 0)
         {
             // Second pass to extract history for summarization
-            IReadOnlyList<ChatMessageContent> summarizedHistory = history.Extract(insertionPoint, truncationIndex).ToArray();
+            IEnumerable<ChatMessageContent> summarizedHistory = history.Extract(insertionPoint, truncationIndex);
 
             try
             {
@@ -79,14 +75,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
                 summary.Metadata = new Dictionary<string, object?> { { SummaryMetadataKey, true } };
 
                 // Assembly the summarized history
-                if (insertionPoint > 0)
-                {
-                    truncatedHistory = [.. history.Extract(0, insertionPoint - 1), summary, .. history.Extract(truncationIndex)];
-                }
-                else
-                {
-                    truncatedHistory = [summary, .. history.Extract(truncationIndex)];
-                }
+                truncatedHistory = AssemblySummarizedHistory(summary);
             }
             catch
             {
@@ -98,6 +87,28 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         }
 
         return truncatedHistory;
+
+        // Inner function to assemble the summarized history
+        IEnumerable<ChatMessageContent> AssemblySummarizedHistory(ChatMessageContent? summary)
+        {
+            if (insertionPoint > 0)
+            {
+                for (int index = 0; index <= insertionPoint - 1; ++index)
+                {
+                    yield return history[index];
+                }
+            }
+
+            if (summary != null)
+            {
+                yield return summary;
+            }
+
+            for (int index = truncationIndex; index < history.Count; ++index)
+            {
+                yield return history[index];
+            }
+        }
     }
 
     /// <summary>
@@ -120,6 +131,18 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         this._targetCount = targetCount;
         this._thresholdCount = thresholdCount ?? 0;
     }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj)
+    {
+        ChatHistorySummarizationReducer? other = obj as ChatHistorySummarizationReducer;
+        return other != null &&
+               this._thresholdCount == other._thresholdCount &&
+               this._targetCount == other._targetCount;
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistorySummarizationReducer), this._thresholdCount, this._targetCount);
 
     private readonly IChatCompletionService _service;
     private readonly int _thresholdCount;

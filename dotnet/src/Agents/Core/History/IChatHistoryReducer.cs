@@ -11,6 +11,12 @@ namespace Microsoft.SemanticKernel.Agents.History;
 public interface IChatHistoryReducer
 {
     /// <summary>
+    /// Each reducer shall override equality evaluation so that different reducers
+    /// of the same configuration can be evaluated for equivalency.
+    /// </summary>
+    bool Equals(object? obj);
+
+    /// <summary>
     /// Each reducer shall implement custom hash-code generation so that different reducers
     /// of the same configuration can be evaluated for equivalency.
     /// </summary>
