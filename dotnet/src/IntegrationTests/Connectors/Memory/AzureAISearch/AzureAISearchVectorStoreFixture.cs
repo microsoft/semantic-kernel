@@ -54,12 +54,12 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
             Properties = new List<VectorStoreRecordProperty>
             {
                 new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
-                new VectorStoreRecordDataProperty("Tags", typeof(string[])),
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool?)),
-                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset?)),
+                new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool?)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset?)) { IsFilterable = true },
                 new VectorStoreRecordDataProperty("Rating", typeof(float?))
             }
         };
@@ -212,7 +212,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         public string HotelId { get; set; }
 
         [SearchableField(IsSortable = true)]
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
         public string HotelName { get; set; }
 
         [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.EnLucene)]
@@ -223,18 +223,18 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 
         [SearchableField(IsFilterable = true, IsFacetable = true)]
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true)]
 #pragma warning disable CA1819 // Properties should not return arrays
         public string[] Tags { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
         [JsonPropertyName("parking_is_included")]
         [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true)]
         public bool? ParkingIncluded { get; set; }
 
         [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-        [VectorStoreRecordData]
+        [VectorStoreRecordData(IsFilterable = true)]
         public DateTimeOffset? LastRenovationDate { get; set; }
 
         [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]

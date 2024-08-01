@@ -543,7 +543,7 @@ public class PineconeVectorStoreRecordCollectionTests(PineconeVectorStoreFixture
 
         var message = (await Assert.ThrowsAsync<InvalidOperationException>(() => recordCollection.CreateCollectionAsync())).Message;
 
-        Assert.Equal("Unsupported distance function 'just eyeball it' for VectorStoreRecordVectorProperty 'Embedding'.", message);
+        Assert.Equal("Distance function 'just eyeball it' for VectorStoreRecordVectorProperty 'Embedding' is not supported by the Pinecone VectorStore.", message);
     }
 
 #pragma warning disable CA1812

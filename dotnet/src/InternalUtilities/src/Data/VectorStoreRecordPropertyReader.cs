@@ -33,7 +33,7 @@ internal static class VectorStoreRecordPropertyReader
     /// <param name="requiresAtLeastOneVector">A value indicating whether we need at least one vector.</param>
     /// <returns>The properties on the <see cref="VectorStoreRecordDefinition"/> split into key, data and vector groupings.</returns>
     /// <exception cref="ArgumentException">Thrown if there are any validation failures with the provided <paramref name="definition"/>.</exception>
-    public static (VectorStoreRecordKeyProperty keyProperty, List<VectorStoreRecordDataProperty> dataProperties, List<VectorStoreRecordVectorProperty> vectorProperties) SplitDefinitionAndVerify(
+    public static (VectorStoreRecordKeyProperty KeyProperty, List<VectorStoreRecordDataProperty> DataProperties, List<VectorStoreRecordVectorProperty> VectorProperties) SplitDefinitionAndVerify(
         string typeName,
         VectorStoreRecordDefinition definition,
         bool supportsMultipleVectors,
@@ -76,7 +76,7 @@ internal static class VectorStoreRecordPropertyReader
     /// <param name="type">The data model to find the properties on.</param>
     /// <param name="supportsMultipleVectors">A value indicating whether multiple vector properties are supported instead of just one.</param>
     /// <returns>The categorized properties.</returns>
-    public static (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) FindProperties(Type type, bool supportsMultipleVectors)
+    public static (PropertyInfo KeyProperty, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindProperties(Type type, bool supportsMultipleVectors)
     {
         var cache = supportsMultipleVectors ? s_multipleVectorsPropertiesCache : s_singleVectorPropertiesCache;
 
@@ -158,7 +158,7 @@ internal static class VectorStoreRecordPropertyReader
     /// <param name="vectorStoreRecordDefinition">The property configuration.</param>
     /// <param name="supportsMultipleVectors">A value indicating whether multiple vector properties are supported instead of just one.</param>
     /// <returns>The categorized properties.</returns>
-    public static (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties) FindProperties(Type type, VectorStoreRecordDefinition vectorStoreRecordDefinition, bool supportsMultipleVectors)
+    public static (PropertyInfo KeyProperty, List<PropertyInfo> DataProperties, List<PropertyInfo> VectorProperties) FindProperties(Type type, VectorStoreRecordDefinition vectorStoreRecordDefinition, bool supportsMultipleVectors)
     {
         PropertyInfo? keyProperty = null;
         List<PropertyInfo> dataProperties = new();
@@ -250,11 +250,11 @@ internal static class VectorStoreRecordPropertyReader
         var definitionProperties = new List<VectorStoreRecordProperty>();
 
         // Key property.
-        var keyAttribute = properties.keyProperty.GetCustomAttribute<VectorStoreRecordKeyAttribute>();
-        definitionProperties.Add(new VectorStoreRecordKeyProperty(properties.keyProperty.Name, properties.keyProperty.PropertyType) { StoragePropertyName = keyAttribute!.StoragePropertyName });
+        var keyAttribute = properties.KeyProperty.GetCustomAttribute<VectorStoreRecordKeyAttribute>();
+        definitionProperties.Add(new VectorStoreRecordKeyProperty(properties.KeyProperty.Name, properties.KeyProperty.PropertyType) { StoragePropertyName = keyAttribute!.StoragePropertyName });
 
         // Data properties.
-        foreach (var dataProperty in properties.dataProperties)
+        foreach (var dataProperty in properties.DataProperties)
         {
             var dataAttribute = dataProperty.GetCustomAttribute<VectorStoreRecordDataAttribute>();
             if (dataAttribute is not null)
@@ -262,13 +262,14 @@ internal static class VectorStoreRecordPropertyReader
                 definitionProperties.Add(new VectorStoreRecordDataProperty(dataProperty.Name, dataProperty.PropertyType)
                 {
                     IsFilterable = dataAttribute.IsFilterable,
+                    IsFullTextSearchable = dataAttribute.IsFullTextSearchable,
                     StoragePropertyName = dataAttribute.StoragePropertyName
                 });
             }
         }
 
         // Vector properties.
-        foreach (var vectorProperty in properties.vectorProperties)
+        foreach (var vectorProperty in properties.VectorProperties)
         {
             var vectorAttribute = vectorProperty.GetCustomAttribute<VectorStoreRecordVectorAttribute>();
             if (vectorAttribute is not null)

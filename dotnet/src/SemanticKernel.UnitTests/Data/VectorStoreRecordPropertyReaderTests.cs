@@ -20,13 +20,13 @@ public class VectorStoreRecordPropertyReaderTests
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify("testType", this._multiPropsDefinition, true, true);
 
         // Assert.
-        Assert.Equal("Key", properties.keyProperty.DataModelPropertyName);
-        Assert.Equal(2, properties.dataProperties.Count);
-        Assert.Equal(2, properties.vectorProperties.Count);
-        Assert.Equal("Data1", properties.dataProperties[0].DataModelPropertyName);
-        Assert.Equal("Data2", properties.dataProperties[1].DataModelPropertyName);
-        Assert.Equal("Vector1", properties.vectorProperties[0].DataModelPropertyName);
-        Assert.Equal("Vector2", properties.vectorProperties[1].DataModelPropertyName);
+        Assert.Equal("Key", properties.KeyProperty.DataModelPropertyName);
+        Assert.Equal(2, properties.DataProperties.Count);
+        Assert.Equal(2, properties.VectorProperties.Count);
+        Assert.Equal("Data1", properties.DataProperties[0].DataModelPropertyName);
+        Assert.Equal("Data2", properties.DataProperties[1].DataModelPropertyName);
+        Assert.Equal("Vector1", properties.VectorProperties[0].DataModelPropertyName);
+        Assert.Equal("Vector2", properties.VectorProperties[1].DataModelPropertyName);
     }
 
     [Theory]
@@ -64,11 +64,11 @@ public class VectorStoreRecordPropertyReaderTests
             VectorStoreRecordPropertyReader.FindProperties(typeof(SinglePropsModel), supportsMultipleVectors);
 
         // Assert.
-        Assert.Equal("Key", properties.keyProperty.Name);
-        Assert.Single(properties.dataProperties);
-        Assert.Single(properties.vectorProperties);
-        Assert.Equal("Data", properties.dataProperties[0].Name);
-        Assert.Equal("Vector", properties.vectorProperties[0].Name);
+        Assert.Equal("Key", properties.KeyProperty.Name);
+        Assert.Single(properties.DataProperties);
+        Assert.Single(properties.VectorProperties);
+        Assert.Equal("Data", properties.DataProperties[0].Name);
+        Assert.Equal("Vector", properties.VectorProperties[0].Name);
     }
 
     [Theory]
@@ -82,13 +82,13 @@ public class VectorStoreRecordPropertyReaderTests
             VectorStoreRecordPropertyReader.FindProperties(typeof(MultiPropsModel), true);
 
         // Assert.
-        Assert.Equal("Key", properties.keyProperty.Name);
-        Assert.Equal(2, properties.dataProperties.Count);
-        Assert.Equal(2, properties.vectorProperties.Count);
-        Assert.Equal("Data1", properties.dataProperties[0].Name);
-        Assert.Equal("Data2", properties.dataProperties[1].Name);
-        Assert.Equal("Vector1", properties.vectorProperties[0].Name);
-        Assert.Equal("Vector2", properties.vectorProperties[1].Name);
+        Assert.Equal("Key", properties.KeyProperty.Name);
+        Assert.Equal(2, properties.DataProperties.Count);
+        Assert.Equal(2, properties.VectorProperties.Count);
+        Assert.Equal("Data1", properties.DataProperties[0].Name);
+        Assert.Equal("Data2", properties.DataProperties[1].Name);
+        Assert.Equal("Vector1", properties.VectorProperties[0].Name);
+        Assert.Equal("Vector2", properties.VectorProperties[1].Name);
     }
 
     [Theory]
@@ -206,6 +206,9 @@ public class VectorStoreRecordPropertyReaderTests
         Assert.True(data1.IsFilterable);
         Assert.False(data2.IsFilterable);
 
+        Assert.True(data1.IsFullTextSearchable);
+        Assert.False(data2.IsFullTextSearchable);
+
         Assert.Equal(typeof(string), data1.PropertyType);
         Assert.Equal(typeof(string), data2.PropertyType);
 
@@ -221,7 +224,7 @@ public class VectorStoreRecordPropertyReaderTests
         var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(SinglePropsModel), true);
 
         // Act.
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, [typeof(string)], "Data");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.DataProperties, [typeof(string)], "Data");
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(this._singlePropsDefinition.Properties.OfType<VectorStoreRecordDataProperty>(), [typeof(string)], "Data");
     }
 
@@ -232,7 +235,7 @@ public class VectorStoreRecordPropertyReaderTests
         var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(EnumerablePropsModel), true);
 
         // Act.
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, [typeof(string)], "Data", supportEnumerable: true);
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.DataProperties, [typeof(string)], "Data", supportEnumerable: true);
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(this._enumerablePropsDefinition.Properties.OfType<VectorStoreRecordDataProperty>(), [typeof(string)], "Data", supportEnumerable: true);
     }
 
@@ -243,7 +246,7 @@ public class VectorStoreRecordPropertyReaderTests
         var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(SinglePropsModel), true);
 
         // Act.
-        var ex1 = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.dataProperties, [typeof(int), typeof(float)], "Data"));
+        var ex1 = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.DataProperties, [typeof(int), typeof(float)], "Data"));
         var ex2 = Assert.Throws<ArgumentException>(() => VectorStoreRecordPropertyReader.VerifyPropertyTypes(this._singlePropsDefinition.Properties.OfType<VectorStoreRecordDataProperty>(), [typeof(int), typeof(float)], "Data"));
 
         // Assert.
@@ -279,9 +282,9 @@ public class VectorStoreRecordPropertyReaderTests
         // Arrange.
         var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseUpper };
         var properties = VectorStoreRecordPropertyReader.FindProperties(typeof(MultiPropsModel), true);
-        var allProperties = (new PropertyInfo[] { properties.keyProperty })
-            .Concat(properties.dataProperties)
-            .Concat(properties.vectorProperties);
+        var allProperties = (new PropertyInfo[] { properties.KeyProperty })
+            .Concat(properties.DataProperties)
+            .Concat(properties.VectorProperties);
 
         // Act.
         var jsonNameMap = allProperties
@@ -401,7 +404,7 @@ public class VectorStoreRecordPropertyReaderTests
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]
@@ -422,7 +425,7 @@ public class VectorStoreRecordPropertyReaderTests
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
             new VectorStoreRecordDataProperty("Data2", typeof(string)) { StoragePropertyName = "data_2" },
             new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.DotProductSimilarity },
             new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>))

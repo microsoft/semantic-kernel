@@ -71,6 +71,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
         Assert.Equal(record.Tags, getResult?.Tags);
+        Assert.Equal(record.FTSTags, getResult?.FTSTags);
         Assert.Equal(record.ParkingIncluded, getResult?.ParkingIncluded);
         Assert.Equal(record.LastRenovationDate, getResult?.LastRenovationDate);
         Assert.Equal(record.Rating, getResult?.Rating);
@@ -129,6 +130,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
         Assert.Equal(record.Tags, getResult?.Tags);
+        Assert.Equal(record.FTSTags, getResult?.FTSTags);
         Assert.Equal(record.ParkingIncluded, getResult?.ParkingIncluded);
         Assert.Equal(record.LastRenovationDate, getResult?.LastRenovationDate);
         Assert.Equal(record.Rating, getResult?.Rating);
@@ -202,6 +204,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal("My Hotel 1", getResult?.HotelName);
         Assert.Equal(1, getResult?.HotelCode);
         Assert.Equal(new[] { "pool", "air conditioning", "concierge" }, getResult?.Tags);
+        Assert.Equal(new[] { "pool", "air conditioning", "concierge" }, getResult?.FTSTags);
         Assert.True(getResult?.ParkingIncluded);
         Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), getResult?.LastRenovationDate);
         Assert.Equal(3.6, getResult?.Rating);
@@ -342,6 +345,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             HotelName = $"My Hotel {hotelCode}",
             HotelCode = 1,
             Tags = ["pool", "air conditioning", "concierge"],
+            FTSTags = ["pool", "air conditioning", "concierge"],
             ParkingIncluded = true,
             LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
             Rating = 3.6,

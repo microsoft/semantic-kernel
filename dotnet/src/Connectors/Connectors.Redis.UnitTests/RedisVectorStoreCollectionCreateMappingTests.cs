@@ -23,6 +23,10 @@ public class RedisVectorStoreCollectionCreateMappingTests
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
 
             new VectorStoreRecordDataProperty("FilterableString", typeof(string)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("FullTextSearchableString", typeof(string)) { IsFullTextSearchable = true },
+            new VectorStoreRecordDataProperty("FilterableStringEnumerable", typeof(string[])) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("FullTextSearchableStringEnumerable", typeof(string[])) { IsFullTextSearchable = true },
+
             new VectorStoreRecordDataProperty("FilterableInt", typeof(int)) { IsFilterable = true },
             new VectorStoreRecordDataProperty("FilterableNullableInt", typeof(int)) { IsFilterable = true },
 
@@ -35,6 +39,9 @@ public class RedisVectorStoreCollectionCreateMappingTests
         var storagePropertyNames = new Dictionary<string, string>()
         {
             { "FilterableString", "FilterableString" },
+            { "FullTextSearchableString", "FullTextSearchableString" },
+            { "FilterableStringEnumerable", "FilterableStringEnumerable" },
+            { "FullTextSearchableStringEnumerable", "FullTextSearchableStringEnumerable" },
             { "FilterableInt", "FilterableInt" },
             { "FilterableNullableInt", "FilterableNullableInt" },
             { "NonFilterableString", "NonFilterableString" },
@@ -47,28 +54,35 @@ public class RedisVectorStoreCollectionCreateMappingTests
 
         // Assert.
         Assert.NotNull(schema);
-        Assert.Equal(5, schema.Fields.Count);
+        Assert.Equal(8, schema.Fields.Count);
 
-        Assert.IsType<TextField>(schema.Fields[0]);
-        Assert.IsType<NumericField>(schema.Fields[1]);
-        Assert.IsType<NumericField>(schema.Fields[2]);
-        Assert.IsType<VectorField>(schema.Fields[3]);
-        Assert.IsType<VectorField>(schema.Fields[4]);
+        Assert.IsType<TagField>(schema.Fields[0]);
+        Assert.IsType<TextField>(schema.Fields[1]);
+        Assert.IsType<TagField>(schema.Fields[2]);
+        Assert.IsType<TextField>(schema.Fields[3]);
+        Assert.IsType<NumericField>(schema.Fields[4]);
+        Assert.IsType<NumericField>(schema.Fields[5]);
+        Assert.IsType<VectorField>(schema.Fields[6]);
+        Assert.IsType<VectorField>(schema.Fields[7]);
 
         VerifyFieldName(schema.Fields[0].FieldName, new List<object> { "$.FilterableString", "AS", "FilterableString" });
-        VerifyFieldName(schema.Fields[1].FieldName, new List<object> { "$.FilterableInt", "AS", "FilterableInt" });
-        VerifyFieldName(schema.Fields[2].FieldName, new List<object> { "$.FilterableNullableInt", "AS", "FilterableNullableInt" });
+        VerifyFieldName(schema.Fields[1].FieldName, new List<object> { "$.FullTextSearchableString", "AS", "FullTextSearchableString" });
+        VerifyFieldName(schema.Fields[2].FieldName, new List<object> { "$.FilterableStringEnumerable.*", "AS", "FilterableStringEnumerable" });
+        VerifyFieldName(schema.Fields[3].FieldName, new List<object> { "$.FullTextSearchableStringEnumerable", "AS", "FullTextSearchableStringEnumerable" });
 
-        VerifyFieldName(schema.Fields[3].FieldName, new List<object> { "$.VectorDefaultIndexingOptions", "AS", "VectorDefaultIndexingOptions" });
-        VerifyFieldName(schema.Fields[4].FieldName, new List<object> { "$.vector_specific_indexing_options", "AS", "vector_specific_indexing_options" });
+        VerifyFieldName(schema.Fields[4].FieldName, new List<object> { "$.FilterableInt", "AS", "FilterableInt" });
+        VerifyFieldName(schema.Fields[5].FieldName, new List<object> { "$.FilterableNullableInt", "AS", "FilterableNullableInt" });
 
-        Assert.Equal("10", ((VectorField)schema.Fields[3]).Attributes!["DIM"]);
-        Assert.Equal("FLOAT32", ((VectorField)schema.Fields[3]).Attributes!["TYPE"]);
-        Assert.Equal("COSINE", ((VectorField)schema.Fields[3]).Attributes!["DISTANCE_METRIC"]);
+        VerifyFieldName(schema.Fields[6].FieldName, new List<object> { "$.VectorDefaultIndexingOptions", "AS", "VectorDefaultIndexingOptions" });
+        VerifyFieldName(schema.Fields[7].FieldName, new List<object> { "$.vector_specific_indexing_options", "AS", "vector_specific_indexing_options" });
 
-        Assert.Equal("20", ((VectorField)schema.Fields[4]).Attributes!["DIM"]);
-        Assert.Equal("FLOAT32", ((VectorField)schema.Fields[4]).Attributes!["TYPE"]);
-        Assert.Equal("L2", ((VectorField)schema.Fields[4]).Attributes!["DISTANCE_METRIC"]);
+        Assert.Equal("10", ((VectorField)schema.Fields[6]).Attributes!["DIM"]);
+        Assert.Equal("FLOAT32", ((VectorField)schema.Fields[6]).Attributes!["TYPE"]);
+        Assert.Equal("COSINE", ((VectorField)schema.Fields[6]).Attributes!["DISTANCE_METRIC"]);
+
+        Assert.Equal("20", ((VectorField)schema.Fields[7]).Attributes!["DIM"]);
+        Assert.Equal("FLOAT32", ((VectorField)schema.Fields[7]).Attributes!["TYPE"]);
+        Assert.Equal("L2", ((VectorField)schema.Fields[7]).Attributes!["DISTANCE_METRIC"]);
     }
 
     [Theory]

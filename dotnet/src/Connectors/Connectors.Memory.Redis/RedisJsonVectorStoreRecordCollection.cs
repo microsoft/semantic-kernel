@@ -90,16 +90,16 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 
         // Validate property types.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, this._vectorStoreRecordDefinition, supportsMultipleVectors: true, requiresAtLeastOneVector: false);
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.keyProperty], s_supportedKeyTypes, "Key");
-        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.vectorProperties, s_supportedVectorTypes, "Vector");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes([properties.KeyProperty], s_supportedKeyTypes, "Key");
+        VectorStoreRecordPropertyReader.VerifyPropertyTypes(properties.VectorProperties, s_supportedVectorTypes, "Vector");
 
         // Lookup json storage property names.
-        var keyJsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(properties.keyProperty, typeof(TRecord), this._jsonSerializerOptions);
+        var keyJsonPropertyName = VectorStoreRecordPropertyReader.GetJsonPropertyName(properties.KeyProperty, typeof(TRecord), this._jsonSerializerOptions);
 
         // Lookup storage property names.
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), this._jsonSerializerOptions);
         this._dataStoragePropertyNames = properties
-            .dataProperties
+            .DataProperties
             .Select(x => this._storagePropertyNames[x.DataModelPropertyName])
             .ToArray();
 
