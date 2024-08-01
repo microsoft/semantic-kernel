@@ -45,6 +45,8 @@
         "generativeai",
         "genai",
         "protos",
-        "endregion"
+        "endregion",
+        "vertexai",
+        "aiplatform"
     ]
 }

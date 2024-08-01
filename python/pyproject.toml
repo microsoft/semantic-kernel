@@ -48,6 +48,7 @@ azure-cosmos = { version = "^4.7.0", optional = true}
 # chroma
 chromadb = { version = ">=0.4.13,<0.6.0", optional = true}
 # google
+google-cloud-aiplatform = { version = "^1.60.0", optional = true}
 google-generativeai = { version = "^0.7.2", optional = true}
 # hugging face
 transformers = { version = "^4.28.1", extras=["torch"], optional = true}
@@ -99,6 +100,7 @@ azure-core = "^1.28.0"
 azure-cosmos = "^4.7.0"
 mistralai = "^0.4.1"
 ollama = "^0.2.1"
+google-cloud-aiplatform = "^1.60.0"
 google-generativeai = "^0.7.2"
 transformers = { version = "^4.28.1", extras=["torch"]}
 sentence-transformers = "^2.2.2"
@@ -117,6 +119,7 @@ msgraph-sdk = "^1.2.0"
 # chroma
 chromadb = ">=0.4.13,<0.6.0"
 # google
+google-cloud-aiplatform = "^1.60.0"
 google-generativeai = "^0.7.2"
 # hugging face
 transformers = { version = "^4.28.1", extras=["torch"]}
@@ -150,7 +153,7 @@ all = ["transformers", "sentence-transformers", "qdrant-client", "chromadb", "py
 
 azure = ["azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "msgraph-sdk"]
 chromadb = ["chromadb"]
-google = ["google-generativeai"]
+google = ["google-cloud-aiplatform", "google-generativeai"]
 hugging_face = ["transformers", "sentence-transformers"]
 milvus = ["pymilvus", "milvus"]
 mistralai = ["mistralai"]

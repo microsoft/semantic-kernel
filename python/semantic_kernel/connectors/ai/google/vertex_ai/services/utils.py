@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import logging
-
-from google.generativeai.protos import Blob, Candidate, Part
+from google.cloud.aiplatform_v1beta1.types.content import Blob, Candidate, Part
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -10,13 +8,11 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 
-logger: logging.Logger = logging.getLogger(__name__)
 
-
-def finish_reason_from_google_ai_to_semantic_kernel(
+def finish_reason_from_vertex_ai_to_semantic_kernel(
     finish_reason: Candidate.FinishReason,
 ) -> SemanticKernelFinishReason | None:
-    """Convert a Google AI FinishReason to a Semantic Kernel FinishReason.
+    """Convert a Vertex AI FinishReason to a Semantic Kernel FinishReason.
 
     This is best effort and may not cover all cases as the enums are not identical.
     """
