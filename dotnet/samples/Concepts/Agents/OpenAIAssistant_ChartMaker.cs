@@ -97,8 +97,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
         {
             string filePath = Path.Combine(Environment.CurrentDirectory, $"{fileId}.jpg");
             BinaryData content = await fileClient.DownloadFileAsync(fileId);
-            await using var outputStream = File.OpenWrite(filePath);
-            await outputStream.WriteAsync(content.ToArray());
+            File.WriteAllBytes(filePath, content.ToArray());
 
             Process.Start(
                 new ProcessStartInfo

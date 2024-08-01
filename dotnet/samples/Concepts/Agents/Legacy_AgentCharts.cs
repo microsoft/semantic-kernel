@@ -62,8 +62,7 @@ Sum      426  1622     856 2904
                     Console.WriteLine($"# {message.Role}: {fileId}");
                     Console.WriteLine($"# {message.Role}: {path}");
                     BinaryData content = await fileClient.DownloadFileAsync(fileId);
-                    await using var outputStream = File.OpenWrite(filename);
-                    await outputStream.WriteAsync(content.ToArray());
+                    File.WriteAllBytes(filename, content.ToArray());
                     Process.Start(
                         new ProcessStartInfo
                         {
