@@ -94,7 +94,7 @@ public sealed class CreateFromTextSearchExample(ITestOutputHelper output) : Base
                 var resultList = await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
                 return options.MapToString!(resultList);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }

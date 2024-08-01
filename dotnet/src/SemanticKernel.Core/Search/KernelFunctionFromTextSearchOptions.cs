@@ -148,7 +148,7 @@ public sealed class KernelFunctionFromTextSearchOptions
         {
             Delegate = GetSearchResultsAsync,
             FunctionName = "GetSearchResults",
-            Description = "Perform a search for content related to the specified query",
+            Description = "Perform a search for content related to the specified query. The search will return the name, value and link for the related content.",
             Parameters =
             [
                 new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
