@@ -6,6 +6,8 @@ using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Bedrock.Core;
 using Connectors.Amazon.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
@@ -22,14 +24,16 @@ internal sealed class BedrockChatCompletionClient
     private readonly IBedrockModelIOService _ioService;
     private readonly BedrockClientUtilities _clientUtilities;
     private Uri? _chatGenerationEndpoint;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Builds the client object and registers the model input-output service given the user's passed in model ID.
     /// </summary>
     /// <param name="modelId"></param>
     /// <param name="bedrockApi"></param>
+    /// <param name="loggerFactory"></param>
     /// <exception cref="ArgumentException"></exception>
-    public BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockApi)
+    public BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockApi, ILoggerFactory? loggerFactory = null)
     {
         var clientService = new BedrockClientIOService();
         this._modelId = modelId;
@@ -37,6 +41,7 @@ internal sealed class BedrockChatCompletionClient
         this._ioService = clientService.GetIOService(modelId);
         this._modelProvider = clientService.GetModelProvider(modelId);
         this._clientUtilities = new BedrockClientUtilities();
+        this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
     /// <summary>
     /// Generates a chat message based on the provided chat history and execution settings.
@@ -75,7 +80,7 @@ internal sealed class BedrockChatCompletionClient
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"ERROR: Can't converse with '{this._modelId}'. Reason: {ex.Message}");
+            this._logger.LogError(ex, "Can't converse with '{ModelId}'. Reason: {Error}", this._modelId, ex.Message);
             if (activity is not null)
             {
                 activity.SetError(ex);
@@ -161,7 +166,7 @@ internal sealed class BedrockChatCompletionClient
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"ERROR: Can't converse stream with '{this._modelId}'. Reason: {ex.Message}");
+            this._logger.LogError(ex, "Can't converse stream with '{ModelId}'. Reason: {Error}", this._modelId, ex.Message);
             if (activity is not null)
             {
                 activity.SetError(ex);

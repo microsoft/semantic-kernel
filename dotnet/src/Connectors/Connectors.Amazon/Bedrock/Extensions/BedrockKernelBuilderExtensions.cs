@@ -3,6 +3,7 @@
 using Amazon.BedrockRuntime;
 using Connectors.Amazon.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Services;
@@ -27,11 +28,12 @@ public static class BedrockKernelBuilderExtensions
         string modelId,
         IAmazonBedrockRuntime bedrockApi)
     {
-        builder.Services.AddSingleton<IChatCompletionService>(_ =>
+        builder.Services.AddSingleton<IChatCompletionService>(services =>
         {
             try
             {
-                return new BedrockChatCompletionService(modelId, bedrockApi);
+                var logger = services.GetService<ILoggerFactory>();
+                return new BedrockChatCompletionService(modelId, bedrockApi, logger);
             }
             catch (Exception ex)
             {
@@ -53,13 +55,14 @@ public static class BedrockKernelBuilderExtensions
         string modelId)
     {
         // Add IAmazonBedrockRuntime service client to the DI container
-        builder.Services.AddAWSService<IAmazonBedrockRuntime>();
+        builder.Services.TryAddAWSService<IAmazonBedrockRuntime>();
         builder.Services.AddSingleton<IChatCompletionService>(services =>
         {
             try
             {
                 var bedrockRuntime = services.GetRequiredService<IAmazonBedrockRuntime>();
-                return new BedrockChatCompletionService(modelId, bedrockRuntime);
+                var logger = services.GetService<ILoggerFactory>();
+                return new BedrockChatCompletionService(modelId, bedrockRuntime, logger);
             }
             catch (Exception ex)
             {
@@ -81,11 +84,12 @@ public static class BedrockKernelBuilderExtensions
         string modelId,
         IAmazonBedrockRuntime bedrockApi)
     {
-        builder.Services.AddSingleton<ITextGenerationService>(_ =>
+        builder.Services.AddSingleton<ITextGenerationService>(services =>
         {
             try
             {
-                return new BedrockTextGenerationService(modelId, bedrockApi);
+                var logger = services.GetService<ILoggerFactory>();
+                return new BedrockTextGenerationService(modelId, bedrockApi, logger);
             }
             catch (Exception ex)
             {
@@ -106,13 +110,14 @@ public static class BedrockKernelBuilderExtensions
         string modelId)
     {
         // Add IAmazonBedrockRuntime service client to the DI container
-        builder.Services.AddAWSService<IAmazonBedrockRuntime>();
+        builder.Services.TryAddAWSService<IAmazonBedrockRuntime>();
         builder.Services.AddSingleton<ITextGenerationService>(services =>
         {
             try
             {
+                var logger = services.GetService<ILoggerFactory>();
                 var bedrockRuntime = services.GetRequiredService<IAmazonBedrockRuntime>();
-                return new BedrockTextGenerationService(modelId, bedrockRuntime);
+                return new BedrockTextGenerationService(modelId, bedrockRuntime, logger);
             }
             catch (Exception ex)
             {

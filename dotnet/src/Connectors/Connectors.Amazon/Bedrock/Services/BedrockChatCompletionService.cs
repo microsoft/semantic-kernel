@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Amazon.BedrockRuntime;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Services;
@@ -20,9 +21,10 @@ public class BedrockChatCompletionService : IChatCompletionService
     /// </summary>
     /// <param name="modelId">The model to be used for chat completion.</param>
     /// <param name="bedrockApi">The IAmazonBedrockRuntime object to be used for DI.</param>
-    public BedrockChatCompletionService(string modelId, IAmazonBedrockRuntime bedrockApi)
+    /// <param name="loggerFactory">Logger.</param>
+    public BedrockChatCompletionService(string modelId, IAmazonBedrockRuntime bedrockApi, ILoggerFactory? loggerFactory = null)
     {
-        this._chatCompletionClient = new BedrockChatCompletionClient(modelId, bedrockApi);
+        this._chatCompletionClient = new BedrockChatCompletionClient(modelId, bedrockApi, loggerFactory);
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 

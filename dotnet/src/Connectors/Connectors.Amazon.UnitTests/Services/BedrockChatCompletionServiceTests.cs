@@ -3,6 +3,7 @@
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Endpoints;
+using Castle.Core.Logging;
 using Connectors.Amazon.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -358,6 +359,7 @@ public class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "anthropic.claude-chat-completion";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var mockLogger = new Mock<ILogger>();
         var executionSettings = new PromptExecutionSettings()
         {
             ModelId = modelId,

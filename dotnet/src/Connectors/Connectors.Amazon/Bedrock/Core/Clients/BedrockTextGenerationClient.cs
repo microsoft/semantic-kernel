@@ -8,6 +8,8 @@ using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Connectors.Amazon.Bedrock.Core;
 using Connectors.Amazon.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core;
@@ -23,14 +25,16 @@ internal sealed class BedrockTextGenerationClient
     private readonly IBedrockModelIOService _ioService;
     private readonly BedrockClientUtilities _clientUtilities;
     private Uri? _textGenerationEndpoint;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Builds the client object and registers the model input-output service given the user's passed in model ID.
     /// </summary>
     /// <param name="modelId"></param>
     /// <param name="bedrockApi"></param>
+    /// <param name="loggerFactory"></param>
     /// <exception cref="ArgumentException"></exception>
-    public BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockApi)
+    public BedrockTextGenerationClient(string modelId, IAmazonBedrockRuntime bedrockApi, ILoggerFactory? loggerFactory = null)
     {
         var clientService = new BedrockClientIOService();
         this._modelId = modelId;
@@ -38,6 +42,7 @@ internal sealed class BedrockTextGenerationClient
         this._ioService = clientService.GetIOService(modelId);
         this._modelProvider = clientService.GetModelProvider(modelId);
         this._clientUtilities = new BedrockClientUtilities();
+        this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }
 
     internal async Task<IReadOnlyList<TextContent>> InvokeBedrockModelAsync(
@@ -71,7 +76,7 @@ internal sealed class BedrockTextGenerationClient
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"ERROR: Can't invoke '{this._modelId}'. Reason: {ex.Message}");
+            this._logger.LogError(ex, "Can't invoke with '{ModelId}'. Reason: {Error}", this._modelId, ex.Message);
             if (activity is not null)
             {
                 activity.SetError(ex);
@@ -127,7 +132,7 @@ internal sealed class BedrockTextGenerationClient
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"ERROR: Can't invoke '{this._modelId}'. Reason: {ex.Message}");
+            this._logger.LogError(ex, "Can't invoke with '{ModelId}'. Reason: {Error}", this._modelId, ex.Message);
             if (activity is not null)
             {
                 activity.SetError(ex);
