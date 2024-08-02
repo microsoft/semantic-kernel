@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "description": "Translate the input into a language of your choice",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 2000,
+      "temperature": 0.7,
+      "top_p": 0.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0,
+      "stop_sequences": [
+        "[done]"
+      ]
+    }
+  },
+  "input_variables": [
+    {
+      "name": "input",
+      "description": "Text to translate",
+      "default": ""
+    },
+      {
+      "name": "language",
+      "description": "Language to translate to",
+      "default": ""
+    }
+  ]
+}

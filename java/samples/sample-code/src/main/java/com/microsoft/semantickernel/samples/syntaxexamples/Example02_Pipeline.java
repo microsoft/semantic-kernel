@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
  * Demonstrates running a pipeline (a sequence of functions) over some input.
  */
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class Example02_Pipeline {
     public static void main(String[] args) {
         Kernel kernel = SKBuilders.kernel().build();

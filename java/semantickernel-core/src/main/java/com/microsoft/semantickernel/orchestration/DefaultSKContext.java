@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.SKBuilders;
 <<<<<<< HEAD
 =======
 import com.microsoft.semantickernel.memory.NullMemory;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import javax.annotation.Nullable;
@@ -19,7 +19,7 @@ public class DefaultSKContext extends AbstractSKContext {
     }
 
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     public DefaultSKContext(ContextVariables variables) {
         super(variables);
     }
@@ -58,7 +58,7 @@ public class DefaultSKContext extends AbstractSKContext {
 
         @Override
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         public SKContext build() {
             if (variables == null) {
                 variables = SKBuilders.variables().build();

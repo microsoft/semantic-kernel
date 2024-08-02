@@ -9,17 +9,26 @@ import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISettings;
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.settings.SettingsMap;
+<<<<<<< AI
 =======
+=======
+>>>>>>> main
 import com.microsoft.semantickernel.connectors.ai.openai.util.SettingsMap;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+<<<<<<< AI
+=======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
@@ -27,7 +36,10 @@ import java.time.Duration;
 
 import static com.microsoft.semantickernel.SamplesConfig.DEFAULT_PROPERTIES_LOCATIONS;
 
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
 /**
  * Demonstrates customizing the configuration of the Open AI client.
  * <p>
@@ -35,8 +47,11 @@ import static com.microsoft.semantickernel.SamplesConfig.DEFAULT_PROPERTIES_LOCA
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for endpoint and credential configuration.
  */
+<<<<<<< AI
+=======
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class Example08_RetryHandler {
 
     public static void main(String[] args) throws ConfigurationException {

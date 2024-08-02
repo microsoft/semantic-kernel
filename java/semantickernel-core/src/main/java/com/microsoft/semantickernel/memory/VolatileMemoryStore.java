@@ -97,6 +97,7 @@ public class VolatileMemoryStore implements MemoryStore {
                 () -> {
                     Map<String, MemoryRecord> collection =
                             _store.computeIfAbsent(collectionName, k -> new ConcurrentHashMap<>());
+                    Map<String, MemoryRecord> collection = getCollection(collectionName);
                     Set<String> keys = new HashSet<>();
                     records.forEach(
                             record -> {

@@ -11,16 +11,24 @@ import com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAICh
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 
 /**
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
  * Demonstrates the use of Semantic Kernel with OpenAI ChatGPT API
  * <p>
  * Refer to the <a href=
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
+<<<<<<< AI
+ * The following example shows how to use Semantic Kernel with OpenAI ChatGPT
+ * API
+=======
 =======
  * The following example shows how to use Semantic Kernel with OpenAI ChatGPT
  * API
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
  */
 public class Example17_ChatGPT {
 

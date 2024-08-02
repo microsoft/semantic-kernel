@@ -8,6 +8,9 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
+<<<<<<< AI
+import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
+=======
 <<<<<<< HEAD
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 =======
@@ -22,6 +25,7 @@ import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 >>>>>>> origin/main-auto-tune
+>>>>>>> main
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceCollection;
 import com.microsoft.semantickernel.services.AIServiceSelection;
@@ -164,8 +168,11 @@ public class Kernel {
     }
 
     /**
+<<<<<<< AI
+=======
 <<<<<<< main
 <<<<<<< HEAD
+>>>>>>> main
      * Register a semantic function on this kernel
 =======
      * Invokes a Prompt.
@@ -181,9 +188,12 @@ public class Kernel {
     }
 
     /**
+<<<<<<< AI
+=======
 <<<<<<< main
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
      * Get a completion function builder, functions created with this builder will be registered on
      * the kernel
 =======

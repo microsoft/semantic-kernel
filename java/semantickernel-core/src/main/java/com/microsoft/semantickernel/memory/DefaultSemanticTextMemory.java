@@ -107,7 +107,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
     }
 
     @Override
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     public Mono<MemoryQueryResult> getAsync(String collection, String key, boolean withEmbedding) {
         return _storage.getAsync(collection, key, withEmbedding)
                 .map(record -> new MemoryQueryResult(record.getMetadata(), 1d));
@@ -148,7 +148,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
             float minRelevanceScore,
 =======
             double minRelevanceScore,
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
             boolean withEmbeddings) {
 
         // TODO: break this up into smaller methods

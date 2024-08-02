@@ -25,7 +25,7 @@ import java.io.IOException;
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
  */
 public class Example03_SemanticFunctionInline {
 
@@ -110,7 +110,7 @@ public class Example03_SemanticFunctionInline {
         String prompt = """
 =======
         String propmt = """
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                 {{$input}}
 
                 Give me the TLDR in 5 words.
@@ -131,7 +131,7 @@ public class Example03_SemanticFunctionInline {
         inlineFunction(kernel, prompt, "tldr", text);
 =======
         inlineFunction(kernel, propmt, "tldr", text);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 
     public static void run(OpenAIAsyncClient client) throws IOException {

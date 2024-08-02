@@ -61,7 +61,10 @@ public class SKBuilders {
     }
 
     public static PromptTemplateConfig.CompletionConfigBuilder completionConfig() {
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
         return BuildersSingleton.INST.getInstance(
                 PromptTemplateConfig.CompletionConfigBuilder.class);
     }
@@ -71,14 +74,20 @@ public class SKBuilders {
             ChatCompletion.Builder<ChatHistoryType> chatCompletion() {
         return (ChatCompletion.Builder<ChatHistoryType>)
                 BuildersSingleton.INST.getInstance(ChatCompletion.Builder.class);
+<<<<<<< AI
 =======
+=======
+>>>>>>> main
         return BuildersSingleton.INST.getInstance(PromptTemplateConfig.CompletionConfigBuilder.class);
     }
 
     @SuppressWarnings("unchecked")
     public static <ChatHistoryType extends ChatHistory> ChatCompletion.Builder<ChatHistoryType> chatCompletion() {
         return (ChatCompletion.Builder<ChatHistoryType>)BuildersSingleton.INST.getInstance(ChatCompletion.Builder.class);
+<<<<<<< AI
+=======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 
     public static MemoryStore.Builder memoryStore() {

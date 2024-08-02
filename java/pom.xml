@@ -6,7 +6,10 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
+<<<<<<< AI
+=======
     <version>1.1.6-SNAPSHOT</version>
+>>>>>>> main
     <version>0.2.10-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -77,6 +80,12 @@
         <module>extensions/semantickernel-planners</module>
         <module>extensions/semantickernel-gpt3-tokenizer</module>
         <module>extensions/semantickernel-settings-loader</module>
+<<<<<<< AI
+
+        <module>extensions/semantickernel-planners</module>
+        <module>extensions/semantickernel-gpt3-tokenizer</module>
+=======
+>>>>>>> main
 
         <module>aiservices/openai</module>
         <module>aiservices/google</module>

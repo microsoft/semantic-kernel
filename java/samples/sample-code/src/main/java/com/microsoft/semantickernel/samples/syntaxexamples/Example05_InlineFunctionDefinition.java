@@ -14,7 +14,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
 /**
  * Demonstrates using prompt templates to define functions.
  * <p>
@@ -37,7 +40,10 @@ public class Example05_InlineFunctionDefinition {
 
     // Function defined using few-shot design pattern
     String functionDefinition = """
+<<<<<<< AI
 =======
+=======
+>>>>>>> main
 public class Example05_InlineFunctionDefinition {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();
@@ -53,7 +59,10 @@ public class Example05_InlineFunctionDefinition {
 
         // Function defined using few-shot design pattern
         String functionDefinition = """
+<<<<<<< AI
+=======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                     Generate a creative reason or excuse for the given event.
                     Be creative and be funny. Let your imagination run wild.
                     
@@ -66,7 +75,10 @@ public class Example05_InlineFunctionDefinition {
                     Event: {{$input}}
                 """.stripIndent();
 
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
     // Create function via builder
     var excuseFunction = SKBuilders
         .completionFunctions()
@@ -102,7 +114,10 @@ public class Example05_InlineFunctionDefinition {
 
     System.out.println(fixedFunction.invokeAsync().block().getResult());
   }
+<<<<<<< AI
 =======
+=======
+>>>>>>> main
         // Create function via builder
         var excuseFunction = SKBuilders
                 .completionFunctions()
@@ -138,5 +153,8 @@ public class Example05_InlineFunctionDefinition {
 
         System.out.println(fixedFunction.invokeAsync().block().getResult());
     }
+<<<<<<< AI
+=======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 }

@@ -65,11 +65,16 @@ public interface ContextVariables extends Buildable {
         /**
          * Builds an instance with the given variables
          *
+<<<<<<< AI
+         * @param map Existing variables
+         * @param map Existing varibles
+=======
 <<<<<<< HEAD
          * @param map Existing variables
 =======
          * @param map Existing varibles
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
          * @return an instantiation of ContextVariables
          */
         Builder withVariables(Map<String, String> map);

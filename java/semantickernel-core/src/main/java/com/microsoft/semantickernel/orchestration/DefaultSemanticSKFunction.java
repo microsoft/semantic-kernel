@@ -8,7 +8,7 @@ import com.microsoft.semantickernel.skilldefinition.ParameterView;
 <<<<<<< HEAD
 import java.util.Collections;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import java.util.List;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -39,7 +39,7 @@ public abstract class DefaultSemanticSKFunction<RequestConfiguration>
                 kernelSkillsSupplier);
 =======
         super(parameters, skillName, functionName, description, kernelSkillsSupplier);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 
     @Override

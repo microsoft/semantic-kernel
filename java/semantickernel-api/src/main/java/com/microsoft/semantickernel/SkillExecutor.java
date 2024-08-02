@@ -60,16 +60,25 @@ public interface SkillExecutor {
      * @param skillName name of the skill
      * @param functionName name of the function
      * @return the function collection
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
      * @throws KernelException if it is not possible to correctly load the skill
      */
     ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName) throws KernelException;
+<<<<<<< AI
+     */
+    ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName);
+=======
 =======
      */
     ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName);
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
     /**
      * Imports a skill using clazz.getResourceAsStream to load skills from the classpath.
@@ -78,16 +87,25 @@ public interface SkillExecutor {
      * @param functionName name of the function
      * @param clazz class that contains the skill
      * @return the function collection
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
      * @throws KernelException if it is not possible to correctly load the skill
      */
     ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) throws KernelException;
+<<<<<<< AI
+     */
+    ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz);
+=======
 =======
      */
     ReadOnlyFunctionCollection importSkillFromResources(
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz);
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
     /**
      * Imports the native functions annotated on the given object as a skill.

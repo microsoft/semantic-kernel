@@ -18,11 +18,16 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
+<<<<<<< AI
+ * Demonstrates a custom implementation of {@code MemoryStore} that is read only.
+ * This sample provides a custom implementation of {@code MemoryStore} that is read only.
+=======
 <<<<<<< HEAD
  * Demonstrates a custom implementation of {@code MemoryStore} that is read only.
 =======
  * This sample provides a custom implementation of {@code MemoryStore} that is read only.
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
  * In this sample, the data is stored in a JSON String and deserialized into an
  * {@code MemoryRecord[]}. For this specific sample, the implementation
  * of {@code MemoryStore}  has a single collection, and thus does not need to be named.
@@ -52,11 +57,16 @@ public class Example25_ReadOnlyMemoryStore
                 });
 
         mono = mono.then(
+<<<<<<< AI
+                store.getNearestMatchAsync("collection", embedding, 0f, true)
+                store.getNearestMatchAsync("collection", embedding, 0.0, true)
+=======
 <<<<<<< HEAD
                 store.getNearestMatchAsync("collection", embedding, 0f, true)
 =======
                 store.getNearestMatchAsync("collection", embedding, 0.0, true)
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                         .mapNotNull(result -> {
                                     Float similarity = result.getT2().floatValue();
                                     MemoryRecord memoryRecord = result.getT1();
@@ -138,11 +148,16 @@ public class Example25_ReadOnlyMemoryStore
         }
 
         @Override
+<<<<<<< AI
+        public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(String collectionName, Embedding embedding, float minRelevanceScore,
+        public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(String collectionName, Embedding embedding, double minRelevanceScore,
+=======
 <<<<<<< HEAD
         public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(String collectionName, Embedding embedding, float minRelevanceScore,
 =======
         public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(String collectionName, Embedding embedding, double minRelevanceScore,
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                                                                         boolean withEmbedding)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
@@ -166,11 +181,16 @@ public class Example25_ReadOnlyMemoryStore
 
         @Override
         public Mono<Collection<Tuple2<MemoryRecord, Float>>> getNearestMatchesAsync(String collectionName, Embedding embedding, int limit,
+<<<<<<< AI
+            float minRelevanceScore, boolean withEmbeddings)
+            double minRelevanceScore, boolean withEmbeddings)
+=======
 <<<<<<< HEAD
             float minRelevanceScore, boolean withEmbeddings)
 =======
             double minRelevanceScore, boolean withEmbeddings)
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return Mono.justOrEmpty(

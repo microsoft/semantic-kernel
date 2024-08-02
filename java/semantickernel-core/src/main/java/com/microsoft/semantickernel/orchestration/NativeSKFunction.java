@@ -8,7 +8,7 @@ import com.microsoft.semantickernel.ai.AIException;
 <<<<<<< HEAD
 import com.microsoft.semantickernel.ai.AIException.ErrorCodes;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -24,7 +24,7 @@ import java.util.Arrays;
 <<<<<<< HEAD
 import java.util.Collections;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,7 +65,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
 =======
             KernelSkillsSupplier skillCollection) {
         super(parameters, skillName, functionName, description, skillCollection);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         // TODO
         // Verify.NotNull(delegateFunction, "The function delegate is empty");
         // Verify.ValidSkillName(skillName);
@@ -97,10 +97,11 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
     }
 
     private static class MethodDetails {
+
 <<<<<<< HEAD
 
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         public final boolean hasSkFunctionAttribute;
         public final SKNativeTask<SKContext> function;
         public final List<ParameterView> parameters;
@@ -110,7 +111,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
         private final String returnType;
         private final String returnDescription;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
         private MethodDetails(
                 boolean hasSkFunctionAttribute,
@@ -123,7 +124,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                 String returnDescription) {
 =======
                 String description) {
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
             this.hasSkFunctionAttribute = hasSkFunctionAttribute;
             this.function = function;
             this.parameters = parameters;
@@ -141,7 +142,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
         public String getReturnDescription() {
             return returnDescription;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         }
     }
 
@@ -166,7 +167,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                 new ParameterView("return", methodDetails.getReturnDescription(), "");
 
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         return new NativeSKFunction(
                 methodDetails.function,
                 methodDetails.parameters,
@@ -176,7 +177,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
 <<<<<<< HEAD
                 Collections.singletonList(returnParam),
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                 kernelSkillsSupplier);
     }
 
@@ -228,7 +229,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                 returnDescription);
 =======
         return new MethodDetails(hasSkFunctionAttribute, function, parameters, name, description);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 
     private static List<ParameterView> getParameters(Method method) {
@@ -355,7 +356,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                                             } catch (IllegalAccessException
                                                     | InvocationTargetException e) {
                                                 throw new RuntimeException(e.getCause());
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                                             }
                                         })
                                 .subscribeOn(Schedulers.boundedElastic()));

@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.SamplesConfig;
 =======
 import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.SKBuilders;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
@@ -103,5 +103,5 @@ public class Example04_CombineLLMPromptsAndNativeCode {
 
         System.out.println(result.block().getResult());
     }
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 }

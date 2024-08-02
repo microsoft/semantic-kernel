@@ -23,7 +23,7 @@ public class Example29_Tokenizer {
      * If you use Semantic Kernel with other models, the tokenization logic is most probably different,
      * and you should not use the GPT tokenizer.
      */
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     public static void main(String[] args) {
         // Example 1
         String sentence = "Some text on one line";

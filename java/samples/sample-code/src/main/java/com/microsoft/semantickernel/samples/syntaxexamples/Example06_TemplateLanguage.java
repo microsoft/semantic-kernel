@@ -10,7 +10,10 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
 /**
  * Show how to invoke a Native Function written in Java
  * from a Semantic Function written in natural language
@@ -20,13 +23,19 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
  * README</a> for configuring your environment to run the examples.
  */
 public class Example06_TemplateLanguage {
+<<<<<<< AI
 =======
+=======
+>>>>>>> main
 public class Example06_TemplateLanguage {
     /// <summary>
     /// Show how to invoke a Native Function written in C#
     /// from a Semantic Function written in natural language
     /// </summary>
+<<<<<<< AI
+=======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
     public static void main(String[] args) throws ConfigurationException {
         System.out.println("======== TemplateLanguage ========");

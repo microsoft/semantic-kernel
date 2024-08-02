@@ -5,7 +5,10 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
+<<<<<<< AI
+=======
     <version>1.1.6-SNAPSHOT</version>
+>>>>>>> main
     <version>0.2.10-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -68,7 +71,10 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
+<<<<<<< AI
+=======
                 <artifactId>semantickernel-aiservices-huggingface</artifactId>
+>>>>>>> main
                 <artifactId>semantickernel-connectors-memory-postgresql</artifactId>
                 <artifactId>aiservices-huggingface</artifactId>
                 <version>${project.version}</version>
@@ -87,15 +93,24 @@
                 <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
                 <version>${project.version}</version>
             </dependency>
+<<<<<<< AI
+                <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+=======
+>>>>>>> main
 
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
                 <version>1.0.0-beta.5</version>
+<<<<<<< AI
+=======
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
                 <version>1.0.0-beta.8</version>
+>>>>>>> main
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
@@ -146,6 +161,8 @@
                 <groupId>com.azure</groupId>
                 <artifactId>azure-search-documents</artifactId>
                 <version>11.6.0-beta.9</version>
+<<<<<<< AI
+=======
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${com.fasterxml.jackson.core.version}</version>
@@ -155,6 +172,7 @@
                 <groupId>com.github.jknack</groupId>
                 <artifactId>handlebars</artifactId>
                 <version>4.3.1</version>
+>>>>>>> main
             </dependency>
             <dependency>
                 <groupId>jakarta.inject</groupId>
@@ -191,6 +209,8 @@
                 <artifactId>postgresql</artifactId>
                 <version>42.6.1</version>
             </dependency>
+<<<<<<< AI
+=======
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
                 <version>1.11.0</version>
@@ -201,6 +221,7 @@
                 <artifactId>google-cloud-vertexai</artifactId>
                 <version>1.1.0</version>
             </dependency>
+>>>>>>> main
         </dependencies>
     </dependencyManagement>
 

@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
  * README</a> for configuring your environment to run the examples.
  */
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class SequentialPlanner_AnswerQuestion {
 
     public static class InformationFinder {

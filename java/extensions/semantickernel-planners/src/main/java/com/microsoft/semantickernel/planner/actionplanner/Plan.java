@@ -14,7 +14,7 @@ import com.microsoft.semantickernel.orchestration.WritableContextVariables;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.PlanningException.ErrorCodes;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -25,7 +25,7 @@ import java.util.Arrays;
 <<<<<<< HEAD
 import java.util.Collections;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -70,7 +70,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                 kernelSkillsSupplier);
 =======
         super(new ArrayList<>(), Plan.class.getName(), "", goal, kernelSkillsSupplier);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         this.state = state;
     }
 
@@ -91,7 +91,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 <<<<<<< HEAD
                 formReturnParameters(functionOutputs),
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                 kernelSkillsSupplier);
 
         this.parameters = null;
@@ -114,7 +114,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 <<<<<<< HEAD
                 formReturnParameters(functionOutputs),
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                 kernelSkillsSupplier);
         this.parameters = parameters;
         this.function = function;
@@ -128,7 +128,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     }
 
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     public Plan(
             SKFunction<?> function,
             List<String> functionOutputs,
@@ -372,7 +372,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                                                         .build());
                                     });
                 });
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 
     public Mono<SKContext> invokeAsync(

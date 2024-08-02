@@ -2,8 +2,11 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+<<<<<<< AI
+=======
 <<<<<<< main
 <<<<<<< HEAD
+>>>>>>> main
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.builders.Buildable;
@@ -16,6 +19,9 @@ import reactor.util.annotation.Nullable;
 
 /** Prompt template configuration */
 @JsonIgnoreProperties(ignoreUnknown = true)
+<<<<<<< AI
+import com.fasterxml.jackson.annotation.JsonProperty;
+=======
 =======
 import com.fasterxml.jackson.annotation.JsonProperty;
 =======
@@ -26,17 +32,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 >>>>>>> origin/main-auto-tune
+>>>>>>> main
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+<<<<<<< AI
+=======
 <<<<<<< main
+>>>>>>> main
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import reactor.util.annotation.Nullable;
 
 /** Prompt template configuration */
+<<<<<<< AI
+=======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 =======
 import java.util.Map;
@@ -48,6 +60,7 @@ import javax.annotation.Nullable;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 >>>>>>> origin/main-auto-tune
+>>>>>>> main
 public class PromptTemplateConfig {
 
     /**
@@ -95,8 +108,11 @@ public class PromptTemplateConfig {
             Collections.emptyMap());
     }
 
+<<<<<<< AI
+=======
 <<<<<<< main
 <<<<<<< HEAD
+>>>>>>> main
     public int getSchema() {
         return schema;
 =======
@@ -175,9 +191,12 @@ public class PromptTemplateConfig {
             outputVariable,
             executionSettings);
     }
+<<<<<<< AI
+=======
 <<<<<<< main
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
     /** Builder for CompletionConfig */
     public static class CompletionConfigBuilder implements SemanticKernelBuilder<CompletionConfig> {
@@ -444,12 +463,18 @@ public class PromptTemplateConfig {
 
 <<<<<<< main
         public SemanticKernelBuilder<CompletionConfig> builder() {
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
             return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
         }
 
         public List<String> getStopSequences() {
             return Collections.unmodifiableList(stopSequences);
+<<<<<<< AI
+          return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
+=======
 =======
           return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
@@ -464,6 +489,7 @@ public class PromptTemplateConfig {
             this.template = template;
             return this;
 >>>>>>> origin/main-auto-tune
+>>>>>>> main
         }
 
         /**

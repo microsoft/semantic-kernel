@@ -132,7 +132,7 @@ public class DefaultKernel implements Kernel {
 
       return this.createSemanticFunction(skillName, functionName, functionConfig);
     }*/
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
     /// <summary>
     /// Import a set of functions from the given skill. The functions must have the `SKFunction`
@@ -254,7 +254,7 @@ public class DefaultKernel implements Kernel {
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) throws KernelException {
 =======
             String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) {
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         Map<String, SemanticFunctionConfig> skills =
                 KernelExtensions.importSemanticSkillFromResourcesDirectory(
                         pluginDirectory, skillName, functionName, clazz, promptTemplateEngine);

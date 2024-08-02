@@ -32,7 +32,7 @@ import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
 
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class Example05_UsingThePlanner {
 
     public static SequentialPlanner getPlanner(Kernel kernel) {
