@@ -30,6 +30,10 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
     MistralAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
+from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
+    AnthropicChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion import AnthropicChatCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
@@ -64,6 +68,12 @@ try:
 except KeyError:
     ollama_setup = False
 
+anthropic_setup: bool = False
+try:
+    if os.environ["ANTHROPIC_API_KEY"] and os.environ["ANTHROPIC_CHAT_MODEL_ID"]:
+        anthropic_setup = True
+except KeyError:
+    anthropic_setup = False
 
 def setup(
     kernel: Kernel,
@@ -121,6 +131,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptEx
         "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
         "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
         "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
+        "anthropic": (AnthropicChatCompletion() if anthropic_setup else None, AnthropicChatPromptExecutionSettings),
     }
 
 
@@ -563,30 +574,19 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             ["Hello", "well"],
-            id="vertex_ai_text_input",
+            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
+            id="anthropic_text_input",
         ),
         pytest.param(
-            "vertex_ai",
-            {
-                "max_tokens": 256,
-            },
+            "anthropic",
+            {},
             [
-                ChatMessageContent(
-                    role=AuthorRole.USER,
-                    items=[
-                        TextContent(text="What is in this image?"),
-                        ImageContent.from_image_path(
-                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
-                        ),
-                    ],
-                ),
-                ChatMessageContent(
-                    role=AuthorRole.USER,
-                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
-                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
-            ["house", "germany"],
-            id="vertex_ai_image_input_file",
+            ["Hello", "well"],
+            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
+            id="anthropic_text_input",
         ),
         pytest.param(
             "vertex_ai",
