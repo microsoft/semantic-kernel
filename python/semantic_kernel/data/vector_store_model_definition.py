@@ -86,6 +86,8 @@ class VectorStoreRecordDefinition:
                     "Data field with embedding property name must refer to a existing vector field."
                 )
             if isinstance(value, VectorStoreRecordKeyField):
+                if self.key_field_name != "":
+                    raise VectorStoreModelException("Memory record definition must have exactly one key field.")
                 self.key_field_name = name
         if not self.key_field_name:
-            raise VectorStoreModelException("Memory record definition must have a key field.")
+            raise VectorStoreModelException("Memory record definition must have exactly one key field.")

@@ -19,8 +19,9 @@ def vectorstoremodel(
 
     This decorator makes a class a vector store model.
     There are three things being checked:
-    - The class must have at least one field with a VectorStoreRecordField annotation.
-    - The class must have one field with the VectorStoreRecordKeyField annotation.
+    - The class must have at least one field with a annotation,
+        of type VectorStoreRecordKeyField, VectorStoreRecordDataField or VectorStoreRecordVectorField.
+    - The class must have exactly one field with the VectorStoreRecordKeyField annotation.
 
     Optionally, when there are VectorStoreRecordDataFields that specify a embedding property name,
     there must be a corresponding VectorStoreRecordVectorField with the same name.
