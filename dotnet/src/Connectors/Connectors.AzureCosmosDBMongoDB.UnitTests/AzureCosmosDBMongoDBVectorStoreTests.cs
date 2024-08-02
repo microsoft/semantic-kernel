@@ -13,6 +13,9 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 
+/// <summary>
+/// Unit tests for <see cref="AzureCosmosDBMongoDBVectorStore"/> class.
+/// </summary>
 public sealed class AzureCosmosDBMongoDBVectorStoreTests
 {
     private readonly Mock<IMongoDatabase> _mockMongoDatabase = new();
@@ -73,13 +76,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
     public async Task ListCollectionNamesReturnsCollectionNamesAsync()
     {
         // Arrange
-        var cursorResponses = new Queue<bool>([true, false]);
         var expectedCollectionNames = new List<string> { "collection-1", "collection-2", "collection-3" };
 
         var mockCursor = new Mock<IAsyncCursor<string>>();
         mockCursor
-            .Setup(l => l.MoveNextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() => cursorResponses.Dequeue());
+            .SetupSequence(l => l.MoveNextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true)
+            .ReturnsAsync(false);
 
         mockCursor
             .Setup(l => l.Current)

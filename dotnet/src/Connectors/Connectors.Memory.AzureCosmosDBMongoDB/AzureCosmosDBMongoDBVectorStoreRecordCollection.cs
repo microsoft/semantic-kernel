@@ -203,7 +203,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         return this.RunOperationAsync(OperationName, async () =>
         {
-            var result = await this._mongoCollection
+            await this._mongoCollection
                 .ReplaceOneAsync(this.GetFilterById(key), storageModel, replaceOptions, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -308,14 +308,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             }
         }
 
-        var query = this._mongoCollection.Find(filter);
+        var findOptions = projectionDefinition is not null ?
+            new FindOptions<BsonDocument> { Projection = projectionDefinition } :
+            null;
 
-        if (projectionDefinition is not null)
-        {
-            query = query.Project(projectionDefinition);
-        }
-
-        return await query.ToCursorAsync(cancellationToken).ConfigureAwait(false);
+        return await this._mongoCollection.FindAsync(filter, findOptions, cancellationToken).ConfigureAwait(false);
     }
 
     private FilterDefinition<BsonDocument> GetFilterById(string id)
