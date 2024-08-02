@@ -5,8 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Defines the distance functions that can be used to compare vectors.
+/// Defines a list of well known distance functions that can be used to compare vectors.
 /// </summary>
+/// <remarks>
+/// Not all Vector Store connectors support all distance functions and some connectors may
+/// support additional distance functions that are not defined here. See the documentation
+/// for each connector for more information on what is supported.
+/// </remarks>
 [Experimental("SKEXP0001")]
 public static class DistanceFunction
 {

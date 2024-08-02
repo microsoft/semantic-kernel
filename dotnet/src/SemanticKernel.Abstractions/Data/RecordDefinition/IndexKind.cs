@@ -5,8 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Defines the index types that can be used to index vectors.
+/// Defines a list of well known index types that can be used to index vectors.
 /// </summary>
+/// <remarks>
+/// Not all Vector Store connectors support all index types and some connectors may
+/// support additional index types that are not defined here. See the documentation
+/// for each connector for more information on what is supported.
+/// </remarks>
 [Experimental("SKEXP0001")]
 public static class IndexKind
 {
