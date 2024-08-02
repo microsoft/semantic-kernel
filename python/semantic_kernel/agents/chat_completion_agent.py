@@ -64,11 +64,12 @@ class ChatCompletionAgent(Agent):
 
         args: dict[str, Any] = {
             "service_id": service_id,
-            "name": name,
             "description": description,
             "instructions": instructions,
             "execution_settings": execution_settings,
         }
+        if name is not None:
+            args["name"] = name
         if id is not None:
             args["id"] = id
         if kernel is not None:
