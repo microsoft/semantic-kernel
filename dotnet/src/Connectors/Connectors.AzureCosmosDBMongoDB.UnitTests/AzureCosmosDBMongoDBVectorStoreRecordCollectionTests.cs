@@ -423,10 +423,12 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
 
     #region private
 
-    private class TestModel
+#pragma warning disable CA1812
+    private sealed class TestModel
     {
         public string? Id { get; set; }
     }
+#pragma warning restore CA1812
 
     #endregion
 }
