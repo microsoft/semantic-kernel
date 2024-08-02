@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.SemanticKernel;
 
 #pragma warning disable SKEXP0001

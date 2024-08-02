@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel;
 
 namespace AIModelRouter;
 
-internal partial class Program
+internal sealed partial class Program
 {
     private static async Task Main(string[] args)
     {
