@@ -50,15 +50,15 @@ internal static class AssistantMessageFactory
                 {
                     yield return MessageContent.FromImageUrl(imageContent.Uri);
                 }
-                //else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
-                //{
-                //    SDK BUG - BAD SIGNATURE (https://github.com/openai/openai-dotnet/issues/135)
-                //        URI does not accept the format used for `DataUri`
-                //        Approach is inefficient anyway...
-                //    yield return MessageContent.FromImageUrl(new Uri(imageContent.DataUri!));
-                //}
-            }
-            else if (content is FileReferenceContent fileContent)
+                else if (string.IsNullOrWhiteSpace(imageContent.DataUri))
+                {
+                    //SDK BUG - BAD SIGNATURE (https://github.com/openai/openai-dotnet/issues/135)
+                    //    URI does not accept the format used for `DataUri`
+                    //    Approach is inefficient anyway...
+                    //yield return MessageContent.FromImageUrl(new Uri(imageContent.DataUri!));
+                    throw new KernelException($"{nameof(ImageContent.DataUri)} not supported for assistant input.");
+                }
+                else if (content is FileReferenceContent fileContent)
             {
                 yield return MessageContent.FromImageFileId(fileContent.FileId);
             }
