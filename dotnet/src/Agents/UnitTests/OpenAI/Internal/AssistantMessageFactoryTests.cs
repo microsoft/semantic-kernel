@@ -27,7 +27,7 @@ public class AssistantMessageFactoryTests
         // Create options
         MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
-        // Validate
+        // Assert
         Assert.NotNull(options);
         Assert.Empty(options.Metadata);
     }
