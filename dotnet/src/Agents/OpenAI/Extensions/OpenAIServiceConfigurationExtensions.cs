@@ -23,9 +23,5 @@ public static class OpenAIServiceConfigurationExtensions
     /// </summary>
     /// <param name="configuration">The configuration</param>
     public static VectorStoreClient CreateVectorStoreClient(this OpenAIServiceConfiguration configuration)
-    {
-        OpenAIClient client = OpenAIClientFactory.CreateClient(configuration);
-
-        return client.GetVectorStoreClient();
-    }
+        => OpenAIClientFactory.CreateClient(configuration).GetVectorStoreClient();
 }
