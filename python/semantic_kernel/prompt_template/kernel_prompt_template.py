@@ -75,10 +75,8 @@ class KernelPromptTemplate(PromptTemplateBase):
                         # is a named arg block.
                         self._add_if_missing(sub_block.variable.name, seen)
 
-    def _add_if_missing(self, variable_name: str, seen: set | None = None):
+    def _add_if_missing(self, variable_name: str, seen: set):
         # Convert variable_name to lower case to handle case-insensitivity
-        if not seen:
-            seen = set()
         if variable_name and variable_name.lower() not in seen:
             seen.add(variable_name.lower())
             self.prompt_template_config.input_variables.append(InputVariable(name=variable_name))

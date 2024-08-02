@@ -370,7 +370,7 @@ public class SQLiteMemoryStore implements MemoryStore {
         @Override
         public MemoryStore build() {
             return new SQLiteMemoryStore();
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         }
     }
 }

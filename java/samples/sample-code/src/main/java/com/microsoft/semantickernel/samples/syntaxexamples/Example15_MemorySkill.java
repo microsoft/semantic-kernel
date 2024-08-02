@@ -8,16 +8,23 @@ import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.TextMemorySkill;
 import com.microsoft.semantickernel.memory.MemoryStore;
+<<<<<<< AI
+import com.microsoft.semantickernel.memory.VolatileMemoryStore;
+=======
 <<<<<<< HEAD
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
 import java.util.List;
 import java.util.stream.Collectors;
 import reactor.core.publisher.Mono;
@@ -29,13 +36,19 @@ import reactor.core.publisher.Mono;
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
  */
+<<<<<<< AI
 =======
+=======
+>>>>>>> main
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+<<<<<<< AI
+=======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class Example15_MemorySkill {
     private static final String MEMORY_COLLECTION_NAME = "aboutMe";
 
@@ -64,11 +77,16 @@ public class Example15_MemorySkill {
                         .withModelId("text-embedding-ada-002")
                         .build();
 
+<<<<<<< AI
+        MemoryStore memoryStore = new VolatileMemoryStore.Builder().build();
+        MemoryStore memoryStore = SKBuilders.memoryStore().build();
+=======
 <<<<<<< HEAD
         MemoryStore memoryStore = new VolatileMemoryStore.Builder().build();
 =======
         MemoryStore memoryStore = SKBuilders.memoryStore().build();
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
         Kernel kernel = SKBuilders.kernel()
                 .withDefaultAIService(textCompletionService)
@@ -77,10 +95,14 @@ public class Example15_MemorySkill {
                 .build();
 
         // ========= Store memories using the kernel =========
+<<<<<<< AI
+
+=======
 <<<<<<< HEAD
 
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         kernel.getMemory().saveInformationAsync(MEMORY_COLLECTION_NAME, "My name is Andrea", "info1", null, null).block();
         kernel.getMemory().saveInformationAsync(MEMORY_COLLECTION_NAME, "I work as a tourist operator", "info2", null, null).block();
         kernel.getMemory().saveInformationAsync(MEMORY_COLLECTION_NAME, "I've been living in Seattle since 2005", "info3", null, null).block();

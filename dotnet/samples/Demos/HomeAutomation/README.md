@@ -12,7 +12,7 @@ If you have set up those credentials as secrets within Secret Manager or through
 ### To set your secrets with Secret Manager:
 
 ```
-cd dotnet/samples/HouseAutomation
+cd dotnet/samples/Demos/HouseAutomation
 
 dotnet user-secrets init
 

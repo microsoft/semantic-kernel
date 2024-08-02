@@ -24,7 +24,8 @@ logging.basicConfig(level=logging.DEBUG)
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-azure_ai_search_settings = AzureAISearchSettings()
+azure_ai_search_settings = AzureAISearchSettings.create()
+azure_ai_search_settings = azure_ai_search_settings.model_dump()
 
 # This example index has fields "title", "chunk", and "vector".
 # Add fields mapping to the settings.
@@ -42,7 +43,7 @@ azure_ai_search_settings["embeddingDependency"] = {
 azure_ai_search_settings["query_type"] = "vector"
 
 # Create the data source settings
-az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings.model_dump())
+az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
 extra = ExtraBody(data_sources=[az_source])
 service_id = "chat-gpt"
 req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_body=extra)
@@ -50,6 +51,7 @@ req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_bod
 # When using data, use the 2024-02-15-preview API version.
 chat_service = AzureChatCompletion(
     service_id="chat-gpt",
+    api_version="2024-02-15-preview",
 )
 kernel.add_service(chat_service)
 

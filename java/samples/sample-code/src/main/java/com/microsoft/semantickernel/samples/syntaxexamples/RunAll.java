@@ -12,7 +12,7 @@ import java.util.List;
  * README</a> for configuring your environment to run the examples.
  */
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class RunAll {
     public interface MainMethod {
         void run(String[] args) throws Exception;
@@ -41,7 +41,7 @@ public class RunAll {
                 Example51_StepwisePlanner::main
 =======
                 Example33_StreamingChat::main
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         );
 
         mains.forEach(mainMethod -> {

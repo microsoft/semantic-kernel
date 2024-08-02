@@ -20,7 +20,7 @@ import java.util.List;
 <<<<<<< HEAD
 import java.util.UUID;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
@@ -110,7 +110,7 @@ public class DefaultKernelTest {
                         + "Incorporate the style suggestion, if provided: \n"
 =======
                         + "\n"
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                         + "+++++\n"
                         + "\n"
                         + "time travel to dinosaur age\n"
@@ -200,7 +200,7 @@ public class DefaultKernelTest {
             mockChatCompletionResponse(openAIAsyncClient, response);
             mockChatCompletionResponseStreaming(openAIAsyncClient, response);
             mockTextCompletionResponse(openAIAsyncClient, response);
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         }
         return openAIAsyncClient;
     }
@@ -215,7 +215,7 @@ public class DefaultKernelTest {
 <<<<<<< HEAD
         Mockito.when(completions.getId()).thenReturn(UUID.randomUUID().toString());
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
         Mockito.when(
                         openAIAsyncClient.getCompletions(
@@ -300,7 +300,7 @@ public class DefaultKernelTest {
     }
 
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     private static void mockChatCompletionResponse(
             OpenAIAsyncClient openAIAsyncClient,
             Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response) {
@@ -315,7 +315,7 @@ public class DefaultKernelTest {
 <<<<<<< HEAD
         Mockito.when(chatCompletions.getId()).thenReturn(UUID.randomUUID().toString());
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
         ArgumentMatcher<ChatCompletionsOptions> completionMatcher =
                 chatCompletionsOptions ->
@@ -361,7 +361,7 @@ public class DefaultKernelTest {
 <<<<<<< HEAD
         Mockito.when(chatCompletions.getId()).thenReturn(UUID.randomUUID().toString());
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
         ArgumentMatcher<ChatCompletionsOptions> completionMatcher =
                 chatCompletionsOptions ->
@@ -426,7 +426,7 @@ public class DefaultKernelTest {
                 .getCompletions(
                         Mockito.matches(model),
                         Mockito.<CompletionsOptions>argThat(
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                                 completionsOptions ->
                                         completionsOptions.getPrompt().size() == 1
                                                 && completionsOptions
