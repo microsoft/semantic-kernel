@@ -6,7 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// A description of a key property on a record for storage in a vector store.
+/// Defines a key property on a vector store record.
+/// The characteristics defined here will influence how the property is treated by the vector store.
 /// </summary>
 [Experimental("SKEXP0001")]
 public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty

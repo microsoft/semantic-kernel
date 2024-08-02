@@ -5,9 +5,12 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Optional options when calling <see cref="IVectorStoreRecordCollection{TKey, TDataModel}.UpsertAsync"/>.
+/// Options when calling <see cref="IVectorStoreRecordCollection{TKey, TDataModel}.UpsertAsync"/>.
 /// Reserved for future use.
 /// </summary>
+/// <remarks>
+/// This class does not currently include any options, but is added for future extensibility of the API.
+/// </remarks>
 [Experimental("SKEXP0001")]
 public class UpsertRecordOptions
 {
