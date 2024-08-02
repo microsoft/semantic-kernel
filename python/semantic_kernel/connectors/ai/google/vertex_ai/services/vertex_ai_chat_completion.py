@@ -58,6 +58,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
     def __init__(
         self,
         project_id: str | None = None,
+        region: str | None = None,
         gemini_model_id: str | None = None,
         service_id: str | None = None,
         env_file_path: str | None = None,
@@ -69,9 +70,11 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         The following environment variables are used:
         - VERTEX_AI_GEMINI_MODEL_ID
         - VERTEX_AI_PROJECT_ID
+        - VERTEX_AI_REGION
 
         Args:
             project_id (str): The Google Cloud project ID.
+            region (str): The Google Cloud region.
             gemini_model_id (str): The Gemini model ID.
             service_id (str): The Vertex AI service ID.
             env_file_path (str): The path to the environment file.
@@ -80,6 +83,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         try:
             vertex_ai_settings = VertexAISettings.create(
                 project_id=project_id,
+                region=region,
                 gemini_model_id=gemini_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
@@ -145,7 +149,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         self, chat_history: ChatHistory, settings: VertexAIChatPromptExecutionSettings
     ) -> list[ChatMessageContent]:
         """Send a chat request to the Vertex AI service."""
-        vertexai.init(project=self.service_settings.project_id)
+        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
@@ -281,7 +285,7 @@ class VertexAIChatCompletion(VertexAIBase, ChatCompletionClientBase):
         settings: VertexAIChatPromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Send a streaming chat request to the Vertex AI service."""
-        vertexai.init(project=self.service_settings.project_id)
+        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
         model = GenerativeModel(
             self.service_settings.gemini_model_id,
             system_instruction=filter_system_message(chat_history),
