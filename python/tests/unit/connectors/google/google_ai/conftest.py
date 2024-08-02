@@ -59,12 +59,81 @@ def mock_google_ai_chat_completion_response() -> AsyncGenerateContentResponse:
     )
 
 
+@pytest.fixture()
+def mock_google_ai_chat_completion_response_with_tool_call() -> AsyncGenerateContentResponse:
+    """Mock Google AI Chat Completion response."""
+    candidate = protos.Candidate()
+    candidate.index = 0
+    candidate.content = protos.Content(
+        role="user",
+        parts=[
+            protos.Part(
+                function_call=protos.FunctionCall(
+                    name="test_function",
+                    args={"test_arg": "test_value"},
+                )
+            )
+        ],
+    )
+    candidate.finish_reason = protos.Candidate.FinishReason.STOP
+
+    response = protos.GenerateContentResponse()
+    response.candidates.append(candidate)
+    response.usage_metadata = protos.GenerateContentResponse.UsageMetadata(
+        prompt_token_count=0,
+        cached_content_token_count=0,
+        candidates_token_count=0,
+        total_token_count=0,
+    )
+
+    return AsyncGenerateContentResponse(
+        done=True,
+        iterator=None,
+        result=response,
+    )
+
+
 @pytest_asyncio.fixture()
 async def mock_google_ai_streaming_chat_completion_response() -> AsyncGenerateContentResponse:
     """Mock Google AI streaming Chat Completion response."""
     candidate = protos.Candidate()
     candidate.index = 0
     candidate.content = protos.Content(role="user", parts=[protos.Part(text="Test content")])
+    candidate.finish_reason = protos.Candidate.FinishReason.STOP
+
+    response = protos.GenerateContentResponse()
+    response.candidates.append(candidate)
+    response.usage_metadata = protos.GenerateContentResponse.UsageMetadata(
+        prompt_token_count=0,
+        cached_content_token_count=0,
+        candidates_token_count=0,
+        total_token_count=0,
+    )
+
+    iterable = MagicMock(spec=AsyncGenerator)
+    iterable.__aiter__.return_value = [response]
+
+    return await AsyncGenerateContentResponse.from_aiterator(
+        iterator=iterable,
+    )
+
+
+@pytest_asyncio.fixture()
+async def mock_google_ai_streaming_chat_completion_response_with_tool_call() -> AsyncGenerateContentResponse:
+    """Mock Google AI streaming Chat Completion response with tool call."""
+    candidate = protos.Candidate()
+    candidate.index = 0
+    candidate.content = protos.Content(
+        role="user",
+        parts=[
+            protos.Part(
+                function_call=protos.FunctionCall(
+                    name="test_function",
+                    args={"test_arg": "test_value"},
+                )
+            )
+        ],
+    )
     candidate.finish_reason = protos.Candidate.FinishReason.STOP
 
     response = protos.GenerateContentResponse()
