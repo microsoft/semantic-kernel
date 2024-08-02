@@ -22,7 +22,7 @@ numpy = [
 ]
 
 # openai connector
-openai = ">=1.0"
+openai = "1.37.1"
 
 # openapi and swagger
 openapi_core = ">=0.18,<0.20"
