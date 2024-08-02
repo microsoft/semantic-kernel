@@ -28,8 +28,8 @@ inputs = {
 connection = AzureOpenAIConnection(
     name="AzureOpenAIConnection",
     type="Custom",
-    api_key=config.get("AZURE_OPENAI__API_KEY", None),
-    api_base=config.get("AZURE_OPENAI__ENDPOINT", None),
+    api_key=config.get("AZURE_OPENAI_API_KEY", None),
+    api_base=config.get("AZURE_OPENAI_ENDPOINT", None),
     api_version="2023-03-15-preview",
 )
 
