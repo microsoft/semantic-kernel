@@ -37,6 +37,6 @@ public class AzureCosmosDBMongoDBHotelModel(string hotelId)
     public string? Description { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreRecordVector(Dimensions: 4, IndexKind: "vector-ivf", DistanceFunction: "COS")]
+    [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.Ivf, DistanceFunction: DistanceFunction.CosineDistance)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

@@ -245,7 +245,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         foreach (var property in this._vectorStoreRecordDefinition.Properties.OfType<VectorStoreRecordVectorProperty>())
         {
             // Use index name same as vector property name with underscore
-            var indexName = $"{this._storagePropertyNames[property.DataModelPropertyName]}_";
+            var vectorPropertyName = this._storagePropertyNames[property.DataModelPropertyName];
+            var indexName = $"{vectorPropertyName}_";
 
             // If index already exists, proceed to the next vector property
             if (uniqueIndexes.Contains(indexName))
@@ -256,9 +257,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             // Otherwise, create a new index
             var searchOptions = new BsonDocument
             {
-                { "kind", property.IndexKind },
+                { "kind", GetIndexKind(property.IndexKind, vectorPropertyName) },
                 { "numLists", this._options.NumLists },
-                { "similarity", property.DistanceFunction },
+                { "similarity", GetDistanceFunction(property.DistanceFunction, vectorPropertyName) },
                 { "dimensions", property.Dimensions }
             };
 
@@ -363,6 +364,33 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
                 OperationName = operationName
             };
         }
+    }
+
+    /// <summary>
+    /// More information about Azure CosmosDB for MongoDB index kinds here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search" />.
+    /// </summary>
+    private static string GetIndexKind(string? indexKind, string vectorPropertyName)
+    {
+        return indexKind switch
+        {
+            IndexKind.Hnsw => "vector-hnsw",
+            IndexKind.Ivf => "vector-ivf",
+            _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
+        };
+    }
+
+    /// <summary>
+    /// More information about Azure CosmosDB for MongoDB distance functions here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search" />.
+    /// </summary>
+    private static string GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
+    {
+        return distanceFunction switch
+        {
+            DistanceFunction.CosineDistance => "COS",
+            DistanceFunction.DotProductSimilarity => "IP",
+            DistanceFunction.EuclideanDistance => "L2",
+            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
+        };
     }
 
     #endregion
