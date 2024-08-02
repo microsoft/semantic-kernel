@@ -7,8 +7,10 @@ namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Defines a key property on a vector store record.
-/// The characteristics defined here will influence how the property is treated by the vector store.
 /// </summary>
+/// <remarks>
+/// The characteristics defined here will influence how the property is treated by the vector store.
+/// </remarks>
 [Experimental("SKEXP0001")]
 public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty
 {
