@@ -27,14 +27,14 @@ internal partial class Program
             .AddOpenAIChatCompletion(serviceId: "openai", modelId: "gpt-4o", apiKey: config["OpenAI:ApiKey"]!)
 
             // Adding a custom filter to capture router selected service id
-            .Services.AddSingleton<IPromptRenderFilter>(new PromptRenderingFilter());
+            .Services.AddSingleton<IPromptRenderFilter>(new SelectedServiceFilter());
 
         var kernel = services.BuildServiceProvider().GetRequiredService<Kernel>();
         var router = new CustomRouter();
 
         while (true)
         {
-            Console.Write("\n\nUser message > ");
+            Console.Write("\n\nUser > ");
             var userMessage = Console.ReadLine();
 
             // Exit application if the user enters an empty message
