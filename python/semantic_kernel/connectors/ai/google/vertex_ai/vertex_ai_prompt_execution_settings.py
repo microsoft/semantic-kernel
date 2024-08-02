@@ -36,6 +36,8 @@ class VertexAITextPromptExecutionSettings(VertexAIPromptExecutionSettings):
 class VertexAIChatPromptExecutionSettings(VertexAIPromptExecutionSettings):
     """Vertex AI Chat Prompt Execution Settings."""
 
+    # Do not set the tools and tool_config manually.
+    # They are set by the service based on the function choice configuration.
     tools: list[Tool] | None = Field(None, max_length=64)
     tool_config: ToolConfig | None = None
 

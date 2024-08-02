@@ -62,12 +62,15 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
     response_format: dict[Literal["type"], Literal["text", "json_object"]] | None = None
-    tools: list[dict[str, Any]] | None = Field(None, max_length=64)
-    tool_choice: str | None = None
     function_call: str | None = None
     functions: list[dict[str, Any]] | None = None
     messages: list[dict[str, Any]] | None = None
     function_call_behavior: FunctionCallBehavior | None = Field(None, exclude=True)
+
+    # Do not set the tools and tool_choice manually.
+    # They are set by the service based on the function choice configuration.
+    tools: list[dict[str, Any]] | None = Field(None, max_length=64)
+    tool_choice: str | None = None
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod

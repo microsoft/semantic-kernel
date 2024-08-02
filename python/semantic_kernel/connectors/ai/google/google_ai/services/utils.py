@@ -82,7 +82,8 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
     parts: list[Part] = []
     for item in message.items:
         if isinstance(item, TextContent):
-            parts.append(Part(text=item.text))
+            if item.text:
+                parts.append(Part(text=item.text))
         elif isinstance(item, FunctionCallContent):
             parts.append(
                 Part(

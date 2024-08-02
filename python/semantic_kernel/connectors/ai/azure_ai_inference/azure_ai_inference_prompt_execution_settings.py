@@ -30,6 +30,8 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
 class AzureAIInferenceChatPromptExecutionSettings(AzureAIInferencePromptExecutionSettings):
     """Azure AI Inference Chat Prompt Execution Settings."""
 
+    # Do not set the tools and tool_choice manually.
+    # They are set by the service based on the function choice configuration.
     tools: list[dict[str, Any]] | None = Field(None, max_length=64)
     tool_choice: str | None = None
 
