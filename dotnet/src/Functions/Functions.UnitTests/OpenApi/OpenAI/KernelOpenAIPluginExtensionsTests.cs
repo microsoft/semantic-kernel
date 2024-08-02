@@ -17,6 +17,7 @@ using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi.OpenAI;
 
+[Obsolete("OpenAI plugins are deprecated and will be removed in a future version.")]
 public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
 {
     /// <summary>

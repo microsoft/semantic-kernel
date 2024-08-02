@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from enum import Enum
 from typing import Annotated
 
 import pytest
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.open_ai.services.utils import (
-    kernel_function_metadata_to_openai_tool_format,
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    kernel_function_metadata_to_function_call_format,
 )
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
@@ -17,9 +18,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 class BooleanPlugin:
     @kernel_function(name="GetBoolean", description="Get a boolean value.")
-    def get_boolean(
-        self, value: Annotated[bool, "The boolean value."]
-    ) -> Annotated[bool, "The boolean value."]:
+    def get_boolean(self, value: Annotated[bool, "The boolean value."]) -> Annotated[bool, "The boolean value."]:
         return value
 
 
@@ -80,6 +79,32 @@ class ListPlugin:
         return [item for item in items if item in ["skip"]]
 
 
+class UnionTypePluginLegacySyntax:
+    @kernel_function(name="union_legacy", description="Union type")
+    def union(self, value: Annotated[str | int, "The union value"]) -> Annotated[str | int, "The union value"]:
+        return value
+
+
+class UnionTypePlugin:
+    @kernel_function(name="union", description="Union type")
+    def union(self, value: Annotated[str | int, "The union value"]) -> Annotated[str | int, "The union value"]:
+        return value
+
+
+class MyEnum(Enum):
+    OPTION_A = "OptionA"
+    OPTION_B = "OptionB"
+    OPTION_C = "OptionC"
+
+
+class EnumPlugin:
+    @kernel_function(name="GetEnumValue", description="Get a value from the enum.")
+    def get_enum_value(
+        self, value: Annotated[MyEnum, "The enum value."]
+    ) -> Annotated[str, "The string representation of the enum value."]:
+        return value.value
+
+
 @pytest.fixture
 def setup_kernel():
     kernel = Kernel()
@@ -90,6 +115,9 @@ def setup_kernel():
             "ComplexTypePlugin": ComplexTypePlugin(),
             "ListPlugin": ListPlugin(),
             "ItemsPlugin": ItemsPlugin(),
+            "UnionPlugin": UnionTypePlugin(),
+            "UnionPluginLegacy": UnionTypePluginLegacySyntax(),
+            "EnumPlugin": EnumPlugin(),
         }
     )
     return kernel
@@ -105,9 +133,7 @@ def test_bool_schema(setup_kernel):
         filters={"included_plugins": ["BooleanPlugin"]}
     )
 
-    boolean_schema = kernel_function_metadata_to_openai_tool_format(
-        boolean_func_metadata[0]
-    )
+    boolean_schema = kernel_function_metadata_to_function_call_format(boolean_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -116,9 +142,7 @@ def test_bool_schema(setup_kernel):
             "description": "Get a boolean value.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "value": {"type": "boolean", "description": "The boolean value."}
-                },
+                "properties": {"value": {"type": "boolean", "description": "The boolean value."}},
                 "required": ["value"],
             },
         },
@@ -127,16 +151,30 @@ def test_bool_schema(setup_kernel):
     assert boolean_schema == expected_schema
 
 
+def test_bool_schema_no_plugins(setup_kernel):
+    kernel = setup_kernel
+    kernel.plugins = None
+
+    boolean_func_metadata = kernel.get_list_of_function_metadata_bool()
+
+    assert boolean_func_metadata == []
+
+
+def test_bool_schema_with_plugins(setup_kernel):
+    kernel = setup_kernel
+
+    boolean_func_metadata = kernel.get_list_of_function_metadata_bool()
+
+    assert boolean_func_metadata is not None
+    assert len(boolean_func_metadata) > 0
+
+
 def test_string_schema(setup_kernel):
     kernel = setup_kernel
 
-    string_func_metadata = kernel.get_list_of_function_metadata_filters(
-        filters={"included_plugins": ["StringPlugin"]}
-    )
+    string_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["StringPlugin"]})
 
-    string_schema = kernel_function_metadata_to_openai_tool_format(
-        string_func_metadata[0]
-    )
+    string_schema = kernel_function_metadata_to_function_call_format(string_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -159,6 +197,32 @@ def test_string_schema(setup_kernel):
     assert string_schema == expected_schema
 
 
+def test_string_schema_filter_functions(setup_kernel):
+    kernel = setup_kernel
+
+    string_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_functions": ["random"]})
+
+    assert string_func_metadata == []
+
+
+def test_string_schema_throws_included_and_excluded_plugins(setup_kernel):
+    kernel = setup_kernel
+
+    with pytest.raises(ValueError):
+        _ = kernel.get_list_of_function_metadata_filters(
+            filters={"included_plugins": ["StringPlugin"], "excluded_plugins": ["BooleanPlugin"]}
+        )
+
+
+def test_string_schema_throws_included_and_excluded_functions(setup_kernel):
+    kernel = setup_kernel
+
+    with pytest.raises(ValueError):
+        _ = kernel.get_list_of_function_metadata_filters(
+            filters={"included_functions": ["function1"], "excluded_functions": ["function2"]}
+        )
+
+
 def test_complex_schema(setup_kernel):
     kernel = setup_kernel
 
@@ -166,9 +230,7 @@ def test_complex_schema(setup_kernel):
         filters={"included_plugins": ["ComplexTypePlugin"]}
     )
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
-        complex_func_metadata[0]
-    )
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -205,13 +267,9 @@ def test_complex_schema(setup_kernel):
 def test_list_schema(setup_kernel):
     kernel = setup_kernel
 
-    complex_func_metadata = kernel.get_list_of_function_metadata_filters(
-        filters={"included_plugins": ["ListPlugin"]}
-    )
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["ListPlugin"]})
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
-        complex_func_metadata[0]
-    )
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -236,16 +294,11 @@ def test_list_schema(setup_kernel):
 
 
 def test_list_of_items_plugin(setup_kernel):
-
     kernel = setup_kernel
 
-    complex_func_metadata = kernel.get_list_of_function_metadata_filters(
-        filters={"included_plugins": ["ItemsPlugin"]}
-    )
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["ItemsPlugin"]})
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
-        complex_func_metadata[0]
-    )
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
 
     expected_schema = {
         "type": "function",
@@ -272,6 +325,74 @@ def test_list_of_items_plugin(setup_kernel):
                     }
                 },
                 "required": ["items"],
+            },
+        },
+    }
+
+    assert complex_schema == expected_schema
+
+
+@pytest.mark.parametrize(
+    ("plugin_name", "function_name"), [("UnionPlugin", "union"), ("UnionPluginLegacy", "union_legacy")]
+)
+def test_union_plugin(setup_kernel, plugin_name, function_name):
+    kernel = setup_kernel
+
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(
+        filters={"included_plugins": ["UnionPlugin", "UnionPluginLegacy"]}
+    )
+
+    complex_schema_1 = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
+    complex_schema_2 = kernel_function_metadata_to_function_call_format(complex_func_metadata[1])
+
+    expected_schema = {
+        "type": "function",
+        "function": {
+            "name": f"{plugin_name}-{function_name}",
+            "description": "Union type",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "anyOf": [
+                            {"type": "string", "description": "The union value"},
+                            {"type": "integer", "description": "The union value"},
+                        ]
+                    }
+                },
+                "required": ["value"],
+            },
+        },
+    }
+
+    if plugin_name == "UnionPlugin":
+        assert complex_schema_1 == expected_schema
+    else:
+        assert complex_schema_2 == expected_schema
+
+
+def test_enum_plugin(setup_kernel):
+    kernel = setup_kernel
+
+    complex_func_metadata = kernel.get_list_of_function_metadata_filters(filters={"included_plugins": ["EnumPlugin"]})
+
+    complex_schema = kernel_function_metadata_to_function_call_format(complex_func_metadata[0])
+
+    expected_schema = {
+        "type": "function",
+        "function": {
+            "name": "EnumPlugin-GetEnumValue",
+            "description": "Get a value from the enum.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "enum": ["OptionA", "OptionB", "OptionC"],
+                        "description": "The enum value.",
+                    }
+                },
+                "required": ["value"],
             },
         },
     }
