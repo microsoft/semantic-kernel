@@ -5,6 +5,12 @@ description = "Semantic Kernel Python SDK"
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
 packages = [{include = "semantic_kernel"}]
+homepage = "https://learn.microsoft.com/en-us/semantic-kernel/overview/"
+repository = "https://github.com/microsoft/semantic-kernel/"
+
+[tool.poetry.urls]
+"Source Code" = "https://github.com/microsoft/semantic-kernel/tree/main/python"
+"Release Notes" = "https://github.com/microsoft/semantic-kernel/releases?q=tag%3Apython-1&expanded=true"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
