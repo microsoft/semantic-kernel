@@ -59,8 +59,9 @@ internal static class AssistantMessageFactory
                     throw new KernelException($"{nameof(ImageContent.DataUri)} not supported for assistant input.");
                 }
                 else if (content is FileReferenceContent fileContent)
-            {
-                yield return MessageContent.FromImageFileId(fileContent.FileId);
+                {
+                    yield return MessageContent.FromImageFileId(fileContent.FileId);
+                }
             }
         }
     }
