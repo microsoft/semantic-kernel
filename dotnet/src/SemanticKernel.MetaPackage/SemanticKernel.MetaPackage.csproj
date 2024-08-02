@@ -8,9 +8,6 @@
     <VersionSuffix>rc</VersionSuffix>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
-    <VersionSuffix>rc</VersionSuffix>
-  </PropertyGroup>
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel</Title>
