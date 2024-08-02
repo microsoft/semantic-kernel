@@ -88,7 +88,7 @@ def history() -> ChatHistory:
 
 
 @pytest.fixture(scope="module")
-def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]:
+def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]:
     azure_openai_settings = AzureOpenAISettings.create()
     endpoint = azure_openai_settings.endpoint
     deployment_name = azure_openai_settings.chat_deployment_name
@@ -118,7 +118,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecution
         "azure_custom_client": (azure_custom_client, AzureChatPromptExecutionSettings),
         "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
         "mistral_ai": (MistralAIChatCompletion() if mistral_ai_setup else None, MistralAIChatPromptExecutionSettings),
-        "ollama": (OllamaChatCompletion(), OllamaChatPromptExecutionSettings),
+        "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
         "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
         "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
     }
@@ -464,8 +464,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             ["Hello", "well"],
-            # marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
-            marks=pytest.mark.skip(reason="Flaky test"),
+            marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
         ),
         pytest.param(

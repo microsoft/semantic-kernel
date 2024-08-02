@@ -73,14 +73,18 @@ jobs:
       - name: Install Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          ollama serve &
-          sleep 5
+          if ${{ vars.OLLAMA_MODEL != '' }}; then
+            curl -fsSL https://ollama.com/install.sh | sh
+            ollama serve &
+            sleep 5
+          fi
       - name: Pull model in Ollama
         if: matrix.os == 'ubuntu-latest'
         run: |
-          ollama pull ${{ vars.OLLAMA_MODEL }}
-          ollama list
+          if ${{ vars.OLLAMA_MODEL != '' }}; then
+            ollama pull ${{ vars.OLLAMA_MODEL }}
+            ollama list
+          fi
       - name: Google auth
         uses: google-github-actions/auth@v2
         with:
@@ -88,6 +92,9 @@ jobs:
           credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
+      - name: Setup Redis Stack Server
+        if: matrix.os == 'ubuntu-latest'
+        run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
       - name: Run Integration Tests
         id: run_tests
         shell: bash
@@ -124,13 +131,25 @@ jobs:
           VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
           VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
         run: |
-          if ${{ matrix.os == 'ubuntu-latest' }}; then
-            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
-          fi
-
           cd python
-          poetry run pytest ./tests/integration -v
-          poetry run pytest ./tests/samples -v
+          poetry run pytest ./tests/integration ./tests/samples -v --junitxml=pytest.xml
+      - name: Surface failing tests
+        if: always()
+        uses: pmeier/pytest-results-action@main
+        with:
+          # A list of JUnit XML files, directories containing the former, and wildcard
+          # patterns to process.
+          # See @actions/glob for supported patterns.
+          path: python/pytest.xml
+          # (Optional) Add a summary of the results at the top of the report
+          summary: true
+          # (Optional) Select which results should be included in the report.
+          # Follows the same syntax as `pytest -r`
+          display-options: fEX
+          # (Optional) Fail the workflow if no JUnit XML was found.
+          fail-on-empty: true
+          # (Optional) Title of the test results section in the workflow summary
+          title: Test results
 
   python-integration-tests:
     needs: paths-filter
