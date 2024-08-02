@@ -41,6 +41,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
     /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it for data and vector properties.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames;
 
+    /// <summary>Collection of vector storage property names.</summary>
+    private readonly List<string> _vectorStoragePropertyNames;
+
     /// <summary>Collection of record vector properties.</summary>
     private readonly List<VectorStoreRecordVectorProperty> _vectorProperties;
 
@@ -77,6 +80,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
         this._vectorProperties = properties.VectorProperties;
+        this._vectorStoragePropertyNames = this._vectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
 
         this._mapper = this._options.BsonDocumentCustomMapper ??
             new AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>(this._vectorStoreRecordDefinition, this._storagePropertyNames);
@@ -297,15 +301,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
 
         var includeVectors = options?.IncludeVectors ?? false;
 
-        if (!includeVectors && this._vectorProperties.Count > 0)
+        if (!includeVectors && this._vectorStoragePropertyNames.Count > 0)
         {
-            foreach (var vectorProperty in this._vectorProperties)
+            foreach (var vectorPropertyName in this._vectorStoragePropertyNames)
             {
-                var propertyToExclude = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
-
                 projectionDefinition = projectionDefinition is not null ?
-                    projectionDefinition.Exclude(propertyToExclude) :
-                    projectionBuilder.Exclude(propertyToExclude);
+                    projectionDefinition.Exclude(vectorPropertyName) :
+                    projectionBuilder.Exclude(vectorPropertyName);
             }
         }
 
