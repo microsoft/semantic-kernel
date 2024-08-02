@@ -57,22 +57,12 @@ def format_user_message(message: ChatMessageContent) -> list[Part]:
     Returns:
         The formatted user message as a list of parts.
     """
-    if not any(isinstance(item, (ImageContent)) for item in message.items):
-        return [Part(text=message.content)]
-
     parts: list[Part] = []
     for item in message.items:
         if isinstance(item, TextContent):
             parts.append(Part(text=message.content))
         elif isinstance(item, ImageContent):
-            if item.data_uri:
-                parts.append(Part(inline_data=Blob(mime_type=item.mime_type, data=item.data)))
-            else:
-                # The Google AI API doesn't support images from arbitrary URIs:
-                # https://github.com/google-gemini/generative-ai-python/issues/357
-                raise ServiceInvalidRequestError(
-                    "ImageContent without data_uri in User message while formatting chat history for Vertex AI"
-                )
+            parts.append(_create_image_part(item))
         else:
             raise ServiceInvalidRequestError(
                 "Unsupported item type in User message while formatting chat history for Vertex AI"
@@ -91,44 +81,29 @@ def format_assistant_message(message: ChatMessageContent) -> list[Part]:
     Returns:
         The formatted assistant message as a list of parts.
     """
-    text_items: list[TextContent] = []
-    function_call_items: list[FunctionCallContent] = []
+    parts: list[Part] = []
     for item in message.items:
         if isinstance(item, TextContent):
-            text_items.append(item)
+            parts.append(Part(text=item.text))
         elif isinstance(item, FunctionCallContent):
-            function_call_items.append(item)
+            parts.append(
+                Part(
+                    function_call=FunctionCall(
+                        name=item.name,
+                        # Convert the arguments to a dictionary if it is a string
+                        args=json.loads(item.arguments) if isinstance(item.arguments, str) else item.arguments,
+                    )
+                )
+            )
+        elif isinstance(item, ImageContent):
+            parts.append(_create_image_part(item))
         else:
             raise ServiceInvalidRequestError(
                 "Unsupported item type in Assistant message while formatting chat history for Vertex AI"
                 f" Inference: {type(item)}"
             )
 
-    if len(text_items) > 1:
-        raise ServiceInvalidRequestError(
-            "Unsupported number of text items in Assistant message while formatting chat history for Vertex AI"
-            f" Inference: {len(text_items)}"
-        )
-
-    if len(function_call_items) > 1:
-        raise ServiceInvalidRequestError(
-            "Unsupported number of function call items in Assistant message while formatting chat history for Vertex AI"
-            f" Inference: {len(function_call_items)}"
-        )
-
-    part = Part()
-    if text_items:
-        part.text = text_items[0].text
-    if function_call_items:
-        # Convert the arguments to a dictionary if it is a string
-        args = function_call_items[0].arguments
-        args = json.loads(args) if isinstance(args, str) else args
-        part.function_call = FunctionCall(
-            name=function_call_items[0].name,
-            args=args,
-        )
-
-    return [part]
+    return parts
 
 
 def format_tool_message(message: ChatMessageContent) -> list[Part]:
@@ -140,28 +115,23 @@ def format_tool_message(message: ChatMessageContent) -> list[Part]:
     Returns:
         The formatted tool message.
     """
-    if len(message.items) != 1:
-        logger.warning(
-            "Unsupported number of items in Tool message while formatting chat history for Vertex AI: "
-            f"{len(message.items)}"
-        )
+    parts: list[Part] = []
+    for item in message.items:
+        if isinstance(item, FunctionResultContent):
+            gemini_function_name = format_function_result_content_name_to_gemini_function_name(item)
+            parts.append(
+                Part(
+                    function_response=FunctionResponse(
+                        name=gemini_function_name,
+                        response={
+                            "name": gemini_function_name,
+                            "content": item.result,
+                        },
+                    )
+                )
+            )
 
-    if not isinstance(message.items[0], FunctionResultContent):
-        raise ValueError("No FunctionResultContent found in the message items")
-
-    gemini_function_name = format_function_result_content_name_to_gemini_function_name(message.items[0])
-
-    return [
-        Part(
-            function_response=FunctionResponse(
-                name=gemini_function_name,
-                response={
-                    "name": gemini_function_name,
-                    "content": message.items[0].result,
-                },
-            ),
-        )
-    ]
+    return parts
 
 
 def kernel_function_metadata_to_vertex_ai_function_call_format(metadata: KernelFunctionMetadata) -> dict[str, Any]:
@@ -197,3 +167,14 @@ def update_settings_from_function_choice_configuration(
                 ]
             )
         ]
+
+
+def _create_image_part(image_content: ImageContent) -> Part:
+    if image_content.data_uri:
+        return Part(inline_data=Blob(mime_type=image_content.mime_type, data=image_content.data))
+
+    # The Google AI API doesn't support images from arbitrary URIs:
+    # https://github.com/google-gemini/generative-ai-python/issues/357
+    raise ServiceInvalidRequestError(
+        "ImageContent without data_uri in User message while formatting chat history for Google AI"
+    )

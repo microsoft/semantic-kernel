@@ -352,14 +352,3 @@ def test_vertex_ai_chat_completion_parse_chat_history_correctly(vertex_ai_unit_t
     assert parsed_chat_history[0].parts[0].text == "test_user_message"
     assert parsed_chat_history[1].role == "model"
     assert parsed_chat_history[1].parts[0].text == "test_assistant_message"
-
-
-def test_vertex_ai_chat_completion_parse_chat_history_throw_unsupported_message(vertex_ai_unit_test_env) -> None:
-    """Test _prepare_chat_history_for_request method with unsupported message type"""
-    vertex_ai_chat_completion = VertexAIChatCompletion()
-
-    chat_history = ChatHistory()
-    chat_history.add_tool_message("test_tool_message")
-
-    with pytest.raises(ValueError):
-        _ = vertex_ai_chat_completion._prepare_chat_history_for_request(chat_history)
