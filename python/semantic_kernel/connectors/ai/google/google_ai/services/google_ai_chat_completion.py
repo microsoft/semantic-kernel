@@ -16,11 +16,11 @@ from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_s
 )
 from semantic_kernel.connectors.ai.google.google_ai.services.google_ai_base import GoogleAIBase
 from semantic_kernel.connectors.ai.google.google_ai.services.utils import (
-    filter_system_message,
     finish_reason_from_google_ai_to_semantic_kernel,
     format_assistant_message,
     format_user_message,
 )
+from semantic_kernel.connectors.ai.google.shared_utils import filter_system_message
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
