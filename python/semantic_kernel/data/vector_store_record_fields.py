@@ -29,6 +29,7 @@ class VectorStoreRecordDataField(VectorStoreRecordField):
     has_embedding: bool = False
     embedding_property_name: str | None = None
     is_filterable: bool | None = None
+    is_full_text_searchable: bool | None = None
 
 
 @dataclass

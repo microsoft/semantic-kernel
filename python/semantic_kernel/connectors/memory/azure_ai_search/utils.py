@@ -98,7 +98,11 @@ def data_model_definition_to_azure_ai_search_index(
                     name=field.name,
                     type=type_,
                     filterable=field.is_filterable,
-                    searchable=type_ in ("Edm.String", "Collection(Edm.String)"),
+                    # searchable is set first on the value of is_full_text_searchable,
+                    # if it is None it checks the field type, if text then it is searchable
+                    searchable=type_ in ("Edm.String", "Collection(Edm.String)")
+                    if field.is_full_text_searchable is None
+                    else field.is_full_text_searchable,
                     sortable=True,
                     hidden=False,
                 )

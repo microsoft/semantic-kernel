@@ -10,13 +10,14 @@ import numpy as np
 from redis.asyncio.client import Redis
 from redis.commands.search.document import Document
 from redis.commands.search.field import Field as RedisField
-from redis.commands.search.field import TextField, VectorField
+from redis.commands.search.field import NumericField, TagField, TextField, VectorField
 
 from semantic_kernel.connectors.memory.azure_ai_search.const import DISTANCE_FUNCTION_MAP
 from semantic_kernel.connectors.memory.redis.const import TYPE_MAPPER_VECTOR, RedisCollectionTypes
 from semantic_kernel.data.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_store_record_fields import (
-    VectorStoreRecordField,
+    VectorStoreRecordDataField,
+    VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -135,6 +136,8 @@ def data_model_definition_to_redis_fields(
     """Create a list of fields for Redis from a data_model_definition."""
     fields: list[RedisField] = []
     for name, field in data_model_definition.fields.items():
+        if isinstance(field, VectorStoreRecordKeyField):
+            continue
         if collection_type == RedisCollectionTypes.HASHSET:
             fields.append(_field_to_redis_field_hashset(name, field))
         elif collection_type == RedisCollectionTypes.JSON:
@@ -142,7 +145,9 @@ def data_model_definition_to_redis_fields(
     return fields
 
 
-def _field_to_redis_field_hashset(name: str, field: VectorStoreRecordField) -> RedisField:
+def _field_to_redis_field_hashset(
+    name: str, field: VectorStoreRecordVectorField | VectorStoreRecordDataField
+) -> RedisField:
     if isinstance(field, VectorStoreRecordVectorField):
         return VectorField(
             name=name,
@@ -153,10 +158,16 @@ def _field_to_redis_field_hashset(name: str, field: VectorStoreRecordField) -> R
                 "distance_metric": DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
             },
         )
-    return TextField(name=name)
+    if field.property_type in ["int", "float"]:
+        return NumericField(name=name)
+    if field.is_full_text_searchable:
+        return TextField(name=name)
+    return TagField(name=name)
 
 
-def _field_to_redis_field_json(name: str, field: VectorStoreRecordField) -> RedisField:
+def _field_to_redis_field_json(
+    name: str, field: VectorStoreRecordVectorField | VectorStoreRecordDataField
+) -> RedisField:
     if isinstance(field, VectorStoreRecordVectorField):
         return VectorField(
             name=f"$.{name}",
@@ -168,4 +179,8 @@ def _field_to_redis_field_json(name: str, field: VectorStoreRecordField) -> Redi
             },
             as_name=name,
         )
-    return TextField(name=f"$.{name}", as_name=name)
+    if field.property_type in ["int", "float"]:
+        return NumericField(name=f"$.{name}", as_name=name)
+    if field.is_full_text_searchable:
+        return TextField(name=f"$.{name}", as_name=name)
+    return TagField(name=f"$.{name}", as_name=name)
