@@ -27,11 +27,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-<<<<<<< main
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.62.0" />
-=======
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.61.3" />
->>>>>>> upstream/main
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
@@ -87,13 +83,8 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
-<<<<<<< main
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
-    <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.1" />
-=======
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
->>>>>>> upstream/main
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
     <PackageVersion Include="MongoDB.Driver" Version="2.27.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
@@ -102,38 +93,22 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.15" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
-<<<<<<< main
     <PackageVersion Include="Grpc.Net.Client" Version="2.64.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
+    <PackageVersion Include="YamlDotNet" Version="16.0.0" />
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
-=======
-    <PackageVersion Include="Grpc.Net.Client" Version="2.63.0" />
-    <PackageVersion Include="protobuf-net" Version="3.2.30" />
-    <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
-    <PackageVersion Include="Fluid.Core" Version="2.10.0" />
->>>>>>> upstream/main
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.42.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
-<<<<<<< main
     <PackageVersion Include="Testcontainers.Milvus" Version="3.9.0" />
-=======
-    <PackageVersion Include="Testcontainers.Milvus" Version="3.8.0" />
->>>>>>> upstream/main
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.1" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
-<<<<<<< main
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24318.1" />
-=======
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24225.1" />
->>>>>>> upstream/main
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
