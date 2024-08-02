@@ -10,6 +10,10 @@
     <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
+    <VersionSuffix>rc</VersionSuffix>
+  </PropertyGroup>
+  
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
