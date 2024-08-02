@@ -24,10 +24,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Linq.Async" />
-  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Connectors.Memory.AzureCosmosDBMongoDB\Connectors.Memory.AzureCosmosDBMongoDB.csproj" />
