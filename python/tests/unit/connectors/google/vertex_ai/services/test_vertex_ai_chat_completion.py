@@ -109,10 +109,9 @@ async def test_vertex_ai_chat_completion(
 
 
 @pytest.mark.asyncio
-@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_vertex_ai_chat_completion_with_function_choice_behavior_fail_verification(
-    vertex_ai_unit_test_env,
     chat_history: ChatHistory,
+    vertex_ai_unit_test_env,
 ) -> None:
     """Test completion of VertexAIChatCompletion with function choice behavior expect verification failure"""
 
@@ -240,7 +239,6 @@ async def test_vertex_ai_streaming_chat_completion(
 
 
 @pytest.mark.asyncio
-@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_vertex_ai_streaming_chat_completion_with_function_choice_behavior_fail_verification(
     chat_history: ChatHistory,
     vertex_ai_unit_test_env,

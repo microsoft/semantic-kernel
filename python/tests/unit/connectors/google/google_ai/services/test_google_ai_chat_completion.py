@@ -109,7 +109,6 @@ async def test_google_ai_chat_completion(
 
 
 @pytest.mark.asyncio
-@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_chat_completion_with_function_choice_behavior_fail_verification(
     chat_history: ChatHistory,
     google_ai_unit_test_env,
@@ -240,7 +239,6 @@ async def test_google_ai_streaming_chat_completion(
 
 
 @pytest.mark.asyncio
-@patch.object(GenerativeModel, "generate_content_async", new_callable=AsyncMock)
 async def test_google_ai_streaming_chat_completion_with_function_choice_behavior_fail_verification(
     chat_history: ChatHistory,
     google_ai_unit_test_env,
