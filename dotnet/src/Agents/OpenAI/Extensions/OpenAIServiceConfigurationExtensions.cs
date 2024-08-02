@@ -16,11 +16,7 @@ public static class OpenAIServiceConfigurationExtensions
     /// </summary>
     /// <param name="configuration">The configuration</param>
     public static FileClient CreateFileClient(this OpenAIServiceConfiguration configuration)
-    {
-        OpenAIClient client = OpenAIClientFactory.CreateClient(configuration);
-
-        return client.GetFileClient();
-    }
+        => OpenAIClientFactory.CreateClient(configuration).GetFileClient();
 
     /// <summary>
     /// Provide a newly created <see cref="VectorStoreClient"/> based on the specified configuration.
