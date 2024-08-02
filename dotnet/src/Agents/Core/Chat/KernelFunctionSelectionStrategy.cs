@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -70,11 +69,11 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
-        this.Logger.LogDebug("[{MethodName}] Invoking function: {PluginName}.{FunctionName}.", nameof(NextAsync), this.Function.PluginName, this.Function.Name);
+        this.Logger.LogKernelFunctionSelectionStrategyInvokingFunction(nameof(NextAsync), this.Function.PluginName, this.Function.Name);
 
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogInformation("[{MethodName}] Invoked function: {PluginName}.{FunctionName}: {ResultType}", nameof(NextAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
+        this.Logger.LogKernelFunctionSelectionStrategyInvokedFunction(nameof(NextAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
 
         string? agentName = this.ResultParser.Invoke(result);
         if (string.IsNullOrEmpty(agentName))

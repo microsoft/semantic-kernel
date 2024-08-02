@@ -12,20 +12,22 @@ namespace Microsoft.SemanticKernel;
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
 [JsonDerivedType(typeof(ImageContent), typeDiscriminator: nameof(ImageContent))]
-#pragma warning disable SKEXP0010
-[JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
-#pragma warning restore SKEXP0010
-#pragma warning disable SKEXP0001
-[JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
 [JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: nameof(FunctionCallContent))]
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: nameof(FunctionResultContent))]
-#pragma warning restore SKEXP0001
+[JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
+[JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
 #pragma warning disable SKEXP0110
 [JsonDerivedType(typeof(AnnotationContent), typeDiscriminator: nameof(AnnotationContent))]
 [JsonDerivedType(typeof(FileReferenceContent), typeDiscriminator: nameof(FileReferenceContent))]
 #pragma warning disable SKEXP0110
 public abstract class KernelContent
 {
+    /// <summary>
+    /// MIME type of the content.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MimeType { get; set; }
+
     /// <summary>
     /// The inner content representation. Use this to bypass the current abstraction.
     /// </summary>
@@ -46,12 +48,6 @@ public abstract class KernelContent
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
-
-    /// <summary>
-    /// MIME type of the content.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? MimeType { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.

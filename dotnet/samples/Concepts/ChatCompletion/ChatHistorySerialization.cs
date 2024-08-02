@@ -17,7 +17,7 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
     /// with <see cref="ChatMessageContent"/> having SK various content types as items.
     /// </summary>
     [Fact]
-    public void SerializeChatHistoryWithSKContentTypes()
+    public async Task SerializeChatHistoryWithSKContentTypesAsync()
     {
         int[] data = [1, 2, 3];
 
@@ -27,10 +27,8 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
             [
                 new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
                 new ImageContent(new Uri("https://fake-random-test-host:123")),
-                new BinaryContent(new BinaryData(data)),
-#pragma warning disable SKEXP0001
-                new AudioContent(new BinaryData(data))
-#pragma warning restore SKEXP0001
+                new BinaryContent(new BinaryData(data), "application/octet-stream"),
+                new AudioContent(new BinaryData(data), "application/octet-stream")
             ]
         };
 
@@ -49,7 +47,7 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
 
         Console.WriteLine($"Image content: {(deserializedMessage.Items![1]! as ImageContent)!.Uri}");
 
-        Console.WriteLine($"Binary content: {Encoding.UTF8.GetString((deserializedMessage.Items![2]! as BinaryContent)!.Content!.Value.Span)}");
+        Console.WriteLine($"Binary content: {Encoding.UTF8.GetString((deserializedMessage.Items![2]! as BinaryContent)!.Data!.Value.Span)}");
 
         Console.WriteLine($"Audio content: {Encoding.UTF8.GetString((deserializedMessage.Items![3]! as AudioContent)!.Data!.Value.Span)}");
 

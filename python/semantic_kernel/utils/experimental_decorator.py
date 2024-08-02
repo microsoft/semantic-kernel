@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import Callable
+from typing import TypeVar
+
+T = TypeVar("T", bound=type)
 
 
 def experimental_function(func: Callable) -> Callable:
@@ -16,7 +19,7 @@ def experimental_function(func: Callable) -> Callable:
     return func
 
 
-def experimental_class(cls: type) -> type:
+def experimental_class(cls: T) -> T:
     """Decorator to mark a class as experimental."""
     if isinstance(cls, type):
         if cls.__doc__:

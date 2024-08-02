@@ -5,7 +5,7 @@ import os
 
 from samples.sk_service_configurator import add_service
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 
@@ -35,7 +35,7 @@ async def main():
             service_id="default",
             temperature=0.0,
             max_tokens=1000,
-            function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
+            function_choice_behavior=FunctionChoiceBehavior.Auto(),
         ),
         plugin_name="Chat",
         function_name="Chat",

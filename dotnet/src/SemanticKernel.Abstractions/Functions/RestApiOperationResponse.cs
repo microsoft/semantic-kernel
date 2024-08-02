@@ -14,12 +14,12 @@ public sealed class RestApiOperationResponse
     /// <summary>
     /// Gets the content of the response.
     /// </summary>
-    public object Content { get; }
+    public object? Content { get; }
 
     /// <summary>
     /// Gets the content type of the response.
     /// </summary>
-    public string ContentType { get; }
+    public string? ContentType { get; }
 
     /// <summary>
     /// The expected schema of the response as advertised in the OpenAPI operation.
@@ -47,7 +47,7 @@ public sealed class RestApiOperationResponse
     /// <param name="content">The content of the response.</param>
     /// <param name="contentType">The content type of the response.</param>
     /// <param name="expectedSchema">The schema against which the response body should be validated.</param>
-    public RestApiOperationResponse(object content, string contentType, KernelJsonSchema? expectedSchema = null)
+    public RestApiOperationResponse(object? content, string? contentType, KernelJsonSchema? expectedSchema = null)
     {
         this.Content = content;
         this.ContentType = contentType;

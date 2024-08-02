@@ -8,6 +8,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// OpenAI function execution parameters
 /// </summary>
+[Obsolete("This class is deprecated and will be removed in a future version.")]
 public class OpenAIFunctionExecutionParameters : OpenApiFunctionExecutionParameters
 {
     /// <summary>

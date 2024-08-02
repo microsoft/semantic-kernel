@@ -19,16 +19,13 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
     protected override bool ForceOpenAI => true;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseRetrievalToolWithOpenAIAssistantAgentAsync()
     {
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
         OpenAIFileReference uploadFile =
-            await fileService.UploadContentAsync(
-                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
+            await fileService.UploadContentAsync(new BinaryContent(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!, "text/plain"),
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
-
-        Console.WriteLine(this.ApiKey);
 
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -43,7 +40,7 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
                 });
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input
         try
@@ -64,7 +61,7 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent content in chat.InvokeAsync(agent))
             {
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }

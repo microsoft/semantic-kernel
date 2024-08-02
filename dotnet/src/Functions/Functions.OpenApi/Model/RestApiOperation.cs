@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
+using System.Web;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -238,7 +239,7 @@ public sealed class RestApiOperation
             var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
 
             // Serializing the parameter and adding it to the path.
-            pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", node.ToString().Trim('"'));
+            pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", HttpUtility.UrlEncode(serializer.Invoke(parameter, node)));
         }
 
         return pathTemplate;

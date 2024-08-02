@@ -18,6 +18,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Provides extension methods for importing plugins exposed through OpenAI's ChatGPT format.
 /// </summary>
+[Obsolete("This class is deprecated and will be removed in a future version.")]
 public static class OpenAIPluginKernelExtensions
 {
     private static readonly JsonSerializerOptions s_jsonOptionsCache =

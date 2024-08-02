@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING, Any, Optional
 from numpy import array, ndarray
 
 if sys.version_info >= (3, 12):
-    from typing import override
+    from typing import override  # pragma: no cover
 else:
-    from typing_extensions import override
+    from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.connectors.memory.chroma.utils import chroma_compute_similarity_scores, query_results_to_records
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceResourceNotFoundError

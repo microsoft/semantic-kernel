@@ -19,6 +19,8 @@ Read more about logit bias and how to configure output: https://help.openai.com/
 
 
 def _config_ban_tokens(settings: PromptExecutionSettings, keys: dict[Any, Any]):
+    if settings.logit_bias is None:
+        settings.logit_bias = {}
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for k in keys:
         # -100 to potentially ban all tokens in the list

@@ -1,0 +1,43 @@
+classDiagram
+
+    Agent
+    AgentChannel
+    AgentChat
+    
+    AgentChat <|-- AgentGroupChat
+    AgentGroupChat o-- Agent
+    AgentGroupChat --> AgentGroupChatSettings
+    class AgentGroupChat {
+        <<Final>>
+        +IReadOnlyList~Agent~ Agents
+        +AgentGroupChatSettings ExecutionSettings
+        +bool IsComplete
+        +void AddAgent(Agent agent)
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync()
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(Agent agent)
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(Agent agent, bool isJoining)
+    }
+
+    AgentGroupChatSettings --> SelectionStrategy
+    AgentGroupChatSettings --> TerminationStrategy
+    class AgentGroupChatSettings {
+        <<Final>>
+        +SelectionStrategy SelectionStrategy
+        +TerminationStrategy TerminationStrategy
+    }
+    
+    class SelectionStrategy {
+        <<Abstract>>
+        #ILogger Logger
+        +Task~Agent~ NextAsync(IReadOnlyList~Agent~ agents, IReadOnlyList~ChatMessageContent~ history)*
+    }    
+
+    class TerminationStrategy {
+        <<Abstract>>
+        +bool AutomaticReset
+        +int MaximumIterations
+        +IReadOnlyList~Agent~? Agents
+        #ILogger Logger
+        +Task~bool~ ShouldTerminateAsync(Agent agent, IReadOnlyList~ChatMessageContent~ history)
+        #Task~bool~ ShouldAgentTerminateAsync(Agent agent, IReadOnlyList~ChatMessageContent~ history)*
+    }

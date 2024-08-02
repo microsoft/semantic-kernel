@@ -28,7 +28,7 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
         """;
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseKernelFunctionStrategiesWithJsonResultAsync()
     {
         // Define the agents
         ChatCompletionAgent agent =
@@ -64,7 +64,7 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent content in chat.InvokeAsync(agent))
             {
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
                 Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");

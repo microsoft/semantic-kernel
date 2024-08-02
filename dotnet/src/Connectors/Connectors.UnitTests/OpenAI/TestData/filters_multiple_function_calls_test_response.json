@@ -11,7 +11,7 @@
         "content": null,
         "tool_calls": [
           {
-            "id": "1",
+            "id": "tool-call-id-1",
             "type": "function",
             "function": {
               "name": "MyPlugin-Function1",
@@ -19,7 +19,7 @@
             }
           },
           {
-            "id": "2",
+            "id": "tool-call-id-2",
             "type": "function",
             "function": {
               "name": "MyPlugin-Function2",

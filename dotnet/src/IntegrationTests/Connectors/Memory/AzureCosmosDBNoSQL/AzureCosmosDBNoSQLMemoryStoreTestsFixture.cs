@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
@@ -35,28 +34,9 @@ public class AzureCosmosDBNoSQLMemoryStoreTestsFixture : IAsyncLifetime
         this.MemoryStore = new AzureCosmosDBNoSQLMemoryStore(
             connectionString,
             this.DatabaseName,
-            new VectorEmbeddingPolicy(
-                new Collection<Embedding>
-                {
-                    new()
-                    {
-                        DataType = VectorDataType.Float32,
-                        Dimensions = 3,
-                        DistanceFunction = DistanceFunction.Cosine,
-                        Path = "/embedding"
-                    }
-                }),
-            new()
-            {
-                VectorIndexes = new Collection<VectorIndexPath> {
-                    new()
-                    {
-                        Path = "/embedding",
-                        Type = VectorIndexType.Flat,
-                    },
-                },
-            }
-        );
+            dimensions: 3,
+            VectorDataType.Float32,
+            VectorIndexType.Flat);
     }
 
     public Task InitializeAsync()

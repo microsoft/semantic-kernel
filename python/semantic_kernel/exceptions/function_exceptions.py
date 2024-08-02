@@ -44,6 +44,10 @@ class FunctionResultError(FunctionException):
     pass
 
 
+class FunctionInvalidParameterConfiguration(FunctionException):
+    pass
+
+
 class PromptRenderingException(FunctionException):
     pass
 

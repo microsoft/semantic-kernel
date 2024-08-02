@@ -90,7 +90,7 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
     {
         Console.WriteLine("======== Streaming Chat ========");
 
-        var chatHistory = new ChatHistory();
+        var chatHistory = new ChatHistory("You are an expert in the tool shop.");
         var chat = kernel.GetRequiredService<IChatCompletionService>();
 
         // First user message

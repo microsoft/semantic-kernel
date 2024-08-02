@@ -23,10 +23,11 @@ internal struct DatabaseEntry
     public float Score { get; set; }
 }
 
-internal sealed class Database
+internal sealed class Database(int? vectorSize)
 {
     private const string TableName = "SKMemoryTable";
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "The vectorSize user input is int and cannot be used for injection")]
     public async Task CreateTableAsync(DuckDBConnection conn, CancellationToken cancellationToken = default)
     {
         using var cmd = conn.CreateCommand();
@@ -35,7 +36,7 @@ internal sealed class Database
                 collection TEXT,
                 key TEXT,
                 metadata TEXT,
-                embedding FLOAT[],
+                embedding FLOAT[{vectorSize}],
                 timestamp TEXT,
                 PRIMARY KEY(collection, key))";
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
@@ -51,7 +52,7 @@ internal sealed class Database
 
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-                INSERT INTO {TableName} VALUES ($collectionName, $key, $metadata, [], $timestamp ); ";
+                INSERT INTO {TableName} VALUES ($collectionName, $key, $metadata, NULL, $timestamp ); ";
         cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
         cmd.Parameters.Add(new DuckDBParameter("key", string.Empty));
         cmd.Parameters.Add(new DuckDBParameter("metadata", string.Empty));
@@ -201,6 +202,31 @@ internal sealed class Database
                 AND key=${nameof(key)}; ";
         cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
         cmd.Parameters.Add(new DuckDBParameter(nameof(key), key));
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task DeleteBatchAsync(DuckDBConnection conn, string collectionName, string[] keys, CancellationToken cancellationToken = default)
+    {
+        if (keys.Length == 0)
+        {
+            return;
+        }
+
+        using var cmd = conn.CreateCommand();
+        var keyPlaceholders = string.Join(", ", keys.Select((k) => "?"));
+
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+        cmd.CommandText = $@"
+         DELETE FROM {TableName}
+         WHERE collection=?
+            AND key IN ({keyPlaceholders});";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+        cmd.Parameters.Add(new DuckDBParameter { Value = collectionName });
+        // Add the key parameters
+        foreach (var key in keys)
+        {
+            cmd.Parameters.Add(new DuckDBParameter { Value = key });
+        }
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 }

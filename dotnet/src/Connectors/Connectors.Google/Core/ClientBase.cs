@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
 internal abstract class ClientBase
 {
-    private readonly Func<Task<string>>? _bearerTokenProvider;
+    private readonly Func<ValueTask<string>>? _bearerTokenProvider;
 
     protected ILogger Logger { get; }
 
@@ -23,7 +23,7 @@ internal abstract class ClientBase
     protected ClientBase(
         HttpClient httpClient,
         ILogger? logger,
-        Func<Task<string>> bearerTokenProvider)
+        Func<ValueTask<string>> bearerTokenProvider)
         : this(httpClient, logger)
     {
         Verify.NotNull(bearerTokenProvider);

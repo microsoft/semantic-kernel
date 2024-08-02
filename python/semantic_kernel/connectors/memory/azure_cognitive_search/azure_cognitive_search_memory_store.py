@@ -89,7 +89,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
             search_endpoint=str(acs_memory_settings.endpoint),
-            admin_key=acs_memory_settings.api_key.get_secret_value(),
+            admin_key=acs_memory_settings.api_key.get_secret_value() if acs_memory_settings.api_key else None,
             azure_credential=azure_credentials,
             token_credential=token_credentials,
         )

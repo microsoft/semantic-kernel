@@ -17,6 +17,7 @@ class KernelParameterMetadata(KernelBaseModel):
     is_required: bool | None = False
     type_object: Any | None = None
     schema_data: dict[str, Any] | None = None
+    function_schema_include: bool | None = True
 
     @model_validator(mode="before")
     @classmethod

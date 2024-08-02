@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Mapping
+from typing import Any
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -12,7 +13,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.kernel_pydantic import HttpsUrl
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -72,14 +72,6 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         if not azure_openai_settings.embedding_deployment_name:
             raise ServiceInitializationError("The Azure OpenAI embedding deployment name is required.")
 
-        if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
-            raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
-
-        if azure_openai_settings.endpoint and azure_openai_settings.embedding_deployment_name:
-            azure_openai_settings.base_url = HttpsUrl(
-                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.embedding_deployment_name}"
-            )
-
         super().__init__(
             deployment_name=azure_openai_settings.embedding_deployment_name,
             endpoint=azure_openai_settings.endpoint,
@@ -91,11 +83,11 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
             ai_model_type=OpenAIModelTypes.EMBEDDING,
-            async_client=async_client,
+            client=async_client,
         )
 
     @classmethod
-    def from_dict(cls, settings: dict[str, str]) -> "AzureTextEmbedding":
+    def from_dict(cls, settings: dict[str, Any]) -> "AzureTextEmbedding":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
         Args:

@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Represents the authentication section for an OpenAI plugin.
 /// </summary>
+[Obsolete("This class is deprecated and will be removed in a future version.")]
 public class OpenAIAuthenticationConfig
 {
     /// <summary>
@@ -57,6 +58,7 @@ public class OpenAIAuthenticationConfig
 /// <summary>
 /// Represents the type of authentication for an OpenAI plugin.
 /// </summary>
+[Obsolete("This enum is deprecated and will be removed in a future version.")]
 public enum OpenAIAuthenticationType
 {
     /// <summary>
@@ -83,6 +85,7 @@ public enum OpenAIAuthenticationType
 /// <summary>
 /// Represents the type of authorization for an OpenAI plugin.
 /// </summary>
+[Obsolete("This enum is deprecated and will be removed in a future version.")]
 public enum OpenAIAuthorizationType
 {
     /// <summary>

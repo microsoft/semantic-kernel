@@ -50,7 +50,7 @@ class ContentFilterAIException(ServiceContentFilterException):
     """AI exception for an error from Azure OpenAI's content filter."""
 
     # The parameter that caused the error.
-    param: str
+    param: str | None
 
     # The error code specific to the content filter.
     content_filter_code: ContentFilterCodes
@@ -72,12 +72,12 @@ class ContentFilterAIException(ServiceContentFilterException):
         super().__init__(message)
 
         self.param = inner_exception.param
-
-        inner_error = inner_exception.body.get("innererror", {})
-        self.content_filter_code = ContentFilterCodes(
-            inner_error.get("code", ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION.value)
-        )
-        self.content_filter_result = {
-            key: ContentFilterResult.from_inner_error_result(values)
-            for key, values in inner_error.get("content_filter_result", {}).items()
-        }
+        if inner_exception.body is not None and isinstance(inner_exception.body, dict):
+            inner_error = inner_exception.body.get("innererror", {})
+            self.content_filter_code = ContentFilterCodes(
+                inner_error.get("code", ContentFilterCodes.RESPONSIBLE_AI_POLICY_VIOLATION.value)
+            )
+            self.content_filter_result = {
+                key: ContentFilterResult.from_inner_error_result(values)
+                for key, values in inner_error.get("content_filter_result", {}).items()
+            }

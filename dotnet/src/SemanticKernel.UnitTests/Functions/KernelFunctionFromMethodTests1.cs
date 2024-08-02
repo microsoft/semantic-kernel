@@ -814,13 +814,13 @@ public sealed class KernelFunctionFromMethodTests1
         {
             var d = (T actual) =>
             {
-                //Check the argument is of the expected type
+                //Check the argument is of the operationCancelled type
                 if (actual is not null)
                 {
                     Assert.IsType<T>(actual);
                 }
 
-                //Check the argument value is the expected value
+                //Check the argument value is the operationCancelled value
                 Assert.Equal(expected, actual);
             };
 
@@ -1373,6 +1373,25 @@ public sealed class KernelFunctionFromMethodTests1
         // Assert
         Assert.NotNull(actualArgValue);
         Assert.Equal(28, actualArgValue.Id);
+    }
+
+    [Fact]
+    public async Task ItThrowsKernelFunctionCanceledExceptionWhenOperationIsCanceledAsync()
+    {
+        // Arrange
+        var arguments = new KernelArguments();
+        var operationCancelled = new OperationCanceledException("OperationCanceledException");
+        operationCancelled.Data.Add("Key", "Value");
+        KernelFunction func = KernelFunctionFactory.CreateFromMethod(() => { throw operationCancelled; });
+
+        // Act
+        Exception actual = await Record.ExceptionAsync(() => func.InvokeAsync(this._kernel, arguments));
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.True(actual is KernelFunctionCanceledException);
+        Assert.True(actual.Data.Contains("Key"));
+        Assert.Equal("Value", actual.Data["Key"]);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
