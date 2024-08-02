@@ -4,11 +4,15 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>samples</artifactId>
+<<<<<<< AI
+        <version>0.2.10-alpha-SNAPSHOT</version>
+=======
 <<<<<<< HEAD
         <version>0.2.10-alpha-SNAPSHOT</version>
 =======
         <version>0.2.9-alpha-SNAPSHOT</version>
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -76,13 +80,19 @@
             <artifactId>jackson-core</artifactId>
             <scope>compile</scope>
         </dependency>
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-settings-loader</artifactId>
         </dependency>
+<<<<<<< AI
+=======
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     </dependencies>
 
     <build>
@@ -109,18 +119,28 @@
                     </execution>
                 </executions>
                 <configuration>
+<<<<<<< AI
+                    <mainClass>com.microsoft.semantickernel.samples.syntaxexamples.${sample}</mainClass>
+                    <mainClass>com.microsoft.semantickernel.syntaxexamples.${sample}</mainClass>
+=======
 <<<<<<< HEAD
                     <mainClass>com.microsoft.semantickernel.samples.syntaxexamples.${sample}</mainClass>
 =======
                     <mainClass>com.microsoft.semantickernel.syntaxexamples.${sample}</mainClass>
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
+<<<<<<< AI
+</project>
+</project>
+=======
 <<<<<<< HEAD
 </project>
 =======
 </project>
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
