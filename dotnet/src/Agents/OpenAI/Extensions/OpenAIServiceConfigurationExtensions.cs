@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
-using OpenAI;
 using OpenAI.Files;
 using OpenAI.VectorStores;
 
