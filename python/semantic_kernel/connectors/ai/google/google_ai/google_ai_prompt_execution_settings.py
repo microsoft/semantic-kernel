@@ -35,10 +35,15 @@ class GoogleAITextPromptExecutionSettings(GoogleAIPromptExecutionSettings):
 class GoogleAIChatPromptExecutionSettings(GoogleAIPromptExecutionSettings):
     """Google AI Chat Prompt Execution Settings."""
 
-    # Do not set the tools and tool_config manually.
-    # They are set by the service based on the function choice configuration.
-    tools: list[dict[str, Any]] | None = Field(None, max_length=64)
-    tool_config: dict[str, Any] | None = None
+    tools: list[dict[str, Any]] | None = Field(
+        None,
+        max_length=64,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    tool_config: dict[str, Any] | None = Field(
+        None,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
 
     @override
     def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:

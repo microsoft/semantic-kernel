@@ -66,11 +66,15 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     functions: list[dict[str, Any]] | None = None
     messages: list[dict[str, Any]] | None = None
     function_call_behavior: FunctionCallBehavior | None = Field(None, exclude=True)
-
-    # Do not set the tools and tool_choice manually.
-    # They are set by the service based on the function choice configuration.
-    tools: list[dict[str, Any]] | None = Field(None, max_length=64)
-    tool_choice: str | None = None
+    tools: list[dict[str, Any]] | None = Field(
+        None,
+        max_length=64,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    tool_choice: str | None = Field(
+        None,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
