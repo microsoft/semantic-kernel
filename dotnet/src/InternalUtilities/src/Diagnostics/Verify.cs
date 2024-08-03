@@ -7,61 +7,126 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Diagnostics;
+namespace Microsoft.SemanticKernel;
 
-internal static class Verify
+[ExcludeFromCodeCoverage]
+internal static partial class Verify
 {
-    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
+#if NET
+    [GeneratedRegex("^[0-9A-Za-z_]*$")]
+    private static partial Regex AsciiLettersDigitsUnderscoresRegex();
+
+    [GeneratedRegex("^[^.]+\\.[^.]+$")]
+    private static partial Regex FilenameRegex();
+#else
+    private static Regex AsciiLettersDigitsUnderscoresRegex() => s_asciiLettersDigitsUnderscoresRegex;
+    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$", RegexOptions.Compiled);
+
+    private static Regex FilenameRegex() => s_filenameRegex;
+    private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$", RegexOptions.Compiled);
+#endif
 
     /// <summary>
     /// Equivalent of ArgumentNullException.ThrowIfNull
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression("obj")] string? paramName = null)
+    internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression(nameof(obj))] string? paramName = null)
     {
+#if NET
+        ArgumentNullException.ThrowIfNull(obj, paramName);
+#else
         if (obj is null)
         {
             ThrowArgumentNullException(paramName);
         }
+#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression("str")] string? paramName = null)
+    internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression(nameof(str))] string? paramName = null)
     {
+#if NET
+        ArgumentException.ThrowIfNullOrWhiteSpace(str, paramName);
+#else
         NotNull(str, paramName);
         if (string.IsNullOrWhiteSpace(str))
         {
             ThrowArgumentWhiteSpaceException(paramName);
         }
+#endif
     }
 
-    internal static void ValidSkillName([NotNull] string? skillName)
+    internal static void NotNullOrEmpty<T>(IList<T> list, [CallerArgumentExpression(nameof(list))] string? paramName = null)
     {
-        NotNullOrWhiteSpace(skillName);
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(skillName))
+        NotNull(list, paramName);
+        if (list.Count == 0)
         {
-            ThrowInvalidName("skill name", skillName);
+            throw new ArgumentException("The value cannot be empty.", paramName);
         }
     }
 
-    internal static void ValidFunctionName([NotNull] string? functionName) =>
-        ValidName(functionName, "function name");
-
-    internal static void ValidFunctionParamName([NotNull] string? functionParamName) =>
-        ValidName(functionParamName, "function parameter name");
-
-    private static void ValidName([NotNull] string? name, string kind)
+    public static void True(bool condition, string message, [CallerArgumentExpression(nameof(condition))] string? paramName = null)
     {
-        NotNullOrWhiteSpace(name);
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(name))
+        if (!condition)
         {
-            ThrowInvalidName(kind, name);
+            throw new ArgumentException(message, paramName);
         }
     }
 
-    internal static void StartsWith(string text, string prefix, string message, [CallerArgumentExpression("text")] string? textParamName = null)
+    internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlyKernelPluginCollection? plugins = null, [CallerArgumentExpression(nameof(pluginName))] string? paramName = null)
+    {
+        NotNullOrWhiteSpace(pluginName);
+        if (!AsciiLettersDigitsUnderscoresRegex().IsMatch(pluginName))
+        {
+            ThrowArgumentInvalidName("plugin name", pluginName, paramName);
+        }
+
+        if (plugins is not null && plugins.Contains(pluginName))
+        {
+            throw new ArgumentException($"A plugin with the name '{pluginName}' already exists.");
+        }
+    }
+
+    internal static void ValidFunctionName([NotNull] string? functionName, [CallerArgumentExpression(nameof(functionName))] string? paramName = null)
+    {
+        NotNullOrWhiteSpace(functionName);
+        if (!AsciiLettersDigitsUnderscoresRegex().IsMatch(functionName))
+        {
+            ThrowArgumentInvalidName("function name", functionName, paramName);
+        }
+    }
+
+    internal static void ValidFilename([NotNull] string? filename, [CallerArgumentExpression(nameof(filename))] string? paramName = null)
+    {
+        NotNullOrWhiteSpace(filename);
+        if (!FilenameRegex().IsMatch(filename))
+        {
+            throw new ArgumentException($"Invalid filename format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
+        }
+    }
+
+    public static void ValidateUrl(string url, bool allowQuery = false, [CallerArgumentExpression(nameof(url))] string? paramName = null)
+    {
+        NotNullOrWhiteSpace(url, paramName);
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || string.IsNullOrEmpty(uri.Host))
+        {
+            throw new ArgumentException($"The `{url}` is not valid.", paramName);
+        }
+
+        if (!allowQuery && !string.IsNullOrEmpty(uri.Query))
+        {
+            throw new ArgumentException($"The `{url}` is not valid: it cannot contain query parameters.", paramName);
+        }
+
+        if (!string.IsNullOrEmpty(uri.Fragment))
+        {
+            throw new ArgumentException($"The `{url}` is not valid: it cannot contain URL fragments.", paramName);
+        }
+    }
+
+    internal static void StartsWith([NotNull] string? text, string prefix, string message, [CallerArgumentExpression(nameof(text))] string? textParamName = null)
     {
         Debug.Assert(prefix is not null);
 
@@ -84,7 +149,7 @@ internal static class Verify
     /// Make sure every function parameter name is unique
     /// </summary>
     /// <param name="parameters">List of parameters</param>
-    internal static void ParametersUniqueness(IList<ParameterView> parameters)
+    internal static void ParametersUniqueness(IReadOnlyList<KernelParameterMetadata> parameters)
     {
         int count = parameters.Count;
         if (count > 0)
@@ -92,7 +157,7 @@ internal static class Verify
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < count; i++)
             {
-                ParameterView p = parameters[i];
+                KernelParameterMetadata p = parameters[i];
                 if (string.IsNullOrWhiteSpace(p.Name))
                 {
                     string paramName = $"{nameof(parameters)}[{i}].{p.Name}";
@@ -108,15 +173,15 @@ internal static class Verify
 
                 if (!seen.Add(p.Name))
                 {
-                    throw new SKException($"The function has two or more parameters with the same name '{p.Name}'");
+                    throw new ArgumentException($"The function has two or more parameters with the same name '{p.Name}'");
                 }
             }
         }
     }
 
     [DoesNotReturn]
-    private static void ThrowInvalidName(string kind, string name) =>
-        throw new SKException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.");
+    private static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
+        throw new ArgumentException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
 
     [DoesNotReturn]
     internal static void ThrowArgumentNullException(string? paramName) =>

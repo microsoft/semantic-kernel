@@ -12,6 +12,14 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParame
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+<<<<<<< AI
+import java.util.Locale;
+=======
+<<<<<<< HEAD
+import java.util.Locale;
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -24,6 +32,16 @@ public abstract class AbstractSkFunction<RequestConfiguration>
     private final String skillName;
     private final String functionName;
     private final String description;
+<<<<<<< AI
+
+    private final List<ParameterView> returnParameters;
+=======
+<<<<<<< HEAD
+
+    private final List<ParameterView> returnParameters;
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     @Nullable private KernelSkillsSupplier skillsSupplier;
 
     /**
@@ -40,12 +58,28 @@ public abstract class AbstractSkFunction<RequestConfiguration>
             String skillName,
             String functionName,
             String description,
+<<<<<<< AI
+            List<ParameterView> returnParameters,
+=======
+<<<<<<< HEAD
+            List<ParameterView> returnParameters,
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
             @Nullable KernelSkillsSupplier skillsSupplier) {
 
         this.parameters = new ArrayList<>(parameters);
         this.skillName = skillName;
         this.functionName = functionName;
         this.description = description;
+<<<<<<< AI
+        this.returnParameters = Collections.unmodifiableList(returnParameters);
+=======
+<<<<<<< HEAD
+        this.returnParameters = Collections.unmodifiableList(returnParameters);
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         this.skillsSupplier = skillsSupplier;
     }
 
@@ -180,7 +214,16 @@ public abstract class AbstractSkFunction<RequestConfiguration>
     }
 
     @Override
+<<<<<<< AI
+    public String toManualString(boolean includeOutputs) {
     public String toManualString() {
+=======
+<<<<<<< HEAD
+    public String toManualString(boolean includeOutputs) {
+=======
+    public String toManualString() {
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         String inputs =
                 parameters.stream()
                         .map(
@@ -207,15 +250,63 @@ public abstract class AbstractSkFunction<RequestConfiguration>
                                             + parameter.getDescription()
                                             + defaultValueString;
                                 })
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
+                        .map(s -> s.toLowerCase(Locale.ROOT))
+                        .sorted()
+                        .distinct()
                         .collect(Collectors.joining("\n"));
 
+        String outputsList = "";
+
+        if (returnParameters.size() > 0) {
+
+            outputsList =
+                    returnParameters.stream()
+                            .filter(it -> !it.getDescription().isEmpty())
+                            .map(it -> "  - " + it.getName() + ": " + it.getDescription())
+                            .collect(Collectors.joining("\n"));
+        }
+
+        String outputs = "";
+        if (includeOutputs) {
+            outputs = "\n  outputs:\n";
+            if (outputsList.length() > 0) {
+                outputs += outputsList;
+            } else {
+                outputs += "  - return: void";
+            }
+        }
+
+<<<<<<< AI
+                        .collect(Collectors.joining("\n"));
+
+=======
+=======
+                        .collect(Collectors.joining("\n"));
+
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         return toFullyQualifiedName()
                 + ":\n"
                 + "  description: "
                 + getDescription()
                 + "\n"
                 + "  inputs:\n"
+<<<<<<< AI
+                + inputs
+                + outputs;
                 + inputs;
+=======
+<<<<<<< HEAD
+                + inputs
+                + outputs;
+=======
+                + inputs;
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 
     @Override

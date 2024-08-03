@@ -1,164 +1,89 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import Any, List, Optional, Union
+import json
+import logging
+from collections.abc import Mapping
+from typing import Any
 
-import openai
+from openai import AsyncOpenAI
+from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
-)
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
-from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
+from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-class OpenAITextCompletion(TextCompletionClientBase):
-    _model_id: str
-    _api_key: str
-    _api_type: Optional[str] = None
-    _api_version: Optional[str] = None
-    _endpoint: Optional[str] = None
-    _org_id: Optional[str] = None
-    _log: Logger
+class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
+    """OpenAI Text Completion class."""
 
     def __init__(
         self,
-        model_id: str,
-        api_key: str,
-        org_id: Optional[str] = None,
-        api_type: Optional[str] = None,
-        api_version: Optional[str] = None,
-        endpoint: Optional[str] = None,
-        log: Optional[Logger] = None,
+        ai_model_id: str | None = None,
+        api_key: str | None = None,
+        org_id: str | None = None,
+        service_id: str | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncOpenAI | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
-        """
-        Initializes a new instance of the OpenAITextCompletion class.
+        """Initialize an OpenAITextCompletion service.
 
-        Arguments:
-            model_id {str} -- OpenAI model name, see
+        Args:
+            ai_model_id (str | None): OpenAI model name, see
                 https://platform.openai.com/docs/models
-            api_key {str} -- OpenAI API key, see
-                https://platform.openai.com/account/api-keys
-            org_id {Optional[str]} -- OpenAI organization ID.
-                This is usually optional unless your
-                account belongs to multiple organizations.
+            service_id (str | None): Service ID tied to the execution settings.
+            api_key (str | None): The optional API key to use. If provided will override,
+                the env vars or .env file value.
+            org_id (str | None): The optional org ID to use. If provided will override,
+                the env vars or .env file value.
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+            async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
+            env_file_path (str | None): Use the environment settings file as a fallback to
+                environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
-        self._model_id = model_id
-        self._api_key = api_key
-        self._api_type = api_type
-        self._api_version = api_version
-        self._endpoint = endpoint
-        self._org_id = org_id
-        self._log = log if log is not None else NullLogger()
-
-    async def complete_async(
-        self,
-        prompt: str,
-        request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
-    ) -> Union[str, List[str]]:
-        # TODO: tracking on token counts/etc.
-        response = await self._send_completion_request(prompt, request_settings, False)
-
-        if len(response.choices) == 1:
-            return response.choices[0].text
-        else:
-            return [choice.text for choice in response.choices]
-
-    # TODO: complete w/ multiple...
-
-    async def complete_stream_async(
-        self,
-        prompt: str,
-        request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
-    ):
-        response = await self._send_completion_request(prompt, request_settings, True)
-
-        async for chunk in response:
-            if request_settings.number_of_responses > 1:
-                for choice in chunk.choices:
-                    completions = [""] * request_settings.number_of_responses
-                    completions[choice.index] = choice.text
-                    yield completions
-            else:
-                yield chunk.choices[0].text
-
-    async def _send_completion_request(
-        self, prompt: str, request_settings: CompleteRequestSettings, stream: bool
-    ):
-        """
-        Completes the given prompt. Returns a single string completion.
-        Cannot return multiple completions. Cannot return logprobs.
-
-        Arguments:
-            prompt {str} -- The prompt to complete.
-            request_settings {CompleteRequestSettings} -- The request settings.
-
-        Returns:
-            str -- The completed text.
-        """
-        if not prompt:
-            raise ValueError("The prompt cannot be `None` or empty")
-        if request_settings is None:
-            raise ValueError("The request settings cannot be `None`")
-
-        if request_settings.max_tokens < 1:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "The max tokens must be greater than 0, "
-                f"but was {request_settings.max_tokens}",
-            )
-
-        if request_settings.logprobs != 0:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "complete_async does not support logprobs, "
-                f"but logprobs={request_settings.logprobs} was requested",
-            )
-
-        model_args = {}
-        if self._api_type in ["azure", "azure_ad"]:
-            model_args["engine"] = self._model_id
-        else:
-            model_args["model"] = self._model_id
-
         try:
-            response: Any = await openai.Completion.acreate(
-                **model_args,
-                api_key=self._api_key,
-                api_type=self._api_type,
-                api_base=self._endpoint,
-                api_version=self._api_version,
-                organization=self._org_id,
-                prompt=prompt,
-                temperature=request_settings.temperature,
-                top_p=request_settings.top_p,
-                presence_penalty=request_settings.presence_penalty,
-                frequency_penalty=request_settings.frequency_penalty,
-                max_tokens=request_settings.max_tokens,
-                stream=stream,
-                n=request_settings.number_of_responses,
-                stop=(
-                    request_settings.stop_sequences
-                    if request_settings.stop_sequences is not None
-                    and len(request_settings.stop_sequences) > 0
-                    else None
-                ),
-                logit_bias=(
-                    request_settings.token_selection_biases
-                    if request_settings.token_selection_biases is not None
-                    and len(request_settings.token_selection_biases) > 0
-                    else {}
-                ),
+            openai_settings = OpenAISettings.create(
+                api_key=api_key,
+                org_id=org_id,
+                text_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
             )
-        except Exception as ex:
-            raise AIException(
-                AIException.ErrorCodes.ServiceError,
-                "OpenAI service failed to complete the prompt",
-                ex,
-            )
-        return response
+        except ValidationError as ex:
+            raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
+        if not openai_settings.text_model_id:
+            raise ServiceInitializationError("The OpenAI text model ID is required.")
+        super().__init__(
+            ai_model_id=openai_settings.text_model_id,
+            service_id=service_id,
+            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+            org_id=openai_settings.org_id,
+            ai_model_type=OpenAIModelTypes.TEXT,
+            default_headers=default_headers,
+            client=async_client,
+        )
+
+    @classmethod
+    def from_dict(cls, settings: dict[str, Any]) -> "OpenAITextCompletion":
+        """Initialize an Open AI service from a dictionary of settings.
+
+        Args:
+            settings: A dictionary of settings for the service.
+        """
+        if "default_headers" in settings and isinstance(settings["default_headers"], str):
+            settings["default_headers"] = json.loads(settings["default_headers"])
+        return OpenAITextCompletion(
+            ai_model_id=settings.get("ai_model_id"),
+            api_key=settings.get("api_key"),
+            org_id=settings.get("org_id"),
+            service_id=settings.get("service_id"),
+            default_headers=settings.get("default_headers"),
+            env_file_path=settings.get("env_file_path"),
+        )

@@ -6,17 +6,17 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Sqlite;
+namespace SemanticKernel.Connectors.UnitTests.Sqlite;
 
 /// <summary>
 /// Unit tests of <see cref="SqliteMemoryStore"/>.
 /// </summary>
 [Collection("Sequential")]
-public class SqliteMemoryStoreTests : IDisposable
+public sealed class SqliteMemoryStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";
     private bool _disposedValue = false;
@@ -28,24 +28,14 @@ public class SqliteMemoryStoreTests : IDisposable
             File.Delete(DatabaseFile);
         }
 
-        using (var stream = File.Create(DatabaseFile)) { }
+        File.Create(DatabaseFile).Dispose();
     }
 
     public void Dispose()
     {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
         if (!this._disposedValue)
         {
-            if (disposing)
-            {
-                File.Delete(DatabaseFile);
-            }
+            File.Delete(DatabaseFile);
 
             this._disposedValue = true;
         }
@@ -160,7 +150,7 @@ public class SqliteMemoryStoreTests : IDisposable
 
         // Assert
         var collections2 = db.GetCollectionsAsync();
-        Assert.True(await collections2.CountAsync() == 0);
+        Assert.Equal(0, await collections2.CountAsync());
     }
 
     [Fact]
@@ -659,7 +649,7 @@ public class SqliteMemoryStoreTests : IDisposable
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
         await db.CreateCollectionAsync(collection);
 
-        List<string> keys = new();
+        List<string> keys = [];
 
         // Act
         await foreach (var key in db.UpsertBatchAsync(collection, records))

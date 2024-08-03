@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// DeleteRequest
@@ -79,7 +79,7 @@ internal sealed class DeleteRequest
 
     public HttpRequestMessage Build()
     {
-        if (this.Filter != null)
+        if (this.Filter is not null)
         {
             this.Filter = PineconeUtils.ConvertFilterToPineconeFilter(this.Filter);
         }
@@ -100,22 +100,22 @@ internal sealed class DeleteRequest
 
         sb.Append("DeleteRequest: ");
 
-        if (this.Ids != null)
+        if (this.Ids is not null)
         {
             sb.Append($"Deleting {this.Ids.Count()} vectors, {string.Join(", ", this.Ids)},");
         }
 
-        if (this.DeleteAll != null)
+        if (this.DeleteAll is not null)
         {
             sb.Append("Deleting All vectors,");
         }
 
-        if (this.Namespace != null)
+        if (this.Namespace is not null)
         {
             sb.Append($"From Namespace: {this.Namespace}, ");
         }
 
-        if (this.Filter == null)
+        if (this.Filter is null)
         {
             return sb.ToString();
         }
@@ -134,12 +134,12 @@ internal sealed class DeleteRequest
 
     private DeleteRequest(IEnumerable<string>? ids)
     {
-        this.Ids = ids ?? new List<string>();
+        this.Ids = ids ?? [];
     }
 
     private DeleteRequest(bool clear)
     {
-        this.Ids = new List<string>();
+        this.Ids = [];
         this.DeleteAll = clear;
     }
 

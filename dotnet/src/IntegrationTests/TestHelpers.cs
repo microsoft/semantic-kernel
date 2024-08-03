@@ -1,33 +1,44 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SemanticKernel.IntegrationTests;
 
 internal static class TestHelpers
 {
-    internal static void ImportSampleSkills(IKernel target)
+    private const string PluginsFolder = "../../../../../../prompt_template_samples";
+
+    internal static void ImportAllSamplePlugins(Kernel kernel)
     {
-        var chatSkill = GetSkills(target,
-            "ChatSkill",
-            "SummarizeSkill",
-            "WriterSkill",
-            "CalendarSkill",
-            "ChildrensBookSkill",
-            "ClassificationSkill",
-            "CodingSkill",
-            "FunSkill",
-            "IntentDetectionSkill",
-            "MiscSkill",
-            "QASkill");
+        ImportSamplePromptFunctions(kernel, PluginsFolder,
+            "ChatPlugin",
+            "SummarizePlugin",
+            "WriterPlugin",
+            "CalendarPlugin",
+            "ChildrensBookPlugin",
+            "ClassificationPlugin",
+            "CodingPlugin",
+            "FunPlugin",
+            "IntentDetectionPlugin",
+            "MiscPlugin",
+            "QAPlugin");
     }
 
-    internal static IDictionary<string, ISKFunction> GetSkills(IKernel target, params string[] skillNames)
+    internal static void ImportAllSampleSkills(Kernel kernel)
+    {
+        ImportSamplePromptFunctions(kernel, "./skills", "FunSkill");
+    }
+
+    internal static IReadOnlyKernelPluginCollection ImportSamplePlugins(Kernel kernel, params string[] pluginNames)
+    {
+        return ImportSamplePromptFunctions(kernel, PluginsFolder, pluginNames);
+    }
+
+    internal static IReadOnlyKernelPluginCollection ImportSamplePromptFunctions(Kernel kernel, string path, params string[] pluginNames)
     {
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
@@ -35,8 +46,10 @@ internal static class TestHelpers
             throw new InvalidOperationException("Unable to determine current assembly directory.");
         }
 
-        string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
+        string parentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, path));
 
-        return target.ImportSemanticSkillFromDirectory(skillParentDirectory, skillNames);
+        return new KernelPluginCollection(
+            from pluginName in pluginNames
+            select kernel.ImportPluginFromPromptDirectory(Path.Combine(parentDirectory, pluginName)));
     }
 }

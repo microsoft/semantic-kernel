@@ -75,7 +75,11 @@ public class NativeSKFunctionTest {
     }
 
     @Test
+<<<<<<< HEAD
+    public void nonExistentVariableCreatesError() {
+=======
     public void nonExistantVariableCreatesError() {
+>>>>>>> main
         class DoesNotExist {
             @DefineSKFunction
             public String doSomething(@SKFunctionParameters(name = "doesNotExist") String anInput) {

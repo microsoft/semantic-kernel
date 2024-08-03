@@ -70,6 +70,8 @@ public class VolatileMemoryStore implements MemoryStore {
                     // Contract:
                     //    Does not guarantee that the collection exists.
 
+                    Map<String, MemoryRecord> collection =
+                            _store.computeIfAbsent(collectionName, k -> new ConcurrentHashMap<>());
                     // getCollection throws MemoryException if the collection does not exist.
                     Map<String, MemoryRecord> collection = getCollection(collectionName);
 
@@ -93,6 +95,8 @@ public class VolatileMemoryStore implements MemoryStore {
 
         return Mono.fromCallable(
                 () -> {
+                    Map<String, MemoryRecord> collection =
+                            _store.computeIfAbsent(collectionName, k -> new ConcurrentHashMap<>());
                     Map<String, MemoryRecord> collection = getCollection(collectionName);
                     Set<String> keys = new HashSet<>();
                     records.forEach(
@@ -191,6 +195,7 @@ public class VolatileMemoryStore implements MemoryStore {
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             int limit,
+            float minRelevanceScore,
             double minRelevanceScore,
             boolean withEmbeddings) {
         Objects.requireNonNull(collectionName);
@@ -252,6 +257,7 @@ public class VolatileMemoryStore implements MemoryStore {
     public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
+            float minRelevanceScore,
             double minRelevanceScore,
             boolean withEmbedding) {
         Objects.requireNonNull(collectionName);
@@ -279,6 +285,9 @@ public class VolatileMemoryStore implements MemoryStore {
         return collection;
     }
 
+    public static class Builder implements MemoryStore.Builder<VolatileMemoryStore> {
+        @Override
+        public VolatileMemoryStore build() {
     public static class Builder implements MemoryStore.Builder {
         @Override
         public MemoryStore build() {

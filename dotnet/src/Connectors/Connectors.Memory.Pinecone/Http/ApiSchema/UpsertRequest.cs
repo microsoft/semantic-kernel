@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// UpsertRequest
@@ -56,7 +56,7 @@ internal sealed class UpsertRequest
     [JsonConstructor]
     private UpsertRequest()
     {
-        this.Vectors = new List<PineconeDocument>();
+        this.Vectors = [];
     }
 
     #endregion

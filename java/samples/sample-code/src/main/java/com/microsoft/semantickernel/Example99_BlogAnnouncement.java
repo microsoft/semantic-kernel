@@ -12,6 +12,18 @@ import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import java.io.IOException;
 
+<<<<<<< HEAD
+/**
+ * Code for Microsoft Developer Blog
+ * <a href="https://devblogs.microsoft.com/semantic-kernel/introducing-semantic-kernel-for-java/">
+ * Introducing Semantic Kernel for Java</a>
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+ */
+=======
+>>>>>>> main
 public class Example99_BlogAnnouncement {
 
   static {

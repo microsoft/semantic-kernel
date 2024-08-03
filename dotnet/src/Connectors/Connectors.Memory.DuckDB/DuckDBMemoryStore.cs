@@ -5,16 +5,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Memory.Collections;
-using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
+namespace Microsoft.SemanticKernel.Connectors.DuckDB;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a DuckDB database.
@@ -22,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
 /// <remarks>The data is saved to a database file, specified in the constructor.
 /// The data persists between subsequent instances. Only one instance may access the file at a time.
 /// The caller is responsible for deleting the file.</remarks>
-public class DuckDBMemoryStore : IMemoryStore, IDisposable
+public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>
     /// Connect a DuckDB database
@@ -32,23 +28,46 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     public static async Task<DuckDBMemoryStore> ConnectAsync(string filename,
         CancellationToken cancellationToken = default)
     {
-        var memoryStore = new DuckDBMemoryStore($"Data Source={filename}");
+        var memoryStore = new DuckDBMemoryStore(filename, null);
         return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Connect a in memory DuckDB database
+    /// Connect a DuckDB database
     /// </summary>
+    /// <param name="filename">Path to the database file. If file does not exist, it will be created.</param>
+    /// <param name="vectorSize">Embedding vector size.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public static async Task<DuckDBMemoryStore> ConnectAsync(
+    public static async Task<DuckDBMemoryStore> ConnectAsync(string filename, int vectorSize,
         CancellationToken cancellationToken = default)
     {
-        var memoryStore = new DuckDBMemoryStore(":memory:");
+        var memoryStore = new DuckDBMemoryStore(filename, vectorSize);
         return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Connect a in memory DuckDB database
+    /// Connect an in memory DuckDB database
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static Task<DuckDBMemoryStore> ConnectAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return ConnectAsync(":memory:", cancellationToken);
+    }
+
+    /// <summary>
+    /// Connect an in memory DuckDB database
+    /// </summary>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static Task<DuckDBMemoryStore> ConnectAsync(int vectorSize,
+        CancellationToken cancellationToken = default)
+    {
+        return ConnectAsync(":memory:", vectorSize, cancellationToken);
+    }
+
+    /// <summary>
+    /// Connect an in memory DuckDB database
     /// </summary>
     /// <param name="connection">An already established connection.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -56,6 +75,19 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default)
     {
         var memoryStore = new DuckDBMemoryStore(connection);
+        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Connect an in memory DuckDB database
+    /// </summary>
+    /// <param name="connection">An already established connection.</param>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task<DuckDBMemoryStore> ConnectAsync(DuckDBConnection connection, int vectorSize,
+        CancellationToken cancellationToken = default)
+    {
+        var memoryStore = new DuckDBMemoryStore(connection, vectorSize);
         return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
     }
 
@@ -74,7 +106,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken))
+        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken).ConfigureAwait(false))
         {
             yield return collection;
         }
@@ -115,7 +147,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         foreach (var key in keys)
         {
             var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result != null)
+            if (result is not null)
             {
                 yield return result;
             }
@@ -135,7 +167,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(k => this._dbConnector.DeleteAsync(this._dbConnection, collectionName, k, cancellationToken))).ConfigureAwait(false);
+        await this._dbConnector.DeleteBatchAsync(this._dbConnection, collectionName, keys.ToArray(), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -152,29 +184,21 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
             yield break;
         }
 
-        var collectionMemories = new List<MemoryRecord>();
-        TopNCollection<MemoryRecord> embeddings = new(limit);
+        List<(MemoryRecord Record, double Score)> embeddings = [];
 
-        await foreach (var record in this.GetAllAsync(collectionName, cancellationToken))
+        await foreach (var dbEntry in this._dbConnector.GetNearestMatchesAsync(this._dbConnection, collectionName, embedding.ToArray(), limit, minRelevanceScore, cancellationToken).ConfigureAwait(false))
         {
-            if (record != null)
-            {
-                double similarity = embedding
-                    .Span
-                    .CosineSimilarity(record.Embedding.Span);
-                if (similarity >= minRelevanceScore)
-                {
-                    var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, ReadOnlyMemory<float>.Empty, record.Key, record.Timestamp);
-                    embeddings.Add(new(entry, similarity));
-                }
-            }
+            var entry = MemoryRecord.FromJsonMetadata(
+                json: dbEntry.MetadataString,
+                withEmbeddings ? dbEntry.Embedding : [],
+                dbEntry.Key,
+                ParseTimestamp(dbEntry.Timestamp));
+            embeddings.Add(new(entry, dbEntry.Score));
         }
 
-        embeddings.SortByScore();
-
-        foreach (var item in embeddings)
+        foreach (var item in embeddings.OrderByDescending(l => l.Score).Take(limit))
         {
-            yield return (item.Value, item.Score.Value);
+            yield return (item.Record, item.Score);
         }
     }
 
@@ -194,27 +218,14 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    #region protected ================================================================================
-
-    protected virtual void Dispose(bool disposing)
-    {
         if (!this._disposedValue)
         {
-            if (disposing)
-            {
-                this._dbConnection.Close();
-                this._dbConnection.Dispose();
-            }
+            this._dbConnection.Close();
+            this._dbConnection.Dispose();
 
             this._disposedValue = true;
         }
     }
-
-    #endregion
 
     #region private ================================================================================
 
@@ -233,9 +244,10 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// Constructor
     /// </summary>
     /// <param name="filename">DuckDB db filename.</param>
-    private DuckDBMemoryStore(string filename)
+    /// <param name="vectorSize">Embedding vector size. If provided, the database will be used ARRAY type to store embeddings. If not, the database will fall back to LIST.</param>
+    private DuckDBMemoryStore(string filename, int? vectorSize = null)
     {
-        this._dbConnector = new Database();
+        this._dbConnector = new Database(vectorSize);
         this._dbConnection = new DuckDBConnection($"Data Source={filename};");
         this._disposedValue = false;
     }
@@ -243,20 +255,11 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Constructor
     /// </summary>
-    private DuckDBMemoryStore()
-    {
-        this._dbConnector = new Database();
-        this._dbConnection = new DuckDBConnection("Data Source=:memory:;");
-        this._disposedValue = false;
-    }
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
     /// <param name="connection"></param>
-    private DuckDBMemoryStore(DuckDBConnection connection)
+    /// <param name="vectorSize">Embedding vector size. If provided, the database will be used ARRAY type to store embeddings. If not, the database will fall back to LIST.</param>
+    private DuckDBMemoryStore(DuckDBConnection connection, int? vectorSize = null)
     {
-        this._dbConnector = new Database();
+        this._dbConnector = new Database(vectorSize);
         this._dbConnection = connection;
         this._disposedValue = false;
     }
@@ -268,8 +271,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
 
     private static DateTimeOffset? ParseTimestamp(string? str)
     {
-        if (!string.IsNullOrEmpty(str)
-            && DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset timestamp))
+        if (DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset timestamp))
         {
             return timestamp;
         }
@@ -277,31 +279,15 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         return null;
     }
 
-    private async IAsyncEnumerable<MemoryRecord> GetAllAsync(string collectionName, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        // delete empty entry in the database if it exists (see CreateCollection)
-        await this._dbConnector.DeleteEmptyAsync(this._dbConnection, collectionName, cancellationToken).ConfigureAwait(false);
-
-        await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken))
-        {
-            var dbEntryEmbeddingString = dbEntry.EmbeddingString;
-            ReadOnlyMemory<float> vector = JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntryEmbeddingString, s_jsonSerializerOptions);
-
-            var record = MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
-
-            yield return record;
-        }
-    }
-
     private async Task<string> InternalUpsertAsync(DuckDBConnection connection, string collectionName, MemoryRecord record, CancellationToken cancellationToken)
     {
         record.Key = record.Metadata.Id;
 
         await this._dbConnector.UpdateOrInsertAsync(conn: connection,
-            collection: collectionName,
+            collectionName: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding, s_jsonSerializerOptions),
+            embedding: record.Embedding.ToArray(),
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -322,7 +308,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         {
             return MemoryRecord.FromJsonMetadata(
                 json: entry.Value.MetadataString,
-                JsonSerializer.Deserialize<ReadOnlyMemory<float>>(entry.Value.EmbeddingString, s_jsonSerializerOptions),
+                entry.Value.Embedding,
                 entry.Value.Key,
                 ParseTimestamp(entry.Value.Timestamp));
         }
@@ -332,15 +318,6 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
             ReadOnlyMemory<float>.Empty,
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
-    }
-
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var jso = new JsonSerializerOptions();
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
-        return jso;
     }
 
     #endregion

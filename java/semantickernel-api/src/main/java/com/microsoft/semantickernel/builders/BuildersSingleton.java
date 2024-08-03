@@ -29,6 +29,38 @@ public enum BuildersSingleton {
     // Fallback classes in case the META-INF/services directory is missing
     // Keep this list in alphabetical order by fallback variable name
 
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
+    private static final String FALLBACK_CHAT_COMPLETION_BUILDER_CLASS =
+            "com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatCompletion$Builder";
+    private static final String FALLBACK_COMPLETION_CONFIG_BUILDER_CLASS =
+            "com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig$CompletionConfigBuilder";
+    private static final String FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS =
+            "com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction$Builder";
+    private static final String FALLBACK_CONTEXT_BUILDER_CLASS =
+            "com.microsoft.semantickernel.orchestration.DefaultSKContext$Builder";
+    private static final String FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS =
+            "com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration$Builder";
+    private static final String FALLBACK_KERNEL_BUILDER_CLASS =
+            "com.microsoft.semantickernel.DefaultKernel$Builder";
+    private static final String FALLBACK_KERNEL_CONFIG_BUILDER_CLASS =
+            "com.microsoft.semantickernel.KernelConfig$Builder";
+    private static final String FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS =
+            "com.microsoft.semantickernel.semanticfunctions.DefaultPromptTemplate$Builder";
+    private static final String FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS =
+            "com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine$Builder";
+    private static final String FALLBACK_MEMORY_STORE_BUILDER_CLASS =
+            "com.microsoft.semantickernel.memory.VolatileMemoryStore$Builder";
+    private static final String FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS =
+            "com.microsoft.semantickernel.memory.DefaultSemanticTextMemory$Builder";
+    private static final String FALLBACK_SKILL_COLLECTION_BUILDER_CLASS =
+            "com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection$Builder";
+<<<<<<< AI
+=======
+=======
+>>>>>>> main
   private static final String FALLBACK_CHAT_COMPLETION_BUILDER_CLASS =
         "com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatCompletion$Builder";
   private static final String FALLBACK_COMPLETION_CONFIG_BUILDER_CLASS =
@@ -53,6 +85,10 @@ public enum BuildersSingleton {
       "com.microsoft.semantickernel.memory.DefaultSemanticTextMemory$Builder";
     private static final String FALLBACK_SKILL_COLLECTION_BUILDER_CLASS =
         "com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection$Builder";
+<<<<<<< AI
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     private static final String FALLBACK_TEXT_COMPLETION_BUILDER_CLASS =
             "com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion$Builder";
     private static final String FALLBACK_VARIABLE_BUILDER_CLASS =
@@ -62,6 +98,26 @@ public enum BuildersSingleton {
             builders = new HashMap<>();
 
     BuildersSingleton() {
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
+        try {
+            // Keep this list in alphabetical order by fallback variable name
+            registerBuilder(ChatCompletion.Builder.class, FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
+            registerBuilder(
+                    PromptTemplateConfig.CompletionConfigBuilder.class,
+                    FALLBACK_COMPLETION_CONFIG_BUILDER_CLASS);
+            registerBuilder(
+                    CompletionSKFunction.Builder.class, FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS);
+            registerBuilder(SKContext.Builder.class, FALLBACK_CONTEXT_BUILDER_CLASS);
+            registerBuilder(
+                    TextEmbeddingGeneration.Builder.class,
+                    FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS);
+<<<<<<< AI
+=======
+=======
+>>>>>>> main
       try {
             // Keep this list in alphabetical order by fallback variable name
             registerBuilder(ChatCompletion.Builder.class, FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
@@ -70,13 +126,35 @@ public enum BuildersSingleton {
             registerBuilder(SKContext.Builder.class, FALLBACK_CONTEXT_BUILDER_CLASS);
             registerBuilder(TextEmbeddingGeneration.Builder.class,
                 FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS);
+<<<<<<< AI
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
             registerBuilder(Kernel.Builder.class, FALLBACK_KERNEL_BUILDER_CLASS);
             registerBuilder(KernelConfig.Builder.class, FALLBACK_KERNEL_CONFIG_BUILDER_CLASS);
             registerBuilder(MemoryStore.Builder.class, FALLBACK_MEMORY_STORE_BUILDER_CLASS);
             registerBuilder(PromptTemplate.Builder.class, FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS);
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
+            registerBuilder(
+                    PromptTemplateEngine.Builder.class,
+                    FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS);
+            registerBuilder(SemanticTextMemory.Builder.class, FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS);
+            registerBuilder(
+                    ReadOnlySkillCollection.Builder.class, FALLBACK_SKILL_COLLECTION_BUILDER_CLASS);
+<<<<<<< AI
             registerBuilder(PromptTemplateEngine.Builder.class, FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS);
             registerBuilder(SemanticTextMemory.Builder.class, FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS);
             registerBuilder(ReadOnlySkillCollection.Builder.class, FALLBACK_SKILL_COLLECTION_BUILDER_CLASS);
+=======
+=======
+            registerBuilder(PromptTemplateEngine.Builder.class, FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS);
+            registerBuilder(SemanticTextMemory.Builder.class, FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS);
+            registerBuilder(ReadOnlySkillCollection.Builder.class, FALLBACK_SKILL_COLLECTION_BUILDER_CLASS);
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
             registerBuilder(TextCompletion.Builder.class, FALLBACK_TEXT_COMPLETION_BUILDER_CLASS);
             registerBuilder(ContextVariables.Builder.class, FALLBACK_VARIABLE_BUILDER_CLASS);
         } catch (Throwable e) {

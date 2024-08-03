@@ -8,10 +8,9 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Utils for Pinecone connector.
@@ -44,7 +43,7 @@ public static class PineconeUtils
     /// </summary>
     public const PodType DefaultPodType = PodType.P1X1;
 
-    internal static JsonSerializerOptions DefaultSerializerOptions => new()
+    internal static JsonSerializerOptions DefaultSerializerOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
@@ -54,11 +53,7 @@ public static class PineconeUtils
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonNode,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        Converters =
-        {
-            new PodTypeJsonConverter(),
-            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
-        }
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
     /// <summary>
@@ -77,16 +72,16 @@ public static class PineconeUtils
     public static async IAsyncEnumerable<PineconeDocument> EnsureValidMetadataAsync(
         IAsyncEnumerable<PineconeDocument> documents)
     {
-        await foreach (PineconeDocument document in documents)
+        await foreach (PineconeDocument document in documents.ConfigureAwait(false))
         {
-            if (document.Metadata == null || GetMetadataSize(document.Metadata) <= MaxMetadataSize)
+            if (document.Metadata is null || GetMetadataSize(document.Metadata) <= MaxMetadataSize)
             {
                 yield return document;
 
                 continue;
             }
 
-            if (!document.Metadata.TryGetValue("text", out object value))
+            if (!document.Metadata.TryGetValue("text", out object? value))
             {
                 yield return document;
 
@@ -144,7 +139,7 @@ public static class PineconeUtils
         List<PineconeDocument> currentBatch = new(batchSize);
         int batchCounter = 0;
 
-        await foreach (PineconeDocument record in data)
+        await foreach (PineconeDocument record in data.ConfigureAwait(false))
         {
             currentBatch.Add(record);
 
@@ -159,7 +154,7 @@ public static class PineconeUtils
             currentBatch = new List<PineconeDocument>(batchSize);
         }
 
-        if (currentBatch.Count <= 0)
+        if (currentBatch.Count == 0)
         {
             yield break;
         }
@@ -177,13 +172,6 @@ public static class PineconeUtils
         return (int)stream.Length;
     }
 
-    private static int GetEntrySize(KeyValuePair<string, object> entry)
-    {
-        Dictionary<string, object> temp = new() { { entry.Key, entry.Value } };
-
-        return GetMetadataSize(temp);
-    }
-
     /// <summary>
     ///  Utility method to convert a dictionary of filters to the format expected by Pinecone.
     /// </summary>
@@ -195,7 +183,7 @@ public static class PineconeUtils
     /// </remarks>
     public static Dictionary<string, object> ConvertFilterToPineconeFilter(Dictionary<string, object> filter)
     {
-        Dictionary<string, object> pineconeFilter = new();
+        Dictionary<string, object> pineconeFilter = [];
 
         foreach (KeyValuePair<string, object> entry in filter)
         {
@@ -249,6 +237,8 @@ public static class PineconeUtils
             PodType.S1X2 => "s1x2",
             PodType.S1X4 => "s1x4",
             PodType.S1X8 => "s1x8",
+            PodType.Starter => "starter",
+            PodType.Nano => "nano",
             _ => string.Empty
         };
     }

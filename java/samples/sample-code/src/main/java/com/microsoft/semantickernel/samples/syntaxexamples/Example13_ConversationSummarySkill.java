@@ -13,6 +13,22 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import reactor.core.publisher.Mono;
 
+<<<<<<< AI
+=======
+<<<<<<< HEAD
+>>>>>>> main
+/**
+ * Demonstrate the {@code com.microsoft.semantickernel.coreskills.ConversationSummarySkill}
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+ */
+<<<<<<< AI
+=======
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class Example13_ConversationSummarySkill {
     private static final String ChatTranscript =
             """

@@ -11,10 +11,10 @@ using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
+namespace Microsoft.SemanticKernel.Connectors.Kusto;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Kusto database.
@@ -93,7 +93,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
-        var result = this.GetBatchAsync(collectionName, new[] { key }, withEmbedding, cancellationToken);
+        var result = this.GetBatchAsync(collectionName, [key], withEmbedding, cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -108,10 +108,10 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         var query = $"{this.GetBaseQuery(collectionName)} " +
             $"| where Key in ({inClauseValue}) " +
             "| project " +
-            $"{KeyColumn.Name}, " +
-            $"{MetadataColumn.Name}=tostring({MetadataColumn.Name}), " +
-            $"{TimestampColumn.Name}, " +
-            $"{EmbeddingColumn.Name}=tostring({EmbeddingColumn.Name})";
+            $"{s_keyColumn.Name}, " +
+            $"{s_metadataColumn.Name}=tostring({s_metadataColumn.Name}), " +
+            $"{s_timestampColumn.Name}, " +
+            $"{s_embeddingColumn.Name}=tostring({s_embeddingColumn.Name})";
 
         if (!withEmbeddings)
         {
@@ -131,10 +131,11 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            var timestamp = !reader.IsDBNull(2) ? reader.GetString(2) : null;
-            var embedding = withEmbeddings ? reader.GetString(3) : default;
-
-            var kustoRecord = new KustoMemoryRecord(key, metadata, embedding, timestamp);
+            DateTime? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
+            var recordEmbedding = withEmbeddings ? reader.GetString(3) : default;
+            var serializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
+            var serializedEmbedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
+            var kustoRecord = new KustoMemoryRecord(key, serializedMetadata, serializedEmbedding, timestamp);
 
             yield return kustoRecord.ToMemoryRecord();
         }
@@ -179,7 +180,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     {
         this.InitializeVectorFunctions();
 
-        var similarityQuery = $"{this.GetBaseQuery(collectionName)} | extend similarity=series_cosine_similarity_fl('{KustoSerializer.SerializeEmbedding(embedding)}', {EmbeddingColumn.Name}, 1, 1)";
+        var similarityQuery = $"{this.GetBaseQuery(collectionName)} | extend similarity=series_cosine_similarity_fl('{KustoSerializer.SerializeEmbedding(embedding)}', {s_embeddingColumn.Name}, 1, 1)";
 
         if (minRelevanceScore != 0)
         {
@@ -191,15 +192,15 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         // reorder to make it easier to ignore the embedding (key, metadata, timestamp, similarity, embedding)
         // Using tostring to make it easier to parse the result. There are probably better ways we should explore.
         similarityQuery += "| project " +
-            $"{KeyColumn.Name}, " +
-            $"{MetadataColumn.Name}=tostring({MetadataColumn.Name}), " +
-            $"{TimestampColumn.Name}, " +
+            $"{s_keyColumn.Name}, " +
+            $"{s_metadataColumn.Name}=tostring({s_metadataColumn.Name}), " +
+            $"{s_timestampColumn.Name}, " +
             "similarity, " +
-            $"{EmbeddingColumn.Name}=tostring({EmbeddingColumn.Name})";
+            $"{s_embeddingColumn.Name}=tostring({s_embeddingColumn.Name})";
 
         if (!withEmbeddings)
         {
-            similarityQuery += $" | project-away {EmbeddingColumn.Name} ";
+            similarityQuery += $" | project-away {s_embeddingColumn.Name} ";
         }
 
         using var reader = await this._queryClient
@@ -214,24 +215,24 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            var timestamp = !reader.IsDBNull(2) ? reader.GetString(2) : null;
+            DateTime? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
             var similarity = reader.GetDouble(3);
             var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
-
-            var kustoRecord = new KustoMemoryRecord(key, metadata, recordEmbedding, timestamp);
-
+            var serializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
+            var serializedEmbedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
+            var kustoRecord = new KustoMemoryRecord(key, serializedMetadata, serializedEmbedding, timestamp);
             yield return (kustoRecord.ToMemoryRecord(), similarity);
         }
     }
 
     /// <inheritdoc/>
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
-        => this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken);
+        => this.RemoveBatchAsync(collectionName, [key], cancellationToken);
 
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        if (keys != null)
+        if (keys is not null)
         {
             var keysString = string.Join(",", keys.Select(k => $"'{k}'"));
             using var resp = await this._adminClient
@@ -246,7 +247,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        var result = this.UpsertBatchAsync(collectionName, new[] { record }, cancellationToken);
+        var result = this.UpsertBatchAsync(collectionName, [record], cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
     }
 
@@ -259,10 +260,10 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         // In Kusto, upserts don't exist because it operates as an append-only store.
         // Nevertheless, given that we have a straightforward primary key (PK), we can simply insert a new record.
         // Our query always selects the latest row of that PK.
-        // An interesting scenario arises when performing deletion after many "upserts". 
+        // An interesting scenario arises when performing deletion after many "upserts".
         // This could turn out to be a heavy operation since, in theory, we might need to remove many outdated versions.
         // Additionally, deleting these records equates to a "soft delete" operation.
-        // For simplicity, and under the assumption that upserts are relatively rare in most systems, 
+        // For simplicity, and under the assumption that upserts are relatively rare in most systems,
         // we will overlook the potential accumulation of "garbage" records.
         // Kusto is generally efficient with handling large volumes of data.
         using var stream = new MemoryStream();
@@ -297,12 +298,19 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+    /// <summary>
+    /// Disposes the <see cref="KustoMemoryStore"/> instance.
+    /// </summary>
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Disposes the resources used by the <see cref="KustoMemoryStore"/> instance.
+    /// </summary>
+    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
@@ -313,14 +321,14 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
     #region private ================================================================================
 
-    private Disposer _disposer;
-    private object _lock = new();
+    private readonly Disposer _disposer;
+    private readonly object _lock = new();
 
-    private string _database;
+    private readonly string _database;
 
     private static ClientRequestProperties GetClientRequestProperties() => new()
     {
-        Application = Telemetry.HttpUserAgent,
+        Application = HttpHeaderConstant.Values.UserAgent,
     };
 
     private bool _searchInitialized;
@@ -328,18 +336,18 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     private readonly ICslQueryProvider _queryClient;
     private readonly ICslAdminProvider _adminClient;
 
-    private static ColumnSchema KeyColumn = new("Key", typeof(string).FullName);
-    private static ColumnSchema MetadataColumn = new("Metadata", typeof(object).FullName);
-    private static ColumnSchema EmbeddingColumn = new("Embedding", typeof(object).FullName);
-    private static ColumnSchema TimestampColumn = new("Timestamp", typeof(DateTime).FullName);
+    private static readonly ColumnSchema s_keyColumn = new("Key", typeof(string).FullName);
+    private static readonly ColumnSchema s_metadataColumn = new("Metadata", typeof(object).FullName);
+    private static readonly ColumnSchema s_embeddingColumn = new("Embedding", typeof(object).FullName);
+    private static readonly ColumnSchema s_timestampColumn = new("Timestamp", typeof(DateTime).FullName);
 
-    private static readonly ColumnSchema[] s_collectionColumns = new ColumnSchema[]
-    {
-        KeyColumn,
-        MetadataColumn,
-        EmbeddingColumn,
-        TimestampColumn
-    };
+    private static readonly ColumnSchema[] s_collectionColumns =
+    [
+        s_keyColumn,
+        s_metadataColumn,
+        s_embeddingColumn,
+        s_timestampColumn
+    ];
 
     /// <summary>
     /// Converts collection name to Kusto table name.
@@ -350,7 +358,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <param name="collectionName">Kusto table name.</param>
     /// <param name="normalized">Boolean flag that indicates if table name normalization is needed.</param>
     private static string GetTableName(string collectionName, bool normalized = true)
-        => normalized ? CslSyntaxGenerator.NormalizeTableName(collectionName) : collectionName;
+        => normalized ? CslSyntaxGenerator.NormalizeName(collectionName) : collectionName;
 
     /// <summary>
     /// Converts Kusto table name to collection name.
@@ -373,7 +381,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// </remarks>
     /// <param name="collection">Collection name.</param>
     private string GetBaseQuery(string collection)
-        => $"{GetTableName(collection)} | summarize arg_max(ingestion_time(), *) by {KeyColumn.Name} ";
+        => $"{GetTableName(collection)} | summarize arg_max(ingestion_time(), *) by {s_keyColumn.Name} ";
 
     /// <summary>
     /// Initializes vector cosine similarity function for given database.

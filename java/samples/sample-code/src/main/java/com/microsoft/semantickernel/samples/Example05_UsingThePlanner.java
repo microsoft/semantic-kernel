@@ -11,9 +11,28 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
+<<<<<<< HEAD
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
 
+/**
+ * Sequential Planner
+ * <p>
+ * See <a href=
+ * "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-planners-sequential-planner/">
+ * Semantic Kernel Planners: Sequential Planner</a>
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+ */
+=======
+import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
+import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
+
+>>>>>>> main
 public class Example05_UsingThePlanner {
 
     public static SequentialPlanner getPlanner(Kernel kernel) {

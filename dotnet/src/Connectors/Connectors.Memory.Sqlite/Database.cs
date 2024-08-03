@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 internal struct DatabaseEntry
 {
@@ -56,30 +56,13 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task UpdateAsync(SqliteConnection conn,
+    public async Task UpsertAsync(SqliteConnection conn,
         string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancellationToken = default)
     {
         using SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-             UPDATE {TableName}
-             SET metadata=@metadata, embedding=@embedding, timestamp=@timestamp
-             WHERE collection=@collection
-                AND key=@key ";
-        cmd.Parameters.AddWithValue("@collection", collection);
-        cmd.Parameters.AddWithValue("@key", key);
-        cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
-        cmd.Parameters.AddWithValue("@embedding", embedding ?? string.Empty);
-        cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task InsertOrIgnoreAsync(SqliteConnection conn,
-        string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancellationToken = default)
-    {
-        using SqliteCommand cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-             INSERT OR IGNORE INTO {TableName}(collection, key, metadata, embedding, timestamp)
-             VALUES(@collection, @key, @metadata, @embedding, @timestamp); ";
+        INSERT OR REPLACE INTO {TableName}(collection, key, metadata, embedding, timestamp)
+        VALUES(@collection, @key, @metadata, @embedding, @timestamp);";
         cmd.Parameters.AddWithValue("@collection", collection);
         cmd.Parameters.AddWithValue("@key", key);
         cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
@@ -182,6 +165,27 @@ internal sealed class Database
                 AND key=@key ";
         cmd.Parameters.AddWithValue("@collection", collectionName);
         cmd.Parameters.AddWithValue("@key", key);
+        return cmd.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public Task DeleteBatchAsync(SqliteConnection conn, string collectionName, string[] keys, CancellationToken cancellationToken = default)
+    {
+        using SqliteCommand cmd = conn.CreateCommand();
+        var keyParameters = keys.Select((key, index) => $"@key{index}");
+        var parameters = string.Join(", ", keyParameters);
+
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+        cmd.CommandText = $@"
+         DELETE FROM {TableName}
+         WHERE collection=@collection
+            AND key IN ({parameters})";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+        cmd.Parameters.Add(new SqliteParameter("@collection", collectionName));
+        for (int i = 0; i < keys.Length; i++)
+        {
+            cmd.Parameters.Add(new SqliteParameter($"@key{i}", keys[i]));
+        }
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 

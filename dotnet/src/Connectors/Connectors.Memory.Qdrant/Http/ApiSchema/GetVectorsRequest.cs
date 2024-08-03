@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class GetVectorsRequest
 {
@@ -25,7 +25,7 @@ internal sealed class GetVectorsRequest
     /// Array of vector IDs to retrieve
     /// </summary>
     [JsonPropertyName("ids")]
-    public IEnumerable<string> PointIds { get; set; } = new List<string>();
+    public IEnumerable<string> PointIds { get; set; } = [];
 
     /// <summary>
     /// Select which payload to return with the response. Default: All

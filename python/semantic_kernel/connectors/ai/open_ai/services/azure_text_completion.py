@@ -1,68 +1,107 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
+from collections.abc import Mapping
+from typing import Any
 
-from logging import Logger
-from typing import Optional
+from openai import AsyncAzureOpenAI
+from openai.lib.azure import AsyncAzureADTokenProvider
+from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
-    OpenAITextCompletion,
-)
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AzureTextCompletion(OpenAITextCompletion):
-    _endpoint: str
-    _api_version: str
-    _api_type: str
+class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
+    """Azure Text Completion class."""
 
     def __init__(
         self,
-        deployment_name: str,
-        endpoint: Optional[str] = None,
-        api_key: Optional[str] = None,
-        api_version: str = "2022-12-01",
-        logger: Optional[Logger] = None,
-        ad_auth=False,
+        service_id: str | None = None,
+        api_key: str | None = None,
+        deployment_name: str | None = None,
+        endpoint: str | None = None,
+        base_url: str | None = None,
+        api_version: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncAzureOpenAI | None = None,
+        env_file_path: str | None = None,
     ) -> None:
+        """Initialize an AzureTextCompletion service.
+
+        Args:
+            service_id: The service ID for the Azure deployment. (Optional)
+            api_key (str | None): The optional api key. If provided, will override the value in the
+                env vars or .env file.
+            deployment_name  (str | None): The optional deployment. If provided, will override the value
+                (text_deployment_name) in the env vars or .env file.
+            endpoint (str | None): The optional deployment endpoint. If provided will override the value
+                in the env vars or .env file.
+            base_url (str | None): The optional deployment base_url. If provided will override the value
+                in the env vars or .env file.
+            api_version (str | None): The optional deployment api version. If provided will override the value
+                in the env vars or .env file.
+            ad_token: The Azure Active Directory token. (Optional)
+            ad_token_provider: The Azure Active Directory token provider. (Optional)
+            default_headers: The default headers mapping of string keys to
+                string values for HTTP requests. (Optional)
+            async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
+            env_file_path (str | None): Use the environment settings file as a fallback to
+                environment variables. (Optional)
         """
-        Initialize an AzureTextCompletion service.
-
-        You must provide:
-        - A deployment_name, endpoint, and api_key (plus, optionally: ad_auth)
-
-        :param deployment_name: The name of the Azure deployment. This value
-            will correspond to the custom name you chose for your deployment
-            when you deployed a model. This value can be found under
-            Resource Management > Deployments in the Azure portal or, alternatively,
-            under Management > Deployments in Azure OpenAI Studio.
-        :param endpoint: The endpoint of the Azure deployment. This value
-            can be found in the Keys & Endpoint section when examining
-            your resource from the Azure portal.
-        :param api_key: The API key for the Azure deployment. This value can be
-            found in the Keys & Endpoint section when examining your resource in
-            the Azure portal. You can use either KEY1 or KEY2.
-        :param api_version: The API version to use. (Optional)
-            The default value is "2022-12-01".
-        :param logger: The logger instance to use. (Optional)
-        :param ad_auth: Whether to use Azure Active Directory authentication.
-            (Optional) The default value is False.
-        """
-        if not deployment_name:
-            raise ValueError("The deployment name cannot be `None` or empty")
-        if not api_key:
-            raise ValueError("The Azure API key cannot be `None` or empty`")
-        if not endpoint:
-            raise ValueError("The Azure endpoint cannot be `None` or empty")
-        if not endpoint.startswith("https://"):
-            raise ValueError("The Azure endpoint must start with https://")
-
-        self._api_type = "azure_ad" if ad_auth else "azure"
+        try:
+            azure_openai_settings = AzureOpenAISettings.create(
+                env_file_path=env_file_path,
+                text_deployment_name=deployment_name,
+                endpoint=endpoint,
+                base_url=base_url,
+                api_key=api_key,
+                api_version=api_version,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError(f"Invalid settings: {ex}") from ex
+        if not azure_openai_settings.text_deployment_name:
+            raise ServiceInitializationError("The Azure Text deployment name is required.")
 
         super().__init__(
-            deployment_name,
-            api_key,
-            api_type=self._api_type,
-            api_version=api_version,
-            endpoint=endpoint,
-            org_id=None,
-            log=logger,
+            deployment_name=azure_openai_settings.text_deployment_name,
+            endpoint=azure_openai_settings.endpoint,
+            base_url=azure_openai_settings.base_url,
+            api_version=azure_openai_settings.api_version,
+            service_id=service_id,
+            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
+            ad_token=ad_token,
+            ad_token_provider=ad_token_provider,
+            default_headers=default_headers,
+            ai_model_type=OpenAIModelTypes.TEXT,
+            client=async_client,
+        )
+
+    @classmethod
+    def from_dict(cls, settings: dict[str, Any]) -> "AzureTextCompletion":
+        """Initialize an Azure OpenAI service from a dictionary of settings.
+
+        Args:
+            settings: A dictionary of settings for the service.
+                should contain keys: deployment_name, endpoint, api_key
+                and optionally: api_version, ad_auth
+        """
+        return AzureTextCompletion(
+            service_id=settings.get("service_id"),
+            api_key=settings.get("api_key"),
+            deployment_name=settings.get("deployment_name"),
+            endpoint=settings.get("endpoint"),
+            base_url=settings.get("base_url"),
+            api_version=settings.get("api_version"),
+            ad_token=settings.get("ad_token"),
+            ad_token_provider=settings.get("ad_token_provider"),
+            default_headers=settings.get("default_headers"),
+            env_file_path=settings.get("env_file_path"),
         )

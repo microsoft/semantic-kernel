@@ -19,6 +19,13 @@ import java.io.IOException;
 
 /**
  * Define a Semantic Function inline with Java code.
+<<<<<<< HEAD
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+=======
+>>>>>>> main
  */
 public class Example03_SemanticFunctionInline {
 
@@ -99,7 +106,11 @@ public class Example03_SemanticFunctionInline {
      * @param kernel
      */
     public static void TLDR(Kernel kernel) {
+<<<<<<< HEAD
+        String prompt = """
+=======
         String propmt = """
+>>>>>>> main
                 {{$input}}
 
                 Give me the TLDR in 5 words.
@@ -116,7 +127,11 @@ public class Example03_SemanticFunctionInline {
                     does not conflict with the First or Second Law.
                 """;
 
+<<<<<<< HEAD
+        inlineFunction(kernel, prompt, "tldr", text);
+=======
         inlineFunction(kernel, propmt, "tldr", text);
+>>>>>>> main
     }
 
     public static void run(OpenAIAsyncClient client) throws IOException {

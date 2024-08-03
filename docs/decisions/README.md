@@ -1,7 +1,8 @@
-# Markdown Any Decision Records
+# Architectural Decision Records (ADRs)
 
-MADR is a lean template to capture any decisions in a structured way. The template originated from capturing architectural decisions and developed to a template allowing to capture any decisions taken.
-For more information [see](https://adr.github.io/madr/)
+An Architectural Decision (AD) is a justified software design choice that addresses a functional or non-functional requirement that is architecturally significant. An Architectural Decision Record (ADR) captures a single AD and its rationale.
+
+For more information [see](https://adr.github.io/)
 
 ## How are we using ADR's to track technical decisions?
 

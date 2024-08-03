@@ -3,9 +3,8 @@
 using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class CreateCollectionRequest
 {
@@ -33,10 +32,10 @@ internal sealed class CreateCollectionRequest
             payload: this);
     }
 
-    internal sealed class VectorSettings : IValidatable
+    internal sealed class VectorSettings(int vectorSize, QdrantDistanceType distanceType)
     {
         [JsonPropertyName("size")]
-        public int? Size { get; set; }
+        public int? Size { get; set; } = vectorSize;
 
         [JsonPropertyName("distance")]
         public string? DistanceAsString
@@ -45,22 +44,7 @@ internal sealed class CreateCollectionRequest
         }
 
         [JsonIgnore]
-        private QdrantDistanceType DistanceType { get; set; }
-
-        public void Validate()
-        {
-            Verify.True(this.Size > 0, "The vector size must be greater than zero");
-            Verify.NotNull(this.DistanceType, "The distance type has not been defined");
-            Verify.True(
-                this.DistanceType is QdrantDistanceType.Cosine or QdrantDistanceType.DotProduct or QdrantDistanceType.Euclidean or QdrantDistanceType.Manhattan,
-                $"Distance type {this.DistanceType:G} not supported.");
-        }
-
-        public VectorSettings(int vectorSize, QdrantDistanceType distanceType)
-        {
-            this.Size = vectorSize;
-            this.DistanceType = distanceType;
-        }
+        private QdrantDistanceType DistanceType { get; set; } = distanceType;
 
         private static string DistanceTypeToString(QdrantDistanceType x)
         {
@@ -70,7 +54,7 @@ internal sealed class CreateCollectionRequest
                 QdrantDistanceType.DotProduct => "DotProduct",
                 QdrantDistanceType.Euclidean => "Euclidean",
                 QdrantDistanceType.Manhattan => "Manhattan",
-                _ => throw new NotSupportedException($"Distance type {Enum.GetName(typeof(QdrantDistanceType), x)} not supported")
+                _ => throw new NotSupportedException($"Distance type {x} not supported")
             };
         }
     }

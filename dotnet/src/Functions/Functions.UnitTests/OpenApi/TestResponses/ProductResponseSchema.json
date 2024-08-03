@@ -1,0 +1,20 @@
+{
+  "title": "ProductResponse",
+  "type": "object",
+  "properties": {
+    "products": {
+      "type": "array",
+      "items": {
+        "title": "Product",
+        "type": "object",
+        "properties": {
+          "attributes": { "type": "array", "items": { "type": "string" } },
+          "name": { "type": "string" },
+          "price": { "type": "string" },
+          "url": { "type": "string" }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,6 +1,19 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.GPT3Tokenizer;
+<<<<<<< HEAD
+
+/**
+ * Demonstrates how to count tokens using GPT tokenizer. The number of tokens affects
+ * API calls cost and each model has a maximum amount of tokens it can process and generate.
+ * This example is specific to OpenAI models, which use the tokenization described here:
+ * <a href="https://platform.openai.com/tokenizer">OpenAI tokenizer</a>
+ * If you use Semantic Kernel with other models, the tokenization logic is most probably different,
+ * and you should not use the GPT tokenizer.
+ */
+public class Example29_Tokenizer {
+
+=======
 public class Example29_Tokenizer {
     /**
      * This sample shows how to count tokens using GPT tokenizer. The number of tokens affects
@@ -10,6 +23,7 @@ public class Example29_Tokenizer {
      * If you use Semantic Kernel with other models, the tokenization logic is most probably different,
      * and you should not use the GPT tokenizer.
      */
+>>>>>>> main
     public static void main(String[] args) {
         // Example 1
         String sentence = "Some text on one line";

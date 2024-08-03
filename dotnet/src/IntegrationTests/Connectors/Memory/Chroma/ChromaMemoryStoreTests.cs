@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Chroma;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.Chroma;
+namespace SemanticKernel.IntegrationTests.Connectors.Chroma;
 
 /// <summary>
 /// Integration tests for <see cref="ChromaMemoryStore"/> class.
@@ -25,8 +25,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     public ChromaMemoryStoreTests()
     {
-        this._httpClient = new();
-        this._httpClient.BaseAddress = new Uri(BaseAddress);
+        this._httpClient = new()
+        {
+            BaseAddress = new Uri(BaseAddress)
+        };
 
         this._chromaMemoryStore = new(this._httpClient);
     }
@@ -56,7 +58,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanHandleDuplicateNameDuringCollectionCreationAsync()
     {
         // Arrange
-        const int expectedCollectionCount = 1;
         var collectionName = this.GetRandomCollectionName();
 
         // Act
@@ -67,7 +68,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var collections = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
         var filteredCollections = collections.Where(collection => collection.Equals(collectionName, StringComparison.Ordinal)).ToList();
 
-        Assert.Equal(expectedCollectionCount, filteredCollections.Count);
+        Assert.Single(filteredCollections);
     }
 
     [Theory(Skip = SkipReason)]
@@ -119,7 +120,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var exception = await Record.ExceptionAsync(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
 
         // Assert
-        Assert.IsType<SKException>(exception);
+        Assert.IsType<KernelException>(exception);
         Assert.Contains(
             $"Cannot delete non-existent collection {collectionName}",
             exception.Message,
@@ -127,7 +128,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItReturnsNullOnNonExistentRecordRetrieval()
+    public async Task ItReturnsNullOnNonExistentRecordRetrievalAsync()
     {
         // Arrange
         var collectionName = this.GetRandomCollectionName();
@@ -255,7 +256,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var expectedRecord2 = this.GetRandomMemoryRecord(embedding: new[] { 5f, 5f, 5f });
         var expectedRecord3 = this.GetRandomMemoryRecord(embedding: new[] { 1f, 1f, 1f });
 
-        var searchEmbedding = new[] { 2f, 2f, 2f };
+        float[] searchEmbedding = [2f, 2f, 2f];
 
         var batch = new List<MemoryRecord> { expectedRecord1, expectedRecord2, expectedRecord3 };
         var keys = batch.Select(l => l.Key);
@@ -286,7 +287,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var expectedRecord2 = this.GetRandomMemoryRecord(embedding: new[] { 5f, 5f, 5f });
         var expectedRecord3 = this.GetRandomMemoryRecord(embedding: new[] { 1f, 1f, 1f });
 
-        var searchEmbedding = new[] { 2f, 2f, 2f };
+        float[] searchEmbedding = [2f, 2f, 2f];
 
         var batch = new List<MemoryRecord> { expectedRecord1, expectedRecord2, expectedRecord3 };
         var keys = batch.Select(l => l.Key);
@@ -315,11 +316,11 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItReturnsNoMatchesFromEmptyCollection()
+    public async Task ItReturnsNoMatchesFromEmptyCollectionAsync()
     {
         // Arrange
         var collectionName = this.GetRandomCollectionName();
-        var searchEmbedding = new[] { 2f, 2f, 2f };
+        float[] searchEmbedding = [2f, 2f, 2f];
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
 
@@ -403,22 +404,13 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
+        this._httpClient.Dispose();
     }
 
     #region private ================================================================================
 
     private readonly HttpClient _httpClient;
     private readonly ChromaMemoryStore _chromaMemoryStore;
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._httpClient.Dispose();
-        }
-    }
 
     private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
     {

@@ -1,9 +1,6 @@
 {
   "version": "2.0.0",
   "tasks": [
-    // *****************************
-    // Contributing (dotnet) - Setup
-    // *****************************
     {
       "label": "setup (contributing-R#)",
       "detail": "",
@@ -36,10 +33,7 @@
         "cwd": "${workspaceFolder}/dotnet"
       }
     },
-    // Code Formatting
     {
-      // Requires 'R# Install' to be run first
-      // r# inspect - dotnet jb inspectcode -o="inspectcode.log" --no-build -s=".\SK-dotnet.sln.DotSettings" -f=Text ".\SK-dotnet.sln"
       "label": "format-check (contributing-R#)",
       "command": "dotnet",
       "type": "process",
@@ -58,7 +52,6 @@
       }
     },
     {
-      // r# cleanup - dotnet jb cleanupcode --no-build -p="Built-in: Reformat Code" -s=SK-dotnet.sln.DotSettings SK-dotnet.sln
       "label": "format (contributing-R#)",
       "command": "dotnet",
       "type": "process",
@@ -88,9 +81,6 @@
       ],
       "dependsOrder": "sequence"
     },
-    // *****************************
-    // Contributing (python) - Setup
-    // *****************************
     {
       "label": "setup (contributing-python)",
       "detail": "",
@@ -118,7 +108,6 @@
         "cwd": "${workspaceFolder}/python"
       }
     },
-    // Formatting
     {
       "label": "validate (contributing-python)",
       "command": "poetry",
@@ -136,10 +125,6 @@
         "cwd": "${workspaceFolder}/python"
       }
     },
-    // ***************
-    // Kernel (dotnet)
-    // ***************
-    // Build
     {
       "label": "build (Semantic-Kernel)",
       "command": "dotnet",
@@ -158,7 +143,6 @@
         "group": "PR-Validate"
       }
     },
-    // Test
     {
       "label": "test (Semantic-Kernel)",
       "command": "dotnet",
@@ -270,10 +254,6 @@
         "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
       }
     },
-    // ****************
-    // Kernel (python)
-    // ****************
-    // Test
     {
       "label": "test (Semantic-Kernel-Python)",
       "command": "poetry",
@@ -322,17 +302,13 @@
         "cwd": "${workspaceFolder}/python"
       }
     },
-    // ****************
-    // Samples (dotnet)
-    // ****************
-    // Kernel Syntax Examples
     {
-      "label": "build (KernelSyntaxExamples)",
+      "label": "build (Concepts)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj",
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary",
         "/property:DebugType=portable"
@@ -341,26 +317,27 @@
       "group": "build"
     },
     {
-      "label": "watch (KernelSyntaxExamples)",
+      "label": "watch (Concepts)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj"
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "build"
     },
     {
-      "label": "run (KernelSyntaxExamples)",
+      "label": "run (Concepts)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "run",
         "--project",
-        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj"
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj",
+        "${input:filter}"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -370,69 +347,81 @@
         "group": "PR-Validate"
       }
     },
-    // KernelHttpServer
     {
-      "label": "run (KernelHttpServer)",
-      "command": "func",
-      "type": "shell",
-      "args": ["start", "--csharp"],
-      "group": "test",
+      "label": "clean (functions)",
+      "command": "dotnet",
+      "args": [
+        "clean",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "problemMatcher": "$msCompile",
       "options": {
-        "cwd": "${workspaceFolder}/samples/dotnet/KernelHttpServer"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "group": "Run-Samples"
+        "cwd": "${workspaceFolder}/samples/dotnet/AIPluginsServer/AIPlugins.AzureFunctions"
       }
     },
-    // chat-summary-webapp-react
     {
-      "label": "run (Starter Chat WebApp React)",
-      "command": "yarn",
-      "type": "shell",
-      "args": ["start"],
-      "group": "test",
-      "options": {
-        "cwd": "${workspaceFolder}/samples/apps/chat-summary-webapp-react"
+      "label": "build (functions)",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "dependsOn": "clean (functions)",
+      "group": {
+        "kind": "build",
+        "isDefault": true
       },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "group": "Run-Samples"
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/samples/dotnet/AIPluginsServer/AIPlugins.AzureFunctions"
       }
     },
-    // book-creator-webapp-react
     {
-      "label": "run (Book Creator WebApp React)",
-      "command": "yarn",
-      "type": "shell",
-      "args": ["start"],
-      "group": "test",
+      "label": "clean release (functions)",
+      "command": "dotnet",
+      "args": [
+        "clean",
+        "--configuration",
+        "Release",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "problemMatcher": "$msCompile",
       "options": {
-        "cwd": "${workspaceFolder}/samples/apps/book-creator-webapp-react"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "group": "Run-Samples"
+        "cwd": "${workspaceFolder}/samples/dotnet/AIPluginsServer/AIPlugins.AzureFunctions"
       }
     },
-    // auth-api-webapp-react
     {
-      "label": "run (Auth API WebApp React)",
-      "command": "yarn",
-      "type": "shell",
-      "args": ["start"],
-      "group": "test",
+      "label": "publish (functions)",
+      "command": "dotnet",
+      "args": [
+        "publish",
+        "--configuration",
+        "Release",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "dependsOn": "clean release (functions)",
+      "problemMatcher": "$msCompile",
       "options": {
-        "cwd": "${workspaceFolder}/samples/apps/auth-api-webapp-react"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "group": "Run-Samples"
+        "cwd": "${workspaceFolder}/samples/dotnet/AIPluginsServer/AIPlugins.AzureFunctions"
       }
+    },
+    {
+      "type": "func",
+      "dependsOn": "build (functions)",
+      "options": {
+        "cwd": "${workspaceFolder}/samples/dotnet/AIPluginsServer/AIPlugins.AzureFunctions/bin/Debug/net6.0"
+      },
+      "command": "host start",
+      "isBackground": true,
+      "problemMatcher": "$func-dotnet-watch"
     }
   ],
   "inputs": [
@@ -440,7 +429,7 @@
       "id": "filter",
       "type": "promptString",
       "default": "",
-      "description": "Enter a filter for the tests"
+      "description": "Enter a filter to pass as argument or filter"
     }
   ]
 }

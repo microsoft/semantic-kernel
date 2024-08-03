@@ -189,6 +189,7 @@ public class TextMemorySkill {
             if (collection == null) collection = DEFAULT_COLLECTION;
         }
         final String _collection = collection;
+        final float _relevance = (float) Math.min(1.0, Math.max(0.0, relevance));
         final double _relevance = Math.min(1.0, Math.max(0.0, relevance));
         final int _limit = Math.max(1, limit);
 
