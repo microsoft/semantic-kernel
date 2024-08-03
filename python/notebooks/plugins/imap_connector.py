@@ -37,9 +37,9 @@ class ImapConnector:
             "text": "",
         }
         with MailBox(host=self.server, port=self.port).login(
-            self.email, self.password
-        ) as mailbox:
-            for msg in mailbox.fetch(limit=int(email_number), reverse=True):
+                self.email, self.password
+            ) as mailbox:
+            for msg in mailbox.fetch(limit=email_number, reverse=True):
                 result = {
                     "id": msg.uid,
                     "from": msg.from_,
