@@ -125,7 +125,7 @@ Reply TERMINATE when the task is done.
                     ],
                 }
 
-        raise Exception("LLM type not provided, must be 'openai' or 'azure'")
+        raise ValueError(f"Invalid LLM type provided. Expected 'openai' or 'azure', but got '{self.llm_type}'. Please check your configuration.")
 
     def __get_function_definitions(self) -> List:
         """
