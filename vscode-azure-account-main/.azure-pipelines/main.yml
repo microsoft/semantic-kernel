@@ -1,0 +1,51 @@
+variables:
+  ${{ if eq(variables['Build.Reason'], 'Schedule') }}:
+    ENABLE_LONG_RUNNING_TESTS: true
+    ENABLE_COMPLIANCE: true
+
+jobs:
+- job: Windows
+  pool:
+    vmImage: windows-latest
+  steps:
+  - template: common/build.yml
+  - template: common/package.yml
+  - template: common/lint.yml
+  - template: compliance/compliance.yml # Only works on Windows
+
+- job: Linux
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - template: common/build.yml
+  - template: common/package.yml
+  - template: common/sbom.yml # only generate on linux
+  - template: common/lint.yml
+  variables:
+    Codeql.Enabled: $[in(variables['Build.Reason'], 'Schedule')] # Enable CodeQL only on scheduled builds because it is slow
+
+- job: macOS
+  pool:
+    vmImage: macOS-latest
+  steps:
+  - template: common/build.yml
+  - template: common/package.yml
+  - template: common/lint.yml
+
+trigger:
+  branches:
+    include:
+    - '*'
+
+pr:
+  branches:
+    include:
+    - '*'
+
+schedules:
+- cron: "30 11 * * *"
+  displayName: Nightly at 4:30 PT
+  always: true # Run even when there are no code changes
+  branches:
+    include:
+    - main

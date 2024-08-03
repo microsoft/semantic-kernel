@@ -1,0 +1,56 @@
+{
+  "name": "azure-account-sample",
+  "displayName": "Azure Account Sample",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "url": "https://github.com/microsoft/vscode-azure-account.git"
+  },
+  "version": "0.2.0",
+  "publisher": "ms-vscode-sample",
+  "engines": {
+    "vscode": "^1.58.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "azure"
+  ],
+  "activationEvents": [
+    "onCommand:azure-account-sample.showSubscriptions",
+    "onCommand:azure-account-sample.showAppServices"
+  ],
+  "main": "./out/src/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "azure-account-sample.showSubscriptions",
+        "title": "Show Subscriptions",
+        "category": "Azure Example"
+      },
+      {
+        "command": "azure-account-sample.showAppServices",
+        "title": "Show AppServices",
+        "category": "Azure Example"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "tsc -p ./",
+    "compile": "tsc -watch -p ./"
+  },
+  "extensionDependencies": [
+    "ms-vscode.azure-account"
+  ],
+  "devDependencies": {
+    "@microsoft/vscode-azext-utils": "^0.1.0",
+    "@types/node": "^14.0.0",
+    "@types/vscode": "1.58.0",
+    "typescript": "^4.0.2"
+  },
+  "dependencies": {
+    "@azure/arm-appservice": "^9.0.0",
+    "@azure/arm-resources": "^4.2.2",
+    "@azure/arm-subscriptions": "^3.1.2"
+  }
+}
