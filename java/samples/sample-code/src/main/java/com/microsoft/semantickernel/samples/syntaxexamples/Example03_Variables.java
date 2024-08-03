@@ -19,7 +19,7 @@ import java.util.Locale;
  * {@code com.microsoft.semantickernel.orchestration.SKContext}
  */
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class Example03_Variables {
 
     public static class StaticTextSkill {

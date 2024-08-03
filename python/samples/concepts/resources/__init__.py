@@ -1,3 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-# intentionally left empty
+from samples.concepts.resources.utils import Colors
+
+__all__ = ["Colors"]

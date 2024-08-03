@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace AutoFunctionCalling;
+namespace FunctionCalling;
 
 /// <summary>
 /// These examples demonstrate two ways functions called by the OpenAI LLM can be invoked using the SK streaming and non-streaming AI API:
@@ -20,10 +20,10 @@ namespace AutoFunctionCalling;
 ///
 /// 2. Manual Invocation by a Caller:
 ///    Functions called by the LLM are returned to the AI API caller. The caller controls the invocation phase where
-///    they may decide which function to call, when to call them, how to handle exceptions, etc. The caller then
-///    adds the function results or exceptions to the chat history and returns it to the LLM, which reasons about it
+///    they may decide which function to call, when to call them, how to handle exceptions, call them in parallel or sequentially, etc.
+///    The caller then adds the function results or exceptions to the chat history and returns it to the LLM, which reasons about it
 ///    and generates the final response.
-///    This approach is more manual and requires more manual intervention from the caller.
+///    This approach is manual and provides more control over the function invocation phase to the caller.
 /// </summary>
 public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
@@ -35,7 +35,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Auto function calling with a non-streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -50,7 +50,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Auto function calling with a streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -61,54 +61,127 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>
-    /// This example demonstrates manual function calling with a non-streaming prompt.
+    /// This example demonstrates manual function calling with a non-streaming chat API.
     /// </summary>
     [Fact]
-    public async Task RunNonStreamingPromptWithManualFunctionCallingAsync()
+    public async Task RunNonStreamingChatAPIWithManualFunctionCallingAsync()
     {
         Console.WriteLine("Manual function calling with a non-streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        // Create kernel and chat service
+        Kernel kernel = CreateKernel();
 
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
 
+        // Configure the chat service to enable manual function calling
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
+        // Create chat history with the initial user message
         ChatHistory chatHistory = new();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
         while (true)
         {
+            // Start or continue chat based on the chat history
             ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
             if (result.Content is not null)
             {
                 Console.Write(result.Content);
             }
 
+            // Get function calls from the chat message content and quit the chat loop if no function calls are found.
             IEnumerable<FunctionCallContent> functionCalls = FunctionCallContent.GetFunctionCalls(result);
             if (!functionCalls.Any())
             {
                 break;
             }
 
-            chatHistory.Add(result); // Adding LLM response containing function calls(requests) to chat history as it's required by LLMs.
+            // Preserving the original chat message content with function calls in the chat history.
+            chatHistory.Add(result);
 
+            // Iterating over the requested function calls and invoking them
             foreach (FunctionCallContent functionCall in functionCalls)
             {
                 try
                 {
-                    FunctionResultContent resultContent = await functionCall.InvokeAsync(kernel); // Executing each function.
+                    // Invoking the function
+                    FunctionResultContent resultContent = await functionCall.InvokeAsync(kernel);
 
+                    // Adding the function result to the chat history
                     chatHistory.Add(resultContent.ToChatMessage());
                 }
                 catch (Exception ex)
                 {
-                    chatHistory.Add(new FunctionResultContent(functionCall, ex).ToChatMessage()); // Adding function result to chat history.
-                    // Adding exception to chat history.
+                    // Adding function exception to the chat history.
+                    chatHistory.Add(new FunctionResultContent(functionCall, ex).ToChatMessage());
                     // or
-                    //string message = "Error details that LLM can reason about.";
-                    //chatHistory.Add(new FunctionResultContent(functionCall, message).ToChatMessageContent()); // Adding function result to chat history.
+                    //chatHistory.Add(new FunctionResultContent(functionCall, "Error details that LLM can reason about.").ToChatMessage());
                 }
+            }
+
+            Console.WriteLine();
+        }
+    }
+
+    /// <summary>
+    /// This example demonstrates manual function calling with a streaming chat API.
+    /// </summary>
+    [Fact]
+    public async Task RunStreamingChatAPIWithManualFunctionCallingAsync()
+    {
+        Console.WriteLine("Manual function calling with a streaming prompt.");
+
+        // Create kernel and chat service
+        Kernel kernel = CreateKernel();
+
+        IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Configure the chat service to enable manual function calling
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        // Create chat history with the initial user message
+        ChatHistory chatHistory = new();
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        while (true)
+        {
+            AuthorRole? authorRole = null;
+            var fccBuilder = new FunctionCallContentBuilder();
+
+            // Start or continue streaming chat based on the chat history
+            await foreach (var streamingContent in chat.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
+            {
+                if (streamingContent.Content is not null)
+                {
+                    Console.Write(streamingContent.Content);
+                }
+                authorRole ??= streamingContent.Role;
+                fccBuilder.Append(streamingContent);
+            }
+
+            // Build the function calls from the streaming content and quit the chat loop if no function calls are found
+            var functionCalls = fccBuilder.Build();
+            if (!functionCalls.Any())
+            {
+                break;
+            }
+
+            // Creating and adding chat message content to preserve the original function calls in the chat history.
+            // The function calls are added to the chat message a few lines below.
+            var fcContent = new ChatMessageContent(role: authorRole ?? default, content: null);
+            chatHistory.Add(fcContent);
+
+            // Iterating over the requested function calls and invoking them
+            foreach (var functionCall in functionCalls)
+            {
+                // Adding the original function call to the chat message content
+                fcContent.Items.Add(functionCall);
+
+                // Invoking the function
+                var functionResult = await functionCall.InvokeAsync(kernel);
+
+                // Adding the function result to the chat history
+                chatHistory.Add(functionResult.ToChatMessage());
             }
 
             Console.WriteLine();
@@ -127,7 +200,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Simulated function calling with a non-streaming prompt.");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -179,7 +252,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("Auto function calling with a streaming chat");
 
-        Kernel kernel = CreateBuilder();
+        Kernel kernel = CreateKernel();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
         IChatCompletionService chat = kernel.GetRequiredService<IChatCompletionService>();
@@ -216,7 +289,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    private static Kernel CreateBuilder()
+    private static Kernel CreateKernel()
     {
         // Create kernel
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -244,7 +317,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                     "Sydney" => "75 and sunny",
                     "Tel Aviv" => "80 and sunny",
                     _ => "31 and snowing",
-                }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
+                }, "GetWeatherForCity", "Gets the current weather for the specified city"),
         ]);
 
         return kernel;

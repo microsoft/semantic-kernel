@@ -21,8 +21,8 @@ internal interface IOpenApiDocumentParser
     /// Please note that enabling this option may result in incomplete or inaccurate parsing results.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>List of rest operations.</returns>
-    Task<IList<RestApiOperation>> ParseAsync(
+    /// <returns>Specification of the REST API.</returns>
+    Task<RestApiSpecification> ParseAsync(
         Stream stream,
         bool ignoreNonCompliantErrors = false,
         IList<string>? operationsToExclude = null,

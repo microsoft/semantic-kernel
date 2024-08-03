@@ -27,7 +27,7 @@ class WebSearchEnginePlugin:
         """Initializes a new instance of the WebSearchEnginePlugin class."""
         self._connector = connector
 
-    @kernel_function(description="Performs a web search for a given query")
+    @kernel_function(name="search", description="Performs a web search for a given query")
     async def search(
         self,
         query: Annotated[str, "The search query"],

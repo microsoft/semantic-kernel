@@ -8,7 +8,7 @@ from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import SearchableField, SearchField, SearchFieldDataType, SimpleField
 from dotenv import load_dotenv
 
-from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
+from semantic_kernel.const import USER_AGENT
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 

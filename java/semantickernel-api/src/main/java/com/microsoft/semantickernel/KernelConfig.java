@@ -9,11 +9,16 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 public final class KernelConfig implements Buildable {
 
     public static Builder builder() {
+<<<<<<< AI
+        return BuildersSingleton.INST.getInstance(KernelConfig.Builder.class);
+      return BuildersSingleton.INST.getInstance(KernelConfig.Builder.class);
+=======
 <<<<<<< HEAD
         return BuildersSingleton.INST.getInstance(KernelConfig.Builder.class);
 =======
       return BuildersSingleton.INST.getInstance(KernelConfig.Builder.class);
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     }
 
     public static class Builder implements SemanticKernelBuilder<KernelConfig> {

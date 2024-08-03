@@ -28,7 +28,7 @@
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.62.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.0" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
@@ -51,11 +51,24 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.6.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.7.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
+    <PackageVersion Include="System.Text.Json" Version="6.0.8" />
+    <PackageVersion Include="Microsoft.PowerShell.SDK" Version="6.2.7" />
+    <!-- Microsoft.Extensions.Logging -->
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+    <!-- Microsoft.Extensions.Configuration -->
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.7.0" />
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
@@ -71,7 +84,7 @@
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.7" />
-    <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.1" />
+    <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.0.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.0.1" />
     <PackageVersion Include="MongoDB.Driver" Version="2.27.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
@@ -83,8 +96,8 @@
     <PackageVersion Include="Grpc.Net.Client" Version="2.64.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
-    <PackageVersion Include="Fluid.Core" Version="2.11.0" />
+    <PackageVersion Include="YamlDotNet" Version="16.0.0" />
+    <PackageVersion Include="Fluid.Core" Version="2.11.1" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.42.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
@@ -120,7 +133,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.12.0]" />
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.12.4]" />
     <PackageReference Include="Roslynator.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -130,5 +143,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <!-- OnnxRuntimeGenAI -->
+    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.3.0"/>
+    <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.3.0"/>
+	  <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.3.0"/>
   </ItemGroup>
 </Project>

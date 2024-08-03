@@ -63,7 +63,7 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_return_type_streaming(self, input: str) -> Annotated[AsyncGenerator[str, Any], "test return"]:
+    def func_return_type_streaming(self, input: str) -> Annotated[AsyncGenerator[str, Any], "test return"]:  # type: ignore
         yield input
 
     @kernel_function
