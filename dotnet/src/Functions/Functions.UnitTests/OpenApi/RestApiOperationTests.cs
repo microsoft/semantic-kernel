@@ -64,7 +64,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ItShouldReplacePathParametersByValuesFromArguments()
+    public void ItShouldBuildOperationUrlWithPathParametersFromArguments()
     {
         // Arrange
         var parameters = new List<RestApiOperationParameter> {
@@ -104,6 +104,49 @@ public class RestApiOperationTests
 
         // Assert
         Assert.Equal("https://fake-random-test-host/v1/34/other_fake_path_section", url.OriginalString);
+    }
+
+    [Fact]
+    public void ItShouldBuildOperationUrlWithEncodedArguments()
+    {
+        // Arrange
+        var parameters = new List<RestApiOperationParameter> {
+            new(
+                name: "p1",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiOperationParameterLocation.Path,
+                style: RestApiOperationParameterStyle.Simple),
+            new(
+                name: "p2",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiOperationParameterLocation.Path,
+                style: RestApiOperationParameterStyle.Simple)
+        };
+
+        var sut = new RestApiOperation(
+            "fake_id",
+            new Uri("https://fake-random-test-host"),
+            "/{p1}/{p2}/other_fake_path_section",
+            HttpMethod.Get,
+            "fake_description",
+            parameters
+        );
+
+        var arguments = new Dictionary<string, object?>
+        {
+            { "p1", "foo:bar" },
+            { "p2", "foo/bar" }
+        };
+
+        // Act
+        var url = sut.BuildOperationUrl(arguments);
+
+        // Assert
+        Assert.Equal("https://fake-random-test-host/foo%3abar/foo%2fbar/other_fake_path_section", url.OriginalString);
     }
 
     [Fact]

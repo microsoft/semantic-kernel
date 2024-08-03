@@ -92,9 +92,6 @@
     <None Update="testsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="testsettings.development.json" Condition="Exists('testsettings.development.json')">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <Content Include="CrossLanguage\Data\LightBulbApi.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -122,10 +119,10 @@
     <Content Include="CrossLanguage\Data\SimplePromptTest.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Plugins\instacart-ai-plugin.json">
+    <Content Include="Plugins\OpenApi\instacart-service.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Plugins\repair-service.json">
+    <Content Include="Plugins\OpenApi\repair-service.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -60,7 +60,7 @@ settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settin
 settings.max_tokens = 2000
 settings.temperature = 0.1
 settings.top_p = 0.8
-settings.function_call_behavior.enable_functions(auto_invoke=True, filters={"exclude_plugin": ["ChatBot"]})
+settings.function_choice_behavior.Auto(filters={"exclude_plugin": ["ChatBot"]})
 
 chat_history = ChatHistory(
     system_message="When responding to the user's request to book a table, include the reservation ID."

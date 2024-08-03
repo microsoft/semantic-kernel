@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 
@@ -201,10 +202,23 @@ def test_create_options_azure_data():
             "authentication": {"type": "api_key", "api_key": "test-key"},
         }
     )
-    extra = ExtraBody(dataSources=[az_source])
+    extra = ExtraBody(data_sources=[az_source])
+    assert extra["data_sources"] is not None
+    assert extra.data_sources is not None
     settings = AzureChatPromptExecutionSettings(extra_body=extra)
     options = settings.prepare_settings_dict()
     assert options["extra_body"] == extra.model_dump(exclude_none=True, by_alias=True)
+    assert options["extra_body"]["data_sources"][0]["type"] == "azure_search"
+
+
+def test_create_options_azure_data_from_azure_ai_settings(azure_ai_search_unit_test_env):
+    az_source = AzureAISearchDataSource.from_azure_ai_search_settings(AzureAISearchSettings.create())
+    extra = ExtraBody(data_sources=[az_source])
+    assert extra["data_sources"] is not None
+    settings = AzureChatPromptExecutionSettings(extra_body=extra)
+    options = settings.prepare_settings_dict()
+    assert options["extra_body"] == extra.model_dump(exclude_none=True, by_alias=True)
+    assert options["extra_body"]["data_sources"][0]["type"] == "azure_search"
 
 
 def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources():

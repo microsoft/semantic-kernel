@@ -29,21 +29,13 @@ class MathPlugin:
             amount = int(amount)
         return MathPlugin.add_or_subtract(input, amount, add=True)
 
-    @kernel_function(
-        description="Subtracts value to a value",
-        name="Subtract",
-    )
+    @kernel_function(name="Subtract")
     def subtract(
         self,
         input: Annotated[int, "the first number"],
         amount: Annotated[int, "the number to subtract"],
     ) -> int:
-        """Returns the difference of numbers provided.
-
-        :param initial_value_text: Initial value as string to subtract the specified amount
-        :param context: Contains the context to get the numbers from
-        :return: The resulting subtraction as a string
-        """
+        """Returns the difference of numbers provided."""
         if isinstance(input, str):
             input = int(input)
         if isinstance(amount, str):
@@ -52,11 +44,5 @@ class MathPlugin:
 
     @staticmethod
     def add_or_subtract(input: int, amount: int, add: bool) -> int:
-        """Helper function to perform addition or subtraction based on the add flag.
-
-        :param initial_value_text: Initial value as string to add or subtract the specified amount
-        :param context: Contains the context to get the numbers from
-        :param add: If True, performs addition, otherwise performs subtraction
-        :return: The resulting sum or subtraction as a string
-        """
+        """Helper function to perform addition or subtraction based on the add flag."""
         return input + amount if add else input - amount
