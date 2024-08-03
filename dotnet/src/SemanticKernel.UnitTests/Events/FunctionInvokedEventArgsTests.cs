@@ -16,7 +16,7 @@ public class FunctionInvokedEventArgsTests
         //Arrange
         var originalResults = new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }), 36, CultureInfo.InvariantCulture);
 
-        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), new KernelArguments(), originalResults);
+        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), [], originalResults);
 
         //Assert
         Assert.Equal(36, sut.ResultValue);
@@ -28,7 +28,7 @@ public class FunctionInvokedEventArgsTests
         //Arrange
         var originalResults = new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }), 36, CultureInfo.InvariantCulture);
 
-        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), new KernelArguments(), originalResults);
+        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), [], originalResults);
 
         //Act
         sut.SetResultValue(72);

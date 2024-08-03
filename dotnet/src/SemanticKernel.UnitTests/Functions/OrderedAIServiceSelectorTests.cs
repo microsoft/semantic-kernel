@@ -24,7 +24,7 @@ public class OrderedAIServiceSelectorTests
 
         // Act
         // Assert
-        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments()));
+        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []));
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<IAIService>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<IAIService>(kernel, function, []);
 
         // Assert
         Assert.NotNull(aiService);
@@ -58,7 +58,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
 
         // Assert
         Assert.NotNull(aiService);
@@ -81,7 +81,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
@@ -106,7 +106,27 @@ public class OrderedAIServiceSelectorTests
 
         // Act
         // Assert
-        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments()));
+        Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []));
+    }
+
+    [Fact]
+    public void ItGetsDefaultServiceForNotFoundModel()
+    {
+        // Arrange
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", new TextGenerationService("model_id_1"));
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service2", new TextGenerationService("model_id_2"));
+        Kernel kernel = builder.Build();
+
+        var promptConfig = new PromptTemplateConfig() { Template = "Hello AI" };
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings { ModelId = "notfound" });
+        var function = kernel.CreateFunctionFromPrompt(promptConfig);
+        var serviceSelector = new OrderedAIServiceSelector();
+
+        // Act
+        // Assert
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
+        Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
     }
 
     [Fact]
@@ -121,7 +141,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
@@ -142,7 +162,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
@@ -165,7 +185,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
@@ -198,7 +218,7 @@ public class OrderedAIServiceSelectorTests
         var serviceSelector = new OrderedAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, []);
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>(expectedModelId), aiService);
@@ -243,7 +263,7 @@ public class OrderedAIServiceSelectorTests
     {
         public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
-        private readonly Dictionary<string, object?> _attributes = new();
+        private readonly Dictionary<string, object?> _attributes = [];
 
         public TextGenerationService(string modelId)
         {

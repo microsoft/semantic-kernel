@@ -9,13 +9,15 @@ using System.Threading.Tasks;
 
 namespace SemanticKernel.UnitTests;
 
-internal sealed class HttpMessageHandlerStub : DelegatingHandler
+public sealed class HttpMessageHandlerStub : DelegatingHandler
 {
     public HttpRequestHeaders? RequestHeaders { get; private set; }
 
     public HttpContentHeaders? ContentHeaders { get; private set; }
 
+#pragma warning disable CA1819 // Properties should not return arrays - Ignore here since setter is private
     public byte[]? RequestContent { get; private set; }
+#pragma warning restore CA1819 // Properties should not return arrays
 
     public Uri? RequestUri { get; private set; }
 
@@ -25,8 +27,10 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public HttpMessageHandlerStub()
     {
-        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

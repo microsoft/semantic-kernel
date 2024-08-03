@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// </summary>
 public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 {
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private Dictionary<string, object?> AttributesInternal { get; } = [];
     private HuggingFaceClient Client { get; }
 
     /// <inheritdoc />
@@ -40,10 +40,10 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(model);
+        Verify.NotNull(model);
 
         this.Client = new HuggingFaceClient(
-        modelId: model,
+            modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
@@ -51,6 +51,30 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         );
 
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
+    /// </summary>
+    /// <param name="endpoint">The uri endpoint including the port where HuggingFace server is hosted</param>
+    /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
+    /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
+    /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
+    public HuggingFaceTextGenerationService(
+        Uri endpoint,
+        string? apiKey = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(endpoint);
+
+        this.Client = new HuggingFaceClient(
+            modelId: null,
+            endpoint: endpoint,
+            apiKey: apiKey,
+            httpClient: HttpClientProvider.GetHttpClient(httpClient),
+            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
+        );
     }
 
     /// <inheritdoc />

@@ -41,13 +41,13 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
 
         TodoTaskList? result = lists.SingleOrDefault(list => list.WellknownListName == WellknownListName.DefaultList);
 
-        while (result == null && lists.Count != 0 && lists.NextPageRequest != null)
+        while (result is null && lists.Count != 0 && lists.NextPageRequest is not null)
         {
             lists = await lists.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
             result = lists.SingleOrDefault(list => list.WellknownListName == WellknownListName.DefaultList);
         }
 
-        if (result == null)
+        if (result is null)
         {
             throw new KernelException("Could not find default task list.");
         }
@@ -62,12 +62,12 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             .Todo.Lists
             .Request().GetAsync(cancellationToken).ConfigureAwait(false);
 
-        List<TodoTaskList> taskLists = lists.ToList();
+        List<TodoTaskList> taskLists = [.. lists];
 
-        while (lists.Count != 0 && lists.NextPageRequest != null)
+        while (lists.Count != 0 && lists.NextPageRequest is not null)
         {
             lists = await lists.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
-            taskLists.AddRange(lists.ToList());
+            taskLists.AddRange(lists);
         }
 
         return taskLists.Select(list => new TaskManagementTaskList(
@@ -90,12 +90,12 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             .Todo.Lists[listId]
             .Tasks.Request().Filter(filterValue).GetAsync(cancellationToken).ConfigureAwait(false);
 
-        List<TodoTask> tasks = tasksPage.ToList();
+        List<TodoTask> tasks = [.. tasksPage];
 
-        while (tasksPage.Count != 0 && tasksPage.NextPageRequest != null)
+        while (tasksPage.Count != 0 && tasksPage.NextPageRequest is not null)
         {
             tasksPage = await tasksPage.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
-            tasks.AddRange(tasksPage.ToList());
+            tasks.AddRange(tasksPage);
         }
 
         return tasks.Select(task => new TaskManagementTask(
@@ -137,10 +137,10 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         return new TodoTask()
         {
             Title = task.Title,
-            ReminderDateTime = task.Reminder == null
+            ReminderDateTime = task.Reminder is null
                 ? null
                 : DateTimeTimeZone.FromDateTimeOffset(DateTimeOffset.Parse(task.Reminder, CultureInfo.InvariantCulture.DateTimeFormat)),
-            DueDateTime = task.Due == null
+            DueDateTime = task.Due is null
                 ? null
                 : DateTimeTimeZone.FromDateTimeOffset(DateTimeOffset.Parse(task.Due, CultureInfo.InvariantCulture.DateTimeFormat)),
             Status = task.IsCompleted ? TaskStatus.Completed : TaskStatus.NotStarted

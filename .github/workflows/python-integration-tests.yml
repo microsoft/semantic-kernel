@@ -39,6 +39,7 @@ jobs:
         run: echo "NOT python file"
 
   python-merge-gate:
+    name: Python Pre-Merge Integration Tests
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     runs-on: ${{ matrix.os }}
@@ -62,46 +63,93 @@ jobs:
         run: |
           export HNSWLIB_NO_NATIVE=1
           python -m pip install --upgrade pip setuptools wheel
-          cd python && poetry install
+          cd python && poetry install --with tests
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           python -m pip install --upgrade pip setuptools wheel
           cd python
-          poetry install
+          poetry install --with tests
+      - name: Install Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if ${{ vars.OLLAMA_MODEL != '' }}; then
+            curl -fsSL https://ollama.com/install.sh | sh
+            ollama serve &
+            sleep 5
+          fi
+      - name: Pull model in Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if ${{ vars.OLLAMA_MODEL != '' }}; then
+            ollama pull ${{ vars.OLLAMA_MODEL }}
+            ollama list
+          fi
+      - name: Google auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
+          credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Setup Redis Stack Server
+        if: matrix.os == 'ubuntu-latest'
+        run: docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
       - name: Run Integration Tests
         id: run_tests
         shell: bash
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
           Python_Integration_Tests: Python_Integration_Tests
-          AzureOpenAI__Label: azure-text-davinci-003
-          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
-          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
-          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
-          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
-          AzureOpenAIEmbeddings_EastUS__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS_EASTUS__DEPLOYMENTNAME}}
-          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAI_EastUS__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
-          AzureOpenAI_EastUS__ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
-          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
-          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
-          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
-          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
-          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
-          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+          OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
+          OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
+          OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
+          POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
+          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
           MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+          AZURE_KEY_VAULT_ENDPOINT: ${{secrets.AZURE_KEY_VAULT_ENDPOINT}}
+          AZURE_KEY_VAULT_CLIENT_ID: ${{secrets.AZURE_KEY_VAULT_CLIENT_ID}}
+          AZURE_KEY_VAULT_CLIENT_SECRET: ${{secrets.AZURE_KEY_VAULT_CLIENT_SECRET}}
+          ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
+          MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
+          MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
+          OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
+          GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
+          GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+          VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
+          VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
+          VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
         run: |
-          if ${{ matrix.os == 'ubuntu-latest' }}; then
-            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
-          fi
-
           cd python
-          poetry run pytest ./tests/integration -v
+          poetry run pytest ./tests/integration ./tests/samples -v --junitxml=pytest.xml
+      - name: Surface failing tests
+        if: always()
+        uses: pmeier/pytest-results-action@main
+        with:
+          # A list of JUnit XML files, directories containing the former, and wildcard
+          # patterns to process.
+          # See @actions/glob for supported patterns.
+          path: python/pytest.xml
+          # (Optional) Add a summary of the results at the top of the report
+          summary: true
+          # (Optional) Select which results should be included in the report.
+          # Follows the same syntax as `pytest -r`
+          display-options: fEX
+          # (Optional) Fail the workflow if no JUnit XML was found.
+          fail-on-empty: true
+          # (Optional) Title of the test results section in the workflow summary
+          title: Test results
 
   python-integration-tests:
     needs: paths-filter
@@ -111,7 +159,7 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
@@ -127,13 +175,35 @@ jobs:
         run: |
           export HNSWLIB_NO_NATIVE=1
           python -m pip install --upgrade pip setuptools wheel
-          cd python && poetry install
+          cd python && poetry install --with tests
 
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          cd python && poetry install
+          cd python && poetry install --with tests
+
+      - name: Install Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+
+      - name: Pull model in Ollama
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          ollama pull ${{ vars.OLLAMA_MODEL }}
+          ollama list
+
+      - name: Google auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.VERTEX_AI_PROJECT_ID }}
+          credentials_json: ${{ secrets.VERTEX_AI_SERVICE_ACCOUNT_KEY }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Run Integration Tests
         id: run_tests
@@ -141,26 +211,35 @@ jobs:
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
           Python_Integration_Tests: Python_Integration_Tests
-          AzureOpenAI__Label: azure-text-davinci-003
-          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
-          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
-          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
-          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
-          AzureOpenAIEmbeddings_EastUS__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS_EASTUS__DEPLOYMENTNAME}}
-          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          AzureOpenAI_EastUS__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
-          AzureOpenAI_EastUS__ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
-          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
-          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
-          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
-          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
-          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
-          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+          OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
+          OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
+          OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
+          POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
+          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
           MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+          AZURE_KEY_VAULT_ENDPOINT: ${{secrets.AZURE_KEY_VAULT_ENDPOINT}}
+          AZURE_KEY_VAULT_CLIENT_ID: ${{secrets.AZURE_KEY_VAULT_CLIENT_ID}}
+          AZURE_KEY_VAULT_CLIENT_SECRET: ${{secrets.AZURE_KEY_VAULT_CLIENT_SECRET}}
+          ACA_POOL_MANAGEMENT_ENDPOINT: ${{secrets.ACA_POOL_MANAGEMENT_ENDPOINT}}
+          MISTRALAI_API_KEY: ${{secrets.MISTRALAI_API_KEY}}
+          MISTRALAI_CHAT_MODEL_ID: ${{ vars.MISTRALAI_CHAT_MODEL_ID }}
+          OLLAMA_MODEL: "${{ matrix.os == 'ubuntu-latest' && vars.OLLAMA_MODEL || '' }}" # phi3
+          GOOGLE_AI_GEMINI_MODEL_ID: ${{ vars.GOOGLE_AI_GEMINI_MODEL_ID }}
+          GOOGLE_AI_EMBEDDING_MODEL_ID: ${{ vars.GOOGLE_AI_EMBEDDING_MODEL_ID }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+          VERTEX_AI_PROJECT_ID: ${{ vars.VERTEX_AI_PROJECT_ID }}
+          VERTEX_AI_GEMINI_MODEL_ID: ${{ vars.VERTEX_AI_GEMINI_MODEL_ID }}
+          VERTEX_AI_EMBEDDING_MODEL_ID: ${{ vars.VERTEX_AI_EMBEDDING_MODEL_ID }}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
             docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
@@ -168,6 +247,7 @@ jobs:
 
           cd python
           poetry run pytest ./tests/integration -v
+          poetry run pytest ./tests/samples -v
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   python-integration-tests-check:
@@ -204,14 +284,14 @@ jobs:
       - name: Fail workflow if tests failed
         id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failure')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: core.setFailed('Integration Tests Failed!')
 
       - name: Fail workflow if tests cancelled
         id: check_tests_cancelled
         if: contains(join(needs.*.result, ','), 'cancelled')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: core.setFailed('Integration Tests Cancelled!')
 

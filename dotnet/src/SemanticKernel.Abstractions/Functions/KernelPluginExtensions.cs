@@ -83,7 +83,7 @@ public static class KernelPluginExtensions
     {
         Verify.NotNull(plugins);
 
-        List<KernelFunctionMetadata> metadata = new();
+        List<KernelFunctionMetadata> metadata = [];
         foreach (KernelPlugin plugin in plugins)
         {
             metadata.AddRange(plugin.GetFunctionsMetadata());

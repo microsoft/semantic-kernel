@@ -16,10 +16,10 @@ public sealed class WebSearchEnginePluginTests
     public async Task SearchAsyncSucceedsAsync()
     {
         // Arrange
-        IEnumerable<string> expected = new[] { Guid.NewGuid().ToString() };
+        IEnumerable<string> expected = [Guid.NewGuid().ToString()];
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
-        connectorMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.SearchAsync<string>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
         WebSearchEnginePlugin target = new(connectorMock.Object);
@@ -28,6 +28,27 @@ public sealed class WebSearchEnginePluginTests
 
         // Act
         await target.SearchAsync(anyQuery);
+
+        // Assert
+        connectorMock.VerifyAll();
+    }
+
+    [Fact]
+    public async Task GetSearchResultsSucceedsAsync()
+    {
+        // Arrange
+        IEnumerable<WebPage> expected = [];
+
+        Mock<IWebSearchEngineConnector> connectorMock = new();
+        connectorMock.Setup(c => c.SearchAsync<WebPage>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expected);
+
+        WebSearchEnginePlugin target = new(connectorMock.Object);
+
+        string anyQuery = Guid.NewGuid().ToString();
+
+        // Act
+        await target.GetSearchResultsAsync(anyQuery);
 
         // Assert
         connectorMock.VerifyAll();

@@ -4,47 +4,37 @@ import pytest
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.planners.sequential_planner.sequential_planner_parser import (
-    SequentialPlanParser,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner_parser import SequentialPlanParser
 from tests.integration.fakes.email_plugin_fake import EmailPluginFake
 from tests.integration.fakes.summarize_plugin_fake import SummarizePluginFake
 from tests.integration.fakes.writer_plugin_fake import WriterPluginFake
 
 
 @pytest.mark.asyncio
-async def test_can_call_to_plan_from_xml(get_aoai_config):
-    deployment_name, api_key, endpoint = get_aoai_config
+async def test_can_call_to_plan_from_xml():
 
     kernel = Kernel()
     # Configure LLM service
     kernel.add_service(
         sk_oai.AzureChatCompletion(
             service_id="text_completion",
-            deployment_name=deployment_name,
-            endpoint=endpoint,
-            api_key=api_key,
         ),
     )
-    kernel.import_plugin_from_object(EmailPluginFake(), "email")
-    kernel.import_plugin_from_object(SummarizePluginFake(), "SummarizePlugin")
-    kernel.import_plugin_from_object(WriterPluginFake(), "WriterPlugin")
+    kernel.add_plugin(EmailPluginFake(), "email")
+    kernel.add_plugin(SummarizePluginFake(), "SummarizePlugin")
+    kernel.add_plugin(WriterPluginFake(), "WriterPlugin")
 
     plan_string = """
 <plan>
-    <function.SummarizePlugin.Summarize/>
-    <function.WriterPlugin.Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
-    <function.email.GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
-    <function.email.SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
+    <function.SummarizePlugin-Summarize/>
+    <function.WriterPlugin-Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
+    <function.email-GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
+    <function.email-SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 </plan>
 """
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
 
-    plan = SequentialPlanParser.to_plan_from_xml(
-        plan_string,
-        goal,
-        SequentialPlanParser.get_plugin_function(kernel),
-    )
+    plan = SequentialPlanParser.to_plan_from_xml(plan_string, goal, kernel)
 
     assert plan is not None
     assert plan.description == "Summarize an input, translate to french, and e-mail to John Doe"
