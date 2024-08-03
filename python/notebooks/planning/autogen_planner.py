@@ -168,6 +168,10 @@ Reply TERMINATE when the task is done.
 class SKFunctionWrapper:
     """
     Wrapper for SK functions to be used with AutoGen Function Calling.
+    This wrapper is designed for functions that accept a single string parameter.
+    """
+    """
+    Wrapper for SK functions to be used with AutoGen Function Calling.
     """
 
     _function: Callable[..., str]
