@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -12,6 +13,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 
 __all__ = [
+    "AnnotationContent",
     "AuthorRole",
     "ChatHistory",
     "ChatMessageContent",
