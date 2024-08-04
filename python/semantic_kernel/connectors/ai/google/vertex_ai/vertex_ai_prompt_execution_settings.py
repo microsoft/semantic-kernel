@@ -4,6 +4,7 @@ import sys
 from typing import Any, Literal
 
 from pydantic import Field
+from vertexai.generative_models import Tool, ToolConfig
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -35,19 +36,26 @@ class VertexAITextPromptExecutionSettings(VertexAIPromptExecutionSettings):
 class VertexAIChatPromptExecutionSettings(VertexAIPromptExecutionSettings):
     """Vertex AI Chat Prompt Execution Settings."""
 
-    tools: list[dict[str, Any]] | None = Field(None, max_length=64)
-    tool_choice: str | None = None
+    tools: list[Tool] | None = Field(
+        None,
+        max_length=64,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    tool_config: ToolConfig | None = Field(
+        None,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
 
     @override
     def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
         """Prepare the settings as a dictionary for sending to the AI service.
 
-        This method removes the tools and tool_choice keys from the settings dictionary, as
+        This method removes the tools and tool_config keys from the settings dictionary, as
         the Vertex AI service mandates these two settings to be sent as separate parameters.
         """
         settings_dict = super().prepare_settings_dict(**kwargs)
         settings_dict.pop("tools", None)
-        settings_dict.pop("tool_choice", None)
+        settings_dict.pop("tool_config", None)
 
         return settings_dict
 
