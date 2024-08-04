@@ -74,15 +74,11 @@ def test_from_fcc_and_result(result: Any):
     assert frc.metadata == {"test": "test", "test2": "test2"}
 
 
-@pytest.mark.parametrize("unwrap", [True, False], ids=["unwrap", "no-unwrap"])
-def test_to_cmc(unwrap: bool):
+def test_to_cmc():
     frc = FunctionResultContent(id="test", name="test-function", result="test-result")
-    cmc = frc.to_chat_message_content(unwrap=unwrap)
+    cmc = frc.to_chat_message_content()
     assert cmc.role.value == "tool"
-    if unwrap:
-        assert cmc.items[0].text == "test-result"
-    else:
-        assert cmc.items[0].result == "test-result"
+    assert cmc.items[0].result == "test-result"
 
 
 def test_serialize():

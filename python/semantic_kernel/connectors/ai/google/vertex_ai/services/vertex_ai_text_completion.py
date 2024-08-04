@@ -32,6 +32,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
     def __init__(
         self,
         project_id: str | None = None,
+        region: str | None = None,
         gemini_model_id: str | None = None,
         service_id: str | None = None,
         env_file_path: str | None = None,
@@ -46,6 +47,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 
         Args:
             project_id (str): The Google Cloud project ID.
+            region (str): The Google Cloud region.
             gemini_model_id (str): The Gemini model ID.
             service_id (str): The Vertex AI service ID.
             env_file_path (str): The path to the environment file.
@@ -54,6 +56,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
         try:
             vertex_ai_settings = VertexAISettings.create(
                 project_id=project_id,
+                region=region,
                 gemini_model_id=gemini_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
@@ -83,7 +86,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
 
     async def _send_request(self, prompt: str, settings: VertexAITextPromptExecutionSettings) -> list[TextContent]:
         """Send a text generation request to the Vertex AI service."""
-        vertexai.init(project=self.service_settings.project_id)
+        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
         model = GenerativeModel(self.service_settings.gemini_model_id)
 
         response: GenerationResponse = await model.generate_content_async(
@@ -134,7 +137,7 @@ class VertexAITextCompletion(VertexAIBase, TextCompletionClientBase):
         self, prompt: str, settings: VertexAITextPromptExecutionSettings
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """Send a text generation request to the Vertex AI service."""
-        vertexai.init(project=self.service_settings.project_id)
+        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
         model = GenerativeModel(self.service_settings.gemini_model_id)
 
         response: AsyncIterable[GenerationResponse] = await model.generate_content_async(

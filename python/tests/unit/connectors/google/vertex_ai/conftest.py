@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from google.cloud.aiplatform_v1beta1.types.content import Candidate, Content, Part
 from google.cloud.aiplatform_v1beta1.types.prediction_service import GenerateContentResponse
+from google.cloud.aiplatform_v1beta1.types.tool import FunctionCall
 from vertexai.generative_models import GenerationResponse
 from vertexai.language_models import TextEmbedding
 
@@ -56,11 +57,72 @@ def mock_vertex_ai_chat_completion_response() -> GenerationResponse:
 
 
 @pytest.fixture()
+def mock_vertex_ai_chat_completion_response_with_tool_call() -> GenerationResponse:
+    """Mock Vertex AI Chat Completion response."""
+    candidate = Candidate()
+    candidate.index = 0
+    candidate.content = Content(
+        role="user",
+        parts=[
+            Part(
+                function_call=FunctionCall(
+                    name="test_function",
+                    args={"test_arg": "test_value"},
+                )
+            )
+        ],
+    )
+    candidate.finish_reason = Candidate.FinishReason.STOP
+
+    response = GenerateContentResponse()
+    response.candidates.append(candidate)
+    response.usage_metadata = GenerateContentResponse.UsageMetadata(
+        prompt_token_count=0,
+        candidates_token_count=0,
+        total_token_count=0,
+    )
+
+    return GenerationResponse._from_gapic(response)
+
+
+@pytest.fixture()
 def mock_vertex_ai_streaming_chat_completion_response() -> AsyncIterable[GenerationResponse]:
     """Mock Vertex AI streaming Chat Completion response."""
     candidate = Candidate()
     candidate.index = 0
     candidate.content = Content(role="user", parts=[Part(text="Test content")])
+    candidate.finish_reason = Candidate.FinishReason.STOP
+
+    response = GenerateContentResponse()
+    response.candidates.append(candidate)
+    response.usage_metadata = GenerateContentResponse.UsageMetadata(
+        prompt_token_count=0,
+        candidates_token_count=0,
+        total_token_count=0,
+    )
+
+    iterable = MagicMock(spec=AsyncGenerator)
+    iterable.__aiter__.return_value = [GenerationResponse._from_gapic(response)]
+
+    return iterable
+
+
+@pytest.fixture()
+def mock_vertex_ai_streaming_chat_completion_response_with_tool_call() -> AsyncIterable[GenerationResponse]:
+    """Mock Vertex AI streaming Chat Completion response."""
+    candidate = Candidate()
+    candidate.index = 0
+    candidate.content = Content(
+        role="user",
+        parts=[
+            Part(
+                function_call=FunctionCall(
+                    name="test_function",
+                    args={"test_arg": "test_value"},
+                )
+            )
+        ],
+    )
     candidate.finish_reason = Candidate.FinishReason.STOP
 
     response = GenerateContentResponse()

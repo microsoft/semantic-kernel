@@ -25,6 +25,8 @@ class VertexAISettings(KernelBaseSettings):
                 (Env var VERTEX_AI_EMBEDDING_MODEL_ID)
     - project_id: str - The Google Cloud project ID.
                 (Env var VERTEX_AI_PROJECT_ID)
+    - region: str - The Google Cloud region.
+                (Env var VERTEX_AI_REGION)
     """
 
     env_prefix: ClassVar[str] = "VERTEX_AI_"
@@ -32,3 +34,4 @@ class VertexAISettings(KernelBaseSettings):
     gemini_model_id: str | None = None
     embedding_model_id: str | None = None
     project_id: str
+    region: str | None = None
