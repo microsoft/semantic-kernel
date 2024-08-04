@@ -47,6 +47,7 @@
         "protos",
         "endregion",
         "vertexai",
-        "aiplatform"
+        "aiplatform",
+        "huggingface"
     ]
 }
