@@ -9,15 +9,19 @@ from xml.etree.ElementTree import Element  # nosec
 from defusedxml import ElementTree
 from pydantic import Field
 
+from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.const import (
+    ANNOTATION_CONTENT_TAG,
     CHAT_MESSAGE_CONTENT_TAG,
     DISCRIMINATOR_FIELD,
+    FILE_REFERENCE_CONTENT_TAG,
     FUNCTION_CALL_CONTENT_TAG,
     FUNCTION_RESULT_CONTENT_TAG,
     IMAGE_CONTENT_TAG,
     TEXT_CONTENT_TAG,
     ContentTypes,
 )
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -29,18 +33,22 @@ from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 TAG_CONTENT_MAP = {
+    ANNOTATION_CONTENT_TAG: AnnotationContent,
     TEXT_CONTENT_TAG: TextContent,
+    FILE_REFERENCE_CONTENT_TAG: FileReferenceContent,
     FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
     FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
     IMAGE_CONTENT_TAG: ImageContent,
 }
 
 ITEM_TYPES = Union[
+    AnnotationContent,
     ImageContent,
     TextContent,
     StreamingTextContent,
     FunctionResultContent,
     FunctionCallContent,
+    FileReferenceContent,
 ]
 
 logger = logging.getLogger(__name__)
