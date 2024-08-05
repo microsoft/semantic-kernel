@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Text;
 using System.Text.Json;
-using Amazon;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Endpoints;
@@ -40,6 +39,7 @@ public class BedrockTextGenerationServiceTests
         // Assert
         Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
     }
+
     /// <summary>
     /// Checks that GetTextContentsAsync calls and correctly handles outputs from InvokeModelAsync.
     /// </summary>
@@ -453,6 +453,7 @@ public class BedrockTextGenerationServiceTests
         var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
         Assert.Equal(executionSettings.ExtensionData["stop_sequences"], stopSequences);
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Meta Llama3.
     /// </summary>
@@ -521,6 +522,7 @@ public class BedrockTextGenerationServiceTests
         Assert.True(requestBodyRoot.TryGetProperty("max_gen_len", out var maxGenLenProperty));
         Assert.Equal(executionSettings.ExtensionData["max_gen_len"], maxGenLenProperty.GetInt32());
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Mistral.
     /// </summary>

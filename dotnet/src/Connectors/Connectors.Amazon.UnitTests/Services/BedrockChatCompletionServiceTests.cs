@@ -3,7 +3,6 @@
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Endpoints;
-using Castle.Core.Logging;
 using Connectors.Amazon.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -16,17 +15,8 @@ namespace Connectors.Amazon.UnitTests.Services;
 /// <summary>
 /// Unit tests for Bedrock Chat Completion Service.
 /// </summary>
-public class BedrockChatCompletionServiceTests
+public sealed class BedrockChatCompletionServiceTests
 {
-    private static ChatHistory CreateSampleChatHistory()
-    {
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Hello");
-        chatHistory.AddAssistantMessage("Hi");
-        chatHistory.AddUserMessage("How are you?");
-        chatHistory.AddSystemMessage("You are an AI Assistant");
-        return chatHistory;
-    }
     /// <summary>
     /// Checks that modelID is added to the list of service attributes when service is registered.
     /// </summary>
@@ -42,6 +32,7 @@ public class BedrockChatCompletionServiceTests
         // Assert
         Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
     }
+
     /// <summary>
     /// Checks that GetChatMessageContentsAsync calls and correctly handles outputs from ConverseAsync.
     /// </summary>
@@ -84,6 +75,7 @@ public class BedrockChatCompletionServiceTests
         Assert.Single(result[0].Items);
         Assert.Equal("Hello, world!", result[0].Items[0].ToString());
     }
+
     /// <summary>
     /// Checks that GetStreamingChatMessageContentsAsync calls and correctly handles outputs from ConverseStreamAsync.
     /// </summary>
@@ -113,17 +105,20 @@ public class BedrockChatCompletionServiceTests
         var result = service.GetStreamingChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
 
         // Assert
+        int iterations = 0;
         await foreach (var item in result)
         {
+            iterations += 1;
             Assert.NotNull(item);
             Assert.NotNull(item.Content);
             Assert.NotNull(item.Role);
             output.Add(item);
         }
-        Assert.NotNull(output);
+        Assert.Equal(iterations, output.Count);
         Assert.NotNull(service.GetModelId());
         Assert.NotNull(service.Attributes);
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
@@ -182,6 +177,7 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(executionSettings.ExtensionData["topP"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
     }
+
     /// <summary>
     /// Checks that the roles from the chat history are correctly assigned and labeled for the converse calls.
     /// </summary>
@@ -224,6 +220,7 @@ public class BedrockChatCompletionServiceTests
         Assert.Single(result[0].Items);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
     }
+
     /// <summary>
     /// Checks that the chat history is given the correct values through calling GetChatMessageContentsAsync.
     /// </summary>
@@ -318,6 +315,7 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(AuthorRole.User, chatHistory[5].Role);
         Assert.Equal("That's great to hear!", chatHistory[5].Items[0].ToString());
     }
+
     /// <summary>
     /// Checks that error handling present for empty chat history.
     /// </summary>
@@ -350,6 +348,7 @@ public class BedrockChatCompletionServiceTests
         await Assert.ThrowsAsync<ArgumentException>(
             () => service.GetChatMessageContentsAsync(chatHistory)).ConfigureAwait(true);
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
@@ -359,7 +358,6 @@ public class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "anthropic.claude-chat-completion";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var mockLogger = new Mock<ILogger>();
         var executionSettings = new PromptExecutionSettings()
         {
             ModelId = modelId,
@@ -409,6 +407,7 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens_to_sample"], converseRequest?.InferenceConfig.MaxTokens);
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
@@ -467,6 +466,7 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_gen_len"], converseRequest?.InferenceConfig.MaxTokens);
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
@@ -525,6 +525,7 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
@@ -583,6 +584,7 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(executionSettings.ExtensionData["p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
     }
+
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the chat completion call.
     /// </summary>
@@ -640,5 +642,15 @@ public class BedrockChatCompletionServiceTests
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
+    }
+
+    private static ChatHistory CreateSampleChatHistory()
+    {
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello");
+        chatHistory.AddAssistantMessage("Hi");
+        chatHistory.AddUserMessage("How are you?");
+        chatHistory.AddSystemMessage("You are an AI Assistant");
+        return chatHistory;
     }
 }
