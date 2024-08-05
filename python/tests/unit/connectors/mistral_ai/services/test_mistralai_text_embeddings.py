@@ -45,6 +45,13 @@ def test_embedding_with_model(mistralai_unit_test_env):
     assert text_embedding.client._api_key == "test_api_key"
 
 
+@pytest.mark.parametrize("exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True) 
+def test_embedding_with_model_without_env(mistralai_unit_test_env):
+    text_embedding = MistralAITextEmbedding(ai_model_id="overwrite-model")
+    assert text_embedding.ai_model_id == "overwrite-model"
+    assert text_embedding.client._api_key == "test_api_key"
+
+
 @pytest.mark.parametrize("exclude_list", [["MISTRALAI_EMBEDDING_MODEL_ID"]], indirect=True)
 def test_embedding_missing_model(mistralai_unit_test_env):
     with pytest.raises(ServiceInitializationError):

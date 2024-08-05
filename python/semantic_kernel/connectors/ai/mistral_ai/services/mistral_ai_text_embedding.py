@@ -86,7 +86,7 @@ class MistralAITextEmbedding(EmbeddingGeneratorBase):
         settings: "PromptExecutionSettings | None" = None,
         **kwargs: Any,
     ) -> ndarray:
-        embedding_response: EmbeddingResponse = await self.generate_raw_embeddings(texts, settings, **kwargs)
+        embedding_response = await self.generate_raw_embeddings(texts, settings, **kwargs)
         return array(embedding_response)
 
     @override
