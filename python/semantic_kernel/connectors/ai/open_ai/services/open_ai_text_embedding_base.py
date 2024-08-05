@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 
 @experimental_class
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
+    """Base class for OpenAI text embedding services."""
+
     @override
     async def generate_embeddings(
         self,
