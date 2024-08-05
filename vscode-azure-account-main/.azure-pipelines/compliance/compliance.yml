@@ -1,0 +1,36 @@
+steps:
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+  displayName: 'Run PoliCheck'
+  inputs:
+    targetType: F # search files and folders
+    optionsUEPATH: '$(Build.SourcesDirectory)/.azure-pipelines/compliance/PoliCheckExclusions.xml'
+  continueOnError: true
+  condition: eq(variables['ENABLE_COMPLIANCE'], 'true')
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+  displayName: 'Run CredScan'
+  inputs:
+    toolMajorVersion: V2
+    suppressionsFile: '$(Build.SourcesDirectory)/.azure-pipelines/compliance/CredScanSuppressions.json'
+    debugMode: true # Needed to suppress folders
+    folderSuppression: true
+  continueOnError: true
+  condition: eq(variables['ENABLE_COMPLIANCE'], 'true')
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
+  displayName: 'AntiMalware Scanner'
+  inputs:
+    FileDirPath: '$(Build.SourcesDirectory)'
+    EnableServices: true
+  continueOnError: true
+  condition: eq(variables['ENABLE_COMPLIANCE'], 'true')
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+  displayName: 'Publish Security Analysis Logs'
+  condition: eq(variables['ENABLE_COMPLIANCE'], 'true')
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+  displayName: 'Post Analysis'
+  inputs:
+    AllTools: true
+  condition: eq(variables['ENABLE_COMPLIANCE'], 'true')

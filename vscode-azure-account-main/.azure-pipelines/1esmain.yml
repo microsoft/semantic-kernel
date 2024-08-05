@@ -1,0 +1,29 @@
+# Trigger the build whenever `main` or `rel/*` is updated
+trigger:
+  - main
+  - rel/*
+
+# Disable PR trigger
+pr: none
+
+# Scheduled nightly build of `main`
+schedules:
+  - cron: "0 0 * * *"
+    displayName: Nightly scheduled build
+    always: false # Don't rebuild if there haven't been changes
+    branches:
+      include:
+        - main
+
+# `resources` specifies the location of templates to pick up, use it to get AzExt templates
+resources:
+  repositories:
+    - repository: azExtTemplates
+      type: github
+      name: microsoft/vscode-azuretools
+      ref: main
+      endpoint: GitHub-AzureTools # The service connection to use when accessing this repository
+
+# Use those templates
+extends:
+  template: azure-pipelines/1esmain.yml@azExtTemplates

@@ -6,7 +6,6 @@
     "github.copilot-chat",
     "github.copilot",
     "franneck94.c-cpp-runner",
-    "ms-azuretools.vscode-azureresourcegroups",
-    "github.vscode-github-actions"
+    "ms-azuretools.vscode-azureresourcegroups"
   ]
 }

@@ -1,0 +1,26 @@
+steps:
+- task: Npm@1
+  displayName: 'cleanReadme'
+  inputs:
+    command: custom
+    customCommand: run cleanReadme
+
+- task: Npm@1
+  displayName: 'Package'
+  inputs:
+    command: custom
+    customCommand: run package
+
+- task: CopyFiles@2
+  displayName: 'Copy vsix to staging directory'
+  inputs:
+    Contents: '**/*.vsix'
+    TargetFolder: '$(build.artifactstagingdirectory)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish artifacts: vsix'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: vsix
+  # Only publish vsix from linux build since we use this to release and want to stay consistent
+  condition: and(eq(variables['Agent.OS'], 'Linux'), ne(variables['System.PullRequest.IsFork'], 'True'))
