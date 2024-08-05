@@ -40,7 +40,7 @@ internal sealed class BedrockTextGenerationClient
         this._modelId = modelId;
         this._bedrockApi = bedrockApi;
         this._ioService = clientService.GetIOService(modelId);
-        this._modelProvider = clientService.GetModelProvider(modelId);
+        this._modelProvider = clientService.GetModelProviderAndName(modelId).modelProvider;
         this._clientUtilities = new BedrockClientUtilities();
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
     }

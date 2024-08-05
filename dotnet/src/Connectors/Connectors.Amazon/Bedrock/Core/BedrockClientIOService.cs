@@ -21,15 +21,13 @@ public class BedrockClientIOService
     /// <param name="modelId"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public IBedrockModelIOService GetIOService(string modelId)
+    internal IBedrockModelIOService GetIOService(string modelId)
     {
-        string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-text-premier-v1:0"
-        string modelProvider = parts[0];
-        string modelName = parts.Length > 1 ? parts[1] : string.Empty;
+        (string modelProvider, string modelName) = this.GetModelProviderAndName(modelId);
 
-        switch (modelProvider)
+        switch (modelProvider.ToUpperInvariant())
         {
-            case "ai21":
+            case "AI21":
                 if (modelName.StartsWith("jamba", StringComparison.OrdinalIgnoreCase))
                 {
                     return new AI21JambaIOService();
@@ -39,19 +37,19 @@ public class BedrockClientIOService
                     return new AI21JurassicIOService();
                 }
                 throw new ArgumentException($"Unsupported AI21 model: {modelId}");
-            case "amazon":
+            case "AMAZON":
                 if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase))
                 {
                     return new AmazonIOService();
                 }
                 throw new ArgumentException($"Unsupported Amazon model: {modelId}");
-            case "anthropic":
+            case "ANTHROPIC":
                 if (modelName.StartsWith("claude-", StringComparison.OrdinalIgnoreCase))
                 {
                     return new AnthropicIOService();
                 }
                 throw new ArgumentException($"Unsupported Anthropic model: {modelId}");
-            case "cohere":
+            case "COHERE":
                 if (modelName.StartsWith("command-r", StringComparison.OrdinalIgnoreCase))
                 {
                     return new CohereCommandRIOService();
@@ -61,18 +59,15 @@ public class BedrockClientIOService
                     return new CohereCommandIOService();
                 }
                 throw new ArgumentException($"Unsupported Cohere model: {modelId}");
-            case "meta":
+            case "META":
                 if (modelName.StartsWith("llama3-", StringComparison.OrdinalIgnoreCase))
                 {
                     return new MetaIOService();
                 }
                 throw new ArgumentException($"Unsupported Meta model: {modelId}");
-            case "mistral":
-                if (modelName.StartsWith("mistral-", StringComparison.OrdinalIgnoreCase) 
+            case "MISTRAL":
+                if (modelName.StartsWith("mistral-", StringComparison.OrdinalIgnoreCase)
                     || modelName.StartsWith("mixtral-", StringComparison.OrdinalIgnoreCase))
-                {
-                    return new MistralIOService();
-                }
                 {
                     return new MistralIOService();
                 }
@@ -81,14 +76,11 @@ public class BedrockClientIOService
                 throw new ArgumentException($"Unsupported model provider: {modelProvider}");
         }
     }
-    /// <summary>
-    /// Gets the model provider from modelId.
-    /// </summary>
-    /// <param name="modelId"></param>
-    /// <returns></returns>
-    public string GetModelProvider(string modelId)
+
+    internal (string modelProvider, string modelName) GetModelProviderAndName(string modelId)
     {
         string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-text-premier-v1:0"
-        return parts[0];
+        string modelName = parts.Length > 1 ? parts[1] : string.Empty;
+        return (parts[0], modelName);
     }
 }
