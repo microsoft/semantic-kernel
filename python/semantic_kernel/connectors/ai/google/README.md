@@ -48,3 +48,7 @@ kernel.add_service(
 ```
 
 > Alternatively, you can use an .env file to store the model id and project id.
+
+## Why is there code that looks almost identical in the implementations on the two connectors
+
+The two connectors have very similar implementations, including the utils files. However, they are fundamentally different as they depend on different packages from Google. Although the namings of many types are identical, they are different types.
