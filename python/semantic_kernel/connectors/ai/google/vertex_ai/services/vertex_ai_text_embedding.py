@@ -29,6 +29,7 @@ class VertexAITextEmbedding(VertexAIBase, EmbeddingGeneratorBase):
     def __init__(
         self,
         project_id: str | None = None,
+        region: str | None = None,
         embedding_model_id: str | None = None,
         service_id: str | None = None,
         env_file_path: str | None = None,
@@ -43,6 +44,7 @@ class VertexAITextEmbedding(VertexAIBase, EmbeddingGeneratorBase):
 
         Args:
             project_id (str): The Google Cloud project ID.
+            region (str): The Google Cloud region.
             embedding_model_id (str): The Gemini model ID.
             service_id (str): The Vertex AI service ID.
             env_file_path (str): The path to the environment file.
@@ -51,6 +53,7 @@ class VertexAITextEmbedding(VertexAIBase, EmbeddingGeneratorBase):
         try:
             vertex_ai_settings = VertexAISettings.create(
                 project_id=project_id,
+                region=region,
                 embedding_model_id=embedding_model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
@@ -89,7 +92,7 @@ class VertexAITextEmbedding(VertexAIBase, EmbeddingGeneratorBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, VertexAIEmbeddingPromptExecutionSettings)  # nosec
 
-        vertexai.init(project=self.service_settings.project_id)
+        vertexai.init(project=self.service_settings.project_id, location=self.service_settings.region)
         model = TextEmbeddingModel.from_pretrained(self.service_settings.embedding_model_id)
         response: list[TextEmbedding] = await model.get_embeddings_async(
             texts,
