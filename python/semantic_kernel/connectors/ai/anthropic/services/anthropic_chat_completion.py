@@ -183,7 +183,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         items: list[Any] = [StreamingTextContent(choice_index=0, text=chunk)]
 
         return StreamingChatMessageContent(
-            choice_index=0, # Anthropic only returns one choice
+            choice_index=0,
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=chunk_metadata,
