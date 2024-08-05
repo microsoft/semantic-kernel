@@ -39,6 +39,11 @@ def test_no_key_field_fail():
         VectorStoreRecordDefinition(fields={"content": VectorStoreRecordDataField()})
 
 
+def test_multiple_key_field_fail():
+    with raises(VectorStoreModelException):
+        VectorStoreRecordDefinition(fields={"key1": VectorStoreRecordKeyField(), "key2": VectorStoreRecordKeyField()})
+
+
 def test_no_matching_vector_field_fail():
     with raises(VectorStoreModelException):
         VectorStoreRecordDefinition(
