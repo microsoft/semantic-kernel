@@ -8,7 +8,7 @@ namespace Connectors.Amazon.Models.Amazon;
 /// The Amazon Titan Text response object when deserialized from Invoke Model call.
 /// </summary>
 [Serializable]
-internal sealed class TitanTextResponse
+public class TitanTextResponse
 {
     /// <summary>
     /// The number of tokens in the prompt.
@@ -23,7 +23,7 @@ internal sealed class TitanTextResponse
     /// <summary>
     /// The result object.
     /// </summary>
-    internal sealed class Result
+    public class Result
     {
         /// <summary>
         /// The number of tokens in the prompt.

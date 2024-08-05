@@ -63,12 +63,12 @@ internal static class CommandRToolUse
         /// The tool call.
         /// </summary>
         [JsonPropertyName("call")]
-        public required ToolCall Call { get; set; }
+        public ToolCall? Call { get; set; }
         /// <summary>
         /// Outputs from the tool call.
         /// </summary>
         [JsonPropertyName("outputs")]
-        public required List<Dictionary<string, string>> Outputs { get; set; }
+        public static List<Dictionary<string, string>>? Outputs { get; set; }
     }
     /// <summary>
     /// Tool call object to be passed into the tool call.
@@ -80,11 +80,11 @@ internal static class CommandRToolUse
         /// Name of tool.
         /// </summary>
         [JsonPropertyName("name")]
-        public required string Name { get; set; }
+        public string? Name { get; set; }
         /// <summary>
         /// Parameters for the tool.
         /// </summary>
         [JsonPropertyName("parameters")]
-        public required Dictionary<string, string> Parameters { get; set; }
+        public Dictionary<string, string>? Parameters { get; set; }
     }
 }

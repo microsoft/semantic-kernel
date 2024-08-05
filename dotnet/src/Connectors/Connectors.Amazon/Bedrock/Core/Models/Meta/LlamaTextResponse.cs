@@ -7,7 +7,7 @@ namespace Connectors.Amazon.Core;
 /// <summary>
 /// Text generation response object for Meta Llama.
 /// </summary>
-internal sealed class LlamaTextResponse
+public class LlamaTextResponse
 {
     /// <summary>
     /// The generated text.

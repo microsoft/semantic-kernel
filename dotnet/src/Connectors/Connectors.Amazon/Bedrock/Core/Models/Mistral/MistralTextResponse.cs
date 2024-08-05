@@ -8,7 +8,7 @@ namespace Connectors.Amazon.Core;
 /// Mistral Text Response body.
 /// </summary>
 [Serializable]
-internal sealed class MistralTextResponse
+public class MistralTextResponse
 {
     /// <summary>
     /// A list of outputs from the model.
@@ -19,7 +19,7 @@ internal sealed class MistralTextResponse
     /// <summary>
     /// Output parameters for the list of outputs of the text response.
     /// </summary>
-    internal sealed class Output
+    public class Output
     {
         /// <summary>
         /// The text that the model generated.

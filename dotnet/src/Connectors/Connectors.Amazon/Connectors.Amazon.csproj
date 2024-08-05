@@ -1,12 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <AssemblyName>Microsoft.SemanticKernel.Connectors.Amazon</AssemblyName>
+        <RootNamespace>$(AssemblyName)</RootNamespace>
         <TargetFramework>net8.0</TargetFramework>
+        <VersionSuffix>alpha</VersionSuffix>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <PropertyGroup>
-      <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
+      <NoWarn>$(NoWarn);SKEXP0001,SKEXP0070</NoWarn>
     </PropertyGroup>
   
     <ItemGroup>
