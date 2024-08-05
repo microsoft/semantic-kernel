@@ -118,6 +118,24 @@
             "problemMatcher": []
         },
         {
+            "label": "Python: Tests - Unit - Failed Only",
+            "type": "shell",
+            "command": "poetry",
+            "args": [
+                "run",
+                "pytest",
+                "tests/unit/",
+                "--last-failed",
+                "-v"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Python: Tests - Code Coverage",
             "type": "shell",
             "command": "poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/",
