@@ -49,14 +49,19 @@ def mock_anthropic_client_completion_stream() -> AsyncAnthropic:
         MagicMock(finish_reason="stop", delta=MagicMock(role="assistant", content="Test")),
         MagicMock(finish_reason="stop", delta=MagicMock(role="assistant", content="Test", tool_calls=None)),
     ]
-
     chat_completion_response.content = content
+
     chat_completion_response_empty = MagicMock()
-    chat_completion_response_empty.choices = []
+    chat_completion_response_empty.content = []
+
+    # Create a MagicMock for the messages attribute
+    messages_mock = MagicMock()
+    messages_mock.stream = chat_completion_response
     
     generator_mock = MagicMock()
     generator_mock.__aiter__.return_value = [chat_completion_response_empty, chat_completion_response]
-    client.chat_stream.return_value = generator_mock
+    
+    client.messages = messages_mock
     
     return client
 
@@ -79,26 +84,26 @@ async def test_complete_chat_contents(
     assert content is not None
 
 
-# @pytest.mark.asyncio
-# async def test_complete_chat_stream_contents(
-#     kernel: Kernel,
-#     mock_settings: AnthropicChatPromptExecutionSettings,
-#     mock_anthropic_client_completion_stream: AsyncAnthropic,
-# ):
-#     chat_history = MagicMock()
-#     arguments = KernelArguments()
+@pytest.mark.asyncio
+async def test_complete_chat_stream_contents(
+    kernel: Kernel,
+    mock_settings: AnthropicChatPromptExecutionSettings,
+    mock_anthropic_client_completion_stream: AsyncAnthropic,
+):
+    chat_history = MagicMock()
+    arguments = KernelArguments()
 
-#     chat_completion_base = AnthropicChatCompletion(
-#         ai_model_id="test_model_id",
-#         service_id="test",
-#         api_key="",
-#         async_client=mock_anthropic_client_completion_stream,
-#     )
+    chat_completion_base = AnthropicChatCompletion(
+        ai_model_id="test_model_id",
+        service_id="test",
+        api_key="",
+        async_client=mock_anthropic_client_completion_stream,
+    )
 
-#     async for content in chat_completion_base.get_streaming_chat_message_contents(
-#         chat_history, mock_settings, kernel=kernel, arguments=arguments
-#     ):
-#         assert content is not None
+    async for content in chat_completion_base.get_streaming_chat_message_contents(
+        chat_history, mock_settings, kernel=kernel, arguments=arguments
+    ):
+        assert content is not None
 
 
 @pytest.mark.asyncio
@@ -191,23 +196,22 @@ async def test_with_different_execution_settings(kernel: Kernel, mock_anthropic_
     assert mock_anthropic_client_completion.messages.create.call_args.kwargs["temperature"] == 0.2
 
 
-# @pytest.mark.asyncio
-# async def test_with_different_execution_settings_stream(
-#     kernel: Kernel, mock_mistral_ai_client_completion_stream: MagicMock
-# ):
-#     chat_history = MagicMock()
-#     settings = OpenAIChatPromptExecutionSettings(temperature=0.2, seed=2)
-#     arguments = KernelArguments()
-#     chat_completion_base = MistralAIChatCompletion(
-#         ai_model_id="test_model_id",
-#         service_id="test",
-#         api_key="",
-#         async_client=mock_mistral_ai_client_completion_stream,
-#     )
+@pytest.mark.asyncio
+async def test_with_different_execution_settings_stream(
+    kernel: Kernel, mock_anthropic_client_completion_stream: MagicMock
+):
+    chat_history = MagicMock()
+    settings = OpenAIChatPromptExecutionSettings(temperature=0.2, seed=2)
+    arguments = KernelArguments()
+    chat_completion_base = AnthropicChatCompletion(
+        ai_model_id="test_model_id",
+        service_id="test",
+        api_key="",
+        async_client=mock_anthropic_client_completion_stream,
+    )
 
-#     async for chunk in chat_completion_base.get_streaming_chat_message_contents(
-#         chat_history, settings, kernel=kernel, arguments=arguments
-#     ):
-#         continue
-#     assert mock_mistral_ai_client_completion_stream.chat_stream.call_args.kwargs["temperature"] == 0.2
-#     assert mock_mistral_ai_client_completion_stream.chat_stream.call_args.kwargs["seed"] == 2
+    async for chunk in chat_completion_base.get_streaming_chat_message_contents(
+        chat_history, settings, kernel=kernel, arguments=arguments
+    ):
+        continue
+    assert mock_anthropic_client_completion_stream.messages.stream.call_args.kwargs["temperature"] == 0.2
