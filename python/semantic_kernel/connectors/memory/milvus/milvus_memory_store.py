@@ -146,6 +146,8 @@ def create_fields(dimensions: int) -> list[FieldSchema]:
 
 @experimental_class
 class MilvusMemoryStore(MemoryStoreBase):
+    """Memory store based on Milvus."""
+
     def __init__(
         self,
         uri: str = "http://localhost:19530",
