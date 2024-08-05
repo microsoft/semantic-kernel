@@ -12,7 +12,6 @@
     <ItemGroup>
       <PackageReference Include="AWSSDK.BedrockRuntime" />
       <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
-      <PackageReference Include="Microsoft.SemanticKernel" />
     </ItemGroup>
 
     <ItemGroup>

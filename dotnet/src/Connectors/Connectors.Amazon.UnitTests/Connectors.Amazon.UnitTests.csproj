@@ -10,7 +10,6 @@
 
     <ItemGroup>
       <PackageReference Include="AWSSDK.BedrockRuntime" />
-      <PackageReference Include="Microsoft.SemanticKernel" />
       <PackageReference Include="Moq"/>
       <PackageReference Include="xunit"/>
       <PackageReference Include="Microsoft.NET.Test.Sdk"/>
