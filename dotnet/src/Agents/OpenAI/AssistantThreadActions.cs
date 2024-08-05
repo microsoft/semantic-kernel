@@ -409,7 +409,7 @@ internal static class AssistantThreadActions
                 ])
             {
                 AuthorName = agentName,
-                Metadata = new Dictionary<string, object?> { { CodeInterpreterMetadataKey, true } }
+                Metadata = new Dictionary<string, object?> { { CodeInterpreterMetadataKey, true } },
             };
     }
 
