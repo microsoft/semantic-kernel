@@ -9,14 +9,14 @@ namespace Connectors.Amazon.Bedrock.Core;
 /// <summary>
 /// Utility functions for the Bedrock clients.
 /// </summary>
-public class BedrockClientUtilities
+internal class BedrockClientUtilities
 {
     /// <summary>
     /// Convert the Http Status Code in Converse Response to the Activity Status Code for Semantic Kernel activity.
     /// </summary>
     /// <param name="httpStatusCode"></param>
     /// <returns></returns>
-    public ActivityStatusCode ConvertHttpStatusCodeToActivityStatusCode(HttpStatusCode httpStatusCode)
+    internal ActivityStatusCode ConvertHttpStatusCodeToActivityStatusCode(HttpStatusCode httpStatusCode)
     {
         if ((int)httpStatusCode >= 200 && (int)httpStatusCode < 300)
         {
@@ -40,7 +40,7 @@ public class BedrockClientUtilities
     /// <param name="role"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public AuthorRole MapConversationRoleToAuthorRole(string role)
+    internal AuthorRole MapConversationRoleToAuthorRole(string role)
     {
         return role switch
         {

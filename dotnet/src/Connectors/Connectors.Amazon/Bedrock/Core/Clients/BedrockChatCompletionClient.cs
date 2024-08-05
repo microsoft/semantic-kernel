@@ -20,7 +20,7 @@ internal sealed class BedrockChatCompletionClient
 {
     private readonly string _modelId;
     private readonly string _modelProvider;
-    private readonly IAmazonBedrockRuntime _bedrockApi;
+    private readonly IAmazonBedrockRuntime _bedrockRuntime;
     private readonly IBedrockModelIOService _ioService;
     private readonly BedrockClientUtilities _clientUtilities;
     private Uri? _chatGenerationEndpoint;
@@ -29,15 +29,15 @@ internal sealed class BedrockChatCompletionClient
     /// <summary>
     /// Builds the client object and registers the model input-output service given the user's passed in model ID.
     /// </summary>
-    /// <param name="modelId"></param>
-    /// <param name="bedrockApi"></param>
-    /// <param name="loggerFactory"></param>
+    /// <param name="modelId">The model ID for the client.</param>
+    /// <param name="bedrockRuntime">The IAmazonBedrockRuntime object to be used for Bedrock runtime actions.</param>
+    /// <param name="loggerFactory">Logger for error output.</param>
     /// <exception cref="ArgumentException"></exception>
-    public BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockApi, ILoggerFactory? loggerFactory = null)
+    internal BedrockChatCompletionClient(string modelId, IAmazonBedrockRuntime bedrockRuntime, ILoggerFactory? loggerFactory = null)
     {
         var clientService = new BedrockClientIOService();
         this._modelId = modelId;
-        this._bedrockApi = bedrockApi;
+        this._bedrockRuntime = bedrockRuntime;
         this._ioService = clientService.GetIOService(modelId);
         this._modelProvider = clientService.GetModelProviderAndName(modelId).modelProvider;
         this._clientUtilities = new BedrockClientUtilities();
@@ -61,7 +61,7 @@ internal sealed class BedrockChatCompletionClient
     {
         Verify.NotNullOrEmpty(chatHistory);
         ConverseRequest converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory, executionSettings);
-        var regionEndpoint = this._bedrockApi.DetermineServiceOperationEndpoint(converseRequest).URL;
+        var regionEndpoint = this._bedrockRuntime.DetermineServiceOperationEndpoint(converseRequest).URL;
         this._chatGenerationEndpoint = new Uri(regionEndpoint);
         ConverseResponse? response = null;
         using var activity = ModelDiagnostics.StartCompletionActivity(
@@ -69,7 +69,7 @@ internal sealed class BedrockChatCompletionClient
         ActivityStatusCode activityStatus;
         try
         {
-            response = await this._bedrockApi.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(false);
+            response = await this._bedrockRuntime.ConverseAsync(converseRequest, cancellationToken).ConfigureAwait(false);
             if (activity is not null)
             {
                 activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
@@ -136,28 +136,26 @@ internal sealed class BedrockChatCompletionClient
         return itemCollection;
     }
 
-    // Order of operations:
-    // 1. Start completion activity with semantic kernel
-    // 2. Call converse stream async with bedrock API
-    // 3. Convert output to semantic kernel's StreamingChatMessageContent
-    // 4. Yield return the streamed contents
-    // 5. End streaming activity with kernel
     internal async IAsyncEnumerable<StreamingChatMessageContent> StreamChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // Set up variables for starting completion activity
         var converseStreamRequest = this._ioService.GetConverseStreamRequest(this._modelId, chatHistory, executionSettings);
-        var regionEndpoint = this._bedrockApi.DetermineServiceOperationEndpoint(converseStreamRequest).URL;
+        var regionEndpoint = this._bedrockRuntime.DetermineServiceOperationEndpoint(converseStreamRequest).URL;
         this._chatGenerationEndpoint = new Uri(regionEndpoint);
         ConverseStreamResponse? response = null;
+
+        // Start completion activity with semantic kernel
         using var activity = ModelDiagnostics.StartCompletionActivity(
             this._chatGenerationEndpoint, this._modelId, this._modelProvider, chatHistory, executionSettings);
         ActivityStatusCode activityStatus;
         try
         {
-            response = await this._bedrockApi.ConverseStreamAsync(converseStreamRequest, cancellationToken).ConfigureAwait(false);
+            // Call converse stream async with bedrock API
+            response = await this._bedrockRuntime.ConverseStreamAsync(converseStreamRequest, cancellationToken).ConfigureAwait(false);
             if (activity is not null)
             {
                 activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
@@ -188,12 +186,15 @@ internal sealed class BedrockChatCompletionClient
         {
             if (chunk is ContentBlockDeltaEvent)
             {
+                // Convert output to semantic kernel's StreamingChatMessageContent
                 var c = (chunk as ContentBlockDeltaEvent)?.Delta.Text;
                 var content = new StreamingChatMessageContent(AuthorRole.Assistant, c);
                 streamedContents?.Add(content);
                 yield return content;
             }
         }
+
+        // End streaming activity with kernel
         activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
         activity?.SetStatus(activityStatus);
         activity?.EndStreaming(streamedContents);

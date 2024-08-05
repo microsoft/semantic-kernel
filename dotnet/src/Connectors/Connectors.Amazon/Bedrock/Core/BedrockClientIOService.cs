@@ -13,7 +13,7 @@ namespace Connectors.Amazon.Bedrock.Core;
 /// <summary>
 /// Utilities to get the model IO service and model provider. Used by Bedrock service clients.
 /// </summary>
-public class BedrockClientIOService
+internal class BedrockClientIOService
 {
     /// <summary>
     /// Gets the model IO service for body conversion.
