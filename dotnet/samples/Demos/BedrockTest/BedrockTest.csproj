@@ -9,7 +9,7 @@
 
     <ItemGroup>
       <PackageReference Include="AWSSDK.BedrockRuntime" />
-      <PackageReference Include="Microsoft.SemanticKernel"/>
+      <ProjectReference Include="..\..\..\src\SemanticKernel.MetaPackage\src\SemanticKernel.MetaPackage.csproj"/>
     </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj"/>
