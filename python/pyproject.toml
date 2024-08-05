@@ -80,7 +80,7 @@ ruff = "0.5.2"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = ">=3.7.1"
-ruff = ">=0.4.5"
+ruff = ">=0.5"
 ipykernel = "^6.29.4"
 nbconvert = "^7.16.4"
 pytest = "^8.2.1"
@@ -177,9 +177,35 @@ target-version = "py310"
 include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
 
 [tool.ruff.lint]
+fixable = ["ALL"]
+unfixable = []
 preview = true
-select = ["D", "E", "F", "I", "CPY", "ISC", "INP", "RSE102", "RET", "SIM", "TD", "FIX", "ERA001", "RUF"]
-ignore = ["D100", "D101", "D104", "TD003", "FIX002"]
+select = [
+    "D", #pydocstyle checks
+    "E", #error checks
+    "F", #pyflakes checks
+    "I", #isort
+    "CPY", #copyright
+    "ISC", #implicit string concat
+    "INP", #implicit namespace package
+    "RSE", #raise exception parantheses check
+    "RET", #flake8-return check
+    "SIM", #flake8-simplify check
+    "TD", #todos
+    "FIX", #fixme checks 
+    "ERA", #remove connected out code
+    "RUF" #RUF specific rules
+]
+ignore = [
+    "D100", #allow missing docstring in public module
+    "D104", #allow missing docstring in public package
+    "TD003", #allow missing link to todo issue
+    "FIX002" #allow todo
+]
+
+[tool.ruff.format]
+preview = true
+docstring-code-format = true
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
