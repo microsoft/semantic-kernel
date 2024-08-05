@@ -68,11 +68,11 @@ public class BedrockClientIOService
                 }
                 throw new ArgumentException($"Unsupported Meta model: {modelId}");
             case "mistral":
-                if (modelName.StartsWith("mistral-", StringComparison.OrdinalIgnoreCase))
+                if (modelName.StartsWith("mistral-", StringComparison.OrdinalIgnoreCase) 
+                    || modelName.StartsWith("mixtral-", StringComparison.OrdinalIgnoreCase))
                 {
                     return new MistralIOService();
                 }
-                if (modelName.StartsWith("mixtral-", StringComparison.OrdinalIgnoreCase))
                 {
                     return new MistralIOService();
                 }
