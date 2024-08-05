@@ -7,12 +7,12 @@ using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Models.Mistral;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Input-output service for Mistral.
 /// </summary>
-public class MistralIOService : IBedrockModelIOService
+internal sealed class MistralIOService : IBedrockModelIOService
 {
     // Define constants for default values
     private const float DefaultTemperatureInstruct = 0.5f;
@@ -26,6 +26,7 @@ public class MistralIOService : IBedrockModelIOService
     private const int DefaultMaxTokensNonInstruct = 8192;
     private const int DefaultTopKNonInstruct = 0;
     private static readonly List<string> s_defaultStopSequencesNonInstruct = new();
+
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Mistral.
     /// </summary>
@@ -54,6 +55,7 @@ public class MistralIOService : IBedrockModelIOService
 
         return requestBody;
     }
+
     /// <summary>
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
     /// </summary>
@@ -74,6 +76,7 @@ public class MistralIOService : IBedrockModelIOService
         textContents.AddRange(responseBody.Outputs.Select(output => new TextContent(output.Text)));
         return textContents;
     }
+
     /// <summary>
     /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Mistral.
     /// </summary>
@@ -103,6 +106,7 @@ public class MistralIOService : IBedrockModelIOService
         };
         return converseRequest;
     }
+
     /// <summary>
     /// Extracts the text generation streaming output from the Mistral response object structure.
     /// </summary>
@@ -123,6 +127,7 @@ public class MistralIOService : IBedrockModelIOService
             }
         }
     }
+
     /// <summary>
     /// Builds the ConverseStreamRequest object for the Converse Bedrock API call, including building the Mistral Request object and mapping parameters to the ConverseStreamRequest object.
     /// </summary>

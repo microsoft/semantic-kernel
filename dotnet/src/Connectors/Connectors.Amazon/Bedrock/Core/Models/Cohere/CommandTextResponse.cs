@@ -2,18 +2,18 @@
 
 using System.Text.Json.Serialization;
 
-namespace Connectors.Amazon.Models.Cohere;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// The Command Text Generation Response body.
 /// </summary>
-public class CommandTextResponse
+internal sealed class CommandTextResponse
 {
     /// <summary>
     /// A list of generated results along with the likelihoods for tokens requested. (Always returned).
     /// </summary>
     [JsonPropertyName("generations")]
-    public required List<Generation> Generations { get; set; }
+    internal required List<Generation> Generations { get; set; }
     /// <summary>
     /// An identifier for the request (always returned).
     /// </summary>
@@ -28,7 +28,7 @@ public class CommandTextResponse
     /// A list of generated results along with the likelihoods for tokens requested. (Always returned). Each generation object in the list contains the following fields.
     /// </summary>
     [Serializable]
-    public class Generation
+    internal sealed class Generation
     {
         /// <summary>
         /// The reason why the model finished generating tokens. COMPLETE - the model sent back a finished reply. MAX_TOKENS – the reply was cut off because the model reached the maximum number of tokens for its context length. ERROR – something went wrong when generating the reply. ERROR_TOXIC – the model generated a reply that was deemed toxic. finish_reason is returned only when is_finished=true. (Not always returned).
@@ -70,7 +70,7 @@ public class CommandTextResponse
     /// An array of per token likelihoods. Returned if you specify the return_likelihoods input parameter.
     /// </summary>
     [Serializable]
-    public class TokenLikelihood
+    internal sealed class TokenLikelihood
     {
         /// <summary>
         /// Token likelihood.

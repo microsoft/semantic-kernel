@@ -2,18 +2,18 @@
 
 using System.Text.Json.Serialization;
 
-namespace Connectors.Amazon.Models.AI21;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// AI21JambaResponse objects for Bedrock Runtime actions.
 /// </summary>
-public static class AI21JambaResponse
+internal sealed class AI21JambaResponse
 {
     /// <summary>
     /// AI21 Text Generation Response object (from Invoke).
     /// </summary>
     [Serializable]
-    public class AI21TextResponse
+    internal sealed class AI21TextResponse
     {
         /// <summary>
         /// A unique ID for the request (not the message). Repeated identical requests get different IDs. However, for a streaming response, the ID will be the same for all responses in the stream.
@@ -34,7 +34,7 @@ public static class AI21JambaResponse
         /// The members for the Choice class as required by AI21 Labs Jamba.
         /// </summary>
         [Serializable]
-        public class Choice
+        internal sealed class Choice
         {
             /// <summary>
             /// Zero-based index of the message in the list of messages. Note that this might not correspond with the position in the response list.
@@ -58,7 +58,7 @@ public static class AI21JambaResponse
         /// Message object for the model with role and content as required.
         /// </summary>
         [Serializable]
-        public class Message
+        internal sealed class Message
         {
             /// <summary>
             /// The role of the message author. One of the following values:
@@ -78,7 +78,7 @@ public static class AI21JambaResponse
         /// The token counts for this request. Per-token billing is based on the prompt token and completion token counts and rates.
         /// </summary>
         [Serializable]
-        public class Usage
+        internal sealed class Usage
         {
             /// <summary>
             /// Number of tokens in the prompt for this request. Note that the prompt token includes the entire message history, plus extra tokens needed by the system when combining the list of prompt messages into a single message, as required by the model. The number of extra tokens is typically proportional to the number of messages in the thread, and should be relatively small.

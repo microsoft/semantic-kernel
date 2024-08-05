@@ -7,13 +7,13 @@ using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Models.Cohere;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Input-output service for Cohere Command R.
 /// </summary>
 // ReSharper disable InconsistentNaming
-public class CohereCommandRIOService : IBedrockModelIOService
+internal sealed class CohereCommandRIOService : IBedrockModelIOService
 // ReSharper restore InconsistentNaming
 {
     // Define constants for default values
@@ -28,6 +28,7 @@ public class CohereCommandRIOService : IBedrockModelIOService
     private const bool DefaultRawPrompting = false;
     private const int DefaultMaxTokens = 4096;
     private const bool DefaultSearchQueriesOnly = false;
+
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Cohere Command R.
     /// </summary>
@@ -67,6 +68,7 @@ public class CohereCommandRIOService : IBedrockModelIOService
 
         return requestBody;
     }
+
     /// <summary>
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
     /// </summary>
@@ -86,6 +88,7 @@ public class CohereCommandRIOService : IBedrockModelIOService
         }
         return textContents;
     }
+
     /// <summary>
     /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Cohere Command R.
     /// </summary>
@@ -126,6 +129,7 @@ public class CohereCommandRIOService : IBedrockModelIOService
 
         return converseRequest;
     }
+
     /// <summary>
     /// Extracts the text generation streaming output from the Cohere Command R response object structure.
     /// </summary>
@@ -139,6 +143,7 @@ public class CohereCommandRIOService : IBedrockModelIOService
             yield return text;
         }
     }
+
     /// <summary>
     /// Builds the ConverseStreamRequest object for the Converse Bedrock API call, including building the Cohere Command R Request object and mapping parameters to the ConverseStreamRequest object.
     /// </summary>

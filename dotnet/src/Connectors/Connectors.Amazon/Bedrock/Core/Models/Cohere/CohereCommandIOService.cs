@@ -6,12 +6,12 @@ using Amazon.BedrockRuntime.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Models.Cohere;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Input-output service for Cohere Command.
 /// </summary>
-public class CohereCommandIOService : IBedrockModelIOService
+internal sealed class CohereCommandIOService : IBedrockModelIOService
 {
     // Define constants for default values
     private const double DefaultTemperature = 0.9;

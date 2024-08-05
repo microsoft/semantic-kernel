@@ -7,12 +7,12 @@ using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Models.Anthropic;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Input-output service for Anthropic Claude model.
 /// </summary>
-public class AnthropicIOService : IBedrockModelIOService
+internal sealed class AnthropicIOService : IBedrockModelIOService
 {
     // Define constants for default values
     private const double DefaultTemperature = 1.0;

@@ -5,12 +5,12 @@ using Amazon.BedrockRuntime.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Models;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Utilities class for functions all Bedrock models need to use.
 /// </summary>
-public static class BedrockModelUtilities
+internal static class BedrockModelUtilities
 {
     /// <summary>
     /// Maps the AuthorRole to the corresponding ConversationRole because AuthorRole is static and { readonly get; }. Only called if AuthorRole is User or Assistant (System set outside/beforehand).
@@ -18,7 +18,7 @@ public static class BedrockModelUtilities
     /// <param name="role"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static ConversationRole MapAuthorRoleToConversationRole(AuthorRole role)
+    internal static ConversationRole MapAuthorRoleToConversationRole(AuthorRole role)
     {
         if (role == AuthorRole.User)
         {
@@ -36,7 +36,7 @@ public static class BedrockModelUtilities
     /// </summary>
     /// <param name="chatHistory"></param>
     /// <returns></returns>
-    public static List<SystemContentBlock> GetSystemMessages(ChatHistory chatHistory)
+    internal static List<SystemContentBlock> GetSystemMessages(ChatHistory chatHistory)
     {
         return chatHistory
             .Where(m => m.Role == AuthorRole.System)
@@ -48,7 +48,7 @@ public static class BedrockModelUtilities
     /// </summary>
     /// <param name="chatHistory"></param>
     /// <returns></returns>
-    public static List<Message> BuildMessageList(ChatHistory chatHistory)
+    internal static List<Message> BuildMessageList(ChatHistory chatHistory)
     {
         // Check that the text from the latest message in the chat history  is not empty.
         Verify.NotNullOrEmpty(chatHistory);
@@ -74,7 +74,7 @@ public static class BedrockModelUtilities
     /// <param name="defaultValue"></param>
     /// <typeparam name="TValue"></typeparam>
     /// <returns></returns>
-    public static TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
+    internal static TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
     {
         if (extensionData?.TryGetValue(key, out object? value) == true && value is TValue typedValue)
         {

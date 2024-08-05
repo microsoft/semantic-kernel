@@ -2,12 +2,12 @@
 
 using System.Text.Json.Serialization;
 
-namespace Connectors.Amazon.Models.Meta;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Text generation response object for Meta Llama.
 /// </summary>
-public class LlamaTextResponse
+internal sealed class LlamaTextResponse
 {
     /// <summary>
     /// The generated text.

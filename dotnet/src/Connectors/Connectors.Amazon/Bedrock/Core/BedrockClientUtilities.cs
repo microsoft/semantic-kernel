@@ -4,12 +4,12 @@ using System.Diagnostics;
 using System.Net;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Bedrock.Core;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Utility functions for the Bedrock clients.
 /// </summary>
-internal class BedrockClientUtilities
+internal sealed class BedrockClientUtilities
 {
     /// <summary>
     /// Convert the Http Status Code in Converse Response to the Activity Status Code for Semantic Kernel activity.

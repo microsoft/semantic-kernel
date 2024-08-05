@@ -2,12 +2,12 @@
 
 using System.Text.Json.Serialization;
 
-namespace Connectors.Amazon.Models.Anthropic;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Anthropic Claude completion response.
 /// </summary>
-public class ClaudeResponse
+internal sealed class ClaudeResponse
 {
     /// <summary>
     /// The resulting completion up to and excluding the stop sequences.

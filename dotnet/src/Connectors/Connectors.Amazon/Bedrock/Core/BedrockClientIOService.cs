@@ -1,19 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Connectors.Amazon.Models;
-using Connectors.Amazon.Models.AI21;
-using Connectors.Amazon.Models.Amazon;
-using Connectors.Amazon.Models.Anthropic;
-using Connectors.Amazon.Models.Cohere;
-using Connectors.Amazon.Models.Meta;
-using Connectors.Amazon.Models.Mistral;
+using Connectors.Amazon.Core;
 
 namespace Connectors.Amazon.Bedrock.Core;
 
 /// <summary>
 /// Utilities to get the model IO service and model provider. Used by Bedrock service clients.
 /// </summary>
-internal class BedrockClientIOService
+internal sealed class BedrockClientIOService
 {
     /// <summary>
     /// Gets the model IO service for body conversion.

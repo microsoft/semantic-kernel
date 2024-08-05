@@ -2,13 +2,13 @@
 
 using System.Text.Json.Serialization;
 
-namespace Connectors.Amazon.Models.Mistral;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Mistral Text Response body.
 /// </summary>
 [Serializable]
-public class MistralTextResponse
+internal sealed class MistralTextResponse
 {
     /// <summary>
     /// A list of outputs from the model.
@@ -19,7 +19,7 @@ public class MistralTextResponse
     /// <summary>
     /// Output parameters for the list of outputs of the text response.
     /// </summary>
-    public class Output
+    internal sealed class Output
     {
         /// <summary>
         /// The text that the model generated.

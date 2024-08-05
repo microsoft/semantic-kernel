@@ -8,12 +8,12 @@ using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Models.AI21;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Input-output service for AI21 Labs Jamba model.
 /// </summary>
-public class AI21JambaIOService : IBedrockModelIOService
+internal sealed class AI21JambaIOService : IBedrockModelIOService
 {
     // Define constants for default values
     private const double DefaultTemperature = 1.0;
@@ -22,6 +22,7 @@ public class AI21JambaIOService : IBedrockModelIOService
     private const int DefaultN = 1;
     private const double DefaultFrequencyPenalty = 0.0;
     private const double DefaultPresencePenalty = 0.0;
+
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by AI21 Labs Jamba model.
     /// </summary>

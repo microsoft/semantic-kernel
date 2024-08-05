@@ -3,20 +3,22 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
+using Connectors.Amazon.Models.AI21;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Models.AI21;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Input-output service for AI21 Labs Jurassic.
 /// </summary>
-public class AI21JurassicIOService : IBedrockModelIOService
+internal sealed class AI21JurassicIOService : IBedrockModelIOService
 {
     // Defined constants for default values
     private const double DefaultTemperature = 0.5;
     private const double DefaultTopP = 0.5;
     private const int DefaultMaxTokens = 200;
+
     /// <summary>
     /// Builds InvokeModelRequest Body parameter to be serialized.
     /// </summary>

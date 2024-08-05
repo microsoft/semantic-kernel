@@ -2,18 +2,18 @@
 
 using System.Text.Json.Serialization;
 
-namespace Connectors.Amazon.Models.Cohere;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Cohere Command R Text Generation Request object for Invoke Model Bedrock API call.
 /// </summary>
-public static class CommandRToolUse
+internal static class CommandRToolUse
 {
     /// <summary>
     /// Tool parameters.
     /// </summary>
     [Serializable]
-    public class Tool
+    internal sealed class Tool
     {
         /// <summary>
         /// Name of the tool.
@@ -35,7 +35,7 @@ public static class CommandRToolUse
     /// Components of each tool parameter.
     /// </summary>
     [Serializable]
-    public class ToolParameter
+    internal sealed class ToolParameter
     {
         /// <summary>
         /// Description of parameter.
@@ -57,7 +57,7 @@ public static class CommandRToolUse
     /// Cohere tool result.
     /// </summary>
     [Serializable]
-    public class ToolResult
+    internal sealed class ToolResult
     {
         /// <summary>
         /// The tool call.
@@ -74,7 +74,7 @@ public static class CommandRToolUse
     /// Tool call object to be passed into the tool call.
     /// </summary>
     [Serializable]
-    public class ToolCall
+    internal sealed class ToolCall
     {
         /// <summary>
         /// Name of tool.

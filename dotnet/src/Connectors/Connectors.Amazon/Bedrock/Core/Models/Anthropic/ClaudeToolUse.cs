@@ -3,17 +3,17 @@
 using System.Text.Json.Serialization;
 using Amazon.BedrockRuntime.Model;
 
-namespace Connectors.Amazon.Models.Anthropic;
+namespace Connectors.Amazon.Core;
 
 /// <summary>
 /// Anthropic Claude request object.
 /// </summary>
-public static class ClaudeToolUse
+internal static class ClaudeToolUse
 {
     /// <summary>
     /// (Optional) Definitions of tools that the model may use.
     /// </summary>
-    public class ClaudeTool : Tool
+    internal sealed class ClaudeTool : Tool
     {
         /// <summary>
         /// The name of the tool.
@@ -37,7 +37,7 @@ public static class ClaudeToolUse
     /// <summary>
     /// (Optional) Specifies how the model should use the provided tools. The model can use a specific tool, any available tool, or decide by itself.
     /// </summary>
-    public class ClaudeToolChoice
+    internal sealed class ClaudeToolChoice
     {
         /// <summary>
         /// The type of tool choice. Possible values are any (use any available tool), auto (the model decides), and tool (use the specified tool).
