@@ -19,6 +19,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 internal static class AssistantThreadActions
 {
     private const string FunctionDelimiter = "-";
+    private const string CodeInterpreterMetadataKey = "code";
 
     private static readonly HashSet<RunStatus> s_pollingStatuses =
         [
@@ -408,6 +409,7 @@ internal static class AssistantThreadActions
                 ])
             {
                 AuthorName = agentName,
+                Metadata = new Dictionary<string, object?> { { CodeInterpreterMetadataKey, true } }
             };
     }
 
