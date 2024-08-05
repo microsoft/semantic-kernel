@@ -17,6 +17,11 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 public sealed class OpenAIAssistantAgent : KernelAgent
 {
+    /// <summary>
+    /// Metadata key that identifies code-interpreter content.
+    /// </summary>
+    public const string CodeInterpreterMetadataKey = "code";
+
     internal const string OptionsMetadataKey = "__run_options";
 
     private readonly Assistant _assistant;
