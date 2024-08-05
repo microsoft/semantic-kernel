@@ -394,14 +394,15 @@ class AzureAssistantAgent(OpenAIAssistantBase):
         if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
             raise AgentInitializationError("Please provide either api_key, ad_token or ad_token_provider.")
 
-        client = AzureAssistantAgent._create_client(
-            api_key=api_key,
-            endpoint=endpoint,
-            api_version=api_version,
-            ad_token=ad_token,
-            ad_token_provider=ad_token_provider,
-            default_headers=default_headers,
-        )
+        if not client:
+            client = AzureAssistantAgent._create_client(
+                api_key=api_key,
+                endpoint=endpoint,
+                api_version=api_version,
+                ad_token=ad_token,
+                ad_token_provider=ad_token_provider,
+                default_headers=default_headers,
+            )
         assistant = await client.beta.assistants.retrieve(id)
         assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
         return AzureAssistantAgent(kernel=kernel, **assistant_definition)
