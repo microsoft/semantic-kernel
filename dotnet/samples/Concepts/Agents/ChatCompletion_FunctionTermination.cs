@@ -36,8 +36,6 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         await InvokeAgentAsync("Hello");
         await InvokeAgentAsync("What is the special soup?");
         await InvokeAgentAsync("What is the special drink?");
-        //await InvokeAgentAsync("What is the special soup and what is its price?");
-        //await InvokeAgentAsync("What is the special drink and what is its price?");
         await InvokeAgentAsync("Thank you");
 
         // Display the chat history.
@@ -91,8 +89,6 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         await InvokeAgentAsync("Hello");
         await InvokeAgentAsync("What is the special soup?");
         await InvokeAgentAsync("What is the special drink?");
-        //await InvokeAgentAsync("What is the special soup and what is its price?");
-        //await InvokeAgentAsync("What is the special drink and what is its price?");
         await InvokeAgentAsync("Thank you");
 
         // Display the chat history.
@@ -160,18 +156,6 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
                 Special Drink: Chai Tea
                 """;
         }
-
-        //[KernelFunction, Description("Provides the prices of the specials from the menu.")]
-        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
-        //public string GetPrices()
-        //{
-        //    return
-        //        """
-        //        Clam Chowder: $9.99
-        //        Cobb Salad: $9.99
-        //        Chai Tea: $9.99"
-        //        """;
-        //}
 
         [KernelFunction, Description("Provides the price of the requested menu item.")]
         public string GetItemPrice(
