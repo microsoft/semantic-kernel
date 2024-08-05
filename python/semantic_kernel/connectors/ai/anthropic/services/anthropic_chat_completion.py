@@ -6,7 +6,8 @@ from typing import Any
 
 from anthropic import AsyncAnthropic
 from anthropic.types import Message, TextBlock
-from anthropic.lib.streaming import MessageStreamManager, AsyncMessageStreamManager
+from anthropic.lib.streaming import MessageStreamManager, AsyncMessageStreamManager, TextEvent
+from anthropic.types import RawMessageStartEvent, RawContentBlockStartEvent, RawContentBlockDeltaEvent, ContentBlockStopEvent, RawMessageDeltaEvent, MessageStopEvent, TextBlock
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
@@ -149,11 +150,15 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             settings.ai_model_id = self.ai_model_id
 
         settings.messages = self._prepare_chat_history_for_request(chat_history)
- 
         try:
             async with self.async_client.messages.stream(**settings.prepare_settings_dict()) as stream:
-                async for text in stream.text_stream:
-                    yield [self._create_streaming_chat_message_content(text, {})]
+                message_start_event = None
+                async for stream_event in stream:
+                    if isinstance(stream_event, RawMessageStartEvent):
+                        message_start_event = stream_event
+                    elif isinstance(stream_event, RawContentBlockDeltaEvent) \
+                          or isinstance(stream_event, RawMessageDeltaEvent):
+                        yield [self._create_streaming_chat_message_content(stream_event, {})]
 
         except Exception as ex:
             raise ServiceResponseException(
@@ -177,18 +182,20 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             finish_reason=FinishReason(response.stop_reason) if response.stop_reason else None,
         )
 
-    def _create_streaming_chat_message_content(self, chunk: str, chunk_metadata: dict[str, Any]) -> StreamingChatMessageContent:
+    def _create_streaming_chat_message_content(self, 
+                                               stream_event: RawContentBlockDeltaEvent | RawMessageDeltaEvent,
+                                               content_block_idx: int,
+                                               chunk_metadata: dict[str, Any]) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a choice."""
         
-        items: list[Any] = [StreamingTextContent(choice_index=0, text=chunk)]
+        items: list[Any] = [StreamingTextContent(choice_index=content_block_idx, text=stream_event.delta.text)]
 
         return StreamingChatMessageContent(
-            choice_index=0,
-            inner_content=chunk,
+            choice_index=content_block_idx,
             ai_model_id=self.ai_model_id,
             metadata=chunk_metadata,
-            role=AuthorRole.ASSISTANT,
-            finish_reason=None,
+            role=AuthorRole(stream_event.delta.role) if stream_event.delta.role else AuthorRole.ASSISTANT,
+            finish_reason=FinishReason(stream_event.finish_reason) if stream_event.finish_reason else None,
             items=items,
         )
 
@@ -197,15 +204,13 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             response: Message
     ) -> dict[str, Any]:
         """Get metadata from a chat response."""
-        metadata: dict[str, Any] = {"id": response.id }
+        metadata: dict[str, Any] = { "id": response.id }
 
         # Check if usage exists and has a value, then add it to the metadata
         if hasattr(response, "usage") and response.usage is not None:
             metadata["usage"] = response.usage
         
         return metadata
-
-    # endregion
 
     def get_prompt_execution_settings_class(self) -> "type[AnthropicChatPromptExecutionSettings]":
         """Create a request settings object."""
