@@ -28,7 +28,7 @@ internal sealed class CommandRTextResponse
     /// An array of inline citations and associated metadata for the generated reply.
     /// </summary>
     [JsonPropertyName("citations")]
-    internal List<Citation>? Citations { get; set; }
+    public List<Citation>? Citations { get; set; }
     /// <summary>
     /// The full prompt that was sent to the model. Specify the return_prompt field to return this field.
     /// </summary>
@@ -45,7 +45,7 @@ internal sealed class CommandRTextResponse
     /// </summary>
     [JsonPropertyName("tool_calls")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    internal List<ToolCall>? ToolCalls { get; set; }
+    public List<ToolCall>? ToolCalls { get; set; }
     /// <summary>
     /// API usage data (only exists for streaming).
     /// </summary>
