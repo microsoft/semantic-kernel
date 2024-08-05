@@ -178,8 +178,7 @@ public class PineconeMemoryStoreTests
             this._description3,
             this._embedding3);
 
-        List<MemoryRecord> records = new()
-            { memoryRecord, memoryRecord2, memoryRecord3 };
+        List<MemoryRecord> records = [memoryRecord, memoryRecord2, memoryRecord3];
 
         this._mockPineconeClient
             .Setup<IAsyncEnumerable<PineconeDocument?>>(x =>
@@ -197,6 +196,24 @@ public class PineconeMemoryStoreTests
         Assert.Equal(memoryRecord.Metadata.Id, upsertBatch[0]);
         Assert.Equal(memoryRecord2.Metadata.Id, upsertBatch[1]);
         Assert.Equal(memoryRecord3.Metadata.Id, upsertBatch[2]);
+    }
+
+    [Fact]
+    public async Task TestRemoveBatchAsync()
+    {
+        // Arrange
+        string collectionName = "testCollection";
+        string[] keys = ["doc1", "doc2"];
+
+        this._mockPineconeClient
+            .Setup<Task>(x => x.DeleteAsync(collectionName, new[] { keys[0], keys[1] }, "", null, false, CancellationToken.None))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await this._pineconeMemoryStore.RemoveBatchAsync(collectionName, keys);
+
+        // Assert
+        this._mockPineconeClient.Verify(x => x.DeleteAsync(collectionName, new[] { keys[0], keys[1] }, "", null, false, CancellationToken.None), Times.Once);
     }
 
     [Fact]
@@ -223,8 +240,8 @@ public class PineconeMemoryStoreTests
         // Arrange
         ReadOnlyMemory<float> embedding = new float[] { 0.1f, 0.2f };
 
-        List<(PineconeDocument, double)> queryResults = new()
-        {
+        List<(PineconeDocument, double)> queryResults =
+        [
             new(new()
             {
                 Id = this._id,
@@ -240,7 +257,7 @@ public class PineconeMemoryStoreTests
                 Metadata = new Dictionary<string, object> { { "document_Id", "value2" } },
                 Values = this._embedding2,
             }, 0.5)
-        };
+        ];
 
         this._mockPineconeClient
             .Setup<IAsyncEnumerable<(PineconeDocument, double)>>(x => x.GetMostRelevantAsync(

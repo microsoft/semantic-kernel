@@ -10,7 +10,7 @@
         <version>0.2.10-alpha-SNAPSHOT</version>
 =======
         <version>0.2.9-alpha-SNAPSHOT</version>
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -30,9 +30,10 @@
             <artifactId>azure-ai-openai</artifactId>
             <scope>test</scope>
         </dependency>
+
 =======
 
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-search-documents</artifactId>
@@ -75,8 +76,11 @@
     </dependencies>
 
 </project>
+    </dependencies>
+
+</project>
 =======
     </dependencies>
 
 </project>
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main

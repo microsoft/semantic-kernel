@@ -22,7 +22,7 @@ public class CalendarPluginTests
         string anyLocation = Guid.NewGuid().ToString();
         DateTimeOffset anyStartTime = DateTimeOffset.Now + TimeSpan.FromDays(1);
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
-        string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        string[] anyAttendees = [Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString()];
 
         CalendarEvent expected = new()
         {
@@ -60,7 +60,7 @@ public class CalendarPluginTests
         string anySubject = Guid.NewGuid().ToString();
         DateTimeOffset anyStartTime = DateTimeOffset.Now + TimeSpan.FromDays(1);
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
-        string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        string[] anyAttendees = [Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString()];
 
         CalendarEvent expected = new()
         {
@@ -99,7 +99,7 @@ public class CalendarPluginTests
         string anyLocation = Guid.NewGuid().ToString();
         DateTimeOffset anyStartTime = DateTimeOffset.Now + TimeSpan.FromDays(1);
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
-        string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        string[] anyAttendees = [Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString()];
 
         CalendarEvent expected = new()
         {
@@ -177,7 +177,7 @@ public class CalendarPluginTests
         string anySubject = Guid.NewGuid().ToString();
         string anyLocation = Guid.NewGuid().ToString();
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
-        string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        string[] anyAttendees = [Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString()];
 
         Mock<ICalendarConnector> connectorMock = new();
 
@@ -202,7 +202,7 @@ public class CalendarPluginTests
         string anySubject = Guid.NewGuid().ToString();
         string anyLocation = Guid.NewGuid().ToString();
         DateTimeOffset anyStartTime = DateTimeOffset.Now + TimeSpan.FromDays(1);
-        string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        string[] anyAttendees = [Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString()];
 
         Mock<ICalendarConnector> connectorMock = new();
 
@@ -227,7 +227,7 @@ public class CalendarPluginTests
         string anyLocation = Guid.NewGuid().ToString();
         DateTimeOffset anyStartTime = DateTimeOffset.Now + TimeSpan.FromDays(1);
         DateTimeOffset anyEndTime = DateTimeOffset.Now + TimeSpan.FromDays(1.1);
-        string[] anyAttendees = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        string[] anyAttendees = [Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString()];
 
         Mock<ICalendarConnector> connectorMock = new();
 

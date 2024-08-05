@@ -35,34 +35,34 @@ public sealed class PromptExecutionSettingsNodeDeserializerTests
         Assert.Equal("gpt-3.5", semanticFunctionConfig.ExecutionSettings["service2"].ModelId);
     }
 
-    private readonly string _yaml = @"
-    template_format: semantic-kernel
-    template:        Say hello world to {{$name}} in {{$language}}
-    description:     Say hello to the specified person using the specified language
-    name:            SayHello
-    input_variables:
-      - name:          name
-        description:   The name of the person to greet
-        default:       John
-      - name:          language
-        description:   The language to generate the greeting in
-        default:       English
-    execution_settings:
-      service1:
-        model_id:          gpt-4
-        temperature:       1.0
-        top_p:             0.0
-        presence_penalty:  0.0
-        frequency_penalty: 0.0
-        max_tokens:        256
-        stop_sequences:    []
-      service2:
-        model_id:          gpt-3.5
-        temperature:       1.0
-        top_p:             0.0
-        presence_penalty:  0.0
-        frequency_penalty: 0.0
-        max_tokens:        256
-        stop_sequences:    [ ""foo"", ""bar"", ""baz"" ]
-";
+    private readonly string _yaml = """
+        template_format: semantic-kernel
+        template:        Say hello world to {{$name}} in {{$language}}
+        description:     Say hello to the specified person using the specified language
+        name:            SayHello
+        input_variables:
+          - name:          name
+            description:   The name of the person to greet
+            default:       John
+          - name:          language
+            description:   The language to generate the greeting in
+            default:       English
+        execution_settings:
+          service1:
+            model_id:          gpt-4
+            temperature:       1.0
+            top_p:             0.0
+            presence_penalty:  0.0
+            frequency_penalty: 0.0
+            max_tokens:        256
+            stop_sequences:    []
+          service2:
+            model_id:          gpt-3.5
+            temperature:       1.0
+            top_p:             0.0
+            presence_penalty:  0.0
+            frequency_penalty: 0.0
+            max_tokens:        256
+            stop_sequences:    [ "foo", "bar", "baz" ]
+        """;
 }

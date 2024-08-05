@@ -20,12 +20,8 @@ public static class FlowExtensions
 
         while (remainingSteps.Count > 0)
         {
-            var independentStep = remainingSteps.FirstOrDefault(step => !remainingSteps.Any(step.DependsOn));
-
-            if (independentStep is null)
-            {
+            var independentStep = remainingSteps.FirstOrDefault(step => !remainingSteps.Any(step.DependsOn)) ??
                 throw new KernelException("The plan contains circular dependencies.");
-            }
 
             sortedSteps.Add(independentStep);
             remainingSteps.Remove(independentStep);
@@ -48,11 +44,8 @@ public static class FlowExtensions
         foreach (var step in referenceSteps)
         {
             flow.Steps.Remove(step);
-            var referencedFlow = await flowRepository.GetFlowAsync(step.FlowName).ConfigureAwait(false);
-            if (referencedFlow is null)
-            {
+            var referencedFlow = await flowRepository.GetFlowAsync(step.FlowName).ConfigureAwait(false) ??
                 throw new ArgumentException($"Referenced flow {step.FlowName} is not found");
-            }
 
             referencedFlow.CompletionType = step.CompletionType;
             referencedFlow.AddPassthrough(step.Passthrough.ToArray());

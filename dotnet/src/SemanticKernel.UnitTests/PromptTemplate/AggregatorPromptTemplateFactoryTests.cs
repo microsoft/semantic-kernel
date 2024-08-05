@@ -94,14 +94,9 @@ public sealed class AggregatorPromptTemplateFactoryTests
         }
     }
 
-    private sealed class MyPromptTemplate1 : IPromptTemplate
+    private sealed class MyPromptTemplate1(PromptTemplateConfig promptConfig) : IPromptTemplate
     {
-        private readonly PromptTemplateConfig _promptModel;
-
-        public MyPromptTemplate1(PromptTemplateConfig promptConfig)
-        {
-            this._promptModel = promptConfig;
-        }
+        private readonly PromptTemplateConfig _promptModel = promptConfig;
 
         public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         {
@@ -124,14 +119,9 @@ public sealed class AggregatorPromptTemplateFactoryTests
         }
     }
 
-    private sealed class MyPromptTemplate2 : IPromptTemplate
+    private sealed class MyPromptTemplate2(PromptTemplateConfig promptConfig) : IPromptTemplate
     {
-        private readonly PromptTemplateConfig _promptModel;
-
-        public MyPromptTemplate2(PromptTemplateConfig promptConfig)
-        {
-            this._promptModel = promptConfig;
-        }
+        private readonly PromptTemplateConfig _promptModel = promptConfig;
 
         public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         {

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>skchatgptazurefunction.PluginShared</RootNamespace>
+  </PropertyGroup>
+
+</Project>

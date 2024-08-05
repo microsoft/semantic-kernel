@@ -30,5 +30,5 @@ internal sealed class ThreadModel
     /// characters long and values can be a maximum of 512 characters long.
     /// </summary>
     [JsonPropertyName("metadata")]
-    public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata { get; set; } = [];
 }

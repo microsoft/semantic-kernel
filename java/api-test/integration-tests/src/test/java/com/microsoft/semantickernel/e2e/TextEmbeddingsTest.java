@@ -143,7 +143,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                 memory.searchAsync("aboutMe", query, 10, .5f, false).block();
 =======
                 memory.searchAsync("aboutMe", query, 10, .5, false).block();
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         results.forEach(
                 result ->
                         System.out.printf(

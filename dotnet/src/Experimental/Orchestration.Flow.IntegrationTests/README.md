@@ -3,8 +3,8 @@
 ## Requirements
 
 1. **Azure OpenAI**: go to the [Azure OpenAI Quickstart](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart)
-   and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
-2. **OpenAI**: go to [OpenAI](https://openai.com/product/) to register and procure your API key.
+   and deploy an instance of Azure OpenAI, deploy a model like "gpt-35-turbo-instruct" find your Endpoint and API key.
+2. **OpenAI**: go to [OpenAI](https://platform.openai.com) to register and procure your API key.
 3. **Azure Bing Web Search API**: go to [Bing Web Search API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
    and select `Try Now` to get started.
 
@@ -25,13 +25,13 @@ To set your secrets with Secret Manager:
 cd dotnet/src/IntegrationTests
 
 dotnet user-secrets init
-dotnet user-secrets set "OpenAI:ServiceId" "text-davinci-003"
-dotnet user-secrets set "OpenAI:ModelId" "text-davinci-003"
+dotnet user-secrets set "OpenAI:ServiceId" "gpt-3.5-turbo-instruct"
+dotnet user-secrets set "OpenAI:ModelId" "gpt-3.5-turbo-instruct"
 dotnet user-secrets set "OpenAI:ChatModelId" "gpt-4"
 dotnet user-secrets set "OpenAI:ApiKey" "..."
 
-dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-text-davinci-003"
-dotnet user-secrets set "AzureOpenAI:DeploymentName" "text-davinci-003"
+dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-gpt-35-turbo-instruct"
+dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-35-turbo-instruct"
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "gpt-4"
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://contoso.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
@@ -56,14 +56,14 @@ For example:
 ```json
 {
   "OpenAI": {
-    "ServiceId": "text-davinci-003",
-    "ModelId": "text-davinci-003",
+    "ServiceId": "gpt-3.5-turbo-instruct",
+    "ModelId": "gpt-3.5-turbo-instruct",
     "ChatModelId": "gpt-4",
     "ApiKey": "sk-...."
   },
   "AzureOpenAI": {
-    "ServiceId": "azure-text-davinci-003",
-    "DeploymentName": "text-davinci-003",
+    "ServiceId": "gpt-35-turbo-instruct",
+    "DeploymentName": "gpt-35-turbo-instruct",
     "ChatDeploymentName": "gpt-4",
     "Endpoint": "https://contoso.openai.azure.com/",
     "ApiKey": "...."
@@ -95,7 +95,7 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
   ```bash
   export OpenAI__ApiKey="sk-...."
   export AzureOpenAI__ApiKey="...."
-  export AzureOpenAI__DeploymentName="azure-text-davinci-003"
+  export AzureOpenAI__DeploymentName="gpt-35-turbo-instruct"
   export AzureOpenAI__ChatDeploymentName="gpt-4"
   export AzureOpenAIEmbeddings__DeploymentName="azure-text-embedding-ada-002"
   export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
@@ -107,7 +107,7 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
   ```ps
   $env:OpenAI__ApiKey = "sk-...."
   $env:AzureOpenAI__ApiKey = "...."
-  $env:AzureOpenAI__DeploymentName = "azure-text-davinci-003"
+  $env:AzureOpenAI__DeploymentName = "gpt-35-turbo-instruct"
   $env:AzureOpenAI__ChatDeploymentName = "gpt-4"
   $env:AzureOpenAIEmbeddings__DeploymentName = "azure-text-embedding-ada-002"
   $env:AzureOpenAI__Endpoint = "https://contoso.openai.azure.com/"
