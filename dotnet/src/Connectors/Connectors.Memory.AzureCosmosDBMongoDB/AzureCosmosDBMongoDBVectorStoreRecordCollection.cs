@@ -3,11 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -78,7 +80,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             supportsMultipleVectors: true,
             requiresAtLeastOneVector: false);
 
-        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
+        this._storagePropertyNames = GetStoragePropertyNames(properties, typeof(TRecord));
         this._vectorProperties = properties.VectorProperties;
         this._vectorStoragePropertyNames = this._vectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
 
@@ -393,6 +395,36 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             DistanceFunction.EuclideanDistance => "L2",
             _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
         };
+    }
+
+    /// <summary>
+    /// Gets storage property names taking into account BSON serialization attributes.
+    /// </summary>
+    private static Dictionary<string, string> GetStoragePropertyNames(
+        (VectorStoreRecordKeyProperty KeyProperty, List<VectorStoreRecordDataProperty> DataProperties, List<VectorStoreRecordVectorProperty> VectorProperties) properties,
+        Type dataModel)
+    {
+        var storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
+
+        var allProperties = new List<VectorStoreRecordProperty>([properties.KeyProperty])
+            .Concat(properties.DataProperties)
+            .Concat(properties.VectorProperties);
+
+        foreach (var property in allProperties)
+        {
+            var propertyInfo = dataModel.GetProperty(property.DataModelPropertyName);
+
+            if (propertyInfo != null)
+            {
+                var bsonElementAttribute = propertyInfo.GetCustomAttribute<BsonElementAttribute>();
+                if (bsonElementAttribute is not null)
+                {
+                    storagePropertyNames[property.DataModelPropertyName] = bsonElementAttribute.ElementName;
+                }
+            }
+        }
+
+        return storagePropertyNames;
     }
 
     #endregion

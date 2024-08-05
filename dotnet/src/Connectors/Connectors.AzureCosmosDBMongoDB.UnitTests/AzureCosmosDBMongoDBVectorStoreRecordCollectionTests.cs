@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using Moq;
 using Xunit;
@@ -409,6 +410,58 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         Assert.Equal("key3", results[2]);
     }
 
+    [Fact]
+    public async Task UpsertWithModelWorksCorrectlyAsync()
+    {
+        var definition = new VectorStoreRecordDefinition
+        {
+            Properties = new List<VectorStoreRecordProperty>
+            {
+                new VectorStoreRecordKeyProperty("Id", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string))
+            }
+        };
+
+        await this.TestUpsertWithModeAsync<TestModel>(
+            dataModel: new TestModel { Id = "key", HotelName = "Test Name" },
+            expectedPropertyName: "HotelName",
+            definition: definition);
+    }
+
+    [Fact]
+    public async Task UpsertWithVectorStoreModelWorksCorrectlyAsync()
+    {
+        await this.TestUpsertWithModeAsync<VectorStoreTestModel>(
+            dataModel: new VectorStoreTestModel { Id = "key", HotelName = "Test Name" },
+            expectedPropertyName: "hotel_name");
+    }
+
+    [Fact]
+    public async Task UpsertWithBsonModelWorksCorrectlyAsync()
+    {
+        var definition = new VectorStoreRecordDefinition
+        {
+            Properties = new List<VectorStoreRecordProperty>
+            {
+                new VectorStoreRecordKeyProperty("Id", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string))
+            }
+        };
+
+        await this.TestUpsertWithModeAsync<BsonTestModel>(
+            dataModel: new BsonTestModel { Id = "key", HotelName = "Test Name" },
+            expectedPropertyName: "hotel_name",
+            definition: definition);
+    }
+
+    [Fact]
+    public async Task UpsertWithBsonVectorStoreModelWorksCorrectlyAsync()
+    {
+        await this.TestUpsertWithModeAsync<BsonVectorStoreTestModel>(
+            dataModel: new BsonVectorStoreTestModel { Id = "key", HotelName = "Test Name" },
+            expectedPropertyName: "hotel_name");
+    }
+
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()
     {
         { ["collection-2"], "collection-2", true },
@@ -423,10 +476,79 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
 
     #region private
 
+    private async Task TestUpsertWithModeAsync<TDataModel>(
+        TDataModel dataModel,
+        string expectedPropertyName,
+        VectorStoreRecordDefinition? definition = null)
+        where TDataModel : class
+    {
+        // Arrange
+        var serializerRegistry = BsonSerializer.SerializerRegistry;
+        var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
+        var expectedDefinition = Builders<BsonDocument>.Filter.Eq(document => document["_id"], "key");
+
+        AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TDataModel>? options = definition != null ?
+            new() { VectorStoreRecordDefinition = definition } :
+            null;
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<TDataModel>(
+            this._mockMongoDatabase.Object,
+            "collection",
+            options);
+
+        // Act
+        var result = await sut.UpsertAsync(dataModel);
+
+        // Assert
+        Assert.Equal("key", result);
+
+        this._mockMongoCollection.Verify(l => l.ReplaceOneAsync(
+            It.Is<FilterDefinition<BsonDocument>>(definition =>
+                definition.Render(documentSerializer, serializerRegistry) ==
+                expectedDefinition.Render(documentSerializer, serializerRegistry)),
+            It.Is<BsonDocument>(document =>
+                document["_id"] == "key" &&
+                document.Contains(expectedPropertyName) &&
+                document[expectedPropertyName] == "Test Name"),
+            It.IsAny<ReplaceOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once());
+    }
+
 #pragma warning disable CA1812
     private sealed class TestModel
     {
         public string? Id { get; set; }
+
+        public string? HotelName { get; set; }
+    }
+
+    private sealed class VectorStoreTestModel
+    {
+        [VectorStoreRecordKey]
+        public string? Id { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "hotel_name")]
+        public string? HotelName { get; set; }
+    }
+
+    private sealed class BsonTestModel
+    {
+        [BsonId]
+        public string? Id { get; set; }
+
+        [BsonElement("hotel_name")]
+        public string? HotelName { get; set; }
+    }
+
+    private sealed class BsonVectorStoreTestModel
+    {
+        [BsonId]
+        [VectorStoreRecordKey]
+        public string? Id { get; set; }
+
+        [BsonElement("hotel_name")]
+        [VectorStoreRecordData]
+        public string? HotelName { get; set; }
     }
 #pragma warning restore CA1812
 
