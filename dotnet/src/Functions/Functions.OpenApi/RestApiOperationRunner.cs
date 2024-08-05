@@ -189,21 +189,37 @@ internal sealed class RestApiOperationRunner
             : HttpHeaderConstant.Values.UserAgent);
         requestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(RestApiOperationRunner)));
 
+        bool stream = false;
+
         if (headers is not null)
         {
             foreach (var header in headers)
             {
                 requestMessage.Headers.Add(header.Key, header.Value);
+
+                if (header.Key.Equals(HttpHeaderConstant.Names.XStream, StringComparison.OrdinalIgnoreCase) && bool.TryParse(header.Value, out var value))
+                {
+                    stream = value;
+                }
             }
         }
 
         try
         {
-            using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+            RestApiOperationResponse response;
 
-            var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
-
-            response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+            if (stream)
+            {
+                var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                response = await SerializeStreamResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
+                response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+            }
+            else
+            {
+                using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+                response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
+                response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+            }
 
             return response;
         }
@@ -283,6 +299,42 @@ internal sealed class RestApiOperationRunner
 
         // Serialize response content and return it
         var serializedContent = await serializer.Invoke(responseMessage.Content).ConfigureAwait(false);
+
+        return new RestApiOperationResponse(serializedContent, contentType!.ToString())
+        {
+            RequestMethod = request.Method.Method,
+            RequestUri = request.RequestUri,
+            RequestPayload = payload,
+        };
+    }
+
+    /// <summary>
+    /// Serializes the response content of an HTTP request.
+    /// </summary>
+    /// <param name="request">The HttpRequestMessage associated with the HTTP request.</param>
+    /// <param name="payload">The payload sent in the HTTP request.</param>
+    /// <param name="responseMessage">The HttpResponseMessage object containing the response content to be serialized.</param>
+    /// <returns>The serialized content.</returns>
+    private static async Task<RestApiOperationResponse> SerializeStreamResponseContentAsync(HttpRequestMessage request, object? payload, HttpResponseMessage responseMessage)
+    {
+        if (responseMessage.StatusCode == HttpStatusCode.NoContent)
+        {
+            return new RestApiOperationResponse(null, null)
+            {
+                RequestMethod = request.Method.Method,
+                RequestUri = request.RequestUri,
+                RequestPayload = payload,
+            };
+        }
+
+        var contentType = responseMessage.Content.Headers.ContentType;
+
+        // Serialize response content and return it
+        var responseStream = await responseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope, the ownership of the stream is transferred to the caller, who will be responsible for disposing the response stream and, implicitly, the response.
+        var serializedContent = new HttpResponseStream(responseStream, responseMessage);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         return new RestApiOperationResponse(serializedContent, contentType!.ToString())
         {
