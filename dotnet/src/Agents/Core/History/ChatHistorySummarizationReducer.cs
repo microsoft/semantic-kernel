@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -76,7 +77,11 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         if (truncationIndex > 0)
         {
             // Second pass to extract history for summarization
-            IEnumerable<ChatMessageContent> summarizedHistory = history.Extract(this.UseSingleSummary ? 0 : insertionPoint, truncationIndex);
+            IEnumerable<ChatMessageContent> summarizedHistory =
+                history.Extract(
+                    this.UseSingleSummary ? 0 : insertionPoint,
+                    truncationIndex,
+                    (m) => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent));
 
             try
             {

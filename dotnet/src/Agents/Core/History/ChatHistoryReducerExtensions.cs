@@ -22,7 +22,8 @@ internal static class ChatHistoryReducerExtensions
     /// <param name="history">The source history</param>
     /// <param name="startIndex">The index of the first message to extract</param>
     /// <param name="finalIndex">The index of the last message to extract</param>
-    public static IEnumerable<ChatMessageContent> Extract(this IReadOnlyList<ChatMessageContent> history, int startIndex, int? finalIndex = null)
+    /// <param name="filter">The optional filter to apply to each message</param>
+    public static IEnumerable<ChatMessageContent> Extract(this IReadOnlyList<ChatMessageContent> history, int startIndex, int? finalIndex = null, Func<ChatMessageContent, bool>? filter = null)
     {
         int maxIndex = history.Count - 1;
         if (startIndex > maxIndex)
@@ -36,6 +37,11 @@ internal static class ChatHistoryReducerExtensions
 
         for (int index = startIndex; index <= finalIndex; ++index)
         {
+            if (filter?.Invoke(history[index]) ?? false)
+            {
+                continue;
+            }
+
             yield return history[index];
         }
     }
