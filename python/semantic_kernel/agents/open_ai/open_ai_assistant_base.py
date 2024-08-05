@@ -721,7 +721,9 @@ class OpenAIAssistantBase(Agent):
         self, agent_name: str, function_step: FunctionCallContent, tool_call: "ToolCall"
     ) -> ChatMessageContent:
         """Generate function result content."""
-        function_call_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.TOOL, name=agent_name)  # type: ignore
+        function_call_content: ChatMessageContent = ChatMessageContent(
+            role=AuthorRole.TOOL, name=agent_name, metadata={"tool_call_type": "function"}
+        )  # type: ignore
         function_call_content.items.append(
             FunctionResultContent(
                 function_name=function_step.function_name,
@@ -738,6 +740,7 @@ class OpenAIAssistantBase(Agent):
             role=AuthorRole.ASSISTANT,
             content=code,
             name=agent_name,
+            metadata={"tool_call_type": "code_interpreter"},
         )
 
     def _generate_annotation_content(self, annotation: "Annotation") -> AnnotationContent:
