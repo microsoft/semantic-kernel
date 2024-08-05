@@ -17,6 +17,8 @@ _T = TypeVar("_T", bound="AnnotationContent")
 
 @experimental_class
 class AnnotationContent(KernelContent):
+    """Annotation content."""
+
     content_type: Literal[ContentTypes.ANNOTATION_CONTENT] = Field(ANNOTATION_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = ANNOTATION_CONTENT_TAG
     file_id: str | None = None
