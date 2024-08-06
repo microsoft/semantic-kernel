@@ -51,16 +51,20 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExtension, KernelReliabilityExtension):
-    """The main Kernel class of Semantic Kernel.
+    """The Kernel of Semantic Kernel.
 
-    This is the main entry point for the Semantic Kernel. It provides the ability to run
-    semantic/native functions, and manage plugins, memory, and AI services.
+    This is the main entry point for Semantic Kernel. It provides the ability to run
+    functions and manage filters, plugins, and AI services.
 
     Attributes:
-        plugins (dict[str, KernelPlugin] | None): The plugins to be used by the kernel
-        services (dict[str, AIServiceClientBase]): The services to be used by the kernel
-        ai_service_selector (AIServiceSelector): The AI service selector to be used by the kernel
-        retry_mechanism (RetryMechanismBase): The retry mechanism to be used by the kernel
+        function_invocation_filters: Filters applied during function invocation, from KernelFilterExtension.
+        prompt_rendering_filters: Filters applied during prompt rendering, from KernelFilterExtension.
+        auto_function_invocation_filters: Filters applied during auto function invocation, from KernelFilterExtension.
+        plugins: A dict with the plugins registered with the Kernel, from KernelFunctionExtension.
+        services: A dict with the services registered with the Kernel, from KernelServicesExtension.
+        ai_service_selector: The AI service selector to be used by the kernel, from KernelServicesExtension.
+        retry_mechanism: The retry mechanism to be used by the kernel, from KernelReliabilityExtension.
+
     """
 
     def __init__(
@@ -75,14 +79,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """Initialize a new instance of the Kernel class.
 
         Args:
-            plugins (KernelPlugin | dict[str, KernelPlugin] | list[KernelPlugin] | None):
-                The plugins to be used by the kernel, will be rewritten to a dict with plugin name as key
-            services (AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None):
-                The services to be used by the kernel, will be rewritten to a dict with service_id as key
-            ai_service_selector (AIServiceSelector | None):
-                The AI service selector to be used by the kernel,
+            plugins: The plugins to be used by the kernel, will be rewritten to a dict with plugin name as key
+            services: The services to be used by the kernel, will be rewritten to a dict with service_id as key
+            ai_service_selector: The AI service selector to be used by the kernel,
                 default is based on order of execution settings.
-            **kwargs (Any): Additional fields to be passed to the Kernel model,
+            **kwargs: Additional fields to be passed to the Kernel model,
                 these are limited to retry_mechanism and function_invoking_handlers
                 and function_invoked_handlers, the best way to add function_invoking_handlers
                 and function_invoked_handlers is to use the add_function_invoking_handler

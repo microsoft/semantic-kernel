@@ -22,6 +22,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
 class TemplateTokenizer:
+    """Tokenize the template text into blocks."""
+
     @staticmethod
     def tokenize(text: str) -> list[Block]:
         """Tokenize the template text into blocks."""

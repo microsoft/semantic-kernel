@@ -94,21 +94,18 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         Raises:
             AgentInitializationError: If the api_key is not provided in the configuration.
         """
-        try:
-            openai_settings = OpenAISettings.create(
-                api_key=api_key,
-                org_id=org_id,
-                chat_model_id=ai_model_id,
-                env_file_path=env_file_path,
-                env_file_encoding=env_file_encoding,
-            )
-        except ValidationError as ex:
-            raise AgentInitializationError("Failed to create OpenAI settings.", ex) from ex
+        openai_settings = OpenAIAssistantAgent._create_open_ai_settings(
+            api_key=api_key,
+            org_id=org_id,
+            ai_model_id=ai_model_id,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
 
         if not client and not openai_settings.api_key:
             raise AgentInitializationError("The OpenAI API key is required, if a client is not provided.")
         if not openai_settings.chat_model_id:
-            raise AgentInitializationError("The OpenAI model ID is required.")
+            raise AgentInitializationError("The OpenAI chat model ID is required.")
 
         if not client:
             client = self._create_client(
@@ -271,6 +268,39 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
             default_headers=merged_headers,
         )
 
+    @staticmethod
+    def _create_open_ai_settings(
+        api_key: str | None = None,
+        org_id: str | None = None,
+        ai_model_id: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+    ) -> OpenAISettings:
+        """An internal method to create the OpenAI settings from the provided arguments.
+
+        Args:
+            api_key: The OpenAI API key.
+            org_id: The OpenAI organization ID. (optional)
+            ai_model_id: The AI model ID. (optional)
+            env_file_path: The environment file path. (optional)
+            env_file_encoding: The environment file encoding. (optional)
+
+        Returns:
+            An OpenAI settings instance.
+        """
+        try:
+            openai_settings = OpenAISettings.create(
+                api_key=api_key,
+                org_id=org_id,
+                chat_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise AgentInitializationError("Failed to create OpenAI settings.", ex) from ex
+
+        return openai_settings
+
     async def list_definitions(self) -> AsyncIterable[dict[str, Any]]:
         """List the assistant definitions.
 
@@ -281,30 +311,55 @@ class OpenAIAssistantAgent(OpenAIAssistantBase):
         for assistant in assistants.data:
             yield self._create_open_ai_assistant_definition(assistant)
 
+    @classmethod
     async def retrieve(
-        self,
+        cls,
+        *,
         id: str,
-        api_key: str,
         kernel: "Kernel | None" = None,
+        api_key: str | None = None,
         org_id: str | None = None,
+        ai_model_id: str | None = None,
+        client: AsyncOpenAI | None = None,
         default_headers: dict[str, str] | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> "OpenAIAssistantAgent":
         """Retrieve an assistant by ID.
 
         Args:
             id: The assistant ID.
-            api_key: The OpenAI API
             kernel: The Kernel instance. (optional)
+            api_key: The OpenAI API key. (optional)
             org_id: The OpenAI organization ID. (optional)
+            ai_model_id: The AI model ID. (optional)
+            client: The OpenAI client. (optional)
             default_headers: The default headers. (optional)
-
+            env_file_path: The environment file path. (optional)
+            env_file_encoding: The environment file encoding. (optional
 
         Returns:
             An OpenAIAssistantAgent instance.
         """
-        client = self._create_client(api_key=api_key, org_id=org_id, default_headers=default_headers)
+        openai_settings = OpenAIAssistantAgent._create_open_ai_settings(
+            api_key=api_key,
+            org_id=org_id,
+            ai_model_id=ai_model_id,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
+        if not client and not openai_settings.api_key:
+            raise AgentInitializationError("The OpenAI API key is required, if a client is not provided.")
+        if not openai_settings.chat_model_id:
+            raise AgentInitializationError("The OpenAI chat model ID is required.")
+        if not client:
+            client = OpenAIAssistantAgent._create_client(
+                api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+                org_id=openai_settings.org_id,
+                default_headers=default_headers,
+            )
         assistant = await client.beta.assistants.retrieve(id)
-        assistant_definition = self._create_open_ai_assistant_definition(assistant)
+        assistant_definition = OpenAIAssistantBase._create_open_ai_assistant_definition(assistant)
         return OpenAIAssistantAgent(kernel=kernel, **assistant_definition)
 
     # endregion
