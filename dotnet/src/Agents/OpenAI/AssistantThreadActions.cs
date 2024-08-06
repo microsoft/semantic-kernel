@@ -118,15 +118,13 @@ internal static class AssistantThreadActions
         string threadId,
         OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration,
         ILogger logger,
-        Kernel? kernel,
+        Kernel kernel,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (agent.IsDeleted)
         {
             throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");
         }
-
-        kernel ??= agent.Kernel;
 
         ToolDefinition[]? tools = [.. agent.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimiter)))];
 
