@@ -33,6 +33,8 @@ TModel = TypeVar("TModel")
 
 @experimental_class
 class AzureAISearchCollection(VectorStoreRecordCollection[str, TModel], Generic[TModel]):
+    """Azure AI Search collection implementation."""
+
     search_client: SearchClient
     search_index_client: SearchIndexClient
     supported_key_types: ClassVar[list[str] | None] = ["str"]

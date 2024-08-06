@@ -21,6 +21,8 @@ TModel = TypeVar("TModel")
 
 
 class VolatileCollection(VectorStoreRecordCollection[KEY_TYPES, TModel]):
+    """Volatile Collection."""
+
     inner_storage: dict[KEY_TYPES, dict] = Field(default_factory=dict)
     supported_key_types: ClassVar[list[str] | None] = ["str", "int", "float"]
 

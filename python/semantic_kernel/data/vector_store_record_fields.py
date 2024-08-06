@@ -13,6 +13,8 @@ from semantic_kernel.data.const import DistanceFunction, IndexKind
 
 @dataclass
 class VectorStoreRecordField(ABC):
+    """Base class for all Vector Store Record Fields."""
+
     name: str | None = None
     property_type: str | None = None
 

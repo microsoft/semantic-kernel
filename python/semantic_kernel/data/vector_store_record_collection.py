@@ -36,6 +36,8 @@ logger = logging.getLogger(__name__)
 
 @experimental_class
 class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
+    """Base class for a vector store record collection."""
+
     collection_name: str
     data_model_type: type[TModel]
     data_model_definition: VectorStoreRecordDefinition

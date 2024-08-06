@@ -124,6 +124,8 @@ def deserialize_document_to_record(
 
 
 class RedisWrapper(Redis):
+    """Wrapper to make sure the connection is closed when the object is deleted."""
+
     def __del__(self) -> None:
         """Close connection, done when the object is deleted, used when SK creates a client."""
         with contextlib.suppress(Exception):

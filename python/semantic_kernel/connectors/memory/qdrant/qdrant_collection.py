@@ -36,6 +36,8 @@ TKey = TypeVar("TKey", str, int)
 
 @experimental_class
 class QdrantCollection(VectorStoreRecordCollection[str | int, TModel]):
+    """A QdrantCollection is a memory collection that uses Qdrant as the backend."""
+
     qdrant_client: AsyncQdrantClient
     named_vectors: bool
     supported_key_types: ClassVar[list[str] | None] = ["str", "int"]

@@ -36,6 +36,8 @@ TModel = TypeVar("TModel")
 
 @experimental_class
 class AzureAISearchStore(VectorStore):
+    """Azure AI Search store implementation."""
+
     search_index_client: SearchIndexClient
 
     def __init__(

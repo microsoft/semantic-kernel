@@ -31,6 +31,8 @@ TKey = TypeVar("TKey", str, int)
 
 @experimental_class
 class QdrantStore(VectorStore):
+    """A QdrantStore is a memory store that uses Qdrant as the backend."""
+
     qdrant_client: AsyncQdrantClient
 
     def __init__(

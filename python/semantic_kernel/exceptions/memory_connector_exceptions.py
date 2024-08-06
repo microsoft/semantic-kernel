@@ -11,14 +11,20 @@ class MemoryConnectorException(KernelException):
 
 
 class VectorStoreModelException(MemoryConnectorException):
+    """Base class for all vector store model exceptions."""
+
     pass
 
 
 class VectorStoreModelSerializationException(VectorStoreModelException):
+    """An error occurred while serializing the vector store model."""
+
     pass
 
 
 class VectorStoreModelDeserializationException(VectorStoreModelException):
+    """An error occurred while deserializing the vector store model."""
+
     pass
 
 
@@ -35,6 +41,8 @@ class MemoryConnectorResourceNotFound(MemoryConnectorException):
 
 
 class VectorStoreModelValidationError(VectorStoreModelException):
+    """An error occurred while validating the vector store model."""
+
     pass
 
 

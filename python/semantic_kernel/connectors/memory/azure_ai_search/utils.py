@@ -161,6 +161,8 @@ def data_model_definition_to_azure_ai_search_index(
 
 
 class SearchIndexClientWrapper(SearchIndexClient):
+    """Wrapper to make sure the connection is closed when the object is deleted."""
+
     def __del__(self) -> None:
         """Async close connection, done when the object is deleted, used when SK creates a client."""
         with contextlib.suppress(Exception):
@@ -168,6 +170,8 @@ class SearchIndexClientWrapper(SearchIndexClient):
 
 
 class SearchClientWrapper(SearchClient):
+    """Wrapper to make sure the connection is closed when the object is deleted."""
+
     def __del__(self) -> None:
         """Async close connection, done when the object is deleted, used when SK creates a client."""
         with contextlib.suppress(Exception):

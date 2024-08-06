@@ -54,19 +54,61 @@ class VectorStoreModelToDictFromDictProtocol(Protocol):
 
 @runtime_checkable
 class ToDictProtocol(Protocol):
+    """Protocol for to_dict method.
+
+    Args:
+        record: The record to be serialized.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        A list of dictionaries.
+    """
+
     def __call__(self, record: Any, **kwargs: Any) -> Sequence[dict[str, Any]]: ...  # pragma: no cover  # noqa: D102
 
 
 @runtime_checkable
 class FromDictProtocol(Protocol):
+    """Protocol for from_dict method.
+
+    Args:
+        records: A list of dictionaries.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        A record or list thereof.
+    """
+
     def __call__(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Any: ...  # noqa: D102
 
 
 @runtime_checkable
 class SerializeProtocol(Protocol):
+    """Protocol for serialize method.
+
+    Args:
+        record: The record to be serialized.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        The serialized record, ready to be consumed by the specific store.
+
+    """
+
     def __call__(self, record: Any, **kwargs: Any) -> Any: ...  # noqa: D102
 
 
 @runtime_checkable
 class DeserializeProtocol(Protocol):
+    """Protocol for deserialize method.
+
+    Args:
+        records: The serialized record directly from the store.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        The deserialized record in the format expected by the application.
+
+    """
+
     def __call__(self, records: Any, **kwargs: Any) -> Any: ...  # noqa: D102

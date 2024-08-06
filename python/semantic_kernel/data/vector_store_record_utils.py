@@ -17,6 +17,8 @@ TModel = TypeVar("TModel", bound=object)
 
 
 class VectorStoreRecordUtils:
+    """Helper class to easily add embeddings to a (set of) vector store record."""
+
     def __init__(self, kernel: "Kernel"):
         """Initializes the VectorStoreRecordUtils with a kernel."""
         self.kernel = kernel
@@ -61,14 +63,12 @@ class VectorStoreRecordUtils:
             if not isinstance(embedding_field, VectorStoreRecordVectorField):
                 raise VectorStoreModelException("Embedding field must be a VectorStoreRecordVectorField")
             if embedding_field.local_embedding:
-                embeddings_to_make.append(
-                    (
-                        name,
-                        field.embedding_property_name,
-                        embedding_field.embedding_settings,
-                        embedding_field.deserialize_function,
-                    )
-                )
+                embeddings_to_make.append((
+                    name,
+                    field.embedding_property_name,
+                    embedding_field.embedding_settings,
+                    embedding_field.deserialize_function,
+                ))
 
         for field_to_embed, field_to_store, settings, cast_callable in embeddings_to_make:
             await self.kernel.add_embedding_to_object(
