@@ -48,4 +48,12 @@
     <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Resources\GenerateStory.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\GenerateStory.yaml" />
+  </ItemGroup>
+
 </Project>
