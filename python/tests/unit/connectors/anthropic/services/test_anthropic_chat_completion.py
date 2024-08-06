@@ -134,7 +134,12 @@ async def test_anthropic_sdk_exception_streaming(kernel: Kernel, mock_settings: 
     chat_history = MagicMock()
     arguments = KernelArguments()
     client = MagicMock(spec=AsyncAnthropic)
-    client.chat_stream.side_effect = Exception("Test Exception")
+
+    # Create a MagicMock for the messages attribute
+    messages_mock = MagicMock()
+    messages_mock.stream.side_effect = Exception("Test Exception")
+
+    client.messages = messages_mock
 
     chat_completion_base = AnthropicChatCompletion(
         ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
