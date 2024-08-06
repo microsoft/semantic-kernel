@@ -29,7 +29,7 @@ jobs:
       dotnetChanges: ${{ steps.filter.outputs.dotnet }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
@@ -121,7 +121,15 @@ jobs:
 
       # Generate test reports and check coverage
       - name: Generate test reports
+<<<<<<< main
+<<<<<<< main
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
+=======
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.6
+>>>>>>> origin/main-auto-tune
+=======
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.8
+>>>>>>> upstream/main
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
@@ -164,13 +172,13 @@ jobs:
       - name: Fail workflow if tests failed
         id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failure')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: core.setFailed('Integration Tests Failed!')
 
       - name: Fail workflow if tests cancelled
         id: check_tests_cancelled
         if: contains(join(needs.*.result, ','), 'cancelled')
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: core.setFailed('Integration Tests Cancelled!')
