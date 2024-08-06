@@ -542,6 +542,7 @@ files = [
     {file = "cffi-1.17.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:aec510255ce690d240f7cb23d7114f6b351c733a74c279a84def763660a2c3bc"},
     {file = "cffi-1.17.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:2770bb0d5e3cc0e31e7318db06efcbcdb7b31bcb1a70086d3177692a02256f59"},
     {file = "cffi-1.17.0-cp312-cp312-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:db9a30ec064129d605d0f1aedc93e00894b9334ec74ba9c6bdd08147434b33eb"},
+<<<<<<< HEAD
     {file = "cffi-1.17.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a47eef975d2b8b721775a0fa286f50eab535b9d56c70a6e62842134cf7841195"},
     {file = "cffi-1.17.0-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:f3e0992f23bbb0be00a921eae5363329253c3b86287db27092461c887b791e5e"},
     {file = "cffi-1.17.0-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:6107e445faf057c118d5050560695e46d272e5301feffda3c41849641222a828"},
@@ -582,6 +583,8 @@ files = [
     {file = "cffi-1.17.0-cp39-cp39-win32.whl", hash = "sha256:0fdacad9e0d9fc23e519efd5ea24a70348305e8d7d85ecbb1a5fa66dc834e7fb"},
     {file = "cffi-1.17.0-cp39-cp39-win_amd64.whl", hash = "sha256:7cbc78dc018596315d4e7841c8c3a7ae31cc4d638c9b627f87d52e8abaaf2d29"},
     {file = "cffi-1.17.0.tar.gz", hash = "sha256:f3157624b7558b914cb039fd1af735e5e8049a87c817cc215109ad1c8779df76"},
+=======
+>>>>>>> fbace6593 (update integration tests)
 ]
 
 [package.dependencies]
@@ -3750,13 +3753,22 @@ sympy = "*"
 
 [[package]]
 name = "openai"
+<<<<<<< HEAD
 version = "1.40.6"
+=======
+version = "1.40.0"
+>>>>>>> fbace6593 (update integration tests)
 description = "The official Python library for the openai API"
 optional = false
 python-versions = ">=3.7.1"
 files = [
+<<<<<<< HEAD
     {file = "openai-1.40.6-py3-none-any.whl", hash = "sha256:b36372124a779381a420a34dd96f762baa748b6bdfaf83a6b9f2745f72ccc1c5"},
     {file = "openai-1.40.6.tar.gz", hash = "sha256:2239232bcb7f4bd4ce8e02544b5769618582411cf399816d96686d1b6c1e5c8d"},
+=======
+    {file = "openai-1.40.0-py3-none-any.whl", hash = "sha256:eb6909abaacd62ef28c275a5c175af29f607b40645b0a49d2856bbed62edb2e7"},
+    {file = "openai-1.40.0.tar.gz", hash = "sha256:1b7b316e27b2333b063ee62b6539b74267c7282498d9a02fc4ccb38a9c14336c"},
+>>>>>>> fbace6593 (update integration tests)
 ]
 
 [package.dependencies]
