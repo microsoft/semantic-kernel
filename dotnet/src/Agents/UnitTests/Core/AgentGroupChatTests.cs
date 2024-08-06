@@ -198,7 +198,13 @@ public class AgentGroupChatTests
         Mock<ChatHistoryKernelAgent> agent = new();
 
         ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test")];
-        agent.Setup(a => a.InvokeAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
+        agent.Setup(
+            a =>
+                a.InvokeAsync(
+                    It.IsAny<ChatHistory>(),
+                    It.IsAny<KernelArguments?>(),
+                    It.IsAny<Kernel?>(),
+                    It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
 
         return agent;
     }

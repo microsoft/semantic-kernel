@@ -136,6 +136,8 @@ public class AgentChatTests
 
         public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             ChatHistory history,
+            KernelArguments? arguments = null,
+            Kernel? kernel = null,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await Task.Delay(0, cancellationToken);
@@ -147,6 +149,8 @@ public class AgentChatTests
 
         public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
             ChatHistory history,
+            KernelArguments? arguments = null,
+            Kernel? kernel = null,
             CancellationToken cancellationToken = default)
         {
             this.InvokeCount++;

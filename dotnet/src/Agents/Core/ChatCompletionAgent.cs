@@ -17,8 +17,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// </summary>
     public KernelArguments? Arguments { get; set; }
 
-    internal IPromptTemplate? Template { get; init; }
-
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
@@ -29,8 +27,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         kernel ??= this.Kernel;
         arguments ??= this.Arguments;
 
-        //KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt(this.Template, null!, this.LoggerFactory); // %%%
-        //KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("do nothing", arguments?.ExecutionSettings?.Values); // %%%
+        KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("do nothing", arguments?.ExecutionSettings?.Values); // %%%
         if (!kernel.ServiceSelector.TrySelectAIService<IChatCompletionService>(
                 kernel,
                 nullPrompt,
@@ -41,7 +38,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             throw new KernelException("No chat completion service found."); // %%%
         }
 
-        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, kernel, arguments, cancellationToken).ConfigureAwait(false);
+        ChatHistory chat = this.SetupAgentChatHistory(history, cancellationToken);
 
         int messageCount = chat.Count;
 
@@ -95,7 +92,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             throw new KernelException("No chat completion service found."); // %%%
         }
 
-        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, kernel, arguments, cancellationToken).ConfigureAwait(false);
+        ChatHistory chat = this.SetupAgentChatHistory(history, cancellationToken);
 
         int messageCount = chat.Count;
 
@@ -128,22 +125,15 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         }
     }
 
-    private async Task<ChatHistory> SetupAgentChatHistoryAsync(
+    private ChatHistory SetupAgentChatHistory(
         IReadOnlyList<ChatMessageContent> history,
-        Kernel kernel,
-        KernelArguments? arguments,
         CancellationToken cancellationToken)
     {
         ChatHistory chat = [];
 
-        string? instructions =
-            this.Template == null ?
-                this.Instructions :
-                await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
-        if (!string.IsNullOrWhiteSpace(instructions))
+        if (!string.IsNullOrWhiteSpace(this.Instructions))
         {
-            chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
+            chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
         }
 
         chat.AddRange(history);
