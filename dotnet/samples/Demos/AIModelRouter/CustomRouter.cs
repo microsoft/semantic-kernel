@@ -23,7 +23,7 @@ public class CustomRouter()
     /// <returns>Service id.</returns>
     public string FindService(string lookupPrompt, IReadOnlyList<string> serviceIds)
     {
-        // The order matters, if the keyword is not found, the last one is used.
+        // The order matters, if the keyword is not found, the first one is used.
         foreach (var serviceId in serviceIds)
         {
             if (Contains(lookupPrompt, serviceId)) { return serviceId; }
