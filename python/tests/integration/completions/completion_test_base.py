@@ -2,8 +2,6 @@
 
 from typing import Any, Union
 
-import pytest
-
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
@@ -13,12 +11,12 @@ from semantic_kernel.kernel import Kernel
 ServiceType = Union[ChatCompletionClientBase | TextCompletionClientBase]
 
 
-class TestCompletionBase:
+class CompletionTestBase:
     """Base class for testing completion services."""
 
-    @pytest.fixture(scope="class")
     def services(self) -> dict[str, tuple[ServiceType, type[PromptExecutionSettings]]]:
         """Return completion services."""
+        raise NotImplementedError
 
     async def test_completion(
         self,
@@ -39,6 +37,7 @@ class TestCompletionBase:
             inputs (list[str]): List of input strings.
             kwargs (dict[str, Any]): Keyword arguments.
         """
+        raise NotImplementedError
 
     async def test_streaming_completion(
         self,
@@ -59,6 +58,7 @@ class TestCompletionBase:
             inputs (list[str]): List of input strings.
             kwargs (dict[str, Any]): Keyword arguments.
         """
+        raise NotImplementedError
 
     def evaluate(self, test_target: Any, **kwargs):
         """Evaluate the response.
@@ -67,3 +67,4 @@ class TestCompletionBase:
             test_target (Any): Test target.
             kwargs (dict[str, Any]): Keyword arguments.
         """
+        raise NotImplementedError

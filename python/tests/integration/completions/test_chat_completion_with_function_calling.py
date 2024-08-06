@@ -16,8 +16,8 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
-from tests.integration.completions.test_chat_completion_base import TestChatCompletionBase
-from tests.integration.completions.test_completion_base import ServiceType
+from tests.integration.completions.chat_completion_test_base import ChatCompletionTestBase
+from tests.integration.completions.completion_test_base import ServiceType
 from tests.integration.completions.test_utils import retry
 
 if sys.version_info >= (3, 12):
@@ -397,7 +397,7 @@ pytestmark = pytest.mark.parametrize(
 
 
 @pytest.mark.asyncio(scope="module")
-class TestChatCompletionWithFunctionCalling(TestChatCompletionBase):
+class TestChatCompletionWithFunctionCalling(ChatCompletionTestBase):
     """Test Chat Completion with function calling"""
 
     @override
@@ -421,7 +421,7 @@ class TestChatCompletionWithFunctionCalling(TestChatCompletionBase):
         )
 
     @override
-    async def test_streaming_chat_completion(
+    async def test_streaming_completion(
         self,
         kernel: Kernel,
         service_id: str,

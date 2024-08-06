@@ -37,7 +37,7 @@ else:
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from tests.integration.completions.test_completion_base import ServiceType, TestCompletionBase
+from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.integration.completions.test_utils import retry
 
 ollama_setup: bool = False
@@ -122,7 +122,7 @@ pytestmark = pytest.mark.parametrize(
 
 
 @pytest.mark.asyncio(scope="module")
-class TestTextCompletion(TestCompletionBase):
+class TestTextCompletion(CompletionTestBase):
     """Test class for text completion"""
 
     @override

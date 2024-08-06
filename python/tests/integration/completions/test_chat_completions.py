@@ -12,8 +12,8 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents import ChatMessageContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from tests.integration.completions.test_chat_completion_base import TestChatCompletionBase
-from tests.integration.completions.test_completion_base import ServiceType
+from tests.integration.completions.chat_completion_test_base import ChatCompletionTestBase
+from tests.integration.completions.completion_test_base import ServiceType
 from tests.integration.completions.test_utils import retry
 
 if sys.version_info >= (3, 12):
@@ -127,7 +127,7 @@ pytestmark = pytest.mark.parametrize(
 
 
 @pytest.mark.asyncio(scope="module")
-class TestChatCompletion(TestChatCompletionBase):
+class TestChatCompletion(ChatCompletionTestBase):
     """Test Chat Completions.
 
     This only tests if the services can return text completions given text inputs.
@@ -153,7 +153,7 @@ class TestChatCompletion(TestChatCompletionBase):
         )
 
     @override
-    async def test_streaming_chat_completion(
+    async def test_streaming_completion(
         self,
         kernel: Kernel,
         service_id: str,

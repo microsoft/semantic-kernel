@@ -12,8 +12,8 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents import ChatHistory, ChatMessageContent, TextContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from tests.integration.completions.test_chat_completion_base import TestChatCompletionBase
-from tests.integration.completions.test_completion_base import ServiceType
+from tests.integration.completions.chat_completion_test_base import ChatCompletionTestBase
+from tests.integration.completions.completion_test_base import ServiceType
 from tests.integration.completions.test_utils import retry
 
 if sys.version_info >= (3, 12):
@@ -184,7 +184,7 @@ pytestmark = pytest.mark.parametrize(
 
 
 @pytest.mark.asyncio(scope="module")
-class TestChatCompletionWithImageInputTextOutput(TestChatCompletionBase):
+class TestChatCompletionWithImageInputTextOutput(ChatCompletionTestBase):
     """Test chat completion with image input and text output."""
 
     @override

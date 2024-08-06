@@ -45,7 +45,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.kernel import Kernel
-from tests.integration.completions.test_completion_base import ServiceType, TestCompletionBase
+from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -67,7 +67,7 @@ except KeyError:
     ollama_setup = False
 
 
-class TestChatCompletionBase(TestCompletionBase):
+class ChatCompletionTestBase(CompletionTestBase):
     """Base class for testing completion services."""
 
     @override
