@@ -277,7 +277,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
             var indexDocument = new BsonDocument
             {
                 ["name"] = indexName,
-                ["key"] = new BsonDocument { [property.DataModelPropertyName] = "cosmosSearch" },
+                ["key"] = new BsonDocument { [vectorPropertyName] = "cosmosSearch" },
                 ["cosmosSearchOptions"] = searchOptions
             };
 
