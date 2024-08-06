@@ -10,9 +10,3 @@ class FinishReason(str, Enum):
     CONTENT_FILTER = "content_filter"
     TOOL_CALLS = "tool_calls"
     FUNCTION_CALL = "function_call"
-    
-    # anthropic finish reasons
-    END = "end_turn"
-    MAX_TOKENS = "max_tokens"
-    STOP_SEQUENCE = "stop_sequence"
-    TOOL_USE = "tool_use"    
