@@ -210,9 +210,9 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
         var requestPayload = await File.ReadAllBytesAsync(FileTestDataFilePath);
 
-        var expectedResponse = new SessionsRemoteFileMetadata("test.txt", 680)
+        var expectedResponse = new SessionsRemoteFileMetadata("test-file.txt", 516)
         {
-            LastModifiedTime = new DateTime(638508470494918207),
+            LastModifiedTime = new DateTime(638585526384228269)
         };
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -223,7 +223,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
-        var result = await plugin.UploadFileAsync(".test.txt", FileTestDataFilePath);
+        var result = await plugin.UploadFileAsync("test-file.txt", FileTestDataFilePath);
 
         // Assert
         Assert.Equal(result.Filename, expectedResponse.Filename);

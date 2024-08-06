@@ -173,7 +173,7 @@ public partial class SessionsPythonPlugin
 
         var JsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
-        return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(JsonElementResult.GetProperty("value")[0].GetRawText())!;
+        return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(JsonElementResult.GetProperty("value")[0].GetProperty("properties").GetRawText())!;
     }
 
     /// <summary>
