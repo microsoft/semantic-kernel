@@ -12,6 +12,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Block(KernelBaseModel):
+    """A block."""
+
     type: ClassVar[BlockTypes] = BlockTypes.UNDEFINED
     content: str
 

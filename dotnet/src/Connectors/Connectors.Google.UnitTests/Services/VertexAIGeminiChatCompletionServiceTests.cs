@@ -25,7 +25,7 @@ public sealed class VertexAIGeminiChatCompletionServiceTests
     {
         // Arrange & Act
         string model = "fake-model";
-        var service = new VertexAIGeminiChatCompletionService(model, () => Task.FromResult("key"), "location", "project");
+        var service = new VertexAIGeminiChatCompletionService(model, () => new ValueTask<string>("key"), "location", "project");
 
         // Assert
         Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);

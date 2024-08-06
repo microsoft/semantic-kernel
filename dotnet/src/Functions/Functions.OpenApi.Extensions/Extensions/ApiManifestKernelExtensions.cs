@@ -155,7 +155,7 @@ public static class ApiManifestKernelExtensions
                         try
                         {
                             logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                            functions.Add(OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(serverUrl), loggerFactory));
+                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(serverUrl), loggerFactory));
                         }
                         catch (Exception ex) when (!ex.IsCriticalException())
                         {

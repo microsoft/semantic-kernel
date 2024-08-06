@@ -11,8 +11,10 @@ namespace Agents;
 /// </summary>
 public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTest(output)
 {
+    protected override bool ForceOpenAI => true;
+
     [Fact]
-    public async Task RunAsync()
+    public async Task UseCodeInterpreterToolWithOpenAIAssistantAgentAsync()
     {
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -26,13 +28,12 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
                 });
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("What is the solution to `3x + 2 = 14`?");
-            await InvokeAgentAsync("What is the fibinacci sequence until 101?");
+            await InvokeAgentAsync("Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
         }
         finally
         {
