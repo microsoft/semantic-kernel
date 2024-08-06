@@ -10,6 +10,8 @@ from semantic_kernel.utils.validation import FUNCTION_PARAM_NAME_REGEX
 
 
 class KernelParameterMetadata(KernelBaseModel):
+    """The kernel parameter metadata."""
+
     name: str | None = Field(..., pattern=FUNCTION_PARAM_NAME_REGEX)
     description: str | None = Field(None)
     default_value: Any | None = None
