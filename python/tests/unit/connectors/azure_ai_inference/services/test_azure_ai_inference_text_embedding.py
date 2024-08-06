@@ -4,12 +4,15 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from azure.ai.inference.aio import EmbeddingsClient
+from azure.core.credentials import AzureKeyCredential
 
 from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceEmbeddingPromptExecutionSettings,
     AzureAIInferenceTextEmbedding,
 )
+from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_settings import AzureAIInferenceSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 
 def test_azure_ai_inference_text_embedding_init(azure_ai_inference_unit_test_env, model_id) -> None:
@@ -19,6 +22,23 @@ def test_azure_ai_inference_text_embedding_init(azure_ai_inference_unit_test_env
     assert azure_ai_inference.ai_model_id == model_id
     assert azure_ai_inference.service_id == model_id
     assert isinstance(azure_ai_inference.client, EmbeddingsClient)
+
+
+@patch("azure.ai.inference.aio.EmbeddingsClient.__init__", return_value=None)
+def test_azure_ai_inference_text_embedding_client_init(mock_client, azure_ai_inference_unit_test_env, model_id) -> None:
+    """Test initialization of the Azure AI Inference client"""
+    endpoint = azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_ENDPOINT"]
+    api_key = azure_ai_inference_unit_test_env["AZURE_AI_INFERENCE_API_KEY"]
+    settings = AzureAIInferenceSettings(endpoint=endpoint, api_key=api_key)
+
+    _ = AzureAIInferenceTextEmbedding(model_id)
+
+    assert mock_client.call_count == 1
+    assert isinstance(mock_client.call_args.kwargs["endpoint"], str)
+    assert mock_client.call_args.kwargs["endpoint"] == str(settings.endpoint)
+    assert isinstance(mock_client.call_args.kwargs["credential"], AzureKeyCredential)
+    assert mock_client.call_args.kwargs["credential"].key == settings.api_key.get_secret_value()
+    assert mock_client.call_args.kwargs["user_agent"] == SEMANTIC_KERNEL_USER_AGENT
 
 
 def test_azure_ai_inference_text_embedding_init_with_service_id(
@@ -82,7 +102,6 @@ async def test_azure_ai_inference_text_embedding(
         dimensions=None,
         encoding_format=None,
         input_type=None,
-        kwargs={},
     )
 
 
@@ -102,7 +121,7 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
     settings = AzureAIInferenceEmbeddingPromptExecutionSettings(
         dimensions=1024, encoding_format="float", input_type="text"
     )
-    await azure_ai_inference_service.generate_embeddings(texts, settings=settings)
+    await azure_ai_inference_service.generate_embeddings(texts, settings)
 
     mock_embed.assert_awaited_once_with(
         input=texts,
@@ -110,7 +129,6 @@ async def test_azure_ai_inference_text_embedding_with_standard_settings(
         dimensions=settings.dimensions,
         encoding_format=settings.encoding_format,
         input_type=settings.input_type,
-        kwargs={"settings": settings},
     )
 
 
@@ -129,7 +147,7 @@ async def test_azure_ai_inference_text_embedding_with_extra_parameters(
     texts = ["hello", "world"]
     extra_parameters = {"test_key": "test_value"}
     settings = AzureAIInferenceEmbeddingPromptExecutionSettings(extra_parameters=extra_parameters)
-    await azure_ai_inference_service.generate_embeddings(texts, settings=settings)
+    await azure_ai_inference_service.generate_embeddings(texts, settings)
 
     mock_embed.assert_awaited_once_with(
         input=texts,
@@ -137,5 +155,4 @@ async def test_azure_ai_inference_text_embedding_with_extra_parameters(
         dimensions=settings.dimensions,
         encoding_format=settings.encoding_format,
         input_type=settings.input_type,
-        kwargs={"settings": settings},
     )

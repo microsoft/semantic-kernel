@@ -5,6 +5,8 @@ name: Build Java Semantic Kernel
 on:
   workflow_dispatch:
   push:
+<<<<<<< AI
+=======
 <<<<<<< main
 <<<<<<< HEAD
     branches: [ "main", "java-development" ]
@@ -13,6 +15,7 @@ on:
   pull_request:
 =======
 >>>>>>> origin/main-auto-tune
+>>>>>>> main
     branches: [ "main", "java-development" ]
 =======
     branches: [ "experimental-java" ]
@@ -24,7 +27,10 @@ on:
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 =======
     branches: [ "main", "java-development" ]
+<<<<<<< AI
+=======
 >>>>>>> origin/main-auto-tune
+>>>>>>> main
     paths:
       - 'java/**'
 
@@ -32,11 +38,14 @@ permissions:
   contents: read
 
 jobs:
+<<<<<<< AI
+=======
 <<<<<<< main
 <<<<<<< HEAD
 =======
   # Determines if Java files have changed
 >>>>>>> origin/main-auto-tune
+>>>>>>> main
   paths-filter:
     runs-on: ubuntu-latest
     outputs:
@@ -62,6 +71,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: paths-filter
     if: needs.paths-filter.outputs.javaChanges == 'true'
+<<<<<<< AI
+=======
 <<<<<<< main
 =======
   java-build:
@@ -69,6 +80,7 @@ jobs:
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 =======
 >>>>>>> origin/main-auto-tune
+>>>>>>> main
     strategy:
       fail-fast: false
       matrix:
@@ -93,6 +105,9 @@ jobs:
             echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
           fi
 
+<<<<<<< AI
+      - uses: actions/setup-java@v4
+=======
 <<<<<<< main
 <<<<<<< HEAD
       - uses: actions/setup-java@v4
@@ -103,6 +118,7 @@ jobs:
       # Sets up the specified JDK version from the matrix
       - uses: actions/setup-java@v4
 >>>>>>> origin/main-auto-tune
+>>>>>>> main
         with:
           java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
           distribution: microsoft
@@ -118,6 +134,9 @@ jobs:
         run: ./mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} test --file pom.xml
         working-directory: java
 
+<<<<<<< AI
+      - uses: actions/upload-artifact@v4
+=======
 <<<<<<< main
 <<<<<<< HEAD
       - uses: actions/upload-artifact@v4
@@ -127,6 +146,7 @@ jobs:
 >>>>>>> origin/main-auto-tune
       - uses: actions/upload-artifact@v2
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         if: always()
         with:
           name: test_output_sk_jdk${{ matrix.java-versions }}u

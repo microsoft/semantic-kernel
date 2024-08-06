@@ -10,7 +10,7 @@
         <version>0.2.10-alpha-SNAPSHOT</version>
 =======
         <version>0.2.9-alpha-SNAPSHOT</version>
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -70,7 +70,7 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
             <scope>test</scope>
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         </dependency>
 
     </dependencies>

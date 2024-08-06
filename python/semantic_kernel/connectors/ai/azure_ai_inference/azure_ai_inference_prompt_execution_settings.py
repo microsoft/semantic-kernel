@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -23,12 +23,22 @@ class AzureAIInferencePromptExecutionSettings(PromptExecutionSettings):
     stop: str | None = None
     temperature: float | None = Field(None, ge=0.0, le=1.0)
     top_p: float | None = Field(None, ge=0.0, le=1.0)
-    extra_parameters: dict[str, str] | None = None
+    extra_parameters: dict[str, Any] | None = None
 
 
 @experimental_class
 class AzureAIInferenceChatPromptExecutionSettings(AzureAIInferencePromptExecutionSettings):
     """Azure AI Inference Chat Prompt Execution Settings."""
+
+    tools: list[dict[str, Any]] | None = Field(
+        None,
+        max_length=64,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
+    tool_choice: str | None = Field(
+        None,
+        description="Do not set this manually. It is set by the service based on the function choice configuration.",
+    )
 
 
 @experimental_class

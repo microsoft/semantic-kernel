@@ -6,12 +6,14 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.core_plugins import MathPlugin, TimePlugin
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions import KernelArguments
 
 if TYPE_CHECKING:
@@ -81,7 +83,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior="auto",
+    function_choice_behavior=FunctionChoiceBehavior.Auto(auto_invoke=True),
 )
 
 history = ChatHistory()
@@ -119,7 +121,7 @@ async def handle_streaming(
     kernel: Kernel,
     chat_function: "KernelFunction",
     arguments: KernelArguments,
-) -> None:
+) -> str | None:
     response = kernel.invoke_stream(
         chat_function,
         return_function_results=False,
@@ -128,12 +130,14 @@ async def handle_streaming(
 
     print("Mosscap:> ", end="")
     streamed_chunks: list[StreamingChatMessageContent] = []
+    result_content = []
     async for message in response:
         if not execution_settings.function_choice_behavior.auto_invoke_kernel_functions and isinstance(
             message[0], StreamingChatMessageContent
         ):
             streamed_chunks.append(message[0])
         else:
+            result_content.append(message[0])
             print(str(message[0]), end="")
 
     if streamed_chunks:
@@ -144,6 +148,9 @@ async def handle_streaming(
         print_tool_calls(streaming_chat_message)
 
     print("\n")
+    if result_content:
+        return "".join([str(content) for content in result_content])
+    return None
 
 
 async def chat() -> bool:
@@ -163,7 +170,7 @@ async def chat() -> bool:
     arguments["chat_history"] = history
 
     if stream:
-        await handle_streaming(kernel, chat_function, arguments=arguments)
+        result = await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
         result = await kernel.invoke(chat_function, arguments=arguments)
 
@@ -176,6 +183,9 @@ async def chat() -> bool:
             return True
 
         print(f"Mosscap:> {result}")
+
+    history.add_user_message(user_input)
+    history.add_assistant_message(str(result))
     return True
 
 

@@ -14,10 +14,7 @@ _T = TypeVar("_T", bound="TextContent")
 
 
 class TextContent(KernelContent):
-    """This is the base class for text response content.
-
-    All Text Completion Services should return an instance of this class as response.
-    Or they can implement their own subclass of this class and return an instance.
+    """This represents text response content.
 
     Args:
         inner_content: Any - The inner content of the response,
@@ -53,7 +50,7 @@ class TextContent(KernelContent):
     def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != cls.tag:
-            raise ContentInitializationError(f"Element tag is not {cls.tag}")
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
 
         return cls(text=unescape(element.text) if element.text else "", encoding=element.get("encoding", None))
 

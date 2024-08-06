@@ -19,7 +19,7 @@ public class OpenAITextEmbeddingGeneration extends ClientBase implements TextEmb
 =======
 public class OpenAITextEmbeddingGeneration extends ClientBase
         implements TextEmbeddingGeneration {
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
     public OpenAITextEmbeddingGeneration(OpenAIAsyncClient client, String modelId) {
         super(client, modelId);

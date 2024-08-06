@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 <<<<<<< HEAD
 import org.junit.jupiter.api.Disabled;
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -109,7 +109,7 @@ class VolatileMemoryStoreTests {
 <<<<<<< HEAD
     @Disabled("inconsistency between memory store implementations")
 =======
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     void itCannotInsertIntoNonExistentCollectionAsync() {
 
         // Arrange
@@ -393,7 +393,7 @@ class VolatileMemoryStoreTests {
         float threshold = -1f;
 =======
         double threshold = -1;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
@@ -483,7 +483,7 @@ class VolatileMemoryStoreTests {
         float threshold = -1f;
 =======
         double threshold = -1;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
@@ -567,7 +567,7 @@ class VolatileMemoryStoreTests {
         float threshold = -1f;
 =======
         double threshold = -1;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
@@ -591,7 +591,7 @@ class VolatileMemoryStoreTests {
         float threshold = -1f;
 =======
         double threshold = -1;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
@@ -676,7 +676,7 @@ class VolatileMemoryStoreTests {
         float threshold = 0.75f;
 =======
         double threshold = 0.75;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         Tuple2<MemoryRecord, Float> topNResultDefault =
                 this._db
                         .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
@@ -770,7 +770,7 @@ class VolatileMemoryStoreTests {
         float threshold = 0.75f;
 =======
         double threshold = 0.75;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         Tuple2<MemoryRecord, Float> topNResult =
                 this._db
                         .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
@@ -796,7 +796,7 @@ class VolatileMemoryStoreTests {
         float threshold = -1f;
 =======
         double threshold = -1;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         Tuple2<MemoryRecord, Float> topNResults =
                 this._db
                         .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
@@ -835,7 +835,7 @@ class VolatileMemoryStoreTests {
                         .getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75f, true)
 =======
                         .getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true)
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
                         .block();
         Collection<String> topNKeys =
                 topNResults.stream()

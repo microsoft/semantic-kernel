@@ -35,6 +35,7 @@ import reactor.core.publisher.Mono;
 public class DefaultCompletionSKFunction
         extends DefaultSemanticSKFunction<CompletionRequestSettings>
         implements CompletionSKFunction {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompletionSKFunction.class);
 
     private final SemanticFunctionConfig functionConfig;
@@ -287,6 +288,7 @@ public class DefaultCompletionSKFunction
     }
 
     public static class Builder implements CompletionSKFunction.Builder {
+
         private Kernel kernel;
         @Nullable private String promptTemplate = null;
         @Nullable private String functionName = null;

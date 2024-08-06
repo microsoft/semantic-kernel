@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -17,7 +18,7 @@ public class RepairServiceTests
     {
         // Arrange
         var kernel = new Kernel();
-        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
+        using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
@@ -69,11 +70,68 @@ public class RepairServiceTests
     }
 
     [Fact(Skip = "This test is for manual verification.")]
+    public async Task ValidateCreatingRepairServicePluginAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
+        using HttpClient httpClient = new();
+
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync(
+            "RepairService",
+            stream,
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+        kernel.Plugins.Add(plugin);
+
+        var arguments = new KernelArguments
+        {
+            ["payload"] = """{ "title": "Engine oil change", "description": "Need to drain the old engine oil and replace it with fresh oil.", "assignedTo": "", "date": "", "image": "" }"""
+        };
+
+        // Create Repair
+        var result = await plugin["createRepair"].InvokeAsync(kernel, arguments);
+
+        Assert.NotNull(result);
+        Assert.Equal("New repair created", result.ToString());
+
+        // List All Repairs
+        result = await plugin["listRepairs"].InvokeAsync(kernel, arguments);
+
+        Assert.NotNull(result);
+        var repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
+        Assert.True(repairs?.Length > 0);
+
+        var id = repairs[repairs.Length - 1].Id;
+
+        // Update Repair
+        arguments = new KernelArguments
+        {
+            ["payload"] = $"{{ \"id\": {id}, \"assignedTo\": \"Karin Blair\", \"date\": \"2024-04-16\", \"image\": \"https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg\" }}"
+        };
+
+        result = await plugin["updateRepair"].InvokeAsync(kernel, arguments);
+
+        Assert.NotNull(result);
+        Assert.Equal("Repair updated", result.ToString());
+
+        // Delete Repair
+        arguments = new KernelArguments
+        {
+            ["payload"] = $"{{ \"id\": {id} }}"
+        };
+
+        result = await plugin["deleteRepair"].InvokeAsync(kernel, arguments);
+
+        Assert.NotNull(result);
+        Assert.Equal("Repair deleted", result.ToString());
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task HttpOperationExceptionIncludeRequestInfoAsync()
     {
         // Arrange
         var kernel = new Kernel();
-        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
+        using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
@@ -108,11 +166,55 @@ public class RepairServiceTests
     }
 
     [Fact(Skip = "This test is for manual verification.")]
+    public async Task KernelFunctionCanceledExceptionIncludeRequestInfoAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
+        using HttpClient httpClient = new();
+
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
+            "RepairService",
+            stream,
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+
+        var arguments = new KernelArguments
+        {
+            ["payload"] = """{ "title": "Engine oil change", "description": "Need to drain the old engine oil and replace it with fresh oil.", "assignedTo": "", "date": "", "image": "" }"""
+        };
+
+        var id = 99999;
+
+        // Update Repair
+        arguments = new KernelArguments
+        {
+            ["payload"] = $"{{ \"id\": {id}, \"assignedTo\": \"Karin Blair\", \"date\": \"2024-04-16\", \"image\": \"https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg\" }}"
+        };
+
+        try
+        {
+            httpClient.Timeout = TimeSpan.FromMilliseconds(10); // Force a timeout
+
+            await plugin["updateRepair"].InvokeAsync(kernel, arguments);
+            Assert.Fail("Expected KernelFunctionCanceledException");
+        }
+        catch (KernelFunctionCanceledException ex)
+        {
+            Assert.Equal("The invocation of function 'updateRepair' was canceled.", ex.Message);
+            Assert.Equal("Patch", ex.Data["http.request.method"]);
+            Assert.Equal("https://piercerepairsapi.azurewebsites.net/repairs", ex.Data["url.full"]);
+            Assert.NotNull(ex.InnerException);
+            Assert.Equal("Patch", ex.InnerException.Data["http.request.method"]);
+            Assert.Equal("https://piercerepairsapi.azurewebsites.net/repairs", ex.InnerException.Data["url.full"]);
+        }
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task UseDelegatingHandlerAsync()
     {
         // Arrange
         var kernel = new Kernel();
-        using var stream = System.IO.File.OpenRead("Plugins/repair-service.json");
+        using var stream = System.IO.File.OpenRead("Plugins/OpenApi/repair-service.json");
 
         using var httpHandler = new HttpClientHandler();
         using var customHandler = new CustomHandler(httpHandler);
@@ -169,10 +271,10 @@ public class RepairServiceTests
         public string? Title { get; set; }
 
         [JsonPropertyName("description")]
-        public string? description { get; set; }
+        public string? Description { get; set; }
 
         [JsonPropertyName("assignedTo")]
-        public string? assignedTo { get; set; }
+        public string? AssignedTo { get; set; }
 
         [JsonPropertyName("date")]
         public string? Date { get; set; }

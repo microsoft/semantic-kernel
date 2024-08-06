@@ -44,7 +44,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
                 });
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input
         try
@@ -66,11 +66,11 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent content in chat.InvokeAsync(agent))
             {
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
 
-                foreach (var annotation in content.Items.OfType<AnnotationContent>())
+                foreach (AnnotationContent annotation in content.Items.OfType<AnnotationContent>())
                 {
                     Console.WriteLine($"\n* '{annotation.Quote}' => {annotation.FileId}");
                     BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!);

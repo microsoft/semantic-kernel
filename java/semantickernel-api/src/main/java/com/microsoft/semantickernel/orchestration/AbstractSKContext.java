@@ -5,25 +5,37 @@ import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import javax.annotation.CheckReturnValue;
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Semantic Kernel context */
 public abstract class AbstractSKContext implements SKContext {
 
+<<<<<<< AI
 =======
+=======
+>>>>>>> main
 import reactor.util.annotation.NonNull;
 import reactor.util.annotation.Nullable;
 
 /** Semantic Kernel context */
 public abstract class AbstractSKContext implements SKContext {
+<<<<<<< AI
+=======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     private final ReadOnlySkillCollection skills;
     private final WritableContextVariables variables;
     @Nullable private final SemanticTextMemory memory;
 
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
     /** Whether an error occurred while executing functions in the pipeline. */
     private boolean errorOccurred;
 
@@ -33,8 +45,11 @@ public abstract class AbstractSKContext implements SKContext {
     /** When an error occurs, this is the most recent exception. */
     @Nullable private Exception lastException;
 
+<<<<<<< AI
+=======
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     @Nullable
     @Override
     public String getResult() {
@@ -80,7 +95,10 @@ public abstract class AbstractSKContext implements SKContext {
         }
     }
 
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
     protected AbstractSKContext(SKContext toClone, String errorDescription, Exception exception) {
         this(toClone.getVariables(), toClone.getSemanticMemory(), toClone.getSkills());
         this.errorOccurred = true;
@@ -88,8 +106,11 @@ public abstract class AbstractSKContext implements SKContext {
         this.lastException = exception;
     }
 
+<<<<<<< AI
+=======
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
     @CheckReturnValue
     @Override
     public SKContext copy() {
@@ -114,47 +135,70 @@ public abstract class AbstractSKContext implements SKContext {
     }
 
     @Override
+<<<<<<< AI
+    public SKContext setVariable(@Nonnull String key, @Nonnull String content) {
+    public SKContext setVariable(@NonNull String key, @NonNull String content) {
+=======
 <<<<<<< HEAD
     public SKContext setVariable(@Nonnull String key, @Nonnull String content) {
 =======
     public SKContext setVariable(@NonNull String key, @NonNull String content) {
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         variables.setVariable(key, content);
         return getThis();
     }
 
     @Override
+<<<<<<< AI
+    public SKContext appendToVariable(@Nonnull String key, @Nonnull String content) {
+    public SKContext appendToVariable(@NonNull String key, @NonNull String content) {
+=======
 <<<<<<< HEAD
     public SKContext appendToVariable(@Nonnull String key, @Nonnull String content) {
 =======
     public SKContext appendToVariable(@NonNull String key, @NonNull String content) {
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         variables.appendToVariable(key, content);
         return getThis();
     }
 
     @Override
+<<<<<<< AI
+    public SKContext update(@Nonnull String content) {
+    public SKContext update(@NonNull String content) {
+=======
 <<<<<<< HEAD
     public SKContext update(@Nonnull String content) {
 =======
     public SKContext update(@NonNull String content) {
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         variables.update(content);
         return getThis();
     }
 
     @Override
+<<<<<<< AI
+    public SKContext update(@Nonnull ContextVariables newData) {
+    public SKContext update(@NonNull ContextVariables newData) {
+=======
 <<<<<<< HEAD
     public SKContext update(@Nonnull ContextVariables newData) {
 =======
     public SKContext update(@NonNull ContextVariables newData) {
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         variables.update(newData, true);
         return getThis();
     }
 
     protected abstract SKContext getThis();
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
 
     public boolean isErrorOccurred() {
         return errorOccurred;
@@ -168,6 +212,9 @@ public abstract class AbstractSKContext implements SKContext {
     public Exception getLastException() {
         return new Exception(lastException);
     }
+<<<<<<< AI
+=======
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 }

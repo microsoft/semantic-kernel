@@ -23,7 +23,7 @@ public class SequentialPlannerRequestSettings {
     @Nullable private Float relevancyThreshold = null;
 =======
     @Nullable private Double relevancyThreshold = null;
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
     /*
         /// <summary>
@@ -62,7 +62,7 @@ public class SequentialPlannerRequestSettings {
             @Nullable Float relevancyThreshold,
 =======
             @Nullable Double relevancyThreshold,
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
             int maxRelevantFunctions,
             Set<String> excludedSkills,
             Set<String> excludedFunctions,
@@ -83,7 +83,7 @@ public class SequentialPlannerRequestSettings {
     public Float getRelevancyThreshold() {
 =======
     public Double getRelevancyThreshold() {
->>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
         return relevancyThreshold;
     }
 

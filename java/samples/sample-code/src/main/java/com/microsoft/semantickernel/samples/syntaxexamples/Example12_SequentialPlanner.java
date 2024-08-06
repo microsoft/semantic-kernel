@@ -19,7 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
+<<<<<<< AI
+=======
 <<<<<<< HEAD
+>>>>>>> main
 /**
  * Demonstrates the <a href=
  * "https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-planners-sequential-planner/">
@@ -29,8 +32,11 @@ import java.util.Set;
  * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
  */
+<<<<<<< AI
+=======
 =======
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 public class Example12_SequentialPlanner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Example12_SequentialPlanner.class);
@@ -105,11 +111,16 @@ public class Example12_SequentialPlanner {
         // - email.SendEmail INPUT='$TRANSLATED_SUMMARY' email_address='$EMAIL_ADDRESS' =>
 
         System.out.println("Original plan:");
+<<<<<<< AI
+        System.out.println(plan.toManualString(false));
+        System.out.println(plan.toPlanString());
+=======
 <<<<<<< HEAD
         System.out.println(plan.toManualString(false));
 =======
         System.out.println(plan.toPlanString());
 >>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
+>>>>>>> main
 
         var input =
                 "Once upon a time, in a faraway kingdom, there lived a kind and just king named Arjun. " +
