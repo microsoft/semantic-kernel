@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import uuid
-from abc import ABC
 from typing import ClassVar
 
 from pydantic import Field
@@ -10,10 +9,11 @@ from semantic_kernel.agents.agent_channel import AgentChannel
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.naming import generate_random_ascii_name
 
 
 @experimental_class
-class Agent(ABC, KernelBaseModel):
+class Agent(KernelBaseModel):
     """Base abstraction for all Semantic Kernel agents.
 
     An agent instance may participate in one or more conversations.
@@ -31,7 +31,7 @@ class Agent(ABC, KernelBaseModel):
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     description: str | None = None
-    name: str | None = None
+    name: str = Field(default_factory=lambda: f"agent_{generate_random_ascii_name()}")
     instructions: str | None = None
     kernel: Kernel = Field(default_factory=Kernel)
     channel_type: ClassVar[type[AgentChannel] | None] = None
