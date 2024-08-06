@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Reflection;
 using Amazon.BedrockRuntime;
+using Amazon.Runtime;
 using Connectors.Amazon.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -42,6 +44,7 @@ public static class BedrockKernelBuilderExtensions
             {
                 IAmazonBedrockRuntime runtime = bedrockRuntime ?? serviceProvider.GetRequiredService<IAmazonBedrockRuntime>();
                 var logger = serviceProvider.GetService<ILoggerFactory>();
+                ((AmazonServiceClient)runtime).BeforeRequestEvent += AWSServiceClient_BeforeServiceRequest;
                 return new BedrockChatCompletionService(modelId, runtime, logger);
             }
             catch (Exception ex)
@@ -78,6 +81,7 @@ public static class BedrockKernelBuilderExtensions
             {
                 IAmazonBedrockRuntime runtime = bedrockRuntime ?? serviceProvider.GetRequiredService<IAmazonBedrockRuntime>();
                 var logger = serviceProvider.GetService<ILoggerFactory>();
+                ((AmazonServiceClient)runtime).BeforeRequestEvent += AWSServiceClient_BeforeServiceRequest;
                 return new BedrockTextGenerationService(modelId, runtime, logger);
             }
             catch (Exception ex)
@@ -87,5 +91,17 @@ public static class BedrockKernelBuilderExtensions
         });
 
         return builder;
+    }
+
+    private const string UserAgentHeader = "User-Agent";
+    private static readonly string s_userAgentString = $"lib/semantic-kernel#{Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty}";
+
+    private static void AWSServiceClient_BeforeServiceRequest(object sender, RequestEventArgs e)
+    {
+        if (e is not WebServiceRequestEventArgs args || !args.Headers.TryGetValue(UserAgentHeader, out string? value) || value.Contains(s_userAgentString))
+        {
+            return;
+        }
+        args.Headers[UserAgentHeader] = value + " " + s_userAgentString;
     }
 }
