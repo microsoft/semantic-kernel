@@ -109,6 +109,7 @@ internal static class AssistantThreadActions
     /// <param name="threadId">The thread identifier</param>
     /// <param name="pollingConfiguration">Config to utilize when polling for run state.</param>
     /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
+    /// <param name="kernel">The <see cref="Kernel"/> plugins and other state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     public static async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
@@ -117,6 +118,7 @@ internal static class AssistantThreadActions
         string threadId,
         OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration,
         ILogger logger,
+        Kernel? kernel,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (agent.IsDeleted)
@@ -124,7 +126,9 @@ internal static class AssistantThreadActions
             throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");
         }
 
-        ToolDefinition[]? tools = [.. agent.Tools, .. agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimiter)))];
+        kernel ??= agent.Kernel;
+
+        ToolDefinition[]? tools = [.. agent.Tools, .. kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimiter)))];
 
         logger.LogOpenAIAssistantCreatingRun(nameof(InvokeAsync), threadId);
 

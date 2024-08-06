@@ -33,10 +33,14 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     /// <inheritdoc/>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
     /// <inheritdoc/>
     public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 }
