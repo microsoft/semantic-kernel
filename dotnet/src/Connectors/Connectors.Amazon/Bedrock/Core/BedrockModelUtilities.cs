@@ -2,7 +2,6 @@
 
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
-using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -95,7 +94,7 @@ internal static class BedrockModelUtilities
         return default;
     }
 
-    internal static void SetPropertyIfNotNull<T>( Func<T?> getValue, Action<T> setValue) where T : struct
+    internal static void SetPropertyIfNotNull<T>(Func<T?> getValue, Action<T> setValue) where T : struct
     {
         var value = getValue();
         if (value.HasValue)

@@ -44,7 +44,12 @@ public static class BedrockKernelBuilderExtensions
             {
                 IAmazonBedrockRuntime runtime = bedrockRuntime ?? serviceProvider.GetRequiredService<IAmazonBedrockRuntime>();
                 var logger = serviceProvider.GetService<ILoggerFactory>();
-                ((AmazonServiceClient)runtime).BeforeRequestEvent += AWSServiceClient_BeforeServiceRequest;
+                // Check if the runtime instance is a proxy object
+                if (runtime.GetType().BaseType == typeof(AmazonServiceClient))
+                {
+                    // Cast to AmazonServiceClient and subscribe to the event
+                    ((AmazonServiceClient)runtime).BeforeRequestEvent += AWSServiceClient_BeforeServiceRequest;
+                }
                 return new BedrockChatCompletionService(modelId, runtime, logger);
             }
             catch (Exception ex)
@@ -81,7 +86,12 @@ public static class BedrockKernelBuilderExtensions
             {
                 IAmazonBedrockRuntime runtime = bedrockRuntime ?? serviceProvider.GetRequiredService<IAmazonBedrockRuntime>();
                 var logger = serviceProvider.GetService<ILoggerFactory>();
-                ((AmazonServiceClient)runtime).BeforeRequestEvent += AWSServiceClient_BeforeServiceRequest;
+                // Check if the runtime instance is a proxy object
+                if (runtime.GetType().BaseType == typeof(AmazonServiceClient))
+                {
+                    // Cast to AmazonServiceClient and subscribe to the event
+                    ((AmazonServiceClient)runtime).BeforeRequestEvent += AWSServiceClient_BeforeServiceRequest;
+                }
                 return new BedrockTextGenerationService(modelId, runtime, logger);
             }
             catch (Exception ex)

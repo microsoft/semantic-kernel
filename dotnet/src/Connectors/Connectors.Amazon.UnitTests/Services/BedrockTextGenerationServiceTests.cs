@@ -4,10 +4,11 @@ using System.Text.Json;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Endpoints;
-using Connectors.Amazon.Extensions;
 using Connectors.Amazon.Core;
+using Connectors.Amazon.Extensions;
 using Connectors.Amazon.Models.Amazon;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
@@ -216,7 +217,7 @@ public class BedrockTextGenerationServiceTests
         // Arrange
         string modelId = "ai21.jamba-instruct-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new PromptExecutionSettings()
+        var executionSettings = new AmazonJambaTextExecutionSettings()
         {
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()

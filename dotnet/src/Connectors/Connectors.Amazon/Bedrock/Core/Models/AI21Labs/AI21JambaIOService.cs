@@ -8,6 +8,7 @@ using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core;
+using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 namespace Connectors.Amazon.Core;
 
@@ -25,6 +26,7 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
+        var exec = AmazonJambaTextExecutionSettings.FromExecutionSettings(executionSettings);
         List<AI21JambaRequest.AI21TextGenerationRequest.Msg> messages = new()
         {
             new AI21JambaRequest.AI21TextGenerationRequest.Msg()
@@ -36,13 +38,13 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
         var requestBody = new AI21JambaRequest.AI21TextGenerationRequest()
         {
             Messages = messages,
-            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature"),
-            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "top_p"),
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_tokens"),
-            Stop = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(executionSettings?.ExtensionData, "stop"),
-            NumberOfResponses = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "n"),
-            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "frequency_penalty"),
-            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "presence_penalty")
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(exec?.ExtensionData, "temperature"),
+            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(exec?.ExtensionData, "top_p"),
+            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(exec?.ExtensionData, "max_tokens"),
+            Stop = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(exec?.ExtensionData, "stop"),
+            NumberOfResponses = BedrockModelUtilities.GetExtensionDataValue<int?>(exec?.ExtensionData, "n"),
+            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(exec?.ExtensionData, "frequency_penalty"),
+            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(exec?.ExtensionData, "presence_penalty")
         };
 
         return requestBody;
