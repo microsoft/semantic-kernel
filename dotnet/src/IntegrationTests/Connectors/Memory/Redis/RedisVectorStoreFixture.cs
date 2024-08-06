@@ -85,7 +85,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         this._containerId = await SetupRedisContainerAsync(this._client);
 
         // Connect to redis.
-        ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379");
+        ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379,connectTimeout=60000,connectRetry=5");
         this.Database = redis.GetDatabase();
 
         // Create a schema for the vector store.

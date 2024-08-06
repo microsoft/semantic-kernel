@@ -103,7 +103,7 @@ async def test_call_with_parameters(
     complete_prompt_execution_settings = OpenAITextPromptExecutionSettings()
     azure_text_completion = AzureTextCompletion()
 
-    await azure_text_completion.get_text_contents(prompt, complete_prompt_execution_settings)
+    await azure_text_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
@@ -135,7 +135,7 @@ async def test_call_with_parameters_logit_bias_not_none(
 
     azure_text_completion = AzureTextCompletion()
 
-    await azure_text_completion.get_text_contents(prompt, complete_prompt_execution_settings)
+    await azure_text_completion.get_text_contents(prompt=prompt, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],

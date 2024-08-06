@@ -23,6 +23,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelServicesExtension(KernelBaseModel, ABC):
+    """Kernel services extension.
+
+    Adds all services related entities to the Kernel.
+    """
+
     services: dict[str, AIServiceClientBase] = Field(default_factory=dict)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
 

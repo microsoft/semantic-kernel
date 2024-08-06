@@ -17,7 +17,7 @@ public static class QdrantServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The kernel builder.</returns>
+    /// <returns>The service collection.</returns>
     public static IServiceCollection AddQdrantVectorStore(this IServiceCollection services, QdrantVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are not constructing the QdrantClient, add the IVectorStore as transient, since we
@@ -46,7 +46,7 @@ public static class QdrantServiceCollectionExtensions
     /// <param name="apiKey">The Qdrant service API key.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The kernel builder.</returns>
+    /// <returns>The service collection.</returns>
     public static IServiceCollection AddQdrantVectorStore(this IServiceCollection services, string host, int port = 6334, bool https = false, string? apiKey = default, QdrantVectorStoreOptions? options = default, string? serviceId = default)
     {
         services.AddKeyedSingleton<IVectorStore>(

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Docker.DotNet;
+using Qdrant.Client;
 
 namespace Memory.VectorStoreFixtures;
 
@@ -24,6 +25,23 @@ public class VectorStoreQdrantContainerFixture : IAsyncLifetime
             using var dockerClientConfiguration = new DockerClientConfiguration();
             this._dockerClient = dockerClientConfiguration.CreateClient();
             this._qdrantContainerId = await VectorStoreInfra.SetupQdrantContainerAsync(this._dockerClient);
+
+            // Delay until the Qdrant server is ready.
+            var qdrantClient = new QdrantClient("localhost");
+            var succeeded = false;
+            var attemptCount = 0;
+            while (!succeeded && attemptCount++ < 10)
+            {
+                try
+                {
+                    await qdrantClient.ListCollectionsAsync();
+                    succeeded = true;
+                }
+                catch (Exception)
+                {
+                    await Task.Delay(1000);
+                }
+            }
         }
     }
 

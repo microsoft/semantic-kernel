@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Optional options when calling <see cref="IVectorStoreRecordCollection{TKey, TDataModel}.GetAsync"/>.
+/// Options when calling <see cref="IVectorStoreRecordCollection{TKey, TDataModel}.GetAsync"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
 public class GetRecordOptions

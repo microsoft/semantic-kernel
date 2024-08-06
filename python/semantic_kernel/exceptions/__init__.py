@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.exceptions.agent_exceptions import *  # noqa: F403
 from semantic_kernel.exceptions.content_exceptions import *  # noqa: F403
 from semantic_kernel.exceptions.function_exceptions import *  # noqa: F403
 from semantic_kernel.exceptions.kernel_exceptions import *  # noqa: F403

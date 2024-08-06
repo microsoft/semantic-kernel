@@ -11,6 +11,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <remarks>
 /// Marking a property as 'data' means that the property is not a key, and not a vector, but optionally
 /// this property may have an associated vector field containing an embedding for this data.
+/// The characteristics defined here will influence how the property is treated by the vector store.
 /// </remarks>
 [Experimental("SKEXP0001")]
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
