@@ -48,6 +48,8 @@
         "endregion",
         "vertexai",
         "aiplatform",
-        "huggingface"
+        "huggingface",
+        "pytestmark",
+        "contoso"
     ]
 }

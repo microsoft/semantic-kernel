@@ -2,6 +2,9 @@
 
 
 import os
+import sys
+from functools import reduce
+from typing import Any
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
@@ -14,6 +17,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_
 from semantic_kernel.connectors.ai.azure_ai_inference.services.azure_ai_inference_chat_completion import (
     AzureAIInferenceChatCompletion,
 )
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
 )
@@ -38,7 +42,15 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.core_plugins.math_plugin import MathPlugin
+from semantic_kernel.kernel import Kernel
 from tests.integration.completions.test_completion_base import ServiceType, TestCompletionBase
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 mistral_ai_setup: bool = False
 try:
@@ -58,6 +70,7 @@ except KeyError:
 class TestChatCompletionBase(TestCompletionBase):
     """Base class for testing completion services."""
 
+    @override
     @pytest.fixture(scope="class")
     def services(self) -> dict[str, tuple[ServiceType, type[PromptExecutionSettings]]]:
         azure_openai_settings = AzureOpenAISettings.create()
@@ -96,3 +109,44 @@ class TestChatCompletionBase(TestCompletionBase):
             "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
             "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
         }
+
+    def setup(self, kernel: Kernel):
+        """Setup the kernel with the completion service and function."""
+        kernel.add_plugin(MathPlugin(), plugin_name="math")
+
+    async def get_chat_completion_response(
+        self,
+        kernel: Kernel,
+        service: ChatCompletionClientBase,
+        execution_settings: PromptExecutionSettings,
+        chat_history: ChatHistory,
+        stream: bool,
+    ) -> Any:
+        """Get response from the service
+
+        Args:
+            kernel (Kernel): Kernel instance.
+            service (ChatCompletionClientBase): Chat completion service.
+            execution_settings (PromptExecutionSettings): Execution settings.
+            input (str): Input string.
+            stream (bool): Stream flag.
+        """
+        if stream:
+            response = service.get_streaming_chat_message_content(
+                chat_history,
+                execution_settings,
+                kernel=kernel,
+            )
+            parts = [part async for part in response]
+            if parts:
+                response = reduce(lambda p, r: p + r, parts)
+            else:
+                raise AssertionError("No response")
+        else:
+            response = await service.get_chat_message_content(
+                chat_history,
+                execution_settings,
+                kernel=kernel,
+            )
+
+        return response

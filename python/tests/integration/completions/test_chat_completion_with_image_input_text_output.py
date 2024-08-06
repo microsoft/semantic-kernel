@@ -23,7 +23,7 @@ else:
 
 
 pytestmark = pytest.mark.parametrize(
-    "service_id, execution_settings_kwargs, inputs",
+    "service_id, execution_settings_kwargs, inputs, kwargs",
     [
         pytest.param(
             "openai",
@@ -40,6 +40,7 @@ pytestmark = pytest.mark.parametrize(
                 ),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
+            {},
             id="openai_image_input_uri",
         ),
         pytest.param(
@@ -57,6 +58,7 @@ pytestmark = pytest.mark.parametrize(
                 ),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
+            {},
             id="openai_image_input_file",
         ),
         pytest.param(
@@ -74,6 +76,7 @@ pytestmark = pytest.mark.parametrize(
                 ),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
+            {},
             id="azure_image_input_uri",
         ),
         pytest.param(
@@ -91,6 +94,7 @@ pytestmark = pytest.mark.parametrize(
                 ),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
+            {},
             id="azure_image_input_file",
         ),
         pytest.param(
@@ -110,6 +114,7 @@ pytestmark = pytest.mark.parametrize(
                 ),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
+            {},
             id="azure_ai_inference_image_input_uri",
         ),
         pytest.param(
@@ -129,13 +134,12 @@ pytestmark = pytest.mark.parametrize(
                 ),
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
+            {},
             id="azure_ai_inference_image_input_file",
         ),
         pytest.param(
             "google_ai",
-            {
-                "max_tokens": 256,
-            },
+            {},
             [
                 ChatMessageContent(
                     role=AuthorRole.USER,
@@ -151,13 +155,12 @@ pytestmark = pytest.mark.parametrize(
                     items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
                 ),
             ],
+            {},
             id="google_ai_image_input_file",
         ),
         pytest.param(
             "vertex_ai",
-            {
-                "max_tokens": 256,
-            },
+            {},
             [
                 ChatMessageContent(
                     role=AuthorRole.USER,
@@ -173,17 +176,18 @@ pytestmark = pytest.mark.parametrize(
                     items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
                 ),
             ],
+            {},
             id="vertex_ai_image_input_file",
         ),
     ],
 )
 
 
-class TestChatCompletionWithImageInput(TestChatCompletionBase):
-    """Test chat completion with image input."""
+@pytest.mark.asyncio(scope="module")
+class TestChatCompletionWithImageInputTextOutput(TestChatCompletionBase):
+    """Test chat completion with image input and text output."""
 
     @override
-    @pytest.mark.asyncio(scope="module")
     async def test_completion(
         self,
         kernel: Kernel,
@@ -191,33 +195,58 @@ class TestChatCompletionWithImageInput(TestChatCompletionBase):
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
         inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        kwargs: dict[str, Any],
     ):
-        self.setup(kernel, service_id, services, execution_settings_kwargs)
-
-        history = ChatHistory()
-        for message in inputs:
-            if isinstance(message, list):
-                for msg in message:
-                    history.add_message(msg)
-            else:
-                history.add_message(message)
-
-            cmc = await retry(partial(self.execute_invoke, kernel=kernel, input=history, stream=False), retries=5)
-            history.add_message(cmc)
-
-        self.evaluate_response(history, inputs=inputs)
+        await self._test_helper(
+            kernel,
+            service_id,
+            services,
+            execution_settings_kwargs,
+            inputs,
+            False,
+        )
 
     @override
-    @pytest.mark.asyncio(scope="module")
-    async def test_streaming_chat_completion(
+    async def test_streaming_completion(
         self,
         kernel: Kernel,
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
         inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        kwargs: dict[str, Any],
     ):
-        self.setup(kernel, service_id, services, execution_settings_kwargs)
+        await self._test_helper(
+            kernel,
+            service_id,
+            services,
+            execution_settings_kwargs,
+            inputs,
+            True,
+        )
+
+    @override
+    def evaluate(self, test_target: Any, **kwargs):
+        inputs = kwargs.get("inputs")
+        assert len(test_target) == len(inputs) * 2
+        for i in range(len(inputs)):
+            message = test_target[i * 2 + 1]
+            assert message.items, "No items in message"
+            assert len(message.items) == 1, "Unexpected number of items in message"
+            assert isinstance(message.items[0], TextContent), "Unexpected message item type"
+            assert message.items[0].text, "Empty message text"
+
+    async def _test_helper(
+        self,
+        kernel: Kernel,
+        service_id: str,
+        services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
+        execution_settings_kwargs: dict[str, Any],
+        inputs: list[ChatMessageContent | list[ChatMessageContent]],
+        stream: bool,
+    ):
+        self.setup(kernel)
+        service, settings_type = services[service_id]
 
         history = ChatHistory()
         for message in inputs:
@@ -226,18 +255,17 @@ class TestChatCompletionWithImageInput(TestChatCompletionBase):
                     history.add_message(msg)
             else:
                 history.add_message(message)
-            cmc = await retry(partial(self.execute_invoke, kernel=kernel, input=history, stream=True), retries=5)
+            cmc = await retry(
+                partial(
+                    self.get_chat_completion_response,
+                    kernel=kernel,
+                    service=service,
+                    execution_settings=settings_type(**execution_settings_kwargs),
+                    chat_history=history,
+                    stream=stream,
+                ),
+                retries=5,
+            )
             history.add_message(cmc)
 
-        self.evaluate_response(history, inputs=inputs)
-
-    @override
-    def evaluate_response(self, response: Any, **kwargs):
-        inputs = kwargs.get("inputs")
-        assert len(response) == len(inputs) * 2
-        for i in range(len(inputs)):
-            message = response[i * 2 + 1]
-            assert message.items, "No items in message"
-            assert len(message.items) == 1, "Unexpected number of items in message"
-            assert isinstance(message.items[0], TextContent), "Unexpected message item type"
-            assert message.items[0].text, "Empty message text"
+        self.evaluate(history.messages, inputs=inputs)

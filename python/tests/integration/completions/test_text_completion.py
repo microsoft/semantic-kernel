@@ -2,7 +2,7 @@
 
 import os
 import sys
-from functools import partial
+from functools import partial, reduce
 from typing import Any
 
 import pytest
@@ -26,6 +26,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 
@@ -48,24 +49,27 @@ except KeyError:
 
 
 pytestmark = pytest.mark.parametrize(
-    "service_id, execution_settings_kwargs, inputs",
+    "service_id, execution_settings_kwargs, inputs, kwargs",
     [
         pytest.param(
             "openai",
             {},
             ["Repeat the word Hello"],
+            {},
             id="openai_text_completion",
         ),
         pytest.param(
             "azure",
             {},
             ["Repeat the word Hello"],
+            {},
             id="azure_text_completion",
         ),
         pytest.param(
             "hf_t2t",
             {},
             ["translate English to Dutch: Hello"],
+            {},
             id="huggingface_text_completion_translation",
         ),
         pytest.param(
@@ -80,25 +84,29 @@ pytestmark = pytest.mark.parametrize(
         toothed predator on Earth. Several whale species exhibit sexual dimorphism,
         in that the females are larger than males."""
             ],
+            {},
             id="huggingface_text_completion_summarization",
         ),
         pytest.param(
             "hf_gen",
             {},
             ["Hello, I like sleeping and "],
+            {},
             id="huggingface_text_completion_generation",
         ),
         pytest.param(
             "ollama",
             {},
             ["Repeat the word Hello"],
+            {},
             marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
-            id="ollama_text_input",
+            id="ollama_text_completion",
         ),
         pytest.param(
             "google_ai",
             {},
             ["Repeat the word Hello"],
+            {},
             marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_text_completion",
         ),
@@ -106,12 +114,14 @@ pytestmark = pytest.mark.parametrize(
             "vertex_ai",
             {},
             ["Repeat the word Hello"],
+            {},
             id="vertex_ai_text_completion",
         ),
     ],
 )
 
 
+@pytest.mark.asyncio(scope="module")
 class TestTextCompletion(TestCompletionBase):
     """Test class for text completion"""
 
@@ -166,8 +176,41 @@ class TestTextCompletion(TestCompletionBase):
             ),
         }
 
+    async def get_text_completion_response(
+        self,
+        service: TextCompletionClientBase,
+        execution_settings: PromptExecutionSettings,
+        prompt: str,
+        stream: bool,
+    ) -> Any:
+        """Get response from the service
+
+        Args:
+            kernel (Kernel): Kernel instance.
+            service (ChatCompletionClientBase): Chat completion service.
+            execution_settings (PromptExecutionSettings): Execution settings.
+            prompt (str): Input string.
+            stream (bool): Stream flag.
+        """
+        if stream:
+            response = service.get_streaming_text_content(
+                prompt=prompt,
+                settings=execution_settings,
+            )
+            parts = [part async for part in response]
+            if parts:
+                response = reduce(lambda p, r: p + r, parts)
+            else:
+                raise AssertionError("No response")
+        else:
+            response = await service.get_text_content(
+                prompt=prompt,
+                settings=execution_settings,
+            )
+
+        return response
+
     @override
-    @pytest.mark.asyncio(scope="module")
     async def test_completion(
         self,
         kernel: Kernel,
@@ -175,14 +218,11 @@ class TestTextCompletion(TestCompletionBase):
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
         inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        kwargs: dict[str, Any],
     ) -> None:
-        self.setup(kernel, service_id, services, execution_settings_kwargs)
-        for message in inputs:
-            response = await retry(partial(self.execute_invoke, kernel=kernel, input=message, stream=False), retries=5)
-            self.evaluate_response(response)
+        await self._test_helper(service_id, services, execution_settings_kwargs, inputs, False)
 
     @override
-    @pytest.mark.asyncio(scope="module")
     async def test_streaming_completion(
         self,
         kernel: Kernel,
@@ -190,17 +230,38 @@ class TestTextCompletion(TestCompletionBase):
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
         inputs: list[str | ChatMessageContent | list[ChatMessageContent]],
+        kwargs: dict[str, Any],
     ):
-        self.setup(kernel, service_id, services, execution_settings_kwargs)
-        for message in inputs:
-            response = await retry(partial(self.execute_invoke, kernel=kernel, input=message, stream=True), retries=5)
-            self.evaluate_response(response)
+        await self._test_helper(service_id, services, execution_settings_kwargs, inputs, True)
 
     @override
-    def evaluate_response(self, response: Any, **kwargs):
-        print(response)
-        if isinstance(response, TextContent):
-            # Test is considered successful if the response is not empty
-            assert response.text, "Error: Empty response"
+    def evaluate(self, test_target: Any, **kwargs):
+        print(test_target)
+        if isinstance(test_target, TextContent):
+            # Test is considered successful if the test_target is not empty
+            assert test_target.text, "Error: Empty test target"
             return
-        raise AssertionError(f"Unexpected output: response: {response}, type: {type(response)}")
+        raise AssertionError(f"Unexpected output: {test_target}, type: {type(test_target)}")
+
+    async def _test_helper(
+        self,
+        service_id: str,
+        services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
+        execution_settings_kwargs: dict[str, Any],
+        inputs: list[str],
+        stream: bool,
+    ):
+        service, settings_type = services[service_id]
+
+        for test_input in inputs:
+            response = await retry(
+                partial(
+                    self.get_text_completion_response,
+                    service=service,
+                    execution_settings=settings_type(**execution_settings_kwargs),
+                    prompt=test_input,
+                    stream=stream,
+                ),
+                retries=5,
+            )
+            self.evaluate(response)

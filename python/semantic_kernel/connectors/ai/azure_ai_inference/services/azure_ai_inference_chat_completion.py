@@ -135,18 +135,20 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, AzureAIInferenceChatPromptExecutionSettings)  # nosec
 
+        kernel = kwargs.get("kernel")
+        if not kernel and settings.function_choice_behavior is not None:
+            raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
+
+        assert isinstance(kernel, Kernel)  # nosec
+        self._configure_function_choice_behavior(settings, kernel)
+
         if (
             settings.function_choice_behavior is None
             or not settings.function_choice_behavior.auto_invoke_kernel_functions
         ):
             return await self._send_chat_request(chat_history, settings)
 
-        kernel = kwargs.get("kernel")
-        if not isinstance(kernel, Kernel):
-            raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
-
         self._verify_function_choice_behavior(settings)
-        self._configure_function_choice_behavior(settings, kernel)
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
@@ -248,6 +250,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, AzureAIInferenceChatPromptExecutionSettings)  # nosec
 
+        kernel = kwargs.get("kernel")
+        if not kernel and settings.function_choice_behavior is not None:
+            raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
+
+        assert isinstance(kernel, Kernel)  # nosec
+        self._configure_function_choice_behavior(settings, kernel)
+
         if (
             settings.function_choice_behavior is None
             or not settings.function_choice_behavior.auto_invoke_kernel_functions
@@ -256,24 +265,22 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             async_generator = self._send_chat_streaming_request(chat_history, settings)
         else:
             # Auto invoke is required.
-            async_generator = self._get_streaming_chat_message_contents_auto_invoke(chat_history, settings, **kwargs)
+            async_generator = self._get_streaming_chat_message_contents_auto_invoke(
+                kernel, chat_history, settings, **kwargs
+            )
 
         async for messages in async_generator:
             yield messages
 
     async def _get_streaming_chat_message_contents_auto_invoke(
         self,
+        kernel: Kernel,
         chat_history: ChatHistory,
         settings: AzureAIInferenceChatPromptExecutionSettings,
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Get streaming chat message contents from the Azure AI Inference service with auto invoking functions."""
-        kernel = kwargs.get("kernel")
-        if not isinstance(kernel, Kernel):
-            raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
-
         self._verify_function_choice_behavior(settings)
-        self._configure_function_choice_behavior(settings, kernel)
 
         # mypy doesn't recognize the settings.function_choice_behavior is not None by the check above
         request_attempts = settings.function_choice_behavior.maximum_auto_invoke_attempts  # type: ignore
@@ -427,7 +434,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     ):
         """Configure the function choice behavior to include the kernel functions."""
         if not settings.function_choice_behavior:
-            raise ServiceInvalidExecutionSettingsError("Function choice behavior is required for tool calls.")
+            return
 
         settings.function_choice_behavior.configure(
             kernel=kernel, update_settings_callback=update_settings_from_function_call_configuration, settings=settings
