@@ -29,16 +29,17 @@ internal sealed class AnthropicIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        var requestBody = new
-        {
-            prompt = $"\n\nHuman: {prompt}\n\nAssistant:",
-            temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature),
-            max_tokens_to_sample = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens_to_sample", (int?)DefaultMaxTokensToSample),
-            stop_sequences = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stop_sequences", s_defaultStopSequences),
-            top_p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", (double?)DefaultTopP),
-            top_k = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_k", (int?)DefaultTopK)
-        };
-        return requestBody;
+        // var requestBody = new
+        // {
+        //     prompt = $"\n\nHuman: {prompt}\n\nAssistant:",
+        //     temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature),
+        //     max_tokens_to_sample = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens_to_sample", (int?)DefaultMaxTokensToSample),
+        //     stop_sequences = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stop_sequences", s_defaultStopSequences),
+        //     top_p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", (double?)DefaultTopP),
+        //     top_k = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_k", (int?)DefaultTopK)
+        // };
+        // return requestBody;
+        throw new NotImplementedException("placeholder - fixing");
     }
     /// <summary>
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
@@ -69,55 +70,56 @@ internal sealed class AnthropicIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        var system = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "system", systemMessages);
-        var inferenceConfig = new InferenceConfiguration
-        {
-            Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-            TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
-        };
-        var additionalModelRequestFields = new Document();
-
-        var tools = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "tools", new List<ClaudeToolUse.ClaudeTool>());
-        var toolChoice = BedrockModelUtilities.GetExtensionDataValue<ClaudeToolUse.ClaudeToolChoice?>(settings?.ExtensionData, "tool_choice", null);
-
-        if (modelId != "anthropic.claude-instant-v1")
-        {
-            additionalModelRequestFields.Add(
-                "tools", new Document(tools.Select(t => new Document
-                {
-                    { "name", t.Name },
-                    { "description", t.Description },
-                    { "input_schema", t.InputSchema }
-                }).ToList())
-            );
-
-            additionalModelRequestFields.Add(
-                "tool_choice", toolChoice != null
-                    ? new Document
-                    {
-                        { "type", toolChoice.Type },
-                        { "name", toolChoice.Name }
-                    }
-                    : new Document()
-            );
-        }
-
-        var converseRequest = new ConverseRequest
-        {
-            ModelId = modelId,
-            Messages = messages,
-            System = system,
-            InferenceConfig = inferenceConfig,
-            AdditionalModelRequestFields = additionalModelRequestFields,
-            AdditionalModelResponseFieldPaths = new List<string>(),
-            GuardrailConfig = null, // Set if needed
-            ToolConfig = null // Set if needed
-        };
-
-        return converseRequest;
+        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+        // var system = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "system", systemMessages);
+        // var inferenceConfig = new InferenceConfiguration
+        // {
+        //     Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+        //     TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
+        //     MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
+        // };
+        // var additionalModelRequestFields = new Document();
+        //
+        // var tools = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "tools", new List<ClaudeToolUse.ClaudeTool>());
+        // var toolChoice = BedrockModelUtilities.GetExtensionDataValue<ClaudeToolUse.ClaudeToolChoice?>(settings?.ExtensionData, "tool_choice", null);
+        //
+        // if (modelId != "anthropic.claude-instant-v1")
+        // {
+        //     additionalModelRequestFields.Add(
+        //         "tools", new Document(tools.Select(t => new Document
+        //         {
+        //             { "name", t.Name },
+        //             { "description", t.Description },
+        //             { "input_schema", t.InputSchema }
+        //         }).ToList())
+        //     );
+        //
+        //     additionalModelRequestFields.Add(
+        //         "tool_choice", toolChoice != null
+        //             ? new Document
+        //             {
+        //                 { "type", toolChoice.Type },
+        //                 { "name", toolChoice.Name }
+        //             }
+        //             : new Document()
+        //     );
+        // }
+        //
+        // var converseRequest = new ConverseRequest
+        // {
+        //     ModelId = modelId,
+        //     Messages = messages,
+        //     System = system,
+        //     InferenceConfig = inferenceConfig,
+        //     AdditionalModelRequestFields = additionalModelRequestFields,
+        //     AdditionalModelResponseFieldPaths = new List<string>(),
+        //     GuardrailConfig = null, // Set if needed
+        //     ToolConfig = null // Set if needed
+        // };
+        //
+        // return converseRequest;
+        throw new NotImplementedException("placeholder - fixing");
     }
     /// <summary>
     /// Extracts the text generation streaming output from the Anthropic Claude response object structure.
@@ -142,57 +144,58 @@ internal sealed class AnthropicIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-
-        var system = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "system", systemMessages);
-
-        var inferenceConfig = new InferenceConfiguration
-        {
-            Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-            TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
-        };
-
-        var additionalModelRequestFields = new Document();
-
-        var tools = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "tools", new List<ClaudeToolUse.ClaudeTool>());
-        var toolChoice = BedrockModelUtilities.GetExtensionDataValue<ClaudeToolUse.ClaudeToolChoice?>(settings?.ExtensionData, "tool_choice", null);
-
-        if (modelId != "anthropic.claude-instant-v1")
-        {
-            additionalModelRequestFields.Add(
-                "tools", new Document(tools.Select(t => new Document
-                {
-                    { "name", t.Name },
-                    { "description", t.Description },
-                    { "input_schema", t.InputSchema }
-                }).ToList())
-            );
-
-            additionalModelRequestFields.Add(
-                "tool_choice", toolChoice != null
-                    ? new Document
-                    {
-                        { "type", toolChoice.Type },
-                        { "name", toolChoice.Name }
-                    }
-                    : new Document()
-            );
-        }
-
-        var converseRequest = new ConverseStreamRequest
-        {
-            ModelId = modelId,
-            Messages = messages,
-            System = system,
-            InferenceConfig = inferenceConfig,
-            AdditionalModelRequestFields = additionalModelRequestFields,
-            AdditionalModelResponseFieldPaths = new List<string>(),
-            GuardrailConfig = null, // Set if needed
-            ToolConfig = null // Set if needed
-        };
-
-        return converseRequest;
+        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+        //
+        // var system = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "system", systemMessages);
+        //
+        // var inferenceConfig = new InferenceConfiguration
+        // {
+        //     Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+        //     TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
+        //     MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens_to_sample", DefaultMaxTokensToSample)
+        // };
+        //
+        // var additionalModelRequestFields = new Document();
+        //
+        // var tools = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "tools", new List<ClaudeToolUse.ClaudeTool>());
+        // var toolChoice = BedrockModelUtilities.GetExtensionDataValue<ClaudeToolUse.ClaudeToolChoice?>(settings?.ExtensionData, "tool_choice", null);
+        //
+        // if (modelId != "anthropic.claude-instant-v1")
+        // {
+        //     additionalModelRequestFields.Add(
+        //         "tools", new Document(tools.Select(t => new Document
+        //         {
+        //             { "name", t.Name },
+        //             { "description", t.Description },
+        //             { "input_schema", t.InputSchema }
+        //         }).ToList())
+        //     );
+        //
+        //     additionalModelRequestFields.Add(
+        //         "tool_choice", toolChoice != null
+        //             ? new Document
+        //             {
+        //                 { "type", toolChoice.Type },
+        //                 { "name", toolChoice.Name }
+        //             }
+        //             : new Document()
+        //     );
+        // }
+        //
+        // var converseRequest = new ConverseStreamRequest
+        // {
+        //     ModelId = modelId,
+        //     Messages = messages,
+        //     System = system,
+        //     InferenceConfig = inferenceConfig,
+        //     AdditionalModelRequestFields = additionalModelRequestFields,
+        //     AdditionalModelResponseFieldPaths = new List<string>(),
+        //     GuardrailConfig = null, // Set if needed
+        //     ToolConfig = null // Set if needed
+        // };
+        //
+        // return converseRequest;
+        throw new NotImplementedException("placeholder - fixing");
     }
 }

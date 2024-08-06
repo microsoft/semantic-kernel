@@ -7,6 +7,7 @@ using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core;
 
 namespace Connectors.Amazon.Core;
 
@@ -15,14 +16,6 @@ namespace Connectors.Amazon.Core;
 /// </summary>
 internal sealed class AI21JambaIOService : IBedrockModelIOService
 {
-    // Define constants for default values
-    private const double DefaultTemperature = 1.0;
-    private const double DefaultTopP = 0.9;
-    private const int DefaultMaxTokens = 4096;
-    private const int DefaultN = 1;
-    private const double DefaultFrequencyPenalty = 0.0;
-    private const double DefaultPresencePenalty = 0.0;
-
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by AI21 Labs Jamba model.
     /// </summary>
@@ -32,23 +25,24 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        var requestBody = new
+        List<AI21JambaRequest.AI21TextGenerationRequest.Msg> messages = new()
         {
-            messages = new[]
+            new AI21JambaRequest.AI21TextGenerationRequest.Msg()
             {
-                new
-                {
-                    role = "user",
-                    content = prompt
-                }
-            },
-            temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", DefaultTemperature),
-            top_p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", DefaultTopP),
-            max_tokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", DefaultMaxTokens),
-            stop = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stop", new List<string>()),
-            n = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "n", DefaultN),
-            frequency_penalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty),
-            presence_penalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "presence_penalty", DefaultPresencePenalty)
+                Role = "user",
+                Content = prompt
+            }
+        };
+        var requestBody = new AI21JambaRequest.AI21TextGenerationRequest()
+        {
+            Messages = messages,
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature"),
+            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "top_p"),
+            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_tokens"),
+            Stop = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(executionSettings?.ExtensionData, "stop"),
+            NumberOfResponses = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "n"),
+            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "frequency_penalty"),
+            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "presence_penalty")
         };
 
         return requestBody;
@@ -87,13 +81,33 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
 
-        var inferenceConfig = new InferenceConfiguration
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens");
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences");
+        var n = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "n");
+        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "frequency_penalty");
+        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "presence_penalty");
+
+        var inferenceConfig = new InferenceConfiguration();
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+
+        var additionalModelRequestFields = new Document();
+        if (n.HasValue)
         {
-            Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-            TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens),
-            StopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []),
-        };
+            additionalModelRequestFields.Add("n", n.Value);
+        }
+        if (frequencyPenalty.HasValue)
+        {
+            additionalModelRequestFields.Add("frequency_penalty", frequencyPenalty.Value);
+        }
+        if (presencePenalty.HasValue)
+        {
+            additionalModelRequestFields.Add("presence_penalty", presencePenalty.Value);
+        }
 
         var converseRequest = new ConverseRequest
         {
@@ -101,12 +115,7 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
             Messages = messages,
             System = systemMessages,
             InferenceConfig = inferenceConfig,
-            AdditionalModelRequestFields = new Document
-            {
-                { "n", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "n", DefaultN) },
-                { "frequency_penalty", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty) },
-                { "presence_penalty", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) }
-            },
+            AdditionalModelRequestFields = additionalModelRequestFields,
             AdditionalModelResponseFieldPaths = []
         };
 
@@ -138,26 +147,41 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
 
-        var inferenceConfig = new InferenceConfiguration
-        {
-            Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-            TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens),
-            StopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []),
-        };
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens");
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences");
+        var n = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "n");
+        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "frequency_penalty");
+        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "presence_penalty");
 
-        var converseRequest = new ConverseStreamRequest
+        var inferenceConfig = new InferenceConfiguration();
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+
+        var additionalModelRequestFields = new Document();
+        if (n.HasValue)
+        {
+            additionalModelRequestFields.Add("n", n.Value);
+        }
+        if (frequencyPenalty.HasValue)
+        {
+            additionalModelRequestFields.Add("frequency_penalty", frequencyPenalty.Value);
+        }
+        if (presencePenalty.HasValue)
+        {
+            additionalModelRequestFields.Add("presence_penalty", presencePenalty.Value);
+        }
+
+        var converseRequest = new ConverseStreamRequest()
         {
             ModelId = modelId,
             Messages = messages,
             System = systemMessages,
             InferenceConfig = inferenceConfig,
-            AdditionalModelRequestFields = new Document
-            {
-                { "n", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "n", DefaultN) },
-                { "frequency_penalty", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty) },
-                { "presence_penalty", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) }
-            },
+            AdditionalModelRequestFields = additionalModelRequestFields,
             AdditionalModelResponseFieldPaths = []
         };
 

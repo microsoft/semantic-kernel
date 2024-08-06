@@ -31,22 +31,23 @@ internal sealed class CohereCommandIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        var requestBody = new
-        {
-            prompt,
-            temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature),
-            p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "p", (double?)DefaultTopP),
-            k = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "k", (double?)DefaultTopK),
-            max_tokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", (int?)DefaultMaxTokens),
-            stop_sequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop_sequences", []),
-            return_likelihoods = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "return_likelihoods", DefaultReturnLikelihoods),
-            stream = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stream", (bool?)DefaultStream),
-            num_generations = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "num_generations", (int?)DefaultNumGenerations),
-            logit_bias = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "logit_bias", new Dictionary<int, double>()),
-            truncate = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "truncate", DefaultTruncate)
-        };
-
-        return requestBody;
+        // var requestBody = new
+        // {
+        //     prompt,
+        //     temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature),
+        //     p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "p", (double?)DefaultTopP),
+        //     k = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "k", (double?)DefaultTopK),
+        //     max_tokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", (int?)DefaultMaxTokens),
+        //     stop_sequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop_sequences", []),
+        //     return_likelihoods = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "return_likelihoods", DefaultReturnLikelihoods),
+        //     stream = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stream", (bool?)DefaultStream),
+        //     num_generations = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "num_generations", (int?)DefaultNumGenerations),
+        //     logit_bias = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "logit_bias", new Dictionary<int, double>()),
+        //     truncate = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "truncate", DefaultTruncate)
+        // };
+        //
+        // return requestBody;
+        throw new NotImplementedException("placeholder - fixing");
     }
     /// <summary>
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.

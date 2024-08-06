@@ -28,15 +28,16 @@ internal sealed class MetaIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        var requestBody = new
-        {
-            prompt,
-            temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", DefaultTemperature),
-            top_p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", DefaultTopP),
-            max_gen_len = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_gen_len", (int?)DefaultMaxGenLen)
-        };
-
-        return requestBody;
+        // var requestBody = new
+        // {
+        //     prompt,
+        //     temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", DefaultTemperature),
+        //     top_p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", DefaultTopP),
+        //     max_gen_len = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_gen_len", (int?)DefaultMaxGenLen)
+        // };
+        //
+        // return requestBody;
+        throw new NotImplementedException("placeholder - fixing");
     }
 
     /// <summary>
@@ -68,29 +69,30 @@ internal sealed class MetaIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-
-        var inferenceConfig = new InferenceConfiguration
-        {
-            Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-            TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
-        };
-
-        var converseRequest = new ConverseRequest
-        {
-            ModelId = modelId,
-            Messages = messages,
-            System = systemMessages,
-            InferenceConfig = inferenceConfig,
-            AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>(),
-            GuardrailConfig = null,
-            ToolConfig = null
-        };
-
-        return converseRequest;
+        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+        //
+        // var inferenceConfig = new InferenceConfiguration
+        // {
+        //     Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+        //     TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
+        //     MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
+        // };
+        //
+        // var converseRequest = new ConverseRequest
+        // {
+        //     ModelId = modelId,
+        //     Messages = messages,
+        //     System = systemMessages,
+        //     InferenceConfig = inferenceConfig,
+        //     AdditionalModelRequestFields = new Document(),
+        //     AdditionalModelResponseFieldPaths = new List<string>(),
+        //     GuardrailConfig = null,
+        //     ToolConfig = null
+        // };
+        //
+        // return converseRequest;
+        throw new NotImplementedException("placeholder - fixing");
     }
 
     /// <summary>
@@ -119,28 +121,29 @@ internal sealed class MetaIOService : IBedrockModelIOService
         ChatHistory chatHistory,
         PromptExecutionSettings? settings = null)
     {
-        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-
-        var inferenceConfig = new InferenceConfiguration
-        {
-            Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-            TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
-        };
-
-        var converseRequest = new ConverseStreamRequest
-        {
-            ModelId = modelId,
-            Messages = messages,
-            System = systemMessages,
-            InferenceConfig = inferenceConfig,
-            AdditionalModelRequestFields = new Document(),
-            AdditionalModelResponseFieldPaths = new List<string>(),
-            GuardrailConfig = null,
-            ToolConfig = null
-        };
-
-        return converseRequest;
+        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+        //
+        // var inferenceConfig = new InferenceConfiguration
+        // {
+        //     Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
+        //     TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
+        //     MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
+        // };
+        //
+        // var converseRequest = new ConverseStreamRequest
+        // {
+        //     ModelId = modelId,
+        //     Messages = messages,
+        //     System = systemMessages,
+        //     InferenceConfig = inferenceConfig,
+        //     AdditionalModelRequestFields = new Document(),
+        //     AdditionalModelResponseFieldPaths = new List<string>(),
+        //     GuardrailConfig = null,
+        //     ToolConfig = null
+        // };
+        //
+        // return converseRequest;
+        throw new NotImplementedException("placeholder - fixing");
     }
 }

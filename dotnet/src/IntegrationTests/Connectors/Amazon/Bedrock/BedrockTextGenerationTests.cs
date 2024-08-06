@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Amazon.Bedrock;
+namespace SemanticKernel.IntegrationTests.Connectors.Amazon;
 
 public class BedrockTextGenerationTests
 {

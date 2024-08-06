@@ -2,6 +2,7 @@
 
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
+using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -66,20 +67,46 @@ internal static class BedrockModelUtilities
             })
             .ToList();
     }
+
     /// <summary>
     /// Gets the prompt execution settings extension data for the model request body build.
+    /// Returns null if the extension data value is not set (default is null if TValue is a nullable type).
     /// </summary>
     /// <param name="extensionData"></param>
     /// <param name="key"></param>
-    /// <param name="defaultValue"></param>
     /// <typeparam name="TValue"></typeparam>
     /// <returns></returns>
-    internal static TValue GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key, TValue defaultValue)
+    internal static TValue? GetExtensionDataValue<TValue>(IDictionary<string, object>? extensionData, string key)
     {
-        if (extensionData?.TryGetValue(key, out object? value) == true && value is TValue typedValue)
+        if (extensionData?.TryGetValue(key, out object? value) == true)
         {
-            return typedValue;
+            try
+            {
+                return (TValue)value;
+            }
+            catch (InvalidCastException)
+            {
+                // Handle the case where the value cannot be cast to TValue
+                return default;
+            }
         }
-        return defaultValue;
+
+        // As long as TValue is nullable this will be properly set to null
+        return default;
+    }
+
+    internal static void SetPropertyIfNotNull<T>( Func<T?> getValue, Action<T> setValue) where T : struct
+    {
+        var value = getValue();
+        if (value.HasValue)
+        {
+            setValue(value.Value);
+        }
+    }
+
+    internal static void SetPropertyIfNotNull<T>(Func<T?> getValue, Action<T?> setValue) where T : class
+    {
+        var value = getValue();
+        setValue(value);
     }
 }
