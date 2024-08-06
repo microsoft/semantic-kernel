@@ -129,22 +129,22 @@ async def test_anthropic_sdk_exception(kernel: Kernel, mock_settings: AnthropicC
         )
 
 
-# @pytest.mark.asyncio
-# async def test_mistral_ai_sdk_exception_streaming(kernel: Kernel, mock_settings: MistralAIChatPromptExecutionSettings):
-#     chat_history = MagicMock()
-#     arguments = KernelArguments()
-#     client = MagicMock(spec=MistralAsyncClient)
-#     client.chat_stream.side_effect = Exception("Test Exception")
+@pytest.mark.asyncio
+async def test_anthropic_sdk_exception_streaming(kernel: Kernel, mock_settings: AnthropicChatPromptExecutionSettings):
+    chat_history = MagicMock()
+    arguments = KernelArguments()
+    client = MagicMock(spec=AsyncAnthropic)
+    client.chat_stream.side_effect = Exception("Test Exception")
 
-#     chat_completion_base = MistralAIChatCompletion(
-#         ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
-#     )
+    chat_completion_base = AnthropicChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
+    )
 
-#     with pytest.raises(ServiceResponseException):
-#         async for content in chat_completion_base.get_streaming_chat_message_contents(
-#             chat_history, mock_settings, kernel=kernel, arguments=arguments
-#         ):
-#             assert content is not None
+    with pytest.raises(ServiceResponseException):
+        async for content in chat_completion_base.get_streaming_chat_message_contents(
+            chat_history, mock_settings, kernel=kernel, arguments=arguments
+        ):
+            assert content is not None
 
 
 def test_anthropic_chat_completion_init(anthropic_unit_test_env) -> None:
@@ -167,7 +167,7 @@ def test_anthropic_chat_completion_init_with_empty_api_key(anthropic_unit_test_e
 
 
 @pytest.mark.parametrize("exclude_list", [["ANTHROPIC_CHAT_MODEL_ID"]], indirect=True)
-def test_mistral_ai_chat_completion_init_with_empty_model_id(anthropic_unit_test_env) -> None:
+def test_anthropic_chat_completion_init_with_empty_model_id(anthropic_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AnthropicChatCompletion(
             env_file_path="test.env",
@@ -175,8 +175,8 @@ def test_mistral_ai_chat_completion_init_with_empty_model_id(anthropic_unit_test
 
 
 def test_prompt_execution_settings_class(anthropic_unit_test_env):
-    mistral_ai_chat_completion = AnthropicChatCompletion()
-    prompt_execution_settings = mistral_ai_chat_completion.get_prompt_execution_settings_class()
+    anthropic_chat_completion = AnthropicChatCompletion()
+    prompt_execution_settings = anthropic_chat_completion.get_prompt_execution_settings_class()
     assert prompt_execution_settings == AnthropicChatPromptExecutionSettings
 
 
