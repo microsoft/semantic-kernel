@@ -23,6 +23,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -211,7 +212,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         if stream_event.delta and hasattr(stream_event.delta, "text"):
             text_content = stream_event.delta.text
         
-        items: list[ITEM_TYPES] = [StreamingTextContent(choice_index=content_block_idx, text=text_content)]
+        items: list[STREAMING_ITEM_TYPES] = [StreamingTextContent(choice_index=content_block_idx, text=text_content)]
         finish_reason = None
 
         if isinstance(stream_event, RawMessageDeltaEvent):
