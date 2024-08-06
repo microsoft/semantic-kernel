@@ -143,10 +143,10 @@ internal partial class ClientCore
 
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
-        var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
-
         for (int requestIndex = 0; ; requestIndex++)
         {
+            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
+
             var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
@@ -207,11 +207,8 @@ internal partial class ClientCore
                 this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", chatCompletion.ToolCalls.OfType<ChatToolCall>().Select(ftc => $"{ftc.FunctionName}({ftc.FunctionArguments})")));
             }
 
-            // Add the original assistant message to the chat messages; this is required for the service
-            // to understand the tool call responses. Also add the result message to the caller's chat
-            // history: if they don't want it, they can remove it, but this makes the data available,
-            // including metadata like usage.
-            chatForRequest.Add(CreateRequestMessage(chatCompletion));
+            // Add the result message to the caller's chat history;
+            // this is required for the service to understand the tool call responses.
             chat.Add(chatMessageContent);
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
@@ -223,7 +220,7 @@ internal partial class ClientCore
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (functionToolCall.Kind != ChatToolCallKind.Function)
                 {
-                    AddResponseMessage(chatForRequest, chat, result: null, "Error: Tool call was not a function call.", functionToolCall, this.Logger);
+                    AddResponseMessage(chat, result: null, "Error: Tool call was not a function call.", functionToolCall, this.Logger);
                     continue;
                 }
 
@@ -235,7 +232,7 @@ internal partial class ClientCore
                 }
                 catch (JsonException)
                 {
-                    AddResponseMessage(chatForRequest, chat, result: null, "Error: Function call arguments were invalid JSON.", functionToolCall, this.Logger);
+                    AddResponseMessage(chat, result: null, "Error: Function call arguments were invalid JSON.", functionToolCall, this.Logger);
                     continue;
                 }
 
@@ -245,14 +242,14 @@ internal partial class ClientCore
                 if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
-                    AddResponseMessage(chatForRequest, chat, result: null, "Error: Function call request for a function that wasn't defined.", functionToolCall, this.Logger);
+                    AddResponseMessage(chat, result: null, "Error: Function call request for a function that wasn't defined.", functionToolCall, this.Logger);
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    AddResponseMessage(chatForRequest, chat, result: null, "Error: Requested function could not be found.", functionToolCall, this.Logger);
+                    AddResponseMessage(chat, result: null, "Error: Requested function could not be found.", functionToolCall, this.Logger);
                     continue;
                 }
 
@@ -287,7 +284,7 @@ internal partial class ClientCore
                 catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
-                    AddResponseMessage(chatForRequest, chat, null, $"Error: Exception while invoking function. {e.Message}", functionToolCall, this.Logger);
+                    AddResponseMessage(chat, null, $"Error: Exception while invoking function. {e.Message}", functionToolCall, this.Logger);
                     continue;
                 }
                 finally
@@ -301,7 +298,7 @@ internal partial class ClientCore
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
-                AddResponseMessage(chatForRequest, chat, stringResult, errorMessage: null, functionToolCall, this.Logger);
+                AddResponseMessage(chat, stringResult, errorMessage: null, functionToolCall, this.Logger);
 
                 // If filter requested termination, returning latest function result.
                 if (invocationContext.Terminate)
@@ -342,10 +339,10 @@ internal partial class ClientCore
         Dictionary<int, string>? functionNamesByIndex = null;
         Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
 
-        var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
-
         for (int requestIndex = 0; ; requestIndex++)
         {
+            var chatForRequest = CreateChatCompletionMessages(chatExecutionSettings, chat);
+
             var toolCallingConfig = this.GetToolCallingConfiguration(kernel, chatExecutionSettings, requestIndex);
 
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chat, toolCallingConfig, kernel);
@@ -478,9 +475,7 @@ internal partial class ClientCore
                 this.Logger.LogDebug("Function call requests: {Requests}", toolCalls.Length);
             }
 
-            // Add the original assistant message to the chat messages; this is required for the service
-            // to understand the tool call responses.
-            chatForRequest.Add(CreateRequestMessage(streamedRole ?? default, content, streamedName, toolCalls));
+            // Add the result message to the caller's chat history; this is required for the service to understand the tool call responses.
             var chatMessageContent = this.CreateChatMessageContent(streamedRole ?? default, content, toolCalls, functionCallContents, metadata, streamedName);
             chat.Add(chatMessageContent);
 
@@ -492,7 +487,7 @@ internal partial class ClientCore
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (string.IsNullOrEmpty(toolCall.FunctionName))
                 {
-                    AddResponseMessage(chatForRequest, chat, result: null, "Error: Tool call was not a function call.", toolCall, this.Logger);
+                    AddResponseMessage(chat, result: null, "Error: Tool call was not a function call.", toolCall, this.Logger);
                     continue;
                 }
 
@@ -504,7 +499,7 @@ internal partial class ClientCore
                 }
                 catch (JsonException)
                 {
-                    AddResponseMessage(chatForRequest, chat, result: null, "Error: Function call arguments were invalid JSON.", toolCall, this.Logger);
+                    AddResponseMessage(chat, result: null, "Error: Function call arguments were invalid JSON.", toolCall, this.Logger);
                     continue;
                 }
 
@@ -514,14 +509,14 @@ internal partial class ClientCore
                 if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
-                    AddResponseMessage(chatForRequest, chat, result: null, "Error: Function call request for a function that wasn't defined.", toolCall, this.Logger);
+                    AddResponseMessage(chat, result: null, "Error: Function call request for a function that wasn't defined.", toolCall, this.Logger);
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    AddResponseMessage(chatForRequest, chat, result: null, "Error: Requested function could not be found.", toolCall, this.Logger);
+                    AddResponseMessage(chat, result: null, "Error: Requested function could not be found.", toolCall, this.Logger);
                     continue;
                 }
 
@@ -556,7 +551,7 @@ internal partial class ClientCore
                 catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
-                    AddResponseMessage(chatForRequest, chat, result: null, $"Error: Exception while invoking function. {e.Message}", toolCall, this.Logger);
+                    AddResponseMessage(chat, result: null, $"Error: Exception while invoking function. {e.Message}", toolCall, this.Logger);
                     continue;
                 }
                 finally
@@ -570,7 +565,7 @@ internal partial class ClientCore
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
-                AddResponseMessage(chatForRequest, chat, stringResult, errorMessage: null, toolCall, this.Logger);
+                AddResponseMessage(chat, stringResult, errorMessage: null, toolCall, this.Logger);
 
                 // If filter requested termination, returning latest function result and breaking request iteration loop.
                 if (invocationContext.Terminate)
@@ -785,26 +780,6 @@ internal partial class ClientCore
         return messages;
     }
 
-    private static ChatMessage CreateRequestMessage(ChatMessageRole chatRole, string content, string? name, ChatToolCall[]? tools)
-    {
-        if (chatRole == ChatMessageRole.User)
-        {
-            return new UserChatMessage(content) { ParticipantName = name };
-        }
-
-        if (chatRole == ChatMessageRole.System)
-        {
-            return new SystemChatMessage(content) { ParticipantName = name };
-        }
-
-        if (chatRole == ChatMessageRole.Assistant)
-        {
-            return new AssistantChatMessage(tools, content) { ParticipantName = name };
-        }
-
-        throw new NotImplementedException($"Role {chatRole} is not implemented");
-    }
-
     private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
     {
         if (message.Role == AuthorRole.System)
@@ -955,26 +930,6 @@ internal partial class ClientCore
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
     }
 
-    private static ChatMessage CreateRequestMessage(OpenAIChatCompletion completion)
-    {
-        if (completion.Role == ChatMessageRole.System)
-        {
-            return ChatMessage.CreateSystemMessage(completion.Content[0].Text);
-        }
-
-        if (completion.Role == ChatMessageRole.Assistant)
-        {
-            return ChatMessage.CreateAssistantMessage(completion);
-        }
-
-        if (completion.Role == ChatMessageRole.User)
-        {
-            return ChatMessage.CreateUserMessage(completion.Content);
-        }
-
-        throw new NotSupportedException($"Role {completion.Role} is not supported.");
-    }
-
     private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel)
     {
         var message = new OpenAIChatMessageContent(completion, targetModel, this.GetChatCompletionMetadata(completion));
@@ -1053,7 +1008,7 @@ internal partial class ClientCore
         return result;
     }
 
-    private static void AddResponseMessage(List<ChatMessage> chatMessages, ChatHistory chat, string? result, string? errorMessage, ChatToolCall toolCall, ILogger logger)
+    private static void AddResponseMessage(ChatHistory chat, string? result, string? errorMessage, ChatToolCall toolCall, ILogger logger)
     {
         // Log any error
         if (errorMessage is not null && logger.IsEnabled(LogLevel.Debug))
@@ -1062,9 +1017,7 @@ internal partial class ClientCore
             logger.LogDebug("Failed to handle tool request ({ToolId}). {Error}", toolCall.Id, errorMessage);
         }
 
-        // Add the tool response message to the chat messages
         result ??= errorMessage ?? string.Empty;
-        chatMessages.Add(new ToolChatMessage(toolCall.Id, result));
 
         // Add the tool response message to the chat history.
         var message = new ChatMessageContent(role: AuthorRole.Tool, content: result, metadata: new Dictionary<string, object?> { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } });
