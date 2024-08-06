@@ -193,14 +193,14 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         // Assert
         Assert.Contains<SessionsRemoteFileMetadata>(result, (item) =>
-            item.Filename == "test.txt" &&
-            item.Size == 680 &&
-            item.LastModifiedTime!.Value.Ticks == 638508470494918207);
+            item.Filename == "test-file.txt" &&
+            item.Size == 516 &&
+            item.LastModifiedTime!.Value.Ticks == 638585580822423944);
 
         Assert.Contains<SessionsRemoteFileMetadata>(result, (item) =>
-            item.Filename == "test2.txt" &&
-            item.Size == 1074 &&
-            item.LastModifiedTime!.Value.Ticks == 638508471084916062);
+            item.Filename == "test-file2.txt" &&
+            item.Size == 211 &&
+            item.LastModifiedTime!.Value.Ticks == 638585580822423944);
     }
 
     [Fact]

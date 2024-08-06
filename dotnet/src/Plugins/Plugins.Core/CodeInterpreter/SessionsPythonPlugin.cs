@@ -230,7 +230,7 @@ public partial class SessionsPythonPlugin
         using var httpClient = this._httpClientFactory.CreateClient();
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}python/files?identifier={this._settings.SessionId}&api-version={ApiVersion}")).ConfigureAwait(false);
+        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}/files?identifier={this._settings.SessionId}&api-version={ApiVersion}")).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -239,13 +239,13 @@ public partial class SessionsPythonPlugin
 
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
-        var files = jsonElementResult.GetProperty("$values");
+        var files = jsonElementResult.GetProperty("value");
 
         var result = new SessionsRemoteFileMetadata[files.GetArrayLength()];
 
         for (var i = 0; i < result.Length; i++)
         {
-            result[i] = JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(files[i].GetRawText())!;
+            result[i] = JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(files[i].GetProperty("properties").GetRawText())!;
         }
 
         return result;
