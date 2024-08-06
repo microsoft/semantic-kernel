@@ -31,9 +31,15 @@ There are some structural differences between dotnet and python that bear a clos
 - Internal static classes
   - Since everything is an object in python, including functions that are often encapsulated by a internal static class in dotnet, there is no need for a internal static class. 
   - Defining the functions in one place and importing the functions in (multiple) other places is a common pattern in python, and is used in the current codebase.
+- Different types of functions/methods
+  - In python there are 4 types of functions that are relevant to designs, function (a regular function, defined outside of a class), method (a function defined within a class), classmethod (a method that is bound to the class and not the instance, and can be called on the class itself), and staticmethod (a method that is not bound to the class or the instance, and can be called on the class or the instance).
 
 ## Design Principles
 These are not generic Python design principles, but rather principles that are specific to the Semantic Kernel project. For more generic python principles, use "The Zen of Python" ([source](https://peps.python.org/pep-0020/)).
+1. **The goal of the python version of dotnet designs is not to complete coverage of all classes in the dotnet design.**
+   - The goal is to maintain the same functionality and behavior, while adhering to pythonic design principles.
+   - This means that in some cases, things like config classes are not implemented, but keyword arguments are used instead, as they are more idiomatic to python, the same with options classes, and many static classes, which are not needed in python.
+   - We also build on pydantic for many of the data classes, as it is a widely used and well maintained library that is idiomatic to python and has the added benefit of easily using validation and serialization as well as limiting boiler plate `__init__` code.
 1. **Base classes and interfaces can be skipped, as long as SOLID is maintained.**
    - Since a user can subclass any class, a abstract base class is not always needed, as long as SOLID is maintained.
    - There are three ways to provide the same behavior to SK users in python, compared to dotnet:
