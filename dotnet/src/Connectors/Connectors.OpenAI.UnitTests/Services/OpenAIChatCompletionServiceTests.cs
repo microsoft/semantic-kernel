@@ -1043,7 +1043,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         this._multiMessageHandlerStub.Dispose();
     }
 
-    private class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
+    private sealed class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
     {
         private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> _callback;
 

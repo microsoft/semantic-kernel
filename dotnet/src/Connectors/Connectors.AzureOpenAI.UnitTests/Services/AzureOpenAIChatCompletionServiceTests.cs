@@ -1062,7 +1062,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         { "text", "text" }
     };
 
-    private class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
+    private sealed class AutoFunctionInvocationFilter : IAutoFunctionInvocationFilter
     {
         private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task> _callback;
 
