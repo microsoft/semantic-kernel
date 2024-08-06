@@ -1,8 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
+using Microsoft.SemanticKernel.Data;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using Xunit;
 using static SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB.AzureCosmosDBMongoDBVectorStoreFixture;
 
@@ -196,6 +200,130 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         Assert.Equal(10, getResult.HotelRating);
     }
 
+    [Fact]
+    public async Task UpsertWithModelWorksCorrectlyAsync()
+    {
+        // Arrange
+        var definition = new VectorStoreRecordDefinition
+        {
+            Properties = new List<VectorStoreRecordProperty>
+            {
+                new VectorStoreRecordKeyProperty("Id", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string))
+            }
+        };
+
+        var model = new TestModel { Id = "key", HotelName = "Test Name" };
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<TestModel>(
+            fixture.MongoDatabase,
+            fixture.TestCollection,
+            new() { VectorStoreRecordDefinition = definition });
+
+        // Act
+        var upsertResult = await sut.UpsertAsync(model);
+        var getResult = await sut.GetAsync(model.Id);
+
+        // Assert
+        Assert.Equal("key", upsertResult);
+
+        Assert.NotNull(getResult);
+        Assert.Equal("key", getResult.Id);
+        Assert.Equal("Test Name", getResult.HotelName);
+    }
+
+    [Fact]
+    public async Task UpsertWithVectorStoreModelWorksCorrectlyAsync()
+    {
+        // Arrange
+        var model = new VectorStoreTestModel { Id = "key", HotelName = "Test Name" };
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<VectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
+
+        // Act
+        var upsertResult = await sut.UpsertAsync(model);
+        var getResult = await sut.GetAsync(model.Id);
+
+        // Assert
+        Assert.Equal("key", upsertResult);
+
+        Assert.NotNull(getResult);
+        Assert.Equal("key", getResult.Id);
+        Assert.Equal("Test Name", getResult.HotelName);
+    }
+
+    [Fact]
+    public async Task UpsertWithBsonModelWorksCorrectlyAsync()
+    {
+        // Arrange
+        var definition = new VectorStoreRecordDefinition
+        {
+            Properties = new List<VectorStoreRecordProperty>
+            {
+                new VectorStoreRecordKeyProperty("Id", typeof(string)),
+                new VectorStoreRecordDataProperty("HotelName", typeof(string))
+            }
+        };
+
+        var model = new BsonTestModel { Id = "key", HotelName = "Test Name" };
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<BsonTestModel>(
+            fixture.MongoDatabase,
+            fixture.TestCollection,
+            new() { VectorStoreRecordDefinition = definition });
+
+        // Act
+        var upsertResult = await sut.UpsertAsync(model);
+        var getResult = await sut.GetAsync(model.Id);
+
+        // Assert
+        Assert.Equal("key", upsertResult);
+
+        Assert.NotNull(getResult);
+        Assert.Equal("key", getResult.Id);
+        Assert.Equal("Test Name", getResult.HotelName);
+    }
+
+    [Fact]
+    public async Task UpsertWithBsonVectorStoreModelWorksCorrectlyAsync()
+    {
+        // Arrange
+        var model = new BsonVectorStoreTestModel { Id = "key", HotelName = "Test Name" };
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<BsonVectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
+
+        // Act
+        var upsertResult = await sut.UpsertAsync(model);
+        var getResult = await sut.GetAsync(model.Id);
+
+        // Assert
+        Assert.Equal("key", upsertResult);
+
+        Assert.NotNull(getResult);
+        Assert.Equal("key", getResult.Id);
+        Assert.Equal("Test Name", getResult.HotelName);
+    }
+
+    [Fact]
+    public async Task UpsertWithBsonVectorStoreWithNameModelWorksCorrectlyAsync()
+    {
+        // Arrange
+        var model = new BsonVectorStoreWithNameTestModel { Id = "key", HotelName = "Test Name" };
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<BsonVectorStoreWithNameTestModel>(fixture.MongoDatabase, fixture.TestCollection);
+
+        // Act
+        var upsertResult = await sut.UpsertAsync(model);
+        var getResult = await sut.GetAsync(model.Id);
+
+        // Assert
+        Assert.Equal("key", upsertResult);
+
+        Assert.NotNull(getResult);
+        Assert.Equal("key", getResult.Id);
+        Assert.Equal("Test Name", getResult.HotelName);
+    }
+
     #region private
 
     private AzureCosmosDBMongoDBHotel CreateTestHotel(string hotelId)
@@ -211,6 +339,53 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
             Description = "This is a great hotel.",
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f },
         };
+    }
+
+    private sealed class TestModel
+    {
+        public string? Id { get; set; }
+
+        public string? HotelName { get; set; }
+    }
+
+    private sealed class VectorStoreTestModel
+    {
+        [VectorStoreRecordKey]
+        public string? Id { get; set; }
+
+        [VectorStoreRecordData(StoragePropertyName = "hotel_name")]
+        public string? HotelName { get; set; }
+    }
+
+    private sealed class BsonTestModel
+    {
+        [BsonId]
+        public string? Id { get; set; }
+
+        [BsonElement("hotel_name")]
+        public string? HotelName { get; set; }
+    }
+
+    private sealed class BsonVectorStoreTestModel
+    {
+        [BsonId]
+        [VectorStoreRecordKey]
+        public string? Id { get; set; }
+
+        [BsonElement("hotel_name")]
+        [VectorStoreRecordData]
+        public string? HotelName { get; set; }
+    }
+
+    private sealed class BsonVectorStoreWithNameTestModel
+    {
+        [BsonId]
+        [VectorStoreRecordKey]
+        public string? Id { get; set; }
+
+        [BsonElement("bson_hotel_name")]
+        [VectorStoreRecordData(StoragePropertyName = "storage_hotel_name")]
+        public string? HotelName { get; set; }
     }
 
     #endregion

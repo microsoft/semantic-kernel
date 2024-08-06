@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.SemanticKernel.Data;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Conventions;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
@@ -47,9 +48,6 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
     /// <summary>A dictionary that maps from a property name to the storage name.</summary>
     private readonly Dictionary<string, string> _storagePropertyNames;
 
-    /// <summary>A dictionary that maps from a storage property name to the data model property name.</summary>
-    private readonly Dictionary<string, string> _reversedStoragePropertyNames;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordMapper{TRecord}"/> class.
     /// </summary>
@@ -68,84 +66,18 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
         // Use Mongo reserved key property name as storage key property name
         this._storagePropertyNames[keyProperty.Name] = AzureCosmosDBMongoDBConstants.MongoReservedKeyPropertyName;
 
-        this._reversedStoragePropertyNames = ReverseDictionary(storagePropertyNames);
+        var conventionPack = new ConventionPack
+        {
+            new IgnoreExtraElementsConvention(ignoreExtraElements: true),
+            new AzureCosmosDBMongoDBNamingConvention(this._storagePropertyNames)
+        };
+
+        ConventionRegistry.Register(nameof(AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>), conventionPack, type => true);
     }
 
     public BsonDocument MapFromDataToStorageModel(TRecord dataModel)
-        => MapDocument(dataModel.ToBsonDocument(), this._storagePropertyNames);
+        => dataModel.ToBsonDocument();
 
     public TRecord MapFromStorageToDataModel(BsonDocument storageModel, StorageToDataModelMapperOptions options)
-        => BsonSerializer.Deserialize<TRecord>(MapDocument(storageModel, this._reversedStoragePropertyNames));
-
-    #region private
-
-    private static BsonDocument MapDocument(BsonDocument document, Dictionary<string, string> propertyMappings)
-    {
-        var newDocument = new BsonDocument();
-
-        foreach (var element in document)
-        {
-            BsonValue newValue;
-            if (element.Value.IsBsonDocument)
-            {
-                newValue = MapDocument(element.Value.AsBsonDocument, propertyMappings);
-            }
-            else if (element.Value.IsBsonArray)
-            {
-                newValue = MapDocumentInArray(element.Value.AsBsonArray, propertyMappings);
-            }
-            else
-            {
-                newValue = element.Value;
-            }
-
-            if (propertyMappings.TryGetValue(element.Name, out var newName))
-            {
-                newDocument[newName] = newValue;
-            }
-            else
-            {
-                newDocument[element.Name] = newValue;
-            }
-        }
-
-        return newDocument;
-    }
-
-    private static BsonArray MapDocumentInArray(BsonArray array, Dictionary<string, string> propertyMappings)
-    {
-        var newArray = new BsonArray();
-
-        foreach (var item in array)
-        {
-            if (item.IsBsonDocument)
-            {
-                newArray.Add(MapDocument(item.AsBsonDocument, propertyMappings));
-            }
-            else if (item.IsBsonArray)
-            {
-                newArray.Add(MapDocumentInArray(item.AsBsonArray, propertyMappings));
-            }
-            else
-            {
-                newArray.Add(item);
-            }
-        }
-
-        return newArray;
-    }
-
-    private static Dictionary<string, string> ReverseDictionary(Dictionary<string, string> original)
-    {
-        var reversed = new Dictionary<string, string>();
-
-        foreach (var kvp in original)
-        {
-            reversed[kvp.Value] = kvp.Key;
-        }
-
-        return reversed;
-    }
-
-    #endregion
+        => BsonSerializer.Deserialize<TRecord>(storageModel);
 }

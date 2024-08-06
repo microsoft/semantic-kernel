@@ -462,6 +462,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             expectedPropertyName: "hotel_name");
     }
 
+    [Fact]
+    public async Task UpsertWithBsonVectorStoreWithNameModelWorksCorrectlyAsync()
+    {
+        await this.TestUpsertWithModeAsync<BsonVectorStoreWithNameTestModel>(
+            dataModel: new BsonVectorStoreWithNameTestModel { Id = "key", HotelName = "Test Name" },
+            expectedPropertyName: "bson_hotel_name");
+    }
+
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()
     {
         { ["collection-2"], "collection-2", true },
@@ -548,6 +556,17 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
 
         [BsonElement("hotel_name")]
         [VectorStoreRecordData]
+        public string? HotelName { get; set; }
+    }
+
+    private sealed class BsonVectorStoreWithNameTestModel
+    {
+        [BsonId]
+        [VectorStoreRecordKey]
+        public string? Id { get; set; }
+
+        [BsonElement("bson_hotel_name")]
+        [VectorStoreRecordData(StoragePropertyName = "storage_hotel_name")]
         public string? HotelName { get; set; }
     }
 #pragma warning restore CA1812
