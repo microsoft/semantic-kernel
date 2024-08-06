@@ -7,7 +7,7 @@ namespace Connectors.Amazon.Core;
 /// <summary>
 /// Anthropic Claude completion response.
 /// </summary>
-public class ClaudeResponse
+internal class ClaudeResponse
 {
     /// <summary>
     /// The resulting completion up to and excluding the stop sequences.

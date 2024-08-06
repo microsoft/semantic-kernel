@@ -16,19 +16,6 @@ namespace Connectors.Amazon.Core;
 internal sealed class CohereCommandRIOService : IBedrockModelIOService
 // ReSharper restore InconsistentNaming
 {
-    // Define constants for default values
-    private const float DefaultTemperature = 0.3f;
-    private const float DefaultTopP = 0.75f;
-    private const float DefaultTopK = 0.0f;
-    private const string DefaultPromptTruncation = "OFF";
-    private const float DefaultFrequencyPenalty = 0.0f;
-    private const float DefaultPresencePenalty = 0.0f;
-    private const int DefaultSeed = 0;
-    private const bool DefaultReturnPrompt = false;
-    private const bool DefaultRawPrompting = false;
-    private const int DefaultMaxTokens = 4096;
-    private const bool DefaultSearchQueriesOnly = false;
-
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Cohere Command R.
     /// </summary>
@@ -38,36 +25,39 @@ internal sealed class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        var defaultChatHistory = new List<Dictionary<string, string>>
+        var chatHistory = BedrockModelUtilities.GetExtensionDataValue<List<CommandRRequest.ChatMessage>>(executionSettings?.ExtensionData, "chat_history");
+        if (chatHistory == null || chatHistory.Count == 0)
         {
-            new()
+            chatHistory = new List<CommandRRequest.ChatMessage>
             {
-                { "role", "USER" },
-                { "message", prompt }
-            }
+                new()
+                {
+                    Role = "USER",
+                    Message = prompt
+                }
+            };
+        }
+        var requestBody = new CommandRRequest.CommandRTextGenerationRequest()
+        {
+            Message = prompt,
+            ChatHistory = chatHistory,
+            Documents = BedrockModelUtilities.GetExtensionDataValue<List<CommandRRequest.Document>?>(executionSettings?.ExtensionData, "documents"),
+            SearchQueriesOnly = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "search_queries_only"),
+            Preamble = BedrockModelUtilities.GetExtensionDataValue<string?>(executionSettings?.ExtensionData, "preamble"),
+            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_tokens"),
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "temperature"),
+            TopP = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "p"),
+            TopK = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "k"),
+            PromptTruncation = BedrockModelUtilities.GetExtensionDataValue<string?>(executionSettings?.ExtensionData, "prompt_truncation"),
+            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "frequency_penalty"),
+            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "presence_penalty"),
+            Seed = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "seed"),
+            ReturnPrompt = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "return_prompt"),
+            StopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>?>(executionSettings?.ExtensionData, "stop_sequences"),
+            RawPrompting = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "raw_prompting")
         };
-        // var requestBody = new
-        // {
-        //     message = prompt,
-        //     chat_history = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "chat_history", defaultChatHistory),
-        //     documents = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "documents", new List<Document>()),
-        //     search_queries_only = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "search_queries_only", DefaultSearchQueriesOnly),
-        //     preamble = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "preamble", ""),
-        //     max_tokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", DefaultMaxTokens),
-        //     temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", DefaultTemperature),
-        //     p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "p", DefaultTopP),
-        //     k = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "k", DefaultTopK),
-        //     prompt_truncation = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation),
-        //     frequency_penalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty),
-        //     presence_penalty = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "presence_penalty", DefaultPresencePenalty),
-        //     seed = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "seed", DefaultSeed),
-        //     return_prompt = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "return_prompt", DefaultReturnPrompt),
-        //     stop_sequences = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stop_sequences", new List<string>()),
-        //     raw_prompting = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "raw_prompting", DefaultRawPrompting)
-        // };
-        //
-        // return requestBody;
-        throw new NotImplementedException("placeholder - fixing");
+
+        return requestBody;
     }
 
     /// <summary>
@@ -81,7 +71,7 @@ internal sealed class CohereCommandRIOService : IBedrockModelIOService
         response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
         memoryStream.Position = 0;
         using var reader = new StreamReader(memoryStream);
-        var responseBody = JsonSerializer.Deserialize<CommandRTextResponse>(reader.ReadToEnd());
+        var responseBody = JsonSerializer.Deserialize<CommandRResponse>(reader.ReadToEnd());
         var textContents = new List<TextContent>();
         if (!string.IsNullOrEmpty(responseBody?.Text))
         {
@@ -99,37 +89,68 @@ internal sealed class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        throw new NotImplementedException("placeholder - fixing");
-        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        // var converseRequest = new ConverseRequest
-        // {
-        //     ModelId = modelId,
-        //     Messages = messages,
-        //     System = systemMessages,
-        //     InferenceConfig = new InferenceConfiguration
-        //     {
-        //         Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", DefaultTemperature),
-        //         TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "p", DefaultTopP),
-        //         MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens)
-        //     },
-        //     AdditionalModelRequestFields = new Document
-        //     {
-        //         { "k", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "k", DefaultTopK) },
-        //         { "prompt_truncation", BedrockModelUtilities.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation) },
-        //         { "frequency_penalty", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty) },
-        //         { "presence_penalty", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) },
-        //         { "seed", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed) },
-        //         { "return_prompt", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt) },
-        //         { "stop_sequences", new Document(BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []).Select(s => new Document(s)).ToList()) },
-        //         { "raw_prompting", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", DefaultRawPrompting) }
-        //     },
-        //     AdditionalModelResponseFieldPaths = new List<string>(),
-        //     GuardrailConfig = null,
-        //     ToolConfig = null
-        // };
-        //
-        // return converseRequest;
+        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "p");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens");
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences");
+
+        var inferenceConfig = new InferenceConfiguration();
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+
+        var additionalModelRequestFields = new Document();
+        var k = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "k");
+        if (k.HasValue)
+        {
+            additionalModelRequestFields.Add("k", k.Value);
+        }
+        var promptTruncation = BedrockModelUtilities.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation");
+        if (!string.IsNullOrEmpty(promptTruncation))
+        {
+            additionalModelRequestFields.Add("prompt_truncation", promptTruncation);
+        }
+        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "frequency_penalty");
+        if (frequencyPenalty.HasValue)
+        {
+            additionalModelRequestFields.Add("frequency_penalty", frequencyPenalty.Value);
+        }
+        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "presence_penalty");
+        if (presencePenalty.HasValue)
+        {
+            additionalModelRequestFields.Add("presence_penalty", presencePenalty.Value);
+        }
+        var seed = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "seed");
+        if (seed.HasValue)
+        {
+            additionalModelRequestFields.Add("seed", seed.Value);
+        }
+        var returnPrompt = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "return_prompt");
+        if (returnPrompt.HasValue)
+        {
+            additionalModelRequestFields.Add("return_prompt", returnPrompt.Value);
+        }
+        var rawPrompting = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "raw_prompting");
+        if (rawPrompting.HasValue)
+        {
+            additionalModelRequestFields.Add("raw_prompting", rawPrompting.Value);
+        }
+        var converseRequest = new ConverseRequest
+        {
+            ModelId = modelId,
+            Messages = messages,
+            System = systemMessages,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = additionalModelRequestFields,
+            AdditionalModelResponseFieldPaths = new List<string>(),
+            GuardrailConfig = null,
+            ToolConfig = null
+        };
+
+        return converseRequest;
     }
 
     /// <summary>
@@ -155,41 +176,67 @@ internal sealed class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        throw new NotImplementedException("placeholder - fixing");
-        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        //
-        // var inferenceConfig = new InferenceConfiguration
-        // {
-        //     Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", DefaultTemperature),
-        //     TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "p", DefaultTopP),
-        //     MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", DefaultMaxTokens)
-        // };
-        //
-        // var additionalModelRequestFields = new Document
-        // {
-        //     { "k", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "k", DefaultTopK) },
-        //     { "prompt_truncation", BedrockModelUtilities.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation", DefaultPromptTruncation) },
-        //     { "frequency_penalty", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "frequency_penalty", DefaultFrequencyPenalty) },
-        //     { "presence_penalty", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "presence_penalty", DefaultPresencePenalty) },
-        //     { "seed", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "seed", DefaultSeed) },
-        //     { "return_prompt", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "return_prompt", DefaultReturnPrompt) },
-        //     { "stop_sequences", new Document(BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences", []).Select(s => new Document(s)).ToList()) },
-        //     { "raw_prompting", BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "raw_prompting", false) }
-        // };
-        //
-        // var converseRequest = new ConverseStreamRequest
-        // {
-        //     ModelId = modelId,
-        //     Messages = messages,
-        //     System = systemMessages,
-        //     InferenceConfig = inferenceConfig,
-        //     AdditionalModelRequestFields = additionalModelRequestFields,
-        //     AdditionalModelResponseFieldPaths = new List<string>(),
-        //     GuardrailConfig = null,
-        //     ToolConfig = null
-        // };
-        //
-        // return converseRequest;
+        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "p");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens");
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences");
+
+        var inferenceConfig = new InferenceConfiguration();
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+
+        var additionalModelRequestFields = new Document();
+        var k = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "k");
+        if (k.HasValue)
+        {
+            additionalModelRequestFields.Add("k", k.Value);
+        }
+        var promptTruncation = BedrockModelUtilities.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation");
+        if (!string.IsNullOrEmpty(promptTruncation))
+        {
+            additionalModelRequestFields.Add("prompt_truncation", promptTruncation);
+        }
+        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "frequency_penalty");
+        if (frequencyPenalty.HasValue)
+        {
+            additionalModelRequestFields.Add("frequency_penalty", frequencyPenalty.Value);
+        }
+        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "presence_penalty");
+        if (presencePenalty.HasValue)
+        {
+            additionalModelRequestFields.Add("presence_penalty", presencePenalty.Value);
+        }
+        var seed = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "seed");
+        if (seed.HasValue)
+        {
+            additionalModelRequestFields.Add("seed", seed.Value);
+        }
+        var returnPrompt = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "return_prompt");
+        if (returnPrompt.HasValue)
+        {
+            additionalModelRequestFields.Add("return_prompt", returnPrompt.Value);
+        }
+        var rawPrompting = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "raw_prompting");
+        if (rawPrompting.HasValue)
+        {
+            additionalModelRequestFields.Add("raw_prompting", rawPrompting.Value);
+        }
+        var converseRequest = new ConverseStreamRequest
+        {
+            ModelId = modelId,
+            Messages = messages,
+            System = systemMessages,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = additionalModelRequestFields,
+            AdditionalModelResponseFieldPaths = new List<string>(),
+            GuardrailConfig = null,
+            ToolConfig = null
+        };
+
+        return converseRequest;
     }
 }

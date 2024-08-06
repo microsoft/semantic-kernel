@@ -7,7 +7,7 @@ namespace Connectors.Amazon.Core;
 /// <summary>
 /// Cohere Command R Text Generation Response body.
 /// </summary>
-internal sealed class CommandRTextResponse
+internal sealed class CommandRResponse
 {
     /// <summary>
     /// Unique identifier for chat completion

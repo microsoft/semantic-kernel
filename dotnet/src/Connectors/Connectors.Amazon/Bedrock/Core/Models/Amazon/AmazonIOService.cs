@@ -7,6 +7,7 @@ using Amazon.Runtime.Documents;
 using Connectors.Amazon.Models.Amazon;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 namespace Connectors.Amazon.Core;
 
@@ -15,11 +16,6 @@ namespace Connectors.Amazon.Core;
 /// </summary>
 internal sealed class AmazonIOService : IBedrockModelIOService
 {
-    // Define constants for default values
-    private const float DefaultTemperature = 0.7f;
-    private const float DefaultTopP = 0.9f;
-    private const int DefaultMaxTokenCount = 512;
-    private static readonly List<string> s_defaultStopSequences = new() { "User:" };
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Amazon Titan.
     /// </summary>
@@ -29,25 +25,25 @@ internal sealed class AmazonIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        // float temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", DefaultTemperature);
-        // float topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "topP", DefaultTopP);
-        // int maxTokenCount = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount);
-        // List<string> stopSequences = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stopSequences", s_defaultStopSequences);
-        //
-        // var requestBody = new
-        // {
-        //     inputText = prompt,
-        //     textGenerationConfig = new
-        //     {
-        //         temperature,
-        //         topP,
-        //         maxTokenCount,
-        //         stopSequences
-        //     }
-        // };
-        // return requestBody;
-        throw new NotImplementedException("placeholder - fixing");
+        var temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "topP");
+        var maxTokenCount = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "maxTokenCount");
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(executionSettings?.ExtensionData, "stopSequences");
+
+        var requestBody = new TitanRequest.TitanTextGenerationRequest()
+        {
+            InputText = prompt,
+            TextGenerationConfig = new TitanRequest.AmazonTitanTextGenerationConfig()
+            {
+                MaxTokenCount = maxTokenCount,
+                TopP = topP,
+                Temperature = temperature,
+                StopSequences = stopSequences
+            }
+        };
+        return requestBody;
     }
+
     /// <summary>
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
     /// </summary>
@@ -69,6 +65,7 @@ internal sealed class AmazonIOService : IBedrockModelIOService
         textContents.Add(new TextContent(outputText));
         return textContents;
     }
+
     /// <summary>
     /// Builds the ConverseRequest object for the Bedrock ConverseAsync call with request parameters required by Amazon Titan.
     /// </summary>
@@ -78,29 +75,32 @@ internal sealed class AmazonIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        //
-        // var inferenceConfig = new InferenceConfiguration
-        // {
-        //     Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", DefaultTemperature),
-        //     TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "topP", DefaultTopP),
-        //     MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount),
-        // };
-        //
-        // var converseRequest = new ConverseRequest
-        // {
-        //     ModelId = modelId,
-        //     Messages = messages,
-        //     System = systemMessages,
-        //     InferenceConfig = inferenceConfig,
-        //     AdditionalModelRequestFields = new Document(),
-        //     AdditionalModelResponseFieldPaths = new List<string>()
-        // };
-        //
-        // return converseRequest;
-        throw new NotImplementedException("placeholder - fixing");
+        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "topP");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "maxTokenCount");
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stopSequences");
+
+        var inferenceConfig = new InferenceConfiguration();
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+
+        var converseRequest = new ConverseRequest
+        {
+            ModelId = modelId,
+            Messages = messages,
+            System = systemMessages,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>()
+        };
+
+        return converseRequest;
     }
+
     /// <summary>
     /// Extracts the text generation streaming output from the Amazon Titan response object structure.
     /// </summary>
@@ -114,6 +114,7 @@ internal sealed class AmazonIOService : IBedrockModelIOService
             yield return text;
         }
     }
+
     /// <summary>
     /// Builds the ConverseStreamRequest object for the Converse Bedrock API call, including building the Amazon Titan Request object and mapping parameters to the ConverseStreamRequest object.
     /// </summary>
@@ -123,27 +124,29 @@ internal sealed class AmazonIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        //
-        // var inferenceConfig = new InferenceConfiguration
-        // {
-        //     Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", DefaultTemperature),
-        //     TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "topP", DefaultTopP),
-        //     MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "maxTokenCount", DefaultMaxTokenCount),
-        // };
-        //
-        // var converseStreamRequest = new ConverseStreamRequest
-        // {
-        //     ModelId = modelId,
-        //     Messages = messages,
-        //     System = systemMessages,
-        //     InferenceConfig = inferenceConfig,
-        //     AdditionalModelRequestFields = new Document(),
-        //     AdditionalModelResponseFieldPaths = []
-        // };
-        //
-        // return converseStreamRequest;
-        throw new NotImplementedException("placeholder - fixing");
+        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "topP");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "maxTokenCount");
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stopSequences");
+
+        var inferenceConfig = new InferenceConfiguration();
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+
+        var converseRequest = new ConverseStreamRequest()
+        {
+            ModelId = modelId,
+            Messages = messages,
+            System = systemMessages,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>()
+        };
+
+        return converseRequest;
     }
 }

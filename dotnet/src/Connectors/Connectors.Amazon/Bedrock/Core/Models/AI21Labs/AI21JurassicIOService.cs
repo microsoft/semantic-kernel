@@ -15,11 +15,6 @@ namespace Connectors.Amazon.Core;
 /// </summary>
 internal sealed class AI21JurassicIOService : IBedrockModelIOService
 {
-    // Defined constants for default values
-    private const double DefaultTemperature = 0.5;
-    private const double DefaultTopP = 0.5;
-    private const int DefaultMaxTokens = 200;
-
     /// <summary>
     /// Builds InvokeModelRequest Body parameter to be serialized.
     /// </summary>

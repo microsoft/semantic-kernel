@@ -14,11 +14,6 @@ namespace Connectors.Amazon.Core;
 /// </summary>
 internal sealed class MetaIOService : IBedrockModelIOService
 {
-    // Define constants for default values
-    private const double DefaultTemperature = 0.5f;
-    private const double DefaultTopP = 0.9f;
-    private const int DefaultMaxGenLen = 512;
-
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Meta Llama.
     /// </summary>
@@ -28,16 +23,14 @@ internal sealed class MetaIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        // var requestBody = new
-        // {
-        //     prompt,
-        //     temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", DefaultTemperature),
-        //     top_p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", DefaultTopP),
-        //     max_gen_len = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_gen_len", (int?)DefaultMaxGenLen)
-        // };
-        //
-        // return requestBody;
-        throw new NotImplementedException("placeholder - fixing");
+        var requestBody = new LlamaRequest.LlamaTextGenerationRequest()
+        {
+            Prompt = prompt,
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature"),
+            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "top_p"),
+            MaxGenLen = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_gen_len")
+        };
+        return requestBody;
     }
 
     /// <summary>
@@ -51,7 +44,7 @@ internal sealed class MetaIOService : IBedrockModelIOService
         response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
         memoryStream.Position = 0;
         using var reader = new StreamReader(memoryStream);
-        var responseBody = JsonSerializer.Deserialize<LlamaTextResponse>(reader.ReadToEnd());
+        var responseBody = JsonSerializer.Deserialize<LlamaResponse>(reader.ReadToEnd());
         var textContents = new List<TextContent>();
         if (!string.IsNullOrEmpty(responseBody?.Generation))
         {
@@ -69,30 +62,31 @@ internal sealed class MetaIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        //
-        // var inferenceConfig = new InferenceConfiguration
-        // {
-        //     Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-        //     TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-        //     MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
-        // };
-        //
-        // var converseRequest = new ConverseRequest
-        // {
-        //     ModelId = modelId,
-        //     Messages = messages,
-        //     System = systemMessages,
-        //     InferenceConfig = inferenceConfig,
-        //     AdditionalModelRequestFields = new Document(),
-        //     AdditionalModelResponseFieldPaths = new List<string>(),
-        //     GuardrailConfig = null,
-        //     ToolConfig = null
-        // };
-        //
-        // return converseRequest;
-        throw new NotImplementedException("placeholder - fixing");
+        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_gen_len");
+
+        var inferenceConfig = new InferenceConfiguration();
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
+
+        var converseRequest = new ConverseRequest
+        {
+            ModelId = modelId,
+            Messages = messages,
+            System = systemMessages,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>(),
+            GuardrailConfig = null,
+            ToolConfig = null
+        };
+
+        return converseRequest;
     }
 
     /// <summary>
@@ -121,29 +115,30 @@ internal sealed class MetaIOService : IBedrockModelIOService
         ChatHistory chatHistory,
         PromptExecutionSettings? settings = null)
     {
-        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        //
-        // var inferenceConfig = new InferenceConfiguration
-        // {
-        //     Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", (float)DefaultTemperature),
-        //     TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", (float)DefaultTopP),
-        //     MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_gen_len", DefaultMaxGenLen)
-        // };
-        //
-        // var converseRequest = new ConverseStreamRequest
-        // {
-        //     ModelId = modelId,
-        //     Messages = messages,
-        //     System = systemMessages,
-        //     InferenceConfig = inferenceConfig,
-        //     AdditionalModelRequestFields = new Document(),
-        //     AdditionalModelResponseFieldPaths = new List<string>(),
-        //     GuardrailConfig = null,
-        //     ToolConfig = null
-        // };
-        //
-        // return converseRequest;
-        throw new NotImplementedException("placeholder - fixing");
+        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_gen_len");
+
+        var inferenceConfig = new InferenceConfiguration();
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
+
+        var converseRequest = new ConverseStreamRequest()
+        {
+            ModelId = modelId,
+            Messages = messages,
+            System = systemMessages,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>(),
+            GuardrailConfig = null,
+            ToolConfig = null
+        };
+
+        return converseRequest;
     }
 }

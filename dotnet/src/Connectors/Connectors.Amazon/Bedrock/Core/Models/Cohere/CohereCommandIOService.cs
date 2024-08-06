@@ -13,15 +13,6 @@ namespace Connectors.Amazon.Core;
 /// </summary>
 internal sealed class CohereCommandIOService : IBedrockModelIOService
 {
-    // Define constants for default values
-    private const double DefaultTemperature = 0.9;
-    private const double DefaultTopP = 0.75;
-    private const int DefaultMaxTokens = 20;
-    private const double DefaultTopK = 0.0;
-    private const string DefaultReturnLikelihoods = "NONE";
-    private const bool DefaultStream = false;
-    private const int DefaultNumGenerations = 1;
-    private const string DefaultTruncate = "END";
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Cohere Command.
     /// </summary>
@@ -31,23 +22,22 @@ internal sealed class CohereCommandIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        // var requestBody = new
-        // {
-        //     prompt,
-        //     temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", (double?)DefaultTemperature),
-        //     p = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "p", (double?)DefaultTopP),
-        //     k = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "k", (double?)DefaultTopK),
-        //     max_tokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", (int?)DefaultMaxTokens),
-        //     stop_sequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(executionSettings?.ExtensionData, "stop_sequences", []),
-        //     return_likelihoods = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "return_likelihoods", DefaultReturnLikelihoods),
-        //     stream = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stream", (bool?)DefaultStream),
-        //     num_generations = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "num_generations", (int?)DefaultNumGenerations),
-        //     logit_bias = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "logit_bias", new Dictionary<int, double>()),
-        //     truncate = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "truncate", DefaultTruncate)
-        // };
-        //
-        // return requestBody;
-        throw new NotImplementedException("placeholder - fixing");
+        var requestBody = new CommandRequest.CohereCommandTextGenerationRequest()
+        {
+            Prompt = prompt,
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature"),
+            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "p"),
+            TopK = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "k"),
+            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_tokens"),
+            StopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>?>(executionSettings?.ExtensionData, "stop_sequences"),
+            ReturnLikelihoods = BedrockModelUtilities.GetExtensionDataValue<string?>(executionSettings?.ExtensionData, "return_likelihoods"),
+            Stream = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "stream"),
+            NumGenerations = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "num_generations"),
+            LogitBias = BedrockModelUtilities.GetExtensionDataValue<Dictionary<int, double>?>(executionSettings?.ExtensionData, "logit_bias"),
+            Truncate = BedrockModelUtilities.GetExtensionDataValue<string?>(executionSettings?.ExtensionData, "truncate")
+        };
+
+        return requestBody;
     }
     /// <summary>
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
@@ -60,7 +50,7 @@ internal sealed class CohereCommandIOService : IBedrockModelIOService
         response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
         memoryStream.Position = 0;
         using var reader = new StreamReader(memoryStream);
-        var responseBody = JsonSerializer.Deserialize<CommandTextResponse>(reader.ReadToEnd());
+        var responseBody = JsonSerializer.Deserialize<CommandResponse>(reader.ReadToEnd());
         var textContents = new List<TextContent>();
         if (responseBody?.Generations is not { Count: > 0 })
         {

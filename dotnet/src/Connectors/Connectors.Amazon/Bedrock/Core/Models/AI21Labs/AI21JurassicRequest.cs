@@ -13,7 +13,7 @@ internal static class AI21JurassicRequest
     /// The AI21 Labs Jurassic Text Generation request object.
     /// </summary>
     [Serializable]
-    public class AI21JurassicTextGenerationRequest
+    internal class AI21JurassicTextGenerationRequest
     {
         /// <summary>
         /// The input prompt as required by AI21 Labs Jurassic.
@@ -67,7 +67,7 @@ internal static class AI21JurassicRequest
     /// Fields that can be added to the penalty objects.
     /// </summary>
     [Serializable]
-    public class CountPenalty
+    internal class CountPenalty
     {
         /// <summary>
         /// Scale of the penalty.
@@ -109,7 +109,7 @@ internal static class AI21JurassicRequest
     /// Fields that can be added to the penalty objects.
     /// </summary>
     [Serializable]
-    public class PresencePenalty
+    internal class PresencePenalty
     {
         /// <summary>
         /// Scale of the penalty.
@@ -157,7 +157,7 @@ internal static class AI21JurassicRequest
     /// Fields that can be added to the penalty objects.
     /// </summary>
     [Serializable]
-    public class FrequencyPenalty
+    internal class FrequencyPenalty
     {
         /// <summary>
         /// Scale of the penalty.

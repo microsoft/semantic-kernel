@@ -14,19 +14,6 @@ namespace Connectors.Amazon.Core;
 /// </summary>
 internal sealed class MistralIOService : IBedrockModelIOService
 {
-    // Define constants for default values
-    private const float DefaultTemperatureInstruct = 0.5f;
-    private const float DefaultTopPInstruct = 0.9f;
-    private const int DefaultMaxTokensInstruct = 512;
-    private const int DefaultTopKInstruct = 50;
-    private static readonly List<string> s_defaultStopSequencesInstruct = new();
-
-    private const float DefaultTemperatureNonInstruct = 0.7f;
-    private const float DefaultTopPNonInstruct = 1.0f;
-    private const int DefaultMaxTokensNonInstruct = 8192;
-    private const int DefaultTopKNonInstruct = 0;
-    private static readonly List<string> s_defaultStopSequencesNonInstruct = new();
-
     /// <summary>
     /// Builds InvokeModel request Body parameter with structure as required by Mistral.
     /// </summary>
@@ -36,25 +23,23 @@ internal sealed class MistralIOService : IBedrockModelIOService
     /// <returns></returns>
     public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
     {
-        // var isInstructModel = modelId.Contains("instruct", StringComparison.OrdinalIgnoreCase);
-        // var temperature = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "temperature", isInstructModel ? DefaultTemperatureInstruct : (double?)DefaultTemperatureNonInstruct);
-        // var topP = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_p", isInstructModel ? DefaultTopPInstruct : (double?)DefaultTopPNonInstruct);
-        // var maxTokens = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "max_tokens", isInstructModel ? DefaultMaxTokensInstruct : (int?)DefaultMaxTokensNonInstruct);
-        // var stop = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "stop", isInstructModel ? s_defaultStopSequencesInstruct : s_defaultStopSequencesNonInstruct);
-        // var topK = BedrockModelUtilities.GetExtensionDataValue(executionSettings?.ExtensionData, "top_k", isInstructModel ? DefaultTopKInstruct : (int?)DefaultTopKNonInstruct);
-        //
-        // var requestBody = new
-        // {
-        //     prompt,
-        //     max_tokens = maxTokens,
-        //     stop,
-        //     temperature,
-        //     top_p = topP,
-        //     top_k = topK
-        // };
-        //
-        // return requestBody;
-        throw new NotImplementedException("placeholder - fixing");
+        var temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "top_p");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_tokens");
+        var stop = BedrockModelUtilities.GetExtensionDataValue<List<string>?>(executionSettings?.ExtensionData, "stop");
+        var topK = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "top_k");
+
+        var requestBody = new MistralRequest.MistralTextGenerationRequest()
+        {
+            Prompt = prompt,
+            MaxTokens = maxTokens,
+            StopSequences = stop,
+            Temperature = temperature,
+            TopP = topP,
+            TopK = topK
+        };
+
+        return requestBody;
     }
 
     /// <summary>
@@ -68,7 +53,7 @@ internal sealed class MistralIOService : IBedrockModelIOService
         response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
         memoryStream.Position = 0;
         using var reader = new StreamReader(memoryStream);
-        var responseBody = JsonSerializer.Deserialize<MistralTextResponse>(reader.ReadToEnd());
+        var responseBody = JsonSerializer.Deserialize<MistralResponse>(reader.ReadToEnd());
         var textContents = new List<TextContent>();
         if (responseBody?.Outputs is not { Count: > 0 })
         {
@@ -87,26 +72,28 @@ internal sealed class MistralIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        // var isInstructModel = modelId.Contains("instruct", StringComparison.OrdinalIgnoreCase);
-        // var temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", isInstructModel ? DefaultTemperatureInstruct : DefaultTemperatureNonInstruct);
-        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        // var converseRequest = new ConverseRequest
-        // {
-        //     ModelId = modelId,
-        //     Messages = messages,
-        //     System = systemMessages,
-        //     InferenceConfig = new InferenceConfiguration
-        //     {
-        //         Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", temperature),
-        //         TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", isInstructModel ? DefaultTopPInstruct : DefaultTopPNonInstruct),
-        //         MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", isInstructModel ? DefaultMaxTokensInstruct : DefaultMaxTokensNonInstruct)
-        //     },
-        //     AdditionalModelRequestFields = new Document(),
-        //     AdditionalModelResponseFieldPaths = new List<string>()
-        // };
-        // return converseRequest;
-        throw new NotImplementedException("placeholder - fixing");
+        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens");
+
+        var inferenceConfig = new InferenceConfiguration();
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
+
+        var converseRequest = new ConverseRequest
+        {
+            ModelId = modelId,
+            Messages = messages,
+            System = systemMessages,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>()
+        };
+        return converseRequest;
     }
 
     /// <summary>
@@ -139,25 +126,27 @@ internal sealed class MistralIOService : IBedrockModelIOService
     /// <returns></returns>
     public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
     {
-        // var isInstructModel = modelId.Contains("instruct", StringComparison.OrdinalIgnoreCase);
-        // var temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", isInstructModel ? DefaultTemperatureInstruct : DefaultTemperatureNonInstruct);
-        // var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
-        // var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        // var converseRequest = new ConverseStreamRequest()
-        // {
-        //     ModelId = modelId,
-        //     Messages = messages,
-        //     System = systemMessages,
-        //     InferenceConfig = new InferenceConfiguration
-        //     {
-        //         Temperature = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "temperature", temperature),
-        //         TopP = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "top_p", isInstructModel ? DefaultTopPInstruct : DefaultTopPNonInstruct),
-        //         MaxTokens = BedrockModelUtilities.GetExtensionDataValue(settings?.ExtensionData, "max_tokens", isInstructModel ? DefaultMaxTokensInstruct : DefaultMaxTokensNonInstruct)
-        //     },
-        //     AdditionalModelRequestFields = new Document(),
-        //     AdditionalModelResponseFieldPaths = new List<string>()
-        // };
-        // return converseRequest;
-        throw new NotImplementedException("placeholder - fixing");
+        var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
+        var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
+
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p");
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens");
+
+        var inferenceConfig = new InferenceConfiguration();
+        BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
+        BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
+
+        var converseRequest = new ConverseStreamRequest()
+        {
+            ModelId = modelId,
+            Messages = messages,
+            System = systemMessages,
+            InferenceConfig = inferenceConfig,
+            AdditionalModelRequestFields = new Document(),
+            AdditionalModelResponseFieldPaths = new List<string>()
+        };
+        return converseRequest;
     }
 }

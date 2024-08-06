@@ -397,11 +397,11 @@ public class BedrockTextGenerationServiceTests
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new InvokeModelResponse
             {
-                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new CommandTextResponse
+                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new CommandResponse
                 {
                     Id = "my-request-id",
                     Prompt = "Write a greeting.",
-                    Generations = new List<CommandTextResponse.Generation>
+                    Generations = new List<CommandResponse.Generation>
                     {
                         new() {
                             Id = "generation-id",
@@ -477,7 +477,7 @@ public class BedrockTextGenerationServiceTests
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new InvokeModelResponse
             {
-                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LlamaTextResponse
+                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LlamaResponse
                 {
                     Generation = "Hello! This is a mock Llama response.",
                     PromptTokenCount = 10,
@@ -535,8 +535,7 @@ public class BedrockTextGenerationServiceTests
             {
                 { "temperature", 0.8 },
                 { "top_p", 0.95 },
-                { "max_tokens", 256 },
-                { "stop", new List<string> { "</end>" } }
+                { "max_tokens", 256 }
             }
         };
         mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelRequest>()))
@@ -547,9 +546,9 @@ public class BedrockTextGenerationServiceTests
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new InvokeModelResponse
             {
-                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new MistralTextResponse
+                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new MistralResponse
                 {
-                    Outputs = new List<MistralTextResponse.Output>
+                    Outputs = new List<MistralResponse.Output>
                     {
                         new() {
                             Text = "Hello! This is a mock Mistral response.",
@@ -590,9 +589,5 @@ public class BedrockTextGenerationServiceTests
 
         Assert.True(requestBodyRoot.TryGetProperty("max_tokens", out var maxTokensProperty));
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], maxTokensProperty.GetInt32());
-
-        Assert.True(requestBodyRoot.TryGetProperty("stop", out var stopSequencesProperty));
-        var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
-        Assert.Equal(executionSettings.ExtensionData["stop"], stopSequences);
     }
 }

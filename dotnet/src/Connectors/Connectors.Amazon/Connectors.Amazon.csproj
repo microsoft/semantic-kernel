@@ -25,6 +25,10 @@
       <Folder Include="Bedrock\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Amazon.UnitTests"/>
+    </ItemGroup>
+
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props"/>
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props"/>
 
