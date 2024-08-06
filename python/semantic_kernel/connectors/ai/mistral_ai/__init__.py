@@ -4,10 +4,8 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
     MistralAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
-from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_text_embedding import MistralAITextEmbedding
 
 __all__ = [
     "MistralAIChatCompletion",
     "MistralAIChatPromptExecutionSettings",
-    "MistralAITextEmbedding",
 ]
