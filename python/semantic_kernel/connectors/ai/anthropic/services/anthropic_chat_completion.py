@@ -34,7 +34,7 @@ from semantic_kernel.exceptions.service_exceptions import (
 )
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
-from .utils import finish_reason_from_anthropic_to_semantic_kernel
+from .utils import ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP, AnthropicFinishReason
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -193,7 +193,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         if content.text:
             items.append(TextContent(text=content.text))
 
-        finish_reason = finish_reason_from_anthropic_to_semantic_kernel(response.stop_reason)
+        finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[AnthropicFinishReason(response.stop_reason)]
         return ChatMessageContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
@@ -218,7 +218,8 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         finish_reason = None
 
         if isinstance(stream_event, RawMessageDeltaEvent):
-            finish_reason = finish_reason_from_anthropic_to_semantic_kernel(stream_event.delta.stop_reason)
+            anthropic_finish_reason = AnthropicFinishReason(stream_event.delta.stop_reason)
+            finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[anthropic_finish_reason]
             metadata["usage"]["output_tokens"] = stream_event.usage.output_tokens
 
         return StreamingChatMessageContent(

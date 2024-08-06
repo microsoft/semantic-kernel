@@ -2,7 +2,6 @@
 
 import logging
 from enum import Enum
-from typing import Literal
 
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
 
@@ -18,18 +17,9 @@ class AnthropicFinishReason(str, Enum):
     TOOL_USE = "tool_use" 
 
 
-def finish_reason_from_anthropic_to_semantic_kernel(
-    finish_reason: Literal["end_turn", "max_tokens", "stop_sequence", "tool_use"] | None,
-) -> SemanticKernelFinishReason | None:
-    """Convert a Anthropic FinishReason to a Semantic Kernel FinishReason.
-
-    This is best effort and may not cover all cases as the enums are not identical.
-    """
-    if finish_reason == AnthropicFinishReason.END:
-        return SemanticKernelFinishReason.STOP
-    if finish_reason == AnthropicFinishReason.MAX_TOKENS:
-        return SemanticKernelFinishReason.LENGTH
-    if finish_reason == AnthropicFinishReason.TOOL_USE:
-        return SemanticKernelFinishReason.TOOL_CALLS
-
-    return None
+# map finish reasons from Anthropic to Semantic Kernel
+ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP = {
+    AnthropicFinishReason.END: SemanticKernelFinishReason.STOP,
+    AnthropicFinishReason.MAX_TOKENS: SemanticKernelFinishReason.LENGTH,
+    AnthropicFinishReason.TOOL_USE: SemanticKernelFinishReason.TOOL_CALLS,
+}
