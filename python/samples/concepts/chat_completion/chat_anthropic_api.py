@@ -37,6 +37,7 @@ chat_history = ChatHistory(system_message=None)
 chat_history.add_user_message("Hi there, who are you?")
 chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need")
 
+
 async def chat() -> bool:
     try:
         user_input = input("User:> ")
