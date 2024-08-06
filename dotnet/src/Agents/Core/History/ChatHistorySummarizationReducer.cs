@@ -158,7 +158,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     }
 
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistorySummarizationReducer), this._thresholdCount, this._targetCount);
+    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistorySummarizationReducer), this._thresholdCount, this._targetCount, this.SummarizationInstructions, this.UseSingleSummary);
 
     private readonly IChatCompletionService _service;
     private readonly int _thresholdCount;
