@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -13,7 +14,7 @@ namespace Agents;
 /// Demonstrate usage of <see cref="KernelFunctionTerminationStrategy"/> and <see cref="KernelFunctionSelectionStrategy"/>
 /// to manage <see cref="AgentGroupChat"/> execution.
 /// </summary>
-public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(output)
+public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     protected override bool ForceOpenAI => true;
 
@@ -154,20 +155,20 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         Console.WriteLine(">>>> AGGREGATED CHAT");
         Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-        await foreach (ChatMessageContent content in chat.GetChatMessagesAsync(personalShopperAgent).Reverse())
+        await foreach (ChatMessageContent message in chat.GetChatMessagesAsync(personalShopperAgent).Reverse())
         {
-            Console.WriteLine($">>>> {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            WriteAgentChatMessage(message);
         }
 
         async Task InvokeChatAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.AddChatMessage(message);
+            this.WriteAgentChatMessage(message);
 
-            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
-
-            await foreach (ChatMessageContent content in chat.InvokeAsync(personalShopperAgent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(personalShopperAgent))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                WriteAgentChatMessage(response);
             }
 
             Console.WriteLine($"\n# IS COMPLETE: {chat.IsComplete}");

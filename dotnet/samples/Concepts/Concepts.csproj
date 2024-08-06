@@ -40,7 +40,10 @@
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
-  
+
+  <PropertyGroup>
+    <IncludeAgentUtilities>true</IncludeAgentUtilities>
+  </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
 
   <ItemGroup>

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 using OpenAI;
 using OpenAI.Assistants;
+using OpenAI.Files;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
@@ -53,7 +55,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="config">Configuration for accessing the Assistants API service.</param>
+    /// <param name="config">Configuration for accessing the API service.</param>
     /// <param name="definition">The assistant definition.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
@@ -86,7 +88,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Retrieve a list of assistant definitions: <see cref="OpenAIAssistantDefinition"/>.
     /// </summary>
-    /// <param name="config">Configuration for accessing the Assistants API service.</param>
+    /// <param name="config">Configuration for accessing the API service.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An list of <see cref="OpenAIAssistantDefinition"/> objects.</returns>
     public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListDefinitionsAsync(
@@ -107,7 +109,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Retrieve a <see cref="OpenAIAssistantAgent"/> by identifier.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="config">Configuration for accessing the Assistants API service.</param>
+    /// <param name="config">Configuration for accessing the API service.</param>
     /// <param name="id">The agent identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
@@ -162,6 +164,26 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
 
         return await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Uploads an file for the purpose of using with assistant.
+    /// </summary>
+    /// <param name="config">Configuration for accessing the API service.</param>
+    /// <param name="stream">The content to upload</param>
+    /// <param name="name">The name of the file</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The file identifier</returns>
+    /// <remarks>
+    /// Use the <see cref="FileClient"/> directly for more advanced file operations.
+    /// </remarks>
+    public static async Task<string> UploadFileAsync(OpenAIServiceConfiguration config, Stream stream, string name, CancellationToken cancellationToken = default)
+    {
+        FileClient client = config.CreateFileClient();
+
+        OpenAIFileInfo fileInfo = await client.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
+
+        return fileInfo.Id;
     }
 
     /// <summary>
@@ -303,7 +325,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         }
 
         IReadOnlyList<string>? fileIds = (IReadOnlyList<string>?)model.ToolResources?.CodeInterpreter?.FileIds;
-        string? vectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.Single();
+        string? vectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.SingleOrDefault();
         bool enableJsonResponse = model.ResponseFormat is not null && model.ResponseFormat == AssistantResponseFormat.JsonObject;
 
         return
@@ -315,6 +337,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 Instructions = model.Instructions,
                 CodeInterpreterFileIds = fileIds,
                 EnableCodeInterpreter = model.Tools.Any(t => t is CodeInterpreterToolDefinition),
+                EnableFileSearch = model.Tools.Any(t => t is FileSearchToolDefinition),
                 Metadata = model.Metadata,
                 ModelId = model.Model,
                 EnableJsonResponse = enableJsonResponse,
@@ -333,7 +356,10 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 Description = definition.Description,
                 Instructions = definition.Instructions,
                 Name = definition.Name,
-                ToolResources = AssistantToolResourcesFactory.GenerateToolResources(definition.VectorStoreId, definition.EnableCodeInterpreter ? definition.CodeInterpreterFileIds : null),
+                ToolResources =
+                    AssistantToolResourcesFactory.GenerateToolResources(
+                        definition.EnableFileSearch ? definition.VectorStoreId : null,
+                        definition.EnableCodeInterpreter ? definition.CodeInterpreterFileIds : null),
                 ResponseFormat = definition.EnableJsonResponse ? AssistantResponseFormat.JsonObject : AssistantResponseFormat.Auto,
                 Temperature = definition.Temperature,
                 NucleusSamplingFactor = definition.TopP,
@@ -358,7 +384,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
             assistantCreationOptions.Tools.Add(ToolDefinition.CreateCodeInterpreter());
         }
 
-        if (!string.IsNullOrWhiteSpace(definition.VectorStoreId))
+        if (definition.EnableFileSearch)
         {
             assistantCreationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
         }

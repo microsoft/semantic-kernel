@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -12,7 +11,7 @@ namespace Agents;
 /// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
 /// produce image content displays the requested charts.
 /// </summary>
-public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(output)
+public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     /// <summary>
     /// Target Open AI services.
@@ -25,7 +24,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
-        OpenAIServiceConfiguration config = GetOpenAIConfiguration();
+        OpenAIServiceConfiguration config = this.GetOpenAIConfiguration();
 
         FileClient fileClient = config.CreateFileClient();
 
@@ -40,6 +39,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
                     Name = AgentName,
                     EnableCodeInterpreter = true,
                     ModelId = this.Model,
+                    Metadata = AssistantSampleMetadata,
                 });
 
         // Create a chat for agent interaction.
@@ -71,48 +71,14 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.AddChatMessage(new(AuthorRole.User, input));
+            this.WriteAgentChatMessage(message);
 
-            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
-
-            await foreach (var message in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                if (!string.IsNullOrWhiteSpace(message.Content))
-                {
-                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
-                }
-
-                foreach (var fileReference in message.Items.OfType<FileReferenceContent>())
-                {
-                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: @{fileReference.FileId}");
-
-                    string downloadPath = await DownloadFileContentAsync(fileReference.FileId);
-
-                    Console.WriteLine($"# {message.Role}: @{fileReference.FileId} downloaded to {downloadPath}");
-                }
+                this.WriteAgentChatMessage(response);
             }
         }
-
-        async Task<string> DownloadFileContentAsync(string fileId)
-        {
-            string filePath = Path.Combine(Environment.CurrentDirectory, $"{fileId}.jpg");
-            BinaryData content = await fileClient.DownloadFileAsync(fileId);
-            File.WriteAllBytes(filePath, content.ToArray());
-
-            Process.Start(
-                new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    Arguments = $"/C start {filePath}"
-                });
-
-            return filePath;
-        }
     }
-
-    private OpenAIServiceConfiguration GetOpenAIConfiguration()
-        =>
-            this.UseOpenAIConfig ?
-                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
-                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

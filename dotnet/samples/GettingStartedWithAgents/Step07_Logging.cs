@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -7,11 +8,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace GettingStarted;
 
 /// <summary>
-/// Demonstrate creation of <see cref="AgentChat"/> with <see cref="AgentGroupChatSettings"/>
-/// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
-/// number of agent interactions.
+/// A repeat of <see cref="Step03_Chat"/> with logging enabled via assignment
+/// of a <see cref="LoggerFactory"/> to <see cref="AgentChat.LoggerFactory"/>.
 /// </summary>
-public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
+/// <remarks>
+/// Samples become super noisy with logging always enabled.
+/// </remarks>
+public class Step07_Logging(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -19,7 +22,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         You are an art director who has opinions about copywriting born of a love for David Ogilvy.
         The goal is to determine if the given copy is acceptable to print.
         If so, state that it is approved.
-        If not, provide insight on how to refine suggested copy without example.
+        If not, provide insight on how to refine suggested copy without examples.
         """;
 
     private const string CopyWriterName = "CopyWriter";
@@ -34,7 +37,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         """;
 
     [Fact]
-    public async Task UseAgentGroupChatWithTwoAgentsAsync()
+    public async Task UseLoggerFactoryWithAgentGroupChatAsync()
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =
@@ -43,6 +46,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
                 Instructions = ReviewerInstructions,
                 Name = ReviewerName,
                 Kernel = this.CreateKernelWithChatCompletion(),
+                LoggerFactory = this.LoggerFactory,
             };
 
         ChatCompletionAgent agentWriter =
@@ -51,12 +55,15 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
                 Instructions = CopyWriterInstructions,
                 Name = CopyWriterName,
                 Kernel = this.CreateKernelWithChatCompletion(),
+                LoggerFactory = this.LoggerFactory,
             };
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
             new(agentWriter, agentReviewer)
             {
+                // This is all that is required to enable logging across the agent framework/
+                LoggerFactory = this.LoggerFactory,
                 ExecutionSettings =
                     new()
                     {
@@ -74,16 +81,16 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
             };
 
         // Invoke chat and display messages.
-        string input = "concept: maps made out of egg cartons.";
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
-        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+        ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
+        chat.AddChatMessage(input);
+        this.WriteAgentChatMessage(input);
 
-        await foreach (ChatMessageContent content in chat.InvokeAsync())
+        await foreach (ChatMessageContent response in chat.InvokeAsync())
         {
-            Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            this.WriteAgentChatMessage(response);
         }
 
-        Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
+        Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy

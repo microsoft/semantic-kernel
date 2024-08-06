@@ -11,7 +11,7 @@ namespace Agents;
 /// Demonstrate <see cref="ChatCompletionAgent"/> agent interacts with
 /// <see cref="OpenAIAssistantAgent"/> when it produces image output.
 /// </summary>
-public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
+public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     /// <summary>
     /// Target OpenAI services.
@@ -27,7 +27,7 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task AnalyzeDataAndGenerateChartAsync()
     {
-        OpenAIServiceConfiguration config = GetOpenAIConfiguration();
+        OpenAIServiceConfiguration config = this.GetOpenAIConfiguration();
 
         FileClient fileClient = config.CreateFileClient();
 
@@ -42,6 +42,7 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
                     Name = AnalystName,
                     EnableCodeInterpreter = true,
                     ModelId = this.Model,
+                    Metadata = AssistantSampleMetadata,
                 });
 
         ChatCompletionAgent summaryAgent =
@@ -88,32 +89,15 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
         {
             if (!string.IsNullOrWhiteSpace(input))
             {
+                ChatMessageContent message = new(AuthorRole.User, input);
                 chat.AddChatMessage(new(AuthorRole.User, input));
-                Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+                this.WriteAgentChatMessage(message);
             }
 
-            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                if (!string.IsNullOrWhiteSpace(message.Content))
-                {
-                    Console.WriteLine($"\n# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
-                }
-
-                foreach (FileReferenceContent fileReference in message.Items.OfType<FileReferenceContent>())
-                {
-                    Console.WriteLine($"\t* Generated image - @{fileReference.FileId}");
-                    BinaryData fileContent = await fileClient.DownloadFileAsync(fileReference.FileId!);
-                    string filePath = Path.ChangeExtension(Path.GetTempFileName(), ".png");
-                    await File.WriteAllBytesAsync($"{filePath}.png", fileContent.ToArray());
-                    Console.WriteLine($"\t* Local path - {filePath}");
-                }
+                this.WriteAgentChatMessage(response);
             }
         }
     }
-
-    private OpenAIServiceConfiguration GetOpenAIConfiguration()
-        =>
-            this.UseOpenAIConfig ?
-                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
-                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

@@ -44,6 +44,11 @@ public sealed class OpenAIAssistantDefinition
     public bool EnableCodeInterpreter { get; init; }
 
     /// <summary>
+    /// Set if file-search is enabled.
+    /// </summary>
+    public bool EnableFileSearch { get; init; }
+
+    /// <summary>
     /// Set if json response-format is enabled.
     /// </summary>
     public bool EnableJsonResponse { get; init; }
@@ -71,7 +76,7 @@ public sealed class OpenAIAssistantDefinition
     public float? TopP { get; init; }
 
     /// <summary>
-    /// Enables file-search if specified.
+    /// Requires file-search if specified.
     /// </summary>
     public string? VectorStoreId { get; init; }
 

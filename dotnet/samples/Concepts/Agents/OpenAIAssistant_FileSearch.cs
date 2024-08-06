@@ -12,7 +12,7 @@ namespace Agents;
 /// <summary>
 /// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(output)
+public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     /// <summary>
     /// Retrieval tool not supported on Azure OpenAI.
@@ -22,7 +22,7 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task UseRetrievalToolWithOpenAIAssistantAgentAsync()
     {
-        OpenAIServiceConfiguration config = GetOpenAIConfiguration();
+        OpenAIServiceConfiguration config = this.GetOpenAIConfiguration();
 
         FileClient fileClient = config.CreateFileClient();
 
@@ -47,12 +47,13 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
                 config,
                 new()
                 {
-                    ModelId = this.Model,
                     VectorStoreId = vectorStore.Id,
+                    ModelId = this.Model,
+                    Metadata = AssistantSampleMetadata,
                 });
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input
         try
@@ -71,20 +72,14 @@ public class OpenAIAssistant_FileSearch(ITestOutputHelper output) : BaseTest(out
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.AddChatMessage(new(AuthorRole.User, input));
+            this.WriteAgentChatMessage(message);
 
-            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
-
-            await foreach (var content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteAgentChatMessage(response);
             }
         }
     }
-
-    private OpenAIServiceConfiguration GetOpenAIConfiguration()
-        =>
-            this.UseOpenAIConfig ?
-                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
-                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 }

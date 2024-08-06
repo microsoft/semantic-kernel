@@ -19,18 +19,18 @@ internal static class AssistantToolResourcesFactory
     /// <param name="codeInterpreterFileIds">An optionallist of file-identifiers for the 'code_interpreter' tool.</param>
     public static ToolResources? GenerateToolResources(string? vectorStoreId, IReadOnlyList<string>? codeInterpreterFileIds)
     {
-        bool hasFileSearch = !string.IsNullOrWhiteSpace(vectorStoreId);
+        bool hasVectorStore = !string.IsNullOrWhiteSpace(vectorStoreId);
         bool hasCodeInterpreterFiles = (codeInterpreterFileIds?.Count ?? 0) > 0;
 
         ToolResources? toolResources = null;
 
-        if (hasFileSearch || hasCodeInterpreterFiles)
+        if (hasVectorStore || hasCodeInterpreterFiles)
         {
             toolResources =
                 new ToolResources()
                 {
                     FileSearch =
-                        hasFileSearch ?
+                        hasVectorStore ?
                             new FileSearchToolResources()
                             {
                                 VectorStoreIds = [vectorStoreId!],
