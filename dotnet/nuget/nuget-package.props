@@ -5,8 +5,8 @@
 
     <VersionPrefix>1.14.1</VersionPrefix>
 =======
-    <VersionPrefix>1.16.2</VersionPrefix>
->>>>>>> semantic-kernel/dieo
+    <VersionPrefix>1.15.0</VersionPrefix>
+>>>>>>> Stashed changes
 
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -57,6 +57,7 @@ internal sealed class SqlServerClient : ISqlServerClient
                 IF OBJECT_ID(N'{fullTableName}', N'U') IS NULL
                 CREATE TABLE {fullTableName} (
                     [key] nvarchar(255) collate Latin1_General_100_BIN2 not null,
+                    [key] nvarchar(255) collate latin1_general_bin2 not null,
                     [metadata] {metadataType} not null,
                     [embedding] varbinary(8000),
                     [timestamp] datetimeoffset,

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -26,7 +26,7 @@ public class ChatHistoryChannel : AgentChannel
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
-        // Capture the current message count to evaluate history mutation.
+<<<        // Capture the current message count to evaluate history mutation.
         int messageCount = this._history.Count;
         HashSet<ChatMessageContent> mutatedHistory = [];
 
@@ -35,7 +35,11 @@ public class ChatHistoryChannel : AgentChannel
 
         ChatMessageContent? yieldMessage = null;
         await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
-        {
+>>>>>>>+Updated upstrea
+====
+           await foreach (var message in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
+>>>>>>>+Stashed changes
+     {
             // Capture all messages that have been included in the mutated the history.
             for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)
             {

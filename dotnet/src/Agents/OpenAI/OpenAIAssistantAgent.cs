@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -302,6 +302,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
         return channel;
     }
+        this.Logger.LogDebug("[{MethodName}] Creating assistant thread", nameof(CreateChannelAsync));
+
+        AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
     internal void ThrowIfDeleted()
     {

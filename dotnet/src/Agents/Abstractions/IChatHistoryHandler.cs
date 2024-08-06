@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -28,5 +28,6 @@ public interface IChatHistoryHandler
     /// <returns>Asynchronous enumeration of streaming content.</returns>
     public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
+        IReadOnlyList<ChatMessageContent> history,
         CancellationToken cancellationToken = default);
 }

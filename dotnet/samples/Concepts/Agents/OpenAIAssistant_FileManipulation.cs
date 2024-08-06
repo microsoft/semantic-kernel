@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -45,6 +45,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
 
         // Create a chat for agent interaction.
         AgentGroupChat chat = new();
+        var chat = new AgentGroupChat();
 
         // Respond to user input
         try
@@ -71,6 +72,11 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
 
                 foreach (AnnotationContent annotation in content.Items.OfType<AnnotationContent>())
+            await foreach (var content in chat.InvokeAsync(agent))
+            {
+                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+
+                foreach (var annotation in content.Items.OfType<AnnotationContent>())
                 {
                     Console.WriteLine($"\n* '{annotation.Quote}' => {annotation.FileId}");
                     BinaryContent fileContent = await fileService.GetFileContentAsync(annotation.FileId!);

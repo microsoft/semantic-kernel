@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -59,6 +59,8 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         // Create a chat for agent interaction.
         AgentGroupChat chat =
             new(agentWriter, agentReviewer)
+        var chat =
+            new AgentGroupChat(agentWriter, agentReviewer)
             {
                 ExecutionSettings =
                     new()

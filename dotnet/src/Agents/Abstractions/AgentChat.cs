@@ -228,6 +228,8 @@ public abstract class AgentChat
                 this.History.Add(message);
 
                 if (isVisible)
+                // Don't expose function-call and function-result messages to caller.
+                if (message.Items.All(i => i is FunctionCallContent || i is FunctionResultContent))
                 {
                     // Yield message to caller
                     yield return message;
@@ -240,7 +242,7 @@ public abstract class AgentChat
                 this._agentChannels
                     .Where(kvp => kvp.Value != channel)
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
-            this._broadcastQueue.Enqueue(channelRefs, messages);
+            this._broadcastQueue.Enqueue(channelRefs, messages.Where(m => m.Role != AuthorRole.Tool).ToArray());
 
             this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
         }
