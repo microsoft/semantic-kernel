@@ -40,10 +40,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class AnthropicChatCompletion(ChatCompletionClientBase):
-
-    input_tokens: int = 0
-    output_tokens: int = 0
-    total_tokens: int = 0
     async_client: AsyncAnthropic
     
     def __init__(
@@ -125,8 +121,6 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 ex,
         ) from ex
         
-        self.store_usage(response)
-
         metadata: dict[str, Any] = {"id": response.id}
         # Check if usage exists and has a value, then add it to the metadata
         if hasattr(response, "usage") and response.usage is not None:
@@ -238,9 +232,3 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         """Create a request settings object."""
         return AnthropicChatPromptExecutionSettings
     
-    def store_usage(self, response):
-        """Store the usage information from the response."""
-        if not isinstance(response, AsyncGenerator):
-            logger.info(f"Anthropic usage: {response.usage}")
-            self.input_tokens += response.usage.input_tokens
-            self.output_tokens += response.usage.output_tokens
