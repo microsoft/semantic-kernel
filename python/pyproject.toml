@@ -57,8 +57,9 @@ chromadb = { version = ">=0.4.13,<0.6.0", optional = true}
 google-cloud-aiplatform = { version = "^1.60.0", optional = true}
 google-generativeai = { version = "^0.7.2", optional = true}
 # hugging face
-transformers = { version = "^4.28.1", extras=["torch"], optional = true}
+transformers = { version = "^4.28.1", extras=['torch'], optional = true}
 sentence-transformers = { version = "^2.2.2", optional = true}
+torch = {version = "2.2.2", optional = true}
 # mongo
 motor = { version = "^3.3.2", optional = true }
 # notebooks
@@ -73,20 +74,20 @@ ollama = { version = "^0.2.1", optional = true}
 # pinecone
 pinecone-client = { version = ">=3.0.0", optional = true}
 # postgres
-psycopg = { version="^3.1.9", extras=["binary","pool"], optional = true}
+psycopg = { version="^3.2.1", extras=["binary","pool"], optional = true}
 # qdrant
 qdrant-client = { version = '^1.9', optional = true}
 # redis
-redis = { version = "^4.6.0", optional = true}
+redis = { version = "^5.0.7", extras=['hiredis'], optional = true}
+types-redis = { version="^4.6.0.20240425", optional = true }
 # usearch
 usearch = { version = "^2.9", optional = true}
 pyarrow = { version = ">=12.0.1,<18.0.0", optional = true}
 weaviate-client = { version = ">=3.18,<5.0", optional = true}
-ruff = "0.5.2"
+pandas = {version = "^2.2.2", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = ">=3.7.1"
-ruff = ">=0.5"
 ipykernel = "^6.29.4"
 nbconvert = "^7.16.4"
 pytest = "^8.2.1"
@@ -96,6 +97,7 @@ pytest-asyncio = "^0.23.7"
 snoop = "^0.4.3"
 mypy = ">=1.10.0"
 types-PyYAML = "^6.0.12.20240311"
+ruff = "^0.5.2"
 
 [tool.poetry.group.unit-tests]
 optional = true
@@ -109,8 +111,14 @@ mistralai = "^0.4.1"
 ollama = "^0.2.1"
 google-cloud-aiplatform = "^1.60.0"
 google-generativeai = "^0.7.2"
-transformers = { version = "^4.28.1", extras=["torch"]}
-sentence-transformers = "^2.2.2"
+transformers = { version = "^4.28.1", extras=['torch']}
+sentence-transformers = { version = "^2.2.2"}
+torch = {version = "2.2.2"}
+# qdrant
+qdrant-client = '^1.9'
+# redis
+redis = { version = "^5.0.7", extras=['hiredis']}
+pandas = {version = "^2.2.2"}
 
 [tool.poetry.group.tests]
 optional = true
@@ -129,8 +137,9 @@ chromadb = ">=0.4.13,<0.6.0"
 google-cloud-aiplatform = "^1.60.0"
 google-generativeai = "^0.7.2"
 # hugging face
-transformers = { version = "^4.28.1", extras=["torch"]}
-sentence-transformers = "^2.2.2"
+transformers = { version = "^4.28.1", extras=['torch']}
+sentence-transformers = { version = "^2.2.2"}
+torch = {version = "2.2.2"}
 # milvus
 pymilvus = ">=2.3,<2.4.4"
 milvus = { version = ">=2.3,<2.3.8", markers = 'sys_platform != "win32"'}
@@ -147,21 +156,23 @@ psycopg = { version="^3.1.9", extras=["binary","pool"]}
 # qdrant
 qdrant-client = '^1.9'
 # redis
-redis = "^4.6.0"
+redis = { version="^5.0.7", extras=['hiredis']}
+types-redis = { version="^4.6.0.20240425" }
 # usearch
 usearch = "^2.9"
 pyarrow = ">=12.0.1,<18.0.0"
 # weaviate
 weaviate-client = ">=3.18,<5.0"
+pandas = {version = "^2.2.2"}
 
 # Extras are exposed to pip, this allows a user to easily add the right dependencies to their environment
 [tool.poetry.extras]
-all = ["transformers", "sentence-transformers", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "google", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
+all = ["transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "mistralai", "ollama", "google", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel", "motor"]
 
 azure = ["azure-ai-inference", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "msgraph-sdk"]
 chromadb = ["chromadb"]
 google = ["google-cloud-aiplatform", "google-generativeai"]
-hugging_face = ["transformers", "sentence-transformers"]
+hugging_face = ["transformers", "sentence-transformers", "torch"]
 milvus = ["pymilvus", "milvus"]
 mistralai = ["mistralai"]
 ollama = ["ollama"]
@@ -170,7 +181,7 @@ notebooks = ["ipykernel"]
 pinecone = ["pinecone-client"]
 postgres = ["psycopg"]
 qdrant = ["qdrant-client"]
-redis = ["redis"]
+redis = ["redis", "types-redis"]
 usearch = ["usearch", "pyarrow"]
 weaviate = ["weaviate-client"]
 
