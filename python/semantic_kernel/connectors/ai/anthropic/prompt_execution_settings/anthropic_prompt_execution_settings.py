@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Literal
+from typing import Any
 
 from pydantic import Field, model_validator
 

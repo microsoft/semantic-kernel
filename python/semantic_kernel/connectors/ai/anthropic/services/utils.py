@@ -10,6 +10,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AnthropicFinishReason(str, Enum):
+    """Finish reasons for Anthropic API."""
+
     END = "end_turn"
     MAX_TOKENS = "max_tokens"
     STOP_SEQUENCE = "stop_sequence"
