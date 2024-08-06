@@ -85,7 +85,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         super().__init__(
             async_client=async_client,
             service_id=service_id or anthropic_settings.chat_model_id,
-            ai_model_id=ai_model_id or anthropic_settings.chat_model_id,
+            ai_model_id=anthropic_settings.chat_model_id,
         )
 
     async def get_chat_message_contents(
