@@ -470,6 +470,82 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             expectedPropertyName: "bson_hotel_name");
     }
 
+    [Fact]
+    public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
+    {
+        // Arrange
+        var hotel = new AzureCosmosDBMongoDBHotelModel("key") { HotelName = "Test Name" };
+
+        var mockMapper = new Mock<IVectorStoreRecordMapper<AzureCosmosDBMongoDBHotelModel, BsonDocument>>();
+
+        mockMapper
+            .Setup(l => l.MapFromDataToStorageModel(It.IsAny<AzureCosmosDBMongoDBHotelModel>()))
+            .Returns(new BsonDocument { ["_id"] = "key", ["my_name"] = "Test Name" });
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+            this._mockMongoDatabase.Object,
+            "collection",
+            new() { BsonDocumentCustomMapper = mockMapper.Object });
+
+        // Act
+        var result = await sut.UpsertAsync(hotel);
+
+        // Assert
+        Assert.Equal("key", result);
+
+        this._mockMongoCollection.Verify(l => l.ReplaceOneAsync(
+            It.IsAny<FilterDefinition<BsonDocument>>(),
+            It.Is<BsonDocument>(document =>
+                document["_id"] == "key" &&
+                document["my_name"] == "Test Name"),
+            It.IsAny<ReplaceOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task GetWithCustomMapperWorksCorrectlyAsync()
+    {
+        // Arrange
+        const string RecordKey = "key";
+
+        var document = new BsonDocument { ["_id"] = RecordKey, ["my_name"] = "Test Name" };
+
+        var mockCursor = new Mock<IAsyncCursor<BsonDocument>>();
+        mockCursor
+            .Setup(l => l.MoveNextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        mockCursor
+            .Setup(l => l.Current)
+            .Returns([document]);
+
+        this._mockMongoCollection
+            .Setup(l => l.FindAsync(
+                It.IsAny<FilterDefinition<BsonDocument>>(),
+                It.IsAny<FindOptions<BsonDocument>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockCursor.Object);
+
+        var mockMapper = new Mock<IVectorStoreRecordMapper<AzureCosmosDBMongoDBHotelModel, BsonDocument>>();
+
+        mockMapper
+            .Setup(l => l.MapFromStorageToDataModel(It.IsAny<BsonDocument>(), It.IsAny<StorageToDataModelMapperOptions>()))
+            .Returns(new AzureCosmosDBMongoDBHotelModel(RecordKey) { HotelName = "Name from mapper" });
+
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+            this._mockMongoDatabase.Object,
+            "collection",
+            new() { BsonDocumentCustomMapper = mockMapper.Object });
+
+        // Act
+        var result = await sut.GetAsync(RecordKey);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(RecordKey, result.HotelId);
+        Assert.Equal("Name from mapper", result.HotelName);
+    }
+
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()
     {
         { ["collection-2"], "collection-2", true },
