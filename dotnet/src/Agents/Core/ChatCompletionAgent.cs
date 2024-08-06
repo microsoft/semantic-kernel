@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -27,16 +28,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         kernel ??= this.Kernel;
         arguments ??= this.Arguments;
 
-        KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("do nothing", arguments?.ExecutionSettings?.Values); // %%%
-        if (!kernel.ServiceSelector.TrySelectAIService<IChatCompletionService>(
-                kernel,
-                nullPrompt,
-                arguments ?? [],
-                out IChatCompletionService? chatCompletionService,
-                out PromptExecutionSettings? executionSettings))
-        {
-            throw new KernelException("No chat completion service found."); // %%%
-        }
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = this.SetupAgentChatHistory(history, cancellationToken);
 
@@ -81,16 +73,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         kernel ??= this.Kernel;
         arguments ??= this.Arguments;
 
-        KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("do nothing", arguments?.ExecutionSettings?.Values); // %%%
-        if (!kernel.ServiceSelector.TrySelectAIService<IChatCompletionService>(
-                kernel,
-                nullPrompt,
-                arguments ?? [],
-                out IChatCompletionService? chatCompletionService,
-                out PromptExecutionSettings? executionSettings))
-        {
-            throw new KernelException("No chat completion service found."); // %%%
-        }
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = this.SetupAgentChatHistory(history, cancellationToken);
 
@@ -123,6 +106,19 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
             history.Add(message);
         }
+    }
+
+    private (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
+    {
+        // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
+        KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) =
+            kernel.ServiceSelector.SelectAIService<IChatCompletionService>(
+                kernel,
+                nullPrompt,
+                arguments ?? []);
+
+        return (chatCompletionService, executionSettings);
     }
 
     private ChatHistory SetupAgentChatHistory(
