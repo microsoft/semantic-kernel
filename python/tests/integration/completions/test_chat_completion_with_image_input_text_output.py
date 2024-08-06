@@ -242,7 +242,7 @@ class TestChatCompletionWithImageInputTextOutput(TestChatCompletionBase):
         service_id: str,
         services: dict[str, tuple[ServiceType, type[PromptExecutionSettings]]],
         execution_settings_kwargs: dict[str, Any],
-        inputs: list[ChatMessageContent | list[ChatMessageContent]],
+        inputs: list[ChatMessageContent],
         stream: bool,
     ):
         self.setup(kernel)
@@ -250,11 +250,8 @@ class TestChatCompletionWithImageInputTextOutput(TestChatCompletionBase):
 
         history = ChatHistory()
         for message in inputs:
-            if isinstance(message, list):
-                for msg in message:
-                    history.add_message(msg)
-            else:
-                history.add_message(message)
+            history.add_message(message)
+
             cmc = await retry(
                 partial(
                     self.get_chat_completion_response,
