@@ -10,6 +10,10 @@ from azure.core.credentials import AzureKeyCredential
 from openai import AsyncAzureOpenAI
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
+    AnthropicChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion import AnthropicChatCompletion
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
 )
@@ -30,10 +34,6 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
     MistralAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
-from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
-    AnthropicChatPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion import AnthropicChatCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
@@ -74,6 +74,7 @@ try:
         anthropic_setup = True
 except KeyError:
     anthropic_setup = False
+
 
 def setup(
     kernel: Kernel,
@@ -478,6 +479,17 @@ pytestmark = pytest.mark.parametrize(
             marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
         ),
+         pytest.param(
+            "anthropic",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
+            id="anthropic_text_input",
+        ),
         pytest.param(
             "google_ai",
             {},
@@ -574,19 +586,30 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             ["Hello", "well"],
-            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
-            id="anthropic_text_input",
+            id="vertex_ai_text_input",
         ),
         pytest.param(
-            "anthropic",
-            {},
+            "vertex_ai",
+            {
+                "max_tokens": 256,
+            },
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[TextContent(text="Where was it made? Make a guess if you are not sure.")],
+                ),
             ],
-            ["Hello", "well"],
-            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
-            id="anthropic_text_input",
+            ["house", "germany"],
+            id="vertex_ai_image_input_file",
         ),
         pytest.param(
             "vertex_ai",
