@@ -24,6 +24,8 @@ _T = TypeVar("_T", bound="DataUri")
 
 
 class DataUri(KernelBaseModel, validate_assignment=True):
+    """A class to represent a data uri."""
+
     data_bytes: bytes | None = None
     data_str: str | None = None
     mime_type: str | None = None
