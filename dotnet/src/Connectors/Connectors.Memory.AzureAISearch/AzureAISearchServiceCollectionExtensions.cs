@@ -20,7 +20,7 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The kernel builder.</returns>
+    /// <returns>The service collection.</returns>
     public static IServiceCollection AddAzureAISearchVectorStore(this IServiceCollection services, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are not constructing the SearchIndexClient, add the IVectorStore as transient, since we
@@ -48,7 +48,7 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="tokenCredential">The credential to authenticate to Azure AI Search with.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The kernel builder.</returns>
+    /// <returns>The service collection.</returns>
     public static IServiceCollection AddAzureAISearchVectorStore(this IServiceCollection services, Uri endpoint, TokenCredential tokenCredential, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
         Verify.NotNull(endpoint);
@@ -77,7 +77,7 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="credential">The credential to authenticate to Azure AI Search with.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The kernel builder.</returns>
+    /// <returns>The service collection.</returns>
     public static IServiceCollection AddAzureAISearchVectorStore(this IServiceCollection services, Uri endpoint, AzureKeyCredential credential, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
         Verify.NotNull(endpoint);

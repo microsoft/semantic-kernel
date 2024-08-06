@@ -17,7 +17,7 @@ public static class RedisServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The kernel builder.</returns>
+    /// <returns>The service collection.</returns>
     public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, RedisVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are not constructing the ConnectionMultiplexer, add the IVectorStore as transient, since we
@@ -44,7 +44,7 @@ public static class RedisServiceCollectionExtensions
     /// <param name="redisConnectionConfiguration">The Redis connection configuration string. If not provided, an <see cref="IDatabase"/> instance will be requested from the dependency injection container.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The kernel builder.</returns>
+    /// <returns>The service collection.</returns>
     public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, string redisConnectionConfiguration, RedisVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are constructing the ConnectionMultiplexer, add the IVectorStore as singleton, since we are managing the lifetime
