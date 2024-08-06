@@ -27,6 +27,7 @@ public class OpenAIAssistantDefinitionTests
         Assert.Null(definition.ExecutionOptions);
         Assert.Null(definition.Temperature);
         Assert.Null(definition.TopP);
+        Assert.False(definition.EnableFileSearch);
         Assert.Null(definition.VectorStoreId);
         Assert.Null(definition.CodeInterpreterFileIds);
         Assert.False(definition.EnableCodeInterpreter);
@@ -47,6 +48,7 @@ public class OpenAIAssistantDefinitionTests
                 ModelId = "testmodel",
                 Instructions = "testinstructions",
                 Description = "testdescription",
+                EnableFileSearch = true,
                 VectorStoreId = "#vs",
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 Temperature = 2,
@@ -69,6 +71,7 @@ public class OpenAIAssistantDefinitionTests
         Assert.Equal("testmodel", definition.ModelId);
         Assert.Equal("testinstructions", definition.Instructions);
         Assert.Equal("testdescription", definition.Description);
+        Assert.True(definition.EnableFileSearch);
         Assert.Equal("#vs", definition.VectorStoreId);
         Assert.Equal(2, definition.Temperature);
         Assert.Equal(0, definition.TopP);

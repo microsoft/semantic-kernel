@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -343,7 +344,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
                 EnableJsonResponse = enableJsonResponse,
                 TopP = model.NucleusSamplingFactor,
                 Temperature = model.Temperature,
-                VectorStoreId = vectorStoreId,
+                VectorStoreId = string.IsNullOrWhiteSpace(vectorStoreId) ? null : vectorStoreId,
                 ExecutionOptions = options,
             };
     }

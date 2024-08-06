@@ -97,6 +97,23 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     /// <summary>
     /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with a file-search and no vector-store
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationWithFileSearchAsync()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                ModelId = "testmodel",
+                EnableFileSearch = true,
+            };
+
+        await this.VerifyAgentCreationAsync(definition);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
     /// for an agent with a vector-store-id (for file-search).
     /// </summary>
     [Fact]
@@ -106,6 +123,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             new()
             {
                 ModelId = "testmodel",
+                EnableFileSearch = true,
                 VectorStoreId = "#vs1",
             };
 
@@ -563,7 +581,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.Equal(hasCodeInterpreter, agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
 
         bool hasFileSearch = false;
-        if (!string.IsNullOrWhiteSpace(sourceDefinition.VectorStoreId))
+        if (sourceDefinition.EnableFileSearch)
         {
             hasFileSearch = true;
             ++expectedToolCount;
@@ -667,7 +685,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
             bool hasCodeInterpreter = definition.EnableCodeInterpreter;
             bool hasCodeInterpreterFiles = (definition.CodeInterpreterFileIds?.Count ?? 0) > 0;
-            bool hasFileSearch = !string.IsNullOrWhiteSpace(definition.VectorStoreId);
+            bool hasFileSearch = definition.EnableFileSearch;
             if (!hasCodeInterpreter && !hasFileSearch)
             {
                 builder.AppendLine(@"  ""tools"": [],");
