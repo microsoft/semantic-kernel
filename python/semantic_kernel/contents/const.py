@@ -15,6 +15,8 @@ DISCRIMINATOR_FIELD: Final[str] = "content_type"
 
 
 class ContentTypes(str, Enum):
+    """Content types enumeration."""
+
     ANNOTATION_CONTENT = ANNOTATION_CONTENT_TAG
     BINARY_CONTENT = BINARY_CONTENT_TAG
     CHAT_MESSAGE_CONTENT = CHAT_MESSAGE_CONTENT_TAG
