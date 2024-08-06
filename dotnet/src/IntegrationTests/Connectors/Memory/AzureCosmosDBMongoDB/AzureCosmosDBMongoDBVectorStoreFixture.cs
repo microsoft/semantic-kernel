@@ -54,7 +54,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Ivf, DistanceFunction = DistanceFunction.CosineDistance }
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
             ]
         };
     }
@@ -107,7 +107,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.Ivf, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.IvfFlat, DistanceFunction: DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
     }
 #pragma warning restore CS8618

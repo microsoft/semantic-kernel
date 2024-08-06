@@ -35,8 +35,8 @@ public static class IndexKind
     public const string Flat = nameof(Flat);
 
     /// <summary>
-    /// Designed to enhance search efficiency by narrowing the search area through the use of neighbor partitions or clusters.
+    /// Inverted File with Flat Compression. Designed to enhance search efficiency by narrowing the search area through the use of neighbor partitions or clusters.
     /// Also referred to as approximate nearest neighbor (ANN) search.
     /// </summary>
-    public const string Ivf = nameof(Ivf);
+    public const string IvfFlat = nameof(IvfFlat);
 }

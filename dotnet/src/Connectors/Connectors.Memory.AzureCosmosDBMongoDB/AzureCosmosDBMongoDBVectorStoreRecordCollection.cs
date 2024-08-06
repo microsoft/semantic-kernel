@@ -378,7 +378,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : I
         return indexKind switch
         {
             IndexKind.Hnsw => "vector-hnsw",
-            IndexKind.Ivf => "vector-ivf",
+            IndexKind.IvfFlat => "vector-ivf",
             _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
         };
     }
