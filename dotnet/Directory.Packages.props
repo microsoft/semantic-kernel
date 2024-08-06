@@ -30,6 +30,7 @@
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.61.3" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.18.1" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
+    <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.0" />
@@ -68,6 +69,7 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7" />
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
@@ -92,6 +94,7 @@
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
     <PackageVersion Include="Testcontainers.Milvus" Version="3.8.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+    <PackageVersion Include="Qdrant.Client" Version="1.9.0" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
