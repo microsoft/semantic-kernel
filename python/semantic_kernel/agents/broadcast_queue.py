@@ -2,6 +2,7 @@
 
 
 import asyncio
+from collections.abc import Callable
 
 from pydantic import Field
 
@@ -13,7 +14,7 @@ class BroadcastQueue(KernelBaseModel):
     """A queue for broadcasting messages to listeners."""
 
     queue: asyncio.Queue = Field(default_factory=asyncio.Queue)
-    listeners: list[callable] = Field(default_factory=list)
+    listeners: list[Callable] = Field(default_factory=list)
 
     def add_listener(self, listener: callable):
         """Add a listener to the broadcast queue."""
