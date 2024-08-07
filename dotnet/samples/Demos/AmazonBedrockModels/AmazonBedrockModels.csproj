@@ -5,6 +5,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>BedrockTest</RootNamespace>
     </PropertyGroup>
     <PropertyGroup>
       <NoWarn>$(NoWarn);SKEXP0001,SKEXP0070</NoWarn>

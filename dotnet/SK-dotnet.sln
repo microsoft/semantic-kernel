@@ -316,9 +316,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Amazon", "src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj", "{E059E9B0-1302-474D-B1B5-10A6E0F1A769}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BedrockTest", "samples\Demos\BedrockTest\BedrockTest.csproj", "{ABEAACCD-CF63-4850-8ED5-E01379DBFC46}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmazonBedrockModels", "samples\Demos\AmazonBedrockModels\AmazonBedrockModels.csproj", "{ABEAACCD-CF63-4850-8ED5-E01379DBFC46}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Amazon.UnitTests", "src\Connectors\Connectors.Amazon.UnitTests\Connectors.Amazon.UnitTests.csproj", "{CCC6DC57-2AC1-4C8E-A448-2CC0537A288E}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Redis.UnitTests", "src\Connectors\Connectors.Redis.UnitTests\Connectors.Redis.UnitTests.csproj", "{1D4667B9-9381-4E32-895F-123B94253EE8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant.UnitTests", "src\Connectors\Connectors.Qdrant.UnitTests\Connectors.Qdrant.UnitTests.csproj", "{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF}"
