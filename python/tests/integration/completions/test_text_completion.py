@@ -129,6 +129,7 @@ pytestmark = pytest.mark.parametrize(
             {},
             ["Repeat the word Hello"],
             ["Hello"],
+            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_text_input",
         ),
         pytest.param(

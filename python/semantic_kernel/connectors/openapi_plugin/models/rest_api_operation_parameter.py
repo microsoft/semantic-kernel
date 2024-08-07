@@ -16,6 +16,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class RestApiOperationParameter:
+    """RestApiOperationParameter."""
+
     def __init__(
         self,
         name: str,

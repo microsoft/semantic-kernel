@@ -25,6 +25,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class HuggingFaceTextCompletion(TextCompletionClientBase):
+    """Hugging Face text completion service."""
+
     task: Literal["summarization", "text-generation", "text2text-generation"]
     device: str
     generator: Any

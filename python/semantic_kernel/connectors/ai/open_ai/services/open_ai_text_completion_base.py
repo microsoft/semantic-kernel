@@ -35,6 +35,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
+    """Base class for OpenAI text completion services."""
+
     MODEL_PROVIDER_NAME: ClassVar[str] = "openai"
 
     @override

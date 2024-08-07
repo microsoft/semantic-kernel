@@ -53,6 +53,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class FunctionCallingStepwisePlanner(KernelBaseModel):
+    """A Function Calling Stepwise Planner."""
+
     service_id: str
     options: FunctionCallingStepwisePlannerOptions
     generate_plan_yaml: str
@@ -277,9 +279,9 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         generate_plan_function = self._create_config_from_yaml(kernel)
         functions_manual = [
             kernel_function_metadata_to_function_call_format(f)
-            for f in kernel.get_list_of_function_metadata(
-                {"excluded_functions": [f"{self.service_id}", "sequential_planner-create_plan"]}
-            )
+            for f in kernel.get_list_of_function_metadata({
+                "excluded_functions": [f"{self.service_id}", "sequential_planner-create_plan"]
+            })
         ]
         generated_plan_args = KernelArguments(
             name_delimiter="-",

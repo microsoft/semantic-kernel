@@ -306,3 +306,7 @@ class ChatMessageContent(KernelContent):
         if len(self.items) == 1 and isinstance(self.items[0], FunctionResultContent):
             return str(self.items[0].result)
         return [item.to_dict() for item in self.items]
+
+    def __hash__(self) -> int:
+        """Return the hash of the chat message content."""
+        return hash((self.tag, self.role, self.content, self.encoding, self.finish_reason, *self.items))

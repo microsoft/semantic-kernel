@@ -31,6 +31,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelFunctionExtension(KernelBaseModel, ABC):
+    """Kernel function extension."""
+
     plugins: dict[str, KernelPlugin] = Field(default_factory=dict)
 
     @field_validator("plugins", mode="before")

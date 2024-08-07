@@ -3,6 +3,8 @@ from enum import Enum
 
 
 class Symbols(str, Enum):
+    """Symbols used in the template engine."""
+
     BLOCK_STARTER = "{"
     BLOCK_ENDER = "}"
 

@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncGenerator, AsyncIterable
+from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -18,6 +19,7 @@ from semantic_kernel.exceptions import (
     OperationCancelledException,
     TemplateSyntaxError,
 )
+from semantic_kernel.exceptions.kernel_exceptions import KernelServiceNotFoundError
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
@@ -31,7 +33,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_extension import KernelFunctionExtension
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE
+from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
@@ -42,25 +44,31 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (
         FunctionChoiceBehavior,
     )
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.functions.kernel_function import KernelFunction
 
 T = TypeVar("T")
 
+TDataModel = TypeVar("TDataModel")
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExtension, KernelReliabilityExtension):
-    """The main Kernel class of Semantic Kernel.
+    """The Kernel of Semantic Kernel.
 
-    This is the main entry point for the Semantic Kernel. It provides the ability to run
-    semantic/native functions, and manage plugins, memory, and AI services.
+    This is the main entry point for Semantic Kernel. It provides the ability to run
+    functions and manage filters, plugins, and AI services.
 
     Attributes:
-        plugins (dict[str, KernelPlugin] | None): The plugins to be used by the kernel
-        services (dict[str, AIServiceClientBase]): The services to be used by the kernel
-        ai_service_selector (AIServiceSelector): The AI service selector to be used by the kernel
-        retry_mechanism (RetryMechanismBase): The retry mechanism to be used by the kernel
+        function_invocation_filters: Filters applied during function invocation, from KernelFilterExtension.
+        prompt_rendering_filters: Filters applied during prompt rendering, from KernelFilterExtension.
+        auto_function_invocation_filters: Filters applied during auto function invocation, from KernelFilterExtension.
+        plugins: A dict with the plugins registered with the Kernel, from KernelFunctionExtension.
+        services: A dict with the services registered with the Kernel, from KernelServicesExtension.
+        ai_service_selector: The AI service selector to be used by the kernel, from KernelServicesExtension.
+        retry_mechanism: The retry mechanism to be used by the kernel, from KernelReliabilityExtension.
+
     """
 
     def __init__(
@@ -75,14 +83,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         """Initialize a new instance of the Kernel class.
 
         Args:
-            plugins (KernelPlugin | dict[str, KernelPlugin] | list[KernelPlugin] | None):
-                The plugins to be used by the kernel, will be rewritten to a dict with plugin name as key
-            services (AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None):
-                The services to be used by the kernel, will be rewritten to a dict with service_id as key
-            ai_service_selector (AIServiceSelector | None):
-                The AI service selector to be used by the kernel,
+            plugins: The plugins to be used by the kernel, will be rewritten to a dict with plugin name as key
+            services: The services to be used by the kernel, will be rewritten to a dict with service_id as key
+            ai_service_selector: The AI service selector to be used by the kernel,
                 default is based on order of execution settings.
-            **kwargs (Any): Additional fields to be passed to the Kernel model,
+            **kwargs: Additional fields to be passed to the Kernel model,
                 these are limited to retry_mechanism and function_invoking_handlers
                 and function_invoked_handlers, the best way to add function_invoking_handlers
                 and function_invoked_handlers is to use the add_function_invoking_handler
@@ -421,3 +426,59 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             else:
                 context.function_result = FunctionResult(function=context.function.metadata, value=value)
             return
+
+    async def add_embedding_to_object(
+        self,
+        inputs: OneOrMany[TDataModel],
+        field_to_embed: str,
+        field_to_store: str,
+        execution_settings: dict[str, "PromptExecutionSettings"],
+        container_mode: bool = False,
+        cast_function: Callable[[list[float]], Any] | None = None,
+        **kwargs: Any,
+    ):
+        """Gather all fields to embed, batch the embedding generation and store."""
+        contents: list[Any] = []
+        dict_like = (getter := getattr(inputs, "get", False)) and callable(getter)
+        list_of_dicts: bool = False
+        if container_mode:
+            contents = inputs[field_to_embed].tolist()  # type: ignore
+        elif isinstance(inputs, list):
+            list_of_dicts = (getter := getattr(inputs[0], "get", False)) and callable(getter)
+            for record in inputs:
+                if list_of_dicts:
+                    contents.append(record.get(field_to_embed))  # type: ignore
+                else:
+                    contents.append(getattr(record, field_to_embed))
+        else:
+            if dict_like:
+                contents.append(inputs.get(field_to_embed))  # type: ignore
+            else:
+                contents.append(getattr(inputs, field_to_embed))
+        vectors = None
+        service: EmbeddingGeneratorBase | None = None
+        for service_id, settings in execution_settings.items():
+            service = self.get_service(service_id, type=EmbeddingGeneratorBase)  # type: ignore
+            if service:
+                vectors = await service.generate_raw_embeddings(texts=contents, settings=settings, **kwargs)  # type: ignore
+                break
+        if not service:
+            raise KernelServiceNotFoundError("No service found to generate embeddings.")
+        if vectors is None:
+            raise KernelInvokeException("No vectors were generated.")
+        if cast_function:
+            vectors = [cast_function(vector) for vector in vectors]
+        if container_mode:
+            inputs[field_to_store] = vectors  # type: ignore
+            return
+        if isinstance(inputs, list):
+            for record, vector in zip(inputs, vectors):
+                if list_of_dicts:
+                    record[field_to_store] = vector  # type: ignore
+                else:
+                    setattr(record, field_to_store, vector)
+            return
+        if dict_like:
+            inputs[field_to_store] = vectors[0]  # type: ignore
+            return
+        setattr(inputs, field_to_store, vectors[0])

@@ -195,3 +195,7 @@ class FunctionCallContent(KernelContent):
         """Convert the instance to a dictionary."""
         args = json.dumps(self.arguments) if isinstance(self.arguments, dict) else self.arguments
         return {"id": self.id, "type": "function", "function": {"name": self.name, "arguments": args}}
+
+    def __hash__(self) -> int:
+        """Return the hash of the function call content."""
+        return hash((self.tag, self.id, self.index, self.name, self.function_name, self.plugin_name, self.arguments))

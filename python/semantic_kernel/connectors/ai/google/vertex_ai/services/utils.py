@@ -8,7 +8,8 @@ from google.cloud.aiplatform_v1beta1.types.content import Blob, Candidate, Part
 from google.cloud.aiplatform_v1beta1.types.tool import FunctionCall, FunctionResponse
 from vertexai.generative_models import FunctionDeclaration, Tool, ToolConfig
 
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionCallChoiceConfiguration, FunctionChoiceType
+from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.shared_utils import (
     FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE,
     format_function_result_content_name_to_gemini_function_name,

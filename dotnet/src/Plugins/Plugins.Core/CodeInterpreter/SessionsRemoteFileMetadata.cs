@@ -39,7 +39,7 @@ public class SessionsRemoteFileMetadata
     /// The last modified time.
     /// </summary>
     [Description("Last modified time.")]
-    [JsonPropertyName("last_modified_time")]
+    [JsonPropertyName("lastModifiedTime")]
     public DateTime? LastModifiedTime { get; set; }
 
     /// <summary>

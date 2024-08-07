@@ -187,6 +187,7 @@ def mock_run_failed():
         object="thread.run",
         thread_id="thread_id",
         tools=[],
+        parallel_tool_calls=True,
     )
 
 
@@ -214,6 +215,7 @@ def mock_run_required_action():
                 ]
             ),
         ),
+        parallel_tool_calls=True,
     )
 
 
@@ -239,6 +241,7 @@ def mock_run_completed():
                 ]
             ),
         ),
+        parallel_tool_calls=True,
     )
 
 

@@ -3,7 +3,8 @@
 This project contains a step by step guide to get started with _Semantic Kernel Agents_ in Python.
 
 #### PyPI:
-- For the use of agents, the minimum allowed Semantic Kernel pypi version is 1.3.0.
+- For the use of Chat Completion agents, the minimum allowed Semantic Kernel pypi version is 1.3.0.
+- For the use of OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.4.0.
 
 #### Source
 

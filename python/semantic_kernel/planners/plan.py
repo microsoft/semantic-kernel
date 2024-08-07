@@ -22,6 +22,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Plan:
+    """A plan for the kernel."""
+
     _state: KernelArguments = PrivateAttr()
     _steps: list["Plan"] = PrivateAttr()
     _function: KernelFunction = PrivateAttr()

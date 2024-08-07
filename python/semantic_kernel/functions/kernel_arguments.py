@@ -9,6 +9,8 @@ if TYPE_CHECKING:
 
 
 class KernelArguments(dict):
+    """The arguments sent to the KernelFunction."""
+
     def __init__(
         self,
         settings: (

@@ -21,6 +21,8 @@ APPEND_TO_RESULT_TAG = "appendToResult"
 
 
 class SequentialPlanParser:
+    """Parser for Sequential planners."""
+
     @staticmethod
     def to_plan_from_xml(
         xml_string: str,

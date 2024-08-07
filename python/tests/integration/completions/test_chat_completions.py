@@ -475,6 +475,7 @@ pytestmark = pytest.mark.parametrize(
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
             ],
             ["Hello", "well"],
+            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_text_input",
         ),
         pytest.param(
@@ -551,6 +552,7 @@ pytestmark = pytest.mark.parametrize(
                 ],
             ],
             ["1.2"],
+            marks=pytest.mark.skip(reason="Skipping due to 429s from Google AI."),
             id="google_ai_tool_call_flow",
         ),
         pytest.param(

@@ -172,3 +172,7 @@ class FunctionResultContent(KernelContent):
     def serialize_result(self, value: Any) -> str:
         """Serialize the result."""
         return str(value)
+
+    def __hash__(self) -> int:
+        """Return the hash of the function result content."""
+        return hash((self.tag, self.id, self.result, self.name, self.function_name, self.plugin_name, self.encoding))

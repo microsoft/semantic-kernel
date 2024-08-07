@@ -61,18 +61,16 @@ class _USearchCollection:
 
 
 # PyArrow Schema definition for the embeddings data from `MemoryRecord`.
-_embeddings_data_schema = pa.schema(
-    [
-        pa.field("key", pa.string()),
-        pa.field("timestamp", pa.timestamp("us")),
-        pa.field("is_reference", pa.bool_()),
-        pa.field("external_source_name", pa.string()),
-        pa.field("id", pa.string()),
-        pa.field("description", pa.string()),
-        pa.field("text", pa.string()),
-        pa.field("additional_metadata", pa.string()),
-    ]
-)
+_embeddings_data_schema = pa.schema([
+    pa.field("key", pa.string()),
+    pa.field("timestamp", pa.timestamp("us")),
+    pa.field("is_reference", pa.bool_()),
+    pa.field("external_source_name", pa.string()),
+    pa.field("id", pa.string()),
+    pa.field("description", pa.string()),
+    pa.field("text", pa.string()),
+    pa.field("additional_metadata", pa.string()),
+])
 
 
 class _CollectionFileType(Enum):
@@ -116,6 +114,8 @@ def pyarrow_table_to_memoryrecords(table: pa.Table, vectors: ndarray | None = No
 
 @experimental_class
 class USearchMemoryStore(MemoryStoreBase):
+    """Memory store for searching embeddings with USearch."""
+
     def __init__(
         self,
         persist_directory: os.PathLike | None = None,
@@ -349,9 +349,10 @@ class USearchMemoryStore(MemoryStoreBase):
         )
 
         # Update embeddings_table
-        ucollection.embeddings_data_table = pa.concat_tables(
-            [ucollection.embeddings_data_table, memoryrecords_to_pyarrow_table(records)]
-        )
+        ucollection.embeddings_data_table = pa.concat_tables([
+            ucollection.embeddings_data_table,
+            memoryrecords_to_pyarrow_table(records),
+        ])
 
         # Update embeddings_id_to_label
         for index, record_id in enumerate(all_records_id):

@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import AsyncIterable
+from unittest.mock import AsyncMock
 
 import pytest
 
 from semantic_kernel.agents.chat_history_channel import ChatHistoryAgentProtocol, ChatHistoryChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import ServiceInvalidTypeError
 
@@ -18,9 +19,6 @@ class MockChatHistoryHandler:
         for message in history:
             yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
 
-    async def invoke_stream(self, history: list[ChatMessageContent]) -> AsyncIterable["StreamingChatMessageContent"]:
-        pass
-
 
 class MockNonChatHistoryHandler:
     """Mock agent to test incorrect instance handling."""
@@ -31,21 +29,77 @@ class MockNonChatHistoryHandler:
 ChatHistoryAgentProtocol.register(MockChatHistoryHandler)
 
 
+class AsyncIterableMock:
+    def __init__(self, async_gen):
+        self.async_gen = async_gen
+
+    def __aiter__(self):
+        return self.async_gen()
+
+
 @pytest.mark.asyncio
 async def test_invoke():
     channel = ChatHistoryChannel()
-    agent = MockChatHistoryHandler()
+    agent = AsyncMock(spec=MockChatHistoryHandler)
+
+    async def mock_invoke(history: list[ChatMessageContent]):
+        for message in history:
+            yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
+
+    agent.invoke.return_value = AsyncIterableMock(
+        lambda: mock_invoke([ChatMessageContent(role=AuthorRole.USER, content="Initial message")])
+    )
 
     initial_message = ChatMessageContent(role=AuthorRole.USER, content="Initial message")
     channel.messages.append(initial_message)
 
     received_messages = []
-    async for message in channel.invoke(agent):
+    async for is_visible, message in channel.invoke(agent):
         received_messages.append(message)
-        break  # only process one message for the test
+        assert is_visible
 
     assert len(received_messages) == 1
     assert "Processed: Initial message" in received_messages[0].content
+
+
+@pytest.mark.asyncio
+async def test_invoke_leftover_in_queue():
+    channel = ChatHistoryChannel()
+    agent = AsyncMock(spec=MockChatHistoryHandler)
+
+    async def mock_invoke(history: list[ChatMessageContent]):
+        for message in history:
+            yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
+        yield ChatMessageContent(
+            role=AuthorRole.SYSTEM, content="Final message", items=[FunctionResultContent(id="test_id", result="test")]
+        )
+
+    agent.invoke.return_value = AsyncIterableMock(
+        lambda: mock_invoke(
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    content="Initial message",
+                    items=[FunctionResultContent(id="test_id", result="test")],
+                )
+            ]
+        )
+    )
+
+    initial_message = ChatMessageContent(role=AuthorRole.USER, content="Initial message")
+    channel.messages.append(initial_message)
+
+    received_messages = []
+    async for is_visible, message in channel.invoke(agent):
+        received_messages.append(message)
+        assert is_visible
+        if len(received_messages) >= 3:
+            break
+
+    assert len(received_messages) == 3
+    assert "Processed: Initial message" in received_messages[0].content
+    assert "Final message" in received_messages[2].content
+    assert received_messages[2].items[0].id == "test_id"
 
 
 @pytest.mark.asyncio

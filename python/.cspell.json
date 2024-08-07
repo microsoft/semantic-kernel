@@ -47,6 +47,10 @@
         "protos",
         "endregion",
         "vertexai",
-        "aiplatform"
+        "aiplatform",
+        "serde",
+        "datamodel",
+        "vectorstoremodel",
+        "qdrant"
     ]
 }

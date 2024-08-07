@@ -9,6 +9,7 @@ from openai.types.beta.assistant import ToolResources, ToolResourcesCodeInterpre
 from pydantic import ValidationError
 
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
+from semantic_kernel.agents.open_ai.open_ai_assistant_base import OpenAIAssistantBase
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationError
 from semantic_kernel.kernel import Kernel
 
@@ -159,35 +160,9 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
         mock_client_instance.beta = MagicMock()
         mock_client_instance.beta.assistants = MagicMock()
 
-        mock_assistant = MagicMock()
-        mock_assistant.metadata = {
-            "__run_options": {
-                "max_completion_tokens": 100,
-                "max_prompt_tokens": 50,
-                "parallel_tool_calls_enabled": True,
-                "truncation_message_count": 10,
-            }
-        }
-        mock_assistant.model = "test_model"
-        mock_assistant.description = "test_description"
-        mock_assistant.id = "test_id"
-        mock_assistant.instructions = "test_instructions"
-        mock_assistant.name = "test_name"
-        mock_assistant.tools = ["code_interpreter", "file_search"]
-        mock_assistant.temperature = 0.7
-        mock_assistant.top_p = 0.9
-        mock_assistant.response_format = {"type": "json_object"}
-        mock_assistant.tool_resources = {
-            "code_interpreter": {"file_ids": ["file1", "file2"]},
-            "file_search": {"vector_store_ids": ["vector_store1"]},
-        }
+        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=AsyncMock())
 
-        mock_client_instance.beta.assistants.retrieve = AsyncMock(return_value=mock_assistant)
-
-        agent = AzureAssistantAgent(
-            kernel=kernel, service_id="test_service", name="test_name", instructions="test_instructions", id="test_id"
-        )
-        agent._create_open_ai_assistant_definition = MagicMock(
+        OpenAIAssistantBase._create_open_ai_assistant_definition = MagicMock(
             return_value={
                 "ai_model_id": "test_model",
                 "description": "test_description",
@@ -216,7 +191,7 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
             }
         )
 
-        retrieved_agent = await agent.retrieve("test_id", "test_api_key", kernel)
+        retrieved_agent = await AzureAssistantAgent.retrieve(id="test_id", api_key="test_api_key", kernel=kernel)
         assert retrieved_agent.model_dump(
             include={
                 "ai_model_id",
@@ -264,7 +239,23 @@ async def test_retrieve_agent(kernel, azure_openai_unit_test_env):
             "truncation_message_count": 10,
         }
         mock_client_instance.beta.assistants.retrieve.assert_called_once_with("test_id")
-        agent._create_open_ai_assistant_definition.assert_called_once_with(mock_assistant)
+        OpenAIAssistantBase._create_open_ai_assistant_definition.assert_called_once()
+
+
+@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True)
+@pytest.mark.asyncio
+async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_openai_unit_test_env):
+    with pytest.raises(AgentInitializationError, match="The Azure OpenAI chat_deployment_name is required."):
+        _ = await AzureAssistantAgent.retrieve(
+            id="test_id", api_key="test_api_key", kernel=kernel, env_file_path="test.env"
+        )
+
+
+@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
+@pytest.mark.asyncio
+async def test_retrieve_agent_missing_api_key_throws(kernel, azure_openai_unit_test_env):
+    with pytest.raises(AgentInitializationError, match="Please provide either api_key, ad_token or ad_token_provider."):
+        _ = await AzureAssistantAgent.retrieve(id="test_id", kernel=kernel, env_file_path="test.env")
 
 
 def test_open_ai_settings_create_throws(azure_openai_unit_test_env):
