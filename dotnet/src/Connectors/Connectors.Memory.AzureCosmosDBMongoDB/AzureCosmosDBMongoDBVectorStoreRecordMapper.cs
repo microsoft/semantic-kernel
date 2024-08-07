@@ -72,7 +72,10 @@ internal sealed class AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord> : IVe
             new AzureCosmosDBMongoDBNamingConvention(this._storagePropertyNames)
         };
 
-        ConventionRegistry.Register(nameof(AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>), conventionPack, type => true);
+        ConventionRegistry.Register(
+            nameof(AzureCosmosDBMongoDBVectorStoreRecordMapper<TRecord>),
+            conventionPack,
+            type => type == typeof(TRecord));
     }
 
     public BsonDocument MapFromDataToStorageModel(TRecord dataModel)
