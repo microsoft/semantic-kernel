@@ -16,7 +16,10 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 [Collection("RedisVectorStoreCollection")]
 public class RedisVectorStoreTests(ITestOutputHelper output, RedisVectorStoreFixture fixture)
 {
-    [Fact]
+    // If null, all tests will be enabled
+    private const string SkipReason = "Requires Redis docker container up and running";
+
+    [Fact(Skip = SkipReason)]
     public async Task ItCanGetAListOfExistingCollectionNamesAsync()
     {
         // Arrange
