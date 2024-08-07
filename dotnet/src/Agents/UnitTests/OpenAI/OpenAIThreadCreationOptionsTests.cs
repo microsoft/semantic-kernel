@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -24,6 +25,8 @@ public class OpenAIThreadCreationOptionsTests
         Assert.Null(options.Metadata);
         Assert.Null(options.VectorStoreId);
         Assert.Null(options.CodeInterpreterFileIds);
+
+        ValidateSerialization(options);
     }
 
     /// <summary>
@@ -32,7 +35,7 @@ public class OpenAIThreadCreationOptionsTests
     [Fact]
     public void OpenAIThreadCreationOptionsAssignment()
     {
-        OpenAIThreadCreationOptions definition =
+        OpenAIThreadCreationOptions options =
             new()
             {
                 Messages = [new ChatMessageContent(AuthorRole.User, "test")],
@@ -41,9 +44,24 @@ public class OpenAIThreadCreationOptionsTests
                 CodeInterpreterFileIds = ["file1"],
             };
 
-        Assert.Single(definition.Messages);
-        Assert.Single(definition.Metadata);
-        Assert.Equal("#vs", definition.VectorStoreId);
-        Assert.Single(definition.CodeInterpreterFileIds);
+        Assert.Single(options.Messages);
+        Assert.Single(options.Metadata);
+        Assert.Equal("#vs", options.VectorStoreId);
+        Assert.Single(options.CodeInterpreterFileIds);
+
+        ValidateSerialization(options);
+    }
+
+    private static void ValidateSerialization(OpenAIThreadCreationOptions source)
+    {
+        string json = JsonSerializer.Serialize(source);
+
+        OpenAIThreadCreationOptions? target = JsonSerializer.Deserialize<OpenAIThreadCreationOptions>(json);
+
+        Assert.NotNull(target);
+        Assert.Equal(source.VectorStoreId, target.VectorStoreId);
+        AssertCollection.Equal(source.CodeInterpreterFileIds, target.CodeInterpreterFileIds);
+        AssertCollection.Equal(source.Messages, target.Messages, m => m.Items.Count); // ChatMessageContent already validated for deep serialization
+        AssertCollection.Equal(source.Metadata, target.Metadata);
     }
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
@@ -14,47 +15,56 @@ public sealed class OpenAIAssistantInvocationOptions
     /// <summary>
     /// Override the AI model targeted by the agent.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ModelName { get; init; }
 
     /// <summary>
     /// Set if code_interpreter tool is enabled.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool EnableCodeInterpreter { get; init; }
 
     /// <summary>
     /// Set if file_search tool is enabled.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool EnableFileSearch { get; init; }
 
     /// <summary>
     /// Set if json response-format is enabled.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? EnableJsonResponse { get; init; }
 
     /// <summary>
     /// The maximum number of completion tokens that may be used over the course of the run.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxCompletionTokens { get; init; }
 
     /// <summary>
     /// The maximum number of prompt tokens that may be used over the course of the run.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxPromptTokens { get; init; }
 
     /// <summary>
     /// Enables parallel function calling during tool use.  Enabled by default.
     /// Use this property to disable.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? ParallelToolCallsEnabled { get; init; }
 
     /// <summary>
     /// When set, the thread will be truncated to the N most recent messages in the thread.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? TruncationMessageCount { get; init; }
 
     /// <summary>
     /// The sampling temperature to use, between 0 and 2.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Temperature { get; init; }
 
     /// <summary>
@@ -65,6 +75,7 @@ public sealed class OpenAIAssistantInvocationOptions
     /// <remarks>
     /// Recommended to set this or temperature but not both.
     /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? TopP { get; init; }
 
     /// <summary>
@@ -72,5 +83,6 @@ public sealed class OpenAIAssistantInvocationOptions
     /// storing additional information about that object in a structured format.Keys
     /// may be up to 64 characters in length and values may be up to 512 characters in length.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 }

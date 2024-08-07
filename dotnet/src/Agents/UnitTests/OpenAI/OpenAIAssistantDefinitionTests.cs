@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
 
@@ -32,6 +33,8 @@ public class OpenAIAssistantDefinitionTests
         Assert.Null(definition.CodeInterpreterFileIds);
         Assert.False(definition.EnableCodeInterpreter);
         Assert.False(definition.EnableJsonResponse);
+
+        ValidateSerialization(definition);
     }
 
     /// <summary>
@@ -84,5 +87,34 @@ public class OpenAIAssistantDefinitionTests
         Assert.Single(definition.CodeInterpreterFileIds);
         Assert.True(definition.EnableCodeInterpreter);
         Assert.True(definition.EnableJsonResponse);
+
+        ValidateSerialization(definition);
+    }
+
+    private static void ValidateSerialization(OpenAIAssistantDefinition source)
+    {
+        string json = JsonSerializer.Serialize(source);
+
+        OpenAIAssistantDefinition? target = JsonSerializer.Deserialize<OpenAIAssistantDefinition>(json);
+
+        Assert.NotNull(target);
+        Assert.Equal(source.Id, target.Id);
+        Assert.Equal(source.Name, target.Name);
+        Assert.Equal(source.ModelId, target.ModelId);
+        Assert.Equal(source.Instructions, target.Instructions);
+        Assert.Equal(source.Description, target.Description);
+        Assert.Equal(source.EnableFileSearch, target.EnableFileSearch);
+        Assert.Equal(source.VectorStoreId, target.VectorStoreId);
+        Assert.Equal(source.Temperature, target.Temperature);
+        Assert.Equal(source.TopP, target.TopP);
+        Assert.Equal(source.EnableFileSearch, target.EnableFileSearch);
+        Assert.Equal(source.VectorStoreId, target.VectorStoreId);
+        Assert.Equal(source.EnableCodeInterpreter, target.EnableCodeInterpreter);
+        Assert.Equal(source.ExecutionOptions?.MaxCompletionTokens, target.ExecutionOptions?.MaxCompletionTokens);
+        Assert.Equal(source.ExecutionOptions?.MaxPromptTokens, target.ExecutionOptions?.MaxPromptTokens);
+        Assert.Equal(source.ExecutionOptions?.TruncationMessageCount, target.ExecutionOptions?.TruncationMessageCount);
+        Assert.Equal(source.ExecutionOptions?.ParallelToolCallsEnabled, target.ExecutionOptions?.ParallelToolCallsEnabled);
+        AssertCollection.Equal(source.CodeInterpreterFileIds, target.CodeInterpreterFileIds);
+        AssertCollection.Equal(source.Metadata, target.Metadata);
     }
 }

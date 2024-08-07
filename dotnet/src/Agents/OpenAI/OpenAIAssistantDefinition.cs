@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
@@ -16,6 +17,7 @@ public sealed class OpenAIAssistantDefinition
     /// <summary>
     /// The description of the assistant.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; init; }
 
     /// <summary>
@@ -26,31 +28,37 @@ public sealed class OpenAIAssistantDefinition
     /// <summary>
     /// The system instructions for the assistant to use.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Instructions { get; init; }
 
     /// <summary>
     /// The name of the assistant.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Name { get; init; }
 
     /// <summary>
     /// Optional file-ids made available to the code_interpreter tool, if enabled.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<string>? CodeInterpreterFileIds { get; init; }
 
     /// <summary>
     /// Set if code-interpreter is enabled.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool EnableCodeInterpreter { get; init; }
 
     /// <summary>
     /// Set if file-search is enabled.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool EnableFileSearch { get; init; }
 
     /// <summary>
     /// Set if json response-format is enabled.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool EnableJsonResponse { get; init; }
 
     /// <summary>
@@ -58,11 +66,13 @@ public sealed class OpenAIAssistantDefinition
     /// storing additional information about that object in a structured format.Keys
     /// may be up to 64 characters in length and values may be up to 512 characters in length.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
     /// <summary>
     /// The sampling temperature to use, between 0 and 2.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Temperature { get; init; }
 
     /// <summary>
@@ -73,15 +83,18 @@ public sealed class OpenAIAssistantDefinition
     /// <remarks>
     /// Recommended to set this or temperature but not both.
     /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? TopP { get; init; }
 
     /// <summary>
     /// Requires file-search if specified.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? VectorStoreId { get; init; }
 
     /// <summary>
     /// Default execution options for each agent invocation.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public OpenAIAssistantExecutionOptions? ExecutionOptions { get; init; }
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
 
@@ -29,6 +30,8 @@ public class OpenAIAssistantInvocationOptionsTests
         Assert.Null(options.EnableJsonResponse);
         Assert.False(options.EnableCodeInterpreter);
         Assert.False(options.EnableFileSearch);
+
+        ValidateSerialization(options);
     }
 
     /// <summary>
@@ -64,5 +67,26 @@ public class OpenAIAssistantInvocationOptionsTests
         Assert.True(options.EnableCodeInterpreter);
         Assert.True(options.EnableJsonResponse);
         Assert.True(options.EnableFileSearch);
+
+        ValidateSerialization(options);
+    }
+
+    private static void ValidateSerialization(OpenAIAssistantInvocationOptions source)
+    {
+        string json = JsonSerializer.Serialize(source);
+
+        OpenAIAssistantInvocationOptions? target = JsonSerializer.Deserialize<OpenAIAssistantInvocationOptions>(json);
+
+        Assert.NotNull(target);
+        Assert.Equal(source.ModelName, target.ModelName);
+        Assert.Equal(source.Temperature, target.Temperature);
+        Assert.Equal(source.TopP, target.TopP);
+        Assert.Equal(source.MaxCompletionTokens, target.MaxCompletionTokens);
+        Assert.Equal(source.MaxPromptTokens, target.MaxPromptTokens);
+        Assert.Equal(source.TruncationMessageCount, target.TruncationMessageCount);
+        Assert.Equal(source.EnableCodeInterpreter, target.EnableCodeInterpreter);
+        Assert.Equal(source.EnableJsonResponse, target.EnableJsonResponse);
+        Assert.Equal(source.EnableFileSearch, target.EnableFileSearch);
+        AssertCollection.Equal(source.Metadata, target.Metadata);
     }
 }
