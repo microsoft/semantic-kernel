@@ -23,7 +23,7 @@ The Azure team has a new client library, namely [Azure.AI.Inference](https://git
 
 Currently is known that the first version of the client SDK will only support: `Chat Completion` and `Text Embedding Generation` and `Image Embedding Generation` with `TextToImage Generation` planned.
 
-There are no current plans to support `Text Completion`.
+There are no current plans to support `Text Generation` modality.
 
 ## AI Connector
 
