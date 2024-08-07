@@ -22,14 +22,22 @@ internal sealed class MockAgent : KernelAgent, IChatHistoryHandler
 
     public IChatHistoryReducer? HistoryReducer { get; init; }
 
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatHistory history, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        ChatHistory history,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
         this.InvokeCount++;
 
         return this.Response.ToAsyncEnumerable();
     }
 
-    public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(ChatHistory history, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        ChatHistory history,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
         this.InvokeCount++;
         return this.Response.Select(m => new StreamingChatMessageContent(m.Role, m.Content)).ToAsyncEnumerable();

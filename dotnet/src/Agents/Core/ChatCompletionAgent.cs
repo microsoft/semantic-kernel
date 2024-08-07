@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 /// <remarks>
 /// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
-/// (<see cref="ChatCompletionAgent.ExecutionSettings"/>)
+/// (<see cref="ChatCompletionAgent.Arguments"/>)
 /// </remarks>
 public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
 {
