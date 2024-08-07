@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 
@@ -11,7 +14,11 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
-public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
+/// <remarks>
+/// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
+/// (<see cref="ChatCompletionAgent.ExecutionSettings"/>)
+/// </remarks>
+public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
 {
     /// <summary>
     /// Optional arguments for the agent.
@@ -19,7 +26,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     public KernelArguments? Arguments { get; set; }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    public IChatHistoryReducer? HistoryReducer { get; init; }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -64,7 +74,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+    public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
@@ -106,6 +116,33 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
             history.Add(message);
         }
+    }
+
+    /// <inheritdoc/>
+    protected override IEnumerable<string> GetChannelKeys()
+    {
+        // Agents with different reducers shall not share the same channel.
+        // Agents with the same or equivalent reducer shall share the same channel.
+        if (this.HistoryReducer != null)
+        {
+            // Explicitly include the reducer type to eliminate the possibility of hash collisions
+            // with custom implementations of IChatHistoryReducer.
+            yield return this.HistoryReducer.GetType().FullName!;
+
+            yield return this.HistoryReducer.GetHashCode().ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+    {
+        ChatHistoryChannel channel =
+            new()
+            {
+                Logger = this.LoggerFactory.CreateLogger<ChatHistoryChannel>()
+            };
+
+        return Task.FromResult<AgentChannel>(channel);
     }
 
     private (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
