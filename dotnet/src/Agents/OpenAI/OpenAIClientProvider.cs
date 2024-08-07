@@ -28,6 +28,9 @@ public sealed class OpenAIClientProvider
     /// </summary>
     public OpenAIClient Client { get; }
 
+    /// <summary>
+    /// Configuration keys required for <see cref="AgentChannel"/> management.
+    /// </summary>
     internal IEnumerable<string> ConfigurationKeys { get; }
 
     private OpenAIClientProvider(OpenAIClient client, IEnumerable<string> keys)
