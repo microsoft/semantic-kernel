@@ -320,7 +320,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant.UnitTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureAIInference", "src\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj", "{E34695C3-B652-478C-BA7B-466249F5C7E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.AzureAIInference.UnitTests", "src\Connectors\Connectors.AzureAIInference.UnitTests\Connectors.AzureAIInference.UnitTests.csproj", "{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -803,6 +807,18 @@ Global
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E34695C3-B652-478C-BA7B-466249F5C7E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -913,6 +929,8 @@ Global
 		{E92AE954-8F3A-4A6F-A4F9-DC12017E5AAF} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{38374C62-0263-4FE8-A18C-70FC8132912B} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
+		{E34695C3-B652-478C-BA7B-466249F5C7E1} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
+		{572EDF3C-D3E2-4AEA-8039-93D37AC3BED2} = {1B4CBDE0-10C2-4E7D-9CD0-FE7586C96ED1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
