@@ -136,19 +136,18 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         assert isinstance(settings, AzureAIInferenceChatPromptExecutionSettings)  # nosec
 
         kernel = kwargs.get("kernel")
-        if not kernel and settings.function_choice_behavior is not None:
+        if settings.function_choice_behavior is not None and (not kernel or not isinstance(kernel, Kernel)):
             raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
 
-        assert isinstance(kernel, Kernel)  # nosec
-        self._configure_function_choice_behavior(settings, kernel)
+        if kernel and settings.function_choice_behavior:
+            self._verify_function_choice_behavior(settings)
+            self._configure_function_choice_behavior(settings, kernel)
 
         if (
             settings.function_choice_behavior is None
             or not settings.function_choice_behavior.auto_invoke_kernel_functions
         ):
             return await self._send_chat_request(chat_history, settings)
-
-        self._verify_function_choice_behavior(settings)
 
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(chat_history, settings)
@@ -160,7 +159,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             results = await self._invoke_function_calls(
                 function_calls=function_calls,
                 chat_history=chat_history,
-                kernel=kernel,
+                kernel=kernel,  # type: ignore
                 arguments=kwargs.get("arguments", None),
                 function_call_count=fc_count,
                 request_index=request_index,
@@ -251,11 +250,12 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         assert isinstance(settings, AzureAIInferenceChatPromptExecutionSettings)  # nosec
 
         kernel = kwargs.get("kernel")
-        if not kernel and settings.function_choice_behavior is not None:
+        if settings.function_choice_behavior is not None and (not kernel or not isinstance(kernel, Kernel)):
             raise ServiceInvalidExecutionSettingsError("Kernel is required for auto invoking functions.")
 
-        assert isinstance(kernel, Kernel)  # nosec
-        self._configure_function_choice_behavior(settings, kernel)
+        if kernel and settings.function_choice_behavior:
+            self._verify_function_choice_behavior(settings)
+            self._configure_function_choice_behavior(settings, kernel)
 
         if (
             settings.function_choice_behavior is None
@@ -266,7 +266,10 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         else:
             # Auto invoke is required.
             async_generator = self._get_streaming_chat_message_contents_auto_invoke(
-                kernel, chat_history, settings, **kwargs
+                kernel,  # type: ignore
+                kwargs.get("arguments"),
+                chat_history,
+                settings,
             )
 
         async for messages in async_generator:
@@ -275,13 +278,11 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     async def _get_streaming_chat_message_contents_auto_invoke(
         self,
         kernel: Kernel,
+        arguments: KernelArguments | None,
         chat_history: ChatHistory,
         settings: AzureAIInferenceChatPromptExecutionSettings,
-        **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Get streaming chat message contents from the Azure AI Inference service with auto invoking functions."""
-        self._verify_function_choice_behavior(settings)
-
         # mypy doesn't recognize the settings.function_choice_behavior is not None by the check above
         request_attempts = settings.function_choice_behavior.maximum_auto_invoke_attempts  # type: ignore
 
@@ -308,7 +309,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                 function_calls=function_calls,
                 chat_history=chat_history,
                 kernel=kernel,
-                arguments=kwargs.get("arguments", None),
+                arguments=arguments,
                 function_call_count=len(function_calls),
                 request_index=request_index,
                 # mypy doesn't recognize the settings.function_choice_behavior is not None by the check above
@@ -419,8 +420,6 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
 
     def _verify_function_choice_behavior(self, settings: AzureAIInferenceChatPromptExecutionSettings):
         """Verify the function choice behavior."""
-        if not settings.function_choice_behavior:
-            raise ServiceInvalidExecutionSettingsError("Function choice behavior is required for tool calls.")
         if settings.extra_parameters is not None and settings.extra_parameters.get("n", 1) > 1:
             # Currently only OpenAI models allow multiple completions but the Azure AI Inference service
             # does not expose the functionality directly. If users want to have more than 1 responses, they
