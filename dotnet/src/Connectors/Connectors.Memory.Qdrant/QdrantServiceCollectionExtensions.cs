@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Data;
 using Qdrant.Client;
 
-namespace Microsoft.SemanticKernel.Connectors.Qdrant;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods to register Qdrant <see cref="IVectorStore"/> instances on an <see cref="IServiceCollection"/>.

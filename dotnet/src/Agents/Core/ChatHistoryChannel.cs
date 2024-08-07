@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.Agents.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -19,7 +20,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
     private readonly ChatHistory _history;
 
     /// <inheritdoc/>
-    protected internal sealed override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
+    protected override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -27,6 +28,9 @@ internal sealed class ChatHistoryChannel : AgentChannel
         {
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
+
+        // Pre-process history reduction.
+        await this._history.ReduceAsync(historyHandler.HistoryReducer, cancellationToken).ConfigureAwait(false);
 
         // Capture the current message count to evaluate history mutation.
         int messageCount = this._history.Count;
@@ -76,7 +80,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._history.AddRange(history);
 
@@ -84,7 +88,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
+    protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._history.ToDescendingAsync();
     }
