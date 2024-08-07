@@ -59,6 +59,21 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
         Assert.Equal("model-id", service.Attributes["ModelId"]);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ConstructorWithCustomEndpointWorksCorrectly(bool includeLoggerFactory)
+    {
+        // Arrange & Act
+        var service = includeLoggerFactory ?
+            new OpenAIAudioToTextService("model-id", new Uri("custom-api"), loggerFactory: this._mockLoggerFactory.Object) :
+            new OpenAIAudioToTextService("model-id", new Uri("custom-api"));
+
+        // Assert
+        Assert.NotNull(service);
+        Assert.Equal("model-id", service.Attributes["ModelId"]);
+    }
+
     [Fact]
     public async Task GetTextContentByDefaultWorksCorrectlyAsync()
     {
