@@ -19,7 +19,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
     [Fact]
     public async Task UseSingleAssistantAgentAsync()
     {
-// Define the agent
+        // Define the agent
         OpenAIServiceConfiguration config = this.GetOpenAIConfiguration();
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
