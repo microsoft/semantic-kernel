@@ -23,7 +23,7 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
     /// <summary>
     /// Optional arguments for the agent.
     /// </summary>
-    public KernelArguments? Arguments { get; set; }
+    public KernelArguments? Arguments { get; init; }
 
     /// <inheritdoc/>
     public IChatHistoryReducer? HistoryReducer { get; init; }
