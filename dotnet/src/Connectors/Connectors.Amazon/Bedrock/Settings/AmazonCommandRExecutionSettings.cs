@@ -13,8 +13,8 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon;
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public class AmazonCommandRExecutionSettings : PromptExecutionSettings
 {
-    private List<CommandRRequest.ChatMessage>? _chatHistory;
-    private List<CommandRRequest.Document>? _documents;
+    private List<CommandRTools.ChatMessage>? _chatHistory;
+    private List<CommandRTools.Document>? _documents;
     private bool? _searchQueriesOnly;
     private string? _preamble;
     private int? _maxTokens;
@@ -26,8 +26,8 @@ public class AmazonCommandRExecutionSettings : PromptExecutionSettings
     private float? _presencePenalty;
     private int? _seed;
     private bool? _returnPrompt;
-    private List<CommandRRequest.Tool>? _tools;
-    private List<CommandRRequest.ToolResult>? _toolResults;
+    private List<CommandRTools.Tool>? _tools;
+    private List<CommandRTools.ToolResult>? _toolResults;
     private List<string>? _stopSequences;
     private bool? _rawPrompting;
 
@@ -35,7 +35,7 @@ public class AmazonCommandRExecutionSettings : PromptExecutionSettings
     /// A list of previous messages between the user and the model, meant to give the model conversational context for responding to the user's message.
     /// </summary>
     [JsonPropertyName("chat_history")]
-    public List<CommandRRequest.ChatMessage>? ChatHistory
+    public List<CommandRTools.ChatMessage>? ChatHistory
     {
         get => this._chatHistory;
         set
@@ -49,7 +49,7 @@ public class AmazonCommandRExecutionSettings : PromptExecutionSettings
     /// A list of texts that the model can cite to generate a more accurate reply. Each document is a string-string dictionary. The resulting generation includes citations that reference some of these documents. We recommend that you keep the total word count of the strings in the dictionary to under 300 words. An _excludes field (array of strings) can be optionally supplied to omit some key-value pairs from being shown to the model.
     /// </summary>
     [JsonPropertyName("documents")]
-    public List<CommandRRequest.Document>? Documents
+    public List<CommandRTools.Document>? Documents
     {
         get => this._documents;
         set
@@ -217,7 +217,7 @@ public class AmazonCommandRExecutionSettings : PromptExecutionSettings
     /// A list of available tools (functions) that the model may suggest invoking before producing a text response. When tools is passed (without tool_results), the text field in the response will be "" and the tool_calls field in the response will be populated with a list of tool calls that need to be made. If no calls need to be made, the tool_calls array will be empty.
     /// </summary>
     [JsonPropertyName("tools")]
-    public List<CommandRRequest.Tool>? Tools
+    public List<CommandRTools.Tool>? Tools
     {
         get => this._tools;
         set
@@ -231,7 +231,7 @@ public class AmazonCommandRExecutionSettings : PromptExecutionSettings
     /// A list of results from invoking tools recommended by the model in the previous chat turn. Results are used to produce a text response and are referenced in citations. When using tool_results, tools must be passed as well. Each tool_result contains information about how it was invoked, as well as a list of outputs in the form of dictionaries. Cohere's unique fine-grained citation logic requires the output to be a list. In case the output is just one item, such as {"status": 200}, you should still wrap it inside a list.
     /// </summary>
     [JsonPropertyName("tool_results")]
-    public List<CommandRRequest.ToolResult>? ToolResults
+    public List<CommandRTools.ToolResult>? ToolResults
     {
         get => this._toolResults;
         set

@@ -29,9 +29,9 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
             TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "topP") ?? exec.TopP,
             MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "maxTokens") ?? exec.MaxTokens,
             StopSequences = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(executionSettings?.ExtensionData, "stopSequences") ?? exec.StopSequences,
-            CountPenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicRequest.CountPenalty?>(executionSettings?.ExtensionData, "countPenalty") ?? exec.CountPenalty,
-            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicRequest.PresencePenalty?>(executionSettings?.ExtensionData, "presencePenalty") ?? exec.PresencePenalty,
-            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicRequest.FrequencyPenalty?>(executionSettings?.ExtensionData, "frequencyPenalty") ?? exec.FrequencyPenalty
+            CountPenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicPenalties?>(executionSettings?.ExtensionData, "countPenalty") ?? exec.CountPenalty,
+            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicPenalties?>(executionSettings?.ExtensionData, "presencePenalty") ?? exec.PresencePenalty,
+            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicPenalties?>(executionSettings?.ExtensionData, "frequencyPenalty") ?? exec.FrequencyPenalty
         };
         return requestBody;
     }

@@ -5,15 +5,49 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
-/// Cohere Command R Text Generation Request object for Invoke Model Bedrock API call.
+/// Structs accessed by the Command R execution settings and Command R request.
 /// </summary>
-internal static class CommandRToolUse
+public static class CommandRTools
 {
+        /// <summary>
+    /// The required fields for chat_history.
+    /// </summary>
+    [Serializable]
+    public class ChatMessage
+    {
+        /// <summary>
+        /// The role for the message. Valid values are USER or CHATBOT. tokens.
+        /// </summary>
+        [JsonPropertyName("role")]
+        public required string Role { get; set; }
+        /// <summary>
+        /// Text contents of the message.
+        /// </summary>
+        [JsonPropertyName("message")]
+        public required string Message { get; set; }
+    }
+    /// <summary>
+    /// JSON structure for list of texts that the model can cite to generate a more accurate reply.
+    /// </summary>
+    [Serializable]
+    public class Document
+    {
+        /// <summary>
+        /// Possible key field.
+        /// </summary>
+        [JsonPropertyName("title")]
+        public required string Title { get; set; }
+        /// <summary>
+        /// Possible value field.
+        /// </summary>
+        [JsonPropertyName("snippet")]
+        public required string Snippet { get; set; }
+    }
     /// <summary>
     /// Tool parameters.
     /// </summary>
     [Serializable]
-    internal sealed class Tool
+    public class Tool
     {
         /// <summary>
         /// Name of the tool.
@@ -35,7 +69,7 @@ internal static class CommandRToolUse
     /// Components of each tool parameter.
     /// </summary>
     [Serializable]
-    internal sealed class ToolParameter
+    public class ToolParameter
     {
         /// <summary>
         /// Description of parameter.
@@ -57,34 +91,40 @@ internal static class CommandRToolUse
     /// Cohere tool result.
     /// </summary>
     [Serializable]
-    internal sealed class ToolResult
+    public class ToolResult
     {
         /// <summary>
         /// The tool call.
         /// </summary>
         [JsonPropertyName("call")]
-        public ToolCall? Call { get; set; }
+        public required ToolCall Call { get; set; }
         /// <summary>
         /// Outputs from the tool call.
         /// </summary>
         [JsonPropertyName("outputs")]
-        public static List<Dictionary<string, string>>? Outputs { get; set; }
+        public required List<Dictionary<string, string>> Outputs { get; set; }
     }
     /// <summary>
     /// Tool call object to be passed into the tool call.
     /// </summary>
     [Serializable]
-    internal sealed class ToolCall
+    public class ToolCall
     {
         /// <summary>
         /// Name of tool.
         /// </summary>
         [JsonPropertyName("name")]
-        public string? Name { get; set; }
+        public required string Name { get; set; }
         /// <summary>
         /// Parameters for the tool.
         /// </summary>
         [JsonPropertyName("parameters")]
-        public Dictionary<string, string>? Parameters { get; set; }
+        public required Dictionary<string, string> Parameters { get; set; }
+
+        /// <summary>
+        /// GenerationID.
+        /// </summary>
+        [JsonPropertyName("generation_id")]
+        public required string GenerationId { get; set; }
     }
 }

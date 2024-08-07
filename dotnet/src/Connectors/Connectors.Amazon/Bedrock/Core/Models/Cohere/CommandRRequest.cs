@@ -7,12 +7,12 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Request object for the Command-R model.
 /// </summary>
-public static class CommandRRequest
+internal static class CommandRRequest
 {
     /// <summary>
     /// Text generation request object.
     /// </summary>
-    public sealed class CommandRTextGenerationRequest
+    internal sealed class CommandRTextGenerationRequest
     {
         /// <summary>
         /// (Required) Text input for the model to respond to.
@@ -24,13 +24,13 @@ public static class CommandRRequest
         /// </summary>
         [JsonPropertyName("chat_history")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public IList<ChatMessage>? ChatHistory { get; set; }
+        public IList<CommandRTools.ChatMessage>? ChatHistory { get; set; }
         /// <summary>
         /// A list of texts that the model can cite to generate a more accurate reply. Each document is a string-string dictionary. The resulting generation includes citations that reference some of these documents. We recommend that you keep the total word count of the strings in the dictionary to under 300 words. An _excludes field (array of strings) can be optionally supplied to omit some key-value pairs from being shown to the model.
         /// </summary>
         [JsonPropertyName("documents")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public IList<Document>? Documents { get; set; }
+        public IList<CommandRTools.Document>? Documents { get; set; }
         /// <summary>
         /// Defaults to false. When true, the response will only contain a list of generated search queries, but no search will take place, and no reply from the model to the user's message will be generated.
         /// </summary>
@@ -103,13 +103,13 @@ public static class CommandRRequest
         /// </summary>
         [JsonPropertyName("tools")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public IList<Tool>? Tools { get; set; }
+        public IList<CommandRTools.Tool>? Tools { get; set; }
         /// <summary>
         /// A list of results from invoking tools recommended by the model in the previous chat turn. Results are used to produce a text response and are referenced in citations. When using tool_results, tools must be passed as well. Each tool_result contains information about how it was invoked, as well as a list of outputs in the form of dictionaries. Cohere’s unique fine-grained citation logic requires the output to be a list. In case the output is just one item, such as {"status": 200}, you should still wrap it inside a list.
         /// </summary>
         [JsonPropertyName("tool_results")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public IList<ToolResult>? ToolResults { get; set; }
+        public IList<CommandRTools.ToolResult>? ToolResults { get; set; }
         /// <summary>
         /// A list of stop sequences. After a stop sequence is detected, the model stops generating further tokens.
         /// </summary>
@@ -122,123 +122,5 @@ public static class CommandRRequest
         [JsonPropertyName("raw_prompting")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? RawPrompting { get; set; }
-    }
-    /// <summary>
-    /// The required fields for chat_history.
-    /// </summary>
-    [Serializable]
-    public class ChatMessage
-    {
-        /// <summary>
-        /// The role for the message. Valid values are USER or CHATBOT. tokens.
-        /// </summary>
-        [JsonPropertyName("role")]
-        public required string Role { get; set; }
-        /// <summary>
-        /// Text contents of the message.
-        /// </summary>
-        [JsonPropertyName("message")]
-        public required string Message { get; set; }
-    }
-    /// <summary>
-    /// JSON structure for list of texts that the model can cite to generate a more accurate reply.
-    /// </summary>
-    [Serializable]
-    public class Document
-    {
-        /// <summary>
-        /// Possible key field.
-        /// </summary>
-        [JsonPropertyName("title")]
-        public required string Title { get; set; }
-        /// <summary>
-        /// Possible value field.
-        /// </summary>
-        [JsonPropertyName("snippet")]
-        public required string Snippet { get; set; }
-    }
-    /// <summary>
-    /// Tool parameters.
-    /// </summary>
-    [Serializable]
-    public class Tool
-    {
-        /// <summary>
-        /// Name of the tool.
-        /// </summary>
-        [JsonPropertyName("name")]
-        public required string Name { get; set; }
-        /// <summary>
-        /// Description of the tool.
-        /// </summary>
-        [JsonPropertyName("description")]
-        public required string Description { get; set; }
-        /// <summary>
-        /// Definitions for each tool.
-        /// </summary>
-        [JsonPropertyName("parameter_definitions")]
-        public required Dictionary<string, ToolParameter> ParameterDefinitions { get; set; }
-    }
-    /// <summary>
-    /// Components of each tool parameter.
-    /// </summary>
-    [Serializable]
-    public class ToolParameter
-    {
-        /// <summary>
-        /// Description of parameter.
-        /// </summary>
-        [JsonPropertyName("description")]
-        public required string Description { get; set; }
-        /// <summary>
-        /// Parameter type (str, int, etc.) as described in a string.
-        /// </summary>
-        [JsonPropertyName("type")]
-        public required string Type { get; set; }
-        /// <summary>
-        /// Whether this parameter is required.
-        /// </summary>
-        [JsonPropertyName("required")]
-        public required bool Required { get; set; }
-    }
-    /// <summary>
-    /// Cohere tool result.
-    /// </summary>
-    [Serializable]
-    public class ToolResult
-    {
-        /// <summary>
-        /// The tool call.
-        /// </summary>
-        [JsonPropertyName("call")]
-        public required ToolCall Call { get; set; }
-        /// <summary>
-        /// Outputs from the tool call.
-        /// </summary>
-        [JsonPropertyName("outputs")]
-        public required List<Dictionary<string, string>> Outputs { get; set; }
-    }
-    /// <summary>
-    /// Tool call object to be passed into the tool call.
-    /// </summary>
-    [Serializable]
-    public class ToolCall
-    {
-        /// <summary>
-        /// Name of tool.
-        /// </summary>
-        [JsonPropertyName("name")]
-        public required string Name { get; set; }
-        /// <summary>
-        /// Parameters for the tool.
-        /// </summary>
-        [JsonPropertyName("parameters")]
-        public required Dictionary<string, string> Parameters { get; set; }
-
-        /// <summary>
-        /// GenerationID.
-        /// </summary>
-        [JsonPropertyName("generation_id")]
-        public required string GenerationId { get; set; }
     }
 }
