@@ -31,13 +31,13 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         });
 
     /// <summary>
-    /// Provide a <see cref="OpenAIServiceConfiguration"/> according to the configuration settings.
+    /// Provide a <see cref="OpenAIClientProvider"/> according to the configuration settings.
     /// </summary>
-    protected OpenAIServiceConfiguration GetOpenAIConfiguration()
+    protected OpenAIClientProvider GetClientProvider()
         =>
             this.UseOpenAIConfig ?
-                OpenAIServiceConfiguration.ForOpenAI(this.ApiKey) :
-                OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
+                OpenAIClientProvider.ForOpenAI(this.ApiKey) :
+                OpenAIClientProvider.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 
     /// <summary>
     /// Common method to write formatted agent chat content to the console.

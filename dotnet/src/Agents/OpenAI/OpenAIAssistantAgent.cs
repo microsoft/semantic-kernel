@@ -26,6 +26,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
     internal const string OptionsMetadataKey = "__run_options";
 
+    private readonly OpenAIClientProvider _provider;
     private readonly Assistant _assistant;
     private readonly AssistantClient _client;
     private readonly string[] _channelKeys;
@@ -55,23 +56,23 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="config">Configuration for accessing the API service.</param>
+    /// <param name="provider">Configuration for accessing the API service.</param>
     /// <param name="definition">The assistant definition.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> CreateAsync(
         Kernel kernel,
-        OpenAIServiceConfiguration config,
+        OpenAIClientProvider provider,
         OpenAIAssistantDefinition definition,
         CancellationToken cancellationToken = default)
     {
         // Validate input
         Verify.NotNull(kernel, nameof(kernel));
-        Verify.NotNull(config, nameof(config));
+        Verify.NotNull(provider, nameof(provider));
         Verify.NotNull(definition, nameof(definition));
 
         // Create the client
-        AssistantClient client = CreateClient(config);
+        AssistantClient client = CreateClient(provider);
 
         // Create the assistant
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
@@ -79,7 +80,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Instantiate the agent
         return
-            new OpenAIAssistantAgent(client, model, DefineChannelKeys(config))
+            new OpenAIAssistantAgent(model, provider, client)
             {
                 Kernel = kernel,
             };
@@ -88,15 +89,15 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Retrieve a list of assistant definitions: <see cref="OpenAIAssistantDefinition"/>.
     /// </summary>
-    /// <param name="config">Configuration for accessing the API service.</param>
+    /// <param name="provider">Configuration for accessing the API service.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An list of <see cref="OpenAIAssistantDefinition"/> objects.</returns>
     public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListDefinitionsAsync(
-        OpenAIServiceConfiguration config,
+        OpenAIClientProvider provider,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Create the client
-        AssistantClient client = CreateClient(config);
+        AssistantClient client = CreateClient(provider);
 
         // Query and enumerate assistant definitions
         await foreach (Assistant model in client.GetAssistantsAsync(ListOrder.NewestFirst, cancellationToken).ConfigureAwait(false))
@@ -109,25 +110,25 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Retrieve a <see cref="OpenAIAssistantAgent"/> by identifier.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="config">Configuration for accessing the API service.</param>
+    /// <param name="provider">Configuration for accessing the API service.</param>
     /// <param name="id">The agent identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> RetrieveAsync(
         Kernel kernel,
-        OpenAIServiceConfiguration config,
+        OpenAIClientProvider provider,
         string id,
         CancellationToken cancellationToken = default)
     {
         // Create the client
-        AssistantClient client = CreateClient(config);
+        AssistantClient client = CreateClient(provider);
 
         // Retrieve the assistant
         Assistant model = await client.GetAssistantAsync(id).ConfigureAwait(false); // SDK BUG - CANCEL TOKEN (https://github.com/microsoft/semantic-kernel/issues/7431)
 
         // Instantiate the agent
         return
-            new OpenAIAssistantAgent(client, model, DefineChannelKeys(config))
+            new OpenAIAssistantAgent(model, provider, client)
             {
                 Kernel = kernel,
             };
@@ -169,7 +170,6 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// Uploads an file for the purpose of using with assistant.
     /// </summary>
-    /// <param name="config">Configuration for accessing the API service.</param>
     /// <param name="stream">The content to upload</param>
     /// <param name="name">The name of the file</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -177,9 +177,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// Use the <see cref="FileClient"/> directly for more advanced file operations.
     /// </remarks>
-    public static async Task<string> UploadFileAsync(OpenAIServiceConfiguration config, Stream stream, string name, CancellationToken cancellationToken = default)
+    public async Task<string> UploadFileAsync(Stream stream, string name, CancellationToken cancellationToken = default)
     {
-        FileClient client = config.CreateFileClient();
+        FileClient client = this._provider.Client.GetFileClient();
 
         OpenAIFileInfo fileInfo = await client.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
 
@@ -299,13 +299,14 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgent"/> class.
     /// </summary>
     private OpenAIAssistantAgent(
-        AssistantClient client,
         Assistant model,
-        IEnumerable<string> channelKeys)
+        OpenAIClientProvider provider,
+        AssistantClient client)
     {
+        this._provider = provider;
         this._assistant = model;
-        this._client = client;
-        this._channelKeys = channelKeys.ToArray();
+        this._client = provider.Client.GetAssistantClient();
+        this._channelKeys = provider.ConfigurationKeys.ToArray();
 
         this.Definition = CreateAssistantDefinition(model);
 
@@ -392,32 +393,19 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         return assistantCreationOptions;
     }
 
-    private static AssistantClient CreateClient(OpenAIServiceConfiguration config)
+    private static AssistantClient CreateClient(OpenAIClientProvider config)
     {
-        OpenAIClient openAIClient = OpenAIClientFactory.CreateClient(config);
-        return openAIClient.GetAssistantClient();
+        return config.Client.GetAssistantClient();
     }
 
-    private static IEnumerable<string> DefineChannelKeys(OpenAIServiceConfiguration config)
+    private static IEnumerable<string> DefineChannelKeys(OpenAIClientProvider config)
     {
         // Distinguish from other channel types.
         yield return typeof(AgentChannel<OpenAIAssistantAgent>).FullName!;
 
-        // Distinguish between different Azure OpenAI endpoints or OpenAI services.
-        yield return config.Endpoint != null ? config.Endpoint.ToString() : "openai";
-
-        // Custom client receives dedicated channel.
-        if (config.HttpClient is not null)
+        foreach (string key in config.ConfigurationKeys)
         {
-            if (config.HttpClient.BaseAddress is not null)
-            {
-                yield return config.HttpClient.BaseAddress.AbsoluteUri;
-            }
-
-            foreach (string header in config.HttpClient.DefaultRequestHeaders.SelectMany(h => h.Value))
-            {
-                yield return header;
-            }
+            yield return key;
         }
     }
 }

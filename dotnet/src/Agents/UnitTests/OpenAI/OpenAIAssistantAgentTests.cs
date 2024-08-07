@@ -634,10 +634,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 definition);
     }
 
-    private OpenAIServiceConfiguration CreateTestConfiguration(bool targetAzure = false)
+    private OpenAIClientProvider CreateTestConfiguration(bool targetAzure = false)
         => targetAzure ?
-            OpenAIServiceConfiguration.ForAzureOpenAI(apiKey: "fakekey", endpoint: new Uri("https://localhost"), this._httpClient) :
-            OpenAIServiceConfiguration.ForOpenAI(apiKey: "fakekey", endpoint: null, this._httpClient);
+            OpenAIClientProvider.ForAzureOpenAI(apiKey: "fakekey", endpoint: new Uri("https://localhost"), this._httpClient) :
+            OpenAIClientProvider.ForOpenAI(apiKey: "fakekey", endpoint: null, this._httpClient);
 
     private void SetupResponse(HttpStatusCode statusCode, string content)
     {

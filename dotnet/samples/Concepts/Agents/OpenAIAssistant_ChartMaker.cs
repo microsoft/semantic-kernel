@@ -19,15 +19,15 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
     [Fact]
     public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
-        OpenAIServiceConfiguration config = this.GetOpenAIConfiguration();
+        OpenAIClientProvider provider = this.GetClientProvider();
 
-        FileClient fileClient = config.CreateFileClient();
+        FileClient fileClient = provider.Client.GetFileClient();
 
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config,
+                provider,
                 new()
                 {
                     Instructions = AgentInstructions,

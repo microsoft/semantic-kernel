@@ -22,15 +22,15 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
     [Fact]
     public async Task AnalyzeDataAndGenerateChartAsync()
     {
-        OpenAIServiceConfiguration config = this.GetOpenAIConfiguration();
+        OpenAIClientProvider provider = this.GetClientProvider();
 
-        FileClient fileClient = config.CreateFileClient();
+        FileClient fileClient = provider.Client.GetFileClient();
 
         // Define the agents
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config,
+                provider,
                 new()
                 {
                     Instructions = AnalystInstructions,

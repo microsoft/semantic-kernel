@@ -16,9 +16,9 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
     [Fact]
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
-        OpenAIServiceConfiguration config = this.GetOpenAIConfiguration();
+        OpenAIClientProvider provider = this.GetClientProvider();
 
-        FileClient fileClient = config.CreateFileClient();
+        FileClient fileClient = provider.Client.GetFileClient();
 
         OpenAIFileInfo uploadFile =
             await fileClient.UploadFileAsync(
@@ -30,7 +30,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config,
+                provider,
                 new()
                 {
                     EnableCodeInterpreter = true,

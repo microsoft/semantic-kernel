@@ -36,7 +36,7 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(openAISettings);
 
         await this.ExecuteAgentAsync(
-            OpenAIServiceConfiguration.ForOpenAI(openAISettings.ApiKey),
+            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
             openAISettings.ModelId,
             input,
             expectedAnswerContains);
@@ -54,14 +54,14 @@ public sealed class OpenAIAssistantAgentTests
         Assert.NotNull(azureOpenAIConfiguration);
 
         await this.ExecuteAgentAsync(
-            OpenAIServiceConfiguration.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
+            OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
             expectedAnswerContains);
     }
 
     private async Task ExecuteAgentAsync(
-        OpenAIServiceConfiguration config,
+        OpenAIClientProvider config,
         string modelName,
         string input,
         string expected)

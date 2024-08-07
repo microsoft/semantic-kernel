@@ -20,11 +20,11 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
     public async Task UseSingleAssistantAgentAsync()
     {
         // Define the agent
-        OpenAIServiceConfiguration config = this.GetOpenAIConfiguration();
+        OpenAIClientProvider provider = this.GetClientProvider();
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config,
+                provider,
                 new()
                 {
                     ModelId = this.Model,
@@ -33,7 +33,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
 
         // Upload an image
         await using Stream imageStream = EmbeddedResource.ReadStream("cat.jpg")!;
-        string fileId = await OpenAIAssistantAgent.UploadFileAsync(config, imageStream, "cat.jpg");
+        string fileId = await agent.UploadFileAsync(imageStream, "cat.jpg");
 
         // Create a thread for the agent conversation.
         string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
@@ -51,7 +51,7 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
         {
             await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
-            await config.CreateFileClient().DeleteFileAsync(fileId);
+            await provider.Client.GetFileClient().DeleteFileAsync(fileId);
         }
 
         // Local function to invoke agent and display the conversation messages.

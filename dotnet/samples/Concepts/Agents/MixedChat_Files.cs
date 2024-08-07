@@ -19,9 +19,9 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
     [Fact]
     public async Task AnalyzeFileAndGenerateReportAsync()
     {
-        OpenAIServiceConfiguration config = this.GetOpenAIConfiguration();
+        OpenAIClientProvider provider = this.GetClientProvider();
 
-        FileClient fileClient = config.CreateFileClient();
+        FileClient fileClient = provider.Client.GetFileClient();
 
         OpenAIFileInfo uploadFile =
             await fileClient.UploadFileAsync(
@@ -35,7 +35,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
         OpenAIAssistantAgent analystAgent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config,
+                provider,
                 new()
                 {
                     EnableCodeInterpreter = true,

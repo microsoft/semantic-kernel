@@ -17,11 +17,11 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
     public async Task UseFileSearchToolWithAssistantAgentAsync()
     {
         // Define the agent
-        OpenAIServiceConfiguration config = this.GetOpenAIConfiguration();
+        OpenAIClientProvider provider = this.GetClientProvider();
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: this.GetOpenAIConfiguration(),
+                provider: this.GetClientProvider(),
                 new()
                 {
                     EnableFileSearch = true,
@@ -30,12 +30,12 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
                 });
 
         // Upload file - Using a table of fictional employees.
-        FileClient fileClient = config.CreateFileClient();
+        FileClient fileClient = provider.Client.GetFileClient();
         await using Stream stream = EmbeddedResource.ReadStream("employees.pdf")!;
         OpenAIFileInfo fileInfo = await fileClient.UploadFileAsync(stream, "employees.pdf", FileUploadPurpose.Assistants);
 
         // Create a vector-store
-        VectorStoreClient vectorStoreClient = config.CreateVectorStoreClient();
+        VectorStoreClient vectorStoreClient = provider.Client.GetVectorStoreClient();
         VectorStore vectorStore =
             await vectorStoreClient.CreateVectorStoreAsync(
                 new VectorStoreCreationOptions()
