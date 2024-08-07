@@ -6,6 +6,7 @@ using Amazon.Runtime.Endpoints;
 using Connectors.Amazon.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
@@ -128,8 +129,11 @@ public sealed class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new PromptExecutionSettings()
+        var executionSettings = new AmazonTitanExecutionSettings()
         {
+            Temperature = 0.3f,
+            TopP = 0.8f,
+            MaxTokenCount = 510,
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
@@ -174,8 +178,11 @@ public sealed class BedrockChatCompletionServiceTests
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
+        Assert.Equal(executionSettings.Temperature, converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["topP"], converseRequest?.InferenceConfig.TopP);
+        Assert.Equal(executionSettings.TopP, converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], converseRequest?.InferenceConfig.MaxTokens);
+        Assert.Equal(executionSettings.MaxTokenCount, converseRequest?.InferenceConfig.MaxTokens);
     }
 
     /// <summary>
@@ -358,8 +365,11 @@ public sealed class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "anthropic.claude-chat-completion";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new PromptExecutionSettings()
+        var executionSettings = new AmazonClaudeExecutionSettings()
         {
+            Temperature = 0.7f,
+            TopP = 0.7f,
+            MaxTokensToSample = 512,
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
@@ -403,6 +413,9 @@ public sealed class BedrockChatCompletionServiceTests
         ConverseRequest converseRequest = (ConverseRequest)invocation.Arguments[0];
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
+        Assert.Equal(executionSettings.Temperature, converseRequest?.InferenceConfig.Temperature);
+        Assert.Equal(executionSettings.TopP, converseRequest?.InferenceConfig.TopP);
+        Assert.Equal(executionSettings.MaxTokensToSample, converseRequest?.InferenceConfig.MaxTokens);
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens_to_sample"], converseRequest?.InferenceConfig.MaxTokens);
@@ -476,13 +489,16 @@ public sealed class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "mistral.mistral-text-lite-v1";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new PromptExecutionSettings()
+        var executionSettings = new AmazonMistralExecutionSettings()
         {
+            Temperature = 0.5f,
+            TopP = 0.9f,
+            MaxTokens = 512,
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
                 { "temperature", 0.5f },
-                { "top_p", .9f },
+                { "top_p", 0.9f },
                 { "max_tokens", 512 }
             }
         };
@@ -521,6 +537,9 @@ public sealed class BedrockChatCompletionServiceTests
         ConverseRequest converseRequest = (ConverseRequest)invocation.Arguments[0];
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
+        Assert.Equal(executionSettings.Temperature, converseRequest?.InferenceConfig.Temperature);
+        Assert.Equal(executionSettings.TopP, converseRequest?.InferenceConfig.TopP);
+        Assert.Equal(executionSettings.MaxTokens, converseRequest?.InferenceConfig.MaxTokens);
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
@@ -535,8 +554,11 @@ public sealed class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "cohere.command-r-chat-stuff";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new PromptExecutionSettings()
+        var executionSettings = new AmazonCommandRExecutionSettings()
         {
+            Temperature = 0.7f,
+            TopP = 0.9f,
+            MaxTokens = 202,
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
@@ -580,6 +602,9 @@ public sealed class BedrockChatCompletionServiceTests
         ConverseRequest converseRequest = (ConverseRequest)invocation.Arguments[0];
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
+        Assert.Equal(executionSettings.Temperature, converseRequest?.InferenceConfig.Temperature);
+        Assert.Equal(executionSettings.TopP, converseRequest?.InferenceConfig.TopP);
+        Assert.Equal(executionSettings.MaxTokens, converseRequest?.InferenceConfig.MaxTokens);
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
@@ -594,8 +619,9 @@ public sealed class BedrockChatCompletionServiceTests
         // Arrange
         string modelId = "ai21.jamba-chat-stuff";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new PromptExecutionSettings()
+        var executionSettings = new AmazonJambaExecutionSettings()
         {
+            Temperature = 0.7f,
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
@@ -640,6 +666,7 @@ public sealed class BedrockChatCompletionServiceTests
         Assert.Single(result);
         Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
         Assert.Equal(executionSettings.ExtensionData["temperature"], converseRequest?.InferenceConfig.Temperature);
+        Assert.Equal(executionSettings.Temperature, converseRequest?.InferenceConfig.Temperature);
         Assert.Equal(executionSettings.ExtensionData["top_p"], converseRequest?.InferenceConfig.TopP);
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], converseRequest?.InferenceConfig.MaxTokens);
     }

@@ -4,12 +4,12 @@ using System.Text.Json.Serialization;
 
 namespace Connectors.Amazon.Core;
 
-internal static class CommandRRequest
+public static class CommandRRequest
 {
     /// <summary>
     /// Text generation request object.
     /// </summary>
-    internal sealed class CommandRTextGenerationRequest
+    public sealed class CommandRTextGenerationRequest
     {
         /// <summary>
         /// (Required) Text input for the model to respond to.
@@ -124,7 +124,7 @@ internal static class CommandRRequest
     /// The required fields for chat_history.
     /// </summary>
     [Serializable]
-    internal class ChatMessage
+    public class ChatMessage
     {
         /// <summary>
         /// The role for the message. Valid values are USER or CHATBOT. tokens.
@@ -141,7 +141,7 @@ internal static class CommandRRequest
     /// JSON structure for list of texts that the model can cite to generate a more accurate reply.
     /// </summary>
     [Serializable]
-    internal class Document
+    public class Document
     {
         /// <summary>
         /// Possible key field.
@@ -158,7 +158,7 @@ internal static class CommandRRequest
     /// Tool parameters.
     /// </summary>
     [Serializable]
-    internal class Tool
+    public class Tool
     {
         /// <summary>
         /// Name of the tool.
@@ -180,7 +180,7 @@ internal static class CommandRRequest
     /// Components of each tool parameter.
     /// </summary>
     [Serializable]
-    internal class ToolParameter
+    public class ToolParameter
     {
         /// <summary>
         /// Description of parameter.
@@ -202,7 +202,7 @@ internal static class CommandRRequest
     /// Cohere tool result.
     /// </summary>
     [Serializable]
-    internal class ToolResult
+    public class ToolResult
     {
         /// <summary>
         /// The tool call.
@@ -219,7 +219,7 @@ internal static class CommandRRequest
     /// Tool call object to be passed into the tool call.
     /// </summary>
     [Serializable]
-    internal class ToolCall
+    public class ToolCall
     {
         /// <summary>
         /// Name of tool.

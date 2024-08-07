@@ -7,6 +7,7 @@ using Connectors.Amazon.Models.AI21;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core.Models.AI21Labs;
+using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 namespace Connectors.Amazon.Core;
 
@@ -24,16 +25,17 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
     /// <returns></returns>
     object IBedrockModelIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
+        var exec = AmazonJurassicExecutionSettings.FromExecutionSettings(executionSettings);
         var requestBody = new AI21JurassicRequest.AI21JurassicTextGenerationRequest()
         {
             Prompt = prompt,
-            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature"),
-            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "topP"),
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "maxTokens"),
-            StopSequences = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(executionSettings?.ExtensionData, "stopSequences"),
-            CountPenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicRequest.CountPenalty?>(executionSettings?.ExtensionData, "countPenalty"),
-            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicRequest.PresencePenalty?>(executionSettings?.ExtensionData, "presencePenalty"),
-            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicRequest.FrequencyPenalty?>(executionSettings?.ExtensionData, "frequencyPenalty")
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature") ?? exec.Temperature,
+            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "topP") ?? exec.TopP,
+            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "maxTokens") ?? exec.MaxTokens,
+            StopSequences = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(executionSettings?.ExtensionData, "stopSequences") ?? exec.StopSequences,
+            CountPenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicRequest.CountPenalty?>(executionSettings?.ExtensionData, "countPenalty") ?? exec.CountPenalty,
+            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicRequest.PresencePenalty?>(executionSettings?.ExtensionData, "presencePenalty") ?? exec.PresencePenalty,
+            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicRequest.FrequencyPenalty?>(executionSettings?.ExtensionData, "frequencyPenalty") ?? exec.FrequencyPenalty
         };
         return requestBody;
     }

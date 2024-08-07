@@ -6,6 +6,7 @@ using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 namespace Connectors.Amazon.Core;
 
@@ -23,12 +24,13 @@ internal sealed class MetaIOService : IBedrockModelIOService
     /// <returns></returns>
     object IBedrockModelIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
+        var exec = AmazonLlama3ExecutionSettings.FromExecutionSettings(executionSettings);
         var requestBody = new LlamaRequest.LlamaTextGenerationRequest()
         {
             Prompt = prompt,
-            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature"),
-            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "top_p"),
-            MaxGenLen = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_gen_len")
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature") ?? exec.Temperature,
+            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "top_p") ?? exec.TopP,
+            MaxGenLen = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_gen_len") ?? exec.MaxGenLen
         };
         return requestBody;
     }
@@ -65,9 +67,10 @@ internal sealed class MetaIOService : IBedrockModelIOService
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
 
-        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
-        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p");
-        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_gen_len");
+        var exec = AmazonLlama3ExecutionSettings.FromExecutionSettings(settings);
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature") ?? exec.Temperature;
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p") ?? exec.TopP;
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_gen_len") ?? exec.MaxGenLen;
 
         var inferenceConfig = new InferenceConfiguration();
         BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
@@ -118,9 +121,10 @@ internal sealed class MetaIOService : IBedrockModelIOService
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
 
-        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
-        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p");
-        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_gen_len");
+        var exec = AmazonLlama3ExecutionSettings.FromExecutionSettings(settings);
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature") ?? exec.Temperature;
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "top_p") ?? exec.TopP;
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_gen_len") ?? exec.MaxGenLen;
 
         var inferenceConfig = new InferenceConfiguration();
         BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);

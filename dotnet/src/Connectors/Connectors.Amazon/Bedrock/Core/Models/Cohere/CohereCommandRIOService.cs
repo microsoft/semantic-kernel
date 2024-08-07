@@ -6,6 +6,7 @@ using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 namespace Connectors.Amazon.Core;
 
@@ -25,7 +26,8 @@ internal sealed class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     object IBedrockModelIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
-        var chatHistory = BedrockModelUtilities.GetExtensionDataValue<List<CommandRRequest.ChatMessage>>(executionSettings?.ExtensionData, "chat_history");
+        var exec = AmazonCommandRExecutionSettings.FromExecutionSettings(executionSettings);
+        var chatHistory = BedrockModelUtilities.GetExtensionDataValue<List<CommandRRequest.ChatMessage>>(executionSettings?.ExtensionData, "chat_history") ?? exec.ChatHistory;
         if (chatHistory == null || chatHistory.Count == 0)
         {
             chatHistory = new List<CommandRRequest.ChatMessage>
@@ -41,20 +43,20 @@ internal sealed class CohereCommandRIOService : IBedrockModelIOService
         {
             Message = prompt,
             ChatHistory = chatHistory,
-            Documents = BedrockModelUtilities.GetExtensionDataValue<List<CommandRRequest.Document>?>(executionSettings?.ExtensionData, "documents"),
-            SearchQueriesOnly = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "search_queries_only"),
-            Preamble = BedrockModelUtilities.GetExtensionDataValue<string?>(executionSettings?.ExtensionData, "preamble"),
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_tokens"),
-            Temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "temperature"),
-            TopP = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "p"),
-            TopK = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "k"),
-            PromptTruncation = BedrockModelUtilities.GetExtensionDataValue<string?>(executionSettings?.ExtensionData, "prompt_truncation"),
-            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "frequency_penalty"),
-            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "presence_penalty"),
-            Seed = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "seed"),
-            ReturnPrompt = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "return_prompt"),
-            StopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>?>(executionSettings?.ExtensionData, "stop_sequences"),
-            RawPrompting = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "raw_prompting")
+            Documents = BedrockModelUtilities.GetExtensionDataValue<List<CommandRRequest.Document>?>(executionSettings?.ExtensionData, "documents") ?? exec.Documents,
+            SearchQueriesOnly = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "search_queries_only") ?? exec.SearchQueriesOnly,
+            Preamble = BedrockModelUtilities.GetExtensionDataValue<string?>(executionSettings?.ExtensionData, "preamble") ?? exec.Preamble,
+            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_tokens") ?? exec.MaxTokens,
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "temperature") ?? exec.Temperature,
+            TopP = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "p") ?? exec.TopP,
+            TopK = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "k") ?? exec.TopK,
+            PromptTruncation = BedrockModelUtilities.GetExtensionDataValue<string?>(executionSettings?.ExtensionData, "prompt_truncation") ?? exec.PromptTruncation,
+            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "frequency_penalty") ?? exec.FrequencyPenalty,
+            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "presence_penalty") ?? exec.PresencePenalty,
+            Seed = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "seed") ?? exec.Seed,
+            ReturnPrompt = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "return_prompt") ?? exec.ReturnPrompt,
+            StopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>?>(executionSettings?.ExtensionData, "stop_sequences") ?? exec.StopSequences,
+            RawPrompting = BedrockModelUtilities.GetExtensionDataValue<bool?>(executionSettings?.ExtensionData, "raw_prompting") ?? exec.RawPrompting
         };
 
         return requestBody;
@@ -91,49 +93,51 @@ internal sealed class CohereCommandRIOService : IBedrockModelIOService
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
-        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "p");
-        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens");
-        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences");
+
+        var exec = AmazonCommandRExecutionSettings.FromExecutionSettings(settings);
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature") ?? exec.Temperature;
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "p") ?? exec.TopP;
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens") ?? exec.MaxTokens;
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences") ?? exec.StopSequences;
 
         var inferenceConfig = new InferenceConfiguration();
         BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
-        BedrockModelUtilities.SetPropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+        BedrockModelUtilities.SetStopSequenceIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
 
         var additionalModelRequestFields = new Document();
-        var k = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "k");
+        var k = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "k") ?? exec.TopK;
         if (k.HasValue)
         {
             additionalModelRequestFields.Add("k", k.Value);
         }
-        var promptTruncation = BedrockModelUtilities.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation");
+        var promptTruncation = BedrockModelUtilities.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation") ?? exec.PromptTruncation;
         if (!string.IsNullOrEmpty(promptTruncation))
         {
             additionalModelRequestFields.Add("prompt_truncation", promptTruncation);
         }
-        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "frequency_penalty");
+        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "frequency_penalty") ?? exec.FrequencyPenalty;
         if (frequencyPenalty.HasValue)
         {
             additionalModelRequestFields.Add("frequency_penalty", frequencyPenalty.Value);
         }
-        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "presence_penalty");
+        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "presence_penalty") ?? exec.PresencePenalty;
         if (presencePenalty.HasValue)
         {
             additionalModelRequestFields.Add("presence_penalty", presencePenalty.Value);
         }
-        var seed = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "seed");
+        var seed = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "seed") ?? exec.Seed;
         if (seed.HasValue)
         {
             additionalModelRequestFields.Add("seed", seed.Value);
         }
-        var returnPrompt = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "return_prompt");
+        var returnPrompt = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "return_prompt") ?? exec.ReturnPrompt;
         if (returnPrompt.HasValue)
         {
             additionalModelRequestFields.Add("return_prompt", returnPrompt.Value);
         }
-        var rawPrompting = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "raw_prompting");
+        var rawPrompting = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "raw_prompting") ?? exec.RawPrompting;
         if (rawPrompting.HasValue)
         {
             additionalModelRequestFields.Add("raw_prompting", rawPrompting.Value);
@@ -178,54 +182,56 @@ internal sealed class CohereCommandRIOService : IBedrockModelIOService
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
-        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature");
-        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "p");
-        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens");
-        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences");
+
+        var exec = AmazonCommandRExecutionSettings.FromExecutionSettings(settings);
+        var temp = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "temperature") ?? exec.Temperature;
+        var topP = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "p") ?? exec.TopP;
+        var maxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "max_tokens") ?? exec.MaxTokens;
+        var stopSequences = BedrockModelUtilities.GetExtensionDataValue<List<string>>(settings?.ExtensionData, "stop_sequences") ?? exec.StopSequences;
 
         var inferenceConfig = new InferenceConfiguration();
         BedrockModelUtilities.SetPropertyIfNotNull(() => temp, value => inferenceConfig.Temperature = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => topP, value => inferenceConfig.TopP = value);
         BedrockModelUtilities.SetPropertyIfNotNull(() => maxTokens, value => inferenceConfig.MaxTokens = value);
-        BedrockModelUtilities.SetPropertyIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
+        BedrockModelUtilities.SetStopSequenceIfNotNull(() => stopSequences, value => inferenceConfig.StopSequences = value);
 
         var additionalModelRequestFields = new Document();
-        var k = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "k");
+        var k = BedrockModelUtilities.GetExtensionDataValue<float?>(settings?.ExtensionData, "k") ?? exec.TopK;
         if (k.HasValue)
         {
             additionalModelRequestFields.Add("k", k.Value);
         }
-        var promptTruncation = BedrockModelUtilities.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation");
+        var promptTruncation = BedrockModelUtilities.GetExtensionDataValue<string>(settings?.ExtensionData, "prompt_truncation") ?? exec.PromptTruncation;
         if (!string.IsNullOrEmpty(promptTruncation))
         {
             additionalModelRequestFields.Add("prompt_truncation", promptTruncation);
         }
-        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "frequency_penalty");
+        var frequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "frequency_penalty") ?? exec.FrequencyPenalty;
         if (frequencyPenalty.HasValue)
         {
             additionalModelRequestFields.Add("frequency_penalty", frequencyPenalty.Value);
         }
-        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "presence_penalty");
+        var presencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(settings?.ExtensionData, "presence_penalty") ?? exec.PresencePenalty;
         if (presencePenalty.HasValue)
         {
             additionalModelRequestFields.Add("presence_penalty", presencePenalty.Value);
         }
-        var seed = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "seed");
+        var seed = BedrockModelUtilities.GetExtensionDataValue<int?>(settings?.ExtensionData, "seed") ?? exec.Seed;
         if (seed.HasValue)
         {
             additionalModelRequestFields.Add("seed", seed.Value);
         }
-        var returnPrompt = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "return_prompt");
+        var returnPrompt = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "return_prompt") ?? exec.ReturnPrompt;
         if (returnPrompt.HasValue)
         {
             additionalModelRequestFields.Add("return_prompt", returnPrompt.Value);
         }
-        var rawPrompting = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "raw_prompting");
+        var rawPrompting = BedrockModelUtilities.GetExtensionDataValue<bool?>(settings?.ExtensionData, "raw_prompting") ?? exec.RawPrompting;
         if (rawPrompting.HasValue)
         {
             additionalModelRequestFields.Add("raw_prompting", rawPrompting.Value);
         }
-        var converseRequest = new ConverseStreamRequest
+        var converseRequest = new ConverseStreamRequest()
         {
             ModelId = modelId,
             Messages = messages,

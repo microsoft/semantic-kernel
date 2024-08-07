@@ -94,6 +94,12 @@ internal static class BedrockModelUtilities
         return default;
     }
 
+    /// <summary>
+    /// Sets Prompt Execution Settings data if the value is not null.
+    /// </summary>
+    /// <param name="getValue">Getter</param>
+    /// <param name="setValue">Setter</param>
+    /// <typeparam name="T">Parameter type</typeparam>
     internal static void SetPropertyIfNotNull<T>(Func<T?> getValue, Action<T> setValue) where T : struct
     {
         var value = getValue();
@@ -103,7 +109,8 @@ internal static class BedrockModelUtilities
         }
     }
 
-    internal static void SetPropertyIfNotNull<T>(Func<T?> getValue, Action<T?> setValue) where T : class
+    // Same function as above but primarily for stop sequences.
+    internal static void SetStopSequenceIfNotNull<T>(Func<T?> getValue, Action<T?> setValue) where T : class
     {
         var value = getValue();
         setValue(value);

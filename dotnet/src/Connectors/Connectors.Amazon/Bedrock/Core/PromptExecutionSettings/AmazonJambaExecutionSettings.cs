@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
@@ -8,10 +10,10 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// Prompt execution settings for AI21 Jamba Chat Completion
 /// </summary>
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-public class AmazonJambaTextExecutionSettings : PromptExecutionSettings
+public class AmazonJambaExecutionSettings : PromptExecutionSettings
 {
-    private double? _temperature;
-    private double? _topP;
+    private float? _temperature;
+    private float? _topP;
     private int? _maxTokens;
     private List<string>? _stop;
     private int? _n;
@@ -22,14 +24,13 @@ public class AmazonJambaTextExecutionSettings : PromptExecutionSettings
     /// How much variation to provide in each answer. Setting this value to 0 guarantees the same response to the same question every time. Setting a higher value encourages more variation. Modifies the distribution from which tokens are sampled. Default: 1.0, Range: 0.0 – 2.0
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double? Temperature
+    public float? Temperature
     {
         get => this._temperature;
         set
         {
             this.ThrowIfFrozen();
             this._temperature = value;
-            this.SetExtensionDataValue("temperature", value);
         }
     }
 
@@ -37,7 +38,7 @@ public class AmazonJambaTextExecutionSettings : PromptExecutionSettings
     /// Limit the pool of next tokens in each step to the top N percentile of possible tokens, where 1.0 means the pool of all possible tokens, and 0.01 means the pool of only the most likely next tokens.
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double? TopP
+    public float? TopP
     {
         get => this._topP;
         set
@@ -122,26 +123,17 @@ public class AmazonJambaTextExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <param name="executionSettings"></param>
     /// <returns></returns>
-    public static AmazonJambaTextExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
+    public static AmazonJambaExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings)
     {
-        if (executionSettings == null)
+        switch (executionSettings)
         {
-            return new AmazonJambaTextExecutionSettings();
+            case null:
+                return new AmazonJambaExecutionSettings();
+            case AmazonJambaExecutionSettings settings:
+                return settings;
         }
-        return (AmazonJambaTextExecutionSettings)executionSettings;
-    }
 
-    private void SetExtensionDataValue<T>(string key, T value)
-    {
-        this.ThrowIfFrozen();
-        if (value is null)
-        {
-            this.ExtensionData?.Remove(key);
-        }
-        else
-        {
-            this.ExtensionData ??= new Dictionary<string, object>();
-            this.ExtensionData[key] = value;
-        }
+        var json = JsonSerializer.Serialize(executionSettings);
+        return JsonSerializer.Deserialize<AmazonJambaExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
     }
 }

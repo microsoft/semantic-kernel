@@ -121,7 +121,7 @@ public class BedrockTextGenerationServiceTests
     }
 
     /// <summary>
-    /// Checks that the prompt execution settings are correctly registered for the text generation call with Amazon Titan.
+    /// Checks that the prompt execution settings are correctly registered for the text generation call with Amazon Titan. Inserts execution settings data both ways to test.
     /// </summary>
     [Fact]
     public async Task TitanGetTextContentsAsyncShouldReturnTextContentsAsyncWithPromptExecutionSettingsAsync()
@@ -129,8 +129,12 @@ public class BedrockTextGenerationServiceTests
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new PromptExecutionSettings()
+        var executionSettings = new AmazonTitanExecutionSettings()
         {
+            Temperature = 0.1f,
+            TopP = 0.95f,
+            MaxTokenCount = 256,
+            StopSequences = new List<string> { "</end>" },
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
@@ -170,7 +174,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new();
+        InvokeModelRequest? invokeModelRequest = null;
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -186,30 +190,27 @@ public class BedrockTextGenerationServiceTests
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
         Assert.True(requestBodyRoot.TryGetProperty("textGenerationConfig", out var textGenerationConfig));
-        if (textGenerationConfig.TryGetProperty("temperature", out var temperatureProperty))
-        {
-            Assert.Equal(executionSettings.ExtensionData["temperature"], (float)temperatureProperty.GetDouble());
-        }
 
-        if (textGenerationConfig.TryGetProperty("topP", out var topPProperty))
-        {
-            Assert.Equal(executionSettings.ExtensionData["topP"], (float)topPProperty.GetDouble());
-        }
+        // Check temperature
+        Assert.True(textGenerationConfig.TryGetProperty("temperature", out var temperatureProperty));
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("temperature", out var extensionTemperature) ? extensionTemperature : executionSettings.Temperature, (float)temperatureProperty.GetDouble());
 
-        if (textGenerationConfig.TryGetProperty("maxTokenCount", out var maxTokenCountProperty))
-        {
-            Assert.Equal(executionSettings.ExtensionData["maxTokenCount"], maxTokenCountProperty.GetInt32());
-        }
+        // Check top_p
+        Assert.True(textGenerationConfig.TryGetProperty("topP", out var topPProperty));
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("topP", out var extensionTopP) ? extensionTopP : executionSettings.TopP, (float)topPProperty.GetDouble());
 
-        if (textGenerationConfig.TryGetProperty("stopSequences", out var stopSequencesProperty))
-        {
-            var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
-            Assert.Equal(executionSettings.ExtensionData["stopSequences"], stopSequences);
-        }
+        // Check max_token_count
+        Assert.True(textGenerationConfig.TryGetProperty("maxTokenCount", out var maxTokenCountProperty));
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("maxTokenCount", out var extensionMaxTokenCount) ? extensionMaxTokenCount : executionSettings.MaxTokenCount, maxTokenCountProperty.GetInt32());
+
+        // Check stop_sequences
+        Assert.True(textGenerationConfig.TryGetProperty("stopSequences", out var stopSequencesProperty));
+        var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("stopSequences", out var extensionStopSequences) ? extensionStopSequences : executionSettings.StopSequences, stopSequences);
     }
 
     /// <summary>
-    /// Checks that the prompt execution settings are correctly registered for the text generation call with AI21 Labs Jamba.
+    /// Checks that the prompt execution settings are correctly registered for the text generation call with AI21 Labs Jamba. Inserts execution settings data both ways to test.
     /// </summary>
     [Fact]
     public async Task AI21JambaGetTextContentsAsyncShouldReturnTextContentsAsyncWithPromptExecutionSettingsAsync()
@@ -217,15 +218,22 @@ public class BedrockTextGenerationServiceTests
         // Arrange
         string modelId = "ai21.jamba-instruct-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new AmazonJambaTextExecutionSettings()
+        var executionSettings = new AmazonJambaExecutionSettings()
         {
+            Temperature = 0.8f,
+            TopP = 0.95f,
+            MaxTokens = 256,
+            Stop = new List<string> { "</end>" },
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
-                { "temperature", 0.8 },
-                { "top_p", 0.95 },
+                { "temperature", 0.8f },
+                { "top_p", 0.95f },
                 { "max_tokens", 256 },
-                { "stop", new List<string> { "</end>" } }
+                { "stop", new List<string> { "</end>" } },
+                { "n", 1 },
+                { "frequency_penalty", 0.0 },
+                { "presence_penalty", 0.0 }
             }
         };
         mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelRequest>()))
@@ -268,7 +276,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new();
+        InvokeModelRequest? invokeModelRequest = null;
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -283,18 +291,35 @@ public class BedrockTextGenerationServiceTests
         using var requestBodyStream = invokeModelRequest.Body;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
+
+        // Check temperature
         Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
-        Assert.Equal(executionSettings.ExtensionData["temperature"], temperatureProperty.GetDouble());
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("temperature", out var extensionTemperature) ? extensionTemperature : executionSettings.Temperature, (float)temperatureProperty.GetDouble());
 
+        // Check top_p
         Assert.True(requestBodyRoot.TryGetProperty("top_p", out var topPProperty));
-        Assert.Equal(executionSettings.ExtensionData["top_p"], topPProperty.GetDouble());
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("top_p", out var extensionTopP) ? extensionTopP : executionSettings.TopP, (float)topPProperty.GetDouble());
 
+        // Check max_tokens
         Assert.True(requestBodyRoot.TryGetProperty("max_tokens", out var maxTokensProperty));
-        Assert.Equal(executionSettings.ExtensionData["max_tokens"], maxTokensProperty.GetInt32());
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("max_tokens", out var extensionMaxTokens) ? extensionMaxTokens : executionSettings.MaxTokens, maxTokensProperty.GetInt32());
 
+        // Check stop
         Assert.True(requestBodyRoot.TryGetProperty("stop", out var stopProperty));
         var stopSequences = stopProperty.EnumerateArray().Select(e => e.GetString()).ToList();
-        Assert.Equal(executionSettings.ExtensionData["stop"], stopSequences);
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("stop", out var extensionStop) ? extensionStop : executionSettings.Stop, stopSequences);
+
+        // Check number_of_responses
+        Assert.True(requestBodyRoot.TryGetProperty("n", out var numberResponsesProperty));
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("n", out var extensionNumberResponses) ? extensionNumberResponses : executionSettings.NumberOfResponses, numberResponsesProperty.GetInt32());
+
+        // Check frequency_penalty
+        Assert.True(requestBodyRoot.TryGetProperty("frequency_penalty", out var frequencyPenaltyProperty));
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("frequency_penalty", out var extensionFrequencyPenalty) ? extensionFrequencyPenalty : executionSettings.FrequencyPenalty, frequencyPenaltyProperty.GetDouble());
+
+        // Check presence_penalty
+        Assert.True(requestBodyRoot.TryGetProperty("presence_penalty", out var presencePenaltyProperty));
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("presence_penalty", out var extensionPresencePenalty) ? extensionPresencePenalty : executionSettings.PresencePenalty, presencePenaltyProperty.GetDouble());
     }
 
     /// <summary>
@@ -379,8 +404,12 @@ public class BedrockTextGenerationServiceTests
         // Arrange
         string modelId = "cohere.command-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new PromptExecutionSettings()
+        var executionSettings = new AmazonCommandExecutionSettings()
         {
+            Temperature = 0.8,
+            TopP = 0.95,
+            MaxTokens = 256,
+            StopSequences = new List<string> { "</end>" },
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
@@ -422,7 +451,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new();
+        InvokeModelRequest invokeModelRequest = null;
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -437,20 +466,24 @@ public class BedrockTextGenerationServiceTests
         using var requestBodyStream = invokeModelRequest.Body;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
+
         Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
+        Assert.Equal(executionSettings.Temperature, temperatureProperty.GetDouble());
         Assert.Equal(executionSettings.ExtensionData["temperature"], temperatureProperty.GetDouble());
 
         Assert.True(requestBodyRoot.TryGetProperty("p", out var topPProperty));
+        Assert.Equal(executionSettings.TopP, topPProperty.GetDouble());
         Assert.Equal(executionSettings.ExtensionData["p"], topPProperty.GetDouble());
 
         Assert.True(requestBodyRoot.TryGetProperty("max_tokens", out var maxTokensProperty));
+        Assert.Equal(executionSettings.MaxTokens, maxTokensProperty.GetInt32());
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], maxTokensProperty.GetInt32());
 
         Assert.True(requestBodyRoot.TryGetProperty("stop_sequences", out var stopSequencesProperty));
         var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.Equal(executionSettings.StopSequences, stopSequences);
         Assert.Equal(executionSettings.ExtensionData["stop_sequences"], stopSequences);
     }
-
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Meta Llama3.
     /// </summary>
@@ -460,13 +493,16 @@ public class BedrockTextGenerationServiceTests
         // Arrange
         string modelId = "meta.llama3-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new PromptExecutionSettings()
+        var executionSettings = new AmazonLlama3ExecutionSettings()
         {
+            Temperature = 0.8f,
+            TopP = 0.95f,
+            MaxGenLen = 256,
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
-                { "temperature", 0.8 },
-                { "top_p", 0.95 },
+                { "temperature", 0.8f },
+                { "top_p", 0.95f },
                 { "max_gen_len", 256 }
             }
         };
@@ -495,7 +531,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new();
+        InvokeModelRequest invokeModelRequest = null;
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -510,13 +546,17 @@ public class BedrockTextGenerationServiceTests
         using var requestBodyStream = invokeModelRequest.Body;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
+
         Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
-        Assert.Equal(executionSettings.ExtensionData["temperature"], temperatureProperty.GetDouble());
+        Assert.Equal(executionSettings.Temperature, (float)temperatureProperty.GetDouble());
+        Assert.Equal(executionSettings.ExtensionData["temperature"], (float)temperatureProperty.GetDouble());
 
         Assert.True(requestBodyRoot.TryGetProperty("top_p", out var topPProperty));
-        Assert.Equal(executionSettings.ExtensionData["top_p"], topPProperty.GetDouble());
+        Assert.Equal(executionSettings.TopP, (float)topPProperty.GetDouble());
+        Assert.Equal(executionSettings.ExtensionData["top_p"], (float)topPProperty.GetDouble());
 
         Assert.True(requestBodyRoot.TryGetProperty("max_gen_len", out var maxGenLenProperty));
+        Assert.Equal(executionSettings.MaxGenLen, maxGenLenProperty.GetInt32());
         Assert.Equal(executionSettings.ExtensionData["max_gen_len"], maxGenLenProperty.GetInt32());
     }
 
@@ -529,13 +569,16 @@ public class BedrockTextGenerationServiceTests
         // Arrange
         string modelId = "mistral.mistral-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new PromptExecutionSettings()
+        var executionSettings = new AmazonMistralExecutionSettings()
         {
+            Temperature = 0.8f,
+            TopP = 0.95f,
+            MaxTokens = 256,
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
-                { "temperature", 0.8 },
-                { "top_p", 0.95 },
+                { "temperature", 0.8f },
+                { "top_p", 0.95f },
                 { "max_tokens", 256 }
             }
         };
@@ -567,7 +610,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = new();
+        InvokeModelRequest invokeModelRequest = null;
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -582,13 +625,17 @@ public class BedrockTextGenerationServiceTests
         using var requestBodyStream = invokeModelRequest.Body;
         var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
         var requestBodyRoot = requestBodyJson.RootElement;
+
         Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
-        Assert.Equal(executionSettings.ExtensionData["temperature"], temperatureProperty.GetDouble());
+        Assert.Equal(executionSettings.Temperature, (float)temperatureProperty.GetDouble());
+        Assert.Equal(executionSettings.ExtensionData["temperature"], (float)temperatureProperty.GetDouble());
 
         Assert.True(requestBodyRoot.TryGetProperty("top_p", out var topPProperty));
-        Assert.Equal(executionSettings.ExtensionData["top_p"], topPProperty.GetDouble());
+        Assert.Equal(executionSettings.TopP, (float)topPProperty.GetDouble());
+        Assert.Equal(executionSettings.ExtensionData["top_p"], (float)topPProperty.GetDouble());
 
         Assert.True(requestBodyRoot.TryGetProperty("max_tokens", out var maxTokensProperty));
+        Assert.Equal(executionSettings.MaxTokens, maxTokensProperty.GetInt32());
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], maxTokensProperty.GetInt32());
     }
 }

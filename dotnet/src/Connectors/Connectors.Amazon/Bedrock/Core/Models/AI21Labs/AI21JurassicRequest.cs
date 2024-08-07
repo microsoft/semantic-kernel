@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core.Models.AI21Lab
 /// <summary>
 /// The AI21 Labs Jurassic request object.
 /// </summary>
-internal static class AI21JurassicRequest
+public static class AI21JurassicRequest
 {
     /// <summary>
     /// The AI21 Labs Jurassic Text Generation request object.
@@ -67,7 +67,7 @@ internal static class AI21JurassicRequest
     /// Fields that can be added to the penalty objects.
     /// </summary>
     [Serializable]
-    internal class CountPenalty
+    public class CountPenalty
     {
         /// <summary>
         /// Scale of the penalty.
@@ -109,7 +109,7 @@ internal static class AI21JurassicRequest
     /// Fields that can be added to the penalty objects.
     /// </summary>
     [Serializable]
-    internal class PresencePenalty
+    public class PresencePenalty
     {
         /// <summary>
         /// Scale of the penalty.
@@ -157,7 +157,7 @@ internal static class AI21JurassicRequest
     /// Fields that can be added to the penalty objects.
     /// </summary>
     [Serializable]
-    internal class FrequencyPenalty
+    public class FrequencyPenalty
     {
         /// <summary>
         /// Scale of the penalty.
