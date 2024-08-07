@@ -84,7 +84,38 @@ public class AgentChatSerializerTests
     public async Task VerifySerializedChatWithAgentsAsync()
     {
         // Create chat
-        TestChat chat = new(new TestAgent());
+        TestChat chat = new(new TestAgent(), new TestAgent());
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
+        ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
+
+        // Serialize and deserialize chat
+        AgentChatState chatState = chat.Serialize();
+        string jsonState = await this.SerializeChatAsync(chat);
+        AgentChatState? restoredState = JsonSerializer.Deserialize<AgentChatState>(jsonState);
+
+        // Validate state
+        Assert.Equal(2, chatState.Participants.Count());
+        ChatHistory? chatHistory = JsonSerializer.Deserialize<ChatHistory>(chatState.History);
+        Assert.NotNull(chatHistory);
+        Assert.Equal(2, chatHistory.Count);
+        Assert.Single(chatState.Channels);
+
+        Assert.NotNull(restoredState);
+        Assert.Equal(2, restoredState.Participants.Count());
+        ChatHistory? restoredHistory = JsonSerializer.Deserialize<ChatHistory>(restoredState.History);
+        Assert.NotNull(restoredHistory);
+        Assert.Equal(2, restoredHistory.Count);
+        Assert.Single(restoredState.Channels);
+    }
+
+    /// <summary>
+    /// Verify serialization cycle for a <see cref="AgentChat"/> with only user message (no channels).
+    /// </summary>
+    [Fact]
+    public async Task VerifySerializedChatWithAggregatorAsync()
+    {
+        // Create chat
+        TestChat chat = new(new AggregatorAgent(() => new TestChat(new TestAgent())));
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
         ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
 
@@ -112,10 +143,38 @@ public class AgentChatSerializerTests
     /// Verify serialization cycle for a <see cref="AgentChat"/> with only user message (no channels).
     /// </summary>
     [Fact]
-    public async Task VerifyDeserializedChatWithAgentsAsync()
+    public async Task VerifyDeserializedChatWithAgemtsAsync()
     {
         // Create chat
-        TestChat chat = new(new TestAgent());
+        TestChat chat = new(new TestAgent(), new TestAgent());
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
+        ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
+
+        // Serialize and deserialize chat
+        AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
+        Assert.Equal(2, serializer.Participants.Count());
+
+        TestChat copy = new(new TestAgent(), new TestAgent());
+
+        await serializer.DeserializeAsync(copy);
+
+        // Validate chat state
+        ChatMessageContent[] history = await copy.GetChatMessagesAsync().ToArrayAsync();
+        Assert.Equal(2, history.Length);
+
+        await copy.InvokeAsync().ToArrayAsync();
+        history = await copy.GetChatMessagesAsync().ToArrayAsync();
+        Assert.Equal(3, history.Length);
+    }
+
+    /// <summary>
+    /// Verify serialization cycle for a <see cref="AgentChat"/> with only user message (no channels).
+    /// </summary>
+    [Fact]
+    public async Task VerifyDeserializedChatWithAggregatorAsync()
+    {
+        // Create chat
+        TestChat chat = new(new AggregatorAgent(() => new TestChat(new TestAgent())));
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
         ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
 
@@ -123,7 +182,7 @@ public class AgentChatSerializerTests
         AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
         Assert.Single(serializer.Participants);
 
-        TestChat copy = new(new TestAgent());
+        TestChat copy = new(new AggregatorAgent(() => new TestChat(new TestAgent())));
 
         await serializer.DeserializeAsync(copy);
 
