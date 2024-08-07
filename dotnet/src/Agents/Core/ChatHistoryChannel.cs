@@ -94,7 +94,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal override string Serialize()
+    protected override string Serialize()
         => JsonSerializer.Serialize(ChatMessageReference.Prepare(this._history));
 
     /// <summary>

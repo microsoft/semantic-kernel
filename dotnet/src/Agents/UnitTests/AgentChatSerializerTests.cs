@@ -84,7 +84,7 @@ public class AgentChatSerializerTests
     public async Task VerifySerializedChatWithAgentsAsync()
     {
         // Create chat
-        TestChat chat = new(new TestAgent(), new TestAgent());
+        TestChat chat = new(CreateMockAgent(), CreateMockAgent());
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
         ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
 
@@ -115,7 +115,7 @@ public class AgentChatSerializerTests
     public async Task VerifySerializedChatWithAggregatorAsync()
     {
         // Create chat
-        TestChat chat = new(new AggregatorAgent(() => new TestChat(new TestAgent())));
+        TestChat chat = new(new AggregatorAgent(() => new TestChat(CreateMockAgent())));
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
         ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
 
@@ -143,10 +143,10 @@ public class AgentChatSerializerTests
     /// Verify Deserialization cycle for a <see cref="AgentChat"/> with history and channels.
     /// </summary>
     [Fact]
-    public async Task VerifyDeserializedChatWithAgemtsAsync()
+    public async Task VerifyDeserializedChatWithAgentsAsync()
     {
         // Create chat
-        TestChat chat = new(new TestAgent(), new TestAgent());
+        TestChat chat = new(CreateMockAgent(), CreateMockAgent());
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
         ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
 
@@ -154,7 +154,7 @@ public class AgentChatSerializerTests
         AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
         Assert.Equal(2, serializer.Participants.Count());
 
-        TestChat copy = new(new TestAgent(), new TestAgent());
+        TestChat copy = new(CreateMockAgent(), CreateMockAgent());
 
         await serializer.DeserializeAsync(copy);
 
@@ -174,7 +174,7 @@ public class AgentChatSerializerTests
     public async Task VerifyDeserializedChatWithAggregatorAsync()
     {
         // Create chat
-        TestChat chat = new(new AggregatorAgent(() => new TestChat(new TestAgent())));
+        TestChat chat = new(new AggregatorAgent(() => new TestChat(CreateMockAgent())));
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
         ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
 
@@ -182,7 +182,7 @@ public class AgentChatSerializerTests
         AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
         Assert.Single(serializer.Participants);
 
-        TestChat copy = new(new AggregatorAgent(() => new TestChat(new TestAgent())));
+        TestChat copy = new(new AggregatorAgent(() => new TestChat(CreateMockAgent())));
 
         await serializer.DeserializeAsync(copy);
 
@@ -202,12 +202,12 @@ public class AgentChatSerializerTests
     public async Task VerifyDeserializedChatWithActivityAsync()
     {
         // Create chat
-        TestChat chat = new(new TestAgent());
+        TestChat chat = new(CreateMockAgent());
 
         // Serialize and deserialize chat
         AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
 
-        TestChat copy = new(new TestAgent());
+        TestChat copy = new(CreateMockAgent());
         ChatMessageContent[] messages = await copy.InvokeAsync().ToArrayAsync();
 
         // Verify exception
@@ -221,12 +221,12 @@ public class AgentChatSerializerTests
     public async Task VerifyDeserializedChatWithUserMessageAsync()
     {
         // Create chat
-        TestChat chat = new(new TestAgent());
+        TestChat chat = new(CreateMockAgent());
 
         // Serialize and deserialize chat
         AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
 
-        TestChat copy = new(new TestAgent());
+        TestChat copy = new(CreateMockAgent());
         copy.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
 
         // Verify exception
@@ -255,6 +255,8 @@ public class AgentChatSerializerTests
         return reader.ReadToEnd();
     }
 
+    private static MockAgent CreateMockAgent() => new() { Response = [new(AuthorRole.Assistant, "sup")] };
+
     private sealed class TestChat(params Agent[] agents) : AgentChat
     {
         public override IReadOnlyList<Agent> Agents => agents;
@@ -262,30 +264,5 @@ public class AgentChatSerializerTests
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>
                 this.InvokeAgentAsync(this.Agents[0], cancellationToken);
-    }
-
-    private sealed class TestAgent : ChatHistoryKernelAgent
-    {
-        public int InvokeCount { get; private set; }
-
-        public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            ChatHistory history,
-            CancellationToken cancellationToken = default)
-        {
-            this.InvokeCount++;
-
-            return new ChatMessageContent[] { new(AuthorRole.Assistant, "sup") }.ToAsyncEnumerable();
-        }
-
-        public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
-            ChatHistory history,
-            CancellationToken cancellationToken = default)
-        {
-            this.InvokeCount++;
-
-            StreamingChatMessageContent[] contents = [new(AuthorRole.Assistant, "sup")];
-
-            return contents.ToAsyncEnumerable();
-        }
     }
 }
