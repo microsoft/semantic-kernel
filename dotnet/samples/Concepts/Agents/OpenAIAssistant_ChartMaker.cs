@@ -13,11 +13,6 @@ namespace Agents;
 /// </summary>
 public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    /// <summary>
-    /// Target Open AI services.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
-
     private const string AgentName = "ChartMaker";
     private const string AgentInstructions = "Create charts as requested without explanation.";
 
@@ -78,6 +73,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
                 this.WriteAgentChatMessage(response);
+                await this.DownloadResponseImageAsync(fileClient, response);
             }
         }
     }

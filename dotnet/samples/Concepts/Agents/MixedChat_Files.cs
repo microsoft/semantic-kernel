@@ -14,11 +14,6 @@ namespace Agents;
 /// </summary>
 public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    /// <summary>
-    /// Target OpenAI services.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
-
     private const string SummaryInstructions = "Summarize the entire conversation for the user in natural language.";
 
     [Fact]
@@ -43,8 +38,8 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
                 config,
                 new()
                 {
-                    EnableCodeInterpreter = true, // Enable code-interpreter
-                    CodeInterpreterFileIds = [uploadFile.Id], // Associate uploaded file with assistant
+                    EnableCodeInterpreter = true,
+                    CodeInterpreterFileIds = [uploadFile.Id], // Associate uploaded file with assistant code-interpreter
                     ModelId = this.Model,
                     Metadata = AssistantSampleMetadata,
                 });
@@ -89,6 +84,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
                 this.WriteAgentChatMessage(response);
+                await this.DownloadResponseContentAsync(fileClient, response);
             }
         }
     }

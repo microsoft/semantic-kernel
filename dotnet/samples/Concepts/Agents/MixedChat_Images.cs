@@ -13,11 +13,6 @@ namespace Agents;
 /// </summary>
 public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    /// <summary>
-    /// Target OpenAI services.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
-
     private const string AnalystName = "Analyst";
     private const string AnalystInstructions = "Create charts as requested without explanation.";
 
@@ -97,6 +92,7 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
                 this.WriteAgentChatMessage(response);
+                await this.DownloadResponseImageAsync(fileClient, response);
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -16,8 +15,6 @@ namespace Agents;
 /// </summary>
 public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    protected override bool ForceOpenAI => true;
-
     private const string InternalLeaderName = "InternalLeader";
     private const string InternalLeaderInstructions =
         """
@@ -157,7 +154,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
 
         await foreach (ChatMessageContent message in chat.GetChatMessagesAsync(personalShopperAgent).Reverse())
         {
-            WriteAgentChatMessage(message);
+            this.WriteAgentChatMessage(message);
         }
 
         async Task InvokeChatAsync(string input)
@@ -168,7 +165,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
 
             await foreach (ChatMessageContent response in chat.InvokeAsync(personalShopperAgent))
             {
-                WriteAgentChatMessage(response);
+                this.WriteAgentChatMessage(response);
             }
 
             Console.WriteLine($"\n# IS COMPLETE: {chat.IsComplete}");

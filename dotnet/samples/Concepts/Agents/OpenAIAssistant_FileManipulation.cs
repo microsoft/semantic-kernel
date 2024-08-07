@@ -13,11 +13,6 @@ namespace Agents;
 /// </summary>
 public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    /// <summary>
-    /// Target OpenAI services.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
-
     [Fact]
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
@@ -38,8 +33,8 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
                 config,
                 new()
                 {
+                    EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id],
-                    EnableCodeInterpreter = true, // Enable code-interpreter
                     ModelId = this.Model,
                     Metadata = AssistantSampleMetadata,
                 });
@@ -70,6 +65,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
                 this.WriteAgentChatMessage(response);
+                await this.DownloadResponseContentAsync(fileClient, response);
             }
         }
     }

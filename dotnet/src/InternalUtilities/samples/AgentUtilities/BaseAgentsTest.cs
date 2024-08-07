@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Files;
 
 /// <summary>
 /// Base class for samples that demonstrate the usage of agents.
@@ -38,23 +40,6 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
                 OpenAIServiceConfiguration.ForAzureOpenAI(this.ApiKey, new Uri(this.Endpoint!));
 
     /// <summary>
-    /// %%%  REMOVE ???
-    /// </summary>
-    protected async Task WriteAgentResponseAsync(IAsyncEnumerable<ChatMessageContent> messages, ChatHistory? history = null)
-    {
-        await foreach (ChatMessageContent message in messages)
-        {
-            if (history != null &&
-                !message.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
-            {
-                history.Add(message);
-            }
-
-            this.WriteAgentChatMessage(message);
-        }
-    }
-
-    /// <summary>
     /// Common method to write formatted agent chat content to the console.
     /// </summary>
     protected void WriteAgentChatMessage(ChatMessageContent message)
@@ -73,19 +58,12 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
             if (item is AnnotationContent annotation)
             {
                 Console.WriteLine($"  [{item.GetType().Name}] {annotation.Quote}: File #{annotation.FileId}");
-                //BinaryData fileContent = await fileClient.DownloadFileAsync(annotation.FileId!); // %%% COMMON
-                //Console.WriteLine($"\n{Encoding.Default.GetString(fileContent.ToArray())}");
-                //Console.WriteLine($"\t[{item.GetType().Name}] {functionCall.Id}"); 
             }
-            if (item is FileReferenceContent fileReference)
+            else if (item is FileReferenceContent fileReference)
             {
                 Console.WriteLine($"  [{item.GetType().Name}] File #{fileReference.FileId}");
-                //BinaryData fileContent = await fileClient.DownloadFileAsync(fileReference.FileId!); // %%% COMMON
-                //string filePath = Path.ChangeExtension(Path.GetTempFileName(), ".png");
-                //await File.WriteAllBytesAsync($"{filePath}.png", fileContent.ToArray());
-                //Console.WriteLine($"\t* Local path - {filePath}");
             }
-            if (item is ImageContent image)
+            else if (item is ImageContent image)
             {
                 Console.WriteLine($"  [{item.GetType().Name}] {image.Uri?.ToString() ?? image.DataUri ?? $"{image.Data?.Length} bytes"}");
             }
@@ -100,19 +78,52 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         }
     }
 
-    //private async Task<string> DownloadFileContentAsync(string fileId)
-    //{
-    //    string filePath = Path.Combine(Environment.CurrentDirectory, $"{fileId}.jpg");
-    //    BinaryData content = await fileClient.DownloadFileAsync(fileId);
-    //    File.WriteAllBytes(filePath, content.ToArray());
+    protected async Task DownloadResponseContentAsync(FileClient client, ChatMessageContent message)
+    {
+        foreach (KernelContent item in message.Items)
+        {
+            if (item is AnnotationContent annotation)
+            {
+                await this.DownloadFileContentAsync(client, annotation.FileId!);
+            }
+        }
+    }
 
-        //    Process.Start(
-        //        new ProcessStartInfo
-        //        {
-        //            FileName = "cmd.exe",
-        //            Arguments = $"/C start {filePath}"
-        //        });
+    protected async Task DownloadResponseImageAsync(FileClient client, ChatMessageContent message)
+    {
+        foreach (KernelContent item in message.Items)
+        {
+            if (item is FileReferenceContent fileReference)
+            {
+                await this.DownloadFileContentAsync(client, fileReference.FileId, launchViewer: true);
+            }
+        }
+    }
 
-        //    return filePath;
-        //}
+    private async Task DownloadFileContentAsync(FileClient client, string fileId, bool launchViewer = false)
+    {
+        OpenAIFileInfo fileInfo = client.GetFile(fileId);
+        if (fileInfo.Purpose == OpenAIFilePurpose.AssistantsOutput)
+        {
+            string filePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(fileInfo.Filename));
+            if (launchViewer)
+            {
+                filePath = Path.ChangeExtension(filePath, ".png");
+            }
+
+            BinaryData content = await client.DownloadFileAsync(fileId);
+            File.WriteAllBytes(filePath, content.ToArray());
+            Console.WriteLine($"  File #{fileId} saved to: {filePath}");
+
+            if (launchViewer)
+            {
+                Process.Start(
+                    new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/C start {filePath}"
+                    });
+            }
+        }
+    }
 }

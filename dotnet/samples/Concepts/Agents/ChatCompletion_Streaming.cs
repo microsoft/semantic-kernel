@@ -91,8 +91,8 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
         {
             // Display full response and capture in chat history
             ChatMessageContent response = new(AuthorRole.Assistant, builder.ToString()) { AuthorName = agent.Name };
-            chat.Add(message);
-            this.WriteAgentChatMessage(message);
+            chat.Add(response);
+            this.WriteAgentChatMessage(response);
         }
     }
 
