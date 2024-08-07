@@ -78,7 +78,7 @@ public class AgentChatSerializerTests
     }
 
     /// <summary>
-    /// Verify serialization cycle for a <see cref="AgentChat"/> with only user message (no channels).
+    /// Verify serialization cycle for a <see cref="AgentChat"/> with history and channels.
     /// </summary>
     [Fact]
     public async Task VerifySerializedChatWithAgentsAsync()
@@ -109,7 +109,7 @@ public class AgentChatSerializerTests
     }
 
     /// <summary>
-    /// Verify serialization cycle for a <see cref="AgentChat"/> with only user message (no channels).
+    /// Verify serialization cycle for a <see cref="AgentChat"/> with a <see cref="AggregatorAgent"/>.
     /// </summary>
     [Fact]
     public async Task VerifySerializedChatWithAggregatorAsync()
@@ -140,7 +140,7 @@ public class AgentChatSerializerTests
     }
 
     /// <summary>
-    /// Verify serialization cycle for a <see cref="AgentChat"/> with only user message (no channels).
+    /// Verify Deserialization cycle for a <see cref="AgentChat"/> with history and channels.
     /// </summary>
     [Fact]
     public async Task VerifyDeserializedChatWithAgemtsAsync()
@@ -168,7 +168,7 @@ public class AgentChatSerializerTests
     }
 
     /// <summary>
-    /// Verify serialization cycle for a <see cref="AgentChat"/> with only user message (no channels).
+    /// Verify deserialization cycle for a <see cref="AgentChat"/> with <see cref="AggregatorAgent"/>.
     /// </summary>
     [Fact]
     public async Task VerifyDeserializedChatWithAggregatorAsync()
@@ -196,7 +196,7 @@ public class AgentChatSerializerTests
     }
 
     /// <summary>
-    /// Verify serialization cycle for a <see cref="AgentChat"/> with only user message (no channels).
+    /// Verify deserialization into a <see cref="AgentChat"/> that already has history and channels.
     /// </summary>
     [Fact]
     public async Task VerifyDeserializedChatWithActivityAsync()
@@ -215,7 +215,7 @@ public class AgentChatSerializerTests
     }
 
     /// <summary>
-    /// Verify serialization cycle for a <see cref="AgentChat"/> with only user message (no channels).
+    /// Verify deserialization into a <see cref="AgentChat"/> with only user message (no channels).
     /// </summary>
     [Fact]
     public async Task VerifyDeserializedChatWithUserMessageAsync()
