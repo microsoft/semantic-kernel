@@ -25,7 +25,7 @@ static partial class JsonSchemaMapper
     private static Type GetElementType(JsonTypeInfo typeInfo)
     {
         Debug.Assert(typeInfo.Kind is JsonTypeInfoKind.Enumerable or JsonTypeInfoKind.Dictionary);
-        return (Type)typeof(JsonTypeInfo).GetProperty("ElementType", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(typeInfo)!;
+        return (Type)typeof(JsonTypeInfo).GetProperty("ElementType", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(typeInfo)!;
     }
 
     // The source generator currently doesn't populate attribute providers for properties
