@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Data;
 using StackExchange.Redis;
 
-namespace Microsoft.SemanticKernel.Connectors.Redis;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods to register Redis <see cref="IVectorStore"/> instances on an <see cref="IServiceCollection"/>.
