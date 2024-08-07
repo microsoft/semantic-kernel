@@ -71,6 +71,6 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
             raw_embeddings.extend(raw_embedding)
         return raw_embeddings
 
-    @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        """Get the request settings class."""
         return OpenAIEmbeddingPromptExecutionSettings
