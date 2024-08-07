@@ -16,8 +16,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Azure AI Inference connector</Title>
-    <Description>Semantic Kernel Model as a Service connector for Azure AI Studio. Contains clients for chat completion, embeddings and text to image generation.</Description>
+    <Title>Semantic Kernel - Azure AI Inference connectors</Title>
+    <Description>Semantic Kernel Model as a Service connectors for Azure AI Studio. Contains clients for chat completion, embeddings and text to image generation.</Description>
   </PropertyGroup>
 
   <ItemGroup>
