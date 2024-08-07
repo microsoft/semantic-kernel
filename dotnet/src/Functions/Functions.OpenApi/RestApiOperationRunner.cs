@@ -206,22 +206,9 @@ internal sealed class RestApiOperationRunner
 
         try
         {
-            RestApiOperationResponse response;
-
-            if (stream)
-            {
-                var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                response = await SerializeStreamResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
-                response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
-            }
-            else
-            {
-                using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
-                response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
-                response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
-            }
-
-            return response;
+            return stream
+            ? await this.HandleStreamResponseAsync(requestMessage, payload, expectedSchemas, cancellationToken).ConfigureAwait(false)
+            : await this.HandleResponseAsync(requestMessage, payload, expectedSchemas, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
@@ -253,6 +240,43 @@ internal sealed class RestApiOperationRunner
 
             throw;
         }
+    }
+
+    /// <summary>
+    /// Handles the response for an HTTP request.
+    /// </summary>
+    /// <param name="requestMessage">The HttpRequestMessage object.</param>
+    /// <param name="payload">HTTP request payload.</param>
+    /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    private async Task<RestApiOperationResponse> HandleResponseAsync(HttpRequestMessage requestMessage, object? payload, IDictionary<string, KernelJsonSchema?>? expectedSchemas, CancellationToken cancellationToken)
+    {
+        using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+
+        var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
+
+        response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Handles the stream response for an HTTP request.
+    /// </summary>
+    /// <param name="requestMessage">The HttpRequestMessage object.</param>
+    /// <param name="payload">HTTP request payload.</param>
+    /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns></returns>
+    private async Task<RestApiOperationResponse> HandleStreamResponseAsync(HttpRequestMessage requestMessage, object? payload, IDictionary<string, KernelJsonSchema?>? expectedSchemas, CancellationToken cancellationToken)
+    {
+        var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+
+        var response = await SerializeStreamResponseContentAsync(requestMessage, payload, responseMessage).ConfigureAwait(false);
+
+        response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+
+        return response;
     }
 
     /// <summary>
@@ -327,8 +351,6 @@ internal sealed class RestApiOperationRunner
             };
         }
 
-        var contentType = responseMessage.Content.Headers.ContentType;
-
         // Serialize response content and return it
         var responseStream = await responseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
 
@@ -336,7 +358,7 @@ internal sealed class RestApiOperationRunner
         var serializedContent = new HttpResponseStream(responseStream, responseMessage);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        return new RestApiOperationResponse(serializedContent, contentType!.ToString())
+        return new RestApiOperationResponse(serializedContent, responseMessage.Content.Headers.ContentType?.ToString())
         {
             RequestMethod = request.Method.Method,
             RequestUri = request.RequestUri,
