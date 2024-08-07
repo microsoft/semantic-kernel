@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Docker.DotNet" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
