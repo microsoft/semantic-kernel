@@ -20,7 +20,7 @@ internal sealed class CohereCommandIOService : IBedrockModelIOService
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
+    object IBedrockModelIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var requestBody = new CommandRequest.CohereCommandTextGenerationRequest()
         {
@@ -39,12 +39,13 @@ internal sealed class CohereCommandIOService : IBedrockModelIOService
 
         return requestBody;
     }
+
     /// <summary>
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
     /// </summary>
     /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
     /// <returns>A list of text content objects as required by the semantic kernel.</returns>
-    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    IReadOnlyList<TextContent> IBedrockModelIOService.GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var memoryStream = new MemoryStream();
         response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -59,12 +60,13 @@ internal sealed class CohereCommandIOService : IBedrockModelIOService
         textContents.AddRange(from generation in responseBody.Generations where !string.IsNullOrEmpty(generation.Text) select new TextContent(generation.Text));
         return textContents;
     }
+
     /// <summary>
     /// Extracts the text generation streaming output from the Cohere Command response object structure.
     /// </summary>
     /// <param name="chunk"></param>
     /// <returns></returns>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    IEnumerable<string> IBedrockModelIOService.GetTextStreamOutput(JsonNode chunk)
     {
         var generations = chunk["generations"]?.AsArray();
         if (generations != null)
@@ -88,10 +90,11 @@ internal sealed class CohereCommandIOService : IBedrockModelIOService
     /// <param name="settings"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
+    ConverseRequest IBedrockModelIOService.GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         throw new NotImplementedException("Converse not supported by this model.");
     }
+
     /// <summary>
     /// Command does not support ConverseStream (only Command R): "Limited. No chat support." - https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html#conversation-inference-supported-models-features
     /// </summary>
@@ -100,7 +103,7 @@ internal sealed class CohereCommandIOService : IBedrockModelIOService
     /// <param name="settings"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
+    ConverseStreamRequest IBedrockModelIOService.GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         throw new NotImplementedException("Streaming not supported by this model.");
     }

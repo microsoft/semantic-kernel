@@ -40,16 +40,16 @@ internal interface IBedrockModelIOService
     /// <summary>
     /// Converts the Json output from the streaming text generation into IEnumerable strings for output.
     /// </summary>
-    /// <param name="chunk"></param>
+    /// <param name="chunk">The payloadPart bytes outputted from the streaming response.</param>
     /// <returns></returns>
     internal IEnumerable<string> GetTextStreamOutput(JsonNode chunk);
 
     /// <summary>
     /// Builds the converse stream request given the chat history and model ID passed in by the user. This request is to be passed into the Bedrock Converse API call.
     /// </summary>
-    /// <param name="modelId"></param>
-    /// <param name="chatHistory"></param>
-    /// <param name="settings"></param>
+    /// <param name="modelId">The model ID for the request.</param>
+    /// <param name="chatHistory">The ChatHistory object to be converted to messages for the stream converse request.</param>
+    /// <param name="settings">PromptExecutionSettings for the request.</param>
     /// <returns></returns>
     internal ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null);
 }

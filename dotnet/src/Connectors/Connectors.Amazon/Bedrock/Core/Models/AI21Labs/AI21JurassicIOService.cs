@@ -22,7 +22,7 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
+    object IBedrockModelIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var requestBody = new AI21JurassicRequest.AI21JurassicTextGenerationRequest()
         {
@@ -37,12 +37,13 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
         };
         return requestBody;
     }
+
     /// <summary>
     /// Extracts the test contents from the InvokeModelResponse as returned by the Bedrock API.
     /// </summary>
     /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
     /// <returns></returns>
-    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    IReadOnlyList<TextContent> IBedrockModelIOService.GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var memoryStream = new MemoryStream();
         response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -57,6 +58,7 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
         textContents.AddRange(responseBody.Completions.Select(completion => new TextContent(completion.Data?.Text)));
         return textContents;
     }
+
     /// <summary>
     /// Jurassic does not support converse.
     /// </summary>
@@ -65,20 +67,22 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
     /// <param name="settings">Optional prompt execution settings.</param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
+    ConverseRequest IBedrockModelIOService.GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         throw new NotImplementedException("This model does not support chat history. Use text generation to invoke singular response to use this model.");
     }
+
     /// <summary>
     /// Jurassic does not support streaming.
     /// </summary>
     /// <param name="chunk"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    IEnumerable<string> IBedrockModelIOService.GetTextStreamOutput(JsonNode chunk)
     {
         throw new NotImplementedException("Streaming not supported by this model.");
     }
+
     /// <summary>
     /// Jurassic does not support converse (or streaming for that matter).
     /// </summary>
@@ -87,7 +91,7 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
     /// <param name="settings"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
+    ConverseStreamRequest IBedrockModelIOService.GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         throw new NotImplementedException("Streaming not supported by this model.");
     }

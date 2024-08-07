@@ -24,7 +24,7 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public object GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings = null)
+    object IBedrockModelIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonJambaTextExecutionSettings.FromExecutionSettings(executionSettings);
         List<AI21JambaRequest.AI21TextGenerationRequest.Msg> messages = new()
@@ -38,13 +38,13 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
         var requestBody = new AI21JambaRequest.AI21TextGenerationRequest()
         {
             Messages = messages,
-            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(exec?.ExtensionData, "temperature"),
-            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(exec?.ExtensionData, "top_p"),
-            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(exec?.ExtensionData, "max_tokens"),
-            Stop = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(exec?.ExtensionData, "stop"),
-            NumberOfResponses = BedrockModelUtilities.GetExtensionDataValue<int?>(exec?.ExtensionData, "n"),
-            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(exec?.ExtensionData, "frequency_penalty"),
-            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(exec?.ExtensionData, "presence_penalty")
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(exec.ExtensionData, "temperature"),
+            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(exec.ExtensionData, "top_p"),
+            MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(exec.ExtensionData, "max_tokens"),
+            Stop = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(exec.ExtensionData, "stop"),
+            NumberOfResponses = BedrockModelUtilities.GetExtensionDataValue<int?>(exec.ExtensionData, "n"),
+            FrequencyPenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(exec.ExtensionData, "frequency_penalty"),
+            PresencePenalty = BedrockModelUtilities.GetExtensionDataValue<double?>(exec.ExtensionData, "presence_penalty")
         };
 
         return requestBody;
@@ -55,7 +55,7 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
     /// </summary>
     /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
     /// <returns></returns>
-    public IReadOnlyList<TextContent> GetInvokeResponseBody(InvokeModelResponse response)
+    IReadOnlyList<TextContent> IBedrockModelIOService.GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var memoryStream = new MemoryStream();
         response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -78,7 +78,7 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
     /// <param name="chatHistory">The messages between assistant and user.</param>
     /// <param name="settings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    public ConverseRequest GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
+    ConverseRequest IBedrockModelIOService.GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
@@ -123,12 +123,13 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
 
         return converseRequest;
     }
+
     /// <summary>
     /// Gets the streamed text output.
     /// </summary>
     /// <param name="chunk"></param>
     /// <returns></returns>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    IEnumerable<string> IBedrockModelIOService.GetTextStreamOutput(JsonNode chunk)
     {
         var buffer = new StringBuilder();
         if (chunk["choices"]?[0]?["delta"]?["content"] != null)
@@ -137,6 +138,7 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
             yield return buffer.ToString();
         }
     }
+
     /// <summary>
     /// Gets converse stream output.
     /// </summary>
@@ -144,7 +146,7 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
     /// <param name="chatHistory"></param>
     /// <param name="settings"></param>
     /// <returns></returns>
-    public ConverseStreamRequest GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings = null)
+    ConverseStreamRequest IBedrockModelIOService.GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
     {
         var messages = BedrockModelUtilities.BuildMessageList(chatHistory);
         var systemMessages = BedrockModelUtilities.GetSystemMessages(chatHistory);
