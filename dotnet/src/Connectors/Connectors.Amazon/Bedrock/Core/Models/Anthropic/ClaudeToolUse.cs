@@ -3,7 +3,7 @@
 using System.Text.Json.Serialization;
 using Amazon.BedrockRuntime.Model;
 
-namespace Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// Anthropic Claude request object.

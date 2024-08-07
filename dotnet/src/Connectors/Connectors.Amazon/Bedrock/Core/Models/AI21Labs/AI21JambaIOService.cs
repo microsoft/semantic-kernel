@@ -5,12 +5,9 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Documents;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core;
-using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
-namespace Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// Input-output service for AI21 Labs Jamba model.

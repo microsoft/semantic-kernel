@@ -2,10 +2,9 @@
 
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// Bedrock input-output service to build the request and response bodies as required by the given model.

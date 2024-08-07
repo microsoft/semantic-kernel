@@ -2,8 +2,11 @@
 
 using System.Text.Json.Serialization;
 
-namespace Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
+/// <summary>
+/// Request object for the Command-R model.
+/// </summary>
 public static class CommandRRequest
 {
     /// <summary>

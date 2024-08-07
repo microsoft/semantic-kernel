@@ -4,17 +4,13 @@ using System.Text.Json;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Endpoints;
-using Connectors.Amazon.Core;
-using Connectors.Amazon.Extensions;
-using Connectors.Amazon.Models.Amazon;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
-namespace Connectors.Amazon.UnitTests.Services;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.UnitTests;
 
 /// <summary>
 /// Unit tests for BedrockTextGenerationService.
@@ -451,7 +447,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = null;
+        InvokeModelRequest? invokeModelRequest = null;
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -481,7 +477,7 @@ public class BedrockTextGenerationServiceTests
 
         Assert.True(requestBodyRoot.TryGetProperty("stop_sequences", out var stopSequencesProperty));
         var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
-        Assert.Equal(executionSettings.StopSequences, stopSequences);
+        Assert.Equal(executionSettings.StopSequences, stopSequences!);
         Assert.Equal(executionSettings.ExtensionData["stop_sequences"], stopSequences);
     }
     /// <summary>
@@ -531,7 +527,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = null;
+        InvokeModelRequest? invokeModelRequest = null;
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
@@ -610,7 +606,7 @@ public class BedrockTextGenerationServiceTests
         var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
 
         // Assert
-        InvokeModelRequest invokeModelRequest = null;
+        InvokeModelRequest? invokeModelRequest = null;
         var invocation = mockBedrockApi.Invocations
             .Where(i => i.Method.Name == "InvokeModelAsync")
             .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);

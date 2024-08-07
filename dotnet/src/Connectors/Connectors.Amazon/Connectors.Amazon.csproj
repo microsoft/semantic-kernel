@@ -22,10 +22,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Bedrock\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Amazon.UnitTests"/>
     </ItemGroup>
 

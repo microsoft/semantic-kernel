@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Connectors.Amazon.Models.AI21;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// AI21 Labs Jurassic Response object.

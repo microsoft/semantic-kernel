@@ -1,16 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Amazon.BedrockRuntime;
-using Connectors.Amazon.Extensions;
-using Connectors.Amazon.Services;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Amazon.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
-namespace Connectors.Amazon.UnitTests;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.UnitTests;
 
 /// <summary>
 /// Kernel Builder Extension Tests for Bedrock.
@@ -67,7 +63,7 @@ public class BedrockKernelBuilderExtensionTests
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
-        builder.AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0", null);
+        builder.AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0");
 
         // Act
         var kernel = builder.Build();

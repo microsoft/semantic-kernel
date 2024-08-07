@@ -2,10 +2,9 @@
 
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// Utilities class for functions all Bedrock models need to use.

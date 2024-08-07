@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// Cohere Command R Text Generation Response body.

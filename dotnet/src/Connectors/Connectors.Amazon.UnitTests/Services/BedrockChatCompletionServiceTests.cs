@@ -3,15 +3,12 @@
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Endpoints;
-using Connectors.Amazon.Extensions;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
-namespace Connectors.Amazon.UnitTests.Services;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.UnitTests;
 
 /// <summary>
 /// Unit tests for Bedrock Chat Completion Service.

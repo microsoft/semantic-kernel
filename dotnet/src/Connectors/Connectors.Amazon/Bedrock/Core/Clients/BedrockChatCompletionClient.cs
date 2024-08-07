@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
-using Connectors.Amazon.Bedrock.Core;
-using Connectors.Amazon.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;

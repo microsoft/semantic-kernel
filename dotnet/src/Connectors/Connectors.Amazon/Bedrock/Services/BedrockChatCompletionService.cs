@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.Connectors.Amazon.Services;
+namespace Microsoft.SemanticKernel.Connectors.Amazon;
 
 /// <summary>
 /// Represents a chat completion service using Amazon Bedrock API.

@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Connectors.Amazon.Models.Amazon;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// The Amazon Titan Text response object when deserialized from Invoke Model call.

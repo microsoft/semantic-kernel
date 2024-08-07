@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Net;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// Utility functions for the Bedrock clients.

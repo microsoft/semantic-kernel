@@ -3,15 +3,13 @@
 using System.Reflection;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
-using Connectors.Amazon.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Amazon.Services;
+using Microsoft.SemanticKernel.Connectors.Amazon;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Connectors.Amazon.Extensions;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extensions for adding Bedrock services to the application.

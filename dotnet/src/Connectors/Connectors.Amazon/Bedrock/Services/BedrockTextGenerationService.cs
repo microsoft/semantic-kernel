@@ -2,12 +2,11 @@
 
 using Amazon.BedrockRuntime;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Amazon.Bedrock.Core;
+using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Connectors.Amazon.Services;
+namespace Microsoft.SemanticKernel.Connectors.Amazon;
 
 /// <summary>
 /// Represents a text generation service using Amazon Bedrock API.

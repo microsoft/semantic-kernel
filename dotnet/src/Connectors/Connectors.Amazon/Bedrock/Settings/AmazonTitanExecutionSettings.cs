@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon;
 
 /// <summary>
 /// Prompt execution settings for Amazon Titan Text Generation

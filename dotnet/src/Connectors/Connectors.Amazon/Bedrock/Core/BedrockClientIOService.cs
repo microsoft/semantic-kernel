@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Connectors.Amazon.Core;
-
-namespace Connectors.Amazon.Bedrock.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// Utilities to get the model IO service and model provider. Used by Bedrock service clients.
