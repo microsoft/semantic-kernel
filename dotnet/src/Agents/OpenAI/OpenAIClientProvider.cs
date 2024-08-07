@@ -14,7 +14,7 @@ using OpenAI;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// %%%
+/// Provides an <see cref="OpenAIClient"/> for use by <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
 public sealed class OpenAIClientProvider
 {
@@ -24,7 +24,7 @@ public sealed class OpenAIClientProvider
     private const string SingleSpaceKey = " ";
 
     /// <summary>
-    /// %%%
+    /// An active client instance.
     /// </summary>
     public OpenAIClient Client { get; }
 
@@ -92,7 +92,7 @@ public sealed class OpenAIClientProvider
     }
 
     /// <summary>
-    /// %%%
+    /// Directly provide a client instance.
     /// </summary>
     public static OpenAIClientProvider FromClient(OpenAIClient client)
     {
