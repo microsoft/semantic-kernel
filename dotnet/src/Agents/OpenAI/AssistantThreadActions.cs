@@ -110,8 +110,12 @@ internal static class AssistantThreadActions
     /// <param name="pollingConfiguration">Config to utilize when polling for run state.</param>
     /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
     /// <param name="kernel">The <see cref="Kernel"/> plugins and other state.</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
+    /// </remarks>
     public static async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         OpenAIAssistantAgent agent,
         AssistantsClient client,
@@ -119,6 +123,7 @@ internal static class AssistantThreadActions
         OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration,
         ILogger logger,
         Kernel kernel,
+        KernelArguments? arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (agent.IsDeleted)

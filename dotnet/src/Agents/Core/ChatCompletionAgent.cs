@@ -40,7 +40,7 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = this.SetupAgentChatHistory(history, cancellationToken);
+        ChatHistory chat = this.SetupAgentChatHistory(history);
 
         int messageCount = chat.Count;
 
@@ -85,7 +85,7 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = this.SetupAgentChatHistory(history, cancellationToken);
+        ChatHistory chat = this.SetupAgentChatHistory(history);
 
         int messageCount = chat.Count;
 
@@ -158,9 +158,7 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
         return (chatCompletionService, executionSettings);
     }
 
-    private ChatHistory SetupAgentChatHistory(
-        IReadOnlyList<ChatMessageContent> history,
-        CancellationToken cancellationToken)
+    private ChatHistory SetupAgentChatHistory(IReadOnlyList<ChatMessageContent> history)
     {
         ChatHistory chat = [];
 

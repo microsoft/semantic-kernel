@@ -24,48 +24,48 @@ public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseTes
         // invalid key that will result in a 401 Unauthorized error.
         Kernel kernel = CreateKernelWithTwoServices();
 
-        // Define the agent targeting ServiceId = ServiceKeyGood 
+        // Define the agent targeting ServiceId = ServiceKeyGood
         ChatCompletionAgent agentGood =
             new()
             {
                 Kernel = kernel,
-                Arguments = new(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyGood }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyGood }),
             };
 
-        // Define the agent targeting ServiceId = ServiceKeyGood 
+        // Define the agent targeting ServiceId = ServiceKeyBad
         ChatCompletionAgent agentBad =
             new()
             {
                 Kernel = kernel,
-                Arguments = new(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyBad }),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyBad }),
             };
 
         // Define the agent with no explicit ServiceId defined
         ChatCompletionAgent agentDefault = new() { Kernel = kernel };
 
-        // Invoke agent as initialized with ServiceId = ServiceKeyGood
+        // Invoke agent as initialized with ServiceId = ServiceKeyGood: Expect agent response
         Console.WriteLine("\n[Agent With Good ServiceId]");
         await InvokeAgentAsync(agentGood);
 
-        // Invoke agent as initialized with ServiceId = ServiceKeyBad
+        // Invoke agent as initialized with ServiceId = ServiceKeyBad: Expect failure due to invalid service key
         Console.WriteLine("\n[Agent With Bad ServiceId]");
         await InvokeAgentAsync(agentBad);
 
-        // Invoke agent as initialized with no explicit ServiceId
+        // Invoke agent as initialized with no explicit ServiceId: Expect agent response
         Console.WriteLine("\n[Agent With No ServiceId]");
         await InvokeAgentAsync(agentDefault);
 
-        // Invoke agent with override arguments where ServiceId = ServiceKeyGood
+        // Invoke agent with override arguments where ServiceId = ServiceKeyGood: Expect agent response
         Console.WriteLine("\n[Bad Agent: Good ServiceId Override]");
         await InvokeAgentAsync(agentBad, new(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyGood }));
 
-        // Invoke agent with override arguments where ServiceId = ServiceKeyBad
+        // Invoke agent with override arguments where ServiceId = ServiceKeyBad: Expect failure due to invalid service key
         Console.WriteLine("\n[Good Agent: Bad ServiceId Override]");
         await InvokeAgentAsync(agentGood, new(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyBad }));
         Console.WriteLine("\n[Default Agent: Bad ServiceId Override]");
         await InvokeAgentAsync(agentDefault, new(new OpenAIPromptExecutionSettings() { ServiceId = ServiceKeyBad }));
 
-        // Invoke agent with override arguments with no explicit ServiceId
+        // Invoke agent with override arguments with no explicit ServiceId: Expect agent response
         Console.WriteLine("\n[Good Agent: No ServiceId Override]");
         await InvokeAgentAsync(agentGood, new(new OpenAIPromptExecutionSettings()));
         Console.WriteLine("\n[Bad Agent: No ServiceId Override]");
