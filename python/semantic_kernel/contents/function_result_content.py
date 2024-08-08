@@ -5,6 +5,11 @@ from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field, field_serializer
 from typing_extensions import deprecated
+from functools import cached_property
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
+from xml.etree.ElementTree import Element  # nosec
+
+from pydantic import Field
 
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.image_content import ImageContent
@@ -25,6 +30,7 @@ TAG_CONTENT_MAP = {
 _T = TypeVar("_T", bound="FunctionResultContent")
 
 
+
 class FunctionResultContent(KernelContent):
     """This class represents function result content."""
 
@@ -35,6 +41,7 @@ class FunctionResultContent(KernelContent):
     name: str | None = None
     function_name: str
     plugin_name: str | None = None
+    result: Any
     encoding: str | None = None
 
     def __init__(
@@ -110,6 +117,7 @@ class FunctionResultContent(KernelContent):
         """Create an instance from an Element."""
         if element.tag != cls.tag:
             raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")
         return cls(id=element.get("id", ""), result=element.text, name=element.get("name", None))
 
     @classmethod
@@ -125,6 +133,8 @@ class FunctionResultContent(KernelContent):
 
         metadata.update(function_call_content.metadata or {})
         metadata.update(getattr(result, "metadata", {}))
+        if function_call_content.metadata:
+            metadata.update(function_call_content.metadata)
         inner_content = result
         if isinstance(result, FunctionResult):
             result = result.value
@@ -146,6 +156,7 @@ class FunctionResultContent(KernelContent):
             result=res,
             function_name=function_call_content.function_name,
             plugin_name=function_call_content.plugin_name,
+            name=function_call_content.name,
             ai_model_id=function_call_content.ai_model_id,
             metadata=metadata,
         )

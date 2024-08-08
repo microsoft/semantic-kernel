@@ -125,6 +125,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Plugins\instacart-ai-plugin.json">
+    <Content Include="Plugins\OpenApi\instacart-service.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Plugins\OpenApi\repair-service.json">

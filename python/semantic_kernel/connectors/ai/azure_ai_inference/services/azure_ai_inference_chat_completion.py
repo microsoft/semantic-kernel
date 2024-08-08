@@ -23,6 +23,25 @@ from azure.ai.inference.models import (
     ChatRequestMessage,
     StreamingChatChoiceUpdate,
     StreamingChatCompletionsUpdate,
+import logging
+from collections.abc import AsyncGenerator
+from typing import Any
+
+from azure.ai.inference.aio import ChatCompletionsClient
+from azure.ai.inference.models import (
+    AssistantMessage,
+    AsyncStreamingChatCompletions,
+    ChatChoice,
+    ChatCompletions,
+    ChatRequestMessage,
+    ImageContentItem,
+    ImageDetailLevel,
+    ImageUrl,
+    StreamingChatChoiceUpdate,
+    SystemMessage,
+    TextContentItem,
+    ToolMessage,
+    UserMessage,
 )
 from azure.core.credentials import AzureKeyCredential
 from pydantic import ValidationError
@@ -40,6 +59,11 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -55,6 +79,15 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.experimental_decorator import experimental_class
+
+_MESSAGE_CONVERTER: dict[AuthorRole, Any] = {
+    AuthorRole.SYSTEM: SystemMessage,
+    AuthorRole.USER: UserMessage,
+    AuthorRole.ASSISTANT: AssistantMessage,
+    AuthorRole.TOOL: ToolMessage,
+}
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -107,6 +140,8 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                 endpoint=str(azure_ai_inference_settings.endpoint),
                 credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
                 user_agent=SEMANTIC_KERNEL_USER_AGENT,
+                endpoint=azure_ai_inference_settings.endpoint,
+                credential=AzureKeyCredential(azure_ai_inference_settings.api_key.get_secret_value()),
             )
 
         super().__init__(
@@ -120,6 +155,10 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         self,
         chat_history: ChatHistory,
         settings: "PromptExecutionSettings",
+    async def get_chat_message_contents(
+        self,
+        chat_history: ChatHistory,
+        settings: AzureAIInferenceChatPromptExecutionSettings,
         **kwargs: Any,
     ) -> list[ChatMessageContent]:
         """Get chat message contents from the Azure AI Inference service.
@@ -178,12 +217,61 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
         assert isinstance(self.client, ChatCompletionsClient)  # nosec
         response: ChatCompletions = await self.client.complete(
             messages=self._prepare_chat_history_for_request(chat_history),
+        response: ChatCompletions = await self.client.complete(
+            messages=self._format_chat_history(chat_history),
             model_extras=settings.extra_parameters,
             **settings.prepare_settings_dict(),
         )
         response_metadata = self._get_metadata_from_response(response)
 
         return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
+
+    async def get_streaming_chat_message_contents(
+        self,
+        chat_history: ChatHistory,
+        settings: AzureAIInferenceChatPromptExecutionSettings,
+        **kwargs: Any,
+    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
+        """Get streaming chat message contents from the Azure AI Inference service.
+
+        Args:
+            chat_history: A list of chats in a chat_history object.
+            settings: Settings for the request.
+            kwargs: Optional arguments.
+
+        Returns:
+            A list of chat message contents.
+        """
+        response: AsyncStreamingChatCompletions = await self.client.complete(
+            stream=True,
+            messages=self._format_chat_history(chat_history),
+            model_extras=settings.extra_parameters,
+            **settings.prepare_settings_dict(),
+        )
+
+        async for chunk in response:
+            if len(chunk.choices) == 0:
+                continue
+            chunk_metadata = self._get_metadata_from_response(chunk)
+            yield [
+                self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
+            ]
+
+    def _get_metadata_from_response(self, response: ChatCompletions | AsyncStreamingChatCompletions) -> dict[str, Any]:
+        """Get metadata from the response.
+
+        Args:
+            response: The response from the service.
+
+        Returns:
+            A dictionary containing metadata.
+        """
+        return {
+            "id": response.id,
+            "model": response.model,
+            "created": response.created,
+            "usage": response.usage,
+        }
 
     def _create_chat_message_content(
         self, response: ChatCompletions, choice: ChatChoice, metadata: dict[str, Any]
@@ -199,6 +287,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             A chat message content object.
         """
         items: list[ITEM_TYPES] = []
+        items = []
         if choice.message.content:
             items.append(
                 TextContent(
@@ -217,6 +306,13 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                             arguments=tool_call.function.arguments,
                         )
                     )
+                items.append(
+                    FunctionCallContent(
+                        id=tool_call.id,
+                        name=tool_call.function.name,
+                        arguments=tool_call.function.arguments,
+                    )
+                )
 
         return ChatMessageContent(
             role=AuthorRole(choice.message.role),
@@ -348,6 +444,7 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
             A streaming chat message content object.
         """
         items: list[STREAMING_ITEM_TYPES] = []
+        items = []
         if choice.delta.content:
             items.append(
                 StreamingTextContent(
@@ -368,6 +465,14 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
                             arguments=tool_call.function.arguments,
                         )
                     )
+                items.append(
+                    FunctionCallContent(
+                        id=tool_call.id,
+                        index=choice.index,
+                        name=tool_call.function.name,
+                        arguments=tool_call.function.arguments,
+                    )
+                )
 
         return StreamingChatMessageContent(
             role=AuthorRole(choice.delta.role) if choice.delta.role else AuthorRole.ASSISTANT,
@@ -464,5 +569,45 @@ class AzureAIInferenceChatCompletion(ChatCompletionClientBase, AzureAIInferenceB
     def get_prompt_execution_settings_class(
         self,
     ) -> type["PromptExecutionSettings"]:
+    def _format_chat_history(self, chat_history: ChatHistory) -> list[ChatRequestMessage]:
+        """Format the chat history to the expected objects for the client.
+
+        Args:
+            chat_history: The chat history.
+
+        Returns:
+            A list of formatted chat history.
+        """
+        chat_request_messages: list[ChatRequestMessage] = []
+
+        for message in chat_history.messages:
+            if message.role != AuthorRole.USER or not any(isinstance(item, ImageContent) for item in message.items):
+                chat_request_messages.append(_MESSAGE_CONVERTER[message.role](content=message.content))
+                continue
+
+            # If it's a user message and there are any image items in the message, we need to create a list of
+            # content items, otherwise we need to just pass in the content as a string or it will error.
+            contentItems = []
+            for item in message.items:
+                if isinstance(item, TextContent):
+                    contentItems.append(TextContentItem(text=item.text))
+                elif isinstance(item, ImageContent) and (item.data_uri or item.uri):
+                    contentItems.append(
+                        ImageContentItem(
+                            image_url=ImageUrl(url=item.data_uri or str(item.uri), detail=ImageDetailLevel.Auto)
+                        )
+                    )
+                else:
+                    logger.warning(
+                        "Unsupported item type in User message while formatting chat history for Azure AI"
+                        f" Inference: {type(item)}"
+                    )
+            chat_request_messages.append(_MESSAGE_CONVERTER[message.role](content=contentItems))
+
+        return chat_request_messages
+
+    def get_prompt_execution_settings_class(
+        self,
+    ) -> AzureAIInferenceChatPromptExecutionSettings:
         """Get the request settings class."""
         return AzureAIInferenceChatPromptExecutionSettings

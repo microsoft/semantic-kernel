@@ -22,10 +22,17 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_calling_utils import (
+    update_settings_from_function_call_configuration,
+)
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -39,6 +46,13 @@ from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_c
     AutoFunctionInvocationContext,
 )
 from semantic_kernel.utils.telemetry.decorators import trace_chat_completion
+from semantic_kernel.exceptions import (
+    ServiceInvalidExecutionSettingsError,
+    ServiceInvalidResponseError,
+)
+from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+    AutoFunctionInvocationContext,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -91,6 +105,27 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         if settings.function_choice_behavior is not None:
             if kernel is None:
                 raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
+        Returns:
+            List[ChatMessageContent]: The completion result(s).
+        """
+        # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
+        # if this method is called with a `FunctionCallBehavior` object as pat of the settings
+        if hasattr(settings, "function_call_behavior") and isinstance(
+            settings.function_call_behavior, FunctionCallBehavior
+        ):
+            settings.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
+                settings.function_call_behavior
+            )
+
+        kernel = kwargs.get("kernel", None)
+        arguments = kwargs.get("arguments", None)
+        if settings.function_choice_behavior is not None:
+            if kernel is None:
+                raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
+            if arguments is None and settings.function_choice_behavior.auto_invoke_kernel_functions:
+                raise ServiceInvalidExecutionSettingsError(
+                    "The kernel arguments are required for auto invoking OpenAI tool calls."
+                )
             if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
@@ -154,6 +189,19 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
 
+    ) -> AsyncGenerator[list[StreamingChatMessageContent | None], Any]:
+        """Executes a streaming chat completion request and returns the result.
+
+        Args:
+            chat_history (ChatHistory): The chat history to use for the chat completion.
+            settings (OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings): The settings to use
+                for the chat completion request.
+            kwargs (Dict[str, Any]): The optional arguments.
+
+        Yields:
+            List[StreamingChatMessageContent]: A stream of
+                StreamingChatMessageContent when using Azure.
+        """
         # For backwards compatibility we need to convert the `FunctionCallBehavior` to `FunctionChoiceBehavior`
         # if this method is called with a `FunctionCallBehavior` object as part of the settings
         if hasattr(settings, "function_call_behavior") and isinstance(
@@ -167,6 +215,14 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         if settings.function_choice_behavior is not None:
             if kernel is None:
                 raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
+        arguments = kwargs.get("arguments", None)
+        if settings.function_choice_behavior is not None:
+            if kernel is None:
+                raise ServiceInvalidExecutionSettingsError("The kernel is required for OpenAI tool calls.")
+            if arguments is None and settings.function_choice_behavior.auto_invoke_kernel_functions:
+                raise ServiceInvalidExecutionSettingsError(
+                    "The kernel arguments are required for auto invoking OpenAI tool calls."
+                )
             if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
@@ -413,6 +469,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Processes the tool calls in the result and update the chat history."""
         # deprecated and might not even be used anymore, hard to trigger directly
         if isinstance(function_call_behavior, FunctionCallBehavior):  # pragma: no cover
+        if isinstance(function_call_behavior, FunctionCallBehavior):
             # We need to still support a `FunctionCallBehavior` input so it doesn't break current
             # customers. Map from `FunctionCallBehavior` -> `FunctionChoiceBehavior`
             function_call_behavior = FunctionChoiceBehavior.from_function_call_behavior(function_call_behavior)

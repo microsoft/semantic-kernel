@@ -16,6 +16,8 @@ from azure.ai.inference.models import (
     StreamingChatChoiceUpdate,
     StreamingChatCompletionsUpdate,
 )
+import pytest
+from azure.ai.inference.aio import ChatCompletionsClient, EmbeddingsClient
 from azure.core.credentials import AzureKeyCredential
 
 from semantic_kernel.connectors.ai.azure_ai_inference import (

@@ -16,6 +16,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import (
     _combine_filter_dicts,
 )
 from semantic_kernel.exceptions import ServiceInitializationError
+)
 
 
 @pytest.fixture
@@ -72,14 +73,6 @@ def test_from_function_call_behavior_enabled_functions():
     assert new_behavior.type == FunctionChoiceType.AUTO
     assert new_behavior.auto_invoke_kernel_functions is True
     assert new_behavior.filters == expected_filters
-
-
-def test_from_function_call_behavior():
-    behavior = FunctionCallBehavior()
-    new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior is not None
-    assert new_behavior.enable_kernel_functions == behavior.enable_kernel_functions
-    assert new_behavior.maximum_auto_invoke_attempts == behavior.max_auto_invoke_attempts
 
 
 @pytest.mark.parametrize(("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)])

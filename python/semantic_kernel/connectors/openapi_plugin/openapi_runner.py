@@ -17,6 +17,7 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_expecte
 )
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_payload import RestApiOperationPayload
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_run_options import RestApiOperationRunOptions
+from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -135,6 +136,7 @@ class OpenApiRunner:
         """Runs the operation defined in the OpenAPI manifest."""
         if not arguments:
             arguments = KernelArguments()
+        """Run the operation."""
         url = self.build_operation_url(
             operation=operation,
             arguments=arguments,

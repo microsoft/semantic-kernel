@@ -5,6 +5,7 @@ from collections import OrderedDict
 from collections.abc import Callable
 from enum import Enum
 from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic.dataclasses import dataclass
 from typing_extensions import deprecated
@@ -52,6 +53,7 @@ def _combine_filter_dicts(*dicts: dict[str, list[str]]) -> dict:
 
     for key in keys:
         combined_functions: OrderedDict[str, None] = OrderedDict()
+        combined_functions = OrderedDict()
         for d in dicts:
             if key in d:
                 if isinstance(d[key], list):
@@ -122,6 +124,9 @@ class FunctionChoiceBehavior(KernelBaseModel):
             return cls.Required(
                 auto_invoke=behavior.auto_invoke_kernel_functions,
                 filters={"included_functions": [behavior.function_fully_qualified_name]},
+                function_fully_qualified_names=[behavior.function_fully_qualified_name]
+                if hasattr(behavior, "function_fully_qualified_name")
+                else None,
             )
         return cls(
             enable_kernel_functions=behavior.enable_kernel_functions,
@@ -145,6 +150,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
         ]
         | None = {},
+        self, kernel: "Kernel", filters: dict[str, Any] | None = {}
     ) -> FunctionCallChoiceConfiguration:
         """Check for missing functions and get the function call choice configuration."""
         if filters:
@@ -262,6 +268,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
                 filters = {"included_functions": valid_fqns}
 
         return type_map[behavior_type](  # type: ignore
+        return type_map[behavior_type](
             auto_invoke=auto_invoke,
             filters=filters,
             **data,

@@ -109,6 +109,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                     FunctionResultContent[] functionResults = await Task.WhenAll(functionResultTasks).ConfigureAwait(false);
 
 
+
                     // Invoke functions for each tool-step
                     IEnumerable<Task<FunctionResultContent>> functionResultTasks = ExecuteFunctionSteps(agent, activeFunctionSteps, cancellationToken);
 
@@ -175,6 +176,10 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 else if (completedStep.Type.Equals(RunStepType.MessageCreation))
                 {
                     RunStepMessageCreationDetails messageCreationDetails = (RunStepMessageCreationDetails)completedStep.StepDetails;
+
+                    // Retrieve the message
+                    ThreadMessage? message = await this.RetrieveMessageAsync(messageCreationDetails, cancellationToken).ConfigureAwait(false);
+
 
                     // Retrieve the message
                     ThreadMessage? message = await this.RetrieveMessageAsync(messageCreationDetails, cancellationToken).ConfigureAwait(false);
@@ -441,6 +446,30 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         }
 
         return functionTasks;
+        }
+
+        return functionTasks;
+    }
+
+    private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)
+    {
+        ToolOutput[] toolOutputs = new ToolOutput[functionResults.Length];
+
+        for (int index = 0; index < functionResults.Length; ++index)
+        {
+            FunctionResultContent functionResult = functionResults[index];
+
+            object resultValue = functionResult.Result ?? string.Empty;
+
+            if (resultValue is not string textResult)
+            {
+                textResult = JsonSerializer.Serialize(resultValue);
+            }
+
+            toolOutputs[index] = new ToolOutput(functionResult.CallId, textResult!);
+        }
+
+        return toolOutputs;
     }
 
     private static ToolOutput[] GenerateToolOutputs(FunctionResultContent[] functionResults)

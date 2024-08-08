@@ -32,6 +32,8 @@ from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_
 from semantic_kernel.connectors.ai.mistral_ai.services.mistral_ai_chat_completion import MistralAIChatCompletion
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -89,6 +91,7 @@ def history() -> ChatHistory:
 
 @pytest.fixture(scope="module")
 def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptExecutionSettings]]]:
+def services() -> dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]]:
     azure_openai_settings = AzureOpenAISettings.create()
     endpoint = azure_openai_settings.endpoint
     deployment_name = azure_openai_settings.chat_deployment_name
@@ -177,6 +180,7 @@ pytestmark = pytest.mark.parametrize(
             "openai",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
                     auto_invoke=True, filters={"excluded_plugins": ["chat"]}
                 )
             },
@@ -190,6 +194,7 @@ pytestmark = pytest.mark.parametrize(
             "openai",
             {
                 "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
                     auto_invoke=False, filters={"excluded_plugins": ["chat"]}
                 )
             },
@@ -273,12 +278,39 @@ pytestmark = pytest.mark.parametrize(
         ),
         pytest.param(
             "azure",
+            {
+                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="azure_tool_call_auto_function_call_behavior",
+        ),
+        pytest.param(
+            "azure",
+            {
+                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                    auto_invoke=False, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="azure_tool_call_non_auto_function_call_behavior",
+        ),
+        pytest.param(
+            "azure",
             {"function_choice_behavior": FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["chat"]})},
             [
                 ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
             ],
             ["348"],
             id="azure_tool_call_auto",
+            id="azure_tool_call_auto_function_choice_behavior",
         ),
         pytest.param(
             "azure",
@@ -288,6 +320,7 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["348"],
             id="azure_tool_call_auto_as_string",
+            id="azure_tool_call_auto_function_choice_behavior_as_string",
         ),
         pytest.param(
             "azure",
@@ -301,6 +334,7 @@ pytestmark = pytest.mark.parametrize(
             ],
             ["348"],
             id="azure_tool_call_non_auto",
+            id="azure_tool_call_non_auto_function_choice_behavior",
         ),
         pytest.param(
             "azure",

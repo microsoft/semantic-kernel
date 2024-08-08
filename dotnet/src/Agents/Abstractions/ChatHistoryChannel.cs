@@ -65,6 +65,7 @@ public class ChatHistoryChannel : AgentChannel
 
         // Dequeue any remaining messages to yield.
         while (messageQueue.Count > 0)
+        await foreach (var message in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
         {
             yieldMessage = messageQueue.Dequeue();
 

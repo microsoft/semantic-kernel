@@ -12,6 +12,8 @@ from semantic_kernel.exceptions.content_exceptions import ContentInitializationE
 
 _T = TypeVar("_T", bound="TextContent")
 
+_T = TypeVar("_T", bound="TextContent")
+
 
 class TextContent(KernelContent):
     """This represents text response content.
@@ -51,6 +53,7 @@ class TextContent(KernelContent):
         """Create an instance from an Element."""
         if element.tag != cls.tag:
             raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")
 
         return cls(text=unescape(element.text) if element.text else "", encoding=element.get("encoding", None))
 

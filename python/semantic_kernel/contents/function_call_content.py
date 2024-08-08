@@ -16,6 +16,16 @@ from semantic_kernel.exceptions import (
     FunctionCallInvalidArgumentsException,
     FunctionCallInvalidNameException,
 )
+from functools import cached_property
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
+from xml.etree.ElementTree import Element  # nosec
+
+from pydantic import Field
+
+from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG, ContentTypes
+from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException, FunctionCallInvalidNameException
+from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -94,6 +104,19 @@ class FunctionCallContent(KernelContent):
             args["metadata"] = metadata
 
         super().__init__(**args)
+    arguments: str | None = None
+
+    EMPTY_VALUES: ClassVar[list[str | None]] = ["", "{}", None]
+
+    @cached_property
+    def function_name(self) -> str:
+        """Get the function name."""
+        return self.split_name()[1]
+
+    @cached_property
+    def plugin_name(self) -> str | None:
+        """Get the plugin name."""
+        return self.split_name()[0]
 
     def __str__(self) -> str:
         """Return the function call as a string."""
@@ -137,6 +160,13 @@ class FunctionCallContent(KernelContent):
         if arg1 in EMPTY_VALUES:
             return arg2 or "{}"
         if arg2 in EMPTY_VALUES:
+    def combine_arguments(self, arg1: str | None, arg2: str | None) -> str:
+        """Combine two arguments."""
+        if arg1 in self.EMPTY_VALUES and arg2 in self.EMPTY_VALUES:
+            return "{}"
+        if arg1 in self.EMPTY_VALUES:
+            return arg2 or "{}"
+        if arg2 in self.EMPTY_VALUES:
             return arg1 or "{}"
         return (arg1 or "") + (arg2 or "")
 
@@ -188,6 +218,7 @@ class FunctionCallContent(KernelContent):
         """Create an instance from an Element."""
         if element.tag != cls.tag:
             raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")
 
         return cls(name=element.get("name"), id=element.get("id"), arguments=element.text or "")
 

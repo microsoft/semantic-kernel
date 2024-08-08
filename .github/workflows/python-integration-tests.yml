@@ -150,6 +150,8 @@ jobs:
           fail-on-empty: true
           # (Optional) Title of the test results section in the workflow summary
           title: Test results
+          poetry run pytest ./tests/integration -v
+          poetry run pytest ./tests/samples -v
 
   python-integration-tests:
     needs: paths-filter

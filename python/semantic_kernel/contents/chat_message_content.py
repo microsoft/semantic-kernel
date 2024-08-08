@@ -240,6 +240,7 @@ class ChatMessageContent(KernelContent):
         """
         if element.tag != cls.tag:
             raise ContentInitializationError(f"Element tag is not {cls.tag}")  # pragma: no cover
+            raise ContentInitializationError(f"Element tag is not {cls.tag}")
         kwargs: dict[str, Any] = {key: value for key, value in element.items()}
         items: list[KernelContent] = []
         if element.text:

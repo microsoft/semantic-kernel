@@ -123,6 +123,10 @@ jobs:
       - name: Generate test reports
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.8
 >>>>>>> Stashed changes
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.6
+=======
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.3
+>>>>>>> Stashed changes
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"

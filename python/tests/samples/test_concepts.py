@@ -55,6 +55,7 @@ from samples.concepts.service_selector.custom_service_selector import main as cu
 from samples.getting_started_with_agents.step1_agent import main as step1_agent
 from samples.getting_started_with_agents.step2_plugins import main as step2_plugins
 from tests.samples.samples_utils import retry
+from tests.samples.test_samples_utils import retry
 
 concepts = [
     param(
@@ -92,6 +93,7 @@ concepts = [
             reason="Temporarily: https://www.klarna.com/us/shopping/public/openai/v0/api-docs/ returns 404"
         ),
     ),
+    param(openai_plugin_klarna, [], id="openai_plugin_klarna"),
     param(plugins_from_dir, [], id="plugins_from_dir"),
     param(azure_chat_gpt_api_handlebars, ["What is 3+3?", "exit"], id="azure_chat_gpt_api_handlebars"),
     param(azure_chat_gpt_api_jinja2, ["What is 3+3?", "exit"], id="azure_chat_gpt_api_jinja2"),
@@ -138,3 +140,5 @@ async def test_concepts(func, responses, monkeypatch):
 
     monkeypatch.setattr("builtins.input", lambda _: responses.pop(0))
     await retry(lambda: func(), reset=reset)
+    monkeypatch.setattr("builtins.input", lambda _: responses.pop(0))
+    await retry(lambda: func())
