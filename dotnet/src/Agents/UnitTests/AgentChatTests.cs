@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
@@ -53,6 +56,32 @@ public class AgentChatTests
         // Verify final history
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
+    }
+
+    /// <summary>
+    /// Verify <see cref="AgentChat"/> throw exception for system message.
+    /// </summary>
+    [Fact]
+    public void VerifyAgentChatRejectsSystemMessge()
+    {
+        // Create chat
+        TestChat chat = new() { LoggerFactory = new Mock<ILoggerFactory>().Object };
+
+        // Verify system message not accepted
+        Assert.Throws<KernelException>(() => chat.AddChatMessage(new ChatMessageContent(AuthorRole.System, "hi")));
+    }
+
+    /// <summary>
+    /// Verify <see cref="AgentChat"/> throw exception for if invoked when active.
+    /// </summary>
+    [Fact]
+    public async Task VerifyAgentChatThrowsWhenActiveAsync()
+    {
+        // Create chat
+        TestChat chat = new();
+
+        // Verify system message not accepted
+        await Assert.ThrowsAsync<KernelException>(() => chat.InvalidInvokeAsync().ToArrayAsync().AsTask());
     }
 
     /// <summary>
@@ -119,5 +148,12 @@ public class AgentChatTests
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>
                 this.InvokeAgentAsync(this.Agent, cancellationToken);
+
+        public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
+            CancellationToken cancellationToken = default)
+        {
+            this.SetActivityOrThrow();
+            return this.InvokeAgentAsync(this.Agent, cancellationToken);
+        }
     }
 }
