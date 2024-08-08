@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Core;
@@ -39,10 +38,10 @@ public class AgentGroupChatTests
     [Fact]
     public async Task VerifyGroupAgentChatAgentMembershipAsync()
     {
-        Agent agent1 = CreateMockAgent().Object;
-        Agent agent2 = CreateMockAgent().Object;
-        Agent agent3 = CreateMockAgent().Object;
-        Agent agent4 = CreateMockAgent().Object;
+        Agent agent1 = CreateMockAgent();
+        Agent agent2 = CreateMockAgent();
+        Agent agent3 = CreateMockAgent();
+        Agent agent4 = CreateMockAgent();
 
         AgentGroupChat chat = new(agent1, agent2);
         Assert.Equal(2, chat.Agents.Count);
@@ -63,9 +62,9 @@ public class AgentGroupChatTests
     [Fact]
     public async Task VerifyGroupAgentChatMultiTurnAsync()
     {
-        Agent agent1 = CreateMockAgent().Object;
-        Agent agent2 = CreateMockAgent().Object;
-        Agent agent3 = CreateMockAgent().Object;
+        Agent agent1 = CreateMockAgent();
+        Agent agent2 = CreateMockAgent();
+        Agent agent3 = CreateMockAgent();
 
         AgentGroupChat chat =
             new(agent1, agent2, agent3)
@@ -162,7 +161,7 @@ public class AgentGroupChatTests
     [Fact]
     public async Task VerifyGroupAgentChatDiscreteTerminationAsync()
     {
-        Agent agent1 = CreateMockAgent().Object;
+        Agent agent1 = CreateMockAgent();
 
         AgentGroupChat chat =
             new()
@@ -186,22 +185,14 @@ public class AgentGroupChatTests
 
     private static AgentGroupChat Create3AgentChat()
     {
-        Agent agent1 = CreateMockAgent().Object;
-        Agent agent2 = CreateMockAgent().Object;
-        Agent agent3 = CreateMockAgent().Object;
+        Agent agent1 = CreateMockAgent();
+        Agent agent2 = CreateMockAgent();
+        Agent agent3 = CreateMockAgent();
 
         return new(agent1, agent2, agent3);
     }
 
-    private static Mock<ChatHistoryKernelAgent> CreateMockAgent()
-    {
-        Mock<ChatHistoryKernelAgent> agent = new();
-
-        ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test")];
-        agent.Setup(a => a.InvokeAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
-
-        return agent;
-    }
+    private static MockAgent CreateMockAgent() => new() { Response = [new(AuthorRole.Assistant, "test")] };
 
     private sealed class TestTerminationStrategy(bool shouldTerminate) : TerminationStrategy
     {

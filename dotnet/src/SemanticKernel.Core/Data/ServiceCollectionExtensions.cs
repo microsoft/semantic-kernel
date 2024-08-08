@@ -2,8 +2,9 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Data;
 
-namespace Microsoft.SemanticKernel.Data;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods to register Data services on an <see cref="IServiceCollection"/>.
