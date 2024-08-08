@@ -15,6 +15,10 @@
     <ItemGroup>
       <PackageReference Include="AWSSDK.BedrockRuntime" />
       <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
+      <PackageReference Include="AWSSDK.Core"/>
+    </ItemGroup>
+    <ItemGroup>
+      <PackageVersion Include="AWSSDK.Core" Version="3.7.400"/>
     </ItemGroup>
 
     <ItemGroup>
