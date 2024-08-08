@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from collections.abc import AsyncGenerator, AsyncIterable
+from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -18,6 +19,7 @@ from semantic_kernel.exceptions import (
     OperationCancelledException,
     TemplateSyntaxError,
 )
+from semantic_kernel.exceptions.kernel_exceptions import KernelServiceNotFoundError
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
@@ -31,7 +33,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_extension import KernelFunctionExtension
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE
+from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
@@ -42,10 +44,12 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (
         FunctionChoiceBehavior,
     )
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.functions.kernel_function import KernelFunction
 
 T = TypeVar("T")
 
+TDataModel = TypeVar("TDataModel")
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -422,3 +426,59 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             else:
                 context.function_result = FunctionResult(function=context.function.metadata, value=value)
             return
+
+    async def add_embedding_to_object(
+        self,
+        inputs: OneOrMany[TDataModel],
+        field_to_embed: str,
+        field_to_store: str,
+        execution_settings: dict[str, "PromptExecutionSettings"],
+        container_mode: bool = False,
+        cast_function: Callable[[list[float]], Any] | None = None,
+        **kwargs: Any,
+    ):
+        """Gather all fields to embed, batch the embedding generation and store."""
+        contents: list[Any] = []
+        dict_like = (getter := getattr(inputs, "get", False)) and callable(getter)
+        list_of_dicts: bool = False
+        if container_mode:
+            contents = inputs[field_to_embed].tolist()  # type: ignore
+        elif isinstance(inputs, list):
+            list_of_dicts = (getter := getattr(inputs[0], "get", False)) and callable(getter)
+            for record in inputs:
+                if list_of_dicts:
+                    contents.append(record.get(field_to_embed))  # type: ignore
+                else:
+                    contents.append(getattr(record, field_to_embed))
+        else:
+            if dict_like:
+                contents.append(inputs.get(field_to_embed))  # type: ignore
+            else:
+                contents.append(getattr(inputs, field_to_embed))
+        vectors = None
+        service: EmbeddingGeneratorBase | None = None
+        for service_id, settings in execution_settings.items():
+            service = self.get_service(service_id, type=EmbeddingGeneratorBase)  # type: ignore
+            if service:
+                vectors = await service.generate_raw_embeddings(texts=contents, settings=settings, **kwargs)  # type: ignore
+                break
+        if not service:
+            raise KernelServiceNotFoundError("No service found to generate embeddings.")
+        if vectors is None:
+            raise KernelInvokeException("No vectors were generated.")
+        if cast_function:
+            vectors = [cast_function(vector) for vector in vectors]
+        if container_mode:
+            inputs[field_to_store] = vectors  # type: ignore
+            return
+        if isinstance(inputs, list):
+            for record, vector in zip(inputs, vectors):
+                if list_of_dicts:
+                    record[field_to_store] = vector  # type: ignore
+                else:
+                    setattr(record, field_to_store, vector)
+            return
+        if dict_like:
+            inputs[field_to_store] = vectors[0]  # type: ignore
+            return
+        setattr(inputs, field_to_store, vectors[0])
