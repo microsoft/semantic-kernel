@@ -41,7 +41,7 @@ internal sealed partial class Program
             if (string.IsNullOrWhiteSpace(userMessage)) { return; }
 
             // Find the best service to use based on the user's input
-            KernelArguments arguments = new KernelArguments(new PromptExecutionSettings()
+            KernelArguments arguments = new(new PromptExecutionSettings()
             {
                 ServiceId = router.FindService(userMessage, ["lmstudio", "ollama", "openai"])
             });
