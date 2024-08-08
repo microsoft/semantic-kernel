@@ -26,8 +26,8 @@ internal sealed class MetaIOService : IBedrockModelIOService
         var requestBody = new LlamaRequest.LlamaTextGenerationRequest()
         {
             Prompt = prompt,
-            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature") ?? exec.Temperature,
-            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "top_p") ?? exec.TopP,
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "temperature") ?? exec.Temperature,
+            TopP = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "top_p") ?? exec.TopP,
             MaxGenLen = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "max_gen_len") ?? exec.MaxGenLen
         };
         return requestBody;

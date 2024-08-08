@@ -32,13 +32,13 @@ internal static class AI21JambaRequest
         /// </summary>
         [JsonPropertyName("temperature")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public double? Temperature { get; set; }
+        public float? Temperature { get; set; }
         /// <summary>
         /// Limit the pool of next tokens in each step to the top N percentile of possible tokens, where 1.0 means the pool of all possible tokens, and 0.01 means the pool of only the most likely next tokens.
         /// </summary>
         [JsonPropertyName("top_p")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public double? TopP { get; set; }
+        public float? TopP { get; set; }
         /// <summary>
         /// The maximum number of tokens to allow for each generated response message. Typically, the best way to limit output length is by providing a length limit in the system prompt (for example, "limit your answers to three sentences"). Default: 4096, Range: 0 – 4096.
         /// </summary>

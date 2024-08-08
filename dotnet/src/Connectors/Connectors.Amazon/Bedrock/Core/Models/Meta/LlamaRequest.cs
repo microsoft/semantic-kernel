@@ -23,14 +23,14 @@ internal static class LlamaRequest
         /// </summary>
         [JsonPropertyName("temperature")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public double? Temperature { get; set; }
+        public float? Temperature { get; set; }
 
         /// <summary>
         /// Use a lower value to ignore less probable options. Set to 0 or 1.0 to disable.
         /// </summary>
         [JsonPropertyName("top_p")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public double? TopP { get; set; }
+        public float? TopP { get; set; }
 
         /// <summary>
         /// Specify the maximum number of tokens to use in the generated response. The model truncates the response once the generated text exceeds max_gen_len.

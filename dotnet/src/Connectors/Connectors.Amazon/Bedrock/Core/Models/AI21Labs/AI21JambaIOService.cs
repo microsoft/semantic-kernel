@@ -37,8 +37,8 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
         var requestBody = new AI21JambaRequest.AI21TextGenerationRequest()
         {
             Messages = messages,
-            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(exec.ExtensionData, "temperature") ?? exec.Temperature,
-            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(exec.ExtensionData, "top_p") ?? exec.TopP,
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(exec.ExtensionData, "temperature") ?? exec.Temperature,
+            TopP = BedrockModelUtilities.GetExtensionDataValue<float?>(exec.ExtensionData, "top_p") ?? exec.TopP,
             MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(exec.ExtensionData, "max_tokens") ?? exec.MaxTokens,
             Stop = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(exec.ExtensionData, "stop") ?? exec.Stop,
             NumberOfResponses = BedrockModelUtilities.GetExtensionDataValue<int?>(exec.ExtensionData, "n") ?? exec.NumberOfResponses,

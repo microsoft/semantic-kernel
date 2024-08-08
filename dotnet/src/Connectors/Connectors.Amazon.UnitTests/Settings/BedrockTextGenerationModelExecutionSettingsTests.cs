@@ -18,20 +18,92 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.UnitTests;
 public class BedrockTextGenerationModelExecutionSettingsTests
 {
     /// <summary>
+    /// Checks that the prompt execution settings extension data overrides the properties when both are set because the property actually should get from the ExtensionData behind the scenes.
+    /// </summary>
+    [Fact]
+    public async Task ExecutionSettingsExtensionDataOverridesPropertiesAsync()
+    {
+        // Arrange
+        string modelId = "meta.llama3-text-generation";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var executionSettings = new AmazonLlama3ExecutionSettings()
+        {
+            Temperature = -10.0f,
+            TopP = -2.0f,
+            MaxGenLen = 2,
+            ModelId = modelId,
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.8f },
+                { "top_p", 0.95f },
+                { "max_gen_len", 256 }
+            }
+        };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
+        mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new InvokeModelResponse
+            {
+                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LlamaResponse
+                {
+                    Generation = "Hello! This is a mock Llama response.",
+                    PromptTokenCount = 10,
+                    GenerationTokenCount = 15,
+                    StopReason = "stop"
+                }))),
+                ContentType = "application/json"
+            });
+        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<ITextGenerationService>();
+        var prompt = "Write a greeting.";
+
+        // Act
+        var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
+
+        // Assert
+        InvokeModelRequest? invokeModelRequest = null;
+        var invocation = mockBedrockApi.Invocations
+            .Where(i => i.Method.Name == "InvokeModelAsync")
+            .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
+        if (invocation != null)
+        {
+            invokeModelRequest = (InvokeModelRequest)invocation.Arguments[0];
+        }
+        Assert.Single(result);
+        Assert.Equal("Hello! This is a mock Llama response.", result[0].Text);
+        Assert.NotNull(invokeModelRequest);
+
+        using var requestBodyStream = invokeModelRequest.Body;
+        var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
+        var requestBodyRoot = requestBodyJson.RootElement;
+
+        Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
+        Assert.NotEqual(executionSettings.Temperature, (float)temperatureProperty.GetDouble());
+        Assert.Equal(executionSettings.ExtensionData["temperature"], (float)temperatureProperty.GetDouble());
+
+        Assert.True(requestBodyRoot.TryGetProperty("top_p", out var topPProperty));
+        Assert.NotEqual(executionSettings.TopP, (float)topPProperty.GetDouble());
+        Assert.Equal(executionSettings.ExtensionData["top_p"], (float)topPProperty.GetDouble());
+
+        Assert.True(requestBodyRoot.TryGetProperty("max_gen_len", out var maxGenLenProperty));
+        Assert.NotEqual(executionSettings.MaxGenLen, maxGenLenProperty.GetInt32());
+        Assert.Equal(executionSettings.ExtensionData["max_gen_len"], maxGenLenProperty.GetInt32());
+    }
+
+    /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Amazon Titan. Inserts execution settings data both ways to test.
     /// </summary>
     [Fact]
-    public async Task TitanGetTextContentsAsyncShouldReturnTextContentsAsyncWithPromptExecutionSettingsAsync()
+    public async Task TitanExecutionSettingsExtensionDataSetsProperlyAsync()
     {
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonTitanExecutionSettings()
         {
-            Temperature = 0.1f,
-            TopP = 0.95f,
-            MaxTokenCount = 256,
-            StopSequences = new List<string> { "</end>" },
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
@@ -105,22 +177,99 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
         Assert.Equal(executionSettings.ExtensionData.TryGetValue("stopSequences", out var extensionStopSequences) ? extensionStopSequences : executionSettings.StopSequences, stopSequences);
     }
+    /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the text generation call with Amazon Titan. Inserts execution settings data both ways to test.
+    /// </summary>
+    [Fact]
+    public async Task TitanExecutionSettingsPropertySetsProperlyAsync()
+    {
+        // Arrange
+        string modelId = "amazon.titan-text-lite-v1";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var executionSettings = new AmazonTitanExecutionSettings()
+        {
+            Temperature = 0.1f,
+            TopP = 0.95f,
+            MaxTokenCount = 256,
+            StopSequences = new List<string> { "</end>" },
+            ModelId = modelId,
+        };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
+        mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new InvokeModelResponse
+            {
+                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new TitanTextResponse
+                {
+                    InputTextTokenCount = 5,
+                    Results = new List<TitanTextResponse.Result>
+                    {
+                        new() {
+                            TokenCount = 10,
+                            OutputText = "This is a mock output.",
+                            CompletionReason = "stop"
+                        }
+                    }
+                }))),
+                ContentType = "application/json"
+            });
+        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<ITextGenerationService>();
+        var prompt = "Write a greeting.";
+
+        // Act
+        var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
+
+        // Assert
+        InvokeModelRequest? invokeModelRequest = null;
+        var invocation = mockBedrockApi.Invocations
+            .Where(i => i.Method.Name == "InvokeModelAsync")
+            .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
+        if (invocation != null)
+        {
+            invokeModelRequest = (InvokeModelRequest)invocation.Arguments[0];
+        }
+        Assert.Single(result);
+        Assert.Equal("This is a mock output.", result[0].Text);
+        Assert.NotNull(invokeModelRequest);
+
+        using var requestBodyStream = invokeModelRequest.Body;
+        var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
+        var requestBodyRoot = requestBodyJson.RootElement;
+        Assert.True(requestBodyRoot.TryGetProperty("textGenerationConfig", out var textGenerationConfig));
+
+        // Check temperature
+        Assert.True(textGenerationConfig.TryGetProperty("temperature", out var temperatureProperty));
+        Assert.Equal(executionSettings.Temperature, (float)temperatureProperty.GetDouble());
+
+        // Check top_p
+        Assert.True(textGenerationConfig.TryGetProperty("topP", out var topPProperty));
+        Assert.Equal(executionSettings.TopP, (float)topPProperty.GetDouble());
+
+        // Check max_token_count
+        Assert.True(textGenerationConfig.TryGetProperty("maxTokenCount", out var maxTokenCountProperty));
+        Assert.Equal(executionSettings.MaxTokenCount, maxTokenCountProperty.GetInt32());
+
+        // Check stop_sequences
+        Assert.True(textGenerationConfig.TryGetProperty("stopSequences", out var stopSequencesProperty));
+        var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.Equal(executionSettings.StopSequences, stopSequences!);
+    }
 
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with AI21 Labs Jamba. Inserts execution settings data both ways to test.
     /// </summary>
     [Fact]
-    public async Task AI21JambaGetTextContentsAsyncShouldReturnTextContentsAsyncWithPromptExecutionSettingsAsync()
+    public async Task JambaExecutionSettingsExtensionDataSetsProperlyAsync()
     {
         // Arrange
         string modelId = "ai21.jamba-instruct-v1:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonJambaExecutionSettings()
         {
-            Temperature = 0.8f,
-            TopP = 0.95f,
-            MaxTokens = 256,
-            Stop = new List<string> { "</end>" },
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
@@ -218,12 +367,117 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         Assert.True(requestBodyRoot.TryGetProperty("presence_penalty", out var presencePenaltyProperty));
         Assert.Equal(executionSettings.ExtensionData.TryGetValue("presence_penalty", out var extensionPresencePenalty) ? extensionPresencePenalty : executionSettings.PresencePenalty, presencePenaltyProperty.GetDouble());
     }
+    /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the text generation call with AI21 Labs Jamba. Inserts execution settings data both ways to test.
+    /// </summary>
+    [Fact]
+    public async Task JambaExecutionSettingsPropertySetsProperlyAsync()
+    {
+        // Arrange
+        string modelId = "ai21.jamba-instruct-v1:0";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var executionSettings = new AmazonJambaExecutionSettings()
+        {
+            Temperature = 0.8f,
+            TopP = 0.95f,
+            MaxTokens = 256,
+            Stop = new List<string> { "</end>" },
+            NumberOfResponses = 1,
+            FrequencyPenalty = 0.0,
+            PresencePenalty = 0.0,
+            ModelId = modelId
+        };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
+        mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new InvokeModelResponse
+            {
+                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AI21JambaResponse.AI21TextResponse
+                {
+                    Id = "my-request-id",
+                    Choices = new List<AI21JambaResponse.AI21TextResponse.Choice>
+                    {
+                        new() {
+                            Index = 0,
+                            Message = new AI21JambaResponse.AI21TextResponse.Message
+                            {
+                                Role = "assistant",
+                                Content = "Hello! This is a mock AI21 response."
+                            },
+                            FinishReason = "stop"
+                        }
+                    },
+                    Use = new AI21JambaResponse.AI21TextResponse.Usage
+                    {
+                        PromptTokens = 10,
+                        CompletionTokens = 15,
+                        TotalTokens = 25
+                    }
+                }))),
+                ContentType = "application/json"
+            });
+        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<ITextGenerationService>();
+        var prompt = "Write a greeting.";
+
+        // Act
+        var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
+
+        // Assert
+        InvokeModelRequest? invokeModelRequest = null;
+        var invocation = mockBedrockApi.Invocations
+            .Where(i => i.Method.Name == "InvokeModelAsync")
+            .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
+        if (invocation != null)
+        {
+            invokeModelRequest = (InvokeModelRequest)invocation.Arguments[0];
+        }
+        Assert.Single(result);
+        Assert.Equal("Hello! This is a mock AI21 response.", result[0].Text);
+        Assert.NotNull(invokeModelRequest);
+
+        using var requestBodyStream = invokeModelRequest.Body;
+        var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
+        var requestBodyRoot = requestBodyJson.RootElement;
+
+        // Check temperature
+        Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
+        Assert.Equal(executionSettings.Temperature, (float)temperatureProperty.GetDouble());
+
+        // Check top_p
+        Assert.True(requestBodyRoot.TryGetProperty("top_p", out var topPProperty));
+        Assert.Equal(executionSettings.TopP, (float)topPProperty.GetDouble());
+
+        // Check max_tokens
+        Assert.True(requestBodyRoot.TryGetProperty("max_tokens", out var maxTokensProperty));
+        Assert.Equal(executionSettings.MaxTokens, maxTokensProperty.GetInt32());
+
+        // Check stop
+        Assert.True(requestBodyRoot.TryGetProperty("stop", out var stopProperty));
+        var stopSequences = stopProperty.EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.Equal(executionSettings.Stop, stopSequences!);
+
+        // Check number_of_responses
+        Assert.True(requestBodyRoot.TryGetProperty("n", out var numberResponsesProperty));
+        Assert.Equal(executionSettings.NumberOfResponses, numberResponsesProperty.GetInt32());
+
+        // Check frequency_penalty
+        Assert.True(requestBodyRoot.TryGetProperty("frequency_penalty", out var frequencyPenaltyProperty));
+        Assert.Equal(executionSettings.FrequencyPenalty, frequencyPenaltyProperty.GetDouble());
+
+        // Check presence_penalty
+        Assert.True(requestBodyRoot.TryGetProperty("presence_penalty", out var presencePenaltyProperty));
+        Assert.Equal(executionSettings.PresencePenalty, presencePenaltyProperty.GetDouble());
+    }
 
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Anthropic Claude.
     /// </summary>
     [Fact]
-    public async Task ClaudeGetTextContentsAsyncShouldReturnTextContentsAsyncWithPromptExecutionSettingsAsync()
+    public async Task ClaudeExecutionSettingsSetsExtensionDataAsync()
     {
         // Arrange
         string modelId = "anthropic.claude-text-generation.model-id-only-needs-proper-prefix";
@@ -296,17 +550,13 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Cohere Command.
     /// </summary>
     [Fact]
-    public async Task CohereCommandGetTextContentsAsyncShouldReturnReturnTextContentsAsyncWithPromptExecutionSettingsAsync()
+    public async Task CommandExecutionSettingsSetsExtensionDataAsync()
     {
         // Arrange
         string modelId = "cohere.command-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonCommandExecutionSettings()
         {
-            Temperature = 0.8,
-            TopP = 0.95,
-            MaxTokens = 256,
-            StopSequences = new List<string> { "</end>" },
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
@@ -365,43 +615,34 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         var requestBodyRoot = requestBodyJson.RootElement;
 
         Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
-        Assert.Equal(executionSettings.Temperature, temperatureProperty.GetDouble());
         Assert.Equal(executionSettings.ExtensionData["temperature"], temperatureProperty.GetDouble());
 
         Assert.True(requestBodyRoot.TryGetProperty("p", out var topPProperty));
-        Assert.Equal(executionSettings.TopP, topPProperty.GetDouble());
         Assert.Equal(executionSettings.ExtensionData["p"], topPProperty.GetDouble());
 
         Assert.True(requestBodyRoot.TryGetProperty("max_tokens", out var maxTokensProperty));
-        Assert.Equal(executionSettings.MaxTokens, maxTokensProperty.GetInt32());
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], maxTokensProperty.GetInt32());
 
         Assert.True(requestBodyRoot.TryGetProperty("stop_sequences", out var stopSequencesProperty));
         var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
-        Assert.Equal(executionSettings.StopSequences, stopSequences!);
         Assert.Equal(executionSettings.ExtensionData["stop_sequences"], stopSequences);
     }
     /// <summary>
-    /// Checks that the prompt execution settings are correctly registered for the text generation call with Meta Llama3.
+    /// Checks that the prompt execution settings are correctly registered for the text generation call with Cohere Command.
     /// </summary>
     [Fact]
-    public async Task LlamaGetTextContentsAsyncShouldReturnTextContentsAsyncWithPromptExecutionSettingsAsync()
+    public async Task CommandExecutionSettingsPropertySetsProperlyAsync()
     {
         // Arrange
-        string modelId = "meta.llama3-text-generation";
+        string modelId = "cohere.command-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
-        var executionSettings = new AmazonLlama3ExecutionSettings()
+        var executionSettings = new AmazonCommandExecutionSettings()
         {
-            Temperature = 0.8f,
-            TopP = 0.95f,
-            MaxGenLen = 256,
-            ModelId = modelId,
-            ExtensionData = new Dictionary<string, object>()
-            {
-                { "temperature", 0.8f },
-                { "top_p", 0.95f },
-                { "max_gen_len", 256 }
-            }
+            Temperature = 0.8,
+            TopP = 0.95,
+            MaxTokens = 256,
+            StopSequences = new List<string> { "</end>" },
+            ModelId = modelId
         };
         mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelRequest>()))
             .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
@@ -411,12 +652,19 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new InvokeModelResponse
             {
-                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LlamaResponse
+                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new CommandResponse
                 {
-                    Generation = "Hello! This is a mock Llama response.",
-                    PromptTokenCount = 10,
-                    GenerationTokenCount = 15,
-                    StopReason = "stop"
+                    Id = "my-request-id",
+                    Prompt = "Write a greeting.",
+                    Generations = new List<CommandResponse.Generation>
+                    {
+                        new() {
+                            Id = "generation-id",
+                            Text = "Hello! This is a mock Cohere Command response.",
+                            FinishReason = "COMPLETE",
+                            IsFinished = true
+                        }
+                    }
                 }))),
                 ContentType = "application/json"
             });
@@ -437,7 +685,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
             invokeModelRequest = (InvokeModelRequest)invocation.Arguments[0];
         }
         Assert.Single(result);
-        Assert.Equal("Hello! This is a mock Llama response.", result[0].Text);
+        Assert.Equal("Hello! This is a mock Cohere Command response.", result[0].Text);
         Assert.NotNull(invokeModelRequest);
 
         using var requestBodyStream = invokeModelRequest.Body;
@@ -445,32 +693,30 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         var requestBodyRoot = requestBodyJson.RootElement;
 
         Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
-        Assert.Equal(executionSettings.Temperature, (float)temperatureProperty.GetDouble());
-        Assert.Equal(executionSettings.ExtensionData["temperature"], (float)temperatureProperty.GetDouble());
+        Assert.Equal(executionSettings.Temperature, temperatureProperty.GetDouble());
 
-        Assert.True(requestBodyRoot.TryGetProperty("top_p", out var topPProperty));
-        Assert.Equal(executionSettings.TopP, (float)topPProperty.GetDouble());
-        Assert.Equal(executionSettings.ExtensionData["top_p"], (float)topPProperty.GetDouble());
+        Assert.True(requestBodyRoot.TryGetProperty("p", out var topPProperty));
+        Assert.Equal(executionSettings.TopP, topPProperty.GetDouble());
 
-        Assert.True(requestBodyRoot.TryGetProperty("max_gen_len", out var maxGenLenProperty));
-        Assert.Equal(executionSettings.MaxGenLen, maxGenLenProperty.GetInt32());
-        Assert.Equal(executionSettings.ExtensionData["max_gen_len"], maxGenLenProperty.GetInt32());
+        Assert.True(requestBodyRoot.TryGetProperty("max_tokens", out var maxTokensProperty));
+        Assert.Equal(executionSettings.MaxTokens, maxTokensProperty.GetInt32());
+
+        Assert.True(requestBodyRoot.TryGetProperty("stop_sequences", out var stopSequencesProperty));
+        var stopSequences = stopSequencesProperty.EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.Equal(executionSettings.StopSequences, stopSequences!);
     }
 
     /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Mistral.
     /// </summary>
     [Fact]
-    public async Task MistralGetTextContentsAsyncShouldReturnTextContentsAsyncWithPromptExecutionSettingsAsync()
+    public async Task MistralExecutionSettingsSetExtensionDataAsync()
     {
         // Arrange
         string modelId = "mistral.mistral-text-generation";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var executionSettings = new AmazonMistralExecutionSettings()
         {
-            Temperature = 0.8f,
-            TopP = 0.95f,
-            MaxTokens = 256,
             ModelId = modelId,
             ExtensionData = new Dictionary<string, object>()
             {
@@ -524,15 +770,81 @@ public class BedrockTextGenerationModelExecutionSettingsTests
         var requestBodyRoot = requestBodyJson.RootElement;
 
         Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
-        Assert.Equal(executionSettings.Temperature, (float)temperatureProperty.GetDouble());
         Assert.Equal(executionSettings.ExtensionData["temperature"], (float)temperatureProperty.GetDouble());
 
         Assert.True(requestBodyRoot.TryGetProperty("top_p", out var topPProperty));
-        Assert.Equal(executionSettings.TopP, (float)topPProperty.GetDouble());
         Assert.Equal(executionSettings.ExtensionData["top_p"], (float)topPProperty.GetDouble());
 
         Assert.True(requestBodyRoot.TryGetProperty("max_tokens", out var maxTokensProperty));
-        Assert.Equal(executionSettings.MaxTokens, maxTokensProperty.GetInt32());
         Assert.Equal(executionSettings.ExtensionData["max_tokens"], maxTokensProperty.GetInt32());
+    }
+    /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the text generation call with Mistral.
+    /// </summary>
+    [Fact]
+    public async Task MistralExecutionSettingsPropertiesSetAsync()
+    {
+        // Arrange
+        string modelId = "mistral.mistral-text-generation";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var executionSettings = new AmazonMistralExecutionSettings()
+        {
+            Temperature = 0.8f,
+            TopP = 0.95f,
+            MaxTokens = 256,
+            ModelId = modelId,
+        };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
+        mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new InvokeModelResponse
+            {
+                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new MistralResponse
+                {
+                    Outputs = new List<MistralResponse.Output>
+                    {
+                        new() {
+                            Text = "Hello! This is a mock Mistral response.",
+                            StopReason = "stop_sequence"
+                        }
+                    }
+                }))),
+                ContentType = "application/json"
+            });
+        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<ITextGenerationService>();
+        var prompt = "Write a greeting.";
+
+        // Act
+        var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
+
+        // Assert
+        InvokeModelRequest? invokeModelRequest = null;
+        var invocation = mockBedrockApi.Invocations
+            .Where(i => i.Method.Name == "InvokeModelAsync")
+            .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
+        if (invocation != null)
+        {
+            invokeModelRequest = (InvokeModelRequest)invocation.Arguments[0];
+        }
+        Assert.Single(result);
+        Assert.Equal("Hello! This is a mock Mistral response.", result[0].Text);
+        Assert.NotNull(invokeModelRequest);
+
+        using var requestBodyStream = invokeModelRequest.Body;
+        var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
+        var requestBodyRoot = requestBodyJson.RootElement;
+
+        Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
+        Assert.Equal(executionSettings.Temperature, (float)temperatureProperty.GetDouble());
+
+        Assert.True(requestBodyRoot.TryGetProperty("top_p", out var topPProperty));
+        Assert.Equal(executionSettings.TopP, (float)topPProperty.GetDouble());
+
+        Assert.True(requestBodyRoot.TryGetProperty("max_tokens", out var maxTokensProperty));
+        Assert.Equal(executionSettings.MaxTokens, maxTokensProperty.GetInt32());
     }
 }

@@ -34,13 +34,13 @@ internal static class MistralRequest
         /// </summary>
         [JsonPropertyName("temperature")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public double? Temperature { get; set; }
+        public float? Temperature { get; set; }
         /// <summary>
         /// Controls the diversity of text that the model generates by setting the percentage of most-likely candidates that the model considers for the next token.
         /// </summary>
         [JsonPropertyName("top_p")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public double? TopP { get; set; }
+        public float? TopP { get; set; }
         /// <summary>
         /// Controls the number of most-likely candidates that the model considers for the next token.
         /// </summary>
