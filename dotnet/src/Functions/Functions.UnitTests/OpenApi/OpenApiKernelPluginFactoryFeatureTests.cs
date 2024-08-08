@@ -15,11 +15,11 @@ public class OpenApiKernelPluginFactoryFeatureTests
     [Fact]
     public async Task CreatesPluginWithOperationPayloadForAnyOfSchemaAsync()
     {
-        await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_any_of.json");
+        await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_tests.json");
 
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
-        var postFoobarFunction = plugin["PostFoobar"];
+        var postFoobarFunction = plugin["PostFoobarAnyOf"];
         Assert.NotNull(postFoobarFunction);
 
         var functionView = postFoobarFunction.Metadata;
@@ -33,31 +33,10 @@ public class OpenApiKernelPluginFactoryFeatureTests
     [Fact]
     public async Task CreatesPluginWithOperationPayloadForAllOfSchemaAsync()
     {
-        await using var stream0 = ResourcePluginsProvider.LoadFromResource("openapi_any_of.json");
-        // /components/schemas/fooBar
-        await using var openApiDocument = OpenApiTestHelper.ModifyOpenApiDocument(stream0, (doc) =>
-        {
-            var schemas = doc["components"]!["schemas"]!;
-            schemas["bar"]!["type"] = "object";
-            schemas["bar"]!["properties"] = new JsonObject
-            {
-                ["name"] = new JsonObject
-                {
-                    ["type"] = "string"
-                }
-            };
-            var anyOf = schemas["fooBar"]!["anyOf"];
-            schemas["fooBar"]!["anyOf"] = null;
-            var schema = new JsonObject
-            {
-                ["allOf"] = anyOf
-            };
-            schemas["fooBar"] = schema;
-        });
-
+        await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_tests.json");
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
-        var postFoobarFunction = plugin["PostFoobar"];
+        var postFoobarFunction = plugin["PostFoobarAllOf"];
         Assert.NotNull(postFoobarFunction);
 
         var functionView = postFoobarFunction.Metadata;
@@ -71,23 +50,11 @@ public class OpenApiKernelPluginFactoryFeatureTests
     [Fact]
     public async Task CreatesPluginWithOperationPayloadForOneOfSchemaAsync()
     {
-        await using var stream0 = ResourcePluginsProvider.LoadFromResource("openapi_any_of.json");
-        // /components/schemas/fooBar
-        await using var openApiDocument = OpenApiTestHelper.ModifyOpenApiDocument(stream0, (doc) =>
-        {
-            var schemas = doc["components"]!["schemas"]!;
-            var anyOf = schemas["fooBar"]!["anyOf"];
-            schemas["fooBar"]!["anyOf"] = null;
-            var schema = new JsonObject
-            {
-                ["oneOf"] = anyOf
-            };
-            schemas["fooBar"] = schema;
-        });
+        await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_tests.json");
 
         var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
-        var postFoobarFunction = plugin["PostFoobar"];
+        var postFoobarFunction = plugin["PostFoobarOneOf"];
         Assert.NotNull(postFoobarFunction);
 
         var functionView = postFoobarFunction.Metadata;
