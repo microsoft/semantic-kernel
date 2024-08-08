@@ -62,7 +62,7 @@ public class AgentChatTests
     /// Verify <see cref="AgentChat"/> throw exception for system message.
     /// </summary>
     [Fact]
-    public void VerifyAgentChatRejectsSystemMessge()
+    public void VerifyAgentChatRejectsSystemMessage()
     {
         // Create chat
         TestChat chat = new() { LoggerFactory = new Mock<ILoggerFactory>().Object };
