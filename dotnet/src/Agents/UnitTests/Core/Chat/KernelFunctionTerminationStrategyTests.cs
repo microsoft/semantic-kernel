@@ -24,11 +24,18 @@ public class KernelFunctionTerminationStrategyTests
     {
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin());
 
-        KernelFunctionTerminationStrategy strategy = new(plugin.Single(), new());
+        KernelFunctionTerminationStrategy strategy =
+            new(plugin.Single(), new())
+            {
+                AgentVariableName = "agent",
+                HistoryVariableName = "history",
+            };
 
         Assert.Null(strategy.Arguments);
         Assert.NotNull(strategy.Kernel);
         Assert.NotNull(strategy.ResultParser);
+        Assert.NotEqual("agent", KernelFunctionTerminationStrategy.DefaultAgentVariableName);
+        Assert.NotEqual("history", KernelFunctionTerminationStrategy.DefaultHistoryVariableName);
 
         Mock<Agent> mockAgent = new();
 
