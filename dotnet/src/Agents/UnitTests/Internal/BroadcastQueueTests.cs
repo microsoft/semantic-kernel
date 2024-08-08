@@ -123,23 +123,11 @@ public class BroadcastQueueTests
         Assert.Equal(receiveCount, channel.ReceiveCount);
     }
 
-    private sealed class TestChannel : AgentChannel
+    private sealed class TestChannel : MockChannel
     {
-        public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.3);
-
         public int ReceiveCount { get; private set; }
 
         public List<ChatMessageContent> ReceivedMessages { get; } = [];
-
-        protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
 
         protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
@@ -150,7 +138,17 @@ public class BroadcastQueueTests
         }
     }
 
-    private sealed class BadChannel : AgentChannel
+    private sealed class BadChannel : MockChannel
+    {
+        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(this.ReceiveDuration, cancellationToken);
+
+            throw new InvalidOperationException("Test");
+        }
+    }
+
+    private abstract class MockChannel : AgentChannel
     {
         public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.1);
 
@@ -164,11 +162,9 @@ public class BroadcastQueueTests
             throw new NotImplementedException();
         }
 
-        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected internal override string Serialize()
         {
-            await Task.Delay(this.ReceiveDuration, cancellationToken);
-
-            throw new InvalidOperationException("Test");
+            throw new NotImplementedException();
         }
     }
 }

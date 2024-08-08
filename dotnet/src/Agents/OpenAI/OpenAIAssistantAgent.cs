@@ -334,6 +334,20 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         }
     }
 
+    /// <inheritdoc/>
+    protected override async Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+    {
+        string threadId = channelState;
+
+        this.Logger.LogOpenAIAssistantAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(OpenAIAssistantChannel), threadId);
+
+        AssistantThread thread = await this._client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogOpenAIAssistantAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(OpenAIAssistantChannel), threadId);
+
+        return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgent"/> class.
     /// </summary>

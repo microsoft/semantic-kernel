@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -143,6 +144,15 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
             };
 
         return Task.FromResult<AgentChannel>(channel);
+    }
+
+    /// <inheritdoc/>
+    protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+    {
+        ChatHistory history =
+            JsonSerializer.Deserialize<ChatHistory>(channelState) ??
+            throw new KernelException("Unable to restore channel: invalid state.");
+        return Task.FromResult<AgentChannel>(new ChatHistoryChannel(history));
     }
 
     private (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)

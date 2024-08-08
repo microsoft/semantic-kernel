@@ -107,6 +107,19 @@ public class AgentChatTests
         }
     }
 
+    /// <summary>
+    /// Verify behavior of <see cref="AgentChat"/> over the course of agent interactions.
+    /// </summary>
+    [Fact]
+    public void VerifyAgentChatRejectsSystemMessage()
+    {
+        // Create chat
+        TestChat chat = new();
+
+        // Add a system message
+        Assert.Throws<KernelException>(() => chat.AddChatMessage(new ChatMessageContent(AuthorRole.System, "hi")));
+    }
+
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
     {
         Assert.Equal(expectedCount, await history.CountAsync());
@@ -115,6 +128,8 @@ public class AgentChatTests
     private sealed class TestChat : AgentChat
     {
         public MockAgent Agent { get; } = new() { Response = [new(AuthorRole.Assistant, "sup")] };
+
+        public override IReadOnlyList<Agent> Agents => [this.Agent];
 
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>

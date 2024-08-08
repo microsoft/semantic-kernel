@@ -61,6 +61,11 @@ public class AgentChannelTests
         {
             throw new NotImplementedException();
         }
+
+        protected internal override string Serialize()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private sealed class NextAgent : TestAgent;
@@ -73,6 +78,11 @@ public class AgentChannelTests
         }
 
         protected internal override IEnumerable<string> GetChannelKeys()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

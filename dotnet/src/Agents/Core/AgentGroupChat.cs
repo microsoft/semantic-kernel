@@ -34,7 +34,7 @@ public sealed class AgentGroupChat : AgentChat
     /// <summary>
     /// The agents participating in the chat.
     /// </summary>
-    public IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
+    public override IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
 
     /// <summary>
     /// Add a <see cref="Agent"/> to the chat.
@@ -74,6 +74,8 @@ public sealed class AgentGroupChat : AgentChat
 
         this.Logger.LogAgentGroupChatInvokingAgents(nameof(InvokeAsync), this.Agents);
 
+        bool isComplete = false;
+
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
@@ -98,17 +100,19 @@ public sealed class AgentGroupChat : AgentChat
                 if (message.Role == AuthorRole.Assistant)
                 {
                     var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
-                    this.IsComplete = await task.ConfigureAwait(false);
+                    isComplete = await task.ConfigureAwait(false);
                 }
 
                 yield return message;
             }
 
-            if (this.IsComplete)
+            if (isComplete)
             {
                 break;
             }
         }
+
+        this.IsComplete = isComplete;
 
         this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
     }
