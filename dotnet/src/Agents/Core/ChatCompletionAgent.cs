@@ -65,7 +65,7 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
             history.Add(message);
         }
 
-        foreach (ChatMessageContent message in messages ?? [])
+        foreach (ChatMessageContent message in messages)
         {
             message.AuthorName = this.Name;
 
@@ -121,6 +121,9 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
     {
+        // Distinguish from other channel types.
+        yield return typeof(ChatHistoryChannel).FullName!;
+
         // Agents with different reducers shall not share the same channel.
         // Agents with the same or equivalent reducer shall share the same channel.
         if (this.HistoryReducer != null)

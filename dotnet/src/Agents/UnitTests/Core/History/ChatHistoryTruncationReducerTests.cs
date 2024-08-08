@@ -21,16 +21,40 @@ public class ChatHistoryTruncationReducerTests
     [InlineData(-1)]
     [InlineData(-1, int.MaxValue)]
     [InlineData(int.MaxValue, -1)]
-    public void VerifyChatHistoryConstructorArgumentValidation(int targetCount, int? thresholdCount = null)
+    public void VerifyConstructorArgumentValidation(int targetCount, int? thresholdCount = null)
     {
         Assert.Throws<ArgumentException>(() => new ChatHistoryTruncationReducer(targetCount, thresholdCount));
+    }
+
+    /// <summary>
+    /// Validate equality override.
+    /// </summary>
+    [Fact]
+    public void VerifyEquality()
+    {
+        ChatHistoryTruncationReducer reducer1 = new(3, 3);
+        ChatHistoryTruncationReducer reducer2 = new(3, 3);
+        ChatHistoryTruncationReducer reducer3 = new(4, 3);
+        ChatHistoryTruncationReducer reducer4 = new(3, 5);
+        ChatHistoryTruncationReducer reducer5 = new(3);
+        ChatHistoryTruncationReducer reducer6 = new(3);
+
+        Assert.True(reducer1.Equals(reducer1));
+        Assert.True(reducer1.Equals(reducer2));
+        Assert.True(reducer5.Equals(reducer6));
+        Assert.True(reducer3.Equals(reducer3));
+        Assert.False(reducer1.Equals(reducer3));
+        Assert.False(reducer1.Equals(reducer4));
+        Assert.False(reducer1.Equals(reducer5));
+        Assert.False(reducer1.Equals(reducer6));
+        Assert.False(reducer1.Equals(null));
     }
 
     /// <summary>
     /// Validate hash-code expresses reducer equivalency.
     /// </summary>
     [Fact]
-    public void VerifyChatHistoryHasCode()
+    public void VerifyHashCode()
     {
         HashSet<ChatHistoryTruncationReducer> reducers = [];
 
