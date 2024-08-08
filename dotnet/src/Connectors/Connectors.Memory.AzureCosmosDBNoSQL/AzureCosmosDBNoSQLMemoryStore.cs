@@ -283,7 +283,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
             """
                 SELECT x.id, x.key, x.metadata, x.timestamp
                 FROM x
-                WHERE (x.key = @key)
+                WHERE (x.id = @key AND x.key = @key)
             """)
             .WithParameter("@key", key);
 
