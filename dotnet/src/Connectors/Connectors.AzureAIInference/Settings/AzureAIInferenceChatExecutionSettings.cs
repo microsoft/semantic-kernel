@@ -202,7 +202,7 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
-    /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
+    /// <returns>An instance of <see cref="AzureAIInferenceChatExecutionSettings"/></returns>
     public static AzureAIInferenceChatExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         if (executionSettings is null)

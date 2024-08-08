@@ -25,7 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAIInference.Core;
 /// <summary>
 /// Base class for AI clients that provides common functionality for interacting with Azure AI Inference services.
 /// </summary>
-internal class ChatClientCore
+internal sealed class ChatClientCore
 {
     private const string ModelProvider = "azure-ai-inference";
     /// <summary>
@@ -106,23 +106,14 @@ internal class ChatClientCore
         ILogger? logger = null)
     {
         this.Logger = logger ?? NullLogger.Instance;
-
-        // Empty constructor will be used when inherited by a specialized Client.
-        if (apiKey is null
-            && endpoint is null
-            && httpClient is null
-            && logger is null)
-        {
-            return;
-        }
-
         // Accepts the endpoint if provided, otherwise uses the default Azure AI Inference endpoint.
         this.Endpoint = endpoint ?? httpClient?.BaseAddress;
         Verify.NotNull(this.Endpoint);
 
         if (string.IsNullOrEmpty(apiKey))
         {
-            // Avoids an exception from Azure AI Inference Client when a custom endpoint is provided without an API key.
+            // Api Key is not required, when not provided will be set to single space to avoid empty exceptions from Azure SDK AzureKeyCredential type.
+            // This is a common scenario when using the Azure AI Inference service thru a Gateway that may inject the API Key.
             apiKey = SingleSpace;
         }
 
@@ -201,7 +192,7 @@ internal class ChatClientCore
     /// <typeparam name="T">Type of the response.</typeparam>
     /// <param name="request">Request to invoke.</param>
     /// <returns>Returns the response.</returns>
-    protected static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
+    private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
     {
         try
         {
@@ -219,7 +210,7 @@ internal class ChatClientCore
     /// <typeparam name="T">Type of the response.</typeparam>
     /// <param name="request">Request to invoke.</param>
     /// <returns>Returns the response.</returns>
-    protected static T RunRequest<T>(Func<T> request)
+    private static T RunRequest<T>(Func<T> request)
     {
         try
         {
@@ -235,7 +226,7 @@ internal class ChatClientCore
     {
         Verify.NotNull(chatHistory);
 
-        // Convert the incoming execution settings to OpenAI settings.
+        // Convert the incoming execution settings to specialized settings.
         AzureAIInferenceChatExecutionSettings chatExecutionSettings = AzureAIInferenceChatExecutionSettings.FromExecutionSettings(executionSettings);
 
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
@@ -369,7 +360,7 @@ internal class ChatClientCore
 
         foreach (var message in chatHistory)
         {
-            options.Messages.AddRange(GetRequestMessages(message /*, executionSettings.ToolCallBehavior */));
+            options.Messages.AddRange(GetRequestMessages(message));
         }
 
         return options;
@@ -386,6 +377,8 @@ internal class ChatClientCore
         {
             if (message.Items is { Count: 1 } && message.Items.FirstOrDefault() is TextContent textContent)
             {
+                // Name removed temporarily as the Azure AI Inference service does not support it ATM.
+                // Issue: https://github.com/Azure/azure-sdk-for-net/issues/45415
                 return [new ChatRequestUserMessage(textContent.Text) /*{ Name = message.AuthorName }*/ ];
             }
 
@@ -395,11 +388,16 @@ internal class ChatClientCore
                 ImageContent imageContent => GetImageContentItem(imageContent),
                 _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
             })))
+
+            // Name removed temporarily as the Azure AI Inference service does not support it ATM.
+            // Issue: https://github.com/Azure/azure-sdk-for-net/issues/45415
             /*{ Name = message.AuthorName }*/];
         }
 
         if (message.Role == AuthorRole.Assistant)
         {
+            // Name removed temporarily as the Azure AI Inference service does not support it ATM.
+            // Issue: https://github.com/Azure/azure-sdk-for-net/issues/45415
             return [new ChatRequestAssistantMessage() { Content = message.Content /* Name = message.AuthorName */ }];
         }
 
