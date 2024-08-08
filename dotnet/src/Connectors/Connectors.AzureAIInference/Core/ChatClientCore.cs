@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -11,6 +10,7 @@ using Azure.AI.Inference;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 
@@ -27,11 +27,6 @@ internal class ChatClientCore
     /// Single space constant.
     /// </summary>
     private const string SingleSpace = " ";
-
-    /// <summary>
-    /// Identifier of the default model to use
-    /// </summary>
-    protected internal string ModelId { get; init; } = string.Empty;
 
     /// <summary>
     /// Non-default endpoint for Azure AI Inference API.
@@ -56,32 +51,23 @@ internal class ChatClientCore
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatClientCore"/> class.
     /// </summary>
-    /// <param name="modelId">Model name.</param>
     /// <param name="apiKey">Azure AI Inference API Key.</param>
     /// <param name="endpoint">Azure AI Inference compatible API endpoint.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal ChatClientCore(
-        string? modelId = null,
         string? apiKey = null,
         Uri? endpoint = null,
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
         // Empty constructor will be used when inherited by a specialized Client.
-        if (modelId is null
-            && apiKey is null
+        if (apiKey is null
             && endpoint is null
             && httpClient is null
             && logger is null)
         {
             return;
-        }
-
-        if (!string.IsNullOrWhiteSpace(modelId))
-        {
-            this.ModelId = modelId!;
-            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
 
         this.Logger = logger ?? NullLogger.Instance;
@@ -108,37 +94,16 @@ internal class ChatClientCore
     /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
-    /// <param name="modelId">Azure AI Inference model Id</param>
     /// <param name="chatClient">Custom <see cref="ChatCompletionsClient"/>.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal ChatClientCore(
-        string? modelId,
         ChatCompletionsClient chatClient,
         ILogger? logger = null)
     {
-        // Model Id may not be required when other services. i.e: File Service.
-        if (modelId is not null)
-        {
-            this.ModelId = modelId;
-            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
-        }
-
         Verify.NotNull(chatClient);
 
         this.Logger = logger ?? NullLogger.Instance;
         this.ChatClient = chatClient;
-    }
-
-    /// <summary>
-    /// Logs Azure AI Inference action details.
-    /// </summary>
-    /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
-    internal void LogActionDetails([CallerMemberName] string? callerMemberName = default)
-    {
-        if (this.Logger!.IsEnabled(LogLevel.Information))
-        {
-            this.Logger.LogInformation("Action: {Action}. Azure AI Inference Model ID: {ModelId}.", callerMemberName, this.ModelId);
-        }
     }
 
     /// <summary>
@@ -212,5 +177,15 @@ internal class ChatClientCore
         {
             throw e.ToHttpOperationException();
         }
+    }
+
+    internal Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

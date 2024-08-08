@@ -1,30 +1,66 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
-// Copyright (c) Microsoft. All rights reserved.
-
+using Azure.AI.Inference;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.Connectors.AzureAIInference.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAIInference;
 
 /// <summary>
-/// Initializes a new instance of the <see cref="AzureAIInferenceChatCompletionService"/> class.
+/// Chat completion service for Azure AI Inference.
 /// </summary>
 public class AzureAIInferenceChatCompletionService : IChatCompletionService
 {
-    IReadOnlyDictionary<string, object?> IAIService.Attributes => throw new System.NotImplementedException();
+    private readonly ChatClientCore _core;
 
-    Task<IReadOnlyList<ChatMessageContent>> IChatCompletionService.GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureAIInferenceChatCompletionService"/> class.
+    /// </summary>
+    /// <param name="endpoint">Endpoint / Target URI</param>
+    /// <param name="apiKey">API Key</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public AzureAIInferenceChatCompletionService(
+            Uri? endpoint = null,
+            string? apiKey = null,
+            HttpClient? httpClient = null,
+            ILoggerFactory? loggerFactory = null)
     {
-        throw new System.NotImplementedException();
+        this._core = new(
+            apiKey,
+            endpoint,
+            httpClient,
+            loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService)));
     }
 
-    IAsyncEnumerable<StreamingChatMessageContent> IChatCompletionService.GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureAIInferenceChatCompletionService"/> class providing your own ChatCompletionsClient instance.
+    /// </summary>
+    /// <param name="chatClient">Breaking glass <see cref="ChatCompletionsClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public AzureAIInferenceChatCompletionService(
+        ChatCompletionsClient chatClient,
+        ILoggerFactory? loggerFactory = null)
     {
-        throw new System.NotImplementedException();
+        this._core = new(
+            chatClient,
+            loggerFactory?.CreateLogger(typeof(AzureAIInferenceChatCompletionService)));
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this._core.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this._core.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 }
