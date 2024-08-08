@@ -12,10 +12,10 @@ public sealed class FunctionChoiceBehaviorConfiguration
     /// <summary>
     /// Represents an AI model's decision-making strategy for calling functions.
     /// </summary>
-    public FunctionChoice Choice { get; internal set; }
+    public FunctionChoice Choice { get; internal init; }
 
     /// <summary>
     /// The functions available for AI model.
     /// </summary>
-    public IReadOnlyList<KernelFunction>? Functions { get; internal set; }
+    public IReadOnlyList<KernelFunction>? Functions { get; internal init; }
 }
