@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,6 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 internal sealed class AnthropicClient
 {
     private const string ModelProvider = "anthropic";
+    private const string AnthropicUrl = "https://api.anthropic.com/v1/messages";
     private readonly Func<ValueTask<string>>? _bearerTokenProvider;
     private readonly Dictionary<string, object?> _attributesInternal = new();
 
@@ -97,7 +97,7 @@ internal sealed class AnthropicClient
             // If a custom endpoint is not provided, the ApiKey is required
             Verify.NotNullOrWhiteSpace(apiKey);
             this._apiKey = apiKey;
-            targetUri = new Uri("https://api.anthropic.com/v1/messages");
+            targetUri = new Uri(AnthropicUrl);
         }
 
         this._httpClient = httpClient;
@@ -283,7 +283,7 @@ internal sealed class AnthropicClient
 
         var filteredChatHistory = new ChatHistory(chatHistory.Where(IsAssistantOrUserOrSystem));
         var anthropicRequest = AnthropicRequest.FromChatHistoryAndExecutionSettings(filteredChatHistory, anthropicExecutionSettings);
-        anthropicRequest.Version = this._version;
+        anthropicRequest.Version = this._endpoint.OriginalString.Equals(AnthropicUrl, StringComparison.Ordinal) ? null : this._version;
 
         return new ChatCompletionState
         {
@@ -392,29 +392,14 @@ internal sealed class AnthropicClient
         {
             httpRequestMessage.Headers.Add("x-api-key", this._apiKey);
         }
-        else
-        if (this._bearerTokenProvider is not null && !httpRequestMessage.Headers.Contains("Authentication") && await this._bearerTokenProvider().ConfigureAwait(false) is { } bearerKey)
+        else if (this._bearerTokenProvider is not null
+                 && !httpRequestMessage.Headers.Contains("Authentication")
+                 && await this._bearerTokenProvider().ConfigureAwait(false) is { } bearerKey)
         {
             httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerKey);
         }
 
         return httpRequestMessage;
-    }
-
-    private static HttpContent? CreateJsonContent(object? payload)
-    {
-        HttpContent? content = null;
-        if (payload is not null)
-        {
-            byte[] utf8Bytes = payload is string s
-                ? Encoding.UTF8.GetBytes(s)
-                : JsonSerializer.SerializeToUtf8Bytes(payload);
-
-            content = new ByteArrayContent(utf8Bytes);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
-        }
-
-        return content;
     }
 
     private void Log(LogLevel logLevel, string? message, params object?[] args)
