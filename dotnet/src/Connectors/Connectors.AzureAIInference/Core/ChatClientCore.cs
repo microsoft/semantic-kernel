@@ -252,8 +252,7 @@ internal class ChatClientCore
         {
             try
             {
-                var responseData2 = await RunRequestAsync(() => this.ChatClient!.CompleteAsync(chatOptions, chatExecutionSettings.ExtraParameters, cancellationToken)).ConfigureAwait(false);
-                responseData = responseData2.Value;
+                responseData = (await RunRequestAsync(() => this.ChatClient!.CompleteAsync(chatOptions, chatExecutionSettings.ExtraParameters ?? string.Empty, cancellationToken)).ConfigureAwait(false)).Value;
 
                 this.LogUsage(responseData.Usage);
                 if (responseData.Choices.Count == 0)

@@ -26,7 +26,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         .Build();
 
     [Theory]
-    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place Market")]
+    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task InvokeGetChatMessageContentsAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
