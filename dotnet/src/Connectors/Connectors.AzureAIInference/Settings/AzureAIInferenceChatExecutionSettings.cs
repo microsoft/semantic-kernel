@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.AI.Inference;
-using System.Collections.Generic;
 using System;
-using Microsoft.SemanticKernel.Text;
-using System.Text.Json;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json;
+using Azure.AI.Inference;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAIInference;
 
