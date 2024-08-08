@@ -51,6 +51,26 @@ internal abstract class ClientCore
     /// </remarks>
     private const int MaxInflightAutoInvokes = 128;
 
+    /// <summary>
+    /// The maximum number of function auto-invokes that can be made in a single user request.
+    /// </summary>
+    /// <remarks>
+    /// After this number of iterations as part of a single user request is reached, auto-invocation
+    /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
+    /// the same function over and over.
+    /// </remarks>
+    private const int MaximumAutoInvokeAttempts = 128;
+
+    /// <summary>
+    /// Number of requests that are part of a single user interaction that should include this functions in the request.
+    /// </summary>
+    /// <remarks>
+    /// Once this limit is reached, the functions will no longer be included in subsequent requests that are part of the user operation, e.g.
+    /// if this is 1, the first request will include the functions, but the subsequent response sending back the functions' result
+    /// will not include the functions for further use.
+    /// </remarks>
+    private const int MaximumUseAttempts = 1;
+
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
     private static readonly ChatCompletionsFunctionToolDefinition s_nonInvocableFunctionTool = new() { Name = "NonInvocableTool" };
 
@@ -384,12 +404,15 @@ internal abstract class ClientCore
 
         // Convert the incoming execution settings to OpenAI settings.
         OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
-        bool autoInvoke = kernel is not null && chatExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
-        ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
         var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+
+        var functionCallConfiguration = this.ConfigureFunctionCalling(requestIndex: 0, kernel, chatExecutionSettings, chatOptions);
+
+        bool autoInvoke = kernel is not null && functionCallConfiguration?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
+        ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
         for (int requestIndex = 1; ; requestIndex++)
         {
@@ -490,7 +513,7 @@ internal abstract class ClientCore
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
-                if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
+                if (functionCallConfiguration?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
                     AddResponseMessage(chatOptions, chat, result: null, "Error: Function call request for a function that wasn't defined.", toolCall, this.Logger);
@@ -566,42 +589,15 @@ internal abstract class ClientCore
             }
 
             // Update tool use information for the next go-around based on having completed another iteration.
-            Debug.Assert(chatExecutionSettings.ToolCallBehavior is not null);
-
-            // Set the tool choice to none. If we end up wanting to use tools, we'll reset it to the desired value.
-            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
-            chatOptions.Tools.Clear();
-
-            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
-            {
-                // Don't add any tools as we've reached the maximum attempts limit.
-                if (this.Logger.IsEnabled(LogLevel.Debug))
-                {
-                    this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
-                }
-            }
-            else
-            {
-                // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
-                // what functions are available in the kernel.
-                chatExecutionSettings.ToolCallBehavior.ConfigureOptions(kernel, chatOptions);
-            }
-
-            // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
-            // if we don't send any tools in subsequent requests, even if we say not to use any.
-            if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None)
-            {
-                Debug.Assert(chatOptions.Tools.Count == 0);
-                chatOptions.Tools.Add(s_nonInvocableFunctionTool);
-            }
+            functionCallConfiguration = this.ConfigureFunctionCalling(requestIndex, kernel, chatExecutionSettings, chatOptions);
 
             // Disable auto invocation if we've exceeded the allowed limit.
-            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
+            if (requestIndex >= functionCallConfiguration?.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
-                    this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
+                    this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", functionCallConfiguration?.MaximumAutoInvokeAttempts);
                 }
             }
         }
@@ -616,13 +612,14 @@ internal abstract class ClientCore
         Verify.NotNull(chat);
 
         OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
-
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
-        bool autoInvoke = kernel is not null && chatExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
-        ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
-
         var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+
+        var functionCallConfiguration = this.ConfigureFunctionCalling(requestIndex: 0, kernel, chatExecutionSettings, chatOptions);
+
+        bool autoInvoke = kernel is not null && functionCallConfiguration?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
+        ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
         StringBuilder? contentBuilder = null;
         Dictionary<int, string>? toolCallIdsByIndex = null;
@@ -792,7 +789,7 @@ internal abstract class ClientCore
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
-                if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
+                if (functionCallConfiguration?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
                     AddResponseMessage(chatOptions, chat, result: null, "Error: Function call request for a function that wasn't defined.", toolCall, this.Logger);
@@ -871,42 +868,15 @@ internal abstract class ClientCore
             }
 
             // Update tool use information for the next go-around based on having completed another iteration.
-            Debug.Assert(chatExecutionSettings.ToolCallBehavior is not null);
-
-            // Set the tool choice to none. If we end up wanting to use tools, we'll reset it to the desired value.
-            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
-            chatOptions.Tools.Clear();
-
-            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
-            {
-                // Don't add any tools as we've reached the maximum attempts limit.
-                if (this.Logger.IsEnabled(LogLevel.Debug))
-                {
-                    this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
-                }
-            }
-            else
-            {
-                // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
-                // what functions are available in the kernel.
-                chatExecutionSettings.ToolCallBehavior.ConfigureOptions(kernel, chatOptions);
-            }
-
-            // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
-            // if we don't send any tools in subsequent requests, even if we say not to use any.
-            if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None)
-            {
-                Debug.Assert(chatOptions.Tools.Count == 0);
-                chatOptions.Tools.Add(s_nonInvocableFunctionTool);
-            }
+            functionCallConfiguration = this.ConfigureFunctionCalling(requestIndex, kernel, chatExecutionSettings, chatOptions);
 
             // Disable auto invocation if we've exceeded the allowed limit.
-            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
+            if (requestIndex >= functionCallConfiguration?.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
-                    this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
+                    this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", functionCallConfiguration?.MaximumAutoInvokeAttempts);
                 }
             }
         }
@@ -1132,7 +1102,6 @@ internal abstract class ClientCore
                 break;
         }
 
-        executionSettings.ToolCallBehavior?.ConfigureOptions(kernel, options);
         if (executionSettings.TokenSelectionBiases is not null)
         {
             foreach (var keyValue in executionSettings.TokenSelectionBiases)
@@ -1587,5 +1556,155 @@ internal abstract class ClientCore
         {
             await functionCallCallback(context).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>
+    /// Configures the function calling functionality based on the provided parameters.
+    /// </summary>
+    /// <param name="requestIndex">Request sequence index of automatic function invocation process.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> to be used for function calling.</param>
+    /// <param name="executionSettings">Execution settings for the completion API.</param>
+    /// <param name="chatOptions">The chat completion options from the Azure.AI.OpenAI package.</param>
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(int requestIndex, Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions)
+    {
+        (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? result = null;
+
+        // If neither behavior specified, we don't need to do anything.
+        if (executionSettings.FunctionChoiceBehavior is null && executionSettings.ToolCallBehavior is null)
+        {
+            return result;
+        }
+
+        // If both behaviors are specified, we can't handle that.
+        if (executionSettings.FunctionChoiceBehavior is not null && executionSettings.ToolCallBehavior is not null)
+        {
+            throw new ArgumentException($"{nameof(executionSettings.ToolCallBehavior)} and {nameof(executionSettings.FunctionChoiceBehavior)} cannot be used together.");
+        }
+
+        // Set the tool choice to none. If we end up wanting to use tools, we'll set it to the desired value.
+        chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+        chatOptions.Tools.Clear();
+
+        // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
+        if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
+        {
+            result = this.ConfigureFunctionCalling(requestIndex, kernel, chatOptions, functionChoiceBehavior);
+        }
+        // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
+        else if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
+        {
+            result = this.ConfigureFunctionCalling(requestIndex, kernel, chatOptions, toolCallBehavior);
+        }
+
+        // Having already sent tools and with tool call information in history, the service can become unhappy "Invalid 'tools': empty array. Expected an array with minimum length 1, but got an empty array instead."
+        // if we don't send any tools in subsequent requests, even if we say not to use any.
+        // Similarly, if we say not to use any tool (ToolChoice = ChatCompletionsToolChoice.None) and dont provide any for the first request,
+        // the service fails with "'tool_choice' is only allowed when 'tools' are specified."
+        if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None && chatOptions.Tools.Count == 0)
+        {
+            chatOptions.Tools.Add(s_nonInvocableFunctionTool);
+        }
+
+        return result;
+    }
+
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(int requestIndex, Kernel? kernel, ChatCompletionsOptions chatOptions, FunctionChoiceBehavior functionChoiceBehavior)
+    {
+        // Regenerate the tool list as necessary and getting other call behavior properties. The invocation of the function(s) could have augmented
+        // what functions are available in the kernel.
+        var config = functionChoiceBehavior.GetConfiguration(new() { Kernel = kernel });
+
+        (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts) result = new()
+        {
+            AllowAnyRequestedKernelFunction = config.AllowAnyRequestedKernelFunction,
+            MaximumAutoInvokeAttempts = config.Options.AutoInvoke ? MaximumAutoInvokeAttempts : 0,
+        };
+
+        if (config.Choice == FunctionChoice.Required && requestIndex >= MaximumUseAttempts)
+        {
+            // Don't add any tools as we've reached the maximum use attempts limit.
+            if (this.Logger.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the functions.", MaximumUseAttempts);
+            }
+
+            return result;
+        }
+
+        if (config.Choice == FunctionChoice.Auto)
+        {
+            if (config.Functions is { Count: > 0 } functions)
+            {
+                chatOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
+
+                foreach (var function in functions)
+                {
+                    var functionDefinition = function.Metadata.ToOpenAIFunction().ToFunctionDefinition();
+                    chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
+                }
+            }
+
+            return result;
+        }
+
+        if (config.Choice == FunctionChoice.Required)
+        {
+            if (config.Functions is { Count: > 0 } functions)
+            {
+                if (functions.Count > 1)
+                {
+                    throw new KernelException("Only one required function is allowed.");
+                }
+
+                var functionDefinition = functions[0].Metadata.ToOpenAIFunction().ToFunctionDefinition();
+
+                chatOptions.ToolChoice = new ChatCompletionsToolChoice(functionDefinition);
+                chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
+            }
+
+            return result;
+        }
+
+        if (config.Choice == FunctionChoice.None)
+        {
+            if (config.Functions is { Count: > 0 } functions)
+            {
+                chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+
+                foreach (var function in functions)
+                {
+                    var functionDefinition = function.Metadata.ToOpenAIFunction().ToFunctionDefinition();
+                    chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
+                }
+            }
+
+            return result;
+        }
+
+        throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
+    }
+
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(int requestIndex, Kernel? kernel, ChatCompletionsOptions chatOptions, ToolCallBehavior toolCallBehavior)
+    {
+        if (requestIndex >= toolCallBehavior.MaximumUseAttempts)
+        {
+            // Don't add any tools as we've reached the maximum attempts limit.
+            if (this.Logger.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.", toolCallBehavior.MaximumUseAttempts);
+            }
+        }
+        else
+        {
+            // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
+            // what functions are available in the kernel.
+            toolCallBehavior.ConfigureOptions(kernel, chatOptions);
+        }
+
+        return new()
+        {
+            AllowAnyRequestedKernelFunction = toolCallBehavior.AllowAnyRequestedKernelFunction,
+            MaximumAutoInvokeAttempts = toolCallBehavior.MaximumAutoInvokeAttempts,
+        };
     }
 }

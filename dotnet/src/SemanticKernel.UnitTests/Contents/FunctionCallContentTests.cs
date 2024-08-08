@@ -59,7 +59,7 @@ public class FunctionCallContentTests
     }
 
     [Fact]
-    public async Task ItShouldHandleFunctionCallRequestExceptionAsync()
+    public async Task ItShouldHandleFunctionCallExceptionAsync()
     {
         // Arrange
         var kernel = new Kernel();
@@ -78,7 +78,7 @@ public class FunctionCallContentTests
     }
 
     [Fact]
-    public void ItShouldReturnListOfFunctionCallRequests()
+    public void ItShouldReturnListOfFunctionCalls()
     {
         // Arrange
         var functionCallContents = new ChatMessageContentItemCollection

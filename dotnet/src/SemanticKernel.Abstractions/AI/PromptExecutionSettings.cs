@@ -66,6 +66,47 @@ public class PromptExecutionSettings
     }
 
     /// <summary>
+    /// Gets or sets the behavior for how functions are chosen by the model and how their calls are handled.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>To disable function calling, and have the model only generate a user-facing message, set the property to null (the default).</item>
+    /// <item>
+    /// To allow the model to decide whether to call the functions and, if so, which ones to call, set the property to an instance returned
+    /// from <see cref="FunctionChoiceBehavior.Auto(IEnumerable{KernelFunction}?, bool)"/> method. By default, all functions in the <see cref="Kernel"/> will be available.
+    /// To limit the functions available, pass a list of the functions when calling the method.
+    /// </item>
+    /// <item>
+    /// To force the model to always call one or more functions, set the property to an instance returned
+    /// from <see cref="FunctionChoiceBehavior.Required(IEnumerable{KernelFunction}?, bool)"/> method. By default, all functions in the <see cref="Kernel"/> will be available.
+    /// To limit the functions available, pass a list of the functions when calling the method.
+    /// </item>
+    /// <item>
+    /// To force the model to not call any functions and only generate a user-facing message, set the property to an instance returned
+    /// from <see cref="FunctionChoiceBehavior.None(IEnumerable{KernelFunction}?, bool)"/> property. By default, all functions in the <see cref="Kernel"/> will be available.
+    /// To limit the functions available, pass a list of the functions when calling the method.
+    /// </item>
+    /// </list>
+    /// For all the behaviors that presume the model to call functions, auto-invoke behavior may be selected. If the service
+    /// sends a request for a function call, if auto-invoke has been requested, the client will attempt to
+    /// resolve that function from the functions available, and if found, rather
+    /// than returning the response back to the caller, it will handle the request automatically, invoking
+    /// the function, and sending back the result. The intermediate messages will be retained in the provided <see cref="ChatHistory"/>.
+    /// </remarks>
+    [JsonPropertyName("function_choice_behavior")]
+    [Experimental("SKEXP0001")]
+    public FunctionChoiceBehavior? FunctionChoiceBehavior
+    {
+        get => this._functionChoiceBehavior;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._functionChoiceBehavior = value;
+        }
+    }
+
+    /// <summary>
     /// Extra properties that may be included in the serialized execution settings.
     /// </summary>
     /// <remarks>
@@ -116,6 +157,7 @@ public class PromptExecutionSettings
         {
             ModelId = this.ModelId,
             ServiceId = this.ServiceId,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
         };
     }
@@ -137,6 +179,7 @@ public class PromptExecutionSettings
     private string? _modelId;
     private IDictionary<string, object>? _extensionData;
     private string? _serviceId;
+    private FunctionChoiceBehavior? _functionChoiceBehavior;
 
     #endregion
 }

@@ -57,7 +57,7 @@ public static class KernelFunctionYaml
     {
         var deserializer = new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer())
+            .WithTypeConverter(new PromptExecutionSettingsTypeConverter())
             .Build();
 
         return deserializer.Deserialize<PromptTemplateConfig>(text);

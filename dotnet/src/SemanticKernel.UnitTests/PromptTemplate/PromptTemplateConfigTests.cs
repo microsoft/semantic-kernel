@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -374,6 +375,108 @@ public class PromptTemplateConfigTests
         Assert.NotNull(promptTemplateConfig);
         Assert.NotNull(promptTemplateConfig.DefaultExecutionSettings);
         Assert.Equal("gpt-4", promptTemplateConfig.DefaultExecutionSettings?.ModelId);
+    }
+
+    [Fact]
+    public void DeserializingAutoFunctionCallingChoice()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "execution_settings": {
+                "default": {
+                  "model_id": "gpt-4",
+                  "function_choice_behavior": {
+                    "type": "auto",
+                    "functions":["p1.f1"]
+                  }
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplateConfig = PromptTemplateConfig.FromJson(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.Single(promptTemplateConfig.ExecutionSettings);
+
+        var executionSettings = promptTemplateConfig.ExecutionSettings.Single().Value;
+
+        var autoFunctionCallChoice = executionSettings.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
+        Assert.NotNull(autoFunctionCallChoice);
+
+        Assert.NotNull(autoFunctionCallChoice.Functions);
+        Assert.Equal("p1.f1", autoFunctionCallChoice.Functions.Single());
+    }
+
+    [Fact]
+    public void DeserializingRequiredFunctionCallingChoice()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "execution_settings": {
+                "default": {
+                  "model_id": "gpt-4",
+                  "function_choice_behavior": {
+                    "type": "required",
+                    "functions":["p1.f1"]
+                  }
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplateConfig = PromptTemplateConfig.FromJson(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.Single(promptTemplateConfig.ExecutionSettings);
+
+        var executionSettings = promptTemplateConfig.ExecutionSettings.Single().Value;
+        Assert.NotNull(executionSettings);
+
+        var requiredFunctionCallChoice = executionSettings.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
+        Assert.NotNull(requiredFunctionCallChoice);
+
+        Assert.NotNull(requiredFunctionCallChoice.Functions);
+        Assert.Equal("p1.f1", requiredFunctionCallChoice.Functions.Single());
+    }
+
+    [Fact]
+    public void DeserializingNoneFunctionCallingChoice()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "execution_settings": {
+                "default": {
+                  "model_id": "gpt-4",
+                  "function_choice_behavior": {
+                    "type": "none"
+                  }
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplateConfig = PromptTemplateConfig.FromJson(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.Single(promptTemplateConfig.ExecutionSettings);
+
+        var executionSettings = promptTemplateConfig.ExecutionSettings.Single().Value;
+
+        var noneFunctionCallChoice = executionSettings.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
+        Assert.NotNull(noneFunctionCallChoice);
     }
 
     [Fact]

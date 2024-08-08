@@ -28,7 +28,8 @@ internal sealed class FunctionName
     /// <param name="pluginName">The plugin name.</param>
     public FunctionName(string name, string? pluginName = null)
     {
-        Verify.NotNull(name);
+        Verify.ValidFunctionName(name);
+        if (pluginName is not null) { Verify.ValidPluginName(pluginName); }
 
         this.Name = name;
         this.PluginName = pluginName;
@@ -43,6 +44,9 @@ internal sealed class FunctionName
     /// <returns>Fully-qualified name of the function.</returns>
     public static string ToFullyQualifiedName(string functionName, string? pluginName = null, string functionNameSeparator = "-")
     {
+        Verify.ValidFunctionName(functionName);
+        if (pluginName is not null) { Verify.ValidPluginName(pluginName); }
+
         return string.IsNullOrEmpty(pluginName) ? functionName : $"{pluginName}{functionNameSeparator}{functionName}";
     }
 

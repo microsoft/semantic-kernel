@@ -357,7 +357,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             }
 
             // Adding a simulated function call to the connector response message
-            var simulatedFunctionCall = new FunctionCallContent("weather-alert", id: "call_123");
+            var simulatedFunctionCall = new FunctionCallContent("weather_alert", id: "call_123");
             messageContent.Items.Add(simulatedFunctionCall);
 
             // Adding a simulated function result to chat history
@@ -420,44 +420,92 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         Assert.Equal(AuthorRole.User, userMessage.Role);
 
         // LLM requested the current time.
-        var getCurrentTimeFunctionCallRequestMessage = chatHistory[1];
-        Assert.Equal(AuthorRole.Assistant, getCurrentTimeFunctionCallRequestMessage.Role);
+        var getCurrentTimeFunctionCallMessage = chatHistory[1];
+        Assert.Equal(AuthorRole.Assistant, getCurrentTimeFunctionCallMessage.Role);
 
-        var getCurrentTimeFunctionCallRequest = getCurrentTimeFunctionCallRequestMessage.Items.OfType<FunctionCallContent>().Single();
-        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallRequest.FunctionName);
-        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallRequest.PluginName);
-        Assert.NotNull(getCurrentTimeFunctionCallRequest.Id);
+        var getCurrentTimeFunctionCall = getCurrentTimeFunctionCallMessage.Items.OfType<FunctionCallContent>().Single();
+        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCall.FunctionName);
+        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCall.PluginName);
+        Assert.NotNull(getCurrentTimeFunctionCall.Id);
 
         // Connector invoked the GetCurrentUtcTime function and added result to chat history.
-        var getCurrentTimeFunctionCallResultMessage = chatHistory[2];
-        Assert.Equal(AuthorRole.Tool, getCurrentTimeFunctionCallResultMessage.Role);
-        Assert.Single(getCurrentTimeFunctionCallResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
+        var getCurrentTimeFunctionResultMessage = chatHistory[2];
+        Assert.Equal(AuthorRole.Tool, getCurrentTimeFunctionResultMessage.Role);
+        Assert.Single(getCurrentTimeFunctionResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
 
-        var getCurrentTimeFunctionCallResult = getCurrentTimeFunctionCallResultMessage.Items.OfType<FunctionResultContent>().Single();
-        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallResult.FunctionName);
-        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallResult.PluginName);
-        Assert.Equal(getCurrentTimeFunctionCallRequest.Id, getCurrentTimeFunctionCallResult.CallId);
-        Assert.NotNull(getCurrentTimeFunctionCallResult.Result);
+        var getCurrentTimeFunctionResult = getCurrentTimeFunctionResultMessage.Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionResult.FunctionName);
+        Assert.Equal("HelperFunctions", getCurrentTimeFunctionResult.PluginName);
+        Assert.Equal(getCurrentTimeFunctionCall.Id, getCurrentTimeFunctionResult.CallId);
+        Assert.NotNull(getCurrentTimeFunctionResult.Result);
 
         // LLM requested the weather for Boston.
-        var getWeatherForCityFunctionCallRequestMessage = chatHistory[3];
-        Assert.Equal(AuthorRole.Assistant, getWeatherForCityFunctionCallRequestMessage.Role);
+        var getWeatherForCityFunctionCallMessage = chatHistory[3];
+        Assert.Equal(AuthorRole.Assistant, getWeatherForCityFunctionCallMessage.Role);
 
-        var getWeatherForCityFunctionCallRequest = getWeatherForCityFunctionCallRequestMessage.Items.OfType<FunctionCallContent>().Single();
-        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallRequest.FunctionName);
-        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallRequest.PluginName);
-        Assert.NotNull(getWeatherForCityFunctionCallRequest.Id);
+        var getWeatherForCityFunctionCall = getWeatherForCityFunctionCallMessage.Items.OfType<FunctionCallContent>().Single();
+        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCall.FunctionName);
+        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCall.PluginName);
+        Assert.NotNull(getWeatherForCityFunctionCall.Id);
 
         // Connector invoked the Get_Weather_For_City function and added result to chat history.
-        var getWeatherForCityFunctionCallResultMessage = chatHistory[4];
-        Assert.Equal(AuthorRole.Tool, getWeatherForCityFunctionCallResultMessage.Role);
-        Assert.Single(getWeatherForCityFunctionCallResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
+        var getWeatherForCityFunctionResultMessage = chatHistory[4];
+        Assert.Equal(AuthorRole.Tool, getWeatherForCityFunctionResultMessage.Role);
+        Assert.Single(getWeatherForCityFunctionResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
 
-        var getWeatherForCityFunctionCallResult = getWeatherForCityFunctionCallResultMessage.Items.OfType<FunctionResultContent>().Single();
-        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallResult.FunctionName);
-        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallResult.PluginName);
-        Assert.Equal(getWeatherForCityFunctionCallRequest.Id, getWeatherForCityFunctionCallResult.CallId);
-        Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
+        var getWeatherForCityFunctionResult = getWeatherForCityFunctionResultMessage.Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionResult.FunctionName);
+        Assert.Equal("HelperFunctions", getWeatherForCityFunctionResult.PluginName);
+        Assert.Equal(getWeatherForCityFunctionCall.Id, getWeatherForCityFunctionResult.CallId);
+        Assert.NotNull(getWeatherForCityFunctionResult.Result);
+    }
+
+    [Fact]
+    public async Task SubsetOfFunctionsCanBeUsedForFunctionCallingAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: false);
+
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
+        kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("What day is today?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableFunctions([function.Metadata.ToOpenAIFunction()], true) };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Friday", result.Content, StringComparison.InvariantCulture);
+    }
+
+    [Fact]
+    public async Task RequiredFunctionShouldBeCalledAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: false);
+
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
+        kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("What day is today?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.RequireFunction(function.Metadata.ToOpenAIFunction(), true) };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Friday", result.Content, StringComparison.InvariantCulture);
     }
 
     [Fact]
@@ -689,7 +737,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
                 }
 
                 // Adding a simulated function call to the connector response message
-                var simulatedFunctionCall = new FunctionCallContent("weather-alert", id: "call_123");
+                var simulatedFunctionCall = new FunctionCallContent("weather_alert", id: "call_123");
                 fcContent.Items.Add(simulatedFunctionCall);
 
                 // Adding a simulated function result to chat history

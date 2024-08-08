@@ -343,6 +343,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             ResponseFormat = this.ResponseFormat,
             TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
             ToolCallBehavior = this.ToolCallBehavior,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt,
             Logprobs = this.Logprobs,
@@ -382,6 +383,8 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
         if (openAIExecutionSettings is not null)
         {
+            // Restores the original function choice behavior that lost internal state(list of functions) during serialization/deserialization process.
+            openAIExecutionSettings.FunctionChoiceBehavior = executionSettings.FunctionChoiceBehavior;
             return openAIExecutionSettings;
         }
 
