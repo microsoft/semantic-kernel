@@ -56,9 +56,9 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     public RunPollingOptions PollingOptions { get; } = new();
 
     /// <summary>
-    /// Expose predefined tools merged with available kernel functions.
+    /// Expose predefined tools for run-processing.
     /// </summary>
-    internal IReadOnlyList<ToolDefinition> Tools => [.. this._assistant.Tools, .. this.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))];
+    internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
 
     /// <summary>
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
