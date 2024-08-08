@@ -265,7 +265,16 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
-    protected override IEnumerable<string> GetChannelKeys() => this._channelKeys;
+    protected override IEnumerable<string> GetChannelKeys()
+    {
+        // Distinguish from other channel types.
+        yield return typeof(OpenAIAssistantChannel).FullName!;
+
+        foreach (string key in this._channelKeys)
+        {
+            yield return key;
+        }
+    }
 
     /// <inheritdoc/>
     protected override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
