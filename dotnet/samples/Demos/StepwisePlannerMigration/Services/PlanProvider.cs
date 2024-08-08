@@ -2,9 +2,12 @@
 
 using System.IO;
 using System.Text.Json;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 #pragma warning disable IDE0005 // Using directive is unnecessary
+
+using Microsoft.SemanticKernel.ChatCompletion;
+
+#pragma warning restore IDE0005 // Using directive is unnecessary
 
 namespace StepwisePlannerMigration.Services;
 
@@ -19,6 +22,3 @@ public class PlanProvider : IPlanProvider
         return JsonSerializer.Deserialize<ChatHistory>(plan)!;
     }
 }
-
-#pragma warning restore IDE0005 // Using directive is unnecessary
-
