@@ -136,7 +136,7 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
 
         var assistantSecondResponse = messages[3];
         Assert.Equal("assistant", assistantSecondResponse.GetProperty("role").GetString());
-        Assert.Equal("ejOH4ZAso", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("id").GetString());
+        Assert.Equal("ejOH4Z1A2", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("id").GetString());
         Assert.Equal("WeatherPlugin-GetWeather", assistantSecondResponse.GetProperty("tool_calls")[0].GetProperty("function").GetProperty("name").GetString());
 
         var functionResult = messages[4];
