@@ -91,6 +91,10 @@ internal sealed class BedrockTextGenerationClient
             }
             throw;
         }
+        if ((response == null) || (response.Body == null))
+        {
+            throw new ArgumentException("Response is null");
+        }
         activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
         activity?.SetStatus(activityStatus);
         IReadOnlyList<TextContent> textResponse = this._ioService.GetInvokeResponseBody(response);

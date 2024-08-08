@@ -97,6 +97,10 @@ internal sealed class BedrockChatCompletionClient
             }
             throw;
         }
+        if ((response == null) || response.Output == null || response.Output.Message == null)
+        {
+            throw new ArgumentException("Response failed");
+        }
         IReadOnlyList<ChatMessageContent> chatMessages = this.ConvertToMessageContent(response).ToList();
         activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
         activity?.SetStatus(activityStatus);
