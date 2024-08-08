@@ -31,12 +31,12 @@ public sealed class OpenAIClientProvider
     /// <summary>
     /// Configuration keys required for <see cref="AgentChannel"/> management.
     /// </summary>
-    internal IEnumerable<string> ConfigurationKeys { get; }
+    internal IReadOnlyList<string> ConfigurationKeys { get; }
 
     private OpenAIClientProvider(OpenAIClient client, IEnumerable<string> keys)
     {
         this.Client = client;
-        this.ConfigurationKeys = keys;
+        this.ConfigurationKeys = keys.ToArray();
     }
 
     /// <summary>
