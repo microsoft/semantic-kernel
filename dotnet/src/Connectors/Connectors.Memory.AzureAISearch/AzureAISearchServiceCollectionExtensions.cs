@@ -5,9 +5,10 @@ using Azure;
 using Azure.Core;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Data;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods to register Azure AI Search <see cref="IVectorStore"/> instances on an <see cref="IServiceCollection"/>.

@@ -22,9 +22,12 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 [Collection("RedisVectorStoreCollection")]
 public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper output, RedisVectorStoreFixture fixture)
 {
+    // If null, all tests will be enabled
+    private const string SkipReason = "Requires Redis docker container up and running";
+
     private const string TestCollectionName = "jsonhotels";
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(TestCollectionName, true)]
     [InlineData("nonexistentcollection", false)]
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
@@ -39,7 +42,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal(expectedExists, actual);
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanCreateACollectionUpsertAndGetAsync(bool useRecordDefinition)
@@ -86,7 +89,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         output.WriteLine(getResult?.ToString());
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
@@ -106,7 +109,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.False(await sut.CollectionExistsAsync());
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition)
@@ -144,7 +147,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         output.WriteLine(getResult?.ToString());
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanUpsertManyDocumentsToVectorStoreAsync(bool useRecordDefinition)
@@ -181,7 +184,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         }
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true, true)]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -223,7 +226,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         output.WriteLine(getResult?.ToString());
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
@@ -246,7 +249,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         }
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItFailsToGetDocumentsWithInvalidSchemaAsync()
     {
         // Arrange.
@@ -257,7 +260,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-4-Invalid", new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition)
@@ -290,7 +293,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Null(await sut.GetAsync("Remove-1"));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
@@ -310,7 +313,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Null(await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
     {
         // Arrange
@@ -321,7 +324,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Null(await sut.GetAsync("BaseSet-5", new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItThrowsMappingExceptionForFailedMapperAsync()
     {
         // Arrange
