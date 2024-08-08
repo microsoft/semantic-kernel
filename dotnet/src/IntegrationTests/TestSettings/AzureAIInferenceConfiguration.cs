@@ -7,9 +7,9 @@ namespace SemanticKernel.IntegrationTests.TestSettings;
 
 [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
     Justification = "Configuration classes are instantiated through IConfiguration.")]
-internal sealed class AzureAIInferenceConfiguration(string? serviceId, Uri endpoint, string apiKey)
+internal sealed class AzureAIInferenceConfiguration(Uri endpoint, string apiKey, string? serviceId = null)
 {
-    public string? ServiceId { get; set; } = serviceId;
     public Uri Endpoint { get; set; } = endpoint;
     public string ApiKey { get; set; } = apiKey;
+    public string? ServiceId { get; set; } = serviceId;
 }

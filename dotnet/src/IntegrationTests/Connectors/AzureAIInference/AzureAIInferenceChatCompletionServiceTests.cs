@@ -33,7 +33,10 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         var config = this._configuration.GetSection("AzureAIInference").Get<AzureAIInferenceConfiguration>();
         Assert.NotNull(config);
 
-        var sut = new AzureAIInferenceChatCompletionService(config.Endpoint, config.ApiKey, loggerFactory: this._loggerFactory);
+        var sut = new AzureAIInferenceChatCompletionService(
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            loggerFactory: this._loggerFactory);
 
         ChatHistory chatHistory = [
             new ChatMessageContent(AuthorRole.User, prompt)
