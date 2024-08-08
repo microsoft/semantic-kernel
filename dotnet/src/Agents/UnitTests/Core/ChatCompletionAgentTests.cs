@@ -115,6 +115,24 @@ public class ChatCompletionAgentTests
             Times.Once);
     }
 
+    /// <summary>
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent.GetChatCompletionService"/>.
+    /// </summary>
+    [Fact]
+    public void VerifyChatCompletionServiceSelection()
+    {
+        Mock<IChatCompletionService> mockService = new();
+        Kernel kernel = CreateKernel(mockService.Object);
+
+        (IChatCompletionService service, PromptExecutionSettings? settings) = ChatCompletionAgent.GetChatCompletionService(kernel, null);
+        Assert.Null(settings);
+
+        (service, settings) = ChatCompletionAgent.GetChatCompletionService(kernel, []);
+        Assert.Null(settings);
+
+        Assert.Throws<KernelException>(() => ChatCompletionAgent.GetChatCompletionService(kernel, new KernelArguments(new PromptExecutionSettings() { ServiceId = "anything" })));
+    }
+
     private static Kernel CreateKernel(IChatCompletionService chatCompletionService)
     {
         var builder = Kernel.CreateBuilder();
