@@ -85,7 +85,16 @@ public abstract class BaseTest
     /// <param name="format">Format string</param>
     /// <param name="args">Arguments</param>
     public void WriteLine(string? format, params object?[] args)
-        => this.Output.WriteLine(format ?? string.Empty, args);
+    {
+        if (args is null || args.Length == 0)
+        {
+            this.Output.WriteLine(format ?? string.Empty);
+        }
+        else
+        {
+            this.Output.WriteLine(format ?? string.Empty, args);
+        }
+    }
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.
