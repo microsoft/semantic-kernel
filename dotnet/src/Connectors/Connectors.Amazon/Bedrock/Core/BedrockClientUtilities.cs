@@ -42,11 +42,11 @@ internal sealed class BedrockClientUtilities
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     internal AuthorRole MapConversationRoleToAuthorRole(string role)
     {
-        return role switch
+        return role.ToUpperInvariant() switch
         {
-            "user" => AuthorRole.User,
-            "assistant" => AuthorRole.Assistant,
-            "system" => AuthorRole.System,
+            "USER" => AuthorRole.User,
+            "ASSISTANT" => AuthorRole.Assistant,
+            "SYSTEM" => AuthorRole.System,
             _ => throw new ArgumentOutOfRangeException(nameof(role), $"Invalid role: {role}")
         };
     }

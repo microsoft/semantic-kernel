@@ -72,7 +72,7 @@ internal sealed class BedrockClientIOService
     internal (string modelProvider, string modelName) GetModelProviderAndName(string modelId)
     {
         string[] parts = modelId.Split('.'); //modelId looks like "amazon.titan-text-premier-v1:0"
-        string modelName = parts.Length > 1 ? parts[1] : string.Empty;
+        string modelName = parts.Length > 1 ? parts[1].ToUpperInvariant() : string.Empty;
         return (parts[0], modelName);
     }
 }
