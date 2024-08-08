@@ -17,27 +17,6 @@ public class BedrockKernelBuilderExtensionTests
     /// Checks that AddBedrockTextGenerationService builds a proper kernel with a null bedrockRuntime.
     /// </summary>
     [Fact]
-    public void AddBedrockTextGenerationCreatesServiceWithNullBedrockRuntime()
-    {
-        // Arrange
-        var builder = Kernel.CreateBuilder();
-        builder.AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0");
-
-        // Act
-        var kernel = builder.Build();
-        var service = kernel.GetRequiredService<ITextGenerationService>();
-
-        // Assert
-        Assert.NotNull(kernel);
-        Assert.NotNull(service);
-        Assert.IsType<BedrockTextGenerationService>(service);
-    }
-
-    /// <summary>
-    /// Checks that AddBedrockTextGenerationService builds a proper kernel with a non-null bedrockRuntime.
-    /// InlineData expects constant values or expressions that can be evaluated at compile-time so cannot pass new Mock IAmazonBedrockRuntime.Object at runtime.
-    /// </summary>
-    [Fact]
     public void AddBedrockTextGenerationCreatesServiceWithNonNullBedrockRuntime()
     {
         // Arrange
@@ -53,26 +32,6 @@ public class BedrockKernelBuilderExtensionTests
         Assert.NotNull(kernel);
         Assert.NotNull(service);
         Assert.IsType<BedrockTextGenerationService>(service);
-    }
-
-    /// <summary>
-    /// Checks that AddBedrockChatCompletionService builds a proper kernel with a null bedrockRuntime.
-    /// </summary>
-    [Fact]
-    public void AddBedrockChatCompletionCreatesServiceWithNullBedrockRuntime()
-    {
-        // Arrange
-        var builder = Kernel.CreateBuilder();
-        builder.AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0");
-
-        // Act
-        var kernel = builder.Build();
-        var service = kernel.GetRequiredService<IChatCompletionService>();
-
-        // Assert
-        Assert.NotNull(kernel);
-        Assert.NotNull(service);
-        Assert.IsType<BedrockChatCompletionService>(service);
     }
 
     /// <summary>

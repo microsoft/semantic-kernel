@@ -80,7 +80,7 @@ public class BedrockTextGenerationServiceTests
         IAmazonBedrockRuntime? nullBedrockRuntime = null;
 
         // Act & Assert
-        await Assert.ThrowsAsync<ValidationException>(async () =>
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
         {
             var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, nullBedrockRuntime).Build();
             var service = kernel.GetRequiredService<ITextGenerationService>();

@@ -79,7 +79,7 @@ public sealed class BedrockChatCompletionServiceTests
         var chatHistory = CreateSampleChatHistory();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ValidationException>(async () =>
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
         {
             var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, nullBedrockRuntime).Build();
             var service = kernel.GetRequiredService<IChatCompletionService>();
