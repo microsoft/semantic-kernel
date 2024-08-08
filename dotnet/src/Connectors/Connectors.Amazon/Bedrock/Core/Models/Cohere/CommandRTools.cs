@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// </summary>
 public static class CommandRTools
 {
-        /// <summary>
+    /// <summary>
     /// The required fields for chat_history.
     /// </summary>
     [Serializable]
