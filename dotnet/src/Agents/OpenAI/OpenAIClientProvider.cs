@@ -104,12 +104,11 @@ public sealed class OpenAIClientProvider
 
     private static AzureOpenAIClientOptions CreateAzureClientOptions(Uri? endpoint, HttpClient? httpClient)
     {
-        AzureOpenAIClientOptions options =
-            new()
-            {
-                ApplicationId = HttpHeaderConstant.Values.UserAgent,
-                Endpoint = endpoint,
-            };
+        AzureOpenAIClientOptions options = new()
+        {
+            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+            Endpoint = endpoint,
+        };
 
         ConfigureClientOptions(httpClient, options);
 
@@ -118,12 +117,11 @@ public sealed class OpenAIClientProvider
 
     private static OpenAIClientOptions CreateOpenAIClientOptions(Uri? endpoint, HttpClient? httpClient)
     {
-        OpenAIClientOptions options =
-            new()
-            {
-                ApplicationId = HttpHeaderConstant.Values.UserAgent,
-                Endpoint = endpoint ?? httpClient?.BaseAddress,
-            };
+        OpenAIClientOptions options = new()
+        {
+            ApplicationId = HttpHeaderConstant.Values.UserAgent,
+            Endpoint = endpoint ?? httpClient?.BaseAddress,
+        };
 
         ConfigureClientOptions(httpClient, options);
 
