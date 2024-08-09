@@ -24,7 +24,7 @@ public class AssistantMessageFactoryTests
         // Setup message with null metadata
         ChatMessageContent message = new(AuthorRole.User, "test");
 
-        // Create options
+        // Act
         MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
         // Assert
