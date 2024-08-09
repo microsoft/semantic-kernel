@@ -102,20 +102,7 @@ public sealed class BedrockChatCompletionServiceTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ConverseResponse
-            {
-                Output = new ConverseOutput
-                {
-                    Message = new Message
-                    {
-                        Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "Hello, world!" } }
-                    }
-                },
-                Metrics = new ConverseMetrics(),
-                StopReason = StopReason.Max_tokens,
-                Usage = new TokenUsage()
-            });
+            .ReturnsAsync(this.CreateConverseResponse("Hello, world!", ConversationRole.Assistant));
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
@@ -191,20 +178,7 @@ public sealed class BedrockChatCompletionServiceTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ConverseResponse
-            {
-                Output = new ConverseOutput
-                {
-                    Message = new Message
-                    {
-                        Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
-                    }
-                },
-                Metrics = new ConverseMetrics(),
-                StopReason = StopReason.Max_tokens,
-                Usage = new TokenUsage()
-            });
+            .ReturnsAsync(this.CreateConverseResponse("Hello, world!", ConversationRole.Assistant));
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
@@ -216,7 +190,7 @@ public sealed class BedrockChatCompletionServiceTests
         Assert.Single(result);
         Assert.Equal(AuthorRole.Assistant, result[0].Role);
         Assert.Single(result[0].Items);
-        Assert.Equal("I'm doing well.", result[0].Items[0].ToString());
+        Assert.Equal("Hello, world!", result[0].Items[0].ToString());
     }
 
     /// <summary>
@@ -236,34 +210,8 @@ public sealed class BedrockChatCompletionServiceTests
 
         // Set up the mock ConverseAsync to return multiple responses
         mockBedrockApi.SetupSequence(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ConverseResponse
-            {
-                Output = new ConverseOutput
-                {
-                    Message = new Message
-                    {
-                        Role = ConversationRole.User,
-                        Content = new List<ContentBlock> { new() { Text = "I'm doing well." } }
-                    }
-                },
-                Metrics = new ConverseMetrics(),
-                StopReason = StopReason.Max_tokens,
-                Usage = new TokenUsage()
-            })
-            .ReturnsAsync(new ConverseResponse
-            {
-                Output = new ConverseOutput
-                {
-                    Message = new Message
-                    {
-                        Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "That's great to hear!" } }
-                    }
-                },
-                Metrics = new ConverseMetrics(),
-                StopReason = StopReason.Max_tokens,
-                Usage = new TokenUsage()
-            });
+            .ReturnsAsync(this.CreateConverseResponse("I'm doing well.", ConversationRole.Assistant))
+            .ReturnsAsync(this.CreateConverseResponse("That's great to hear!", ConversationRole.User));
 
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<IChatCompletionService>();
@@ -283,12 +231,12 @@ public sealed class BedrockChatCompletionServiceTests
         Assert.Equal(2, result1.Count + result2.Count);
 
         // Check the first result
-        Assert.Equal(AuthorRole.User, result1[0].Role);
+        Assert.Equal(AuthorRole.Assistant, result1[0].Role);
         Assert.Single(result1[0].Items);
         Assert.Equal("I'm doing well.", result1[0].Items[0].ToString());
 
         // Check the second result
-        Assert.Equal(AuthorRole.Assistant, result2[0].Role);
+        Assert.Equal(AuthorRole.User, result2[0].Role);
         Assert.Single(result2[0].Items);
         Assert.Equal("That's great to hear!", result2[0].Items[0].ToString());
 
@@ -325,20 +273,7 @@ public sealed class BedrockChatCompletionServiceTests
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var chatHistory = new ChatHistory();
         mockBedrockApi.SetupSequence(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ConverseResponse
-            {
-                Output = new ConverseOutput
-                {
-                    Message = new Message
-                    {
-                        Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "sample" } }
-                    }
-                },
-                Metrics = new ConverseMetrics(),
-                StopReason = StopReason.Max_tokens,
-                Usage = new TokenUsage()
-            });
+            .ReturnsAsync(this.CreateConverseResponse("hi", ConversationRole.Assistant));
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -396,20 +331,7 @@ public sealed class BedrockChatCompletionServiceTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ConverseResponse
-            {
-                Output = new ConverseOutput
-                {
-                    Message = new Message
-                    {
-                        Role = (ConversationRole)"bad_role", // Invalid role value
-                        Content = new List<ContentBlock> { new() { Text = "Hello" } }
-                    }
-                },
-                Metrics = new ConverseMetrics(),
-                StopReason = StopReason.Max_tokens,
-                Usage = new TokenUsage()
-            });
+            .ReturnsAsync(this.CreateConverseResponse("Hello", (ConversationRole)"bad_role"));
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = CreateSampleChatHistory();
@@ -434,20 +356,7 @@ public sealed class BedrockChatCompletionServiceTests
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
         mockBedrockApi.Setup(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ConverseResponse
-            {
-                Output = new ConverseOutput
-                {
-                    Message = new Message
-                    {
-                        Role = ConversationRole.Assistant,
-                        Content = new List<ContentBlock> { new() { Text = "Hello" } }
-                    }
-                },
-                Metrics = new ConverseMetrics(),
-                StopReason = StopReason.Max_tokens,
-                Usage = new TokenUsage()
-            });
+            .ReturnsAsync(this.CreateConverseResponse("hello", ConversationRole.Assistant));
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory();
@@ -474,5 +383,23 @@ public sealed class BedrockChatCompletionServiceTests
     private byte[] GetTestResponseAsBytes(string fileName)
     {
         return File.ReadAllBytes($"../../../TestData/{fileName}");
+    }
+
+    private ConverseResponse CreateConverseResponse(string text, ConversationRole role)
+    {
+        return new ConverseResponse
+        {
+            Output = new ConverseOutput
+            {
+                Message = new Message
+                {
+                    Role = role,
+                    Content = new List<ContentBlock> { new() { Text = text } }
+                }
+            },
+            Metrics = new ConverseMetrics(),
+            StopReason = StopReason.Max_tokens,
+            Usage = new TokenUsage()
+        };
     }
 }
