@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Amazon.Runtime.Endpoints;
@@ -138,6 +139,8 @@ public sealed class BedrockChatCompletionServiceTests
     {
         // Arrange
         string modelId = "amazon.titan-text-lite-v1";
+
+        var content = this.GetTestResponseAsBytes("stream_response.txt");
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseStreamRequest>()))
             .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
@@ -147,7 +150,7 @@ public sealed class BedrockChatCompletionServiceTests
         mockBedrockApi.Setup(m => m.ConverseStreamAsync(It.IsAny<ConverseStreamRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseStreamResponse
             {
-                Stream = new ConverseStreamOutput(new MemoryStream())
+                Stream = new ConverseStreamOutput(new MemoryStream(content))
             });
 
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
@@ -168,6 +171,7 @@ public sealed class BedrockChatCompletionServiceTests
             Assert.NotNull(item.Role);
             output.Add(item);
         }
+        Assert.True(output.Count > 0);
         Assert.Equal(iterations, output.Count);
         Assert.NotNull(service.GetModelId());
         Assert.NotNull(service.Attributes);
@@ -466,5 +470,10 @@ public sealed class BedrockChatCompletionServiceTests
         chatHistory.AddUserMessage("How are you?");
         chatHistory.AddSystemMessage("You are an AI Assistant");
         return chatHistory;
+    }
+
+    private byte[] GetTestResponseAsBytes(string fileName)
+    {
+        return File.ReadAllBytes($"/Users/charyeh/semantic-kernel-project/semantic-kernel/dotnet/src/Connectors/Connectors.Amazon.UnitTests/TestData/converse_stream_response");
     }
 }
