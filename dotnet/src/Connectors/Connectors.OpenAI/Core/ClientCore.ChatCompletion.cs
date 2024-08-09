@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 internal partial class ClientCore
 {
     protected const string ModelProvider = "openai";
-    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke);
+    protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction);
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -239,7 +239,7 @@ internal partial class ClientCore
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
-                if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
+                if (toolCallingConfig.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
                     AddResponseMessage(chat, result: null, "Error: Function call request for a function that wasn't defined.", functionToolCall, this.Logger);
@@ -506,7 +506,7 @@ internal partial class ClientCore
                 // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
-                if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
+                if (toolCallingConfig.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
                     AddResponseMessage(chat, result: null, "Error: Function call request for a function that wasn't defined.", toolCall, this.Logger);
@@ -1134,41 +1134,55 @@ internal partial class ClientCore
 
     private ToolCallingConfig GetToolCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, int requestIndex)
     {
-        if (executionSettings.ToolCallBehavior is null)
+        IList<ChatTool>? tools = null;
+        ChatToolChoice? choice = null;
+        bool autoInvoke = false;
+        bool allowAnyRequestedKernelFunction = false;
+        int maximumAutoInvokeAttempts = 0;
+
+        if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
         {
-            return new ToolCallingConfig(Tools: [s_nonInvocableFunctionTool], Choice: ChatToolChoice.None, AutoInvoke: false);
+            (tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction) = this.ConfigureFunctionCalling(kernel, requestIndex, toolCallBehavior);
         }
-
-        if (requestIndex >= executionSettings.ToolCallBehavior.MaximumUseAttempts)
-        {
-            // Don't add any tools as we've reached the maximum attempts limit.
-            if (this.Logger!.IsEnabled(LogLevel.Debug))
-            {
-                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", executionSettings.ToolCallBehavior!.MaximumUseAttempts);
-            }
-
-            return new ToolCallingConfig(Tools: [s_nonInvocableFunctionTool], Choice: ChatToolChoice.None, AutoInvoke: false);
-        }
-
-        var (tools, choice) = executionSettings.ToolCallBehavior.ConfigureOptions(kernel);
-
-        bool autoInvoke = kernel is not null &&
-            executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts > 0 &&
-            s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
 
         // Disable auto invocation if we've exceeded the allowed limit.
-        if (requestIndex >= executionSettings.ToolCallBehavior.MaximumAutoInvokeAttempts)
+        if (requestIndex >= maximumAutoInvokeAttempts)
         {
             autoInvoke = false;
             if (this.Logger!.IsEnabled(LogLevel.Debug))
             {
-                this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", executionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
+                this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", maximumAutoInvokeAttempts);
             }
         }
 
         return new ToolCallingConfig(
-            Tools: tools ?? [s_nonInvocableFunctionTool],
-            Choice: choice ?? ChatToolChoice.None,
-            AutoInvoke: autoInvoke);
+           Tools: tools ?? [s_nonInvocableFunctionTool],
+           Choice: choice ?? ChatToolChoice.None,
+           AutoInvoke: autoInvoke && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes,
+           AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction);
+    }
+
+    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts, bool AllowAnyRequestedKernelFunction) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, ToolCallBehavior toolCallBehavior)
+    {
+        IList<ChatTool>? tools = null;
+        ChatToolChoice? choice = null;
+        bool autoInvoke = kernel is not null && toolCallBehavior.MaximumAutoInvokeAttempts > 0;
+        bool allowAnyRequestedKernelFunction = toolCallBehavior.AllowAnyRequestedKernelFunction;
+        int maximumAutoInvokeAttempts = toolCallBehavior.MaximumAutoInvokeAttempts;
+
+        if (requestIndex >= toolCallBehavior.MaximumUseAttempts)
+        {
+            // Don't add any tools as we've reached the maximum attempts limit.
+            if (this.Logger!.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached.", toolCallBehavior.MaximumUseAttempts);
+            }
+        }
+        else
+        {
+            (tools, choice) = toolCallBehavior.ConfigureOptions(kernel);
+        }
+
+        return new(tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction);
     }
 }
