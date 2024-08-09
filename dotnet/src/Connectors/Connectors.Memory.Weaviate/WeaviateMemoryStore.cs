@@ -117,7 +117,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collectionName, "Collection name is empty");
+        Verify.NotNullOrWhiteSpace(collectionName, nameof(collectionName));
 
         string className = ToWeaviateFriendlyClassName(collectionName);
         string description = ToWeaviateFriendlyClassDescription(collectionName);
@@ -149,7 +149,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collectionName, "Collection name is empty");
+        Verify.NotNullOrWhiteSpace(collectionName, nameof(collectionName));
 
         string className = ToWeaviateFriendlyClassName(collectionName);
 
@@ -218,7 +218,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collectionName, "Collection name is empty");
+        Verify.NotNullOrWhiteSpace(collectionName, nameof(collectionName));
 
         string className = ToWeaviateFriendlyClassName(collectionName);
 
@@ -243,7 +243,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collectionName, "Collection name is empty");
+        Verify.NotNullOrWhiteSpace(collectionName, nameof(collectionName));
 
         return await this.UpsertBatchAsync(collectionName, [record], cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
     }
@@ -252,7 +252,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collectionName, "Collection name is empty");
+        Verify.NotNullOrWhiteSpace(collectionName, nameof(collectionName));
 
         this._logger.LogDebug("Upsert vectors");
 
@@ -289,9 +289,8 @@ public partial class WeaviateMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collectionName, "Collection name is empty");
-        Verify.NotNullOrWhiteSpace(key, "Key is empty");
-
+        Verify.NotNullOrWhiteSpace(collectionName, nameof(collectionName));
+        Verify.NotNullOrWhiteSpace(key, nameof(key));
         using HttpRequestMessage request = new GetObjectRequest
         {
             Id = key,
@@ -355,8 +354,8 @@ public partial class WeaviateMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collectionName, "Collection name is empty");
-        Verify.NotNull(key, "Key is NULL");
+        Verify.NotNullOrWhiteSpace(collectionName, nameof(collectionName));
+        Verify.NotNullOrWhiteSpace(key, nameof(key));
 
         string className = ToWeaviateFriendlyClassName(collectionName);
 
@@ -386,7 +385,27 @@ public partial class WeaviateMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(async k => await this.RemoveAsync(collectionName, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(collectionName, nameof(collectionName));
+        Verify.NotNull(keys, nameof(keys));
+        var keyArray = keys.ToArray();
+        if (keyArray.Length != 0)
+        {
+            string className = ToWeaviateFriendlyClassName(collectionName);
+            var requestBuilder = BatchDeleteRequest.Create(className, keyArray);
+            using HttpRequestMessage request = requestBuilder.Build();
+
+            try
+            {
+                await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                this._logger.LogDebug("Vectors deleted");
+            }
+            catch (HttpOperationException e)
+            {
+                this._logger.LogError(e, "Request to batch delete collection: {CollectionName}, with class name: {ClassName} failed. ERROR : {ErrorMessage}", collectionName, className, e.Message);
+                throw;
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -398,7 +417,8 @@ public partial class WeaviateMemoryStore : IMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(embedding, "The given vector is NULL");
+        Verify.NotNullOrWhiteSpace(collectionName, nameof(collectionName));
+        Verify.NotNull(embedding, nameof(embedding));
 
         this._logger.LogDebug("Searching top {Limit} nearest vectors", limit);
 
@@ -513,9 +533,9 @@ public partial class WeaviateMemoryStore : IMemoryStore
             throw new ArgumentException("collectionName must start with a letter.", nameof(collectionName));
         }
 
-        return !char.IsUpper(sanitised[0])
+        return (!char.IsUpper(sanitised[0])
             ? string.Concat(sanitised[0].ToString().ToUpper(CultureInfo.InvariantCulture), sanitised.Substring(1))
-            : sanitised;
+            : sanitised).Trim();
     }
 
     // Execute the HTTP request
@@ -552,7 +572,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
 
     private static MemoryRecordMetadata ToMetadata(WeaviateObject weaviateObject)
     {
-        Verify.NotNull(weaviateObject.Properties, "weaviateObject.Properties");
+        Verify.NotNull(weaviateObject.Properties, nameof(weaviateObject.Properties));
 
         return new(
             false,
