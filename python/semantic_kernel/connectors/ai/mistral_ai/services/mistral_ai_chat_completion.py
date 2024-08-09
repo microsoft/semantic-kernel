@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 from collections.abc import AsyncGenerator
 from typing import Any
@@ -16,6 +17,8 @@ from mistralai.models.chat_completion import (
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
@@ -31,8 +34,10 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
+    ServiceInvalidExecutionSettingsError,
     ServiceResponseException,
 )
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -116,8 +121,66 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
 
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
+        
+        kernel = kwargs.get("kernel", None)
+        if settings.function_choice_behavior is not None and kernel is None:
+            raise ServiceInvalidExecutionSettingsError("The kernel is required for MistralAI tool calls.")
+            
+        self._update_settings(settings, chat_history, kernel=kernel)
 
-        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        # behavior for non-function calling or for enable, but not auto-invoke.
+        if settings.function_choice_behavior is None or (
+            settings.function_choice_behavior and not settings.function_choice_behavior.auto_invoke_kernel_functions
+        ):
+            return await self._send_chat_request(settings)
+        
+        # MistralAI Tool Calls are different from OpenAI Tool Calls
+        # tool_choice Required needs to be mapped to any
+        if settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED:
+            settings.tool_choice = "any"
+        
+        # loop for auto-invoke function calls
+        for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
+            completions = await self._send_chat_request(settings)
+            # there is only one chat message, this was checked earlier
+            chat_history.add_message(message=completions[0])
+            # get the function call contents from the chat message
+            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
+            if (fc_count := len(function_calls)) == 0:
+                return completions
+
+            logger.info(f"processing {fc_count} tool calls in parallel.")
+
+            # this function either updates the chat history with the function call results
+            # or returns the context, with terminate set to True
+            # in which case the loop will break and the function calls are returned.
+            results = await asyncio.gather(
+                *[
+                    kernel.invoke_function_call(
+                        function_call=function_call,
+                        chat_history=chat_history,
+                        arguments=kwargs.get("arguments", None),
+                        function_call_count=fc_count,
+                        request_index=request_index,
+                        function_behavior=settings.function_choice_behavior,
+                    )
+                    for function_call in function_calls
+                ],
+            )
+
+            if any(result.terminate for result in results if result is not None):
+                return completions
+
+            self._update_settings(settings, chat_history, kernel=kernel)
+        else:
+            # do a final call, without function calling when the max has been reached.
+            settings.function_choice_behavior.auto_invoke_kernel_functions = False
+            return await self._send_chat_request(settings)
+        
+    async def _send_chat_request(self,
+        settings: "PromptExecutionSettings",
+    ) -> list["ChatMessageContent"]:
+        
         try:
             response = await self.async_client.chat(**settings.prepare_settings_dict())
         except Exception as ex:
@@ -276,3 +339,18 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             self.total_tokens += response.usage.total_tokens
             if hasattr(response.usage, "completion_tokens"):
                 self.completion_tokens += response.usage.completion_tokens
+                
+    def _update_settings(
+        self,
+        settings: MistralAIChatPromptExecutionSettings,
+        chat_history: ChatHistory,
+        kernel: "Kernel | None" = None,
+    ) -> None:
+        """Update the settings with the chat history."""
+        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        if settings.function_choice_behavior and kernel:
+            settings.function_choice_behavior.configure(
+                kernel=kernel,
+                update_settings_callback=update_settings_from_function_call_configuration,
+                settings=settings,
+            )
