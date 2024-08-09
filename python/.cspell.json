@@ -51,6 +51,9 @@
         "serde",
         "datamodel",
         "vectorstoremodel",
-        "qdrant"
+        "qdrant",
+        "huggingface",
+        "pytestmark",
+        "contoso"
     ]
 }

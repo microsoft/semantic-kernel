@@ -10,10 +10,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.service_exceptions import (
-    ServiceInvalidExecutionSettingsError,
-    ServiceInvalidRequestError,
-)
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
@@ -119,6 +116,6 @@ def configure_function_choice_behavior(
 ):
     """Configure the function choice behavior to include the kernel functions."""
     if not settings.function_choice_behavior:
-        raise ServiceInvalidExecutionSettingsError("Function choice behavior is required for tool calls.")
+        return
 
     settings.function_choice_behavior.configure(kernel=kernel, update_settings_callback=callback, settings=settings)
