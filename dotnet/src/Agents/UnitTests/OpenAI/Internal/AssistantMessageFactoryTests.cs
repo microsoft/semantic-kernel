@@ -21,7 +21,7 @@ public class AssistantMessageFactoryTests
     [Fact]
     public void VerifyAssistantMessageAdapterCreateOptionsDefault()
     {
-        // Setup message with null metadata
+        // Arrange (Setup message with null metadata)
         ChatMessageContent message = new(AuthorRole.User, "test");
 
         // Act
