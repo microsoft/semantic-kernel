@@ -176,7 +176,7 @@ public class BedrockTextGenerationServiceTests
         // Arrange
         string modelId = "amazon.titan-text-premier-v1:0";
         string prompt = "Write a short greeting.";
-        var content = this.GetTexResponseAsBytes("stream_response.txt");
+        var content = this.GetTextResponseAsBytes("invoke_stream_response");
 
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelWithResponseStreamRequest>()))
@@ -198,12 +198,16 @@ public class BedrockTextGenerationServiceTests
         var output = service.GetStreamingTextContentsAsync(prompt).ConfigureAwait(true);
 
         // Assert
+        int iterations = 0;
         await foreach (var item in output)
         {
+            iterations += 1;
             Assert.NotNull(item);
             Assert.NotNull(item.Text);
             result.Add(item);
         }
+        Assert.True(iterations > 0);
+        Assert.Equal(iterations, result.Count);
         Assert.NotNull(result);
         Assert.NotNull(service.GetModelId());
     }
@@ -292,8 +296,8 @@ public class BedrockTextGenerationServiceTests
             service.GetTextContentsAsync("sample prompt", invalidSettings)).ConfigureAwait(true);
     }
 
-    private byte[] GetTexResponseAsBytes(string fileName)
+    private byte[] GetTextResponseAsBytes(string fileName)
     {
-        return File.ReadAllBytes($"/Users/charyeh/semantic-kernel-project/semantic-kernel/dotnet/src/Connectors/Connectors.Amazon.UnitTests/TestData/mystreamInvoke");
+        return File.ReadAllBytes($"../../../TestData/{fileName}");
     }
 }
