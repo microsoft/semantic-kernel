@@ -209,4 +209,77 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             this._attributes.Add(key, value);
         }
     }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(TextContent input, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        var imageSettings = OpenAITextToImageExecutionSettings.FromExecutionSettings(executionSettings);
+
+        Verify.NotNull(input);
+
+        var size = (imageSettings.Width, imageSettings.Height) switch
+        {
+            (256, 256) => ImageSize.Size256x256,
+            (512, 512) => ImageSize.Size512x512,
+            (1024, 1024) => ImageSize.Size1024x1024,
+            (1792, 1024) => ImageSize.Size1792x1024,
+            (1024, 1792) => ImageSize.Size1024x1792,
+            _ => throw new NotSupportedException($"The provided size is not supported: {imageSettings.Width}x{imageSettings.Height}")
+        };
+
+        Response<ImageGenerations> imageGenerations;
+        try
+        {
+            var options = new ImageGenerationOptions
+            {
+                DeploymentName = this._deploymentName,
+                ImageCount = imageSettings.ImageCount,
+                Prompt = input.Text,
+                Size = size,
+            };
+
+            if (imageSettings.Quality is not null)
+            {
+                options.Quality = imageSettings.Quality;
+            }
+            if (imageSettings.Style is not null)
+            {
+                options.Style = imageSettings.Style;
+            }
+
+            imageGenerations = await this._client.GetImageGenerationsAsync(options, cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
+        }
+
+        if (!imageGenerations.HasValue)
+        {
+            throw new KernelException("The response does not contain an image result");
+        }
+
+        if (imageGenerations.Value.Data.Count == 0)
+        {
+            throw new KernelException("The response does not contain any image");
+        }
+
+        List<ImageContent> images = [];
+        foreach (var image in imageGenerations.Value.Data)
+        {
+            if (image.Url is not null)
+            {
+                images.Add(new ImageContent(image.Url));
+            }
+            else if (image.Base64Data is not null)
+            {
+                images.Add(new ImageContent($"data:;base64,{image.Base64Data}"));
+            }
+            else
+            {
+                throw new NotSupportedException("Image is neither an URL nor a base64 data");
+            }
+        }
+        return images;
+    }
 }

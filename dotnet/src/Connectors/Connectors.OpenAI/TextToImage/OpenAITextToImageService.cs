@@ -93,6 +93,12 @@ public sealed class OpenAITextToImageService : ITextToImageService
         return this.GenerateImageAsync(this._modelId, description, width, height, "url", x => x.Url, cancellationToken);
     }
 
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(TextContent input, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<string> GenerateImageAsync(
         string? model,
         string description,

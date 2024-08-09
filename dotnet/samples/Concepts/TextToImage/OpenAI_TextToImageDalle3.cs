@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToImage;
 
 namespace TextToImage;
@@ -76,6 +77,24 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
         Img description: [An image of a map zooming in on the pin location, revealing a small island with a palm tree on it]
 
         */
+    }
+
+    [Fact]
+    public async Task SimpleTextToImageExampleAsync()
+    {
+        var builder = Kernel.CreateBuilder()
+           .AddAzureOpenAITextToImage( // Add your text to image service
+               deploymentName: TestConfiguration.AzureOpenAI.ImageDeploymentName,
+               endpoint: TestConfiguration.AzureOpenAI.ImageEndpoint,
+               apiKey: TestConfiguration.AzureOpenAI.ImageApiKey,
+               modelId: TestConfiguration.AzureOpenAI.ImageModelId);
+
+        var kernel = builder.Build();
+        var service = kernel.GetRequiredService<ITextToImageService>();
+
+        var generatedImages = await service.GetImageContentsAsync(new TextContent("A cute baby sea otter"), new OpenAITextToImageExecutionSettings { Width = 1024, Height = 1024 });
+
+        this.Output.WriteLine(generatedImages[0].Uri!.ToString());
     }
 
     [Fact(Skip = "Generating the Image can take too long and often break the test")]
