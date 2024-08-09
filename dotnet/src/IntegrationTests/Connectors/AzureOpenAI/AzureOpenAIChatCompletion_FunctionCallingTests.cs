@@ -860,6 +860,54 @@ public sealed class AzureOpenAIChatCompletionFunctionCallingTests : BaseIntegrat
         await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
     }
 
+    [Fact]
+    public async Task SubsetOfFunctionsCanBeUsedForFunctionCallingAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel();
+
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
+        kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("What day is today?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableFunctions([function.Metadata.ToOpenAIFunction()], true) };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Friday", result.Content, StringComparison.InvariantCulture);
+    }
+
+    [Fact]
+    public async Task RequiredFunctionShouldBeCalledAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel();
+
+        var function = kernel.CreateFunctionFromMethod(() => DayOfWeek.Friday, "GetDayOfWeek", "Retrieves the current day of the week.");
+        kernel.ImportPluginFromFunctions("HelperFunctions", [function]);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("What day is today?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.RequireFunction(function.Metadata.ToOpenAIFunction(), true) };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Friday", result.Content, StringComparison.InvariantCulture);
+    }
+
     private Kernel CreateAndInitializeKernel(bool importHelperPlugin = false)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
