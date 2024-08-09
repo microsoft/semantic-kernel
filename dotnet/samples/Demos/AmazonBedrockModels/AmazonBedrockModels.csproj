@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AmazonBedrockModels</RootNamespace>
+    </PropertyGroup>
+    <PropertyGroup>
+      <NoWarn>$(NoWarn);SKEXP0001,SKEXP0070</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AWSSDK.BedrockRuntime" />
+    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj"/>
+  </ItemGroup>
+
+</Project>
