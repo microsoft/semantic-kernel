@@ -73,7 +73,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
                 - {{{CopyWriterName}}}
                 
                 Always follow these rules when selecting the next participant:
-                - After user input, it is {{{CopyWriterName}}}'a turn.
+                - After user input, it is {{{CopyWriterName}}}'s turn.
                 - After {{{CopyWriterName}}}, it is {{{ReviewerName}}}'s turn.
                 - After {{{ReviewerName}}}, it is {{{CopyWriterName}}}'s turn.
 

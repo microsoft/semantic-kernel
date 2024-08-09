@@ -19,17 +19,27 @@ public class KernelFunctionExtensionsTests
     [Fact]
     public void VerifyKernelFunctionToFunctionTool()
     {
+        // Arrange
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<TestPlugin>();
+
+        // Assert
         Assert.Equal(2, plugin.FunctionCount);
 
+        // Arrange
         KernelFunction f1 = plugin[nameof(TestPlugin.TestFunction1)];
         KernelFunction f2 = plugin[nameof(TestPlugin.TestFunction2)];
 
+        // Act
         FunctionToolDefinition definition1 = f1.ToToolDefinition("testplugin");
+
+        // Assert
         Assert.StartsWith($"testplugin-{nameof(TestPlugin.TestFunction1)}", definition1.FunctionName, StringComparison.Ordinal);
         Assert.Equal("test description", definition1.Description);
 
+        // Act
         FunctionToolDefinition definition2 = f2.ToToolDefinition("testplugin");
+
+        // Assert
         Assert.StartsWith($"testplugin-{nameof(TestPlugin.TestFunction2)}", definition2.FunctionName, StringComparison.Ordinal);
         Assert.Equal("test description", definition2.Description);
     }

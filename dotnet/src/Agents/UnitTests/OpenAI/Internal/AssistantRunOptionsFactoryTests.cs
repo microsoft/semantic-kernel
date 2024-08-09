@@ -18,13 +18,17 @@ public class AssistantRunOptionsFactoryTests
     [Fact]
     public void AssistantRunOptionsFactoryExecutionOptionsNullTest()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("gpt-anything")
             {
                 Temperature = 0.5F,
             };
 
+        // Act
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, null);
+
+        // Assert
         Assert.NotNull(options);
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
@@ -37,6 +41,7 @@ public class AssistantRunOptionsFactoryTests
     [Fact]
     public void AssistantRunOptionsFactoryExecutionOptionsEquivalentTest()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("gpt-anything")
             {
@@ -49,7 +54,10 @@ public class AssistantRunOptionsFactoryTests
                 Temperature = 0.5F,
             };
 
+        // Act
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+
+        // Assert
         Assert.NotNull(options);
         Assert.Null(options.Temperature);
         Assert.Null(options.NucleusSamplingFactor);
@@ -61,6 +69,7 @@ public class AssistantRunOptionsFactoryTests
     [Fact]
     public void AssistantRunOptionsFactoryExecutionOptionsOverrideTest()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("gpt-anything")
             {
@@ -80,7 +89,10 @@ public class AssistantRunOptionsFactoryTests
                 EnableJsonResponse = true,
             };
 
+        // Act
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
+
+        // Assert
         Assert.NotNull(options);
         Assert.Equal(0.9F, options.Temperature);
         Assert.Equal(8, options.TruncationStrategy.LastMessages);
@@ -94,6 +106,7 @@ public class AssistantRunOptionsFactoryTests
     [Fact]
     public void AssistantRunOptionsFactoryExecutionOptionsMetadataTest()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("gpt-anything")
             {
@@ -115,8 +128,10 @@ public class AssistantRunOptionsFactoryTests
                 },
             };
 
+        // Act
         RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(definition, invocationOptions);
 
+        // Assert
         Assert.Equal(2, options.Metadata.Count);
         Assert.Equal("value", options.Metadata["key1"]);
         Assert.Equal(string.Empty, options.Metadata["key2"]);

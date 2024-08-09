@@ -23,36 +23,36 @@ public class AgentChatTests
     [Fact]
     public async Task VerifyAgentChatLifecycleAsync()
     {
-        // Create chat
+        // Arrange: Create chat
         TestChat chat = new();
 
-        // Verify initial state
+        // Assert: Verify initial state
         Assert.False(chat.IsActive);
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
-        // Inject history
+        // Act: Inject history
         chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "More")]);
         chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "And then some")]);
 
-        // Verify updated history
+        // Assert: Verify updated history
         await this.VerifyHistoryAsync(expectedCount: 2, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent hasn't joined
 
-        // Invoke with input & verify (agent joins chat)
+        // Act: Invoke with input & verify (agent joins chat)
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
         await chat.InvokeAsync().ToArrayAsync();
-        Assert.Equal(1, chat.Agent.InvokeCount);
 
-        // Verify updated history
+        // Assert: Verify updated history
+        Assert.Equal(1, chat.Agent.InvokeCount);
         await this.VerifyHistoryAsync(expectedCount: 4, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 4, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
-        // Invoke without input & verify
+        // Act: Invoke without input
         await chat.InvokeAsync().ToArrayAsync();
-        Assert.Equal(2, chat.Agent.InvokeCount);
 
-        // Verify final history
+        // Assert: Verify final history
+        Assert.Equal(2, chat.Agent.InvokeCount);
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
     }
@@ -63,10 +63,10 @@ public class AgentChatTests
     [Fact]
     public void VerifyAgentChatRejectsSystemMessage()
     {
-        // Create chat
+        // Arrange: Create chat
         TestChat chat = new() { LoggerFactory = new Mock<ILoggerFactory>().Object };
 
-        // Verify system message not accepted
+        // Assert and Act: Verify system message not accepted
         Assert.Throws<KernelException>(() => chat.AddChatMessage(new ChatMessageContent(AuthorRole.System, "hi")));
     }
 
@@ -76,10 +76,10 @@ public class AgentChatTests
     [Fact]
     public async Task VerifyAgentChatThrowsWhenActiveAsync()
     {
-        // Create chat
+        // Arrange: Create chat
         TestChat chat = new();
 
-        // Verify system message not accepted
+        // Assert and Act: Verify system message not accepted
         await Assert.ThrowsAsync<KernelException>(() => chat.InvalidInvokeAsync().ToArrayAsync().AsTask());
     }
 
@@ -89,13 +89,14 @@ public class AgentChatTests
     [Fact(Skip = "Not 100% reliable for github workflows, but useful for dev testing.")]
     public async Task VerifyGroupAgentChatConcurrencyAsync()
     {
+        // Arrange
         TestChat chat = new();
 
         Task[] tasks;
 
         int isActive = 0;
 
-        // Queue concurrent tasks
+        // Act: Queue concurrent tasks
         object syncObject = new();
         lock (syncObject)
         {
@@ -117,7 +118,7 @@ public class AgentChatTests
 
         await Task.Yield();
 
-        // Verify failure
+        // Assert: Verify failure
         await Assert.ThrowsAsync<KernelException>(() => Task.WhenAll(tasks));
 
         async Task SynchronizedInvokeAsync()

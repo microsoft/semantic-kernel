@@ -19,7 +19,10 @@ public class OpenAIClientProviderTests
     [Fact]
     public void VerifyOpenAIClientFactoryTargetAzureByKey()
     {
+        // Arrange
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI("key", new Uri("https://localhost"));
+
+        // Assert
         Assert.NotNull(provider.Client);
     }
 
@@ -29,8 +32,11 @@ public class OpenAIClientProviderTests
     [Fact]
     public void VerifyOpenAIClientFactoryTargetAzureByCredential()
     {
+        // Arrange
         Mock<TokenCredential> mockCredential = new();
         OpenAIClientProvider provider = OpenAIClientProvider.ForAzureOpenAI(mockCredential.Object, new Uri("https://localhost"));
+
+        // Assert
         Assert.NotNull(provider.Client);
     }
 
@@ -42,7 +48,10 @@ public class OpenAIClientProviderTests
     [InlineData("http://myproxy:9819")]
     public void VerifyOpenAIClientFactoryTargetOpenAINoKey(string? endpoint)
     {
+        // Arrange
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(endpoint != null ? new Uri(endpoint) : null);
+
+        // Assert
         Assert.NotNull(provider.Client);
     }
 
@@ -54,7 +63,10 @@ public class OpenAIClientProviderTests
     [InlineData("key", "http://myproxy:9819")]
     public void VerifyOpenAIClientFactoryTargetOpenAIByKey(string key, string? endpoint)
     {
+        // Arrange
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(key, endpoint != null ? new Uri(endpoint) : null);
+
+        // Assert
         Assert.NotNull(provider.Client);
     }
 
@@ -64,8 +76,11 @@ public class OpenAIClientProviderTests
     [Fact]
     public void VerifyOpenAIClientFactoryWithHttpClient()
     {
+        // Arrange
         using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
         OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(httpClient: httpClient);
+
+        // Assert
         Assert.NotNull(provider.Client);
     }
 }

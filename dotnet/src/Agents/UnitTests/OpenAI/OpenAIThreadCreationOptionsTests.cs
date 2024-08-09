@@ -19,13 +19,16 @@ public class OpenAIThreadCreationOptionsTests
     [Fact]
     public void OpenAIThreadCreationOptionsInitialState()
     {
+        // Arrange
         OpenAIThreadCreationOptions options = new();
 
+        // Assert
         Assert.Null(options.Messages);
         Assert.Null(options.Metadata);
         Assert.Null(options.VectorStoreId);
         Assert.Null(options.CodeInterpreterFileIds);
 
+        // Act and Assert
         ValidateSerialization(options);
     }
 
@@ -35,6 +38,7 @@ public class OpenAIThreadCreationOptionsTests
     [Fact]
     public void OpenAIThreadCreationOptionsAssignment()
     {
+        // Arrange
         OpenAIThreadCreationOptions options =
             new()
             {
@@ -44,20 +48,24 @@ public class OpenAIThreadCreationOptionsTests
                 CodeInterpreterFileIds = ["file1"],
             };
 
+        // Assert
         Assert.Single(options.Messages);
         Assert.Single(options.Metadata);
         Assert.Equal("#vs", options.VectorStoreId);
         Assert.Single(options.CodeInterpreterFileIds);
 
+        // Act and Assert
         ValidateSerialization(options);
     }
 
     private static void ValidateSerialization(OpenAIThreadCreationOptions source)
     {
+        // Act
         string json = JsonSerializer.Serialize(source);
 
         OpenAIThreadCreationOptions? target = JsonSerializer.Deserialize<OpenAIThreadCreationOptions>(json);
 
+        // Assert
         Assert.NotNull(target);
         Assert.Equal(source.VectorStoreId, target.VectorStoreId);
         AssertCollection.Equal(source.CodeInterpreterFileIds, target.CodeInterpreterFileIds);

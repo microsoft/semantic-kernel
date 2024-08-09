@@ -17,8 +17,10 @@ public class OpenAIAssistantDefinitionTests
     [Fact]
     public void VerifyOpenAIAssistantDefinitionInitialState()
     {
+        // Arrange
         OpenAIAssistantDefinition definition = new("testmodel");
 
+        // Assert
         Assert.Equal(string.Empty, definition.Id);
         Assert.Equal("testmodel", definition.ModelId);
         Assert.Null(definition.Name);
@@ -34,6 +36,7 @@ public class OpenAIAssistantDefinitionTests
         Assert.False(definition.EnableCodeInterpreter);
         Assert.False(definition.EnableJsonResponse);
 
+        // Act and Assert
         ValidateSerialization(definition);
     }
 
@@ -43,6 +46,7 @@ public class OpenAIAssistantDefinitionTests
     [Fact]
     public void VerifyOpenAIAssistantDefinitionAssignment()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
@@ -68,6 +72,7 @@ public class OpenAIAssistantDefinitionTests
                 EnableJsonResponse = true,
             };
 
+        // Assert
         Assert.Equal("testid", definition.Id);
         Assert.Equal("testname", definition.Name);
         Assert.Equal("testmodel", definition.ModelId);
@@ -87,6 +92,7 @@ public class OpenAIAssistantDefinitionTests
         Assert.True(definition.EnableCodeInterpreter);
         Assert.True(definition.EnableJsonResponse);
 
+        // Act and Assert
         ValidateSerialization(definition);
     }
 

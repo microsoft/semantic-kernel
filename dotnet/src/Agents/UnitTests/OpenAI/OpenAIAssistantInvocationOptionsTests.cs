@@ -17,8 +17,10 @@ public class OpenAIAssistantInvocationOptionsTests
     [Fact]
     public void OpenAIAssistantInvocationOptionsInitialState()
     {
+        // Arrange
         OpenAIAssistantInvocationOptions options = new();
 
+        // Assert
         Assert.Null(options.ModelName);
         Assert.Null(options.Metadata);
         Assert.Null(options.Temperature);
@@ -31,6 +33,7 @@ public class OpenAIAssistantInvocationOptionsTests
         Assert.False(options.EnableCodeInterpreter);
         Assert.False(options.EnableFileSearch);
 
+        // Act and Assert
         ValidateSerialization(options);
     }
 
@@ -40,6 +43,7 @@ public class OpenAIAssistantInvocationOptionsTests
     [Fact]
     public void OpenAIAssistantInvocationOptionsAssignment()
     {
+        // Arrange
         OpenAIAssistantInvocationOptions options =
             new()
             {
@@ -56,6 +60,7 @@ public class OpenAIAssistantInvocationOptionsTests
                 EnableFileSearch = true,
             };
 
+        // Assert
         Assert.Equal("testmodel", options.ModelName);
         Assert.Equal(2, options.Temperature);
         Assert.Equal(0, options.TopP);
@@ -68,15 +73,18 @@ public class OpenAIAssistantInvocationOptionsTests
         Assert.True(options.EnableJsonResponse);
         Assert.True(options.EnableFileSearch);
 
+        // Act and Assert
         ValidateSerialization(options);
     }
 
     private static void ValidateSerialization(OpenAIAssistantInvocationOptions source)
     {
+        // Act
         string json = JsonSerializer.Serialize(source);
 
         OpenAIAssistantInvocationOptions? target = JsonSerializer.Deserialize<OpenAIAssistantInvocationOptions>(json);
 
+        // Assert
         Assert.NotNull(target);
         Assert.Equal(source.ModelName, target.ModelName);
         Assert.Equal(source.Temperature, target.Temperature);

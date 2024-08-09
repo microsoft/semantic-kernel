@@ -18,14 +18,17 @@ public class AddHeaderRequestPolicyTests
     [Fact]
     public void VerifyAddHeaderRequestPolicyExecution()
     {
+        // Arrange
         using HttpClientTransport clientTransport = new();
         HttpPipeline pipeline = new(clientTransport);
 
         HttpMessage message = pipeline.CreateMessage();
-
         AddHeaderRequestPolicy policy = new(headerName: "testname", headerValue: "testvalue");
+
+        // Act
         policy.OnSendingRequest(message);
 
+        // Assert
         Assert.Single(message.Request.Headers);
         HttpHeader header = message.Request.Headers.Single();
         Assert.Equal("testname", header.Name);

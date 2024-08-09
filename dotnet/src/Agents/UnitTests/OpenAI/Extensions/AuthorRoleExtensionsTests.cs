@@ -29,7 +29,10 @@ public class AuthorRoleExtensionsTests
 
     private void VerifyRoleConversion(AuthorRole inputRole, MessageRole expectedRole)
     {
+        // Arrange
         MessageRole convertedRole = inputRole.ToMessageRole();
+
+        // Assert
         Assert.Equal(expectedRole, convertedRole);
     }
 }

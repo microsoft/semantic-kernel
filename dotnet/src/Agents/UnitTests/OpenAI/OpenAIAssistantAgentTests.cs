@@ -32,8 +32,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationEmptyAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition = new("testmodel");
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -44,6 +46,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationPropertiesAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
@@ -52,6 +55,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 Instructions = "testinstructions",
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -62,12 +66,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithCodeInterpreterAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
                 EnableCodeInterpreter = true,
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -78,6 +84,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithCodeInterpreterFilesAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
@@ -85,6 +92,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 CodeInterpreterFileIds = ["file1", "file2"],
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -95,12 +103,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithFileSearchAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
                 EnableFileSearch = true,
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -111,6 +121,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithVectorStoreAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
@@ -118,6 +129,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 VectorStoreId = "#vs1",
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -128,6 +140,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithMetadataAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
@@ -138,6 +151,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 },
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -148,12 +162,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithJsonResponseAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
                 EnableJsonResponse = true,
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -164,12 +180,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithTemperatureAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
                 Temperature = 2.0F,
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -180,12 +198,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithTopPAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
                 TopP = 2.0F,
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -196,12 +216,14 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithEmptyExecutionOptionsAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
                 ExecutionOptions = new OpenAIAssistantExecutionOptions(),
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -212,6 +234,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithExecutionOptionsAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
@@ -223,6 +246,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                     }
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -233,6 +257,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationWithEmptyExecutionOptionsAndMetadataAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition =
             new("testmodel")
             {
@@ -244,6 +269,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 },
             };
 
+        // Act and Assert
         await this.VerifyAgentCreationAsync(definition);
     }
 
@@ -253,6 +279,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentRetrievalAsync()
     {
+        // Arrange
         OpenAIAssistantDefinition definition = new("testmodel");
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
@@ -263,6 +290,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 this.CreateTestConfiguration(),
                 "#id");
 
+        // Act and Assert
         ValidateAgentDefinition(agent, definition);
     }
 
@@ -272,17 +300,23 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentDeleteAsync()
     {
+        // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+        // Assert
         Assert.False(agent.IsDeleted);
 
+        // Arrange
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.DeleteAgent);
 
+        // Act
         await agent.DeleteAsync();
+        // Assert
         Assert.True(agent.IsDeleted);
 
+        // Act
         await agent.DeleteAsync(); // Doesn't throw
+        // Assert
         Assert.True(agent.IsDeleted);
-
         await Assert.ThrowsAsync<KernelException>(() => agent.AddChatMessageAsync("threadid", new(AuthorRole.User, "test")));
         await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync("threadid").ToArrayAsync().AsTask());
     }
@@ -293,16 +327,22 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreateThreadAsync()
     {
+        // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateThread);
 
+        // Act
         string threadId = await agent.CreateThreadAsync();
+        // Assert
         Assert.NotNull(threadId);
 
+        // Arrange
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateThread);
 
+        // Act
         threadId = await agent.CreateThreadAsync(new());
+        // Assert
         Assert.NotNull(threadId);
     }
 
@@ -312,6 +352,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentChatTextMessageAsync()
     {
+        // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
         this.SetupResponses(
@@ -323,7 +364,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.GetTextMessage);
 
         AgentGroupChat chat = new();
+
+        // Act
         ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+
+        // Assert
         Assert.Single(messages);
         Assert.Single(messages[0].Items);
         Assert.IsType<TextContent>(messages[0].Items[0]);
@@ -335,6 +380,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentChatTextMessageWithAnnotationAsync()
     {
+        // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
         this.SetupResponses(
@@ -346,7 +392,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.GetTextMessageWithAnnotation);
 
         AgentGroupChat chat = new();
+
+        // Act
         ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+
+        // Assert
         Assert.Single(messages);
         Assert.Equal(2, messages[0].Items.Count);
         Assert.NotNull(messages[0].Items.SingleOrDefault(c => c is TextContent));
@@ -359,6 +409,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentChatImageMessageAsync()
     {
+        // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
         this.SetupResponses(
@@ -370,7 +421,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.GetImageMessage);
 
         AgentGroupChat chat = new();
+
+        // Act
         ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+
+        // Assert
         Assert.Single(messages);
         Assert.Single(messages[0].Items);
         Assert.IsType<FileReferenceContent>(messages[0].Items[0]);
@@ -382,7 +437,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentGetMessagesAsync()
     {
-        // Create agent
+        // Arrange: Create agent
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
         // Initialize agent channel
@@ -395,18 +450,22 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.GetTextMessage);
 
         AgentGroupChat chat = new();
+
+        // Act
         ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+        // Assert
         Assert.Single(messages);
 
-        // Setup messages
+        // Arrange: Setup messages
         this.SetupResponses(
             HttpStatusCode.OK,
             ResponseContent.ListMessagesPageMore,
             ResponseContent.ListMessagesPageMore,
             ResponseContent.ListMessagesPageFinal);
 
-        // Get messages and verify
+        // Act: Get messages
         messages = await chat.GetChatMessagesAsync(agent).ToArrayAsync();
+        // Assert
         Assert.Equal(5, messages.Length);
     }
 
@@ -416,7 +475,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentAddMessagesAsync()
     {
-        // Create agent
+        // Arrange: Create agent
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
         // Initialize agent channel
@@ -428,12 +487,18 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.MessageSteps,
             ResponseContent.GetTextMessage);
         AgentGroupChat chat = new();
+
+        // Act
         ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+        // Assert
         Assert.Single(messages);
 
+        // Arrange
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
 
+        // Act
         messages = await chat.GetChatMessagesAsync().ToArrayAsync();
+        // Assert
         Assert.Equal(2, messages.Length);
     }
 
@@ -443,6 +508,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentListDefinitionAsync()
     {
+        // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
         this.SetupResponses(
@@ -451,19 +517,24 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.ListAgentsPageMore,
             ResponseContent.ListAgentsPageFinal);
 
+        // Act
         var messages =
             await OpenAIAssistantAgent.ListDefinitionsAsync(
                 this.CreateTestConfiguration()).ToArrayAsync();
+        // Assert
         Assert.Equal(7, messages.Length);
 
+        // Arrange
         this.SetupResponses(
             HttpStatusCode.OK,
             ResponseContent.ListAgentsPageMore,
             ResponseContent.ListAgentsPageFinal);
 
+        // Act
         messages =
             await OpenAIAssistantAgent.ListDefinitionsAsync(
                 this.CreateTestConfiguration()).ToArrayAsync();
+        // Assert
         Assert.Equal(4, messages.Length);
     }
 
@@ -473,6 +544,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentWithFunctionCallAsync()
     {
+        // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MyPlugin>();
@@ -490,7 +562,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.GetTextMessage);
 
         AgentGroupChat chat = new();
+
+        // Act
         ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+
+        // Assert
         Assert.Single(messages);
         Assert.Single(messages[0].Items);
         Assert.IsType<TextContent>(messages[0].Items[0]);

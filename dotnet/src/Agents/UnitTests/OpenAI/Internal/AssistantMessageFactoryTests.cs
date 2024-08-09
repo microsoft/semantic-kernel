@@ -24,7 +24,7 @@ public class AssistantMessageFactoryTests
         // Arrange (Setup message with null metadata)
         ChatMessageContent message = new(AuthorRole.User, "test");
 
-        // Act
+        // Act: Create options
         MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
         // Assert
@@ -38,17 +38,17 @@ public class AssistantMessageFactoryTests
     [Fact]
     public void VerifyAssistantMessageAdapterCreateOptionsWithMetadataEmpty()
     {
-        // Setup message with empty metadata
+        // Arrange Setup message with empty metadata
         ChatMessageContent message =
             new(AuthorRole.User, "test")
             {
                 Metadata = new Dictionary<string, object?>()
             };
 
-        // Create options
+        // Act: Create options
         MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
-        // Validate
+        // Assert
         Assert.NotNull(options);
         Assert.Empty(options.Metadata);
     }
@@ -59,7 +59,7 @@ public class AssistantMessageFactoryTests
     [Fact]
     public void VerifyAssistantMessageAdapterCreateOptionsWithMetadata()
     {
-        // Setup message with metadata
+        // Arrange: Setup message with metadata
         ChatMessageContent message =
             new(AuthorRole.User, "test")
             {
@@ -71,10 +71,10 @@ public class AssistantMessageFactoryTests
                     }
             };
 
-        // Create options
+        // Act: Create options
         MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
-        // Validate
+        // Assert
         Assert.NotNull(options);
         Assert.NotEmpty(options.Metadata);
         Assert.Equal(2, options.Metadata.Count);
@@ -88,7 +88,7 @@ public class AssistantMessageFactoryTests
     [Fact]
     public void VerifyAssistantMessageAdapterCreateOptionsWithMetadataNull()
     {
-        // Setup message with null metadata value
+        // Arrange: Setup message with null metadata value
         ChatMessageContent message =
             new(AuthorRole.User, "test")
             {
@@ -100,10 +100,10 @@ public class AssistantMessageFactoryTests
                     }
             };
 
-        // Create options
+        // Act: Create options
         MessageCreationOptions options = AssistantMessageFactory.CreateOptions(message);
 
-        // Validate
+        // Assert
         Assert.NotNull(options);
         Assert.NotEmpty(options.Metadata);
         Assert.Equal(2, options.Metadata.Count);
@@ -117,8 +117,13 @@ public class AssistantMessageFactoryTests
     [Fact]
     public void VerifyAssistantMessageAdapterGetMessageContentsWithText()
     {
+        // Arrange
         ChatMessageContent message = new(AuthorRole.User, items: [new TextContent("test")]);
+
+        // Act
         MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
+
+        // Assert
         Assert.NotNull(contents);
         Assert.Single(contents);
         Assert.NotNull(contents.Single().Text);
@@ -130,8 +135,13 @@ public class AssistantMessageFactoryTests
     [Fact]
     public void VerifyAssistantMessageAdapterGetMessageWithImageUrl()
     {
+        // Arrange
         ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new Uri("https://localhost/myimage.png"))]);
+
+        // Act
         MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
+
+        // Assert
         Assert.NotNull(contents);
         Assert.Single(contents);
         Assert.NotNull(contents.Single().ImageUrl);
@@ -143,8 +153,13 @@ public class AssistantMessageFactoryTests
     [Fact(Skip = "API bug with data Uri construction")]
     public void VerifyAssistantMessageAdapterGetMessageWithImageData()
     {
+        // Arrange
         ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new byte[] { 1, 2, 3 }, "image/png")]);
+
+        // Act
         MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
+
+        // Assert
         Assert.NotNull(contents);
         Assert.Single(contents);
         Assert.NotNull(contents.Single().ImageUrl);
@@ -156,8 +171,13 @@ public class AssistantMessageFactoryTests
     [Fact]
     public void VerifyAssistantMessageAdapterGetMessageWithImageFile()
     {
+        // Arrange
         ChatMessageContent message = new(AuthorRole.User, items: [new FileReferenceContent("file-id")]);
+
+        // Act
         MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
+
+        // Assert
         Assert.NotNull(contents);
         Assert.Single(contents);
         Assert.NotNull(contents.Single().ImageFileId);
@@ -169,6 +189,7 @@ public class AssistantMessageFactoryTests
     [Fact]
     public void VerifyAssistantMessageAdapterGetMessageWithAll()
     {
+        // Arrange
         ChatMessageContent message =
             new(
                 AuthorRole.User,
@@ -178,7 +199,11 @@ public class AssistantMessageFactoryTests
                     new ImageContent(new Uri("https://localhost/myimage.png")),
                     new FileReferenceContent("file-id")
                 ]);
+
+        // Act
         MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
+
+        // Assert
         Assert.NotNull(contents);
         Assert.Equal(3, contents.Length);
     }

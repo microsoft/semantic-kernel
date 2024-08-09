@@ -16,8 +16,10 @@ public class RunPollingOptionsTests
     [Fact]
     public void RunPollingOptionsInitialStateTest()
     {
+        // Arrange
         RunPollingOptions options = new();
 
+        // Assert
         Assert.Equal(RunPollingOptions.DefaultPollingInterval, options.RunPollingInterval);
         Assert.Equal(RunPollingOptions.DefaultPollingBackoff, options.RunPollingBackoff);
         Assert.Equal(RunPollingOptions.DefaultMessageSynchronizationDelay, options.MessageSynchronizationDelay);
@@ -30,6 +32,7 @@ public class RunPollingOptionsTests
     [Fact]
     public void RunPollingOptionsAssignmentTest()
     {
+        // Arrange
         RunPollingOptions options =
             new()
             {
@@ -39,6 +42,7 @@ public class RunPollingOptionsTests
                 MessageSynchronizationDelay = TimeSpan.FromSeconds(5),
             };
 
+        // Assert
         Assert.Equal(3, options.RunPollingInterval.TotalSeconds);
         Assert.Equal(4, options.RunPollingBackoff.TotalSeconds);
         Assert.Equal(5, options.MessageSynchronizationDelay.TotalSeconds);
@@ -51,6 +55,7 @@ public class RunPollingOptionsTests
     [Fact]
     public void RunPollingOptionsGetIntervalTest()
     {
+        // Arrange
         RunPollingOptions options =
             new()
             {
@@ -59,6 +64,7 @@ public class RunPollingOptionsTests
                 RunPollingBackoffThreshold = 8,
             };
 
+        // Assert
         Assert.Equal(options.RunPollingInterval, options.GetPollingInterval(8));
         Assert.Equal(options.RunPollingBackoff, options.GetPollingInterval(9));
     }
