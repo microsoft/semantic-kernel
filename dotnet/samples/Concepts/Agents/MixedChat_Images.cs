@@ -27,6 +27,7 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task AnalyzeDataAndGenerateChartAsync()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
         // Define the agents
@@ -108,5 +109,6 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseTest(output)
                 }
             }
         }
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

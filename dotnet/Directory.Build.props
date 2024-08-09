@@ -12,6 +12,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- In "main" branch this flag should be always "false". -->
+    <IsReleaseCandidate>true</IsReleaseCandidate>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <!-- Disable NuGet packaging by default. Projects can override. -->
     <IsPackable>disable</IsPackable>
   </PropertyGroup>

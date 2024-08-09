@@ -91,13 +91,16 @@ Sum      426  1622     856 2904
         }
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     private static OpenAIFileService CreateFileService()
+
     {
         return
             ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
                 new OpenAIFileService(TestConfiguration.OpenAI.ApiKey) :
                 new OpenAIFileService(new Uri(TestConfiguration.AzureOpenAI.Endpoint), apiKey: TestConfiguration.AzureOpenAI.ApiKey);
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     private static AgentBuilder CreateAgentBuilder()
     {

@@ -14,7 +14,7 @@ public class Kernel_Injecting(ITestOutputHelper output) : BaseTest(output)
     {
         ServiceCollection collection = new();
         collection.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
-        collection.AddOpenAITextGeneration(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
+        collection.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
         collection.AddSingleton<Kernel>();
 
         // Registering class that uses Kernel to execute a plugin

@@ -16,17 +16,16 @@ The sample can be configured by using the command line with .NET [Secret Manager
 
 This sample has been tested with the following models:
 
-| Service      | Model type      | Model            | Model version | Supported |
-| ------------ | --------------- | ---------------- | ------------: | --------- |
-| OpenAI       | Text Completion | text-davinci-003 |             1 | ❌        |
-| OpenAI       | Chat Completion | gpt-3.5-turbo    |             1 | ❌        |
-| OpenAI       | Chat Completion | gpt-3.5-turbo    |          0301 | ❌        |
-| Azure OpenAI | Chat Completion | gpt-3.5-turbo    |          0613 | ✅        |
-| Azure OpenAI | Chat Completion | gpt-3.5-turbo    |          1106 | ✅        |
-| OpenAI       | Chat Completion | gpt-4            |             1 | ❌        |
-| OpenAI       | Chat Completion | gpt-4            |          0314 | ❌        |
-| Azure OpenAI | Chat Completion | gpt-4            |          0613 | ✅        |
-| Azure OpenAI | Chat Completion | gpt-4            |          1106 | ✅        |
+| Service      | Model            | Model version | Supported |
+| ------------ | ---------------- | ------------: | --------- |
+| OpenAI       | gpt-3.5-turbo    |             1 | ❌        |
+| OpenAI       | gpt-3.5-turbo    |          0301 | ❌        |
+| Azure OpenAI | gpt-3.5-turbo    |          0613 | ✅        |
+| Azure OpenAI | gpt-3.5-turbo    |          1106 | ✅        |
+| OpenAI       | gpt-4            |             1 | ❌        |
+| OpenAI       | gpt-4            |          0314 | ❌        |
+| Azure OpenAI | gpt-4            |          0613 | ✅        |
+| Azure OpenAI | gpt-4            |          1106 | ✅        |
 
 This sample uses function calling, so it only works on models newer than 0613.
 
@@ -39,7 +38,6 @@ cd 14-Create-ChatGPT-Plugin/Solution
 
 dotnet user-secrets set "Global:LlmService" "OpenAI"
 
-dotnet user-secrets set "OpenAI:ModelType" "chat-completion"
 dotnet user-secrets set "OpenAI:ChatCompletionModelId" "gpt-4"
 dotnet user-secrets set "OpenAI:ApiKey" "... your OpenAI key ..."
 dotnet user-secrets set "OpenAI:OrgId" "... your ord ID ..."
@@ -52,7 +50,6 @@ cd 14-Create-ChatGPT-Plugin/Solution
 
 dotnet user-secrets set "Global:LlmService" "AzureOpenAI"
 
-dotnet user-secrets set "AzureOpenAI:DeploymentType" "chat-completion"
 dotnet user-secrets set "AzureOpenAI:ChatCompletionDeploymentName" "gpt-35-turbo"
 dotnet user-secrets set "AzureOpenAI:ChatCompletionModelId" "gpt-3.5-turbo-0613"
 dotnet user-secrets set "AzureOpenAI:Endpoint" "... your Azure OpenAI endpoint ..."

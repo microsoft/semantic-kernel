@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.AI.OpenAI;
+using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using xRetry;
 
 namespace ChatCompletion;
@@ -47,8 +47,8 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        var chatExtensionsOptions = GetAzureChatExtensionsOptions();
-        var promptExecutionSettings = new OpenAIPromptExecutionSettings { AzureChatExtensionsOptions = chatExtensionsOptions };
+        var dataSource = GetAzureSearchDataSource();
+        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings { AzureChatDataSource = dataSource };
 
         var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -98,8 +98,8 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
-        var chatExtensionsOptions = GetAzureChatExtensionsOptions();
-        var promptExecutionSettings = new OpenAIPromptExecutionSettings { AzureChatExtensionsOptions = chatExtensionsOptions };
+        var dataSource = GetAzureSearchDataSource();
+        var promptExecutionSettings = new AzureOpenAIPromptExecutionSettings { AzureChatDataSource = dataSource };
 
         // First question without previous context based on uploaded content.
         var response = await kernel.InvokeAsync(function, new(promptExecutionSettings) { ["input"] = ask });
@@ -125,20 +125,15 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataConfig"/> class.
+    /// Initializes a new instance of the <see cref="AzureSearchChatDataSource"/> class.
     /// </summary>
-    private static AzureChatExtensionsOptions GetAzureChatExtensionsOptions()
+    private static AzureSearchChatDataSource GetAzureSearchDataSource()
     {
-        var azureSearchExtensionConfiguration = new AzureSearchChatExtensionConfiguration
+        return new AzureSearchChatDataSource
         {
-            SearchEndpoint = new Uri(TestConfiguration.AzureAISearch.Endpoint),
-            Authentication = new OnYourDataApiKeyAuthenticationOptions(TestConfiguration.AzureAISearch.ApiKey),
+            Endpoint = new Uri(TestConfiguration.AzureAISearch.Endpoint),
+            Authentication = DataSourceAuthentication.FromApiKey(TestConfiguration.AzureAISearch.ApiKey),
             IndexName = TestConfiguration.AzureAISearch.IndexName
-        };
-
-        return new AzureChatExtensionsOptions
-        {
-            Extensions = { azureSearchExtensionConfiguration }
         };
     }
 }

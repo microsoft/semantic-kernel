@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0005 // Using directive is unnecessary
+
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -7,6 +10,8 @@ using Microsoft.SemanticKernel.Planning;
 using StepwisePlannerMigration.Models;
 using StepwisePlannerMigration.Plugins;
 using StepwisePlannerMigration.Services;
+
+#pragma warning restore IDE0005 // Using directive is unnecessary
 
 namespace StepwisePlannerMigration.Controllers;
 

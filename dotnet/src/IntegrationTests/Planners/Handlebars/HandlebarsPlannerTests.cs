@@ -17,12 +17,12 @@ namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 public sealed class HandlebarsPlannerTests
 {
     [Theory]
-    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
-    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string goal, string expectedFunction, string expectedPlugin)
+    [InlineData("Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
+    public async Task CreatePlanFunctionFlowAsync(string goal, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
-        var kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        var kernel = this.InitializeKernel(useEmbeddings);
         kernel.ImportPluginFromType<EmailPluginFake>(expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
@@ -57,7 +57,7 @@ public sealed class HandlebarsPlannerTests
     }
 
     [Theory]
-    [InlineData(true, "List each property of the default Qux object.", "## Complex types", """
+    [InlineData("List each property of the default Qux object.", "## Complex types", """
         ### Qux:
         {
           "type": "Object",
@@ -71,11 +71,11 @@ public sealed class HandlebarsPlannerTests
           }
         }
         """, "GetDefaultQux", "Foo")]
-    public async Task CreatePlanWithComplexTypesDefinitionsAsync(bool useChatModel, string goal, string expectedSectionHeader, string expectedTypeHeader, string expectedFunction, string expectedPlugin)
+    public async Task CreatePlanWithComplexTypesDefinitionsAsync(string goal, string expectedSectionHeader, string expectedTypeHeader, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
-        var kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        var kernel = this.InitializeKernel(useEmbeddings);
         kernel.ImportPluginFromObject(new Foo());
 
         // Act
@@ -103,7 +103,7 @@ public sealed class HandlebarsPlannerTests
         );
     }
 
-    private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = true)
+    private Kernel InitializeKernel(bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -113,22 +113,11 @@ public sealed class HandlebarsPlannerTests
 
         IKernelBuilder builder = Kernel.CreateBuilder();
 
-        if (useChatModel)
-        {
-            builder.Services.AddAzureOpenAIChatCompletion(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                modelId: azureOpenAIConfiguration.ChatModelId,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.Services.AddAzureOpenAITextGeneration(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                modelId: azureOpenAIConfiguration.ModelId,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
+        builder.Services.AddAzureOpenAIChatCompletion(
+            deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+            modelId: azureOpenAIConfiguration.ChatModelId,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            apiKey: azureOpenAIConfiguration.ApiKey);
 
         if (useEmbeddings)
         {

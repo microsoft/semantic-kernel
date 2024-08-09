@@ -22,12 +22,15 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseTe
     [Fact]
     public async Task AnalyzeCSVFileUsingOpenAIAssistantAgentAsync()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
         OpenAIFileReference uploadFile =
             await fileService.UploadContentAsync(
                 new BinaryContent(await EmbeddedResource.ReadAllAsync("sales.csv"), mimeType: "text/plain"),
                 new OpenAIFileUploadExecutionSettings("sales.csv", OpenAIFilePurpose.Assistants));
+
+#pragma warning restore CS0618 // Type or member is obsolete
 
         Console.WriteLine(this.ApiKey);
 

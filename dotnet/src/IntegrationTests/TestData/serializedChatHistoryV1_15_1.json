@@ -1,0 +1,125 @@
+﻿[
+  {
+    "Role": {
+      "Label": "user"
+    },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "Given the current time of day and weather, what is the likely color of the sky in Boston?"
+      }
+    ]
+  },
+  {
+    "Role": {
+      "Label": "assistant"
+    },
+    "Items": [
+      {
+        "$type": "FunctionCallContent",
+        "Id": "call_q5FoU2fpfEyZmvC6iqtIXPYQ",
+        "PluginName": "HelperFunctions",
+        "FunctionName": "Get_Weather_For_City",
+        "Arguments": {
+          "cityName": "Boston"
+        }
+      }
+    ],
+    "ModelId": "gpt-4",
+    "Metadata": {
+      "Id": "chatcmpl-9lf5Qgx7xquKec3tc6lTn27y8Lmkz",
+      "Created": "2024-07-16T16:13:00+00:00",
+      "PromptFilterResults": [],
+      "SystemFingerprint": null,
+      "Usage": {
+        "CompletionTokens": 23,
+        "PromptTokens": 196,
+        "TotalTokens": 219
+      },
+      "ContentFilterResults": null,
+      "FinishReason": "tool_calls",
+      "FinishDetails": null,
+      "LogProbabilityInfo": null,
+      "Index": 0,
+      "Enhancements": null,
+      "ChatResponseMessage.FunctionToolCalls": [
+        {
+          "Name": "HelperFunctions-Get_Weather_For_City",
+          "Arguments": "{\n  \u0022cityName\u0022: \u0022Boston\u0022\n}",
+          "Id": "call_q5FoU2fpfEyZmvC6iqtIXPYQ"
+        }
+      ]
+    }
+  },
+  {
+    "Role": {
+      "Label": "tool"
+    },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "61 and rainy",
+        "Metadata": {
+          "ChatCompletionsToolCall.Id": "call_q5FoU2fpfEyZmvC6iqtIXPYQ"
+        }
+      },
+      {
+        "$type": "FunctionResultContent",
+        "CallId": "call_q5FoU2fpfEyZmvC6iqtIXPYQ",
+        "PluginName": "HelperFunctions",
+        "FunctionName": "Get_Weather_For_City",
+        "Result": "61 and rainy"
+      }
+    ],
+    "Metadata": {
+      "ChatCompletionsToolCall.Id": "call_q5FoU2fpfEyZmvC6iqtIXPYQ"
+    }
+  },
+  {
+    "Role": {
+      "Label": "assistant"
+    },
+    "Items": [
+      {
+        "$type": "TextContent",
+        "Text": "Given the current weather in Boston is 61\u00B0F and rainy, the likely color of the sky would be gray or overcast due to the presence of rain clouds.",
+        "ModelId": "gpt-4",
+        "Metadata": {
+          "Id": "chatcmpl-9lf5RibNr9h4bzq7JJjUXj6ITz7wN",
+          "Created": "2024-07-16T16:13:01+00:00",
+          "PromptFilterResults": [],
+          "SystemFingerprint": null,
+          "Usage": {
+            "CompletionTokens": 34,
+            "PromptTokens": 237,
+            "TotalTokens": 271
+          },
+          "ContentFilterResults": null,
+          "FinishReason": "stop",
+          "FinishDetails": null,
+          "LogProbabilityInfo": null,
+          "Index": 0,
+          "Enhancements": null
+        }
+      }
+    ],
+    "ModelId": "gpt-4",
+    "Metadata": {
+      "Id": "chatcmpl-9lf5RibNr9h4bzq7JJjUXj6ITz7wN",
+      "Created": "2024-07-16T16:13:01+00:00",
+      "PromptFilterResults": [],
+      "SystemFingerprint": null,
+      "Usage": {
+        "CompletionTokens": 34,
+        "PromptTokens": 237,
+        "TotalTokens": 271
+      },
+      "ContentFilterResults": null,
+      "FinishReason": "stop",
+      "FinishDetails": null,
+      "LogProbabilityInfo": null,
+      "Index": 0,
+      "Enhancements": null
+    }
+  }
+]

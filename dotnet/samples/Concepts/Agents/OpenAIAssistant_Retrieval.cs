@@ -21,12 +21,13 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
     [Fact]
     public async Task UseRetrievalToolWithOpenAIAssistantAgentAsync()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
         OpenAIFileReference uploadFile =
             await fileService.UploadContentAsync(new BinaryContent(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!, "text/plain"),
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
-
+#pragma warning restore CS0618 // Type or member is obsolete
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(

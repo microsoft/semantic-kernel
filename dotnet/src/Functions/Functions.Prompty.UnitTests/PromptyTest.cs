@@ -60,8 +60,8 @@ public sealed class PromptyTest
         // Assert
         Assert.NotNull(executionSettings);
         Assert.Equal("gpt-35-turbo", executionSettings.ModelId);
-        Assert.Equal(1.0, executionSettings.Temperature);
-        Assert.Equal(1.0, executionSettings.TopP);
+        Assert.Null(executionSettings.Temperature);
+        Assert.Null(executionSettings.TopP);
         Assert.Null(executionSettings.StopSequences);
         Assert.Null(executionSettings.ResponseFormat);
         Assert.Null(executionSettings.TokenSelectionBiases);

@@ -32,24 +32,25 @@ internal static class Program
         builder.Services.AddHostedService<Worker>();
 
         // Get configuration
-        builder.Services.AddOptions<AzureOpenAI>()
-                        .Bind(builder.Configuration.GetSection(nameof(AzureOpenAI)))
+        builder.Services.AddOptions<AzureOpenAIOptions>()
+                        .Bind(builder.Configuration.GetSection(nameof(AzureOpenAIOptions)))
                         .ValidateDataAnnotations()
                         .ValidateOnStart();
 
         // Chat completion service that kernels will use
         builder.Services.AddSingleton<IChatCompletionService>(sp =>
         {
-            AzureOpenAI options = sp.GetRequiredService<IOptions<AzureOpenAI>>().Value;
+            OpenAIOptions options = sp.GetRequiredService<IOptions<OpenAIOptions>>().Value;
 
             // A custom HttpClient can be provided to this constructor
-            return new AzureOpenAIChatCompletionService(options.ChatDeploymentName, options.Endpoint, options.ApiKey);
+            return new OpenAIChatCompletionService(options.ChatModelId, options.ApiKey);
 
-            /* Alternatively, you can use plain, non-Azure OpenAI after loading OpenAIOptions instead
-               of AzureOpenAI options with builder.Services.AddOptions:
-            OpenAI options = sp.GetRequiredService<IOptions<OpenAIOptions>>().Value;
+            /* Alternatively, you can use plain, Azure OpenAI after loading AzureOpenAIOptions instead
+               of OpenAI options with builder.Services.AddOptions:
 
-            return new OpenAIChatCompletionService(options.ChatModelId, options.ApiKey);*/
+            AzureOpenAIOptions options = sp.GetRequiredService<IOptions<AzureOpenAI>>().Value;
+
+            return new AzureOpenAIChatCompletionService(options.ChatDeploymentName, options.Endpoint, options.ApiKey); */
         });
 
         // Add plugins that can be used by kernels
