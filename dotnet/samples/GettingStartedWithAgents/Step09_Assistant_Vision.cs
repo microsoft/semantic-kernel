@@ -25,9 +25,8 @@ public class Step09_Assistant_Vision(ITestOutputHelper output) : BaseAgentsTest(
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 provider,
-                new()
+                new(this.Model)
                 {
-                    ModelId = this.Model,
                     Metadata = AssistantSampleMetadata,
                 });
 

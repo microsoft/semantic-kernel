@@ -76,10 +76,9 @@ public sealed class OpenAIAssistantAgentTests
             await OpenAIAssistantAgent.CreateAsync(
                 kernel,
                 config,
-                new()
+                new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
-                    ModelId = modelName,
                 });
 
         AgentGroupChat chat = new();

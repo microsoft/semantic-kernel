@@ -17,11 +17,10 @@ public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : Ba
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                provider: this.GetClientProvider(),
-                new()
+                clientProvider: this.GetClientProvider(),
+                new(this.Model)
                 {
                     EnableCodeInterpreter = true,
-                    ModelId = this.Model,
                     Metadata = AssistantSampleMetadata,
                 });
 

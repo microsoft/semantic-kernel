@@ -36,11 +36,10 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 provider,
-                new()
+                new(this.Model)
                 {
                     EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id], // Associate uploaded file with assistant code-interpreter
-                    ModelId = this.Model,
                     Metadata = AssistantSampleMetadata,
                 });
 

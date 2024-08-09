@@ -21,11 +21,10 @@ public class Step11_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAge
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                provider: this.GetClientProvider(),
-                new()
+                clientProvider: this.GetClientProvider(),
+                new(this.Model)
                 {
                     EnableFileSearch = true,
-                    ModelId = this.Model,
                     Metadata = AssistantSampleMetadata,
                 });
 

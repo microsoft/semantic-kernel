@@ -32,11 +32,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentCreationEmptyAsync()
     {
-        OpenAIAssistantDefinition definition =
-            new()
-            {
-                ModelId = "testmodel",
-            };
+        OpenAIAssistantDefinition definition = new("testmodel");
 
         await this.VerifyAgentCreationAsync(definition);
     }
@@ -49,9 +45,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationPropertiesAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 Name = "testname",
                 Description = "testdescription",
                 Instructions = "testinstructions",
@@ -68,9 +63,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithCodeInterpreterAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 EnableCodeInterpreter = true,
             };
 
@@ -85,9 +79,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithCodeInterpreterFilesAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 EnableCodeInterpreter = true,
                 CodeInterpreterFileIds = ["file1", "file2"],
             };
@@ -103,9 +96,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithFileSearchAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 EnableFileSearch = true,
             };
 
@@ -120,9 +112,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithVectorStoreAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 EnableFileSearch = true,
                 VectorStoreId = "#vs1",
             };
@@ -138,9 +129,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithMetadataAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 Metadata = new Dictionary<string, string>()
                 {
                     { "a", "1" },
@@ -159,9 +149,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithJsonResponseAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 EnableJsonResponse = true,
             };
 
@@ -176,9 +165,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithTemperatureAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 Temperature = 2.0F,
             };
 
@@ -193,9 +181,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithTopPAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 TopP = 2.0F,
             };
 
@@ -210,10 +197,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithEmptyExecutionOptionsAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
-                ExecutionOptions = new(),
+                ExecutionOptions = new OpenAIAssistantExecutionOptions(),
             };
 
         await this.VerifyAgentCreationAsync(definition);
@@ -227,9 +213,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithExecutionOptionsAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 ExecutionOptions =
                     new()
                     {
@@ -249,9 +234,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     public async Task VerifyOpenAIAssistantAgentCreationWithEmptyExecutionOptionsAndMetadataAsync()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
-                ModelId = "testmodel",
                 ExecutionOptions = new(),
                 Metadata = new Dictionary<string, string>()
                 {
@@ -269,11 +253,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     [Fact]
     public async Task VerifyOpenAIAssistantAgentRetrievalAsync()
     {
-        OpenAIAssistantDefinition definition =
-            new()
-            {
-                ModelId = "testmodel",
-            };
+        OpenAIAssistantDefinition definition = new("testmodel");
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
 
@@ -619,11 +599,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     private Task<OpenAIAssistantAgent> CreateAgentAsync()
     {
-        OpenAIAssistantDefinition definition =
-            new()
-            {
-                ModelId = "testmodel",
-            };
+        OpenAIAssistantDefinition definition = new("testmodel");
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentPayload(definition));
 

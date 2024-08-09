@@ -17,10 +17,10 @@ public class OpenAIAssistantDefinitionTests
     [Fact]
     public void VerifyOpenAIAssistantDefinitionInitialState()
     {
-        OpenAIAssistantDefinition definition = new();
+        OpenAIAssistantDefinition definition = new("testmodel");
 
         Assert.Equal(string.Empty, definition.Id);
-        Assert.Equal(string.Empty, definition.ModelId);
+        Assert.Equal("testmodel", definition.ModelId);
         Assert.Null(definition.Name);
         Assert.Null(definition.Instructions);
         Assert.Null(definition.Description);
@@ -44,11 +44,10 @@ public class OpenAIAssistantDefinitionTests
     public void VerifyOpenAIAssistantDefinitionAssignment()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("testmodel")
             {
                 Id = "testid",
                 Name = "testname",
-                ModelId = "testmodel",
                 Instructions = "testinstructions",
                 Description = "testdescription",
                 EnableFileSearch = true,

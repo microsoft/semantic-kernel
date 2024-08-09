@@ -31,12 +31,11 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAgentsTest(output)
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 provider,
-                new()
+                new(this.Model)
                 {
                     Instructions = AnalystInstructions,
                     Name = AnalystName,
                     EnableCodeInterpreter = true,
-                    ModelId = this.Model,
                     Metadata = AssistantSampleMetadata,
                 });
 

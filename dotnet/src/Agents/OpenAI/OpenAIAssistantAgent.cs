@@ -70,17 +70,17 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> CreateAsync(
         Kernel kernel,
-        OpenAIClientProvider provider,
+        OpenAIClientProvider clientProvider,
         OpenAIAssistantDefinition definition,
         CancellationToken cancellationToken = default)
     {
         // Validate input
         Verify.NotNull(kernel, nameof(kernel));
-        Verify.NotNull(provider, nameof(provider));
+        Verify.NotNull(clientProvider, nameof(clientProvider));
         Verify.NotNull(definition, nameof(definition));
 
         // Create the client
-        AssistantClient client = CreateClient(provider);
+        AssistantClient client = CreateClient(clientProvider);
 
         // Create the assistant
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
@@ -88,7 +88,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
 
         // Instantiate the agent
         return
-            new OpenAIAssistantAgent(model, provider, client)
+            new OpenAIAssistantAgent(model, clientProvider, client)
             {
                 Kernel = kernel,
             };
@@ -363,23 +363,22 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         string? vectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.SingleOrDefault();
         bool enableJsonResponse = model.ResponseFormat is not null && model.ResponseFormat == AssistantResponseFormat.JsonObject;
 
-        return new()
-            {
-                Id = model.Id,
-                Name = model.Name,
-                Description = model.Description,
-                Instructions = model.Instructions,
-                CodeInterpreterFileIds = fileIds,
-                EnableCodeInterpreter = model.Tools.Any(t => t is CodeInterpreterToolDefinition),
-                EnableFileSearch = model.Tools.Any(t => t is FileSearchToolDefinition),
-                Metadata = model.Metadata,
-                ModelId = model.Model,
-                EnableJsonResponse = enableJsonResponse,
-                TopP = model.NucleusSamplingFactor,
-                Temperature = model.Temperature,
-                VectorStoreId = string.IsNullOrWhiteSpace(vectorStoreId) ? null : vectorStoreId,
-                ExecutionOptions = options,
-            };
+        return new(model.Model)
+        {
+            Id = model.Id,
+            Name = model.Name,
+            Description = model.Description,
+            Instructions = model.Instructions,
+            CodeInterpreterFileIds = fileIds,
+            EnableCodeInterpreter = model.Tools.Any(t => t is CodeInterpreterToolDefinition),
+            EnableFileSearch = model.Tools.Any(t => t is FileSearchToolDefinition),
+            Metadata = model.Metadata,
+            EnableJsonResponse = enableJsonResponse,
+            TopP = model.NucleusSamplingFactor,
+            Temperature = model.Temperature,
+            VectorStoreId = string.IsNullOrWhiteSpace(vectorStoreId) ? null : vectorStoreId,
+            ExecutionOptions = options,
+        };
     }
 
     private static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)

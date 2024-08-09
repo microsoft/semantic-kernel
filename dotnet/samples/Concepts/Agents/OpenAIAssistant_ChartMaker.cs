@@ -28,12 +28,11 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseAgentsTe
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 provider,
-                new()
+                new(this.Model)
                 {
                     Instructions = AgentInstructions,
                     Name = AgentName,
                     EnableCodeInterpreter = true,
-                    ModelId = this.Model,
                     Metadata = AssistantSampleMetadata,
                 });
 

@@ -19,7 +19,7 @@ public class AssistantRunOptionsFactoryTests
     public void AssistantRunOptionsFactoryExecutionOptionsNullTest()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("gpt-anything")
             {
                 Temperature = 0.5F,
             };
@@ -38,7 +38,7 @@ public class AssistantRunOptionsFactoryTests
     public void AssistantRunOptionsFactoryExecutionOptionsEquivalentTest()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("gpt-anything")
             {
                 Temperature = 0.5F,
             };
@@ -62,7 +62,7 @@ public class AssistantRunOptionsFactoryTests
     public void AssistantRunOptionsFactoryExecutionOptionsOverrideTest()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("gpt-anything")
             {
                 Temperature = 0.5F,
                 ExecutionOptions =
@@ -95,7 +95,7 @@ public class AssistantRunOptionsFactoryTests
     public void AssistantRunOptionsFactoryExecutionOptionsMetadataTest()
     {
         OpenAIAssistantDefinition definition =
-            new()
+            new("gpt-anything")
             {
                 Temperature = 0.5F,
                 ExecutionOptions =

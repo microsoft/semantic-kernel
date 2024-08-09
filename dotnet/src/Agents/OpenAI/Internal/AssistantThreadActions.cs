@@ -133,6 +133,8 @@ internal static class AssistantThreadActions
 
     /// <summary>
     /// Invoke the assistant on the specified thread.
+    /// In the enumeration returned by this method, a message is considered visible if it is intended to be displayed to the user.
+    /// Example of a non-visible message is function-content for functions that are automatically executed.
     /// </summary>
     /// <param name="agent">The assistant agent to interact with the thread.</param>
     /// <param name="client">The assistant client</param>
@@ -434,7 +436,7 @@ internal static class AssistantThreadActions
             new ChatMessageContent(
                 AuthorRole.Assistant,
                 [
-                    new TextContent(code)
+                    new TextContent(pythonCode)
                 ])
             {
                 AuthorName = agentName,

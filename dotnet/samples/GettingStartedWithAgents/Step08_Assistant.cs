@@ -23,12 +23,11 @@ public class Step08_Assistant(ITestOutputHelper output) : BaseAgentsTest(output)
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                provider: this.GetClientProvider(),
-                new()
+                clientProvider: this.GetClientProvider(),
+                new(this.Model)
                 {
                     Instructions = HostInstructions,
                     Name = HostName,
-                    ModelId = this.Model,
                     Metadata = AssistantSampleMetadata,
                 });
 

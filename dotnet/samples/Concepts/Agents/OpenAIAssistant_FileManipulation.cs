@@ -31,11 +31,10 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAg
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
                 provider,
-                new()
+                new(this.Model)
                 {
                     EnableCodeInterpreter = true,
                     CodeInterpreterFileIds = [uploadFile.Id],
-                    ModelId = this.Model,
                     Metadata = AssistantSampleMetadata,
                 });
 

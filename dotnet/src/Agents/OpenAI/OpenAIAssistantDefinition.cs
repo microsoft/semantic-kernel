@@ -12,7 +12,7 @@ public sealed class OpenAIAssistantDefinition
     /// <summary>
     /// Identifies the AI model targeted by the agent.
     /// </summary>
-    public string ModelId { get; init; } = string.Empty;
+    public string ModelId { get; }
 
     /// <summary>
     /// The description of the assistant.
@@ -97,4 +97,16 @@ public sealed class OpenAIAssistantDefinition
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public OpenAIAssistantExecutionOptions? ExecutionOptions { get; init; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
+    /// </summary>
+    /// <param name="modelId">The targeted model</param>
+    [JsonConstructor]
+    public OpenAIAssistantDefinition(string modelId)
+    {
+        Verify.NotNullOrWhiteSpace(modelId);
+
+        this.ModelId = modelId;
+    }
 }
