@@ -375,5 +375,4 @@ public sealed class OpenApiKernelPluginFactoryTests
     }
 
     #endregion
-
 }
