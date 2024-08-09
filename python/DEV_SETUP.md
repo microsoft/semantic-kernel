@@ -4,6 +4,8 @@ This document describes how to setup your environment with Python and Poetry,
 if you're working on new features or a bug fix for Semantic Kernel, or simply
 want to run the tests included.
 
+Also have a look at the [Pythonic Design Principles for Semantic Kernel](../docs/PYTHONIC_DESIGN_PRINCIPLES.md) for more information on how to design Python code for Semantic Kernel.
+
 ## LLM setup
 
 Make sure you have an
@@ -244,7 +246,7 @@ If in doubt, use the link above to read much more considerations of what to do a
 
 ## Pydantic and Serialization
 
-[Pydantic Documentation](https://docs.pydantic.dev/1.10/)
+[Pydantic Documentation](https://docs.pydantic.dev/latest/)
 
 ### Overview
 
