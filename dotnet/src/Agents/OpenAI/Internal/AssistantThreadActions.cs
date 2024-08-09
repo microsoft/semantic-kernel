@@ -428,7 +428,7 @@ internal static class AssistantThreadActions
             };
     }
 
-    private static ChatMessageContent GenerateCodeInterpreterContent(string agentName, string code)
+    private static ChatMessageContent GenerateCodeInterpreterContent(string agentName, string pythonCode)
     {
         return
             new ChatMessageContent(
