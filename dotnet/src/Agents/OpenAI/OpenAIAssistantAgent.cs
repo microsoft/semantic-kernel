@@ -64,7 +64,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="provider">Configuration for accessing the API service.</param>
+    /// <param name="clientProvider">OpenAI client provider for accessing the API service.</param>
     /// <param name="definition">The assistant definition.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
@@ -363,8 +363,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         string? vectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.SingleOrDefault();
         bool enableJsonResponse = model.ResponseFormat is not null && model.ResponseFormat == AssistantResponseFormat.JsonObject;
 
-        return
-            new()
+        return new()
             {
                 Id = model.Id,
                 Name = model.Name,

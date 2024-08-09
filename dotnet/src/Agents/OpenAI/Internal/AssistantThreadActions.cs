@@ -48,7 +48,7 @@ internal static class AssistantThreadActions
                 ToolResources = AssistantToolResourcesFactory.GenerateToolResources(options?.VectorStoreId, options?.CodeInterpreterFileIds),
             };
 
-        if (options?.Messages != null)
+        if (options?.Messages is not null)
         {
             foreach (ChatMessageContent message in options.Messages)
             {
@@ -428,7 +428,7 @@ internal static class AssistantThreadActions
             };
     }
 
-    private static ChatMessageContent GenerateCodeInterpreterContent(string agentName, string code)
+    private static ChatMessageContent GenerateCodeInterpreterContent(string agentName, string pythonCode)
     {
         return
             new ChatMessageContent(
