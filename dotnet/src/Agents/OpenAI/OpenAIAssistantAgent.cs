@@ -363,8 +363,7 @@ public sealed class OpenAIAssistantAgent : KernelAgent
         string? vectorStoreId = model.ToolResources?.FileSearch?.VectorStoreIds?.SingleOrDefault();
         bool enableJsonResponse = model.ResponseFormat is not null && model.ResponseFormat == AssistantResponseFormat.JsonObject;
 
-        return
-            new()
+        return new()
             {
                 Id = model.Id,
                 Name = model.Name,
