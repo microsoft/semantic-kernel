@@ -261,19 +261,43 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 
     /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(
-        string collectionName,
-        string key,
-        bool withEmbedding = false,
-        CancellationToken cancellationToken = default)
+    string collectionName,
+    string key,
+    bool withEmbedding = false,
+    CancellationToken cancellationToken = default)
     {
-        // TODO: Consider using a query when `withEmbedding` is false to avoid passing it over the wire.
-        var result = await this._cosmosClient
-         .GetDatabase(this._databaseName)
-         .GetContainer(collectionName)
-         .ReadItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken)
-         .ConfigureAwait(false);
+        var container = this._cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainer(collectionName);
 
-        return result.Resource;
+        if (withEmbedding)
+        {
+            var result = await container
+                .ReadItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
+            return result.Resource;
+        }
+
+        var queryDefinition = new QueryDefinition(
+            """
+                SELECT x.id, x.key, x.metadata, x.timestamp
+                FROM x
+                WHERE (x.id = @key AND x.key = @key)
+            """)
+            .WithParameter("@key", key);
+
+        var queryIterator = container.GetItemQueryIterator<MemoryRecord>(queryDefinition);
+
+        if (queryIterator.HasMoreResults)
+        {
+            foreach (var memoryRecord in await queryIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
+            {
+                return memoryRecord;
+            }
+        }
+
+        return null;
     }
 
     /// <inheritdoc/>
