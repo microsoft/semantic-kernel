@@ -10,6 +10,10 @@ from azure.core.credentials import AzureKeyCredential
 from openai import AsyncAzureOpenAI
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
+    AnthropicChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.anthropic.services.anthropic_chat_completion import AnthropicChatCompletion
 from semantic_kernel.connectors.ai.azure_ai_inference.azure_ai_inference_prompt_execution_settings import (
     AzureAIInferenceChatPromptExecutionSettings,
 )
@@ -63,6 +67,13 @@ try:
         ollama_setup = True
 except KeyError:
     ollama_setup = False
+
+anthropic_setup: bool = False
+try:
+    if os.environ["ANTHROPIC_API_KEY"] and os.environ["ANTHROPIC_CHAT_MODEL_ID"]:
+        anthropic_setup = True
+except KeyError:
+    anthropic_setup = False
 
 
 def setup(
@@ -121,6 +132,7 @@ def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptEx
         "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
         "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
         "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
+        "anthropic": (AnthropicChatCompletion() if anthropic_setup else None, AnthropicChatPromptExecutionSettings),
     }
 
 
@@ -466,6 +478,17 @@ pytestmark = pytest.mark.parametrize(
             ["Hello", "well"],
             marks=pytest.mark.skipif(not ollama_setup, reason="Need local Ollama setup"),
             id="ollama_text_input",
+        ),
+         pytest.param(
+            "anthropic",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
+            marks=pytest.mark.skipif(not anthropic_setup, reason="Anthropic Environment Variables not set"),
+            id="anthropic_text_input",
         ),
         pytest.param(
             "google_ai",
