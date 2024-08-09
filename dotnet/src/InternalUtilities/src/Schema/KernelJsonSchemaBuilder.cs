@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -20,19 +21,34 @@ namespace Microsoft.SemanticKernel;
 internal static class KernelJsonSchemaBuilder
 {
     private static readonly JsonSerializerOptions s_options = CreateDefaultOptions();
-    private static readonly JsonSchemaMapperConfiguration s_config = new() { IncludeSchemaVersion = false };
+    private static readonly JsonSchemaMapperConfiguration s_config = new()
+    {
+        IncludeSchemaVersion = false,
+        IncludeTypeInEnums = true,
+        TreatNullObliviousAsNonNullable = true,
+    };
 
     public static KernelJsonSchema Build(JsonSerializerOptions? options, Type type, string? description = null)
     {
         options ??= s_options;
 
-        JsonObject jsonObj = options.GetJsonSchema(type, s_config);
+        JsonNode jsonSchema = options.GetJsonSchema(type, s_config);
+        Debug.Assert(jsonSchema.GetValueKind() is JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True);
+
+        if (jsonSchema is not JsonObject jsonObj)
+        {
+            // Transform boolean schemas into object equivalents.
+            jsonObj = jsonSchema.GetValue<bool>()
+                ? new JsonObject()
+                : new JsonObject { ["not"] = true };
+        }
+
         if (!string.IsNullOrWhiteSpace(description))
         {
             jsonObj["description"] = description;
         }
 
-        return KernelJsonSchema.Parse(JsonSerializer.Serialize(jsonObj, options));
+        return KernelJsonSchema.Parse(jsonObj.ToJsonString(options));
     }
 
     private static JsonSerializerOptions CreateDefaultOptions()
