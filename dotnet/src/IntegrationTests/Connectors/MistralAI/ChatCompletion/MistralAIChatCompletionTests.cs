@@ -301,6 +301,48 @@ public sealed class MistralAIChatCompletionTests
     }
 
     [Fact(Skip = "This test is for manual verification.")]
+    public async Task ValidateGetStreamingChatMessageContentsWithAutoInvokeAndFunctionFilterAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ChatModel"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!);
+
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+
+        var invokedFunctions = new List<string>();
+        var filter = new FakeFunctionFilter(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
+        kernel.FunctionInvocationFilters.Add(filter);
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+        var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
+
+        StringBuilder content = new();
+
+        await foreach (var update in service.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel))
+        {
+            if (!string.IsNullOrEmpty(update.Content))
+            {
+                content.Append(update.Content);
+            }
+        }
+
+        // Assert
+        Assert.NotNull(content);
+        Assert.Contains("sunny", content.ToString());
+        Assert.Contains("GetWeather", invokedFunctions);
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task ValidateGetChatMessageContentsWithAutoInvokeAndFunctionInvocationFilterAsync()
     {
         // Arrange
