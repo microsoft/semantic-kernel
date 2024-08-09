@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -15,14 +16,14 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 /// <remarks>
 /// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
-/// (<see cref="ChatCompletionAgent.ExecutionSettings"/>)
+/// (<see cref="ChatCompletionAgent.Arguments"/>)
 /// </remarks>
 public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
 {
     /// <summary>
-    /// Optional execution settings for the agent.
+    /// Optional arguments for the agent.
     /// </summary>
-    public PromptExecutionSettings? ExecutionSettings { get; set; }
+    public KernelArguments? Arguments { get; init; }
 
     /// <inheritdoc/>
     public IChatHistoryReducer? HistoryReducer { get; init; }
@@ -30,9 +31,14 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
     /// <inheritdoc/>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IChatCompletionService chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
+        kernel ??= this.Kernel;
+        arguments ??= this.Arguments;
+
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
 
@@ -43,8 +49,8 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
         IReadOnlyList<ChatMessageContent> messages =
             await chatCompletionService.GetChatMessageContentsAsync(
                 chat,
-                this.ExecutionSettings,
-                this.Kernel,
+                executionSettings,
+                kernel,
                 cancellationToken).ConfigureAwait(false);
 
         this.Logger.LogAgentChatServiceInvokedAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType(), messages.Count);
@@ -61,7 +67,6 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
 
         foreach (ChatMessageContent message in messages ?? [])
         {
-            // TODO: MESSAGE SOURCE - ISSUE #5731
             message.AuthorName = this.Name;
 
             yield return message;
@@ -71,9 +76,14 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
     /// <inheritdoc/>
     public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IChatCompletionService chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
+        kernel ??= this.Kernel;
+        arguments ??= this.Arguments;
+
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = this.GetChatCompletionService(kernel, arguments);
 
         ChatHistory chat = this.SetupAgentChatHistory(history);
 
@@ -84,15 +94,14 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
         IAsyncEnumerable<StreamingChatMessageContent> messages =
             chatCompletionService.GetStreamingChatMessageContentsAsync(
                 chat,
-                this.ExecutionSettings,
-                this.Kernel,
+                executionSettings,
+                kernel,
                 cancellationToken);
 
         this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType());
 
         await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
         {
-            // TODO: MESSAGE SOURCE - ISSUE #5731
             message.AuthorName = this.Name;
 
             yield return message;
@@ -134,6 +143,19 @@ public sealed class ChatCompletionAgent : KernelAgent, IChatHistoryHandler
             };
 
         return Task.FromResult<AgentChannel>(channel);
+    }
+
+    private (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
+    {
+        // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
+        KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) =
+            kernel.ServiceSelector.SelectAIService<IChatCompletionService>(
+                kernel,
+                nullPrompt,
+                arguments ?? []);
+
+        return (chatCompletionService, executionSettings);
     }
 
     private ChatHistory SetupAgentChatHistory(IReadOnlyList<ChatMessageContent> history)
