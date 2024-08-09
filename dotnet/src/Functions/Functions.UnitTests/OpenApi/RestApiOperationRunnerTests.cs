@@ -1024,6 +1024,50 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
+    public async Task ItShouldReadContentAsStreamSuccessfullyAsync()
+    {
+        // Arrange
+        var stream = new MemoryStream(Encoding.UTF8.GetBytes("fake-content"));
+
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StreamContent(stream);
+
+        var parameters = new List<RestApiOperationParameter>
+        {
+            new(name: "x-stream", type: "string", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+        };
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            parameters,
+            payload: null
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "payload", JsonSerializer.Serialize(new { value = "fake-value" }) },
+            { "content-type", "application/json" },
+            { "x-stream", true }
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.NotNull(result.Content as Stream);
+
+        using var reader = new StreamReader((Stream)result.Content);
+        Assert.Equal("fake-content", reader.ReadToEnd());
+    }
+
+    [Fact]
     public async Task ItShouldThrowExceptionForUnsupportedContentTypeAsync()
     {
         // Arrange

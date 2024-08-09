@@ -13,6 +13,9 @@ internal static class HttpHeaderConstant
     {
         /// <summary>HTTP header name to use to include the Semantic Kernel package version in all HTTP requests issued by Semantic Kernel.</summary>
         public static string SemanticKernelVersion => "Semantic-Kernel-Version";
+
+        /// <summary>HTTP header to determine if the operation should be run as stream.</summary>
+        public static string XStream => "x-stream";
     }
 
     public static class Values
