@@ -388,7 +388,7 @@ internal static class AssistantThreadActions
             // Process text content
             if (!string.IsNullOrEmpty(itemContent.Text))
             {
-                content.Items.Add(new TextContent(itemContent.Text.Trim()));
+                content.Items.Add(new TextContent(itemContent.Text));
 
                 foreach (TextAnnotation annotation in itemContent.TextAnnotations)
                 {
