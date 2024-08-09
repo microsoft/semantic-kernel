@@ -13,7 +13,6 @@ from anthropic.types import (
     RawMessageStartEvent,
     TextBlock,
 )
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.anthropic.prompt_execution_settings.anthropic_prompt_execution_settings import (
     AnthropicChatPromptExecutionSettings,
@@ -67,19 +66,17 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
                 to environment variables. 
             env_file_encoding (str | None): The encoding of the environment settings file. 
         """
-        try:
-            anthropic_settings = AnthropicSettings.create(
-                api_key=api_key,
-                chat_model_id=ai_model_id,
-                env_file_path=env_file_path,
-                env_file_encoding=env_file_encoding,
-            )
-        except ValidationError as ex:
-            raise ServiceInitializationError("Failed to create Anthropic settings.", ex) from ex
-        
+        anthropic_settings = AnthropicSettings.create(
+            api_key=api_key,
+            chat_model_id=ai_model_id,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
+
         if not anthropic_settings.chat_model_id:
             raise ServiceInitializationError("The Anthropic chat model ID is required.")
-
+        if not async_client and not anthropic_settings.api_key:
+            raise ServiceInitializationError("The Anthropic API key is required.")
         if not async_client:
             async_client = AsyncAnthropic(
                 api_key=anthropic_settings.api_key.get_secret_value(),
