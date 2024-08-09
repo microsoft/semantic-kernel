@@ -27,12 +27,16 @@ public class KernelFunctionSelectionStrategyTests
         KernelFunctionSelectionStrategy strategy =
             new(plugin.Single(), new())
             {
-                ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
+                ResultParser = (result) => mockAgent.Object.Id,
+                AgentsVariableName = "agents",
+                HistoryVariableName = "history",
             };
 
         Assert.Null(strategy.Arguments);
         Assert.NotNull(strategy.Kernel);
         Assert.NotNull(strategy.ResultParser);
+        Assert.NotEqual("agent", KernelFunctionSelectionStrategy.DefaultAgentsVariableName);
+        Assert.NotEqual("history", KernelFunctionSelectionStrategy.DefaultHistoryVariableName);
 
         Agent nextAgent = await strategy.NextAsync([mockAgent.Object], []);
 
@@ -44,16 +48,35 @@ public class KernelFunctionSelectionStrategyTests
     /// Verify strategy mismatch.
     /// </summary>
     [Fact]
-    public async Task VerifyKernelFunctionSelectionStrategyParsingAsync()
+    public async Task VerifyKernelFunctionSelectionStrategyThrowsOnNullResultAsync()
     {
         Mock<Agent> mockAgent = new();
-        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(string.Empty));
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(mockAgent.Object.Id));
 
         KernelFunctionSelectionStrategy strategy =
             new(plugin.Single(), new())
             {
                 Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
-                ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
+                ResultParser = (result) => "larry",
+            };
+
+        await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent.Object], []));
+    }
+
+    /// <summary>
+    /// Verify strategy mismatch.
+    /// </summary>
+    [Fact]
+    public async Task VerifyKernelFunctionSelectionStrategyThrowsOnBadResultAsync()
+    {
+        Mock<Agent> mockAgent = new();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(""));
+
+        KernelFunctionSelectionStrategy strategy =
+            new(plugin.Single(), new())
+            {
+                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
+                ResultParser = (result) => result.GetValue<string>() ?? null!,
             };
 
         await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent.Object], []));

@@ -9,7 +9,7 @@ namespace GettingStarted;
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
-public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
+public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string ParrotName = "Parrot";
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
@@ -37,15 +37,15 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.Add(new ChatMessageContent(AuthorRole.User, input));
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.Add(message);
+            this.WriteAgentChatMessage(message);
 
-            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
-
-            await foreach (ChatMessageContent content in agent.InvokeAsync(chat))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(chat))
             {
-                chat.Add(content);
+                chat.Add(response);
 
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteAgentChatMessage(response);
             }
         }
     }

@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Diagnostics.CodeAnalysis;
-using Azure.AI.OpenAI.Assistants;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
+using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 

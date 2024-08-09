@@ -154,7 +154,9 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         ChatHistorySummarizationReducer? other = obj as ChatHistorySummarizationReducer;
         return other != null &&
                this._thresholdCount == other._thresholdCount &&
-               this._targetCount == other._targetCount;
+               this._targetCount == other._targetCount &&
+               this.UseSingleSummary == other.UseSingleSummary &&
+               string.Equals(this.SummarizationInstructions, other.SummarizationInstructions, StringComparison.Ordinal);
     }
 
     /// <inheritdoc/>

@@ -4,23 +4,19 @@ using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Agents.OpenAI;
+namespace SemanticKernel.IntegrationTests.Agents;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDisposable
+public sealed class OpenAIAssistantAgentTests
 {
-    private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
@@ -36,12 +32,12 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task OpenAIAssistantAgentTestAsync(string input, string expectedAnswerContains)
     {
-        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
-        Assert.NotNull(openAIConfiguration);
+        OpenAIConfiguration openAISettings = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
+        Assert.NotNull(openAISettings);
 
         await this.ExecuteAgentAsync(
-            new(openAIConfiguration.ApiKey),
-            openAIConfiguration.ModelId,
+            OpenAIClientProvider.ForOpenAI(openAISettings.ApiKey),
+            openAISettings.ModelId,
             input,
             expectedAnswerContains);
     }
@@ -50,7 +46,7 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Theory(Skip = "No supported endpoint configured.")]
+    [Theory/*(Skip = "No supported endpoint configured.")*/]
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task AzureOpenAIAssistantAgentAsync(string input, string expectedAnswerContains)
     {
@@ -58,22 +54,20 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
         Assert.NotNull(azureOpenAIConfiguration);
 
         await this.ExecuteAgentAsync(
-            new(azureOpenAIConfiguration.ApiKey, azureOpenAIConfiguration.Endpoint),
+            OpenAIClientProvider.ForAzureOpenAI(azureOpenAIConfiguration.ApiKey, new Uri(azureOpenAIConfiguration.Endpoint)),
             azureOpenAIConfiguration.ChatDeploymentName!,
             input,
             expectedAnswerContains);
     }
 
     private async Task ExecuteAgentAsync(
-        OpenAIAssistantConfiguration config,
+        OpenAIClientProvider config,
         string modelName,
         string input,
         string expected)
     {
         // Arrange
-        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
-
-        Kernel kernel = this._kernelBuilder.Build();
+        Kernel kernel = new();
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         kernel.Plugins.Add(plugin);
@@ -82,10 +76,9 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
             await OpenAIAssistantAgent.CreateAsync(
                 kernel,
                 config,
-                new()
+                new(modelName)
                 {
                     Instructions = "Answer questions about the menu.",
-                    ModelId = modelName,
                 });
 
         AgentGroupChat chat = new();
@@ -100,15 +93,6 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
 
         // Assert
         Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private readonly XunitLogger<Kernel> _logger = new(output);
-    private readonly RedirectOutput _testOutputHelper = new(output);
-
-    public void Dispose()
-    {
-        this._logger.Dispose();
-        this._testOutputHelper.Dispose();
     }
 
     public sealed class MenuPlugin

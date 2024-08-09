@@ -23,7 +23,7 @@ public class ChatHistorySummarizationReducerTests
     [InlineData(-1)]
     [InlineData(-1, int.MaxValue)]
     [InlineData(int.MaxValue, -1)]
-    public void VerifyChatHistoryConstructorArgumentValidation(int targetCount, int? thresholdCount = null)
+    public void VerifyConstructorArgumentValidation(int targetCount, int? thresholdCount = null)
     {
         Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
 
@@ -34,7 +34,7 @@ public class ChatHistorySummarizationReducerTests
     /// Verify object state after initialization.
     /// </summary>
     [Fact]
-    public void VerifyChatHistoryInitializationState()
+    public void VerifyInitializationState()
     {
         Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
 
@@ -55,10 +55,41 @@ public class ChatHistorySummarizationReducerTests
     }
 
     /// <summary>
+    /// Validate equality override.
+    /// </summary>
+    [Fact]
+    public void VerifyEquality()
+    {
+        Mock<IChatCompletionService> mockCompletionService = this.CreateMockCompletionService();
+
+        ChatHistorySummarizationReducer reducer1 = new(mockCompletionService.Object, 3, 3);
+        ChatHistorySummarizationReducer reducer2 = new(mockCompletionService.Object, 3, 3);
+        ChatHistorySummarizationReducer reducer3 = new(mockCompletionService.Object, 3, 3) { UseSingleSummary = false };
+        ChatHistorySummarizationReducer reducer4 = new(mockCompletionService.Object, 3, 3) { SummarizationInstructions = "override" };
+        ChatHistorySummarizationReducer reducer5 = new(mockCompletionService.Object, 4, 3);
+        ChatHistorySummarizationReducer reducer6 = new(mockCompletionService.Object, 3, 5);
+        ChatHistorySummarizationReducer reducer7 = new(mockCompletionService.Object, 3);
+        ChatHistorySummarizationReducer reducer8 = new(mockCompletionService.Object, 3);
+
+        Assert.True(reducer1.Equals(reducer1));
+        Assert.True(reducer1.Equals(reducer2));
+        Assert.True(reducer7.Equals(reducer8));
+        Assert.True(reducer3.Equals(reducer3));
+        Assert.True(reducer4.Equals(reducer4));
+        Assert.False(reducer1.Equals(reducer3));
+        Assert.False(reducer1.Equals(reducer4));
+        Assert.False(reducer1.Equals(reducer5));
+        Assert.False(reducer1.Equals(reducer6));
+        Assert.False(reducer1.Equals(reducer7));
+        Assert.False(reducer1.Equals(reducer8));
+        Assert.False(reducer1.Equals(null));
+    }
+
+    /// <summary>
     /// Validate hash-code expresses reducer equivalency.
     /// </summary>
     [Fact]
-    public void VerifyChatHistoryHasCode()
+    public void VerifyHashCode()
     {
         HashSet<ChatHistorySummarizationReducer> reducers = [];
 

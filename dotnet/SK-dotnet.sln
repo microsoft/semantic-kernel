@@ -277,16 +277,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettingStartedWithAgents", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{77E141BA-AF5E-4C01-A970-6C07AC3CD55A}"
 	ProjectSection(SolutionItems) = preProject
-		src\InternalUtilities\samples\ConfigurationNotFoundException.cs = src\InternalUtilities\samples\ConfigurationNotFoundException.cs
-		src\InternalUtilities\samples\EnumerableExtensions.cs = src\InternalUtilities\samples\EnumerableExtensions.cs
-		src\InternalUtilities\samples\Env.cs = src\InternalUtilities\samples\Env.cs
-		src\InternalUtilities\samples\ObjectExtensions.cs = src\InternalUtilities\samples\ObjectExtensions.cs
-		src\InternalUtilities\samples\PlanExtensions.cs = src\InternalUtilities\samples\PlanExtensions.cs
-		src\InternalUtilities\samples\RepoFiles.cs = src\InternalUtilities\samples\RepoFiles.cs
 		src\InternalUtilities\samples\SamplesInternalUtilities.props = src\InternalUtilities\samples\SamplesInternalUtilities.props
-		src\InternalUtilities\samples\TextOutputHelperExtensions.cs = src\InternalUtilities\samples\TextOutputHelperExtensions.cs
-		src\InternalUtilities\samples\XunitLogger.cs = src\InternalUtilities\samples\XunitLogger.cs
-		src\InternalUtilities\samples\YourAppException.cs = src\InternalUtilities\samples\YourAppException.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Prompty", "src\Functions\Functions.Prompty\Functions.Prompty.csproj", "{12B06019-740B-466D-A9E0-F05BC123A47D}"
@@ -340,9 +331,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant.UnitTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Redis.UnitTests", "src\Connectors\Connectors.Redis.UnitTests\Connectors.Redis.UnitTests.csproj", "{ACD8C464-AEC9-45F6-A458-50A84F353DB7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CreateChatGptPlugin", "CreateChatGptPlugin", "{F8B82F6B-B16A-4F8C-9C41-E9CD8D79A098}"
 EndProject
@@ -351,6 +340,29 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MathPlugin", "MathPlugin", "{4BB70FB3-1EC0-4F4A-863B-273D6C6D4D9A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "kernel-functions-generator", "samples\Demos\CreateChatGptPlugin\MathPlugin\kernel-functions-generator\kernel-functions-generator.csproj", "{4326A974-F027-4ABD-A220-382CC6BB0801}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{EE454832-085F-4D37-B19B-F94F7FC6984A}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\samples\InternalUtilities\BaseTest.cs = src\InternalUtilities\samples\InternalUtilities\BaseTest.cs
+		src\InternalUtilities\samples\InternalUtilities\ConfigurationNotFoundException.cs = src\InternalUtilities\samples\InternalUtilities\ConfigurationNotFoundException.cs
+		src\InternalUtilities\samples\InternalUtilities\EmbeddedResource.cs = src\InternalUtilities\samples\InternalUtilities\EmbeddedResource.cs
+		src\InternalUtilities\samples\InternalUtilities\EnumerableExtensions.cs = src\InternalUtilities\samples\InternalUtilities\EnumerableExtensions.cs
+		src\InternalUtilities\samples\InternalUtilities\Env.cs = src\InternalUtilities\samples\InternalUtilities\Env.cs
+		src\InternalUtilities\samples\InternalUtilities\JsonResultTranslator.cs = src\InternalUtilities\samples\InternalUtilities\JsonResultTranslator.cs
+		src\InternalUtilities\samples\InternalUtilities\ObjectExtensions.cs = src\InternalUtilities\samples\InternalUtilities\ObjectExtensions.cs
+		src\InternalUtilities\samples\InternalUtilities\RepoFiles.cs = src\InternalUtilities\samples\InternalUtilities\RepoFiles.cs
+		src\InternalUtilities\samples\InternalUtilities\TestConfiguration.cs = src\InternalUtilities\samples\InternalUtilities\TestConfiguration.cs
+		src\InternalUtilities\samples\InternalUtilities\TextOutputHelperExtensions.cs = src\InternalUtilities\samples\InternalUtilities\TextOutputHelperExtensions.cs
+		src\InternalUtilities\samples\InternalUtilities\XunitLogger.cs = src\InternalUtilities\samples\InternalUtilities\XunitLogger.cs
+		src\InternalUtilities\samples\InternalUtilities\YourAppException.cs = src\InternalUtilities\samples\InternalUtilities\YourAppException.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Agents", "Agents", "{5C6C30E0-7AC1-47F4-8244-57B066B43FD8}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\samples\AgentUtilities\BaseAgentsTest.cs = src\InternalUtilities\samples\AgentUtilities\BaseAgentsTest.cs
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{2A6B056D-B35A-4CCE-80EE-0307EA9C3A57}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -839,10 +851,6 @@ Global
 		{ACD8C464-AEC9-45F6-A458-50A84F353DB7}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{ACD8C464-AEC9-45F6-A458-50A84F353DB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACD8C464-AEC9-45F6-A458-50A84F353DB7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{38374C62-0263-4FE8-A18C-70FC8132912B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{38374C62-0263-4FE8-A18C-70FC8132912B}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{38374C62-0263-4FE8-A18C-70FC8132912B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{38374C62-0263-4FE8-A18C-70FC8132912B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -861,6 +869,12 @@ Global
 		{4326A974-F027-4ABD-A220-382CC6BB0801}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{4326A974-F027-4ABD-A220-382CC6BB0801}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4326A974-F027-4ABD-A220-382CC6BB0801}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A6B056D-B35A-4CCE-80EE-0307EA9C3A57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A6B056D-B35A-4CCE-80EE-0307EA9C3A57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A6B056D-B35A-4CCE-80EE-0307EA9C3A57}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A6B056D-B35A-4CCE-80EE-0307EA9C3A57}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{2A6B056D-B35A-4CCE-80EE-0307EA9C3A57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A6B056D-B35A-4CCE-80EE-0307EA9C3A57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -975,12 +989,14 @@ Global
 		{738DCDB1-EFA8-4913-AD4C-6FC3F09B0A0C} = {2E79AD99-632F-411F-B3A5-1BAF3F5F89AB}
 		{8642A03F-D840-4B2E-B092-478300000F83} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{ACD8C464-AEC9-45F6-A458-50A84F353DB7} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
-		{38374C62-0263-4FE8-A18C-70FC8132912B} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{E06818E3-00A5-41AC-97ED-9491070CDEA1} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{F8B82F6B-B16A-4F8C-9C41-E9CD8D79A098} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{6B268108-2AB5-4607-B246-06AD8410E60E} = {4BB70FB3-1EC0-4F4A-863B-273D6C6D4D9A}
 		{4BB70FB3-1EC0-4F4A-863B-273D6C6D4D9A} = {F8B82F6B-B16A-4F8C-9C41-E9CD8D79A098}
 		{4326A974-F027-4ABD-A220-382CC6BB0801} = {4BB70FB3-1EC0-4F4A-863B-273D6C6D4D9A}
+		{EE454832-085F-4D37-B19B-F94F7FC6984A} = {77E141BA-AF5E-4C01-A970-6C07AC3CD55A}
+		{5C6C30E0-7AC1-47F4-8244-57B066B43FD8} = {77E141BA-AF5E-4C01-A970-6C07AC3CD55A}
+		{2A6B056D-B35A-4CCE-80EE-0307EA9C3A57} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

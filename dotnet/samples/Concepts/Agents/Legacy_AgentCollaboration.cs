@@ -9,17 +9,6 @@ namespace Agents;
 /// </summary>
 public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(output)
 {
-    /// <summary>
-    /// Specific model is required that supports agents and function calling.
-    /// Currently this is limited to Open AI hosted services.
-    /// </summary>
-    private const string OpenAIFunctionEnabledModel = "gpt-4-turbo-preview";
-
-    /// <summary>
-    /// Set this to 'true' to target OpenAI instead of Azure OpenAI.
-    /// </summary>
-    private const bool UseOpenAI = false;
-
     // Track agents for clean-up
     private static readonly List<IAgent> s_agents = [];
 
@@ -29,8 +18,6 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
     [Fact(Skip = "This test take more than 5 minutes to execute")]
     public async Task RunCollaborationAsync()
     {
-        Console.WriteLine($"======== Example72:Collaboration:{(UseOpenAI ? "OpenAI" : "AzureAI")} ========");
-
         IAgentThread? thread = null;
         try
         {
@@ -82,8 +69,6 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
     [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAsPluginsAsync()
     {
-        Console.WriteLine($"======== Example72:AsPlugins:{(UseOpenAI ? "OpenAI" : "AzureAI")} ========");
-
         try
         {
             // Create copy-writer agent to generate ideas
@@ -113,7 +98,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
         }
     }
 
-    private static async Task<IAgent> CreateCopyWriterAsync(IAgent? agent = null)
+    private async Task<IAgent> CreateCopyWriterAsync(IAgent? agent = null)
     {
         return
             Track(
@@ -125,7 +110,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
                     .BuildAsync());
     }
 
-    private static async Task<IAgent> CreateArtDirectorAsync()
+    private async Task<IAgent> CreateArtDirectorAsync()
     {
         return
             Track(
@@ -136,13 +121,13 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
                     .BuildAsync());
     }
 
-    private static AgentBuilder CreateAgentBuilder()
+    private AgentBuilder CreateAgentBuilder()
     {
         var builder = new AgentBuilder();
 
         return
-            UseOpenAI ?
-                builder.WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
+            this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                builder.WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey) :
                 builder.WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
 

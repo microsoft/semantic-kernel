@@ -5,20 +5,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Agents.OpenAI;
+namespace SemanticKernel.IntegrationTests.Agents;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class ChatCompletionAgentTests(ITestOutputHelper output) : IDisposable
+public sealed class ChatCompletionAgentTests()
 {
     private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
@@ -41,8 +40,6 @@ public sealed class ChatCompletionAgentTests(ITestOutputHelper output) : IDispos
         AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-
-        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
 
         this._kernelBuilder.AddAzureOpenAIChatCompletion(
             configuration.ChatDeploymentName!,
@@ -92,15 +89,6 @@ public sealed class ChatCompletionAgentTests(ITestOutputHelper output) : IDispos
         }
 
         Assert.Contains(expectedAnswerContains, messages.Single().Content, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private readonly XunitLogger<Kernel> _logger = new(output);
-    private readonly RedirectOutput _testOutputHelper = new(output);
-
-    public void Dispose()
-    {
-        this._logger.Dispose();
-        this._testOutputHelper.Dispose();
     }
 
     public sealed class MenuPlugin

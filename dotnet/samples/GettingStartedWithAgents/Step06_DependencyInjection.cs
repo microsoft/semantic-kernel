@@ -3,23 +3,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Resources;
 
 namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate creation of an agent via dependency injection.
 /// </summary>
-public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(output)
+public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    private const int ScoreCompletionThreshold = 70;
-
     private const string TutorName = "Tutor";
     private const string TutorInstructions =
         """
-        Think step-by-step and rate the user input on creativity and expressivness from 1-100.
+        Think step-by-step and rate the user input on creativity and expressiveness from 1-100.
 
         Respond in JSON format with the following JSON schema:
 
@@ -80,50 +76,27 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         // Local function to invoke agent and display the conversation messages.
         async Task WriteAgentResponse(string input)
         {
-            Console.WriteLine($"# {AuthorRole.User}: {input}");
+            ChatMessageContent message = new(AuthorRole.User, input);
+            this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent content in agentClient.RunDemoAsync(input))
+            await foreach (ChatMessageContent response in agentClient.RunDemoAsync(message))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteAgentChatMessage(response);
             }
         }
     }
 
     private sealed class AgentClient([FromKeyedServices(TutorName)] ChatCompletionAgent agent)
     {
-        private readonly AgentGroupChat _chat =
-            new()
-            {
-                ExecutionSettings =
-                    new()
-                    {
-                        // Here a TerminationStrategy subclass is used that will terminate when
-                        // the response includes a score that is greater than or equal to 70.
-                        TerminationStrategy = new ThresholdTerminationStrategy()
-                    }
-            };
+        private readonly AgentGroupChat _chat = new();
 
-        public IAsyncEnumerable<ChatMessageContent> RunDemoAsync(string input)
+        public IAsyncEnumerable<ChatMessageContent> RunDemoAsync(ChatMessageContent input)
         {
-            // Create a chat for agent interaction.
-
-            this._chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            this._chat.AddChatMessage(input);
 
             return this._chat.InvokeAsync(agent);
         }
     }
 
-    private record struct InputScore(int score, string notes);
-
-    private sealed class ThresholdTerminationStrategy : TerminationStrategy
-    {
-        protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
-        {
-            string lastMessageContent = history[history.Count - 1].Content ?? string.Empty;
-
-            InputScore? result = JsonResultTranslator.Translate<InputScore>(lastMessageContent);
-
-            return Task.FromResult((result?.score ?? 0) >= ScoreCompletionThreshold);
-        }
-    }
+    private record struct WritingScore(int score, string notes);
 }

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -46,7 +47,7 @@ internal sealed class MockAgent : KernelAgent, IChatHistoryHandler
     /// <inheritdoc/>
     protected internal override IEnumerable<string> GetChannelKeys()
     {
-        yield return typeof(ChatHistoryChannel).FullName!;
+        yield return Guid.NewGuid().ToString();
     }
 
     /// <inheritdoc/>

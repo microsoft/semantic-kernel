@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
@@ -113,6 +114,42 @@ public class ChatCompletionAgentTests
                     It.IsAny<Kernel>(),
                     It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent.GetChatCompletionService"/>.
+    /// </summary>
+    [Fact]
+    public void VerifyChatCompletionServiceSelection()
+    {
+        Mock<IChatCompletionService> mockService = new();
+        Kernel kernel = CreateKernel(mockService.Object);
+
+        (IChatCompletionService service, PromptExecutionSettings? settings) = ChatCompletionAgent.GetChatCompletionService(kernel, null);
+        Assert.Null(settings);
+
+        (service, settings) = ChatCompletionAgent.GetChatCompletionService(kernel, []);
+        Assert.Null(settings);
+
+        Assert.Throws<KernelException>(() => ChatCompletionAgent.GetChatCompletionService(kernel, new KernelArguments(new PromptExecutionSettings() { ServiceId = "anything" })));
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent.GetChatCompletionService"/>.
+    /// </summary>
+    [Fact]
+    public void VerifyChatCompletionChannelKeys()
+    {
+        ChatCompletionAgent agent1 = new();
+        ChatCompletionAgent agent2 = new();
+        ChatCompletionAgent agent3 = new() { HistoryReducer = new ChatHistoryTruncationReducer(50) };
+        ChatCompletionAgent agent4 = new() { HistoryReducer = new ChatHistoryTruncationReducer(50) };
+        ChatCompletionAgent agent5 = new() { HistoryReducer = new ChatHistoryTruncationReducer(100) };
+
+        Assert.Equal(agent1.GetChannelKeys(), agent2.GetChannelKeys());
+        Assert.Equal(agent3.GetChannelKeys(), agent4.GetChannelKeys());
+        Assert.NotEqual(agent1.GetChannelKeys(), agent3.GetChannelKeys());
+        Assert.NotEqual(agent3.GetChannelKeys(), agent5.GetChannelKeys());
     }
 
     private static Kernel CreateKernel(IChatCompletionService chatCompletionService)

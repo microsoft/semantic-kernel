@@ -11,7 +11,7 @@ namespace GettingStarted;
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> with a <see cref="KernelPlugin"/>,
 /// and then eliciting its response to explicit user messages.
 /// </summary>
-public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
+public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
@@ -45,37 +45,34 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.Add(new ChatMessageContent(AuthorRole.User, input));
-            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.Add(message);
+            this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent content in agent.InvokeAsync(chat))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(chat))
             {
-                chat.Add(content);
+                chat.Add(response);
 
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteAgentChatMessage(response);
             }
         }
     }
 
-    public sealed class MenuPlugin
+    private sealed class MenuPlugin
     {
         [KernelFunction, Description("Provides a list of specials from the menu.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
-        public string GetSpecials()
-        {
-            return @"
-Special Soup: Clam Chowder
-Special Salad: Cobb Salad
-Special Drink: Chai Tea
-";
-        }
+        public string GetSpecials() =>
+            """
+            Special Soup: Clam Chowder
+            Special Salad: Cobb Salad
+            Special Drink: Chai Tea
+            """;
 
         [KernelFunction, Description("Provides the price of the requested menu item.")]
         public string GetItemPrice(
             [Description("The name of the menu item.")]
-        string menuItem)
-        {
-            return "$9.99";
-        }
+            string menuItem) =>
+            "$9.99";
     }
 }
