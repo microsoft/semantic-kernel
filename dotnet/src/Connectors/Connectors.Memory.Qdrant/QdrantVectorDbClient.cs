@@ -246,6 +246,37 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     }
 
     /// <inheritdoc/>
+    public async Task DeleteVectorByPayloadIdsAsync(string collectionName, string[] metadataIds, CancellationToken cancellationToken = default)
+    {
+        using var request = BatchDeleteVectorsRequest
+            .DeleteFrom(collectionName)
+            .DeleteVectors(metadataIds)
+            .Build();
+
+        string? responseContent = null;
+
+        try
+        {
+            (_, responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpOperationException e)
+        {
+            this._logger.LogError(e, "Vector delete request failed: {Message}", e.Message);
+            throw;
+        }
+
+        var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
+        if (result?.Status == "ok")
+        {
+            this._logger.LogDebug("Vector being deleted");
+        }
+        else
+        {
+            this._logger.LogWarning("Vector delete failed");
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task UpsertVectorsAsync(string collectionName, IEnumerable<QdrantVectorRecord> vectorData, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Upserting vectors");

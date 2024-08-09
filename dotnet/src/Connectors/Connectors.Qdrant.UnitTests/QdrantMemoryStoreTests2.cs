@@ -485,10 +485,11 @@ public class QdrantMemoryStoreTests2
     public async Task ItCanRemoveAVectorUsingMetadataIdAsync()
     {
         // Arrange
+        string[] ids = [this._id];
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task>(x =>
-                x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                x.DeleteVectorByPayloadIdsAsync(It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
@@ -498,33 +499,28 @@ public class QdrantMemoryStoreTests2
 
         // Assert
         mockQdrantClient.Verify<Task>(x =>
-            x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<CancellationToken>()), Times.Once());
+            x.DeleteVectorByPayloadIdsAsync(It.IsAny<string>(), ids, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
     public async Task ItCanRemoveBatchVectorsUsingMetadataIdAsync()
     {
         // Arrange
+        string[] ids = [this._id, this._id2, this._id3];
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task>(x =>
-                x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                x.DeleteVectorByPayloadIdsAsync(It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
-        await vectorStore.RemoveBatchAsync("test_collection", [this._id, this._id2, this._id3]);
+        await vectorStore.RemoveBatchAsync("test_collection", ids);
 
         // Assert
         mockQdrantClient.Verify<Task>(x =>
-            x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
-        mockQdrantClient.Verify<Task>(x =>
-            x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<CancellationToken>()), Times.Once());
-        mockQdrantClient.Verify<Task>(x =>
-            x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), this._id2, It.IsAny<CancellationToken>()), Times.Once());
-        mockQdrantClient.Verify<Task>(x =>
-            x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<CancellationToken>()), Times.Once());
+            x.DeleteVectorByPayloadIdsAsync("test_collection", ids, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
