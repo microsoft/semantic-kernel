@@ -73,15 +73,7 @@ while not exit do
     chatHistory.Add(new ChatMessageContent(AuthorRole.Assistant, question))
 
     let result = 
-        task {
-            try
-                let! x = chatCompletion.GetChatMessageContentAsync(chatHistory)
-                return x
-            with ex ->
-                let inner = ex.InnerException :?> System.Net.Http.HttpRequestException
-                failwith inner.Message
-                return new ChatMessageContent()
-        }
+        chatCompletion.GetChatMessageContentAsync(chatHistory)
         |> Async.AwaitTask
         |> Async.RunSynchronously
 
