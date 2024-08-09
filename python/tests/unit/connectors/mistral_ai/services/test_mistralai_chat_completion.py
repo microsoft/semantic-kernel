@@ -20,6 +20,7 @@ from semantic_kernel.contents.chat_message_content import (
     FunctionResultContent,
     TextContent,
 )
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
@@ -79,45 +80,6 @@ async def test_complete_chat_contents(
     )
     assert content is not None
     
-
-@pytest.mark.asyncio
-async def test_complete_chat_stream_contents(
-    kernel: Kernel,
-    mock_settings: MistralAIChatPromptExecutionSettings,
-    mock_mistral_ai_client_completion_stream: MistralAsyncClient,
-):
-    chat_history = MagicMock()
-    arguments = KernelArguments()
-
-    chat_completion_base = MistralAIChatCompletion(
-        ai_model_id="test_model_id",
-        service_id="test",
-        api_key="",
-        async_client=mock_mistral_ai_client_completion_stream,
-    )
-
-    async for content in chat_completion_base.get_streaming_chat_message_contents(
-        chat_history, mock_settings, kernel=kernel, arguments=arguments
-    ):
-        assert content is not None
-
-
-@pytest.mark.asyncio
-async def test_mistral_ai_sdk_exception(kernel: Kernel, mock_settings: MistralAIChatPromptExecutionSettings):
-    chat_history = MagicMock()
-    arguments = KernelArguments()
-    client = MagicMock(spec=MistralAsyncClient)
-    client.chat.side_effect = Exception("Test Exception")
-
-    chat_completion_base = MistralAIChatCompletion(
-        ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
-    )
-
-    with pytest.raises(ServiceResponseException):
-        await chat_completion_base.get_chat_message_contents(
-            chat_history=chat_history, settings=mock_settings, kernel=kernel, arguments=arguments
-        )
-        
 
 @pytest.mark.parametrize("function_choice_behavior", [
     pytest.param(
@@ -246,7 +208,167 @@ async def test_complete_chat_contents_function_call_behavior_without_kernel(
         await chat_completion_base.get_chat_message_contents(
             chat_history=chat_history, settings=mock_settings
         )
+        
 
+@pytest.mark.asyncio
+async def test_complete_chat_stream_contents(
+    kernel: Kernel,
+    mock_settings: MistralAIChatPromptExecutionSettings,
+    mock_mistral_ai_client_completion_stream: MistralAsyncClient,
+):
+    chat_history = MagicMock()
+    arguments = KernelArguments()
+
+    chat_completion_base = MistralAIChatCompletion(
+        ai_model_id="test_model_id",
+        service_id="test",
+        api_key="",
+        async_client=mock_mistral_ai_client_completion_stream,
+    )
+
+    async for content in chat_completion_base.get_streaming_chat_message_contents(
+        chat_history, mock_settings, kernel=kernel, arguments=arguments
+    ):
+        assert content is not None
+
+
+@pytest.mark.parametrize("function_choice_behavior", [
+    pytest.param(
+        FunctionChoiceBehavior.Auto(),
+        id="auto"
+    ),
+    pytest.param(
+        FunctionChoiceBehavior.Auto(auto_invoke=False),
+        id="auto_none_invoke"
+    ),
+    pytest.param(
+        FunctionChoiceBehavior.Required(auto_invoke=False),
+        id="required"
+    ),
+    pytest.param(
+        FunctionChoiceBehavior.NoneInvoke(),
+        id="none"
+    ),
+])
+@pytest.mark.asyncio
+async def test_complete_chat_contents_streaming_function_call_behavior_tool_call(
+    kernel: Kernel,
+    mock_settings: MistralAIChatPromptExecutionSettings,
+    function_choice_behavior: FunctionChoiceBehavior
+):
+    mock_settings.function_choice_behavior = function_choice_behavior
+    
+    # Prepare Connector Mocks
+    mock_text = MagicMock(spec=TextContent)
+    mock_message_text_content = StreamingChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[mock_text], choice_index='0'
+    )
+    
+    mock_function_call = MagicMock(spec=FunctionCallContent)
+    mock_message_function_call = StreamingChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[mock_function_call], choice_index='0'
+    )
+    
+    mock_function_result = MagicMock(
+            spec=FunctionResultContent,
+            result="Test",
+            id="test_id"
+        )
+    mock_message_function_result = StreamingChatMessageContent(
+        role=AuthorRole.TOOL, items=[mock_function_result], choice_index='0'
+    )
+    
+    if function_choice_behavior.type_ is not FunctionChoiceType.NONE:
+        # Mock Tool Flow FunctionCall --> FunctionResult --> TextContent
+        mock_messages = [[mock_message_function_call], [mock_message_text_content]]
+    else:
+        # Mock None Flow TextContent
+        mock_messages = [[mock_message_text_content]]
+    
+    generator_mocks = []    
+    for mock_message in mock_messages:   
+        generator_mock = MagicMock()
+        generator_mock.__aiter__.return_value = [mock_message]
+        generator_mocks.append(generator_mock)
+
+    arguments = KernelArguments()
+    chat_completion_base = MistralAIChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key=""
+    )
+
+    def fake_function_result(
+            function_call,
+            chat_history: ChatHistory,
+            arguments,
+            function_call_count,
+            request_index,
+            function_behavior,
+    ):
+        chat_history.add_message(message=mock_message_function_result)
+        return
+
+    with (
+        patch.object(
+            chat_completion_base,
+            '_send_chat_request_streaming',
+            side_effect=generator_mocks
+        ),
+        patch(
+            "semantic_kernel.kernel.Kernel.invoke_function_call",
+            side_effect=fake_function_result,
+            new_callable=AsyncMock,
+            
+        ) as mock_process_function_call,
+    ):
+        messages = []
+        async for chunk in chat_completion_base.get_streaming_chat_message_contents(
+            chat_history=ChatHistory(system_message="Test"), settings=mock_settings, kernel=kernel, arguments=arguments
+        ):
+            messages.append(chunk)
+            
+        response = messages[-1]
+        # Check for Function Call Behavior Auto
+        if function_choice_behavior.type_ == 'auto':
+            if function_choice_behavior.auto_invoke_kernel_functions:
+                # Check if the function call was invoked
+                mock_process_function_call.assert_awaited()
+                assert response == [mock_message_text_content]
+            else:
+                # Check if the function call was not invoked
+                assert response == [mock_message_function_call]
+            
+        # Check for Function Call Behavior None
+        if function_choice_behavior.type_ == FunctionChoiceType.NONE:
+            # Always returns Text
+            assert response == [mock_message_text_content]
+        
+        # Check for Function Call Behavior Required  
+        if function_choice_behavior.type_ == FunctionChoiceType.REQUIRED:
+            if function_choice_behavior.auto_invoke_kernel_functions:
+                # Check if the function call was invoked
+                mock_process_function_call.assert_awaited()
+                assert response == [mock_message_function_result]
+            else:
+                # Check if the function call was not invoked
+                assert response == [mock_message_function_call]
+
+
+@pytest.mark.asyncio
+async def test_mistral_ai_sdk_exception(kernel: Kernel, mock_settings: MistralAIChatPromptExecutionSettings):
+    chat_history = MagicMock()
+    arguments = KernelArguments()
+    client = MagicMock(spec=MistralAsyncClient)
+    client.chat.side_effect = Exception("Test Exception")
+
+    chat_completion_base = MistralAIChatCompletion(
+        ai_model_id="test_model_id", service_id="test", api_key="", async_client=client
+    )
+
+    with pytest.raises(ServiceResponseException):
+        await chat_completion_base.get_chat_message_contents(
+            chat_history=chat_history, settings=mock_settings, kernel=kernel, arguments=arguments
+        )
+        
 
 @pytest.mark.asyncio
 async def test_mistral_ai_sdk_exception_streaming(kernel: Kernel, mock_settings: MistralAIChatPromptExecutionSettings):

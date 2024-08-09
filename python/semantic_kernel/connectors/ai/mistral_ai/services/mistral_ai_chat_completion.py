@@ -3,6 +3,7 @@
 import asyncio
 import logging
 from collections.abc import AsyncGenerator
+from functools import reduce
 from typing import Any
 
 from mistralai.async_client import MistralAsyncClient
@@ -134,11 +135,6 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
         ):
             return await self._send_chat_request(settings)
         
-        # MistralAI Tool Calls are different from OpenAI Tool Calls
-        # tool_choice Required needs to be mapped to any
-        if settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED:
-            settings.tool_choice = "any"
-        
         # loop for auto-invoke function calls
         for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
             completions = await self._send_chat_request(settings)
@@ -218,7 +214,78 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
 
-        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        kernel = kwargs.get("kernel", None)
+        if settings.function_choice_behavior is not None and kernel is None:
+            raise ServiceInvalidExecutionSettingsError("The kernel is required for MistralAI tool calls.")
+            
+        self._update_settings(settings, chat_history, kernel=kernel)
+        
+        request_attempts = (
+            settings.function_choice_behavior.maximum_auto_invoke_attempts
+            if (settings.function_choice_behavior and settings.function_choice_behavior.auto_invoke_kernel_functions)
+            else 1
+        )
+        # hold the messages, if there are more than one response, it will not be used, so we flatten
+        for request_index in range(request_attempts):
+            all_messages: list[StreamingChatMessageContent] = []
+            function_call_returned = False
+            async for messages in self._send_chat_request_streaming(settings):
+                for msg in messages:
+                    if msg is not None:
+                        all_messages.append(msg)
+                        if any(isinstance(item, FunctionCallContent) for item in msg.items):
+                            function_call_returned = True
+                yield messages
+
+            if (
+                settings.function_choice_behavior is None
+                or (
+                    settings.function_choice_behavior
+                    and not settings.function_choice_behavior.auto_invoke_kernel_functions
+                )
+                or not function_call_returned
+            ):
+                # no need to process function calls
+                # note that we don't check the FinishReason and instead check whether there are any tool calls,
+                # as the service may return a FinishReason of "stop" even if there are tool calls to be made,
+                # in particular if a required tool is specified.
+                return
+
+            # there is one response stream in the messages, combining now to create the full completion
+            # depending on the prompt, the message may contain both function call content and others
+            full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
+            function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
+            chat_history.add_message(message=full_completion)
+
+            fc_count = len(function_calls)
+            logger.info(f"processing {fc_count} tool calls in parallel.")
+
+            # this function either updates the chat history with the function call results
+            # or returns the context, with terminate set to True
+            # in which case the loop will break and the function calls are returned.
+            # Exceptions are not caught, that is up to the developer, can be done with a filter
+            results = await asyncio.gather(
+                *[
+                    kernel.invoke_function_call(
+                        function_call=function_call,
+                        chat_history=chat_history,
+                        arguments=kwargs.get("arguments", None),
+                        function_call_count=fc_count,
+                        request_index=request_index,
+                        function_behavior=settings.function_choice_behavior,
+                    )
+                    for function_call in function_calls
+                ],
+            )
+            if any(result.terminate for result in results if result is not None):
+                return
+
+            self._update_settings(settings, chat_history, kernel=kernel)
+
+    async def _send_chat_request_streaming(self,
+        settings: "PromptExecutionSettings",
+    ) -> AsyncGenerator[list["StreamingChatMessageContent"], None]:
+        
         try:
             response = self.async_client.chat_stream(**settings.prepare_settings_dict())
         except Exception as ex:
@@ -233,7 +300,6 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
             yield [
                 self._create_streaming_chat_message_content(chunk, choice, chunk_metadata) for choice in chunk.choices
             ]
-
     # region content conversion to SK
 
     def _create_chat_message_content(
@@ -354,3 +420,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
                 update_settings_callback=update_settings_from_function_call_configuration,
                 settings=settings,
             )
+            # MistralAI Tool Calls are different from OpenAI Tool Calls
+            # tool_choice Required needs to be mapped to any
+            if settings.function_choice_behavior.type_ == FunctionChoiceType.REQUIRED:
+                settings.tool_choice = "any"
