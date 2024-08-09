@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Agents.Extensions;
 /// <summary>
 /// Extension methods for <see cref="ChatMessageContent"/>
 /// </summary>
-internal static class ChatHistoryExtensions
+public static class ChatHistoryExtensions
 {
     /// <summary>
     /// Enumeration of chat-history in descending order.
