@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Data;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
@@ -27,7 +28,8 @@ public record AzureCosmosDBNoSQLHotel()
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
-    [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
+    [JsonPropertyName("parking_is_included")]
+    [VectorStoreRecordData]
     public bool ParkingIncluded { get; set; }
 
     /// <summary>An array metadata field.</summary>

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
@@ -10,6 +12,14 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord> where TRecord : class
 {
     /// <summary>
+    /// Gets or sets an optional custom mapper to use when converting between the data model and the Azure CosmosDB NoSQL record.
+    /// </summary>
+    /// <remarks>
+    /// If not set, the default mapper that is provided by the Azure CosmosDB NoSQL client SDK will be used.
+    /// </remarks>
+    public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
+
+    /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>
     /// <remarks>
@@ -18,4 +28,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord
     /// See <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure CosmosDB NoSQL record.
+    /// </summary>
+    public JsonSerializerOptions? JsonSerializerOptions { get; init; } = null;
+
+    /// <summary>
+    /// The property name to use as partition key.
+    /// </summary>
+    public string? PartitionKeyPropertyName { get; init; } = null;
 }

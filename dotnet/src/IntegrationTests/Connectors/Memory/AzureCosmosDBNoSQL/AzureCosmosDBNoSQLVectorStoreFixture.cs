@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
@@ -13,12 +13,7 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
 {
     private const string DatabaseName = "testdb";
 
-    private readonly List<string> _testCollections = ["sk-test-hotels", "sk-test-contacts"];
-
     private readonly CosmosClient _cosmosClient;
-
-    /// <summary>Main test collection for tests.</summary>
-    public string TestCollection => this._testCollections[0];
 
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     public Database? Database { get; private set; }
@@ -36,8 +31,9 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
             .Build();
 
         var connectionString = GetConnectionString(configuration);
+        var options = new CosmosClientOptions { Serializer = new CosmosSystemTextJsonSerializer(JsonSerializerOptions.Default) };
 
-        this._cosmosClient = new CosmosClient(connectionString);
+        this._cosmosClient = new CosmosClient(connectionString, options);
     }
 
     public async Task InitializeAsync()
@@ -45,22 +41,10 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
         await this._cosmosClient.CreateDatabaseIfNotExistsAsync(DatabaseName);
 
         this.Database = this._cosmosClient.GetDatabase(DatabaseName);
-
-        foreach (var collection in this._testCollections)
-        {
-            await this.Database.CreateContainerIfNotExistsAsync(new ContainerProperties(collection, "/key"));
-        }
     }
 
     public async Task DisposeAsync()
     {
-        foreach (var collection in this._testCollections)
-        {
-            await this.Database!
-                .GetContainer(collection)
-                .DeleteContainerAsync();
-        }
-
         await this.Database!.DeleteAsync();
     }
 
