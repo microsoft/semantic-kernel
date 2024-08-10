@@ -93,7 +93,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
     private readonly VectorStoreRecordKeyProperty _keyProperty;
 
     /// <summary>The property name to use as partition key.</summary>
-    private readonly string _partitionKeyPropertyName;
+    private readonly string _partitionKeyStoragePropertyName;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Azure CosmosDB NoSQL record.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, JsonObject> _mapper;
@@ -145,9 +145,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
         this._keyStoragePropertyName = AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName;
 
         // If partition key is not provided, use key property as a partition key.
-        this._partitionKeyPropertyName = !string.IsNullOrWhiteSpace(this._options.PartitionKeyPropertyName) ?
+        var partitionKeyPropertyName = !string.IsNullOrWhiteSpace(this._options.PartitionKeyPropertyName) ?
             this._options.PartitionKeyPropertyName! :
             this._keyProperty.DataModelPropertyName;
+
+        this._partitionKeyStoragePropertyName = this._storagePropertyNames[partitionKeyPropertyName];
 
         this._nonVectorStoragePropertyNames = properties.DataProperties
             .Cast<VectorStoreRecordProperty>()
@@ -202,10 +204,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
     {
         Verify.NotNullOrWhiteSpace(key);
 
-        return this.RunOperationAsync("DeleteItem", () =>
-            this._database
-                .GetContainer(this.CollectionName)
-                .DeleteItemAsync<object>(key, PartitionKey.None, cancellationToken: cancellationToken));
+        return this.DeleteItemsAsync([key], cancellationToken);
     }
 
     /// <inheritdoc />
@@ -213,9 +212,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
     {
         Verify.NotNull(keys);
 
-        var tasks = keys.Select(key => this.DeleteAsync(key, options, cancellationToken));
-
-        return Task.WhenAll(tasks);
+        return this.DeleteItemsAsync(keys, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -248,7 +245,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
         const string OperationName = "GetItems";
 
         var includeVectors = options?.IncludeVectors ?? false;
-        var queryDefinition = this.GetSelectQuery(keys.ToList(), includeVectors);
+        var fields = new List<string>(includeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
+        var queryDefinition = this.GetSelectQuery(keys.ToList(), fields);
 
         await foreach (var jsonObject in this.GetItemsAsync(queryDefinition, cancellationToken).ConfigureAwait(false))
         {
@@ -274,7 +272,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
                 () => this._mapper.MapFromDataToStorageModel(record));
 
         var jsonObjectKey = jsonObject.TryGetPropertyValue(this._keyStoragePropertyName, out var jsonKey) ? jsonKey?.ToString() : null;
-        var jsonObjectPartitionKeyValue = jsonObject.TryGetPropertyValue(this._storagePropertyNames[this._partitionKeyPropertyName], out var jsonPartitionKey) ? jsonPartitionKey?.ToString() : null;
+        var jsonObjectPartitionKeyValue = jsonObject.TryGetPropertyValue(this._partitionKeyStoragePropertyName, out var jsonPartitionKey) ? jsonPartitionKey?.ToString() : null;
 
         return await this.RunOperationAsync(OperationName, () =>
             this.UpsertItemAsync(jsonObjectKey, jsonObjectPartitionKeyValue, jsonObject, cancellationToken)).ConfigureAwait(false);
@@ -374,7 +372,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
         var vectorEmbeddingPolicy = new VectorEmbeddingPolicy(embeddings);
         var indexingPolicy = new IndexingPolicy { VectorIndexes = vectorIndexes };
 
-        return new ContainerProperties(this.CollectionName, partitionKeyPath: $"/{this._storagePropertyNames[this._partitionKeyPropertyName]}")
+        return new ContainerProperties(this.CollectionName, partitionKeyPath: $"/{this._partitionKeyStoragePropertyName}")
         {
             VectorEmbeddingPolicy = vectorEmbeddingPolicy,
             IndexingPolicy = indexingPolicy
@@ -426,16 +424,16 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
         };
     }
 
-    private QueryDefinition GetSelectQuery(List<string> keys, bool includeVectors)
+    private QueryDefinition GetSelectQuery(List<string> keys, List<string> fields)
     {
-        var fields = new List<string>(includeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames)
-            .Select(field => $"x.{field}");
+        var selectFields = fields.Select(field => $"x.{field}");
+        var ids = string.Join(",", keys.Select((id, index) => $"@id{index}"));
 
         var whereClause = keys.Count == 1 ?
             $"WHERE x.{this._keyStoragePropertyName} = @id0" :
-            $"WHERE x.{this._keyStoragePropertyName} IN ({string.Join(",", keys.Select((id, index) => $"@id{index}"))}";
+            $"WHERE x.{this._keyStoragePropertyName} IN ({ids})";
 
-        var query = $"SELECT {string.Join(",", fields)} FROM x {whereClause}";
+        var query = $"SELECT {string.Join(",", selectFields)} FROM x {whereClause}";
 
         var queryDefinition = new QueryDefinition(query);
 
@@ -453,7 +451,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
             .GetContainer(this.CollectionName)
             .GetItemQueryIterator<JsonObject>(queryDefinition);
 
-        if (iterator.HasMoreResults)
+        while (iterator.HasMoreResults)
         {
             var response = await iterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
 
@@ -484,6 +482,31 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
             .ConfigureAwait(false);
 
         return key!;
+    }
+
+    private async Task DeleteItemsAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
+    {
+        var fields = new HashSet<string> { AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, this._partitionKeyStoragePropertyName }.ToList();
+
+        var query = this.GetSelectQuery(keys.ToList(), fields);
+
+        // Get items from DB to obtain a partition key value, which is required for deletion operation.
+        var items = await this.GetItemsAsync(query, cancellationToken)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var tasks = items.Select(item =>
+        {
+            var key = item[AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName]!.ToString();
+            var partitionKeyValue = item[this._partitionKeyStoragePropertyName]!.ToString();
+
+            return this.RunOperationAsync("DeleteItem", () =>
+                this._database
+                    .GetContainer(this.CollectionName)
+                    .DeleteItemAsync<JsonObject>(key, new PartitionKey(partitionKeyValue), cancellationToken: cancellationToken));
+        });
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     #endregion

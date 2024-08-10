@@ -2,11 +2,15 @@
 
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 
+/// <summary>
+/// Unit tests for <see cref="AzureCosmosDBNoSQLVectorStore"/>.
+/// </summary>
 [Collection("AzureCosmosDBNoSQLVectorStoreCollection")]
 public sealed class AzureCosmosDBNoSQLVectorStoreTests(AzureCosmosDBNoSQLVectorStoreFixture fixture)
 {
@@ -17,6 +21,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests(AzureCosmosDBNoSQLVectorS
     {
         // Arrange
         var sut = new AzureCosmosDBNoSQLVectorStore(fixture.Database!);
+
+        await fixture.Database!.CreateContainerIfNotExistsAsync(new ContainerProperties("sk-test-hotels", "/id"));
+        await fixture.Database!.CreateContainerIfNotExistsAsync(new ContainerProperties("sk-test-contacts", "/id"));
 
         // Act
         var collectionNames = await sut.ListCollectionNamesAsync().ToListAsync();
