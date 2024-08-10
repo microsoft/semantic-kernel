@@ -53,7 +53,7 @@ public sealed class AgentGroupChat : AgentChat
     /// The interactions will proceed according to the <see cref="SelectionStrategy"/> and the <see cref="TerminationStrategy"/>
     /// defined via <see cref="AgentGroupChat.ExecutionSettings"/>.
     /// In the absence of an <see cref="AgentGroupChatSettings.SelectionStrategy"/>, this method will not invoke any agents.
-    /// Any agent may be explicitly selected by calling <see cref="AgentGroupChat.InvokeAsync(Agent, bool, CancellationToken)"/>.
+    /// Any agent may be explicitly selected by calling <see cref="AgentGroupChat.InvokeAsync(Agent, CancellationToken)"/>.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
@@ -114,6 +114,17 @@ public sealed class AgentGroupChat : AgentChat
     }
 
     /// <summary>
+    /// %%%
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException(); // %%% TODO
+    }
+
+    /// <summary>
     /// Process a single interaction between a given <see cref="Agent"/> an a <see cref="AgentGroupChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
@@ -122,35 +133,17 @@ public sealed class AgentGroupChat : AgentChat
     /// <remark>
     /// Specified agent joins the chat.
     /// </remark>>
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        Agent agent,
-        CancellationToken cancellationToken = default) =>
-        this.InvokeAsync(agent, isJoining: true, cancellationToken);
-
-    /// <summary>
-    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentGroupChat"/> irregardless of
-    /// the <see cref="SelectionStrategy"/> defined via <see cref="AgentGroupChat.ExecutionSettings"/>.  Likewise, this does
-    /// not regard <see cref="TerminationStrategy.MaximumIterations"/> as it only takes a single turn for the specified agent.
-    /// </summary>
-    /// <param name="agent">The agent actively interacting with the chat.</param>
-    /// <param name="isJoining">Optional flag to control if agent is joining the chat.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         Agent agent,
-        bool isJoining,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.EnsureStrategyLoggerAssignment();
 
         this.Logger.LogAgentGroupChatInvokingAgent(nameof(InvokeAsync), agent.GetType(), agent.Id);
 
-        if (isJoining)
-        {
-            this.AddAgent(agent);
-        }
+        this.AddAgent(agent); // %%% RECTIFY WITH SERIALIATION
 
-        await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
+        await foreach (ChatMessageContent message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
         {
             if (message.Role == AuthorRole.Assistant)
             {
@@ -162,6 +155,22 @@ public sealed class AgentGroupChat : AgentChat
         }
 
         this.Logger.LogAgentGroupChatYield(nameof(InvokeAsync), this.IsComplete);
+    }
+
+    /// <summary>
+    /// Process a single interaction between a given <see cref="Agent"/> an a <see cref="AgentGroupChat"/>.
+    /// </summary>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remark>
+    /// Specified agent joins the chat.
+    /// </remark>>
+    public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        Agent agent,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException(); // %%% TODO
     }
 
     /// <summary>

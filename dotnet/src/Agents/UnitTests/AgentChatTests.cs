@@ -155,5 +155,10 @@ public class AgentChatTests
             this.SetActivityOrThrow();
             return this.InvokeAgentAsync(this.Agent, cancellationToken);
         }
+
+        public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException(); // %%% TODO
+        }
     }
 }

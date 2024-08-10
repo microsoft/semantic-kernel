@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -47,6 +48,12 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 
             yield return (IsVisible: true, message);
         }
+    }
+
+    /// <inheritdoc/>
+    protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(AggregatorAgent agent, ChatHistory messages, CancellationToken cancellationToken = default)
+    {
+        throw new System.NotImplementedException(); // %%% TODO
     }
 
     /// <inheritdoc/>

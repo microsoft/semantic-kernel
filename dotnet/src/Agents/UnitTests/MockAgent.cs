@@ -15,7 +15,7 @@ namespace SemanticKernel.Agents.UnitTests;
 /// <summary>
 /// Mock definition of <see cref="KernelAgent"/> with a <see cref="IChatHistoryHandler"/> contract.
 /// </summary>
-internal class MockAgent : KernelAgent, IChatHistoryHandler
+internal sealed class MockAgent : KernelAgent, IChatHistoryHandler
 {
     public int InvokeCount { get; private set; }
 

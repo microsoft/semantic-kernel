@@ -78,6 +78,25 @@ public sealed class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
+    protected override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(Agent agent, ChatHistory messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (agent is not IChatHistoryHandler historyHandler)
+        {
+            throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
+        }
+
+        // Pre-process history reduction.
+        await this._history.ReduceAsync(historyHandler.HistoryReducer, cancellationToken).ConfigureAwait(false);
+
+        await foreach (StreamingChatMessageContent streamingMessage in historyHandler.InvokeStreamingAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
+        {
+            yield return streamingMessage;
+        }
+
+        // %%% VERIFY this._history
+    }
+
+    /// <inheritdoc/>
     protected override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._history.AddRange(history);

@@ -61,12 +61,7 @@ public class AgentGroupChatTests
         Assert.Equal(3, chat.Agents.Count);
 
         // Act
-        var messages = await chat.InvokeAsync(agent4, isJoining: false).ToArrayAsync();
-        // Assert
-        Assert.Equal(3, chat.Agents.Count);
-
-        // Act
-        messages = await chat.InvokeAsync(agent4).ToArrayAsync();
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent4).ToArrayAsync();
         // Assert
         Assert.Equal(4, chat.Agents.Count);
     }
