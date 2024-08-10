@@ -126,6 +126,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
         kernel = kwargs.get("kernel", None)
         if settings.function_choice_behavior is not None and kernel is None:
             raise ServiceInvalidExecutionSettingsError("The kernel is required for MistralAI tool calls.")
+        assert isinstance(kernel, Kernel)  # nosec
             
         self._update_settings(settings, chat_history, kernel=kernel)
 
@@ -217,6 +218,7 @@ class MistralAIChatCompletion(ChatCompletionClientBase):
         kernel = kwargs.get("kernel", None)
         if settings.function_choice_behavior is not None and kernel is None:
             raise ServiceInvalidExecutionSettingsError("The kernel is required for MistralAI tool calls.")
+        assert isinstance(kernel, Kernel)  # nosec
             
         self._update_settings(settings, chat_history, kernel=kernel)
         

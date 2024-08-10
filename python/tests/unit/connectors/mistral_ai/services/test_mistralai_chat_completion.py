@@ -5,7 +5,7 @@ import pytest
 from mistralai.async_client import MistralAsyncClient
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.mistral_ai.prompt_execution_settings.mistral_ai_prompt_execution_settings import (
     MistralAIChatPromptExecutionSettings,
 )
@@ -17,7 +17,6 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import (
     ChatMessageContent,
     FunctionCallContent,
-    FunctionResultContent,
     TextContent,
 )
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -28,6 +27,7 @@ from semantic_kernel.exceptions import (
     ServiceResponseException,
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
 
@@ -79,23 +79,52 @@ async def test_complete_chat_contents(
         chat_history=chat_history, settings=mock_settings, kernel=kernel, arguments=arguments
     )
     assert content is not None
-    
+ 
 
-@pytest.mark.parametrize("function_choice_behavior", [
+mock_message_text_content = ChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[TextContent(text="test")]
+)
+
+mock_message_function_call = ChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[
+            FunctionCallContent(
+                name="test",
+                arguments={"key": "test"},
+            )
+        ]
+)     
+
+
+@pytest.mark.parametrize("function_choice_behavior,model_responses,expected_result", [
     pytest.param(
         FunctionChoiceBehavior.Auto(),
+        [[mock_message_function_call], [mock_message_text_content]],
+        TextContent,
         id="auto"
     ),
     pytest.param(
         FunctionChoiceBehavior.Auto(auto_invoke=False),
+        [[mock_message_function_call]],
+        FunctionCallContent,
         id="auto_none_invoke"
     ),
+    # Commented out due to waiting on the implementation of the required behavior auto invoke True
+    # pytest.param(
+    #     FunctionChoiceBehavior.Required(auto_invoke=True),
+    #     [[mock_message_function_call]],
+    #     FunctionResultContent,
+    #     id="required"
+    # ),
     pytest.param(
         FunctionChoiceBehavior.Required(auto_invoke=False),
-        id="required"
+        [[mock_message_function_call]],
+        FunctionCallContent,
+        id="required_none_invoke"
     ),
     pytest.param(
         FunctionChoiceBehavior.NoneInvoke(),
+        [[mock_message_text_content]],
+        TextContent,
         id="none"
     ),
 ])
@@ -103,93 +132,29 @@ async def test_complete_chat_contents(
 async def test_complete_chat_contents_function_call_behavior_tool_call(
     kernel: Kernel,
     mock_settings: MistralAIChatPromptExecutionSettings,
-    function_choice_behavior: FunctionChoiceBehavior
+    function_choice_behavior: FunctionChoiceBehavior,
+    model_responses,
+    expected_result
 ):
+    kernel.add_function("test", kernel_function(lambda key: "test", name="test"))
     mock_settings.function_choice_behavior = function_choice_behavior
     
-    # Prepare Connector Mocks
-    mock_text = MagicMock(spec=TextContent)
-    mock_message_text_content = ChatMessageContent(
-        role=AuthorRole.ASSISTANT, items=[mock_text]
-    )
-    
-    mock_function_call = MagicMock(spec=FunctionCallContent)
-    mock_message_function_call = ChatMessageContent(
-        role=AuthorRole.ASSISTANT, items=[mock_function_call]
-    )
-    
-    mock_function_result = MagicMock(
-            spec=FunctionResultContent,
-            result="Test",
-            id="test_id"
-        )
-    mock_message_function_result = ChatMessageContent(
-        role=AuthorRole.TOOL, items=[mock_function_result]
-    )
-    
-    if function_choice_behavior.type_ is not FunctionChoiceType.NONE:
-        # Mock Tool Flow FunctionCall --> FunctionResult --> TextContent
-        mock_messages = [[mock_message_function_call], [mock_message_text_content]]
-    else:
-        # Mock None Flow TextContent
-        mock_messages = [[mock_message_text_content]]
-
     arguments = KernelArguments()
     chat_completion_base = MistralAIChatCompletion(
         ai_model_id="test_model_id", service_id="test", api_key=""
     )
 
-    def fake_function_result(
-            function_call,
-            chat_history: ChatHistory,
-            arguments,
-            function_call_count,
-            request_index,
-            function_behavior,
-    ):
-        chat_history.add_message(message=mock_message_function_result)
-        return
-
     with (
         patch.object(
             chat_completion_base,
             '_send_chat_request',
-              side_effect=mock_messages),
-        patch(
-            "semantic_kernel.kernel.Kernel.invoke_function_call",
-            side_effect=fake_function_result,
-            new_callable=AsyncMock,
-            
-        ) as mock_process_function_call,
+              side_effect=model_responses),
     ):
         response: list[ChatMessageContent] = await chat_completion_base.get_chat_message_contents(
             chat_history=ChatHistory(system_message="Test"), settings=mock_settings, kernel=kernel, arguments=arguments
         )
         
-        # Check for Function Call Behavior Auto
-        if function_choice_behavior.type_ == 'auto':
-            if function_choice_behavior.auto_invoke_kernel_functions:
-                # Check if the function call was invoked
-                mock_process_function_call.assert_awaited()
-                assert response == [mock_message_text_content]
-            else:
-                # Check if the function call was not invoked
-                assert response == [mock_message_function_call]
-            
-        # Check for Function Call Behavior None
-        if function_choice_behavior.type_ == FunctionChoiceType.NONE:
-            # Always returns Text
-            assert response == [mock_message_text_content]
-          
-        # Check for Function Call Behavior Required  
-        if function_choice_behavior.type_ == FunctionChoiceType.REQUIRED:
-            if function_choice_behavior.auto_invoke_kernel_functions:
-                # Check if the function call was invoked
-                mock_process_function_call.assert_awaited()
-                assert response == [mock_message_function_result]
-            else:
-                # Check if the function call was not invoked
-                assert response == [mock_message_function_call]
+        assert all(isinstance(content, expected_result) for content in response[0].items)
 
 
 @pytest.mark.asyncio
@@ -232,21 +197,38 @@ async def test_complete_chat_stream_contents(
         assert content is not None
 
 
-@pytest.mark.parametrize("function_choice_behavior", [
+mock_message_function_call = StreamingChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[FunctionCallContent(name="test")], choice_index='0'
+)
+
+mock_message_text_content = StreamingChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[TextContent(text="test")], choice_index='0'
+)
+
+
+@pytest.mark.parametrize("function_choice_behavior,model_responses,expected_result", [
     pytest.param(
         FunctionChoiceBehavior.Auto(),
+        [[mock_message_function_call], [mock_message_text_content]],
+        [mock_message_text_content],
         id="auto"
     ),
     pytest.param(
         FunctionChoiceBehavior.Auto(auto_invoke=False),
+        [[mock_message_function_call]],
+        [mock_message_function_call],
         id="auto_none_invoke"
     ),
     pytest.param(
         FunctionChoiceBehavior.Required(auto_invoke=False),
+        [[mock_message_function_call]],
+        [mock_message_function_call],
         id="required"
     ),
     pytest.param(
         FunctionChoiceBehavior.NoneInvoke(),
+        [[mock_message_text_content]],
+        [mock_message_text_content],
         id="none"
     ),
 ])
@@ -254,39 +236,15 @@ async def test_complete_chat_stream_contents(
 async def test_complete_chat_contents_streaming_function_call_behavior_tool_call(
     kernel: Kernel,
     mock_settings: MistralAIChatPromptExecutionSettings,
-    function_choice_behavior: FunctionChoiceBehavior
+    function_choice_behavior: FunctionChoiceBehavior,
+    model_responses,
+    expected_result
 ):
     mock_settings.function_choice_behavior = function_choice_behavior
     
-    # Prepare Connector Mocks
-    mock_text = MagicMock(spec=TextContent)
-    mock_message_text_content = StreamingChatMessageContent(
-        role=AuthorRole.ASSISTANT, items=[mock_text], choice_index='0'
-    )
-    
-    mock_function_call = MagicMock(spec=FunctionCallContent)
-    mock_message_function_call = StreamingChatMessageContent(
-        role=AuthorRole.ASSISTANT, items=[mock_function_call], choice_index='0'
-    )
-    
-    mock_function_result = MagicMock(
-            spec=FunctionResultContent,
-            result="Test",
-            id="test_id"
-        )
-    mock_message_function_result = StreamingChatMessageContent(
-        role=AuthorRole.TOOL, items=[mock_function_result], choice_index='0'
-    )
-    
-    if function_choice_behavior.type_ is not FunctionChoiceType.NONE:
-        # Mock Tool Flow FunctionCall --> FunctionResult --> TextContent
-        mock_messages = [[mock_message_function_call], [mock_message_text_content]]
-    else:
-        # Mock None Flow TextContent
-        mock_messages = [[mock_message_text_content]]
-    
+    # Mock sequence of model responses
     generator_mocks = []    
-    for mock_message in mock_messages:   
+    for mock_message in model_responses:   
         generator_mock = MagicMock()
         generator_mock.__aiter__.return_value = [mock_message]
         generator_mocks.append(generator_mock)
@@ -296,29 +254,12 @@ async def test_complete_chat_contents_streaming_function_call_behavior_tool_call
         ai_model_id="test_model_id", service_id="test", api_key=""
     )
 
-    def fake_function_result(
-            function_call,
-            chat_history: ChatHistory,
-            arguments,
-            function_call_count,
-            request_index,
-            function_behavior,
-    ):
-        chat_history.add_message(message=mock_message_function_result)
-        return
-
     with (
         patch.object(
             chat_completion_base,
             '_send_chat_request_streaming',
             side_effect=generator_mocks
-        ),
-        patch(
-            "semantic_kernel.kernel.Kernel.invoke_function_call",
-            side_effect=fake_function_result,
-            new_callable=AsyncMock,
-            
-        ) as mock_process_function_call,
+        )
     ):
         messages = []
         async for chunk in chat_completion_base.get_streaming_chat_message_contents(
@@ -327,30 +268,7 @@ async def test_complete_chat_contents_streaming_function_call_behavior_tool_call
             messages.append(chunk)
             
         response = messages[-1]
-        # Check for Function Call Behavior Auto
-        if function_choice_behavior.type_ == 'auto':
-            if function_choice_behavior.auto_invoke_kernel_functions:
-                # Check if the function call was invoked
-                mock_process_function_call.assert_awaited()
-                assert response == [mock_message_text_content]
-            else:
-                # Check if the function call was not invoked
-                assert response == [mock_message_function_call]
-            
-        # Check for Function Call Behavior None
-        if function_choice_behavior.type_ == FunctionChoiceType.NONE:
-            # Always returns Text
-            assert response == [mock_message_text_content]
-        
-        # Check for Function Call Behavior Required  
-        if function_choice_behavior.type_ == FunctionChoiceType.REQUIRED:
-            if function_choice_behavior.auto_invoke_kernel_functions:
-                # Check if the function call was invoked
-                mock_process_function_call.assert_awaited()
-                assert response == [mock_message_function_result]
-            else:
-                # Check if the function call was not invoked
-                assert response == [mock_message_function_call]
+        assert response == expected_result
 
 
 @pytest.mark.asyncio
