@@ -455,7 +455,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
         {
             var response = await iterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
 
-            foreach (var record in response)
+            foreach (var record in response.Resource)
             {
                 if (record is not null)
                 {
@@ -486,27 +486,43 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> : IVe
 
     private async Task DeleteItemsAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
     {
-        var fields = new HashSet<string> { AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, this._partitionKeyStoragePropertyName }.ToList();
-
-        var query = this.GetSelectQuery(keys.ToList(), fields);
-
-        // Get items from DB to obtain a partition key value, which is required for deletion operation.
-        var items = await this.GetItemsAsync(query, cancellationToken)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        var tasks = items.Select(item =>
+        // If partition key is the same as key property, delete items using provided keys.
+        if (this._partitionKeyStoragePropertyName.Equals(AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, StringComparison.Ordinal))
         {
-            var key = item[AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName]!.ToString();
-            var partitionKeyValue = item[this._partitionKeyStoragePropertyName]!.ToString();
+            var tasks = keys.Select(key =>
+            {
+                return this.RunOperationAsync("DeleteItem", () =>
+                    this._database
+                        .GetContainer(this.CollectionName)
+                        .DeleteItemAsync<JsonObject>(key, new PartitionKey(key), cancellationToken: cancellationToken));
+            });
 
-            return this.RunOperationAsync("DeleteItem", () =>
-                this._database
-                    .GetContainer(this.CollectionName)
-                    .DeleteItemAsync<JsonObject>(key, new PartitionKey(partitionKeyValue), cancellationToken: cancellationToken));
-        });
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+        // Otherwise get items from DB to obtain a partition key value, which is required for deletion operation.
+        else
+        {
+            var fields = new HashSet<string> { AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, this._partitionKeyStoragePropertyName }.ToList();
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+            var query = this.GetSelectQuery(keys.ToList(), fields);
+
+            var items = await this.GetItemsAsync(query, cancellationToken)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var tasks = items.Select(item =>
+            {
+                var key = item[AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName]!.ToString();
+                var partitionKeyValue = item[this._partitionKeyStoragePropertyName]!.ToString();
+
+                return this.RunOperationAsync("DeleteItem", () =>
+                    this._database
+                        .GetContainer(this.CollectionName)
+                        .DeleteItemAsync<JsonObject>(key, new PartitionKey(partitionKeyValue), cancellationToken: cancellationToken));
+            });
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
     }
 
     #endregion
