@@ -19,6 +19,8 @@ public interface ITextToImageService : IAIService
     /// <param name="description">Image generation prompt</param>
     /// <param name="width">Image width in pixels</param>
     /// <param name="height">Image height in pixels</param>
+    /// <param name="quality">The quality of the generated image</param>
+    /// <param name="style">The style of the generated image</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Generated image in base64 format or image URL</returns>
@@ -27,6 +29,8 @@ public interface ITextToImageService : IAIService
         string description,
         int width,
         int height,
+        string quality = "HIGH",
+        string style = "VIVID",
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 }
