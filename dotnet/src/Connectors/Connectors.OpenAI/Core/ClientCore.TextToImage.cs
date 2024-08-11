@@ -29,9 +29,9 @@ internal partial class ClientCore
         string prompt,
         int width,
         int height,
-        string quality = "HIGH",
-        string style = "VIVID",
-        CancellationToken cancellationToken = default)
+        string quality,
+        string style,
+        CancellationToken cancellationToken)
     {
         Verify.NotNullOrWhiteSpace(prompt);
 
