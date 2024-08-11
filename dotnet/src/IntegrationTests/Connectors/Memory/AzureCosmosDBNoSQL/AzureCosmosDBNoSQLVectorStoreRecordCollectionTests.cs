@@ -153,6 +153,35 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     }
 
     [Fact(Skip = SkipReason)]
+    public async Task ItCanGetAndDeleteRecordWithPartitionKeyAsync()
+    {
+        // Arrange
+        const string HotelId = "55555555-5555-5555-5555-555555555555";
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+            fixture.Database!,
+            "delete-with-partition-key",
+            new() { PartitionKeyPropertyName = "HotelName" });
+
+        await sut.CreateCollectionAsync();
+
+        var record = this.CreateTestHotel(HotelId);
+
+        var upsertResult = await sut.UpsertAsync(record);
+        var getResult = await sut.GetAsync(HotelId);
+
+        Assert.Equal(HotelId, upsertResult);
+        Assert.NotNull(getResult);
+
+        // Act
+        await sut.DeleteAsync(HotelId);
+
+        getResult = await sut.GetAsync(HotelId);
+
+        // Assert
+        Assert.Null(getResult);
+    }
+
+    [Fact(Skip = SkipReason)]
     public async Task ItCanGetAndDeleteBatchAsync()
     {
         // Arrange

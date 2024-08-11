@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.JavaScript;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +11,8 @@ using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Microsoft.SemanticKernel.Data;
 using Moq;
 using Xunit;
+using DistanceFunction = Microsoft.SemanticKernel.Data.DistanceFunction;
+using IndexKind = Microsoft.SemanticKernel.Data.IndexKind;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 
@@ -114,21 +113,51 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         // Arrange
         const string CollectionName = "collection";
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TestVectorModel>(
             this._mockDatabase.Object,
             CollectionName);
 
-        var expectedVectorEmbeddingPolicy = new VectorEmbeddingPolicy([new Embedding
-        {
-            DataType = VectorDataType.Float32,
-            Dimensions = 4,
-            DistanceFunction = Microsoft.Azure.Cosmos.DistanceFunction.Cosine,
-            Path = "/description_embedding"
-        }]);
+        var expectedVectorEmbeddingPolicy = new VectorEmbeddingPolicy(
+        [
+            new Embedding
+            {
+                DataType = VectorDataType.Float16,
+                Dimensions = 1,
+                DistanceFunction = Microsoft.Azure.Cosmos.DistanceFunction.Cosine,
+                Path = "/DescriptionEmbedding1"
+            },
+            new Embedding
+            {
+                DataType = VectorDataType.Float32,
+                Dimensions = 2,
+                DistanceFunction = Microsoft.Azure.Cosmos.DistanceFunction.Cosine,
+                Path = "/DescriptionEmbedding2"
+            },
+            new Embedding
+            {
+                DataType = VectorDataType.Uint8,
+                Dimensions = 3,
+                DistanceFunction = Microsoft.Azure.Cosmos.DistanceFunction.DotProduct,
+                Path = "/DescriptionEmbedding3"
+            },
+            new Embedding
+            {
+                DataType = VectorDataType.Int8,
+                Dimensions = 4,
+                DistanceFunction = Microsoft.Azure.Cosmos.DistanceFunction.Euclidean,
+                Path = "/DescriptionEmbedding4"
+            },
+        ]);
 
         var expectedIndexingPolicy = new IndexingPolicy
         {
-            VectorIndexes = [new VectorIndexPath { Type = VectorIndexType.Flat, Path = "/description_embedding" }]
+            VectorIndexes =
+            [
+                new VectorIndexPath { Type = VectorIndexType.Flat, Path = "/DescriptionEmbedding1" },
+                new VectorIndexPath { Type = VectorIndexType.Flat, Path = "/DescriptionEmbedding2" },
+                new VectorIndexPath { Type = VectorIndexType.QuantizedFlat, Path = "/DescriptionEmbedding3" },
+                new VectorIndexPath { Type = VectorIndexType.DiskANN, Path = "/DescriptionEmbedding4" },
+            ]
         };
 
         var expectedContainerProperties = new ContainerProperties(CollectionName, "/id")
@@ -194,15 +223,42 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             Times.Exactly(actualCollectionCreations));
     }
 
-    [Fact]
-    public async Task DeleteInvokesValidMethodsAsync()
+    [Theory]
+    [InlineData(null, "key")]
+    [InlineData("HotelName", "Test Name")]
+    public async Task DeleteInvokesValidMethodsAsync(string? partitionKeyPropertyName, string expectedPartitionKey)
     {
         // Arrange
         const string RecordKey = "key";
 
+        var jsonObject = new JsonObject { ["id"] = RecordKey, ["HotelName"] = "Test Name" };
+
+        var mockFeedResponse = new Mock<FeedResponse<JsonObject>>();
+        mockFeedResponse
+            .Setup(l => l.Resource)
+            .Returns([jsonObject]);
+
+        var mockFeedIterator = new Mock<FeedIterator<JsonObject>>();
+        mockFeedIterator
+            .SetupSequence(l => l.HasMoreResults)
+            .Returns(true)
+            .Returns(false);
+
+        mockFeedIterator
+            .Setup(l => l.ReadNextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockFeedResponse.Object);
+
+        this._mockContainer
+            .Setup(l => l.GetItemQueryIterator<JsonObject>(
+                It.IsAny<QueryDefinition>(),
+                It.IsAny<string>(),
+                It.IsAny<QueryRequestOptions>()))
+            .Returns(mockFeedIterator.Object);
+
         var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
-            "collection");
+            "collection",
+            new() { PartitionKeyPropertyName = partitionKeyPropertyName });
 
         // Act
         await sut.DeleteAsync(RecordKey);
@@ -210,7 +266,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         // Assert
         this._mockContainer.Verify(l => l.DeleteItemAsync<JsonObject>(
             RecordKey,
-            new PartitionKey(RecordKey),
+            new PartitionKey(expectedPartitionKey),
             It.IsAny<ItemRequestOptions>(),
             It.IsAny<CancellationToken>()),
             Times.Once());
@@ -533,6 +589,24 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         public string? Id { get; set; }
 
         public string? HotelName { get; set; }
+    }
+
+    private sealed class TestVectorModel
+    {
+        [VectorStoreRecordKey]
+        public string? Id { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 1, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+        public ReadOnlyMemory<Half>? DescriptionEmbedding1 { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 2, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+        public ReadOnlyMemory<float>? DescriptionEmbedding2 { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 3, IndexKind: IndexKind.QuantizedFlat, DistanceFunction: DistanceFunction.DotProductSimilarity)]
+        public ReadOnlyMemory<byte>? DescriptionEmbedding3 { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.DiskAnn, DistanceFunction: DistanceFunction.EuclideanDistance)]
+        public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
     }
 
     #endregion
