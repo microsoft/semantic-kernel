@@ -59,16 +59,13 @@ internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord> : IVect
 
     private static void RenameJsonProperty(JsonObject jsonObject, string oldKey, string newKey)
     {
-        if (jsonObject is not null)
+        if (jsonObject is not null && jsonObject.ContainsKey(oldKey))
         {
-            if (jsonObject.ContainsKey(oldKey))
-            {
-                JsonNode? value = jsonObject[oldKey];
+            JsonNode? value = jsonObject[oldKey];
 
-                jsonObject.Remove(oldKey);
+            jsonObject.Remove(oldKey);
 
-                jsonObject[newKey] = value;
-            }
+            jsonObject[newKey] = value;
         }
     }
 
