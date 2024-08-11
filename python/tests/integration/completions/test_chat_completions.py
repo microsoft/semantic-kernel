@@ -63,6 +63,20 @@ try:
         ollama_setup = True
 except KeyError:
     ollama_setup = False
+    
+google_ai_setup: bool = False
+try:
+    if os.environ["GOOGLE_AI_API_KEY"]:
+        google_ai_setup = True
+except KeyError:
+    google_ai_setup = False
+    
+vertex_ai_setup: bool = False
+try:
+    if os.environ["VERTEX_AI_SERVICE_ACCOUNT_KEY"]:
+        vertex_ai_setup = True
+except KeyError:
+    vertex_ai_setup = False
 
 
 def setup(
@@ -119,8 +133,8 @@ def services() -> dict[str, tuple[ChatCompletionClientBase | None, type[PromptEx
         "azure_ai_inference": (azure_ai_inference_client, AzureAIInferenceChatPromptExecutionSettings),
         "mistral_ai": (MistralAIChatCompletion() if mistral_ai_setup else None, MistralAIChatPromptExecutionSettings),
         "ollama": (OllamaChatCompletion() if ollama_setup else None, OllamaChatPromptExecutionSettings),
-        "google_ai": (GoogleAIChatCompletion(), GoogleAIChatPromptExecutionSettings),
-        "vertex_ai": (VertexAIChatCompletion(), VertexAIChatPromptExecutionSettings),
+        "google_ai": (GoogleAIChatCompletion() if google_ai_setup else None, GoogleAIChatPromptExecutionSettings),
+        "vertex_ai": (VertexAIChatCompletion() if vertex_ai_setup else None, VertexAIChatPromptExecutionSettings),
     }
 
 
@@ -455,6 +469,59 @@ pytestmark = pytest.mark.parametrize(
             ["Hello", "well"],
             marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
             id="mistral_ai_text_input",
+        ),
+        pytest.param(
+            "mistral_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            marks=pytest.mark.skipif(not mistral_ai_setup, reason="Mistral AI Environment Variables not set"),
+            id="mistral_ai_tool_call_auto",
+        ),
+        pytest.param(
+            "mistral_ai",
+            {
+                "function_choice_behavior": FunctionChoiceBehavior.Auto(
+                    auto_invoke=False, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+            id="mistral_ai_tool_call_non_auto",
+        ),
+        pytest.param(
+            "mistral_ai",
+            {},
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="123456789", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="123456789", name="finance-search", result="1.2B")],
+                    ),
+                ],
+            ],
+            ["1.2"],
+            id="mistral_ai_tool_call_flow",
         ),
         pytest.param(
             "ollama",
