@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
-using IndexKind = Microsoft.SemanticKernel.Data.IndexKind;
 using DistanceFunction = Microsoft.SemanticKernel.Data.DistanceFunction;
+using IndexKind = Microsoft.SemanticKernel.Data.IndexKind;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 
