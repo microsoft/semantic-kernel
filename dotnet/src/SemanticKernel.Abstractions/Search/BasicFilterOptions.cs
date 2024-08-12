@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Search;
 public sealed class BasicFilterOptions
 {
     /// <summary>
-    /// The equals clauses to apply to the <see cref="FilterOptions" />
+    /// The clauses to apply to the <see cref="BasicFilterOptions" />
     /// </summary>
     public IEnumerable<FilterClause> FilterClauses => this._filterClauses;
 
