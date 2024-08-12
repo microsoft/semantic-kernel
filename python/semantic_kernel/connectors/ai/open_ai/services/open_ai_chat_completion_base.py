@@ -135,7 +135,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
 
             if any(result.terminate for result in results if result is not None):
-                return completions
+                return [chat_history.messages[-1]]
 
             self._update_settings(settings, chat_history, kernel=kernel)
         else:
@@ -235,7 +235,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 ],
             )
             if any(result.terminate for result in results if result is not None):
-                return
+                yield [chat_history.messages[-1]]  # type: ignore
+                break
 
             self._update_settings(settings, chat_history, kernel=kernel)
 
