@@ -57,21 +57,21 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(256, 256, "dall-e-2")]
-    [InlineData(512, 512, "dall-e-2")]
-    [InlineData(1024, 1024, "dall-e-2")]
-    [InlineData(1024, 1024, "dall-e-3")]
-    [InlineData(1024, 1792, "dall-e-3")]
-    [InlineData(1792, 1024, "dall-e-3")]
-    [InlineData(123, 321, "custom-model-1")]
-    [InlineData(179, 124, "custom-model-2")]
-    public async Task GenerateImageWorksCorrectlyAsync(int width, int height, string modelId)
+    [InlineData(256, 256, "dall-e-2", "HIGH", "VIVID")]
+    [InlineData(512, 512, "dall-e-2", "STANDARD", "NATURAL")]
+    [InlineData(1024, 1024, "dall-e-2", "HIGH", "NATURAL")]
+    [InlineData(1024, 1024, "dall-e-3", "STANDARD", "VIVID")]
+    [InlineData(1024, 1792, "dall-e-3", "HIGH", "VIVID")]
+    [InlineData(1792, 1024, "dall-e-3", "STANDARD", "NATURAL")]
+    [InlineData(123, 321, "custom-model-1", "HIGH", "VIVID")]
+    [InlineData(179, 124, "custom-model-2", "STANDARD", "NATURAL")]
+    public async Task GenerateImageWorksCorrectlyAsync(int width, int height, string modelId, string quality, string style)
     {
         // Arrange
         var sut = new AzureOpenAITextToImageService("deployment", "https://api-host", "api-key", modelId, this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
 
         // Act 
-        var result = await sut.GenerateImageAsync("description", width, height);
+        var result = await sut.GenerateImageAsync("description", width, height, quality, style);
 
         // Assert
         Assert.Equal("https://image-url/", result);
