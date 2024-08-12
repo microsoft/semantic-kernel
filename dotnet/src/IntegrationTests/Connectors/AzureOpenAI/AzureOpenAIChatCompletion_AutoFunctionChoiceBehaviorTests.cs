@@ -20,8 +20,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
 {
     private readonly Kernel _kernel;
     private readonly FakeFunctionFilter _autoFunctionInvocationFilter;
-    private readonly IChatCompletionService _chatCompletionService
-        ;
+    private readonly IChatCompletionService _chatCompletionService;
 
     public AzureOpenAIAutoFunctionChoiceBehaviorTests()
     {
