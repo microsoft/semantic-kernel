@@ -32,3 +32,9 @@ class AgentInvokeError(AgentException):
     """An error occurred while invoking the agent."""
 
     pass
+
+
+class AgentChatError(AgentException):
+    """An error occurred while invoking the agent chat."""
+
+    pass

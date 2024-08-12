@@ -64,28 +64,15 @@ async def main():
     # Add the sample plugin to the kernel
     kernel.add_plugin(plugin=MenuPlugin(), plugin_name="menu")
 
-    # Create the agent
+    # Create the OpenAI Assistant Agent
     if use_azure_openai:
-        agent = AzureAssistantAgent(
+        agent = await AzureAssistantAgent.create(
             kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
         )
     else:
-        agent = OpenAIAssistantAgent(
+        agent = await OpenAIAssistantAgent.create(
             kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
         )
-
-    # Next create the assistant
-    await agent.create_assistant()
-
-    # Note: the agent creation can be done in one step if desired
-    # if use_azure_openai:
-    #     agent = await AzureAssistantAgent.create(
-    #         kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
-    #     )
-    # else:
-    #     agent = await OpenAIAssistantAgent.create(
-    #         kernel=kernel, service_id=service_id, name=HOST_NAME, instructions=HOST_INSTRUCTIONS
-    #     )
 
     thread_id = await agent.create_thread()
 

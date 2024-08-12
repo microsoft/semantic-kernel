@@ -5,19 +5,21 @@ import base64
 import hashlib
 import logging
 import threading
-from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING
+from abc import abstractmethod
+from collections.abc import AsyncGenerator, AsyncIterable
+from typing import Protocol, runtime_checkable
 
-from pydantic import Field
+from pydantic import Field, SkipValidation
 
+from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.agent_channel import AgentChannel
-from semantic_kernel.agents.broadcast_queue import BroadcastQueue
+from semantic_kernel.agents.broadcast_queue import BroadcastQueue, ChannelReference
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.agent_exceptions import AgentChatError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-
-if TYPE_CHECKING:
-    from semantic_kernel.agents.agent import Agent
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -41,17 +43,27 @@ class KeyEncoder:
         return base64.b64encode(sha256_hash).decode("utf-8")
 
 
+@experimental_class
+@runtime_checkable
+class AgentChatProtocol(Protocol):
+    """A protocol for agent chat."""
+
+    @abstractmethod
+    async def invoke(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
+        """Invoke an agent asynchronously."""
+        ...
+
+
 class AgentChat(KernelBaseModel):
     """A base class chat interface for agents."""
 
     broadcast_queue: BroadcastQueue = Field(default_factory=BroadcastQueue)
     agent_channels: dict[str, AgentChannel] = Field(default_factory=dict)
-    channel_map: dict[str, str] = Field(default_factory=dict)
+    channel_map: dict[Agent, str] = Field(default_factory=dict)
     logger: logging.Logger = Field(default_factory=lambda: logging.getLogger("AgentChat"))
     history: ChatHistory = Field(default_factory=ChatHistory)
-
+    lock: SkipValidation[threading.Lock] = Field(default_factory=threading.Lock, exclude=True)
     _is_active: bool = False
-    _lock: threading.Lock = threading.Lock()
 
     @property
     def is_active(self) -> bool:
@@ -60,17 +72,17 @@ class AgentChat(KernelBaseModel):
 
     def set_activity_or_throw(self):
         """Set the activity signal or throw an exception if another agent is active."""
-        with self._lock:
+        with self.lock:
             if self._is_active:
                 raise Exception("Unable to proceed while another agent is active.")
             self._is_active = True
 
     def clear_activity_signal(self):
         """Clear the activity signal."""
-        with self._lock:
+        with self.lock:
             self._is_active = False
 
-    async def invoke(self) -> AsyncGenerator[ChatMessageContent, None]:
+    def invoke(self, agent: Agent | None = None, is_joining: bool | None = False) -> AsyncIterable[ChatMessageContent]:
         """Invoke the agent asynchronously."""
         raise NotImplementedError("Subclasses should implement this method")
 
@@ -89,62 +101,89 @@ class AgentChat(KernelBaseModel):
             if agent is None:
                 messages = self.get_messages_in_descending_order_async()
             else:
-                # Handle agent-specific history retrieval here
-                pass
-
+                channel_key = self._get_agent_hash(agent)
+                channel = await self._synchronize_channel(channel_key)
+                if channel is not None:
+                    messages = channel.get_history()
             if messages is not None:
                 async for message in messages:
                     yield message
-            messages = reversed(self.history.messages) if agent is None else self.agent_channels.get(agent.id).messages
-            if messages:
-                for message in messages:
-                    yield message
         finally:
             self.clear_activity_signal()
 
-    def get_agent_hash(self, agent: Agent):
+    async def _synchronize_channel(self, channel_key: str) -> AgentChannel | None:
+        """Synchronize a channel."""
+        channel = self.agent_channels.get(channel_key, None)
+        if channel:
+            await self.broadcast_queue.ensure_synchronized(ChannelReference(channel=channel, hash=channel_key))
+        return channel
+
+    def _get_agent_hash(self, agent: Agent):
         """Get the hash of an agent."""
-        if agent not in self.channel_map:
+        from semantic_kernel.agents.agent import Agent  # noqa: F401
+
+        hash_value = self.channel_map.get(agent, None)
+        if hash_value is None:
             hash_value = KeyEncoder.generate_hash(agent.get_channel_keys())
-            # Ok if already present: same agent always produces the same hash
             self.channel_map[agent] = hash_value
 
-        return self.channel_map[agent]
+        return hash_value
 
-    async def add_chat_messages(self, messages: list[ChatMessageContent]):
+    async def add_chat_message(self, message: ChatMessageContent) -> None:
+        """Add a chat message."""
+        await self.add_chat_messages([message])
+
+    async def add_chat_messages(self, messages: list[ChatMessageContent]) -> None:
         """Add chat messages."""
         self.set_activity_or_throw()
-        self.logger.info("Adding messages")
+
+        for message in messages:
+            if message.role == AuthorRole.SYSTEM:
+                error_message = "System messages cannot be added to the chat history."
+                logger.error(error_message)
+                raise AgentChatError(error_message)
+
+        logger.info(f"Adding `{len(messages)}` agent chat messages")
+
         try:
             self.history.messages.extend(messages)
-            await asyncio.create_task(self.broadcast_queue.enqueue(messages))
+
+            # Broadcast message to other channels (in parallel)
+            # Note: Able to queue messages without synchronizing channels.
+            channel_refs = [ChannelReference(channel=channel, hash=key) for key, channel in self.agent_channels.items()]
+            await self.broadcast_queue.enqueue(channel_refs, messages)
         finally:
             self.clear_activity_signal()
 
-    async def invoke_agent(self, agent: Agent) -> AsyncGenerator[ChatMessageContent, None]:
+    async def _get_or_create_channel(self, agent: Agent) -> AgentChannel:
+        """Get or create a channel."""
+        channel_key = self._get_agent_hash(agent)
+        channel = await self._synchronize_channel(channel_key)
+        if channel is None:
+            channel = agent.create_channel()
+            self.agent_channels[channel_key] = channel
+
+            if len(self.history.messages) > 0:
+                await channel.receive(self.history.messages)
+        return channel
+
+    async def invoke_agent(self, agent: Agent) -> AsyncIterable[ChatMessageContent]:
         """Invoke an agent asynchronously."""
         self.set_activity_or_throw()
-        self.logger.info(f"Invoking agent {agent.name}")
+        logger.info(f"Invoking agent {agent.name}")
         try:
-            channel = self.agent_channels.get(agent.id)
-            if channel is None:
-                channel = await self.create_channel(agent)
-                self.agent_channels[agent.id] = channel
+            channel: AgentChannel = await self._get_or_create_channel(agent)
+            messages: list[ChatMessageContent] = []
 
-            async for message in self.process_agent_interaction(agent, channel):
-                yield message
+            async for is_visible, message in channel.invoke(agent):
+                messages.append(message)
+                self.history.messages.append(message)
+                if is_visible:
+                    yield message
+
+            # Broadcast message to other channels (in parallel)
+            # Note: Able to queue messages without synchronizing channels.
+            channel_refs = [ChannelReference(channel=channel, hash=key) for key, channel in self.agent_channels.items()]
+            await self.broadcast_queue.enqueue(channel_refs, messages)
         finally:
             self.clear_activity_signal()
-
-    async def create_channel(self, agent: Agent) -> AgentChannel:
-        """Create a channel for an agent."""
-        self.logger.info(f"Creating channel for agent {agent.name}")
-        return AgentChannel(id=agent.id)
-
-    async def process_agent_interaction(
-        self, agent: Agent, channel: AgentChannel
-    ) -> AsyncGenerator[ChatMessageContent, None]:
-        """Process an agent interaction asynchronously."""
-        async for message in channel.invoke(agent):
-            self.history.messages.append(message)
-            yield message

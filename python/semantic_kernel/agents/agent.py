@@ -55,3 +55,19 @@ class Agent(KernelBaseModel):
         if not self.channel_type:
             raise NotImplementedError("Unable to create channel. Channel type not configured.")
         return self.channel_type()
+
+    def __eq__(self, other):
+        """Check if two agents are equal."""
+        if isinstance(other, Agent):
+            return (
+                self.id == other.id
+                and self.name == other.name
+                and self.description == other.description
+                and self.instructions == other.instructions
+                and self.channel_type == other.channel_type
+            )
+        return False
+
+    def __hash__(self):
+        """Get the hash of the agent."""
+        return hash((self.id, self.name, self.description, self.instructions, self.channel_type))
