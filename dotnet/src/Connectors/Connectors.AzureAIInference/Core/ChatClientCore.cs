@@ -229,7 +229,7 @@ internal sealed class ChatClientCore
         Verify.NotNull(chatHistory);
 
         // Convert the incoming execution settings to specialized settings.
-        AzureAIInferenceChatExecutionSettings chatExecutionSettings = AzureAIInferenceChatExecutionSettings.FromExecutionSettings(executionSettings);
+        AzureAIInferencePromptExecutionSettings chatExecutionSettings = AzureAIInferencePromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
@@ -245,7 +245,7 @@ internal sealed class ChatClientCore
         {
             try
             {
-                responseData = (await RunRequestAsync(() => this.ChatClient.CompleteAsync(chatOptions, chatExecutionSettings.ExtraParameters ?? string.Empty, cancellationToken)).ConfigureAwait(false)).Value;
+                responseData = (await RunRequestAsync(() => this.ChatClient!.CompleteAsync(chatOptions, chatExecutionSettings.ExtraParameters ?? string.Empty, cancellationToken)).ConfigureAwait(false)).Value;
 
                 this.LogUsage(responseData.Usage);
                 if (responseData.Choices.Count == 0)
@@ -274,11 +274,7 @@ internal sealed class ChatClientCore
         return responseContent;
     }
 
-    internal async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    internal IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chatHistory);
 
@@ -370,7 +366,7 @@ internal sealed class ChatClientCore
     }
 
     private ChatCompletionsOptions CreateChatCompletionsOptions(
-        AzureAIInferenceChatExecutionSettings executionSettings,
+        AzureAIInferencePromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
         Kernel? kernel,
         string? modelId)
@@ -536,7 +532,7 @@ internal sealed class ChatClientCore
 
     private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletions completions, ChatChoice chatChoice)
     {
-        return new Dictionary<string, object?>(12)
+        return new Dictionary<string, object?>(5)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
