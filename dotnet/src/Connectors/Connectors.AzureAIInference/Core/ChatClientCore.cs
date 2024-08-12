@@ -227,7 +227,7 @@ internal sealed class ChatClientCore
         Verify.NotNull(chatHistory);
 
         // Convert the incoming execution settings to specialized settings.
-        AzureAIInferenceChatExecutionSettings chatExecutionSettings = AzureAIInferenceChatExecutionSettings.FromExecutionSettings(executionSettings);
+        AzureAIInferencePromptExecutionSettings chatExecutionSettings = AzureAIInferencePromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
@@ -286,7 +286,7 @@ internal sealed class ChatClientCore
     }
 
     private ChatCompletionsOptions CreateChatCompletionsOptions(
-        AzureAIInferenceChatExecutionSettings executionSettings,
+        AzureAIInferencePromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
         Kernel? kernel,
         string? modelId)

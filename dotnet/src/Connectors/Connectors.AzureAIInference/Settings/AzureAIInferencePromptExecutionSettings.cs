@@ -10,14 +10,14 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Connectors.AzureAIInference;
 
 /// <summary>
-/// Chat completion execution settings.
+/// Chat completion prompt execution settings.
 /// </summary>
-public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
+public class AzureAIInferencePromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureAIInferenceChatExecutionSettings"/> class.
+    /// Initializes a new instance of the <see cref="AzureAIInferencePromptExecutionSettings"/> class.
     /// </summary>
-    public AzureAIInferenceChatExecutionSettings()
+    public AzureAIInferencePromptExecutionSettings()
     {
         this.ExtensionData = new Dictionary<string, object>();
     }
@@ -27,11 +27,11 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
     /// </summary>
     public string? ExtraParameters
     {
-        get => this.GetValueExtensionData("extra_parameters") as string;
+        get => this._extraParameters;
         set
         {
             this.ThrowIfFrozen();
-            this.SetValueInExtensionData(value!, "extra_parameters");
+            this._extraParameters = value;
         }
     }
 
@@ -44,11 +44,11 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
     /// </summary>
     public float? FrequencyPenalty
     {
-        get => this.GetValueExtensionData("frequency_penalty") as float?;
+        get => this._frequencyPenalty;
         set
         {
             this.ThrowIfFrozen();
-            this.SetValueInExtensionData(value!, "frequency_penalty");
+            this._frequencyPenalty = value;
         }
     }
 
@@ -61,11 +61,11 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
     /// </summary>
     public float? PresencePenalty
     {
-        get => this.GetValueExtensionData("presence_penalty") as float?;
+        get => this._presencePenalty;
         set
         {
             this.ThrowIfFrozen();
-            this.SetValueInExtensionData(value!, "presence_penalty");
+            this._presencePenalty = value;
         }
     }
 
@@ -79,11 +79,11 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
     /// </summary>
     public float? Temperature
     {
-        get => this.GetValueExtensionData("temperature") as float?;
+        get => this._temperature;
         set
         {
             this.ThrowIfFrozen();
-            this.SetValueInExtensionData(value!, "temperature");
+            this._temperature = value;
         }
     }
 
@@ -98,22 +98,22 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
     /// </summary>
     public float? NucleusSamplingFactor
     {
-        get => this.GetValueExtensionData("top_p") as float?;
+        get => this._nucleusSamplingFactor;
         set
         {
             this.ThrowIfFrozen();
-            this.SetValueInExtensionData(value!, "top_p");
+            this._nucleusSamplingFactor = value;
         }
     }
 
     /// <summary> The maximum number of tokens to generate. </summary>
     public int? MaxTokens
     {
-        get => this.GetValueExtensionData("max_tokens") as int?;
+        get => this._maxTokens;
         set
         {
             this.ThrowIfFrozen();
-            this.SetValueInExtensionData(value!, "max_tokens");
+            this._maxTokens = value;
         }
     }
 
@@ -126,22 +126,22 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
     /// </summary>
     public object? ResponseFormat
     {
-        get => this.GetValueExtensionData("response_format");
+        get => this._responseFormat;
         set
         {
             this.ThrowIfFrozen();
-            this.SetValueInExtensionData(value!, "response_format");
+            this._responseFormat = value;
         }
     }
 
     /// <summary> A collection of textual sequences that will end completions generation. </summary>
     public IList<string> StopSequences
     {
-        get => (this.GetValueExtensionData("stop") as IList<string>) ?? [];
+        get => this._stopSequences;
         set
         {
             this.ThrowIfFrozen();
-            this.SetValueInExtensionData(value, "stop");
+            this._stopSequences = value;
         }
     }
 
@@ -152,11 +152,11 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
     /// </summary>
     public IList<ChatCompletionsToolDefinition> Tools
     {
-        get => (this.GetValueExtensionData("tools") as IList<ChatCompletionsToolDefinition>) ?? [];
+        get => this._tools;
         set
         {
             this.ThrowIfFrozen();
-            this.SetValueInExtensionData(value, "tools");
+            this._tools = value;
         }
     }
 
@@ -166,11 +166,11 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
     /// </summary>
     public long? Seed
     {
-        get => this.GetValueExtensionData("seed") as long?;
+        get => this._seed;
         set
         {
             this.ThrowIfFrozen();
-            this.SetValueInExtensionData(value!, "seed");
+            this._seed = value;
         }
     }
 
@@ -184,15 +184,34 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
 
         base.Freeze();
 
+        if (this._stopSequences is not null)
+        {
+            this._stopSequences = new ReadOnlyCollection<string>(this._stopSequences);
+        }
+
+        if (this._tools is not null)
+        {
+            this._tools = new ReadOnlyCollection<ChatCompletionsToolDefinition>(this._tools);
+        }
+
         this.ExtensionData = new ReadOnlyDictionary<string, object>(this.ExtensionData!);
     }
 
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
-        return new AzureAIInferenceChatExecutionSettings()
+        return new AzureAIInferencePromptExecutionSettings()
         {
-            // As all the properties retrieve values from the extension data, we can just clone the extension data.
+            ExtraParameters = this.ExtraParameters,
+            FrequencyPenalty = this.FrequencyPenalty,
+            PresencePenalty = this.PresencePenalty,
+            Temperature = this.Temperature,
+            NucleusSamplingFactor = this.NucleusSamplingFactor,
+            MaxTokens = this.MaxTokens,
+            ResponseFormat = this.ResponseFormat,
+            StopSequences = new List<string>(this.StopSequences),
+            Tools = new List<ChatCompletionsToolDefinition>(this.Tools),
+            Seed = this.Seed,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
         };
     }
@@ -202,31 +221,42 @@ public class AzureAIInferenceChatExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
-    /// <returns>An instance of <see cref="AzureAIInferenceChatExecutionSettings"/></returns>
-    public static AzureAIInferenceChatExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    /// <returns>An instance of <see cref="AzureAIInferencePromptExecutionSettings"/></returns>
+    public static AzureAIInferencePromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         if (executionSettings is null)
         {
-            return new AzureAIInferenceChatExecutionSettings();
+            return new AzureAIInferencePromptExecutionSettings();
         }
 
-        if (executionSettings is AzureAIInferenceChatExecutionSettings settings)
+        if (executionSettings is AzureAIInferencePromptExecutionSettings settings)
         {
             return settings;
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
 
-        var aiInferenceSettings = JsonSerializer.Deserialize<AzureAIInferenceChatExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
+        var aiInferenceSettings = JsonSerializer.Deserialize<AzureAIInferencePromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
         if (aiInferenceSettings is not null)
         {
             return aiInferenceSettings;
         }
 
-        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureAIInferenceChatExecutionSettings)}", nameof(executionSettings));
+        throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(AzureAIInferencePromptExecutionSettings)}", nameof(executionSettings));
     }
 
     #region private ================================================================================
+
+    private string? _extraParameters;
+    private float? _frequencyPenalty;
+    private float? _presencePenalty;
+    private float? _temperature;
+    private float? _nucleusSamplingFactor;
+    private int? _maxTokens;
+    private object? _responseFormat;
+    private IList<string> _stopSequences = [];
+    private IList<ChatCompletionsToolDefinition> _tools = [];
+    private long? _seed;
 
     private void SetValueInExtensionData(object value, string propertyName)
         => this.ExtensionData![propertyName] = value;
