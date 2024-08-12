@@ -15,6 +15,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class VolatileMemoryStore(MemoryStoreBase):
+    """A volatile memory store that stores data in memory."""
+
     _store: dict[str, dict[str, MemoryRecord]]
 
     def __init__(self) -> None:

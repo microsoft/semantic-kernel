@@ -17,5 +17,5 @@ public abstract class KernelAgent : Agent
     /// <remarks>
     /// Defaults to empty Kernel, but may be overridden.
     /// </remarks>
-    public Kernel Kernel { get; init; } = new Kernel();
+    public Kernel Kernel { get; init; } = new();
 }
