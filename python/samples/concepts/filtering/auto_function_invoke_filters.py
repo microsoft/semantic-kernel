@@ -148,6 +148,7 @@ async def chat() -> bool:
         for fr in result.value[0].items:
             if isinstance(fr, FunctionResultContent):
                 print(f"Mosscap:> {fr.result}")
+                history.add_assistant_message(str(fr.result))
     elif any(isinstance(item, FunctionCallContent) for item in result.value[0].items):
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # ChatMessageContent with information about the tool calls, which need to be sent
@@ -155,6 +156,10 @@ async def chat() -> bool:
         for fcc in result.value[0].items:
             if isinstance(fcc, FunctionCallContent):
                 print_tool_calls(fcc)
+        history.add_assistant_message(str(result))
+    else:
+        print(f"Mosscap:> {result}")
+        history.add_assistant_message(str(result))
 
     return True
 
