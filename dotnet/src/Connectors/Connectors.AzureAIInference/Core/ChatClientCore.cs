@@ -274,11 +274,15 @@ internal sealed class ChatClientCore
         return responseContent;
     }
 
-    internal IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    internal async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chatHistory);
 
-        AzureAIInferenceChatExecutionSettings chatExecutionSettings = AzureAIInferenceChatExecutionSettings.FromExecutionSettings(executionSettings);
+        AzureAIInferencePromptExecutionSettings chatExecutionSettings = AzureAIInferencePromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
