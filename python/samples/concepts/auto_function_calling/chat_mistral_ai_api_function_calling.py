@@ -39,8 +39,15 @@ stream = True
 
 kernel = Kernel()
 
-# Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-kernel.add_service(MistralAIChatCompletion(service_id="chat"))
+# Note: the underlying Model must be Mistral Small, Mistral Large, Mixtral 8x22B, Mistral Nemo.
+# You can use MISTRALAI_API_KEY and MISTRALAI_CHAT_MODEL_ID environment variables to set the API key and model ID.
+# Or just set it here in the Constructor for testing
+kernel.add_service(MistralAIChatCompletion(
+        service_id="chat",
+        # api_key=XXXXXXX,
+        # ai_model_id="mistral-large",
+    )
+)
 
 plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
