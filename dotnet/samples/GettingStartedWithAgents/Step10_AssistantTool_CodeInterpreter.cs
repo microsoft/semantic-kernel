@@ -1,34 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Agents;
+namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTest(output)
+public class Step10_AssistantTool_CodeInterpreter(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    protected override bool ForceOpenAI => true;
-
     [Fact]
-    public async Task UseCodeInterpreterToolWithOpenAIAssistantAgentAsync()
+    public async Task UseCodeInterpreterToolWithAssistantAgentAsync()
     {
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
-                new()
+                clientProvider: this.GetClientProvider(),
+                new(this.Model)
                 {
-                    EnableCodeInterpreter = true, // Enable code-interpreter
-                    ModelId = this.Model,
+                    EnableCodeInterpreter = true,
+                    Metadata = AssistantSampleMetadata,
                 });
 
-        // Create a chat for agent interaction.
-        AgentGroupChat chat = new();
+        // Create a thread for the agent conversation.
+        string threadId = await agent.CreateThreadAsync(new OpenAIThreadCreationOptions { Metadata = AssistantSampleMetadata });
 
         // Respond to user input
         try
@@ -37,19 +34,20 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         }
         finally
         {
+            await agent.DeleteThreadAsync(threadId);
             await agent.DeleteAsync();
         }
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            ChatMessageContent message = new(AuthorRole.User, input);
+            await agent.AddChatMessageAsync(threadId, message);
+            this.WriteAgentChatMessage(message);
 
-            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
-
-            await foreach (var content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteAgentChatMessage(response);
             }
         }
     }

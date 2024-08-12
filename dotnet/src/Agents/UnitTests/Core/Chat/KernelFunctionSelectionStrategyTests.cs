@@ -5,7 +5,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Core.Chat;
@@ -21,42 +20,73 @@ public class KernelFunctionSelectionStrategyTests
     [Fact]
     public async Task VerifyKernelFunctionSelectionStrategyDefaultsAsync()
     {
-        Mock<Agent> mockAgent = new();
-        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(mockAgent.Object.Id));
+        // Arrange
+        MockAgent mockAgent = new();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(mockAgent.Id));
 
         KernelFunctionSelectionStrategy strategy =
             new(plugin.Single(), new())
             {
-                ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
+                ResultParser = (result) => mockAgent.Id,
+                AgentsVariableName = "agents",
+                HistoryVariableName = "history",
             };
 
+        // Assert
         Assert.Null(strategy.Arguments);
         Assert.NotNull(strategy.Kernel);
         Assert.NotNull(strategy.ResultParser);
+        Assert.NotEqual("agent", KernelFunctionSelectionStrategy.DefaultAgentsVariableName);
+        Assert.NotEqual("history", KernelFunctionSelectionStrategy.DefaultHistoryVariableName);
 
-        Agent nextAgent = await strategy.NextAsync([mockAgent.Object], []);
+        // Act
+        Agent nextAgent = await strategy.NextAsync([mockAgent], []);
 
+        // Assert
         Assert.NotNull(nextAgent);
-        Assert.Equal(mockAgent.Object, nextAgent);
+        Assert.Equal(mockAgent, nextAgent);
     }
 
     /// <summary>
     /// Verify strategy mismatch.
     /// </summary>
     [Fact]
-    public async Task VerifyKernelFunctionSelectionStrategyParsingAsync()
+    public async Task VerifyKernelFunctionSelectionStrategyThrowsOnNullResultAsync()
     {
-        Mock<Agent> mockAgent = new();
-        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(string.Empty));
+        // Arrange
+        MockAgent mockAgent = new();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(mockAgent.Id));
 
         KernelFunctionSelectionStrategy strategy =
             new(plugin.Single(), new())
             {
-                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
-                ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
+                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
+                ResultParser = (result) => "larry",
             };
 
-        await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent.Object], []));
+        // Act and Assert
+        await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent], []));
+    }
+
+    /// <summary>
+    /// Verify strategy mismatch.
+    /// </summary>
+    [Fact]
+    public async Task VerifyKernelFunctionSelectionStrategyThrowsOnBadResultAsync()
+    {
+        // Arrange
+        MockAgent mockAgent = new();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(""));
+
+        KernelFunctionSelectionStrategy strategy =
+            new(plugin.Single(), new())
+            {
+                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
+                ResultParser = (result) => result.GetValue<string>() ?? null!,
+            };
+
+        // Act and Assert
+        await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent], []));
     }
 
     private sealed class TestPlugin(string agentName)

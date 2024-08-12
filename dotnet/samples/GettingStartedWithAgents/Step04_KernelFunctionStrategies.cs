@@ -10,7 +10,7 @@ namespace GettingStarted;
 /// Demonstrate usage of <see cref="KernelFunctionTerminationStrategy"/> and <see cref="KernelFunctionSelectionStrategy"/>
 /// to manage <see cref="AgentGroupChat"/> execution.
 /// </summary>
-public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest(output)
+public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -64,17 +64,18 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
         KernelFunction selectionFunction =
             KernelFunctionFactory.CreateFromPrompt(
                 $$$"""
-                Your job is to determine which participant takes the next turn in a conversation according to the action of the most recent participant.
+                Determine which participant takes the next turn in a conversation based on the the most recent participant.
                 State only the name of the participant to take the next turn.
+                No participant should take more than one turn in a row.
                 
                 Choose only from these participants:
                 - {{{ReviewerName}}}
                 - {{{CopyWriterName}}}
                 
                 Always follow these rules when selecting the next participant:
-                - After user input, it is {{{CopyWriterName}}}'a turn.
-                - After {{{CopyWriterName}}} replies, it is {{{ReviewerName}}}'s turn.
-                - After {{{ReviewerName}}} provides feedback, it is {{{CopyWriterName}}}'s turn.
+                - After user input, it is {{{CopyWriterName}}}'s turn.
+                - After {{{CopyWriterName}}}, it is {{{ReviewerName}}}'s turn.
+                - After {{{ReviewerName}}}, it is {{{CopyWriterName}}}'s turn.
 
                 History:
                 {{$history}}
@@ -116,15 +117,15 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
             };
 
         // Invoke chat and display messages.
-        string input = "concept: maps made out of egg cartons.";
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
-        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+        ChatMessageContent message = new(AuthorRole.User, "concept: maps made out of egg cartons.");
+        chat.AddChatMessage(message);
+        this.WriteAgentChatMessage(message);
 
-        await foreach (ChatMessageContent content in chat.InvokeAsync())
+        await foreach (ChatMessageContent responese in chat.InvokeAsync())
         {
-            Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            this.WriteAgentChatMessage(responese);
         }
 
-        Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
+        Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
     }
 }

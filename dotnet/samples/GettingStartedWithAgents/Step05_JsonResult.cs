@@ -10,14 +10,14 @@ namespace GettingStarted;
 /// <summary>
 /// Demonstrate parsing JSON response.
 /// </summary>
-public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
+public class Step05_JsonResult(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     private const int ScoreCompletionThreshold = 70;
 
     private const string TutorName = "Tutor";
     private const string TutorInstructions =
         """
-        Think step-by-step and rate the user input on creativity and expressivness from 1-100.
+        Think step-by-step and rate the user input on creativity and expressiveness from 1-100.
 
         Respond in JSON format with the following JSON schema:
 
@@ -60,19 +60,20 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.AddChatMessage(message);
+            this.WriteAgentChatMessage(message);
 
-            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
-
-            await foreach (ChatMessageContent content in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
-                Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
+                this.WriteAgentChatMessage(response);
+
+                Console.WriteLine($"[IS COMPLETED: {chat.IsComplete}]");
             }
         }
     }
 
-    private record struct InputScore(int score, string notes);
+    private record struct WritingScore(int score, string notes);
 
     private sealed class ThresholdTerminationStrategy : TerminationStrategy
     {
@@ -80,7 +81,7 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
         {
             string lastMessageContent = history[history.Count - 1].Content ?? string.Empty;
 
-            InputScore? result = JsonResultTranslator.Translate<InputScore>(lastMessageContent);
+            WritingScore? result = JsonResultTranslator.Translate<WritingScore>(lastMessageContent);
 
             return Task.FromResult((result?.score ?? 0) >= ScoreCompletionThreshold);
         }
