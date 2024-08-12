@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests;
+namespace SemanticKernel.Agents.UnitTests.Core;
 
 /// <summary>
 /// Unit testing of <see cref="ChatHistoryChannel"/>.
