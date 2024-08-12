@@ -452,7 +452,7 @@ internal sealed class ChatClientCore
 
     private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletions completions, ChatChoice chatChoice)
     {
-        return new Dictionary<string, object?>(12)
+        return new Dictionary<string, object?>(5)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
