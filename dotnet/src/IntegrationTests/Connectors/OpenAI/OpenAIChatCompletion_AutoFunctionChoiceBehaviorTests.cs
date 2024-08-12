@@ -342,12 +342,8 @@ public sealed class OpenAIAutoFunctionChoiceBehaviorTests : BaseIntegrationTest
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
-    public class DateTimeUtils
+    private sealed class DateTimeUtils
     {
-        [KernelFunction]
-        [Description("Retrieves the current time in UTC.")]
-        public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
-
         [KernelFunction]
         [Description("Retrieves the current date.")]
         public string GetCurrentDate() => DateTime.UtcNow.ToString("d", CultureInfo.InvariantCulture);

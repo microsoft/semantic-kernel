@@ -1213,7 +1213,7 @@ internal partial class ClientCore
         FunctionChoiceBehaviorConfiguration config = functionChoiceBehavior.GetConfiguration(new() { Kernel = kernel });
 
         IList<ChatTool>? tools = null;
-        ChatToolChoice? choice = null;
+        ChatToolChoice? toolChoice = null;
         int maximumAutoInvokeAttempts = config.AutoInvoke ? MaximumAutoInvokeAttempts : 0;
         bool autoInvoke = kernel is not null && config.AutoInvoke;
         bool allowAnyRequestedKernelFunction = config.AllowAnyRequestedKernelFunction;
@@ -1222,7 +1222,7 @@ internal partial class ClientCore
         {
             if (config.Functions is { Count: > 0 } functions)
             {
-                choice = ChatToolChoice.Auto;
+                toolChoice = ChatToolChoice.Auto;
                 tools = [];
 
                 foreach (var function in functions)
@@ -1231,7 +1231,7 @@ internal partial class ClientCore
                 }
             }
 
-            return new(tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction);
+            return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction);
         }
 
         throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");

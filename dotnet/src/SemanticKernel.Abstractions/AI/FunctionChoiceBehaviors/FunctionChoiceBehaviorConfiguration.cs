@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents function choice behavior configuration produced by a <see cref="FunctionChoiceBehavior" />.
 /// </summary>
-[Experimental("SKEXP0010")]
+[Experimental("SKEXP0001")]
 public sealed class FunctionChoiceBehaviorConfiguration
 {
     /// <summary>

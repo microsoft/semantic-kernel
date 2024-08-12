@@ -38,9 +38,9 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     }
 
     /// <inheritdoc />
-#pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
-#pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     {
         // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
         // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -84,7 +84,7 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
             }
         }
 
-#pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         return new FunctionChoiceBehaviorConfiguration()
         {
             Choice = FunctionChoice.Auto,
@@ -92,6 +92,6 @@ internal sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
             AutoInvoke = this._autoInvoke,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };
-#pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 }

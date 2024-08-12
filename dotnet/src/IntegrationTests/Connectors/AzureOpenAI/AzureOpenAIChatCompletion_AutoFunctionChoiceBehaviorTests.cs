@@ -346,7 +346,7 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
-    public class DateTimeUtils
+    private sealed class DateTimeUtils
     {
         [KernelFunction]
         [Description("Retrieves the current date.")]

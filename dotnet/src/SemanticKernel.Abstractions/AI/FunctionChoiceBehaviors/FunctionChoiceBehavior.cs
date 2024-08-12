@@ -22,7 +22,7 @@ public abstract class FunctionChoiceBehavior
     /// <param name="autoInvoke">
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </param>
-    [Experimental("SKEXP0010")]
+    [Experimental("SKEXP0001")]
     public static FunctionChoiceBehavior Auto(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true)
     {
         return new AutoFunctionChoiceBehavior(functions, autoInvoke);
@@ -33,7 +33,7 @@ public abstract class FunctionChoiceBehavior
     /// </summary>
     /// <param name="context">The context provided by AI connectors, used to determine the configuration.</param>
     /// <returns>The configuration.</returns>
-#pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     public abstract FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context);
-#pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 }
