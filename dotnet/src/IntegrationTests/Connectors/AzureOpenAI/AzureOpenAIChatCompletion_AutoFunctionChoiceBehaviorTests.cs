@@ -346,7 +346,9 @@ public sealed class AzureOpenAIAutoFunctionChoiceBehaviorTests : BaseIntegration
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class DateTimeUtils
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
         [KernelFunction]
         [Description("Retrieves the current date.")]
