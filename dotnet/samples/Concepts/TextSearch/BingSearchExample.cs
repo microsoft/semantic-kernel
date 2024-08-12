@@ -81,7 +81,7 @@ public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(outpu
     /// Show how to create a <see cref="BingTextSearch"/> with a custom mapper and use it to perform a text search.
     /// </summary>
     [Fact]
-    public async Task UseBingTextSearchWithFilterForNewsAsync()
+    public async Task UseBingTextSearchWithSiteFilterAsync()
     {
         var query = "What is the Semantic Kernel?";
 

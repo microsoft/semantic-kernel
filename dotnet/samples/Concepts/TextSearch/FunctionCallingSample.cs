@@ -73,6 +73,6 @@ public sealed class FunctionCallingExample(ITestOutputHelper output) : BaseTest(
         // Invoke prompt and use text search plugin to provide grounding information
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
         KernelArguments arguments = new(settings);
-        Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include the link to the relevant information in the response.", arguments));
+        Console.WriteLine(await kernel.InvokePromptAsync("What is the Semantic Kernel? Include citations to the relevant information where it is referenced in the response.", arguments));
     }
 }

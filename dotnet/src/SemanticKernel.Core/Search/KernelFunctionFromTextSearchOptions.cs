@@ -62,9 +62,10 @@ public sealed class KernelFunctionFromTextSearchOptions
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="textSearch"></param>
+    /// <param name="basicFilter"></param>
     /// <param name="mapToString"></param>
     /// <returns></returns>
-    public static KernelFunctionFromTextSearchOptions DefaultSearch<T>(ITextSearch<T> textSearch, MapSearchResultToString<T>? mapToString = null) where T : class
+    public static KernelFunctionFromTextSearchOptions DefaultSearch<T>(ITextSearch<T> textSearch, BasicFilterOptions? basicFilter = null, MapSearchResultToString<T>? mapToString = null) where T : class
     {
         mapToString ??= DefaultMapSearchResultToString;
 
@@ -82,7 +83,8 @@ public sealed class KernelFunctionFromTextSearchOptions
                 SearchOptions searchOptions = new()
                 {
                     Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
-                    Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0)
+                    Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0),
+                    BasicFilter = basicFilter
                 };
 
                 var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
@@ -115,8 +117,9 @@ public sealed class KernelFunctionFromTextSearchOptions
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="textSearch"></param>
+    /// <param name="basicFilter"></param>
     /// <returns></returns>
-    public static KernelFunctionFromTextSearchOptions DefaultGetSearchResults<T>(ITextSearch<T> textSearch) where T : class
+    public static KernelFunctionFromTextSearchOptions DefaultGetSearchResults<T>(ITextSearch<T> textSearch, BasicFilterOptions? basicFilter = null) where T : class
     {
         async Task<IEnumerable<T>> GetSearchResultsAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
@@ -132,7 +135,8 @@ public sealed class KernelFunctionFromTextSearchOptions
                 SearchOptions searchOptions = new()
                 {
                     Count = (count as int?) ?? GetDefaultValue(parameters, "count", 2),
-                    Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0)
+                    Offset = (skip as int?) ?? GetDefaultValue(parameters, "skip", 0),
+                    BasicFilter = basicFilter
                 };
 
                 var result = await textSearch.SearchAsync(query.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);

@@ -4,8 +4,8 @@ status: proposed
 contact: markwallace
 date: {YYYY-MM-DD when the decision was last updated}
 deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey
-consulted: 
-informed: stephentoub, matthewbolanos
+consulted: stephentoub, matthewbolanos, shrojans 
+informed: 
 ---
 
 # Text Search Service
@@ -15,6 +15,124 @@ informed: stephentoub, matthewbolanos
 Semantic Kernel has support for searching using popular Vector databases e.g. Azure AI Search, Chroma, Milvus and also Web search engines e.g. Bing, Google.
 There are two sets of abstractions and plugins depending on whether the developer wants to perform search against a Vector database or a Web search engine.
 The current abstractions are experimental and the purpose of this ADR is to progress the design of the abstractions so that they can graduate to non experimental status.
+
+There are two main use cases we need to support:
+
+1. Allow Prompt Engineers to easily insert grounding information in prompts i.e. support for Retrieval-Augmented Generation scenarios.
+2. Allow Developers to register search plugins which can be called by the LLM to retrieve additional data it needs to respond to a user ask i.e. support for Function Calling scenarios.
+
+### Retrieval-Augmented Generation Scenarios
+
+Retrieval-Augmented Generation (RAG) is a process of optimizing the output of an LLM, so it references authoritative data which may not be part of its training data when generating a response. This reduce the likelihood of hallucinations and also enables the provision of citations which the end user can use to independently verify the response from the LLM. RAG works by retrieving additional data that is relevant to the use query and then augment the prompt with this data before sending to the LLM.
+
+Consider the following sample where the top Bing search results are included as additional data in the prompt.
+
+```csharp
+// Create a kernel with OpenAI chat completion
+IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+kernelBuilder.AddOpenAIChatCompletion(
+        modelId: TestConfiguration.OpenAI.ChatModelId,
+        apiKey: TestConfiguration.OpenAI.ApiKey,
+        httpClient: httpClient);
+Kernel kernel = kernelBuilder.Build();
+
+// Create a text search using the Bing search service
+var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+
+// Build a text search plugin with Bing search service and add to the kernel
+var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<string>(textSearch, "SearchPlugin");
+kernel.Plugins.Add(searchPlugin);
+
+// Invoke prompt and use text search plugin to provide grounding information
+var query = "What is the Semantic Kernel?";
+KernelArguments arguments = new() { { "query", query } };
+Console.WriteLine(await kernel.InvokePromptAsync("{{SearchPlugin.Search $query}}. {{$query}}", arguments));
+```
+
+This example works as follows:
+
+1. Create a `BingTextSearch` which can perform Bing search queries.
+2. Wrap the `BingTextSearch` as a plugin which can be called when rendering a prompt.
+3. Insert a call to the plugin which performs a search using the user query.
+4. The prompt will be augmented with the abstract from the top search results.
+
+**Note:** In this case the abstract from the search result is the only data included in the prompt.
+The LLM should use this data if it considers it relevant but there is no feedback mechanism to the user which would allow
+them to verify the source of the data.
+
+The following sample shows a solution to this problem.
+
+```csharp
+// Create a kernel with OpenAI chat completion
+IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+kernelBuilder.AddOpenAIChatCompletion(
+        modelId: TestConfiguration.OpenAI.ChatModelId,
+        apiKey: TestConfiguration.OpenAI.ApiKey,
+        httpClient: httpClient);
+Kernel kernel = kernelBuilder.Build();
+
+// Create a text search using the Bing search service
+var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
+
+// Build a text search plugin with Bing search service and add to the kernel
+var searchPlugin = TextSearchKernelPluginFactory.CreateFromTextSearch<TextSearchResult>(textSearch, "SearchPlugin");
+kernel.Plugins.Add(searchPlugin);
+
+// Invoke prompt and use text search plugin to provide grounding information
+var query = "What is the Semantic Kernel?";
+string promptTemplate = @"
+{{#with (SearchPlugin-GetSearchResults query)}}  
+  {{#each this}}  
+    Name: {{Name}}
+    Value: {{Value}}
+    Link: {{Link}}
+    -----------------
+  {{/each}}  
+{{/with}}  
+
+{{query}}
+
+Include citations to the relevant information where it is referenced in the response.
+";
+
+KernelArguments arguments = new() { { "query", query } };
+HandlebarsPromptTemplateFactory promptTemplateFactory = new();
+Console.WriteLine(await kernel.InvokePromptAsync(
+    promptTemplate,
+    arguments,
+    templateFormat: HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
+    promptTemplateFactory: promptTemplateFactory
+));
+```
+
+This example works as follows:
+
+1. Create a `BingTextSearch` which can perform Bing search queries and convert the response into a normalized format.
+2. The normalized format is a Semantic Kernel abstraction called `TextSearchResult` which includes a name, value and link for each search result.
+3. Wrap the `BingTextSearch` as a plugin which can be called when rendering a prompt.
+4. Insert a call to the plugin which performs a search using the user query.
+5. The prompt will be augmented with the name, value and link from the top search results.
+6. The prompt also instructs the LLM to include citations to the relevant information in the response.
+
+An example response would look like this:
+
+```
+The Semantic Kernel (SK) is a lightweight and powerful SDK developed by Microsoft that integrates Large Language Models (LLMs) such as OpenAI, Azure OpenAI, and Hugging Face with traditional programming languages like C#, Python, and Java ([GitHub](https://github.com/microsoft/semantic-kernel)). It facilitates the combination of natural language processing capabilities with pre-existing APIs and code, enabling developers to add large language capabilities to their applications swiftly ([What It Is and Why It Matters](https://techcommunity.microsoft.com/t5/microsoft-developer-community/semantic-kernel-what-it-is-and-why-it-matters/ba-p/3877022)).
+
+The Semantic Kernel serves as a middleware that translates the AI model's requests into function calls, effectively bridging the gap between semantic functions (LLM tasks) and native functions (traditional computer code) ([InfoWorld](https://www.infoworld.com/article/2338321/semantic-kernel-a-bridge-between-large-language-models-and-your-code.html)). It also enables the automatic orchestration and execution of tasks using natural language prompting across multiple languages and platforms ([Hello, Semantic Kernel!](https://devblogs.microsoft.com/semantic-kernel/hello-world/)).
+
+In addition to its core capabilities, Semantic Kernel supports advanced functionalities like prompt templating, chaining, and planning, which allow developers to create intricate workflows tailored to specific use cases ([Architecting AI Apps](https://devblogs.microsoft.com/semantic-kernel/architecting-ai-apps-with-semantic-kernel/)).
+
+By describing your existing code to the AI models, Semantic Kernel effectively marshals the request to the appropriate function, returns results back to the LLM, and enables the AI agent to generate a final response ([Quickly Start](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide)). This process brings unparalleled productivity and new experiences to application users ([Hello, Semantic Kernel!](https://devblogs.microsoft.com/semantic-kernel/hello-world/)).
+
+The Semantic Kernel is an indispensable tool for developers aiming to build advanced AI applications by seamlessly integrating large language models with traditional programming frameworks ([Comprehensive Guide](https://gregdziedzic.com/understanding-semantic-kernel-a-comprehensive-guide/)).
+```
+
+**Note:** In this case there is a link to the relevant information so the end user can follow the links to verify the response.
+
+### Function Calling Scenarios
+
+
 
 ## Decision Drivers
 
@@ -41,43 +159,10 @@ Need additional clarification
 - Application developers can override which filters the AI can use via search settings.
 - Application developers can set the filters when they create the connection.
 
-### Current Design
-
-The current design for search is divided into two implementations:
-
-1. Search using a Memory Store i.e. Vector Database
-1. Search using a Web Search Engine
-
-In each case a plugin implementation is provided which allows the search to be integrated into prompts e.g. to provide additional context or to be called from a planner or using auto function calling with a LLM.
-
-#### Memory Store Search
-
-The diagram below shows the layers in the current design of the Memory Store search functionality.
-
-<img src="./diagrams/text-search-service-imemorystore.png" alt="Current Memory Design" width="40%"/>
-
-#### Web Search Engine Integration
-
-The diagram below shows the layers in the current design of the Web Search Engine integration.
-
-<img src="./diagrams/text-search-service-iwebsearchengineconnector.png" alt="Current Web Search Design" width="40%"/>
-
-The Semantic Kernel currently includes experimental support for a `WebSearchEnginePlugin` which can be configured via a `IWebSearchEngineConnector` to integrate with a Web Search Services such as Bing or Google. The search results can be returned as a collection of string values or a collection of `WebPage` instances.
-
-- The `string` values returned from the plugin represent a snippet of the search result in plain text.
-- The `WebPage` instances returned from the plugin are a normalized subset of a complete search result. Each `WebPage` includes:
-  - `name` The name of the search result web page
-  - `url` The url of the search result web page
-  - `snippet` A snippet of the search result in plain text
-
-The current design doesn't support breaking glass scenario's or using custom types for the response values.
-
-One goal of this ADR is to have a design where text search is unified into a single abstraction and a single plugin can be configured to perform web based searches or to search a vector store.
-
 ## Considered Options
 
-- Define `ITextSearchService` abstraction specifically for text search
-- {title of option 2}
+- Define `ITextSearch` abstraction specifically for text search that uses generics
+- Define `ITextSearch` abstraction specifically for text search that does not use generics
 - {title of option 3}
 - … <!-- numbers of options can vary -->
 
@@ -90,7 +175,7 @@ Chosen option: "{title of option 1}", because
 
 ## Pros and Cons of the Options
 
-### Define `ITextSearchService` Abstraction
+### Define `ITextSearch` Abstraction with Generics
 
 A new `ITextSearchService` abstraction is used to define the contract to perform a text based search.
 `ITextSearchService` uses generics are each implementation is required to support returning search values as:
@@ -330,3 +415,37 @@ document the team agreement on the decision and/or
 define when this decision when and how the decision should be realized and if/when it should be re-visited and/or
 how the decision is validated.
 Links to other decisions and resources might appear here as well.}
+
+### Current Design
+
+The current design for search is divided into two implementations:
+
+1. Search using a Memory Store i.e. Vector Database
+1. Search using a Web Search Engine
+
+In each case a plugin implementation is provided which allows the search to be integrated into prompts e.g. to provide additional context or to be called from a planner or using auto function calling with a LLM.
+
+#### Memory Store Search
+
+The diagram below shows the layers in the current design of the Memory Store search functionality.
+
+<img src="./diagrams/text-search-service-imemorystore.png" alt="Current Memory Design" width="40%"/>
+
+#### Web Search Engine Integration
+
+The diagram below shows the layers in the current design of the Web Search Engine integration.
+
+<img src="./diagrams/text-search-service-iwebsearchengineconnector.png" alt="Current Web Search Design" width="40%"/>
+
+The Semantic Kernel currently includes experimental support for a `WebSearchEnginePlugin` which can be configured via a `IWebSearchEngineConnector` to integrate with a Web Search Services such as Bing or Google. The search results can be returned as a collection of string values or a collection of `WebPage` instances.
+
+- The `string` values returned from the plugin represent a snippet of the search result in plain text.
+- The `WebPage` instances returned from the plugin are a normalized subset of a complete search result. Each `WebPage` includes:
+  - `name` The name of the search result web page
+  - `url` The url of the search result web page
+  - `snippet` A snippet of the search result in plain text
+
+The current design doesn't support breaking glass scenario's or using custom types for the response values.
+
+One goal of this ADR is to have a design where text search is unified into a single abstraction and a single plugin can be configured to perform web based searches or to search a vector store.
+
