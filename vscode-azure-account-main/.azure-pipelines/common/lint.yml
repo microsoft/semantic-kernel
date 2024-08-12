@@ -1,0 +1,10 @@
+steps:
+- task: Npm@1
+  displayName: 'Lint'
+  inputs:
+    command: custom
+    customCommand: run lint
+
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'
+  condition: ne(variables['System.PullRequest.IsFork'], 'True')

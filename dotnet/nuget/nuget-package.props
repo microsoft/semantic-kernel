@@ -2,10 +2,14 @@
   <PropertyGroup>
     <!-- Central version prefix - applies to all nuget packages. -->
 <<<<<<< main
+<<<<<<< main
 
     <VersionPrefix>1.14.1</VersionPrefix>
 =======
     <VersionPrefix>1.16.2</VersionPrefix>
+>>>>>>> upstream/main
+=======
+    <VersionPrefix>1.17.0</VersionPrefix>
 >>>>>>> upstream/main
 
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>

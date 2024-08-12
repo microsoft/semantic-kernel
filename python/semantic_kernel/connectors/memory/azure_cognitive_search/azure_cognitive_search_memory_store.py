@@ -40,6 +40,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
+    """Azure Cognitive Search Memory Store."""
+
     _search_index_client: SearchIndexClient = None
     _vector_size: int = None
 
