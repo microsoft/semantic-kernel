@@ -65,7 +65,9 @@ public sealed class CreateFromTextSearchExample(ITestOutputHelper output) : Base
         Console.WriteLine(JsonSerializer.Serialize(resultList));
     }
 
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
     private static KernelPluginFromTextSearchOptions<T> CreateCustomOptions<T>(ITextSearch<T> textSearch) where T : class
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
     {
         List<KernelFunctionFromTextSearchOptions> functions = [];
         KernelPluginFromTextSearchOptions<T> options = new()
