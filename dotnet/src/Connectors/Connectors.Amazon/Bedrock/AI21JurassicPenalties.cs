@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon;
 
 /// <summary>
 /// Penalty struct for AI21 Jurassic. Accessed by both the execution settings and request object so must be kept public.

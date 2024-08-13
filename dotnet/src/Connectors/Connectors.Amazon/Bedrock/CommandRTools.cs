@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
+namespace Microsoft.SemanticKernel.Connectors.Amazon;
 
 /// <summary>
 /// Structs accessed by the Command R execution settings and Command R request.
