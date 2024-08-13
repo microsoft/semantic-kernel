@@ -293,11 +293,11 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AI21JambaResponse.AI21TextResponse
                 {
                     Id = "my-request-id",
-                    Choices = new List<AI21JambaResponse.AI21TextResponse.Choice>
+                    Choices = new List<AI21JambaResponse.Choice>
                     {
                         new() {
                             Index = 0,
-                            Message = new AI21JambaResponse.AI21TextResponse.Message
+                            Message = new AI21JambaResponse.Message
                             {
                                 Role = "assistant",
                                 Content = "Hello! This is a mock AI21 response."
@@ -305,7 +305,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                             FinishReason = "stop"
                         }
                     },
-                    Usage = new AI21JambaResponse.AI21TextResponse.JambaUsage
+                    Usage = new AI21JambaResponse.JambaUsage
                     {
                         PromptTokens = 10,
                         CompletionTokens = 15,
@@ -398,11 +398,11 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                 Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AI21JambaResponse.AI21TextResponse
                 {
                     Id = "my-request-id",
-                    Choices = new List<AI21JambaResponse.AI21TextResponse.Choice>
+                    Choices = new List<AI21JambaResponse.Choice>
                     {
                         new() {
                             Index = 0,
-                            Message = new AI21JambaResponse.AI21TextResponse.Message
+                            Message = new AI21JambaResponse.Message
                             {
                                 Role = "assistant",
                                 Content = "Hello! This is a mock AI21 response."
@@ -410,7 +410,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                             FinishReason = "stop"
                         }
                     },
-                    Usage = new AI21JambaResponse.AI21TextResponse.JambaUsage
+                    Usage = new AI21JambaResponse.JambaUsage
                     {
                         PromptTokens = 10,
                         CompletionTokens = 15,
