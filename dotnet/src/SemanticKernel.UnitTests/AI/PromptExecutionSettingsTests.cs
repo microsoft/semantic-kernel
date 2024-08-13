@@ -32,6 +32,7 @@ public class PromptExecutionSettingsTests
         Assert.NotNull(clone);
         Assert.Equal(executionSettings.ModelId, clone.ModelId);
         Assert.Equivalent(executionSettings.ExtensionData, clone.ExtensionData);
+        Assert.Equivalent(executionSettings.FunctionChoiceBehavior, clone.FunctionChoiceBehavior);
         Assert.Equal(executionSettings.ServiceId, clone.ServiceId);
     }
 
@@ -88,6 +89,7 @@ public class PromptExecutionSettingsTests
         Assert.NotNull(executionSettings.ExtensionData);
         Assert.Throws<NotSupportedException>(() => executionSettings.ExtensionData.Add("results_per_prompt", 2));
         Assert.Throws<NotSupportedException>(() => executionSettings.ExtensionData["temperature"] = 1);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto());
 
         executionSettings!.Freeze(); // idempotent
         Assert.True(executionSettings.IsFrozen);

@@ -47,6 +47,16 @@ internal partial class ClientCore
     /// </remarks>
     protected const int MaxInflightAutoInvokes = 128;
 
+    /// <summary>
+    /// The maximum number of function auto-invokes that can be made in a single user request.
+    /// </summary>
+    /// <remarks>
+    /// After this number of iterations as part of a single user request is reached, auto-invocation
+    /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
+    /// the same function over and over.
+    /// </remarks>
+    private const int MaximumAutoInvokeAttempts = 128;
+
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
     protected static readonly ChatTool s_nonInvocableFunctionTool = ChatTool.CreateFunctionTool("NonInvocableTool");
 
@@ -236,7 +246,7 @@ internal partial class ClientCore
                     continue;
                 }
 
-                // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
+                // Make sure the requested function is one we advertised. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
                 if (toolCallingConfig.AllowAnyRequestedKernelFunction is not true &&
@@ -503,7 +513,7 @@ internal partial class ClientCore
                     continue;
                 }
 
-                // Make sure the requested function is one we requested. If we're permitting any kernel function to be invoked,
+                // Make sure the requested function is one we advertised. If we're permitting any kernel function to be invoked,
                 // then we don't need to check this, as it'll be handled when we look up the function in the kernel to be able
                 // to invoke it. If we're permitting only a specific list of functions, though, then we need to explicitly check.
                 if (toolCallingConfig.AllowAnyRequestedKernelFunction is not true &&
@@ -1134,13 +1144,25 @@ internal partial class ClientCore
 
     private ToolCallingConfig GetToolCallingConfiguration(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, int requestIndex)
     {
+        // If both behaviors are specified, we can't handle that.
+        if (executionSettings.FunctionChoiceBehavior is not null && executionSettings.ToolCallBehavior is not null)
+        {
+            throw new ArgumentException($"{nameof(executionSettings.ToolCallBehavior)} and {nameof(executionSettings.FunctionChoiceBehavior)} cannot be used together.");
+        }
+
         IList<ChatTool>? tools = null;
         ChatToolChoice? choice = null;
         bool autoInvoke = false;
         bool allowAnyRequestedKernelFunction = false;
         int maximumAutoInvokeAttempts = 0;
 
-        if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
+        // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
+        if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
+        {
+            (tools, choice, autoInvoke, maximumAutoInvokeAttempts) = this.ConfigureFunctionCalling(kernel, requestIndex, functionChoiceBehavior);
+        }
+        // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
+        else if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
         {
             (tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction) = this.ConfigureFunctionCalling(kernel, requestIndex, toolCallBehavior);
         }
@@ -1156,10 +1178,10 @@ internal partial class ClientCore
         }
 
         return new ToolCallingConfig(
-           Tools: tools ?? [s_nonInvocableFunctionTool],
-           Choice: choice ?? ChatToolChoice.None,
-           AutoInvoke: autoInvoke && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes,
-           AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction);
+            Tools: tools ?? [s_nonInvocableFunctionTool],
+            Choice: choice ?? ChatToolChoice.None,
+            AutoInvoke: autoInvoke && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes,
+            AllowAnyRequestedKernelFunction: allowAnyRequestedKernelFunction);
     }
 
     private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts, bool AllowAnyRequestedKernelFunction) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, ToolCallBehavior toolCallBehavior)
@@ -1184,5 +1206,33 @@ internal partial class ClientCore
         }
 
         return new(tools, choice, autoInvoke, maximumAutoInvokeAttempts, allowAnyRequestedKernelFunction);
+    }
+
+    private (IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, int maximumAutoInvokeAttempts) ConfigureFunctionCalling(Kernel? kernel, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior)
+    {
+        FunctionChoiceBehaviorConfiguration config = functionChoiceBehavior.GetConfiguration(new() { Kernel = kernel });
+
+        IList<ChatTool>? tools = null;
+        ChatToolChoice? toolChoice = null;
+        int maximumAutoInvokeAttempts = config.AutoInvoke ? MaximumAutoInvokeAttempts : 0;
+        bool autoInvoke = kernel is not null && config.AutoInvoke;
+
+        if (config.Choice == FunctionChoice.Auto)
+        {
+            if (config.Functions is { Count: > 0 } functions)
+            {
+                toolChoice = ChatToolChoice.Auto;
+                tools = [];
+
+                foreach (var function in functions)
+                {
+                    tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition());
+                }
+            }
+
+            return new(tools, toolChoice, autoInvoke, maximumAutoInvokeAttempts);
+        }
+
+        throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
     }
 }
