@@ -29,7 +29,7 @@ internal static class AI21JambaResponse
         /// The token counts for this request. Per-token billing is based on the prompt token and completion token counts and rates.
         /// </summary>
         [JsonPropertyName("usage")]
-        public Usage? Use { get; set; }
+        public JambaUsage? Usage { get; set; }
         /// <summary>
         /// The members for the Choice class as required by AI21 Labs Jamba.
         /// </summary>
@@ -78,7 +78,7 @@ internal static class AI21JambaResponse
         /// The token counts for this request. Per-token billing is based on the prompt token and completion token counts and rates.
         /// </summary>
         [Serializable]
-        internal class Usage
+        internal class JambaUsage
         {
             /// <summary>
             /// Number of tokens in the prompt for this request. Note that the prompt token includes the entire message history, plus extra tokens needed by the system when combining the list of prompt messages into a single message, as required by the model. The number of extra tokens is typically proportional to the number of messages in the thread, and should be relatively small.

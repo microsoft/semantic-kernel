@@ -305,7 +305,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                             FinishReason = "stop"
                         }
                     },
-                    Use = new AI21JambaResponse.AI21TextResponse.Usage
+                    Usage = new AI21JambaResponse.AI21TextResponse.JambaUsage
                     {
                         PromptTokens = 10,
                         CompletionTokens = 15,
@@ -410,7 +410,7 @@ public class BedrockTextGenerationModelExecutionSettingsTests
                             FinishReason = "stop"
                         }
                     },
-                    Use = new AI21JambaResponse.AI21TextResponse.Usage
+                    Usage = new AI21JambaResponse.AI21TextResponse.JambaUsage
                     {
                         PromptTokens = 10,
                         CompletionTokens = 15,

@@ -24,9 +24,9 @@ internal sealed class AI21JambaIOService : IBedrockModelIOService
     object IBedrockModelIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonJambaExecutionSettings.FromExecutionSettings(executionSettings);
-        List<AI21JambaRequest.AI21TextGenerationRequest.Msg> messages = new()
+        List<AI21JambaRequest.AI21TextGenerationRequest.JambaMessage> messages = new()
         {
-            new AI21JambaRequest.AI21TextGenerationRequest.Msg()
+            new AI21JambaRequest.AI21TextGenerationRequest.JambaMessage()
             {
                 Role = "user",
                 Content = prompt
