@@ -403,14 +403,12 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         )
         await stack(invocation_context)
 
-        if invocation_context.terminate:
-            return invocation_context
-
         frc = FunctionResultContent.from_function_call_content_and_result(
             function_call_content=function_call, result=invocation_context.function_result
         )
         chat_history.add_message(message=frc.to_chat_message_content())
-        return None
+
+        return invocation_context if invocation_context.terminate else None
 
     async def _inner_auto_function_invoke_handler(self, context: AutoFunctionInvocationContext):
         """Inner auto function invocation handler."""
