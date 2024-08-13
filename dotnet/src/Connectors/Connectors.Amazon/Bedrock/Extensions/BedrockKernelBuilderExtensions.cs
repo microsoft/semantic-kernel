@@ -110,6 +110,6 @@ public static class BedrockKernelBuilderExtensions
         {
             return;
         }
-        args.Headers[UserAgentHeader] = value + " " + s_userAgentString;
+        args.Headers[UserAgentHeader] = $"{value} {s_userAgentString}";
     }
 }
