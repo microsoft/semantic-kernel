@@ -67,16 +67,14 @@ internal sealed class CohereCommandRIOService : IBedrockModelIOService
     /// <returns></returns>
     IReadOnlyList<TextContent> IBedrockModelIOService.GetInvokeResponseBody(InvokeModelResponse response)
     {
-        using var memoryStream = new MemoryStream();
-        response.Body.CopyToAsync(memoryStream).ConfigureAwait(false).GetAwaiter().GetResult();
-        memoryStream.Position = 0;
-        using var reader = new StreamReader(memoryStream);
+        using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<CommandRResponse>(reader.ReadToEnd());
-        var textContents = new List<TextContent>();
+        List<TextContent> textContents = [];
         if (!string.IsNullOrEmpty(responseBody?.Text))
         {
             textContents.Add(new TextContent(responseBody.Text));
         }
+
         return textContents;
     }
 
