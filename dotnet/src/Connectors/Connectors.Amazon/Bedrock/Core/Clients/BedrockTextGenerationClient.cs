@@ -20,7 +20,7 @@ internal sealed class BedrockTextGenerationClient
     private readonly string _modelId;
     private readonly string _modelProvider;
     private readonly IAmazonBedrockRuntime _bedrockRuntime;
-    private readonly IBedrockModelIOService _ioService;
+    private readonly IBedrockTextGenerationIOService _ioTextService;
     private readonly BedrockClientUtilities _clientUtilities;
     private Uri? _textGenerationEndpoint;
     private readonly ILogger _logger;
@@ -37,7 +37,7 @@ internal sealed class BedrockTextGenerationClient
         var clientService = new BedrockClientIOService();
         this._modelId = modelId;
         this._bedrockRuntime = bedrockRuntime;
-        this._ioService = clientService.GetIOService(modelId);
+        this._ioTextService = clientService.GetTextIOService(modelId);
         this._modelProvider = clientService.GetModelProviderAndName(modelId).modelProvider;
         this._clientUtilities = new BedrockClientUtilities();
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
@@ -49,7 +49,7 @@ internal sealed class BedrockTextGenerationClient
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(prompt);
-        var requestBody = this._ioService.GetInvokeModelRequestBody(this._modelId, prompt, executionSettings);
+        var requestBody = this._ioTextService.GetInvokeModelRequestBody(this._modelId, prompt, executionSettings);
         var invokeRequest = new InvokeModelRequest
         {
             ModelId = this._modelId,
@@ -97,7 +97,7 @@ internal sealed class BedrockTextGenerationClient
         }
         activityStatus = this._clientUtilities.ConvertHttpStatusCodeToActivityStatusCode(response.HttpStatusCode);
         activity?.SetStatus(activityStatus);
-        IReadOnlyList<TextContent> textResponse = this._ioService.GetInvokeResponseBody(response);
+        IReadOnlyList<TextContent> textResponse = this._ioTextService.GetInvokeResponseBody(response);
         activity?.SetCompletionResponse(textResponse);
         return textResponse;
     }
@@ -109,7 +109,7 @@ internal sealed class BedrockTextGenerationClient
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(prompt);
-        var requestBody = this._ioService.GetInvokeModelRequestBody(this._modelId, prompt, executionSettings);
+        var requestBody = this._ioTextService.GetInvokeModelRequestBody(this._modelId, prompt, executionSettings);
         var invokeRequest = new InvokeModelWithResponseStreamRequest
         {
             ModelId = this._modelId,
@@ -164,7 +164,7 @@ internal sealed class BedrockTextGenerationClient
             {
                 continue;
             }
-            IEnumerable<string> texts = this._ioService.GetTextStreamOutput(chunk);
+            IEnumerable<string> texts = this._ioTextService.GetTextStreamOutput(chunk);
             foreach (var text in texts)
             {
                 var content = new StreamingTextContent(text);

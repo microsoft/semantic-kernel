@@ -3,14 +3,13 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Amazon.BedrockRuntime.Model;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 /// <summary>
 /// Input-output service for AI21 Labs Jurassic.
 /// </summary>
-internal sealed class AI21JurassicIOService : IBedrockModelIOService
+internal sealed class AI21JurassicIOService : IBedrockTextGenerationIOService
 {
     /// <summary>
     /// Builds InvokeModelRequest Body parameter to be serialized.
@@ -19,7 +18,7 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="executionSettings">Optional prompt execution settings.</param>
     /// <returns></returns>
-    object IBedrockModelIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
+    object IBedrockTextGenerationIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonJurassicExecutionSettings.FromExecutionSettings(executionSettings);
         var requestBody = new AI21JurassicRequest.AI21JurassicTextGenerationRequest
@@ -41,7 +40,7 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
     /// </summary>
     /// <param name="response">The InvokeModelResponse object provided by the Bedrock InvokeModelAsync output.</param>
     /// <returns></returns>
-    IReadOnlyList<TextContent> IBedrockModelIOService.GetInvokeResponseBody(InvokeModelResponse response)
+    IReadOnlyList<TextContent> IBedrockTextGenerationIOService.GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<AI21JurassicResponse>(reader.ReadToEnd());
@@ -55,39 +54,13 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
     }
 
     /// <summary>
-    /// Jurassic does not support converse.
-    /// </summary>
-    /// <param name="modelId">The model ID.</param>
-    /// <param name="chatHistory">The messages between assistant and user.</param>
-    /// <param name="settings">Optional prompt execution settings.</param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    ConverseRequest IBedrockModelIOService.GetConverseRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
-    {
-        throw new NotImplementedException("This model does not support chat history. Use text generation to invoke singular response to use this model.");
-    }
-
-    /// <summary>
     /// Jurassic does not support streaming.
     /// </summary>
     /// <param name="chunk"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    IEnumerable<string> IBedrockModelIOService.GetTextStreamOutput(JsonNode chunk)
+    IEnumerable<string> IBedrockTextGenerationIOService.GetTextStreamOutput(JsonNode chunk)
     {
-        throw new NotImplementedException("Streaming not supported by this model.");
-    }
-
-    /// <summary>
-    /// Jurassic does not support converse (or streaming for that matter).
-    /// </summary>
-    /// <param name="modelId"></param>
-    /// <param name="chatHistory"></param>
-    /// <param name="settings"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    ConverseStreamRequest IBedrockModelIOService.GetConverseStreamRequest(string modelId, ChatHistory chatHistory, PromptExecutionSettings? settings)
-    {
-        throw new NotImplementedException("Streaming not supported by this model.");
+        throw new NotSupportedException("Streaming not supported by this model.");
     }
 }

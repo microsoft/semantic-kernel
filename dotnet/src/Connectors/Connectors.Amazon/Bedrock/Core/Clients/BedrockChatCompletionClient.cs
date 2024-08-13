@@ -19,7 +19,7 @@ internal sealed class BedrockChatCompletionClient
     private readonly string _modelId;
     private readonly string _modelProvider;
     private readonly IAmazonBedrockRuntime _bedrockRuntime;
-    private readonly IBedrockModelIOService _ioService;
+    private readonly IBedrockChatCompletionIOService _ioChatService;
     private readonly BedrockClientUtilities _clientUtilities;
     private Uri? _chatGenerationEndpoint;
     private readonly ILogger _logger;
@@ -36,7 +36,7 @@ internal sealed class BedrockChatCompletionClient
         var clientService = new BedrockClientIOService();
         this._modelId = modelId;
         this._bedrockRuntime = bedrockRuntime;
-        this._ioService = clientService.GetIOService(modelId);
+        this._ioChatService = clientService.GetChatIOService(modelId);
         this._modelProvider = clientService.GetModelProviderAndName(modelId).modelProvider;
         this._clientUtilities = new BedrockClientUtilities();
         this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
@@ -58,7 +58,7 @@ internal sealed class BedrockChatCompletionClient
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(chatHistory);
-        ConverseRequest converseRequest = this._ioService.GetConverseRequest(this._modelId, chatHistory, executionSettings);
+        ConverseRequest converseRequest = this._ioChatService.GetConverseRequest(this._modelId, chatHistory, executionSettings);
         var regionEndpoint = this._bedrockRuntime.DetermineServiceOperationEndpoint(converseRequest).URL;
         this._chatGenerationEndpoint = new Uri(regionEndpoint);
         ConverseResponse? response = null;
@@ -145,7 +145,7 @@ internal sealed class BedrockChatCompletionClient
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Set up variables for starting completion activity
-        var converseStreamRequest = this._ioService.GetConverseStreamRequest(this._modelId, chatHistory, executionSettings);
+        var converseStreamRequest = this._ioChatService.GetConverseStreamRequest(this._modelId, chatHistory, executionSettings);
         var regionEndpoint = this._bedrockRuntime.DetermineServiceOperationEndpoint(converseStreamRequest).URL;
         this._chatGenerationEndpoint = new Uri(regionEndpoint);
         ConverseStreamResponse? response = null;
