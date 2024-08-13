@@ -13,8 +13,8 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon;
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public class AmazonJurassicExecutionSettings : PromptExecutionSettings
 {
-    private double? _temperature;
-    private double? _topP;
+    private float? _temperature;
+    private float? _topP;
     private int? _maxTokens;
     private List<string>? _stopSequences;
     private AI21JurassicPenalties? _countPenalty;
@@ -25,7 +25,7 @@ public class AmazonJurassicExecutionSettings : PromptExecutionSettings
     /// Use a lower value to decrease randomness in the response.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double? Temperature
+    public float? Temperature
     {
         get => this._temperature;
         set
@@ -39,7 +39,7 @@ public class AmazonJurassicExecutionSettings : PromptExecutionSettings
     /// Use a lower value to ignore less probable options.
     /// </summary>
     [JsonPropertyName("topP")]
-    public double? TopP
+    public float? TopP
     {
         get => this._topP;
         set

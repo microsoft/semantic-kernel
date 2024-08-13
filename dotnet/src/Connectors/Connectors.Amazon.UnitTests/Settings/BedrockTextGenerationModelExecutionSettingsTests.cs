@@ -474,6 +474,91 @@ public class BedrockTextGenerationModelExecutionSettingsTests
     }
 
     /// <summary>
+    /// Checks that the prompt execution settings are correctly registered for the text generation call with AI21 Labs Jamba. Inserts execution settings data both ways to test.
+    /// </summary>
+    [Fact]
+    public async Task JurassicExecutionSettingsExtensionDataSetsProperlyAsync()
+    {
+        // Arrange
+        string modelId = "ai21.j2-ultra-v1";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var executionSettings = new AmazonJurassicExecutionSettings()
+        {
+            ModelId = modelId,
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.8f },
+                { "topP", 0.95f },
+                { "maxTokens", 256 },
+                { "stopSequences", new List<string> { "</end>" } }
+            }
+        };
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<InvokeModelRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
+        mockBedrockApi.Setup(m => m.InvokeModelAsync(It.IsAny<InvokeModelRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new InvokeModelResponse
+            {
+                Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AI21JurassicResponse
+                {
+                    Id = 10000000000,
+                    Completions = new List<AI21JurassicResponse.Completion>
+                    {
+                        new()
+                        {
+                            Data = new AI21JurassicResponse.JurassicData
+                            {
+                                Text = "Hello! This is a mock AI21 response."
+                            }
+                        }
+                    }
+                })))
+            });
+        var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<ITextGenerationService>();
+        var prompt = "Write a greeting.";
+
+        // Act
+        var result = await service.GetTextContentsAsync(prompt, executionSettings).ConfigureAwait(true);
+
+        // Assert
+        InvokeModelRequest? invokeModelRequest = null;
+        var invocation = mockBedrockApi.Invocations
+            .Where(i => i.Method.Name == "InvokeModelAsync")
+            .SingleOrDefault(i => i.Arguments.Count > 0 && i.Arguments[0] is InvokeModelRequest);
+        if (invocation != null)
+        {
+            invokeModelRequest = (InvokeModelRequest)invocation.Arguments[0];
+        }
+        Assert.Single(result);
+        Assert.Equal("Hello! This is a mock AI21 response.", result[0].Text);
+        Assert.NotNull(invokeModelRequest);
+
+        using var requestBodyStream = invokeModelRequest.Body;
+        var requestBodyJson = await JsonDocument.ParseAsync(requestBodyStream).ConfigureAwait(true);
+        var requestBodyRoot = requestBodyJson.RootElement;
+
+        // Check temperature
+        Assert.True(requestBodyRoot.TryGetProperty("temperature", out var temperatureProperty));
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("temperature", out var extensionTemperature) ? extensionTemperature : executionSettings.Temperature, (float)temperatureProperty.GetDouble());
+
+        // Check top_p
+        Assert.True(requestBodyRoot.TryGetProperty("topP", out var topPProperty));
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("topP", out var extensionTopP) ? extensionTopP : executionSettings.TopP, (float)topPProperty.GetDouble());
+
+        // Check max_tokens
+        Assert.True(requestBodyRoot.TryGetProperty("maxTokens", out var maxTokensProperty));
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("maxTokens", out var extensionMaxTokens) ? extensionMaxTokens : executionSettings.MaxTokens, maxTokensProperty.GetInt32());
+
+        // Check stop
+        Assert.True(requestBodyRoot.TryGetProperty("stopSequences", out var stopProperty));
+        var stopSequences = stopProperty.EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.Equal(executionSettings.ExtensionData.TryGetValue("stopSequences", out var extensionStop) ? extensionStop : executionSettings.StopSequences, stopSequences);
+    }
+
+    /// <summary>
     /// Checks that the prompt execution settings are correctly registered for the text generation call with Anthropic Claude.
     /// </summary>
     [Fact]

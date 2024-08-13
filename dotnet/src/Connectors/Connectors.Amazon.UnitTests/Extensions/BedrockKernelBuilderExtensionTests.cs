@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Amazon.BedrockRuntime;
+using Amazon.Runtime;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
@@ -53,5 +54,21 @@ public class BedrockKernelBuilderExtensionTests
         Assert.NotNull(kernel);
         Assert.NotNull(service);
         Assert.IsType<BedrockChatCompletionService>(service);
+    }
+
+    /// <summary>
+    /// Makes sure AWSServiceClient created BeforeServiceRequest DoesNothingForNonWebServiceRequestEventArgs
+    /// </summary>
+    [Fact]
+    public void AwsServiceClientBeforeServiceRequestDoesNothingForNonWebServiceRequestEventArgs()
+    {
+        // Arrange
+        var requestEventArgs = new Mock<RequestEventArgs>();
+
+        // Act
+        BedrockKernelBuilderExtensions.AWSServiceClient_BeforeServiceRequest(null!, requestEventArgs.Object);
+
+        // Assert
+        // No exceptions should be thrown
     }
 }

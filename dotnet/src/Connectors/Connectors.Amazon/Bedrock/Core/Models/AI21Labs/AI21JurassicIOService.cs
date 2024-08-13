@@ -22,11 +22,11 @@ internal sealed class AI21JurassicIOService : IBedrockModelIOService
     object IBedrockModelIOService.GetInvokeModelRequestBody(string modelId, string prompt, PromptExecutionSettings? executionSettings)
     {
         var exec = AmazonJurassicExecutionSettings.FromExecutionSettings(executionSettings);
-        var requestBody = new AI21JurassicRequest.AI21JurassicTextGenerationRequest()
+        var requestBody = new AI21JurassicRequest.AI21JurassicTextGenerationRequest
         {
             Prompt = prompt,
-            Temperature = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "temperature") ?? exec.Temperature,
-            TopP = BedrockModelUtilities.GetExtensionDataValue<double?>(executionSettings?.ExtensionData, "topP") ?? exec.TopP,
+            Temperature = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "temperature") ?? exec.Temperature,
+            TopP = BedrockModelUtilities.GetExtensionDataValue<float?>(executionSettings?.ExtensionData, "topP") ?? exec.TopP,
             MaxTokens = BedrockModelUtilities.GetExtensionDataValue<int?>(executionSettings?.ExtensionData, "maxTokens") ?? exec.MaxTokens,
             StopSequences = BedrockModelUtilities.GetExtensionDataValue<IList<string>?>(executionSettings?.ExtensionData, "stopSequences") ?? exec.StopSequences,
             CountPenalty = BedrockModelUtilities.GetExtensionDataValue<AI21JurassicPenalties?>(executionSettings?.ExtensionData, "countPenalty") ?? exec.CountPenalty,

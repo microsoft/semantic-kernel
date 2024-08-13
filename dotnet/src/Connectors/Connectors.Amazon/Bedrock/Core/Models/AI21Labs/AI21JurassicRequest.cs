@@ -25,13 +25,13 @@ internal static class AI21JurassicRequest
         /// </summary>
         [JsonPropertyName("temperature")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public double? Temperature { get; set; }
+        public float? Temperature { get; set; }
         /// <summary>
         /// Use a lower value to ignore less probable options.
         /// </summary>
         [JsonPropertyName("topP")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public double? TopP { get; set; }
+        public float? TopP { get; set; }
         /// <summary>
         /// Specify the maximum number of tokens to use in the generated response.
         /// </summary>
