@@ -69,6 +69,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests(ITestOutputHelper
         ];
 
         StringBuilder fullContent = new();
+
         // Act
         await foreach (var update in sut.GetStreamingChatMessageContentsAsync(chatHistory))
         {

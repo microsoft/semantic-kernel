@@ -550,7 +550,7 @@ internal sealed class ChatClientCore
 
     private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
-        return new Dictionary<string, object?>(4)
+        return new Dictionary<string, object?>(3)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
