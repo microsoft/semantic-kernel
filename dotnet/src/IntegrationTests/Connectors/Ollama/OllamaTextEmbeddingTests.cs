@@ -18,7 +18,7 @@ public sealed class OllamaTextEmbeddingTests
         .AddUserSecrets<OllamaTextEmbeddingTests>()
         .Build();
 
-    [Theory]//(Skip = "For manual verification only")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("mxbai-embed-large", 1024)]
     [InlineData("nomic-embed-text", 768)]
     [InlineData("all-minilm", 384)]
@@ -42,7 +42,7 @@ public sealed class OllamaTextEmbeddingTests
         Assert.Equal(expectedVectorLength, result.Length);
     }
 
-    [Theory]//(Skip = "For manual verification only")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("mxbai-embed-large", 1024)]
     [InlineData("nomic-embed-text", 768)]
     [InlineData("all-minilm", 384)]

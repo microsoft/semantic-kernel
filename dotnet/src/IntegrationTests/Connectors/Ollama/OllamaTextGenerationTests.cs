@@ -29,7 +29,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         .AddUserSecrets<OllamaCompletionTests>()
         .Build();
 
-    [Theory]//(Skip = "For manual verification only")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task ItInvokeStreamingWorksAsync(string prompt, string expectedAnswerContains)
     {
@@ -55,7 +55,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         Assert.Contains(expectedAnswerContains, fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItShouldReturnMetadataAsync()
     {
         // Arrange
@@ -87,7 +87,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         Assert.NotEqual(0, ollamaMetadata.EvalDuration);
     }
 
-    [Theory]//(Skip = "For manual verification only")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("\n")]
     [InlineData("\r\n")]
     public async Task ItCompletesWithDifferentLineEndingsAsync(string lineEnding)
@@ -114,7 +114,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         Assert.Contains(ExpectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItInvokePromptTestAsync()
     {
         // Arrange
@@ -132,7 +132,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory]//(Skip = "For manual verification only")]
+    [Theory(Skip = "For manual verification only")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task ItInvokeTestAsync(string prompt, string expectedAnswerContains)
     {
@@ -154,7 +154,7 @@ public sealed class OllamaTextGenerationTests(ITestOutputHelper output) : IDispo
         Assert.NotNull(actual.Metadata);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItShouldHaveSemanticKernelVersionHeaderAsync()
     {
         // Arrange
