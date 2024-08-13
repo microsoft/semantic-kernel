@@ -134,6 +134,7 @@ The Semantic Kernel is an indispensable tool for developers aiming to build adva
 
 
 
+
 ## Decision Drivers
 
 - An AI must be able to perform searches with a search plugin and get back “results” of type `T`.
